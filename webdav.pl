@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.6.0
+# VERSION 0.6.1 BETA
 # REQUIREMENTS:
 #   - CPAN Package (Debian/Ubuntu package):
 #       CGI (libcgi-perl)
@@ -39,6 +39,10 @@
 #    - see http://amor.cms.hu-berlin.de/~rohdedan/webdav/
 #       
 # CHANGES:
+#   0.6.1: BETA
+#        - Web interface:
+#            - fixed MIME sorting bug (GET)
+#            - added ascending/descending order character to the column name (GET)
 #   0.6.0: 2010/19/12
 #        - fixed default DOCUMENT_ROOT and VIRTUAL_BASE (Apache's DOCUMENT_ROOT is without a trailing slash by default)
 #        - added mime.types file support requested by Hanz Makmur <makmur@cs.rutgers.edu>
@@ -412,7 +416,7 @@ $CSS = <<EOS
 .filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
 .th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
 .th_sel { width:1em; }
-.th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { color: black; text-decoration: none; }
+.th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { color: black; text-decoration: none; text-shadow: 1px 1px white; }
 .th_highlight { background-color: #bcbcbc; border: 1px inset black; }
 .th_size, .th_perm, .tc_size, .tc_perm { text-align:right; }
 .tr_up { background-color: white; }
@@ -3276,7 +3280,7 @@ sub cmp_files {
 				return $b_stats[$idx] <=> $a_stats[$idx] || lc($b) cmp lc($a) if $order =~/_desc$/;
 				return $a_stats[$idx] <=> $b_stats[$idx] || lc($a) cmp lc($b);
 			}
-		} elsif ($order =~ /mimetype/) {
+		} elsif ($order =~ /mime/) {
 			my $a_mime = getMIMEType($a);
 			my $b_mime = getMIMEType($b);
 			if ($a_mime ne $b_mime) {
@@ -4474,11 +4478,12 @@ sub getFolderList {
 	my $order = $cgi->param('order') || 'name';
 	my $dir = $order=~/_desc$/ ? '' : '_desc';
 	my $query = "showall=".$cgi->param('showall') if $cgi->param('showall');
-	$row.= $cgi->td({-class=>'th_fn'.($order=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'em;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names')))
-		.$cgi->td({-class=>'th_lm'.($order=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified')))
-		.$cgi->td({-class=>'th_size'.($order=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size')))
-		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($order=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions')))):'')
-		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($order=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype'))):'');
+	my $ochar = ' <span class="orderchar">'.($dir eq '' ? '&darr;' :'&uarr;').'</span>';
+	$row.= $cgi->td({-class=>'th_fn'.($order=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'em;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($order=~/^name/?$ochar:'')))
+		.$cgi->td({-class=>'th_lm'.($order=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($order=~/^lastmodified/?$ochar:'')))
+		.$cgi->td({-class=>'th_size'.($order=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($order=~/^size/?$ochar:'')))
+		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($order=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($order=~/^mode/?$ochar:'')))):'')
+		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($order=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($order=~/^mime/?$ochar:''))):'');
 	$list .= $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $row);
 			
 
