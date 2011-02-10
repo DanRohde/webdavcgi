@@ -43,6 +43,8 @@
 #        - Web interface:
 #            - fixed MIME sorting bug (GET)
 #            - added ascending/descending order character to the column name (GET)
+#            - fixed POST upload permission denied error message (POST)
+#            - fixed rename of file/folder to a existing file/folder error message (POST)
 #   0.6.0: 2010/19/12
 #        - fixed default DOCUMENT_ROOT and VIRTUAL_BASE (Apache's DOCUMENT_ROOT is without a trailing slash by default)
 #        - added mime.types file support requested by Hanz Makmur <makmur@cs.rutgers.edu>
@@ -671,6 +673,7 @@ $LANG = 'default';
 				afsaclscurrentfolder=>'ACLs of the current folder <code>%s</code> <br/> (<code>%s</code>):',
 				afsaclhelp => '  ', afsgrouphelp=>'  ',
 				clickchangessort=>'Click here to change sort.',
+				msg_uploadforbidden=>'Sorry, it\'s not possible to upload file(s) "%s" (wrong permissions?)',
 			},
 		'de' => 
 			{
@@ -752,6 +755,7 @@ $LANG = 'default';
 				afsaclscurrentfolder=>'ACLs für den aktuellen Ordner <code>%s</code><br/> (<code>%s</code>):',
 				afsaclhelp => '  ', afsgrouphelp=>'  ',
 				clickchangessort=>'Klicken, um Sortierung zu ändern.',
+				msg_uploadforbidden=>'Sorry, die Datei(en) "%s" kann/können nicht hochgeladen werden (fehlende Rechte?)',
 			},
 
 		);
@@ -1631,8 +1635,7 @@ sub _POST {
 				if ($cgi->param('newname')) {
 					my @files = $cgi->param('file');
 					if (($#files > 0)&&(! -d $PATH_TRANSLATED.$cgi->param('newname'))) {
-						printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden');
-						exit;
+						$errmsg='renameerr';
 					} else {
 						$msg='rename';
 						$msgparam = 'p1='.$cgi->escape(join(', ',@files))
@@ -1699,6 +1702,8 @@ sub _POST {
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam, $errmsg, $msgparam));
 	} elsif ($ALLOW_POST_UPLOADS && -d $PATH_TRANSLATED && defined $cgi->param('file_upload')) {
 		my @filelist;
+		$errmsg=undef;
+		$msgparam='';
 		foreach my $filename ($cgi->param('file_upload')) {
 			next if $filename eq "";
 			my $rfn= $filename;
@@ -1718,15 +1723,18 @@ sub _POST {
 				flock(O, LOCK_UN) if $ENABLE_FLOCK;
 				close(O);
 			} else {
-				printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden');
-				last;
+				$errmsg='uploadforbidden';
+				if ($msgparam eq '') { $msgparam='p1='.$rfn; } else { $msgparam.=', '.$rfn; }
+				next;
 			}
 		}
-		if ($#filelist>-1) {
-			$msg=($#filelist>0)?'uploadmulti':'uploadsingle';
-			$msgparam='p1='.($#filelist+1).';p2='.$cgi->escape(substr(join(', ',@filelist), 0, 150));
-		} else {
-			$errmsg='uploadnothingerr';
+		if (!defined $errmsg) {
+			if ($#filelist>-1) {
+				$msg=($#filelist>0)?'uploadmulti':'uploadsingle';
+				$msgparam='p1='.($#filelist+1).';p2='.$cgi->escape(substr(join(', ',@filelist), 0, 150));
+			} else {
+				$errmsg='uploadnothingerr';
+			}
 		}
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam,$errmsg,$msgparam));
 	} elsif ($ALLOW_ZIP_DOWNLOAD && defined $cgi->param('zip')) {
