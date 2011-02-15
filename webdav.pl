@@ -386,7 +386,7 @@ $ICON_WIDTH = 18;
 ## -- CSS
 ## defines a stylesheet added to the header of the Web interface
 $CSS = <<EOS
-input,select { text-shadow: 1px 1px white; color:black; }
+input,select { text-shadow: 1px 1px white;  }
 .header, .signature { border: 2px outset black; padding-left:3px;background-color:#eeeeee; margin: 2px 0px 2px 0px; }
 .signature a { color: black; text-decoration: none; }
 .search { text-align:right;font-size:0.8em;padding:2px 0 0 0;border:0;margin: 0px 0px 4px 0px; }
