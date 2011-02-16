@@ -36,7 +36,7 @@
 #       Graphics::Magick (libgraphics-magick-perl)
 #       File::Sepc::Link (CPAN only)
 # INSTALLATION:
-#    - see http://amor.cms.hu-berlin.de/~rohdedan/webdav/
+#    - see http://webdavcgi.sf.net/
 #       
 # CHANGES:
 #   0.6.1: BETA
@@ -407,8 +407,10 @@ input,select { text-shadow: 1px 1px white;  }
 .davmount { font-size:0.8em;color:black; }
 .hidden { display: none; }
 .changedirform { display: inline; }
-.bookmark { width: 15em; text-shadow: none; }
-#addbookmark, #rmbookmark { font-size: 0.8em; border: 1px outset black; padding: 0px; margin: 0px; font-family: monospace;}
+.bookmark { width: 15em; text-shadow: none; font-family: monospace;}
+.bookmark .title { background-color: #aaaaaa; font-weight: bold; }
+.bookmark .function { background-color: #cccccc; font-weight: bold; text-shadow: 1px 1px white;}
+#addbookmark, #rmbookmark { font-size: 0.8em; border: 1px outset black; padding: 0px; margin: 0px; font-family: monospace; background-color: #dddddd; text-shadow: 1px 1px white; color: black; font-weight: bold; text-decoration: none;}
 
 .viewtools { display: inline; float:right; margin-top: 4px;  }
 .up, .refresh { font-size: 0.8em; border: 1px outset black; padding: 2px; font-weight: bold; text-decoration: none; color: black; background-color: #dddddd; text-shadow: 1px 1px white;}
@@ -698,8 +700,9 @@ $LANG = 'default';
 				msg_uploadforbidden=>'Sorry, it\'s not possible to upload file(s) "%s" (wrong permissions?)',
 				changedir=>'Change Location', go=>'Go', cancel=>'Cancel',
 				bookmarks=>'-- Bookmarks --',
-				addbookmark=>'&nbsp;+&nbsp;', addbookmarktitle=>'Add current folder to bookmarks',
-				rmbookmark=>'&nbsp;-&nbsp;', rmbookmarktitle=>'Remove current folder from bookmarks', 
+				addbookmark=>'Add', addbookmarktitle=>'Add current folder to bookmarks',
+				rmbookmark=>'Remove', rmbookmarktitle=>'Remove current folder from bookmarks', 
+				rmallbookmarks=>'-- Remove All --', rmallbookmarkstitle=>'Remove all bookmarks',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 			},
 		'de' => 
@@ -785,8 +788,9 @@ $LANG = 'default';
 				msg_uploadforbidden=>'Sorry, die Datei(en) "%s" kann/können nicht hochgeladen werden (fehlende Rechte?)',
 				changedir=>'Verzeichnis wechseln', go=>'Wechseln', cancel=>'Abbrechen',
 				bookmarks=>'-- Lesezeichen --',
-				addbookmark=>'&nbsp;+&nbsp;', addbookmarktitle=>'Aktuellen Ordner zu Lesezeichen hinzufügen',
-				rmbookmark=>'&nbsp;-&nbsp;', rmbookmarktitle=>'Aktuellen Ordner aus Lesezeichen entfernen', 
+				addbookmark=>'Hinzufügen', addbookmarktitle=>'Aktuellen Ordner zu Lesezeichen hinzufügen',
+				rmbookmark=>'Entfernen', rmbookmarktitle=>'Aktuellen Ordner aus Lesezeichen entfernen', 
+				rmallbookmarks=>'-- Alle Entfernen --', rmallbookmarkstitle=>'Alle Lesenzeichen entfernen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 			},
 
@@ -4183,7 +4187,7 @@ sub getQuota {
 
 	my ($block_curr, $block_soft, $block_hard, $block_timelimit,
             $inode_curr, $inode_soft, $inode_hard, $inode_timelimit);
-	$fn=~s/"/\\"/g;
+	$fn=~s/"/\\"/g; $fn=~s/\\/\\\\/g;
 	if (defined $GFSQUOTA && open(QCMD,"$GFSQUOTA \"$fn\"|")) {
 		my @lines = <QCMD>;
 		close(QCMD);
@@ -4757,6 +4761,12 @@ sub start_html {
 	$content.=qq@<meta http-equiv="Content-Type" content="text/html; charset=$CHARSET"/>@;
 	$content.=qq@<meta name="author" content="Daniel Rohde"/>@;
 	my $bookmarktext = _tl('bookmarks');
+	my $addbookmark = _tl('addbookmark');
+	my $rmbookmark = _tl('rmbookmark');
+	my $addbookmarktitle = _tl('addbookmarktitle');
+	my $rmbookmarktitle = _tl('rmbookmarktitle');
+	my $rmallb = _tl('rmallbookmarks');
+	my $rmallbt = _tl('rmallbookmarkstitle');
 	my $jscript = <<EOS
 		<script>
 		function getBookmarkLocation() {
@@ -4780,6 +4790,14 @@ sub start_html {
 				setCookie('bookmark'+i, "-", 1);
 				bookmarkcheck();
 			}
+		}
+		function rmAllBookmarks() {
+			var i = 0;
+			while (getCookie('bookmark'+i) != "") {
+				delCookie('bookmark'+i);
+				i++;
+			}
+			bookmarkcheck();
 		}
 		function isBookmarked() {
 			var loc = getBookmarkLocation();
@@ -4808,8 +4826,19 @@ sub start_html {
 			uri = uri.replace(/\\"/g,"%22");
 			return uri;
 		}
+		function bookmarkChanged(bm) {
+			if (bm == '+') addBookmark();
+			else if (bm == '-') rmBookmark();
+			else if (bm == '--') rmAllBookmarks();
+			else changeDir(bm);
+			return true;
+		}
 		function buildBookmarkList() {
 			var e = document.getElementById('bookmarks');
+			var rmb = '$rmbookmark';
+			var rmbt = '$rmbookmarktitle';
+			var addb = '$addbookmark';
+			var addbt = '$addbookmarktitle';
 			if (!e) return;
 			var loc = getBookmarkLocation();
 			var b = new Array();
@@ -4822,16 +4851,21 @@ sub start_html {
 				b.push(c);
 			}
 			b.sort();
+			var isBookmarked = false;
 			for (i=0; i<b.length; i++) {
 				var c = b[i];
 				var d = (c == loc) ? ' disabled="disabled"' : '';
+				if (c == loc) isBookmarked = true;
 				var v = c.length <= 25 ? c : c.substr(0,5)+'...'+c.substr(c.length-17);
 				content = content + '<option value="'+encodeSpecChars(c)+'" title="'+c+'"'+d+'>' + v + '</option>';
 			}
-			e.innerHTML = '<select class="bookmark" name="bookmark" onchange="return changeDir(this.options[this.selectedIndex].value);">'
-					+'<option value="">$bookmarktext</option>'
-					+ (content != "" ? content : '<option disabled="disabled">-------------------------</option>') +
-					"</select>" ;
+			e.innerHTML = '<select class="bookmark" name="bookmark" onchange="return bookmarkChanged(this.options[this.selectedIndex].value);">'
+					+'<option class="title" value="">$bookmarktext</option>'
+					+(!isBookmarked?'<option class="function" title="'+addbt+'" value="+">'+addb+'</option>' : '')
+					+ (content != "" ?  content : '')
+					+(isBookmarked?'<option disabled="disabled"></option><option class="function" title="'+rmbt+'" value="-">'+rmb+'</option>' : '')
+					+ '<option disabled="disabled"></option><option class="function" title="$rmallbt" value="--">$rmallb</option>' 
+					+ '</select>' ;
 		}
 		function bookmarkcheck() {
 			toggleBookmarkButtons();
@@ -4930,6 +4964,11 @@ sub start_html {
 			date.setTime(date.getTime() + 315360000000);
 			expires = date.toGMTString();
 			document.cookie = name + '=' + escape(value) + ';'+ (e?'expires='+expires+'; ':'') +' path=/; secure;'; 
+		}
+		function delCookie(name) {
+			var date = new Date();
+			date.setTime(date.getTime() - 1000000);
+			document.cookie = name + '=' + escape('-') + '; expires='+date.toGMTString()+'; path=/; secure;';
 		}
 		function getCookie(name) {
 			if (document.cookie.length>0) {
@@ -5034,7 +5073,7 @@ sub minify {
 sub renderAFSACLManager {
 	my @entries;
 	my $pt = $PATH_TRANSLATED;
-	$pt=~s/"/\\"/g;
+	$pt=~s/"/\\"/g;  $pt=~s/\\/\\\\/g;
 	open(my $afs, "$AFS_FSCMD listacl \"$pt\" |") or die("cannot execute $AFS_FSCMD list \"$PATH_TRANSLATED\"");
 	my $line;
 	$line = <$afs>; # skip first line
@@ -5083,7 +5122,7 @@ sub renderAFSACLManager {
 		}
 		return $content;
 	}
-	my $content = $cgi->a({-name=>'afsaclmanagerpos'}).renderMessage('acl')
+	my $content = $cgi->a({-id=>'afsaclmanagerpos'},"").renderMessage('acl')
 			.$cgi->div(sprintf(_tl('afsaclscurrentfolder'),$PATH_TRANSLATED, $REQUEST_URI))
 			.$cgi->start_table({-class=>'afsacltable'});
 	$content .= _renderACLData(\@entries, 1);
@@ -5120,7 +5159,7 @@ sub doAFSSaveACL() {
 	if ($pacls ne "") {
 		my $cmd;
 		my $fn = $PATH_TRANSLATED;
-		$fn=~s/"/\\"/g;
+		$fn=~s/"/\\"/g; $fn=~s/\\/\\\\/g;
 		$cmd= qq@$AFS_FSCMD setacl -dir \"$fn\" -acl $pacls -clear 2>&1@;
 		debug($cmd);
 		$output = qx@$cmd@;
@@ -5189,7 +5228,7 @@ sub renderAFSGroupManager {
 	my $rgrp = "";
 	$rgrp .= $cgi->input({-name=>'afsnewgrpname',-size=>20, -value=>$cgi->param('afsnewgrpname')||'',-onfocus=>'if (this.value == "") { this.value="'.$ru.':"; this.select();}', -onblur=>'if (this.value == "'.$ru.':") this.value="";', -onkeypress=>'return catchEnter(event,"afsrenamegrp");'}).$cgi->submit({-id=>'afsrenamegrp', -name=>'afsrenamegrp', -value=>_tl('afsrenamegroup'), -onclick=>'return window.confirm("'._tl('afsconfirmrenamegrp').'");'}) if $ALLOW_AFSGROUPCHANGES && $#groups > -1;
 
-	return $cgi->a({-name=>'afsgroupmanagerpos'}).renderMessage('afs')
+	return $cgi->a({-id=>'afsgroupmanagerpos'},"").renderMessage('afs')
 		.$cgi->start_form({-name=>'afsgroupmanagerform', -method=>'post'})
 		.$cgi->start_table({-class=>'afsgroupmanager'})
 		.$cgi->Tr($cgi->th($hgc).$cgi->th($huc))
