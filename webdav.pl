@@ -4762,15 +4762,11 @@ sub start_html {
 	$content.='<head><title>'.$cgi->escapeHTML($title).'</title>';
 	$content.=qq@<meta http-equiv="Content-Type" content="text/html; charset=$CHARSET"/>@;
 	$content.=qq@<meta name="author" content="Daniel Rohde"/>@;
-	my $bookmarktext = _tl('bookmarks');
-	my $addbookmark = _tl('addbookmark');
-	my $rmbookmark = _tl('rmbookmark');
-	my $addbookmarktitle = _tl('addbookmarktitle');
-	my $rmbookmarktitle = _tl('rmbookmarktitle');
-	my $rmallb = _tl('rmallbookmarks');
-	my $rmallbt = _tl('rmallbookmarkstitle');
-	my $sbpname = _tl('sortbookmarkbypath');
-	my $sbtname = _tl('sortbookmarkbytime');
+
+	my %tl;
+	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','sortbookmarkbypath','sortbookmarkbytime')) {
+		$tl{$usedtext} = _tl($usedtext);
+	}
 	my $jscript = <<EOS
 		<script>
 		function getBookmarkLocation() {
@@ -4858,12 +4854,6 @@ sub start_html {
 		}
 		function buildBookmarkList() {
 			var e = document.getElementById('bookmarks');
-			var rmb = '$rmbookmark';
-			var rmbt = '$rmbookmarktitle';
-			var addb = '$addbookmark';
-			var addbt = '$addbookmarktitle';
-			var sbpname = '$sbpname';
-			var sbtname = '$sbtname';
 			if (!e) return;
 			var loc = getBookmarkLocation();
 			var b = new Array();
@@ -4897,12 +4887,12 @@ sub start_html {
 				sbtarr = bms.match(/desc/) ? '&darr;' : '&uarr;';
 			}
 			e.innerHTML = '<select class="bookmark" name="bookmark" onchange="return bookmarkChanged(this.options[this.selectedIndex].value);">'
-					+'<option class="title" value="">$bookmarktext</option>'
-					+(!isBookmarked?'<option class="function" title="'+addbt+'" value="+">'+addb+'</option>' : '')
+					+'<option class="title" value="">$tl{bookmarks}</option>'
+					+(!isBookmarked?'<option class="function" title="$tl{addbookmarktitle}" value="+">$tl{addbookmark}</option>' : '')
 					+ (content != "" ?  content : '')
-					+(isBookmarked?'<option disabled="disabled"></option><option class="function" title="'+rmbt+'" value="-">'+rmb+'</option>' : '')
-					+ (b.length<=1 ? '' : '<option class="function" value="path'+sbpadd+'">'+sbpname+' '+sbparr+'</option><option class="function" value="time'+sbtadd+'">'+sbtname+' '+sbtarr+'</option>')
-					+ '<option disabled="disabled"></option><option class="function" title="$rmallbt" value="--">$rmallb</option>' 
+					+(isBookmarked?'<option disabled="disabled"></option><option class="function" title="$tl{rmbookmarktitle}" value="-">$tl{rmbookmark}</option>' : '')
+					+ (b.length<=1 ? '' : '<option class="function" value="path'+sbpadd+'">$tl{sortbookmarkbypath} '+sbparr+'</option><option class="function" value="time'+sbtadd+'">$tl{sortbookmarkbytime} '+sbtarr+'</option>')
+					+ '<option disabled="disabled"></option><option class="function" title="$tl{rmallbookmarkstitle}" value="--">$tl{rmallbookmarks}</option>' 
 					+ '</select>' ;
 		}
 		function bookmarkcheck() {
