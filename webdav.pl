@@ -47,7 +47,7 @@
 #            - fixed rename of file/folder to a existing file/folder error message (POST)
 #            - added change location feature (GET)
 #            - added bookmark feature (GET)
-#            - fixed AFS quota and ACL command call bug  (GET)
+#            - fixed major AFS quota and ACL command call bug  (special characters in folder names; GET)
 #            - moved file upload up (GET)
 #            - improved 'view by page'/'show all' (cookie based now, GET)
 #            - added go up and refresh buttons (GET)
@@ -703,6 +703,7 @@ $LANG = 'default';
 				addbookmark=>'Add', addbookmarktitle=>'Add current folder to bookmarks',
 				rmbookmark=>'Remove', rmbookmarktitle=>'Remove current folder from bookmarks', 
 				rmallbookmarks=>'-- Remove All --', rmallbookmarkstitle=>'Remove all bookmarks',
+				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 			},
 		'de' => 
@@ -791,6 +792,7 @@ $LANG = 'default';
 				addbookmark=>'Hinzufügen', addbookmarktitle=>'Aktuellen Ordner zu Lesezeichen hinzufügen',
 				rmbookmark=>'Entfernen', rmbookmarktitle=>'Aktuellen Ordner aus Lesezeichen entfernen', 
 				rmallbookmarks=>'-- Alle Entfernen --', rmallbookmarkstitle=>'Alle Lesenzeichen entfernen',
+				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 			},
 
@@ -4187,7 +4189,7 @@ sub getQuota {
 
 	my ($block_curr, $block_soft, $block_hard, $block_timelimit,
             $inode_curr, $inode_soft, $inode_hard, $inode_timelimit);
-	$fn=~s/"/\\"/g; $fn=~s/\\/\\\\/g;
+	$fn=~s/(["\$\\])/\\$1/g; 
 	if (defined $GFSQUOTA && open(QCMD,"$GFSQUOTA \"$fn\"|")) {
 		my @lines = <QCMD>;
 		close(QCMD);
@@ -4767,6 +4769,8 @@ sub start_html {
 	my $rmbookmarktitle = _tl('rmbookmarktitle');
 	my $rmallb = _tl('rmallbookmarks');
 	my $rmallbt = _tl('rmallbookmarkstitle');
+	my $sbpname = _tl('sortbookmarkbypath');
+	my $sbtname = _tl('sortbookmarkbytime');
 	my $jscript = <<EOS
 		<script>
 		function getBookmarkLocation() {
@@ -4778,6 +4782,7 @@ sub start_html {
 			while (getCookie('bookmark'+i)!= "-" && getCookie('bookmark'+i) != "" && getCookie('bookmark'+i)!=loc) i++;
 			if (getCookie('bookmark'+i) != loc) {
 				setCookie('bookmark'+i, loc, 1);
+				setCookie('bookmark'+i+'time', (new Date()).getTime(), 1);
 				bookmarkcheck();
 			}
 			return false;
@@ -4795,6 +4800,7 @@ sub start_html {
 			var i = 0;
 			while (getCookie('bookmark'+i) != "") {
 				delCookie('bookmark'+i);
+				delCookie('bookmark'+i+'time');
 				i++;
 			}
 			bookmarkcheck();
@@ -4830,8 +4836,25 @@ sub start_html {
 			if (bm == '+') addBookmark();
 			else if (bm == '-') rmBookmark();
 			else if (bm == '--') rmAllBookmarks();
+			else if (bm.match(/^time/) || bm.match(/^path/)) { setCookie('bookmarksort',bm); bookmarkcheck(); }
 			else changeDir(bm);
 			return true;
+		}
+		function getBookmarkTime(bm) {
+			var i=0;
+			while (getCookie('bookmark'+i) != "" && getCookie('bookmark'+i) != bm) i++;
+			return getCookie('bookmark'+i+'time');
+		}
+		function bookmarkSort(a,b) {
+			var s = getCookie('bookmarksort');
+			if (s == "") s='path';
+			var f = s.match(/desc/) ? -1 : 1;
+
+			if (s.match(/time/)) {
+				a = getBookmarkTime(a);
+				b = getBookmarkTime(b);
+			}
+			return f * (a == b ? 0 : a < b ? -1 : 1);
 		}
 		function buildBookmarkList() {
 			var e = document.getElementById('bookmarks');
@@ -4839,6 +4862,8 @@ sub start_html {
 			var rmbt = '$rmbookmarktitle';
 			var addb = '$addbookmark';
 			var addbt = '$addbookmarktitle';
+			var sbpname = '$sbpname';
+			var sbtname = '$sbtname';
 			if (!e) return;
 			var loc = getBookmarkLocation();
 			var b = new Array();
@@ -4850,7 +4875,7 @@ sub start_html {
 				if (c=="-") continue;
 				b.push(c);
 			}
-			b.sort();
+			b.sort(bookmarkSort);
 			var isBookmarked = false;
 			for (i=0; i<b.length; i++) {
 				var c = b[i];
@@ -4859,11 +4884,24 @@ sub start_html {
 				var v = c.length <= 25 ? c : c.substr(0,5)+'...'+c.substr(c.length-17);
 				content = content + '<option value="'+encodeSpecChars(c)+'" title="'+c+'"'+d+'>' + v + '</option>';
 			}
+			var bms = getCookie('bookmarksort');
+			if (bms == "") bms='path';
+			var sbparr,sbpadd,sbtarr,sbtadd;
+			sbpadd = ''; sbparr = '';
+			sbtadd = ''; sbtarr = ''; 
+			if (bms.match(/^path/)) {
+				sbpadd = bms.match(/desc/) ? '' : '-desc';
+				sbparr = bms.match(/desc/) ? '&darr;' : '&uarr;';
+			} else if (bms.match(/^time/)) {
+				sbtadd = bms.match(/desc/) ? '' : '-desc';
+				sbtarr = bms.match(/desc/) ? '&darr;' : '&uarr;';
+			}
 			e.innerHTML = '<select class="bookmark" name="bookmark" onchange="return bookmarkChanged(this.options[this.selectedIndex].value);">'
 					+'<option class="title" value="">$bookmarktext</option>'
 					+(!isBookmarked?'<option class="function" title="'+addbt+'" value="+">'+addb+'</option>' : '')
 					+ (content != "" ?  content : '')
 					+(isBookmarked?'<option disabled="disabled"></option><option class="function" title="'+rmbt+'" value="-">'+rmb+'</option>' : '')
+					+ (b.length<=1 ? '' : '<option class="function" value="path'+sbpadd+'">'+sbpname+' '+sbparr+'</option><option class="function" value="time'+sbtadd+'">'+sbtname+' '+sbtarr+'</option>')
 					+ '<option disabled="disabled"></option><option class="function" title="$rmallbt" value="--">$rmallb</option>' 
 					+ '</select>' ;
 		}
@@ -5073,7 +5111,7 @@ sub minify {
 sub renderAFSACLManager {
 	my @entries;
 	my $pt = $PATH_TRANSLATED;
-	$pt=~s/"/\\"/g;  $pt=~s/\\/\\\\/g;
+	$pt=~s/(["\$\\])/\\$1/g; 
 	open(my $afs, "$AFS_FSCMD listacl \"$pt\" |") or die("cannot execute $AFS_FSCMD list \"$PATH_TRANSLATED\"");
 	my $line;
 	$line = <$afs>; # skip first line
@@ -5159,7 +5197,7 @@ sub doAFSSaveACL() {
 	if ($pacls ne "") {
 		my $cmd;
 		my $fn = $PATH_TRANSLATED;
-		$fn=~s/"/\\"/g; $fn=~s/\\/\\\\/g;
+		$fn=~s/(["\$\\])/\\$1/g; 
 		$cmd= qq@$AFS_FSCMD setacl -dir \"$fn\" -acl $pacls -clear 2>&1@;
 		debug($cmd);
 		$output = qx@$cmd@;
