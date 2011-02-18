@@ -409,7 +409,7 @@ input,select { text-shadow: 1px 1px white;  }
 .changedirform { display: inline; }
 .bookmark { width: 15em; text-shadow: none; font-family: monospace;}
 .bookmark .title { background-color: #aaaaaa; font-weight: bold; }
-.bookmark .function { background-color: #cccccc; font-weight: bold; text-shadow: 1px 1px white;}
+.bookmark .func { background-color: #cccccc; font-weight: bold; text-shadow: 1px 1px white;}
 #addbookmark, #rmbookmark { font-size: 0.8em; border: 1px outset black; padding: 0px; margin: 0px; font-family: monospace; background-color: #dddddd; text-shadow: 1px 1px white; color: black; font-weight: bold; text-decoration: none;}
 
 .viewtools { display: inline; float:right; margin-top: 4px;  }
@@ -4888,11 +4888,11 @@ sub start_html {
 			}
 			e.innerHTML = '<select class="bookmark" name="bookmark" onchange="return bookmarkChanged(this.options[this.selectedIndex].value);">'
 					+'<option class="title" value="">$tl{bookmarks}</option>'
-					+(!isBookmarked?'<option class="function" title="$tl{addbookmarktitle}" value="+">$tl{addbookmark}</option>' : '')
+					+(!isBookmarked?'<option class="func" title="$tl{addbookmarktitle}" value="+">$tl{addbookmark}</option>' : '')
 					+ (content != "" ?  content : '')
-					+(isBookmarked?'<option disabled="disabled"></option><option class="function" title="$tl{rmbookmarktitle}" value="-">$tl{rmbookmark}</option>' : '')
-					+ (b.length<=1 ? '' : '<option class="function" value="path'+sbpadd+'">$tl{sortbookmarkbypath} '+sbparr+'</option><option class="function" value="time'+sbtadd+'">$tl{sortbookmarkbytime} '+sbtarr+'</option>')
-					+ '<option disabled="disabled"></option><option class="function" title="$tl{rmallbookmarkstitle}" value="--">$tl{rmallbookmarks}</option>' 
+					+(isBookmarked?'<option disabled="disabled"></option><option class="func" title="$tl{rmbookmarktitle}" value="-">$tl{rmbookmark}</option>' : '')
+					+ (b.length<=1 ? '' : '<option class="func" value="path'+sbpadd+'">$tl{sortbookmarkbypath} '+sbparr+'</option><option class="func" value="time'+sbtadd+'">$tl{sortbookmarkbytime} '+sbtarr+'</option>')
+					+ '<option disabled="disabled"></option><option class="func" title="$tl{rmallbookmarkstitle}" value="--">$tl{rmallbookmarks}</option>' 
 					+ '</select>' ;
 		}
 		function bookmarkcheck() {
@@ -4929,7 +4929,6 @@ sub start_html {
 		var shiftsel = new Object();
 		function handleCheckboxClick(o,id,e) {
 			if (!e) e = window.event;
-
 			var nid = parseInt(id.substr(1));
 			var nlid = shiftsel && shiftsel.lastId ? parseInt(shiftsel.lastId.substr(1)) : nid;
 			if ((e.shiftKey||shiftsel.shifted) && shiftsel.lastId && nid != nlid ) {
@@ -4940,7 +4939,7 @@ sub start_html {
 					var el = document.getElementById('f'+i);
 					if (el) { 	
 						el.checked=!el.checked; 
-						toggleClassNameById("tr_f"+i, "tr_selected", e.checked); 
+						toggleClassNameById("tr_f"+i, "tr_selected", el.checked); 
 					}
 				}
 			}
