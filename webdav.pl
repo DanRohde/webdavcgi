@@ -25,21 +25,15 @@
 #########################################################################
 # VERSION 0.6.1 BETA
 # REQUIREMENTS:
-#   - CPAN Package (Debian/Ubuntu package):
-#       CGI (libcgi-perl)
-#       DBI (libdbi-perl) + Driver, e.g. DBD::SQLite (libdbd-sqlite3-perl)
-#       OSSP::uuid  (libossp-uuid-perl)
-#       Date::Parse (libtimedate-perl)
-#       XML::Simple (libxml-simple-perl)
-#       Quota (libquota-perl)
-#       Archive::Zip (libarchive-zip-perl)
-#       Graphics::Magick (libgraphics-magick-perl)
-#       File::Sepc::Link (CPAN only)
+#    - see http://webdavcgi.sf.net/doc.html
 # INSTALLATION:
-#    - see http://webdavcgi.sf.net/
+#    - see http://webdavcgi.sf.net/doc.html
 #       
 # CHANGES:
 #   0.6.1: BETA
+#        - fixed missing HTTP status of inaccessible files (GET)
+#        - changed CONFIGFILE default
+#        - fixed major AFS performance bug related to AFS ACL rights: list without read right on a folder with unreadable files (GET/PROPFIND)
 #        - Web interface:
 #            - fixed MIME sorting bug (GET)
 #            - added ascending/descending order character to the column name (GET)
@@ -51,6 +45,7 @@
 #            - moved file upload up (GET)
 #            - improved 'view by page'/'show all' (cookie based now, GET)
 #            - added go up and refresh buttons (GET)
+#            - changed THUMBNAIL_CACHEDIR default to /tmp (GET)
 #   0.6.0: 2010/19/12
 #        - fixed default DOCUMENT_ROOT and VIRTUAL_BASE (Apache's DOCUMENT_ROOT is without a trailing slash by default)
 #        - added mime.types file support requested by Hanz Makmur <makmur@cs.rutgers.edu>
@@ -241,17 +236,7 @@
 #    - RFC5785 (Defining Well-Known Uniform Resource Identifiers (URIs))
 #    - improve/fix precondition checks (If header)
 # KNOWN PROBLEMS:
-#    - see http://amor.cms.hu-berlin.de/~rohdedan/webdav/
-#########################################################################
-# Example Apache configuration (.htaccess):
-#
-#   RewriteEngine On
-#   RewriteRule .* /cgi-bin/webdavwrapper
-# 
-#   AuthType Basic
-#   AuthName "A protected WebDAV folder"
-#   AuthUserFile /path-to-my-auth-file
-#   require valid-user
+#    - see http://webdavcgi.sf.net/
 #########################################################################
 use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
             @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG %ELEMENTORDER
@@ -279,7 +264,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $ENABLE_FLOCK $SHOW_MIME $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
-            $WEB_ID $ENABLE_BOOKMARKS
+            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -292,7 +277,7 @@ $ENV{PATH}="/bin:/usr/bin:/sbin/:/usr/local/bin:/usr/sbin";
 ## you can overwrite all variables from this setup section with a config file
 ## (simply copy the complete setup section (without 'use vars ...') or single options to your config file)
 ## EXAMPLE: CONFIGFILE = './webdav.conf';
-$CONFIGFILE = '/usr/local/www/cgi-bin/webdav.conf';
+$CONFIGFILE = $ENV{WEBDAVCONF} || '/usr/local/www/cgi-bin/webdav.conf';
 
 ## -- VIRTUAL_BASE
 ## only neccassary if you use redirects or rewrites 
@@ -450,6 +435,7 @@ input,select { text-shadow: 1px 1px white;  }
 .functions { float: right; padding: 0px 5px 0px 20px;}
 fieldset { clear: both; }
 
+.rmuploadfield { text-decoration: none; margin: 4px; font-family: monospace; padding: 1px; border: 1px outset black; text-shadow: 1px 1px white; background-color: #dddddd; color: black;}
 
 .toggle { cursor:pointer; border: 1px outset black; font-family: monospace; padding: 0px 4px 1px 3px; margin: 0px 2px 0px 2px; }
 legend {  font-size: 0.8em; font-weight: bold; margin: 5px 0px 2px 0px; padding: 0px; }
@@ -705,6 +691,7 @@ $LANG = 'default';
 				rmallbookmarks=>'-- Remove All --', rmallbookmarkstitle=>'Remove all bookmarks',
 				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
+				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
 			},
 		'de' => 
 			{
@@ -730,7 +717,7 @@ $LANG = 'default';
 				zipdownloadbutton => 'Herunterladen', zipdownloadtext => ' aller ausgewählten Dateien und Ordner als ZIP-Archiv.',
 				zipuploadtext => 'Ein ZIP-Archiv: ', zipuploadbutton => 'hochladen & auspacken.',
 				zipuploadconfirm => 'Wollen Sie das ZIP-Archiv wirklich hochladen, auspacken und damit alle existierenden Dateien ersetzen?',
-				fileuploadtext => 'Datei: ', fileuploadbutton=> 'hochladen', fileuploadmore =>'mehrere Dateien hochladen',
+				fileuploadtext => 'Datei: ', fileuploadbutton=> 'Hochladen', fileuploadmore =>'mehrere Dateien hochladen',
 				fileuploadconfirm =>'Wollen Sie wirklich die Datei(en) hochladen und existierenende Dateien ggf. ersetzen?',
 				confirm => 'Bitte bestätigen Sie.',
 				foldernotwriteable => 'In diesem Ordner darf nicht geschrieben werden (fehlende Zugriffsrechte).',
@@ -794,6 +781,7 @@ $LANG = 'default';
 				rmallbookmarks=>'-- Alle Entfernen --', rmallbookmarkstitle=>'Alle Lesenzeichen entfernen',
 				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
+				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
 			},
 
 		);
@@ -859,6 +847,10 @@ $BUFSIZE = 1048576;
 ## if you use a GFS/GFS2 filesystem and if you want quota property support set this variable
 ## EXAMPLE: $GFSQUOTA='/usr/sbin/gfs2_quota -f';
 #$GFSQUOTA='/usr/sbin/gfs_quota -f';
+
+## -- ENABLE_AFS
+## enables AFS support
+# $ENABLE_AFS = 1;
 
 ## -- AFSQUOTA
 ## if you use a AFS filesystem and if you want quota property support set this variable
@@ -984,7 +976,7 @@ $THUMBNAIL_WIDTH=110;
 ## defines the path to a cache directory for image thumbnails
 ## this is neccessary if you enable the thumbnail cache ($ENABLE_THUMBNAIL_CACHE)
 ## EXAMPLE: $THUMBNAIL_CACHEDIR=".thumbs";
-$THUMBNAIL_CACHEDIR="/usr/local/www/tmp/thumbs";
+$THUMBNAIL_CACHEDIR="/tmp";
 
 ## -- ENABLE_BIND
 ## enables BIND/UNBIND/REBIND methods defined in http://tools.ietf.org/html/draft-ietf-webdav-bind-27
@@ -1019,7 +1011,7 @@ my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 ## if enabled all unreadable files and folders are clickable for full AFS support
 ## it's not a security risk because process rights and file permissions will work
 ## EXAMPLE: $IGNOREFILEPERMISSIONS = 0;
-$IGNOREFILEPERMISSIONS = 0;
+$IGNOREFILEPERMISSIONS = $ENABLE_AFS;
 
 ## -- ENABLE_FLOCK
 ## enables file locking support (flock) for PUT/POST uploads to respect existing locks and to set locks for files to change
@@ -1108,6 +1100,7 @@ our $REQUEST_URI = $ENV{REQUEST_URI};
 
 debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
+debug("CGI-Version: $CGI::VERSION");
 
 debug("$0: X-Litmus: ".$cgi->http("X-Litmus")) if defined $cgi->http("X-Litmus");
 debug("$0: X-Litmus-Second: ".$cgi->http("X-Litmus-Second")) if defined $cgi->http("X-Litmus-Second");
@@ -1374,6 +1367,8 @@ sub _GET {
 
 	if (is_hidden($fn)) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+	} elsif ($ENABLE_AFS && !checkAFSAccess($fn)) {
+		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
 	} elsif (-d $fn && !$FANCYINDEXING) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif (-e $fn && $cgi->param('action') eq 'davmount') {
@@ -1528,10 +1523,11 @@ sub _GET {
 			}
 			$content .= qq@<fieldset><legend>@.$cgi->escapeHTML(_tl('upload')).'</legend><div id="toggleupload" style="display:block;">'
 				.$cgi->hidden(-name=>'upload',-value=>1)
-				.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-name=>'file_upload', -multiple=>'multiple' ))
-				.$cgi->span({-id=>'moreuploads'},"").$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
+				.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
+				.$cgi->span({-id=>'moreuploads'},"")
+				.' '.$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
 				.' '
-				.$cgi->a({-onclick=>'javascript:document.getElementById("moreuploads").innerHTML=document.getElementById("moreuploads").innerHTML+"<br/>"+document.getElementById("file_upload").innerHTML',-href=>'#'},_tl('fileuploadmore'))
+				.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
 				.' ('.($CGI::POST_MAX / 1048576).' MB max)'
 				.'</div></fieldset>'
 				if $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
@@ -1593,16 +1589,6 @@ sub _GET {
 			$content.= $cgi->start_form(-method=>'post', -id=>'clpform')
 					.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
 					.$cgi->hidden(-name=>'files', -value=>'') .$cgi->end_form() if ($ALLOW_FILE_MANAGEMENT && $ENABLE_CLIPBOARD);
-###			$content .= $cgi->start_multipart_form(-method=>'post', -onsubmit=>'return window.confirm("'._tl('confirm').'");', -id=>'fileupload')
-###				.qq@<fieldset><legend>@.$cgi->escapeHTML(_tl('upload')).'</legend><div id="toggleupload" style="display:block;">'
-###				.$cgi->hidden(-name=>'upload',-value=>1)
-###				.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-name=>'file_upload', -multiple=>'multiple' ))
-###				.$cgi->span({-id=>'moreuploads'},"").$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
-###				.' '
-###				.$cgi->a({-onclick=>'javascript:document.getElementById("moreuploads").innerHTML=document.getElementById("moreuploads").innerHTML+"<br/>"+document.getElementById("file_upload").innerHTML',-href=>'#'},_tl('fileuploadmore'))
-###				.' ('.($CGI::POST_MAX / 1048576).' MB max)'
-###				.'</div></fieldset>'
-###				.$cgi->end_form() if $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
 			if ($ENABLE_AFSGROUPMANAGER) {
 				$content.=qq@<fieldset><legend><span id="togglebuttonafsgroup" onclick="toggle('afsgroup');" class="toggle">+</span>@.$cgi->escapeHTML(_tl('afsgroup')).'</legend><div id="toggleafsgroup" style="display:none;">';
 				$content.=renderAFSGroupManager();
@@ -1625,6 +1611,8 @@ sub _GET {
 				print $buffer;
 			}
 			close(F);
+		} else {
+			printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (cannot open file)');
 		}
 	} else {
 		debug("GET: $fn NOT FOUND!");
@@ -1755,6 +1743,7 @@ sub _POST {
 		$msgparam='';
 		foreach my $filename ($cgi->param('file_upload')) {
 			next if $filename eq "";
+			next unless $cgi->uploadInfo($filename);
 			my $rfn= $filename;
 			$rfn=~s/\\/\//g; # fix M$ Windows backslashes
 			my $destination = $PATH_TRANSLATED.basename($rfn);
@@ -1763,7 +1752,7 @@ sub _POST {
 			if (open(O,">$destination")) {
 				if ($ENABLE_FLOCK && !flock(O, LOCK_EX | LOCK_NB)) {
 					close(O);
-					printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden');
+					printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (flock failed)');
 					last;
 				}
 				while (read($filename,my $buffer,$BUFSIZE || 1048576)>0) {
@@ -1853,7 +1842,7 @@ sub _POST {
 		## NOT IMPLEMENTED YET
 	} else {
 		debug("_POST: forbidden POST to $PATH_TRANSLATED");
-		printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden');
+		printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (unknown request, params:'.join(', ',$cgi->param()).')');
 	}
 }
 sub _OPTIONS {
@@ -3007,11 +2996,22 @@ sub getPropStat {
 	my ($fn,$uri,$props,$all,$noval) = @_;
 	my @propstat= ();
 
-	my $nfn = File::Spec::Link->full_resolve($fn);
+	debug("getPropStat($fn,$uri,...)");
 
-	my @stat = stat($fn);
+	### +++ AFS fix
+	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
+	### --- AFS fix
+
+	my $nfn = $isReadable ? File::Spec::Link->full_resolve($fn) : $fn;
+
+	my @stat = $isReadable ? stat($fn) : ();
 	my %resp_200 = (status=>'HTTP/1.1 200 OK');
 	my %resp_404 = (status=>'HTTP/1.1 404 Not Found');
+
+	### +++ AFS fix
+	my $isDir = $ENABLE_AFS ? ( checkAFSAccess($nfn) ? -d $nfn : 0 ) : -d $fn;
+	### --- AFS fix
+
 	foreach my $prop (@{$props}) {
 		my ($xmlnsuri,$propname) = ('DAV:',$prop);
 		if ($prop=~/^{([^}]*)}(.*)$/) {
@@ -3021,17 +3021,17 @@ sub getPropStat {
 			debug("getPropStat: UNSUPPORTED: $propname");
 			$resp_404{prop}{$prop}=undef;
 			next;
-		} elsif (( !defined $NAMESPACES{$xmlnsuri} || grep(/^\Q$propname\E$/,-d $fn?@KNOWN_COLL_LIVE_PROPS:@KNOWN_FILE_LIVE_PROPS)>0 ) && grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0) { 
+		} elsif (( !defined $NAMESPACES{$xmlnsuri} || grep(/^\Q$propname\E$/,$isDir?@KNOWN_COLL_LIVE_PROPS:@KNOWN_FILE_LIVE_PROPS)>0 ) && grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0) { 
 			my $dbval = db_getProperty($fn, $prop=~/{[^}]*}/?$prop:'{'.getNameSpaceUri($prop)."}$prop");
 			if (defined $dbval) {
 				$resp_200{prop}{$prop}=$noval?undef:$dbval;
 				next;
-			} elsif (grep(/^\Q$propname\E$/,-d $nfn?@KNOWN_COLL_LIVE_PROPS:@KNOWN_FILE_LIVE_PROPS)==0) {
+			} elsif (grep(/^\Q$propname\E$/,$isDir?@KNOWN_COLL_LIVE_PROPS:@KNOWN_FILE_LIVE_PROPS)==0) {
 				debug("getPropStat: #1 NOT FOUND: $prop ($propname, $xmlnsuri)");
 				$resp_404{prop}{$prop}=undef;
 			}
 		} 
-		if (grep(/^\Q$propname\E$/, -d $nfn ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS)>0) {
+		if (grep(/^\Q$propname\E$/, $isDir ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS)>0) {
 			if ($noval) { 
 				$resp_200{prop}{$prop}=undef;
 			} else {
@@ -3049,25 +3049,31 @@ sub getPropStat {
 }
 sub getProperty {
 	my ($fn, $uri, $prop, $statRef, $resp_200, $resp_404) = @_;
-	#debug("getProperty: fn=$fn, uri=$uri, prop=$prop");
-	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : stat($fn);
+	debug("getProperty: fn=$fn, uri=$uri, prop=$prop");
+
+	### +++ AFS fix
+	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
+	my $isDir = $isReadable ? -d $fn : 0;
+	### --- AFS fix
+
+	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : ($isReadable ? stat($fn) : ());
 
 	$$resp_200{prop}{creationdate}=strftime('%Y-%m-%dT%H:%M:%SZ' ,gmtime($ctime)) if $prop eq 'creationdate';
 	$$resp_200{prop}{displayname}=$cgi->escape(basename($uri)) if $prop eq 'displayname' && !defined $$resp_200{prop}{displayname};
 	$$resp_200{prop}{getcontentlanguage}='en' if $prop eq 'getcontentlanguage';
 	$$resp_200{prop}{getcontentlength}= $size if $prop eq 'getcontentlength';
-	$$resp_200{prop}{getcontenttype}=(-d $fn?'httpd/unix-directory':getMIMEType($fn)) if $prop eq 'getcontenttype';
+	$$resp_200{prop}{getcontenttype}=($isDir?'httpd/unix-directory':getMIMEType($fn)) if $prop eq 'getcontenttype';
 	$$resp_200{prop}{getetag}=getETag($fn) if $prop eq 'getetag';
 	$$resp_200{prop}{getlastmodified}=strftime('%a, %d %b %Y %T GMT' ,gmtime($mtime)) if $prop eq 'getlastmodified';
 	$$resp_200{prop}{lockdiscovery}=getLockDiscovery($fn) if $prop eq 'lockdiscovery';
-	$$resp_200{prop}{resourcetype}=(-d $fn?{collection=>undef}:undef) if $prop eq 'resourcetype';
-	$$resp_200{prop}{resourcetype}{calendar}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV && -d $fn;
-	$$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && -d $fn;
-	$$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && -d $fn;
-	$$resp_200{prop}{resourcetype}{addressbook}=undef if $prop eq 'resourcetype' && $ENABLE_CARDDAV && -d $fn;
-	$$resp_200{prop}{resourcetype}{'vevent-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && -d $fn;
-	$$resp_200{prop}{resourcetype}{'vtodo-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && -d $fn;
-	$$resp_200{prop}{resourcetype}{'vcard-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && -d $fn;
+	$$resp_200{prop}{resourcetype}=($isDir?{collection=>undef}:undef) if $prop eq 'resourcetype';
+	$$resp_200{prop}{resourcetype}{calendar}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV && $isDir;
+	$$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
+	$$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
+	$$resp_200{prop}{resourcetype}{addressbook}=undef if $prop eq 'resourcetype' && $ENABLE_CARDDAV && $isDir;
+	$$resp_200{prop}{resourcetype}{'vevent-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && $isDir;
+	$$resp_200{prop}{resourcetype}{'vtodo-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && $isDir;
+	$$resp_200{prop}{resourcetype}{'vcard-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && $isDir;
 	$$resp_200{prop}{'component-set'}='VEVENT,VTODO,VCARD' if $prop eq 'component-set';
 	if ($prop eq 'supportedlock') {
 		$$resp_200{prop}{supportedlock}{lockentry}[0]{lockscope}{exclusive}=undef;
@@ -3075,7 +3081,7 @@ sub getProperty {
 		$$resp_200{prop}{supportedlock}{lockentry}[1]{lockscope}{shared}=undef;
 		$$resp_200{prop}{supportedlock}{lockentry}[1]{locktype}{write}=undef;
 	}
-	$$resp_200{prop}{executable}=(-x $fn )?'T':'F' if $prop eq 'executable';
+	$$resp_200{prop}{executable}=($isReadable && -x $fn )?'T':'F' if $prop eq 'executable';
 
 	$$resp_200{prop}{source}={ 'link'=> { 'src'=>$uri, 'dst'=>$uri }} if $prop eq 'source';
 
@@ -3091,20 +3097,20 @@ sub getProperty {
 			$$resp_404{prop}{'quota-used-bytes'} = undef if $prop eq 'quota-used-bytes';
 		}
 	}
-	$$resp_200{prop}{childcount}=(-d $fn?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'childcount';
+	$$resp_200{prop}{childcount}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'childcount';
 	$$resp_200{prop}{id}=$uri if $prop eq 'id';
-	$$resp_200{prop}{isfolder}=(-d $fn?1:0) if $prop eq 'isfolder';
+	$$resp_200{prop}{isfolder}=($isDir?1:0) if $prop eq 'isfolder';
 	$$resp_200{prop}{ishidden}=(basename($fn)=~/^\./?1:0) if $prop eq 'ishidden';
 	$$resp_200{prop}{isstructureddocument}=0 if $prop eq 'isstructureddocument';
-	$$resp_200{prop}{hassubs}=(-d $fn ?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'hassubs';
-	$$resp_200{prop}{nosubs}=(-d $fn?(-w $fn?1:0):1) if $prop eq 'nosubs';
-	$$resp_200{prop}{objectcount}=(-d $fn?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'objectcount';
+	$$resp_200{prop}{hassubs}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'hassubs';
+	$$resp_200{prop}{nosubs}=($isDir?(-w $fn?1:0):1) if $prop eq 'nosubs';
+	$$resp_200{prop}{objectcount}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'objectcount';
 	$$resp_200{prop}{reserved}=0 if $prop eq 'reserved';
-	$$resp_200{prop}{visiblecount}=(-d $fn?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'visiblecount';
+	$$resp_200{prop}{visiblecount}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'visiblecount';
 
-	$$resp_200{prop}{iscollection}=(-d $fn?1:0) if $prop eq 'iscollection';
-	$$resp_200{prop}{isFolder}=(-d $fn?1:0) if $prop eq 'isFolder';
-	$$resp_200{prop}{'authoritative-directory'}=(-d $fn?'t':'f') if $prop eq 'authoritative-directory';
+	$$resp_200{prop}{iscollection}=($isDir?1:0) if $prop eq 'iscollection';
+	$$resp_200{prop}{isFolder}=($isDir?1:0) if $prop eq 'isFolder';
+	$$resp_200{prop}{'authoritative-directory'}=($isDir?'t':'f') if $prop eq 'authoritative-directory';
 	$$resp_200{prop}{resourcetag}=$REQUEST_URI if $prop eq 'resourcetag';
 	$$resp_200{prop}{'repl-uid'}=getuuid($fn) if $prop eq 'repl-uid';
 	$$resp_200{prop}{modifiedby}=$ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER} if $prop eq 'modifiedby';
@@ -3122,8 +3128,8 @@ sub getProperty {
 	$$resp_200{prop}{parentname}=$cgi->escape(basename(dirname($uri))) if $prop eq 'parentname';
 	$$resp_200{prop}{isreadonly}=(!$IGNOREFILEPERMISSIONS && !-w $fn?1:0) if $prop eq 'isreadonly';
 	$$resp_200{prop}{isroot}=($fn eq $DOCUMENT_ROOT?1:0) if $prop eq 'isroot';
-	$$resp_200{prop}{getcontentclass}=(-d $fn?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'getcontentclass';
-	$$resp_200{prop}{contentclass}=(-d $fn?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'contentclass';
+	$$resp_200{prop}{getcontentclass}=($isDir?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'getcontentclass';
+	$$resp_200{prop}{contentclass}=($isDir?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'contentclass';
 	$$resp_200{prop}{lastaccessed}=strftime('%m/%d/%Y %I:%M:%S %p' ,gmtime($atime)) if $prop eq 'lastaccessed';
 
 	$$resp_200{prop}{owner} = { href=>$uri } if $prop eq 'owner';
@@ -3324,9 +3330,15 @@ sub getMIMEType {
 sub cmp_files {
 	my $fp_a = $PATH_TRANSLATED.$a;
 	my $fp_b = $PATH_TRANSLATED.$b;
+	my $order = $cgi->param('order');
+	my $factor = ($order =~/_desc$/) ? -1 : 1;
+	## +++ AFS fix
+	return $factor * ( $a cmp $b ) if $ENABLE_AFS && !checkAFSAccess($fp_a) && !checkAFSAccess($fp_b);
+	return $factor if $ENABLE_AFS && !checkAFSAccess($fp_a);
+	return $factor if $ENABLE_AFS && !checkAFSAccess($fp_b);
+	## --- AFS fix
 	return -1 if -d $fp_a && !-d $fp_b;
 	return 1 if !-d $fp_a && -d $fp_b;
-	my $order = $cgi->param('order');
 	if (defined $order) {
 		study $order;
 		if ($order =~ /^(lastmodified|size|mode)/) {
@@ -3351,15 +3363,14 @@ sub cmp_files {
 	return lc($a) cmp lc($b);
 }
 sub getfancyfilename {
-	my ($full,$s,$m,$fn) = @_;
+	my ($full,$s,$m,$fn,$isUnReadable) = @_;
 	my $ret = $s;
 	my $q = getQueryParams();
 
 	$full = '/' if $full eq '//'; # fixes root folder navigation bug
 
-	$full.="?$q" if defined $q && defined $fn && -d $fn;
+	$full.="?$q" if defined $q && defined $fn && !$isUnReadable && -d $fn;
 	my $fntext = length($s)>$MAXFILENAMESIZE ? substr($s,0,$MAXFILENAMESIZE-3) : $s;
-
 
 	$ret = $IGNOREFILEPERMISSIONS || (!-d $fn && -r $fn) || -x $fn  ? $cgi->a({href=>$full,title=>$s},$cgi->escapeHTML($fntext)) : $cgi->escapeHTML($fntext);
 	$ret .=  length($s)>$MAXFILENAMESIZE ? '...' : (' 'x($MAXFILENAMESIZE-length($s)));
@@ -3371,11 +3382,11 @@ sub getfancyfilename {
 	my $onmouseover="";
 	my $onmouseout="";
 	my $align="";
-	my $id=getETag($fn);
+	my $id='i'.time().$WEB_ID;
 	$id=~s/\"//g;
 	
 	my $cssclass='icon';
-	if ($ENABLE_THUMBNAIL && -r $fn && hasThumbSupport(getMIMEType($fn)))  {
+	if ($ENABLE_THUMBNAIL && !$isUnReadable && -r $fn && hasThumbSupport(getMIMEType($fn)))  {
 		$icon=$full.($full=~/\?.*/?';':'?').'action=thumb';
 		if ($THUMBNAIL_WIDTH && $ICON_WIDTH < $THUMBNAIL_WIDTH) {
 			$cssclass='thumb';
@@ -3736,7 +3747,10 @@ sub getIfHeaderComponents {
 sub readDirRecursive {
 	my ($fn, $ru, $respsRef, $props, $all, $noval, $depth, $noroot, $visited) = @_;
 	return if is_hidden($fn);
-	my $nfn = File::Spec::Link->full_resolve($fn);
+	### +++ AFS fix
+	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
+	### --- AFS fix
+	my $nfn = $isReadable ?  File::Spec::Link->full_resolve($fn) : $fn;
 	unless ($noroot) {
 		my %response = ( href=>$ru );
 		$response{href}=$ru;
@@ -3751,7 +3765,7 @@ sub readDirRecursive {
 	}
 	return if exists $$visited{$nfn} && !$noroot && ($depth eq 'infinity' || $depth<0);
 	$$visited{$nfn} = 1;
-	if ($depth!=0 &&  -d $nfn ) {
+	if ($depth!=0 &&  $isReadable && -d $nfn ) {
 		if (!defined $FILECOUNTPERDIRLIMIT{$fn} || $FILECOUNTPERDIRLIMIT{$fn}>0) {
 			if (defined $FILEFILTERPERDIR{$fn} && _tl('webdavfolderisfiltered') ne 'webdavfolderisfiltered') {
 				my $fru = $ru.$cgi->escape(_tl('webdavfolderisfiltered'));
@@ -3763,8 +3777,10 @@ sub readDirRecursive {
 			}
 			foreach my $f ( sort cmp_files @{readDir($fn)}) {
 				my $fru=$ru.$cgi->escape($f);
-				$fru.='/' if -d "$nfn/$f" && $fru!~/\/$/;
-				my $nnfn = File::Spec::Link->full_resolve("$nfn/$f");
+				###$fru.='/' if -d "$nfn/$f" && $fru!~/\/$/;
+				$isReadable = $ENABLE_AFS ? checkAFSAccess("$nfn/$f") : 1;
+				my $nnfn = $isReadable ? File::Spec::Link->full_resolve("$nfn/$f") : "$nfn/$f";
+				$fru.='/' if $isReadable && -d $nnfn && $fru!~/\/$/;
 				readDirRecursive($nnfn, $fru, $respsRef, $props, $all, $noval, $depth>0?$depth-1:$depth, 0, $visited);
 			}
 		}
@@ -4440,11 +4456,71 @@ sub getChangeDirForm {
 		)
 		. $cgi->button(-id=>'changedirbutton', -name=>_tl('changedir'), -onclick=>'javascript:showChangeDir(true)')
 		. ( $ENABLE_BOOKMARKS ? 
-		 ' '. $cgi->span({-id=>'bookmarks'}, "")
+		 ' '. $cgi->span({-id=>'bookmarks'}, buildBookmarkList())
 		. ' '. $cgi->a({-id=>'addbookmark',-onclick=>'return addBookmark()', -href=>'#', -title=>_tl('addbookmarktitle')}, _tl('addbookmark'))
 		. ' '. $cgi->a({-id=>'rmbookmark',-class=>'hidden',-onclick=>'return rmBookmark()', -href=>'#', -title=>_tl('rmbookmarktitle')}, _tl('rmbookmark')) : '' )
 		;
 	
+}
+sub buildBookmarkList {
+	my(@bookmarks, %labels, %attributes);
+	my $isBookmarked = 0;
+	my $i=0;
+	while (my $b = $cgi->cookie('bookmark'.$i)) { 
+		$i++;
+		next if $b eq '-';
+		push @bookmarks, $b;
+		$labels{$b} = $cgi->escapeHTML(length($b) <=25 ? $b : substr($b,0,5).'...'.substr($b,length($b)-17));
+		$attributes{$b}{title}=$cgi->escapeHTML($b);
+		$attributes{$b}{disabled}='disabled' if $b eq $REQUEST_URI;
+		$isBookmarked = 1 if $b eq $REQUEST_URI;
+	}
+	sub getBookmarkTime {
+		my $i = 0;
+		$i++ while ($cgi->cookie('bookmark'.$i) && $cgi->cookie('bookmark'.$i) ne $_[0]);
+		return $cgi->cookie('bookmark'.$i.'time') || 0;
+	}
+	sub cmpBookmarks{
+		my $s = $cgi->cookie('bookmarksort') || 'path';
+		my $f = $s=~/desc$/ ? -1 : 1;
+		
+		if ($s =~ /^time/) {
+			my $at = getBookmarkTime($a);
+			my $bt = getBookmarkTime($b);
+			return $f * ($at == $bt ? $a cmp $b : $at < $bt ? -1 : 1);
+		}
+		return $f * ( $a cmp $b );
+	};
+	@bookmarks = sort cmpBookmarks @bookmarks;
+	
+	$attributes{""}{disabled}='disabled';
+	if ($isBookmarked) {
+		push @bookmarks, ""; 
+		push @bookmarks, '-'; $labels{'-'}=_tl('rmbookmark'); $attributes{'-'}= { -title=>_tl('rmbookmarktitle'), -class=>'func' };
+	} else {
+		unshift @bookmarks, '+'; $labels{'+'}=_tl('addbookmark'); $attributes{'+'}={-title=>_tl('addbookmarktitle'), -class=>'func'};
+	}
+	if ($#bookmarks > 1) {
+		my $bms = $cgi->cookie('bookmarksort') || 'path';
+		my ($sbpadd, $sbparr, $sbtadd, $sbtarr) = ('','','','');
+		if ($bms=~/^path/) {
+			$sbpadd = ($bms=~/desc$/)? '' : '-desc';
+			$sbparr = ($bms=~/desc$/)? ' &darr;' : ' &uarr;';
+		} else {
+			$sbtadd = ($bms=~/desc$/)? '' : '-desc';
+			$sbtarr = ($bms=~/desc$/)? ' &darr;' : ' &uarr;';
+		}
+		push @bookmarks, 'path'.$sbpadd;  $labels{'path'.$sbpadd}=_tl('sortbookmarkbypath').$sbparr; $attributes{'path'.$sbpadd}{class}='func';
+		push @bookmarks, 'time'.$sbtadd;  $labels{'time'.$sbtadd}=_tl('sortbookmarkbytime').$sbtarr; $attributes{'time'.$sbtadd}{class}='func';
+	}
+	push @bookmarks,"";
+	push @bookmarks,'--'; $labels{'--'}=_tl('rmallbookmarks'); $attributes{'--'}={ title=>_tl('rmallbookmarkstitle'), -class=>'func' };
+
+	unshift @bookmarks, '#'; $labels{'#'}=_tl('bookmarks'); $attributes{'#'}{class}='title'; 
+	my $e = $cgi->autoEscape(0);
+	my $content = $cgi->popup_menu( -class=>'bookmark', -name=>'bookmark', -onchange=>'return bookmarkChanged(this.options[this.selectedIndex].value);', -values=>\@bookmarks, -labels=>\%labels, -attributes=>\%attributes);
+	$cgi->autoEscape($e);
+	return $content;
 }
 sub getQuickNavPath {
 	my ($ru, $query) = @_;
@@ -4595,14 +4671,26 @@ sub getFolderList {
 		$WEB_ID++;
 		my $fid = "f$WEB_ID";
 		my $full = $fn.$filename;
-		my $mimetype = -d $full ? '<folder>' : getMIMEType($filename);
 		my $nru = $ru.uri_escape($filename);
-		$filename.="/" if -d $full;
-		$nru.="/" if -d $full;
+		### +++ AFS fix
+		my $isReadable = 1;	
+		my $isUnReadable = 0;
+		if (!$ENABLE_AFS || checkAFSAccess($full)) {
+			$isReadable = $IGNOREFILEPERMISSIONS  || (-d $full && -x $full) || (-f $full && -r $full);
+		} else {
+			$isReadable = 0;
+			$isUnReadable = 1;
+		}
+		### --- AFS fix
+
+		my $mimetype = '?';
+		$mimetype = -d $full ? '<folder>' : getMIMEType($filename) unless $isUnReadable;
+		$filename.="/" if !$isUnReadable && -d $full;
+		$nru.="/" if !$isUnReadable && -d $full;
 
 		next if $filter && $filename !~/$filter/i;
 
-		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($full);
+		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = !$isUnReadable ? stat($full) : (0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 		
 		push @rowclass,shift @rowclass;
 
@@ -4617,21 +4705,22 @@ sub getFolderList {
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
-		$row.= $cgi->td({-class=>'tc_fn', -onclick=>$onclick, -onmousedown=>$ignev, -ondblclick=>$ignev}, getfancyfilename($nru,$filename,$mimetype, $full));
+		$row.= $cgi->td({-class=>'tc_fn', -onclick=>$onclick, -onmousedown=>$ignev, -ondblclick=>$ignev}, getfancyfilename($nru,$filename,$mimetype, $full, $isUnReadable));
 		$row.= $cgi->td({-class=>'tc_lm', -title=>_tl('created').' '.$ctf, -onclick=>$onclick, -onmousedown=>$ignev}, $lmf);
 		$row.= $cgi->td({-class=>'tc_size', -title=>sprintf("= %.2fKB = %.2fMB = %.2fGB",$size/1024, $size/1048576, $size/1073741824), -onclick=>$onclick, -onmousedown=>$ignev}, $size);
 		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
 		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
-		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>$IGNOREFILEPERMISSIONS || (-d $full && -x $full) || (-f $full && -r $full)?qq@window.location.href="$nru";@ : ''}, $row);
+		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>$isReadable?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
 		$count++;
-		$foldercount++ if -d $full;
-		$filecount++ if -f $full;
-		$filesizes+=$size if -f $full;
+		$foldercount++ if !$isUnReadable && -d $full;
+		$filecount++ if $isUnReadable || -f $full;
+		$filesizes+=$size if $isUnReadable || -f $full;
+
 	}
 	my $pagenav = $filter ? '' : getPageNavBar($ru, $fullcount);
-	$content.=$cgi->start_multipart_form(-method=>'post', -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
+	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 	$content .= $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
 	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %d Bytes (= %.2f KB = %.2f MB = %.2f GB)", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $filesizes, $filesizes/1024, $filesizes/1048576, $filesizes/1073741824)) if ($SHOW_STAT); 
@@ -4764,11 +4853,23 @@ sub start_html {
 	$content.=qq@<meta name="author" content="Daniel Rohde"/>@;
 
 	my %tl;
-	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','sortbookmarkbypath','sortbookmarkbytime')) {
+	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle')) {
 		$tl{$usedtext} = _tl($usedtext);
 	}
 	my $jscript = <<EOS
-		<script>
+		<script type="text/javascript">
+		function addUploadField(force) {
+			var e = document.getElementById('moreuploads');
+			var fu = document.getElementsByName('file_upload');
+			if (!force) for (var i = 0; i<fu.length; i++) if (fu[i].value == "") return false;
+			e.id = 'moreuploads'+(new Date()).getTime();
+			var rmid='fileuploadfield'+(new Date()).getTime();
+			e.innerHTML = '<span id="'+rmid+'"><br/>'
+					+ document.getElementById("file_upload").innerHTML 
+				      + '<a class="rmuploadfield" title="$tl{rmuploadfieldtitle}" href="#" onclick="document.getElementById(\\''+rmid+'\\').innerHTML=\\'\\'; return false;">$tl{rmuploadfield}</a></span>'
+					+ '<span id="moreuploads"></span>';
+			return false;
+		}
 		function getBookmarkLocation() {
 			return decodeURIComponent(window.location.pathname);
 		}
@@ -5205,6 +5306,22 @@ sub doAFSSaveACL() {
 		$msgparam='p1='.$cgi->escape($output);
 	}
 	print $cgi->redirect($redirtarget.createMsgQuery($msg, $msgparam, $errmsg, $msgparam,'acl').'#afsaclmanagerpos');
+}
+sub checkAFSAccess {
+	my ($f) =@_;
+	my $ret = 0;
+
+	return $CACHE{checkAFSAccess}{$f} if exists $CACHE{checkAFSAccess}{$f};
+
+	$ret = lstat($f) ? 1 : 0;
+
+	#$f=~s/([\'\\])/\\$1/g;
+	#system("$AFS_FSCMD getcalleraccess '$f'>/dev/null 2>&1");
+	#$ret = $?>>8 == 0 ? 1 : 0;
+
+	$CACHE{checkAFSAccess}{$f} = $ret;
+
+	return $ret;
 }
 sub renderAFSGroupManager {
 	my $ru = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
