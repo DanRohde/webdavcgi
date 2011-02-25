@@ -23,14 +23,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.6.1 BETA
+# VERSION 0.6.1
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html
 # INSTALLATION:
 #    - see http://webdavcgi.sf.net/doc.html
 #       
 # CHANGES:
-#   0.6.1: BETA
+#   0.6.1: 2011/25/02
 #        - fixed missing HTTP status of inaccessible files (GET)
 #        - changed CONFIGFILE default
 #        - fixed major AFS performance bug related to AFS ACL rights: list without read right on a folder with unreadable files (GET/PROPFIND)
@@ -406,7 +406,7 @@ input,select { text-shadow: 1px 1px white;  }
 .pagenav a, .showall a { text-decoration: none;}
 
 .filelist a { text-decoration: none; }
-.filelist { width:100%;font-family:monospace;border:0; border-spacing:0; padding:2px; font-size: 0.9em;}
+.filelist { width:100%;font-family:monospace;border:0; border-spacing:0; padding:2px; font-size: 0.9em; clear: both;}
 .filelist .tr_odd { background-color: white; }
 .filelist .tr_even { background-color: #eeeeee; }
 .filelist .tr_up, .filelist .tr_even, .filelist .tr_odd {  cursor: pointer; }
@@ -792,7 +792,7 @@ $TRANSLATION{'de_DE.UTF8'} = $TRANSLATION{de};
 ## database setup for LOCK/UNLOCK/PROPPATCH/PROPFIND data
 ## EXAMPLE: $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'.db';
 ## ATTENTION: if users share the same folder they should use the same database. The example works only for users with unshared folders and $CREATE_DB should be enabled.
-$DBI_SRC='dbi:SQLite:dbname=/usr/local/www/var/webdav/webdav.'.($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'.db';
+$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'.db';
 $DBI_USER="";
 $DBI_PASS="";
 
@@ -4481,7 +4481,7 @@ sub buildBookmarkList {
 		return $cgi->cookie('bookmark'.$i.'time') || 0;
 	}
 	sub cmpBookmarks{
-		my $s = $cgi->cookie('bookmarksort') || 'path';
+		my $s = $cgi->cookie('bookmarksort') || 'time-desc';
 		my $f = $s=~/desc$/ ? -1 : 1;
 		
 		if ($s =~ /^time/) {
@@ -4501,7 +4501,7 @@ sub buildBookmarkList {
 		unshift @bookmarks, '+'; $labels{'+'}=_tl('addbookmark'); $attributes{'+'}={-title=>_tl('addbookmarktitle'), -class=>'func'};
 	}
 	if ($#bookmarks > 1) {
-		my $bms = $cgi->cookie('bookmarksort') || 'path';
+		my $bms = $cgi->cookie('bookmarksort') || 'time-desc';
 		my ($sbpadd, $sbparr, $sbtadd, $sbtarr) = ('','','','');
 		if ($bms=~/^path/) {
 			$sbpadd = ($bms=~/desc$/)? '' : '-desc';
@@ -4944,7 +4944,7 @@ sub start_html {
 		}
 		function bookmarkSort(a,b) {
 			var s = getCookie('bookmarksort');
-			if (s == "") s='path';
+			if (s == "") s='time-desc';
 			var f = s.match(/desc/) ? -1 : 1;
 
 			if (s.match(/time/)) {
@@ -4976,7 +4976,7 @@ sub start_html {
 				content = content + '<option value="'+encodeSpecChars(c)+'" title="'+c+'"'+d+'>' + v + '</option>';
 			}
 			var bms = getCookie('bookmarksort');
-			if (bms == "") bms='path';
+			if (bms == "") bms='time-desc';
 			var sbparr,sbpadd,sbtarr,sbtadd;
 			sbpadd = ''; sbparr = '';
 			sbtadd = ''; sbtarr = ''; 
