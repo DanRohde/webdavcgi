@@ -23,13 +23,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.6.1
+# VERSION 0.6.2 BETA
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html
 # INSTALLATION:
 #    - see http://webdavcgi.sf.net/doc.html
 #       
 # CHANGES:
+#   0.6.2: BETA
+#        - Web interface:
+#            - added $ORDER config parameter (GET)
+#            - improved folder list order with cookies (GET)
+#            - fixed sort order bug in search results (GET)
+#        - fixed file/folder search performance bug in a AFS (GET)
 #   0.6.1: 2011/25/02
 #        - fixed missing HTTP status of inaccessible files (GET)
 #        - changed CONFIGFILE default
@@ -264,7 +270,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $ENABLE_FLOCK $SHOW_MIME $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
-            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS
+            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -788,6 +794,11 @@ $LANG = 'default';
 $TRANSLATION{'de_DE'} = $TRANSLATION{de};
 $TRANSLATION{'de_DE.UTF8'} = $TRANSLATION{de};
 
+## -- ORDER
+##  sort order for a folder list (allowed values: name, lastmodified, size, mode, mime, and this values with a _desc suffix)
+## DEFAULT: $ORDER = 'name';
+$ORDER = 'name';
+
 ## -- DBI_(SRC/USER/PASS)
 ## database setup for LOCK/UNLOCK/PROPPATCH/PROPFIND data
 ## EXAMPLE: $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'.db';
@@ -1098,6 +1109,10 @@ $DAV.=', bind' if $ENABLE_BIND;
 our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
 our $REQUEST_URI = $ENV{REQUEST_URI};
 
+$LANG = $cgi->param('lang') || $cgi->cookie('lang') || $LANG || 'default';
+$ORDER = $cgi->param('order') || $cgi->cookie('order') || $ORDER || 'name';
+study $ORDER;
+
 debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
 debug("CGI-Version: $CGI::VERSION");
@@ -1137,6 +1152,8 @@ if (grep(/^\Q$<\E$/, @FORBIDDEN_UID)>0) {
 }
 
 $WEB_ID = 0;
+
+
 #### PROPERTIES:
 # from RFC2518:
 #    creationdate, displayname, getcontentlanguage, getcontentlength, 
@@ -1362,8 +1379,6 @@ sub gotomethod {
 sub _GET {
 	my $fn = $PATH_TRANSLATED;
 	debug("_GET: $fn");
-
-	$LANG = $cgi->param('lang') || $cgi->cookie('lang') || $LANG;
 
 	if (is_hidden($fn)) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
@@ -3009,7 +3024,7 @@ sub getPropStat {
 	my %resp_404 = (status=>'HTTP/1.1 404 Not Found');
 
 	### +++ AFS fix
-	my $isDir = $ENABLE_AFS ? ( checkAFSAccess($nfn) ? -d $nfn : 0 ) : -d $fn;
+	my $isDir = $ENABLE_AFS ? checkAFSAccess($nfn) && -d $nfn : -d $fn;
 	### --- AFS fix
 
 	foreach my $prop (@{$props}) {
@@ -3053,7 +3068,7 @@ sub getProperty {
 
 	### +++ AFS fix
 	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
-	my $isDir = $isReadable ? -d $fn : 0;
+	my $isDir = $isReadable && -d $fn;
 	### --- AFS fix
 
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : ($isReadable ? stat($fn) : ());
@@ -3330,8 +3345,7 @@ sub getMIMEType {
 sub cmp_files {
 	my $fp_a = $PATH_TRANSLATED.$a;
 	my $fp_b = $PATH_TRANSLATED.$b;
-	my $order = $cgi->param('order');
-	my $factor = ($order =~/_desc$/) ? -1 : 1;
+	my $factor = ($ORDER =~/_desc$/) ? -1 : 1;
 	## +++ AFS fix
 	return $factor * ( $a cmp $b ) if $ENABLE_AFS && !checkAFSAccess($fp_a) && !checkAFSAccess($fp_b);
 	return $factor if $ENABLE_AFS && !checkAFSAccess($fp_a);
@@ -3339,28 +3353,13 @@ sub cmp_files {
 	## --- AFS fix
 	return -1 if -d $fp_a && !-d $fp_b;
 	return 1 if !-d $fp_a && -d $fp_b;
-	if (defined $order) {
-		study $order;
-		if ($order =~ /^(lastmodified|size|mode)/) {
-			my @a_stats = stat $fp_a;
-			my @b_stats = stat $fp_b;
-			my $idx = $order=~/lastmodified/? 9 : $order=~/mode/? 2 : 7;
-			if ($a_stats[$idx] != $b_stats[$idx]) {
-				return $b_stats[$idx] <=> $a_stats[$idx] || lc($b) cmp lc($a) if $order =~/_desc$/;
-				return $a_stats[$idx] <=> $b_stats[$idx] || lc($a) cmp lc($b);
-			}
-		} elsif ($order =~ /mime/) {
-			my $a_mime = getMIMEType($a);
-			my $b_mime = getMIMEType($b);
-			if ($a_mime ne $b_mime) {
-				return $b_mime cmp $a_mime || lc($b) cmp lc($a) if $order =~ /_desc$/;
-				return $a_mime cmp $b_mime || lc($a) cmp lc($b);
-			}
-			
-		}
-		return lc($b) cmp lc($a) if $order =~ /_desc$/;
+	if ($ORDER =~ /^(lastmodified|size|mode)/) {
+		my $idx = $ORDER=~/lastmodified/? 9 : $ORDER=~/mode/? 2 : 7;
+		return $factor * ( (stat($fp_a))[$idx] <=> (stat($fp_b))[$idx] || lc($a) cmp lc($b) );
+	} elsif ($ORDER =~ /mime/) {
+		return $factor * ( getMIMEType($a) cmp getMIMEType($b) || lc($a) cmp lc($b));
 	}
-	return lc($a) cmp lc($b);
+	return $factor * (lc($a) cmp lc($b));
 }
 sub getfancyfilename {
 	my ($full,$s,$m,$fn,$isUnReadable) = @_;
@@ -3465,7 +3464,12 @@ sub printHeaderAndContent {
 	$type='text/plain' unless defined $type;
 	$content="" unless defined $content;
 
-	my $header =$cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=> [ $cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y'), $cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y') ]);
+	my @cookies;
+	push @cookies, $cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y');
+	push @cookies, $cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y');
+	push @cookies, $cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y');
+
+	my $header =$cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
 
 	$header = "MS-Author-Via: DAV\r\n$header";
 	$header = "DAV: $DAV\r\n$header";
@@ -4543,14 +4547,13 @@ sub getPageNavBar {
 	my ($ru, $count) = @_;
 	my $limit = $PAGE_LIMIT || -1;
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
-	my $order = $cgi->param('order') || 'name';
 	my $page = $cgi->param('page') || 1;
 
 	my $content = "";
 	return $content if $limit <1 || $count <= $limit;
 
 	if ($showall) {
-		return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?order=$order;showpage=1"}, _tl('navpageview')));
+		return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')));
 	}
 
 
@@ -4560,23 +4563,23 @@ sub getPageNavBar {
 	$content .= _tl('navpage')."$page/$maxpages: ";
 
 	$content .= ($page > 1 ) 
-			? $cgi->a({-href=>$ru."?order=$order;page=1", -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
+			? $cgi->a({-href=>$ru."?page=1", -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
 			: _tl('navfirstblind');
 	$content .= ($page > 1 ) 
-			? $cgi->a({-href=>$ru."?order=$order;page=".($page-1), -title=>_tl('navprevtooltip')}, _tl('navprev')) 
+			? $cgi->a({-href=>$ru."?page=".($page-1), -title=>_tl('navprevtooltip')}, _tl('navprev')) 
 			: _tl('navprevblind');
 
 	$content .= sprintf("%02d-%02d/%d",(($limit * ($page - 1)) + 1) , ( $page < $maxpages || $count % $limit == 0 ? $limit * $page : ($limit*($page-1)) + $count % $limit), $count);
 	
 	$content .= ($page < $maxpages) 
-			? $cgi->a({-href=>$ru."?order=$order;page=".($page+1), -title=>_tl('navnexttooltip')},_tl('navnext')) 
+			? $cgi->a({-href=>$ru."?page=".($page+1), -title=>_tl('navnexttooltip')},_tl('navnext')) 
 			: _tl('navnextblind');
 
 	$content .= ($page < $maxpages) 
-			? $cgi->a({-href=>$ru."?order=$order;page=$maxpages", title=>_tl('navlasttooltip')},_tl('navlast')) 
+			? $cgi->a({-href=>$ru."?page=$maxpages", title=>_tl('navlasttooltip')},_tl('navlast')) 
 			: _tl('navlastblind');
 
-	$content .= $cgi->a({-href=>$ru."?order=$order;showall=1", -title=>_tl('navalltooltip')}, _tl('navall'));
+	$content .= $cgi->a({-href=>$ru."?showall=1", -title=>_tl('navalltooltip')}, _tl('navall'));
 
 
 	return $cgi->div({-class=>'pagenav'},$content);
@@ -4584,7 +4587,7 @@ sub getPageNavBar {
 sub getQueryParams {
 	# preserve query parameters
 	my @query;
-	foreach my $param (('order')) {
+	foreach my $param (()) {
 		push @query, $param.'='.$cgi->param($param) if defined $cgi->param($param);
 	}
 	return $#query>-1 ? join(';',@query) : undef;
@@ -4619,7 +4622,7 @@ sub getFolderList {
 			);
 	$content .= $cgi->div( { -class=>'viewtools' }, 
 			$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up'))
-			.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
+			.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh'))) if !$filter;
 	if ($SHOW_QUOTA) {
 		my ($ql, $qu) = getQuota($fn);
 		if (defined $ql && defined $qu) {
@@ -4635,15 +4638,14 @@ sub getFolderList {
 	
 	$row.=$cgi->td({-class=>'th_sel'},$cgi->checkbox(-onclick=>'javascript:toggleAllFiles(this);', -name=>'selectall',-value=>"",-label=>"", -title=>_tl('togglealltooltip'))) if $ALLOW_FILE_MANAGEMENT;
 
-	my $order = $cgi->param('order') || 'name';
-	my $dir = $order=~/_desc$/ ? '' : '_desc';
-	my $query = "";
+	my $dir = $ORDER=~/_desc$/ ? '' : '_desc';
+	my $query = $filter ? 'search=' . $cgi->param('search'):'';
 	my $ochar = ' <span class="orderchar">'.($dir eq '' ? '&darr;' :'&uarr;').'</span>';
-	$row.= $cgi->td({-class=>'th_fn'.($order=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'em;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($order=~/^name/?$ochar:'')))
-		.$cgi->td({-class=>'th_lm'.($order=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($order=~/^lastmodified/?$ochar:'')))
-		.$cgi->td({-class=>'th_size'.($order=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($order=~/^size/?$ochar:'')))
-		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($order=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($order=~/^mode/?$ochar:'')))):'')
-		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($order=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($order=~/^mime/?$ochar:''))):'');
+	$row.= $cgi->td({-class=>'th_fn'.($ORDER=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'em;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($ORDER=~/^name/?$ochar:'')))
+		.$cgi->td({-class=>'th_lm'.($ORDER=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($ORDER=~/^lastmodified/?$ochar:'')))
+		.$cgi->td({-class=>'th_size'.($ORDER=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($ORDER=~/^size/?$ochar:'')))
+		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($ORDER=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($ORDER=~/^mode/?$ochar:'')))):'')
+		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($ORDER=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($ORDER=~/^mime/?$ochar:''))):'');
 	$list .= $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $row);
 			
 
@@ -4778,17 +4780,20 @@ sub getSearchResult {
 	my ($list,$count)=getFolderList($fn,$ru,$search);
 	$content.=$cgi->hr().$cgi->div({-class=>'resultcount'},$count._tl($count>1?'searchresults':'searchresult')).$list if $count>0 && $isRecursive;
 	$$fullcount+=$count;
-	my $fh;
-	opendir($fh,$fn);
-	foreach my $filename (sort cmp_files grep {  !/^(\.|\.\.)$/ } readdir($fh)) {
-		my $full = $fn.$filename;
-		next if is_hidden($full);
-		my $nru = $ru.uri_escape($filename);
-		$full.="/" if -d $full;
-		$nru.="/" if -d $full;
-		$content.=getSearchResult($search,$full,$nru,1,$fullcount,$visited) if -d $full;
+	if (opendir(my $fh,$fn)) {
+		foreach my $filename (sort cmp_files grep {  !/^\.{1,2}$/ } readdir($fh)) {
+			local($PATH_TRANSLATED);
+			my $full = $fn.$filename;
+			next if is_hidden($full);
+			my $nru = $ru.uri_escape($filename);
+			my $isDir = $ENABLE_AFS ? checkAFSAccess($full) && -d $full : -d $full;
+			$full.="/" if $isDir;
+			$nru.="/" if $isDir;
+			$PATH_TRANSLATED = $full;
+			$content.=getSearchResult($search,$full,$nru,1,$fullcount,$visited) if $isDir;
+		}
+		closedir($fh);
 	}
-	closedir($fh);
 	if (!$isRecursive) {
 		if ($$fullcount==0) {
 			$content.=$cgi->h2(_tl('searchnothingfound') . "'" .$cgi->escapeHTML($search)."'"._tl('searchgoback').getQuickNavPath($ru));
@@ -4845,7 +4850,6 @@ sub createMsgQuery {
 sub start_html {
 	my ($title) = @_;
 	my $content ="";
-	my $order = $cgi->param("order") || 'name';
 	my $confirmmsg = _tl('confirm');
 	$content.="<!DOCTYPE html>\n";
 	$content.='<head><title>'.$cgi->escapeHTML($title).'</title>';
@@ -5182,7 +5186,7 @@ EOS
 	minify($jscript);
 	$content.=$jscript;
 	$content.=qq@<link rel="search" type="application/opensearchdescription+xml" title="WebDAV CGI filename search" href="$REQUEST_URI?action=opensearch"/>@ if $ALLOW_SEARCH;
-	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss;order=$order" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
+	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
 	minify($CSS);
 	$content.=qq@<style>$CSS</style>@ if defined $CSS;
 	$content.=qq@<link href="$CSSURI" rel="stylesheet" type="text/css"/>@ if defined $CSSURI;
