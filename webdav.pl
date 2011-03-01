@@ -32,9 +32,11 @@
 # CHANGES:
 #   0.6.2: BETA
 #        - Web interface:
+#            - added file/folder name filtering feature (GET)
 #            - added $ORDER config parameter (GET)
 #            - improved folder list order with cookies (GET)
 #            - fixed sort order bug in search results (GET)
+#            - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
 #        - fixed file/folder search performance bug in a AFS (GET)
 #   0.6.1: 2011/25/02
 #        - fixed missing HTTP status of inaccessible files (GET)
@@ -270,7 +272,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $ENABLE_FLOCK $SHOW_MIME $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
-            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER
+            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -438,6 +440,7 @@ input,select { text-shadow: 1px 1px white;  }
 .folderstats, .resultcount, .results { font-size:0.8em; }
 .clipboard { float:left; margin-right: 30px; }
 .copybutton,.cutbutton,.pastebutton { margin: 0px 5px 0px 5px; }
+.namefilter { display: inline; }
 .functions { float: right; padding: 0px 5px 0px 20px;}
 fieldset { clear: both; }
 
@@ -510,6 +513,10 @@ $ALLOW_ZIP_DOWNLOAD = 1;
 ## -- ENABLE_CLIPBOARD
 ## enables cut/copy/paste buttons and actions in the Web interface
 $ENABLE_CLIPBOARD = 1;
+
+## -- ENABLE_NAMEFILTER
+## enables file/folder name filtering on the current folder in the Web interface
+$ENABLE_NAMEFILTER = 1;
 
 ## -- SHOW_STAT
 ## shows file statistics after file/folder list in the Web interface
@@ -698,6 +705,7 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
+				namefilter=>'filter current folder',
 			},
 		'de' => 
 			{
@@ -788,6 +796,7 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
+				namefilter=>'aktuelle Datei/Ordner-Liste filtern',
 			},
 
 		);
@@ -1514,9 +1523,9 @@ sub _GET {
 		} else {
 			$content .= $cgi->div({-class=>'notwriteable'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
 			$content .= $cgi->div({-class=>'notreadable'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
-			$content .= $cgi->div({-class=>'filtered', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn})) if $FILEFILTERPERDIR{$fn};
+			$content .= $cgi->div({-class=>'filtered', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 
-			my ($list, $count) = getFolderList($fn,$ru);
+			my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
 			$content.=$list;
 			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
 				my $clpboard = "";
@@ -1525,8 +1534,10 @@ sub _GET {
 							.$cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut')})
 							.$cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -id=>'paste', -class=>'pastebutton',-value=>_tl('paste')})
 						) if ($ENABLE_CLIPBOARD); 
+				my $namefilter = $ENABLE_NAMEFILTER ? $cgi->div({-class=>'namefilter'},$cgi->input({-size=>5, -id=>'namefilter', -value=>$cgi->param('namefilter')||'',-name=>'namefilter', -onkeypress=>'javascript:return handleNameFilter(this,event)', -onkeyup=>'javascript: if (this.size<this.value.length || (this.value.length<this.size && this.value.length>5)) this.size = this.value.length;',-title=>_tl('namefilter')})) : '';
 				$content.= $cgi->div({-class=>'toolbar'}, 
 							$clpboard
+							.$namefilter
 							.$cgi->div({-class=>'functions'}, 
 								(!$ALLOW_ZIP_DOWNLOAD ? '' : $cgi->span({-title=>_tl('zipdownloadtext')}, $cgi->submit(-name=>'zip', -disabled=>'disabled', -value=>_tl('zipdownloadbutton'))))
 								.'&nbsp;&nbsp;'
@@ -3464,12 +3475,13 @@ sub printHeaderAndContent {
 	$type='text/plain' unless defined $type;
 	$content="" unless defined $content;
 
-	my @cookies;
-	push @cookies, $cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y');
-	push @cookies, $cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y');
-	push @cookies, $cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y');
+	my @cookies = ( 
+		$cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y'),
+		$cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y'),
+		$cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y'),
+	);
 
-	my $header =$cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
+	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
 
 	$header = "MS-Author-Via: DAV\r\n$header";
 	$header = "DAV: $DAV\r\n$header";
@@ -4459,10 +4471,7 @@ sub getChangeDirForm {
 		   . $cgi->button(-id=>'changedircancelbutton',  -name=>_tl('cancel'), onclick=>'javascript:showChangeDir(false)')
 		)
 		. $cgi->button(-id=>'changedirbutton', -name=>_tl('changedir'), -onclick=>'javascript:showChangeDir(true)')
-		. ( $ENABLE_BOOKMARKS ? 
-		 ' '. $cgi->span({-id=>'bookmarks'}, buildBookmarkList())
-		. ' '. $cgi->a({-id=>'addbookmark',-onclick=>'return addBookmark()', -href=>'#', -title=>_tl('addbookmarktitle')}, _tl('addbookmark'))
-		. ' '. $cgi->a({-id=>'rmbookmark',-class=>'hidden',-onclick=>'return rmBookmark()', -href=>'#', -title=>_tl('rmbookmarktitle')}, _tl('rmbookmark')) : '' )
+		. ( $ENABLE_BOOKMARKS ?  buildBookmarkList() : '' )
 		;
 	
 }
@@ -4524,7 +4533,9 @@ sub buildBookmarkList {
 	my $e = $cgi->autoEscape(0);
 	my $content = $cgi->popup_menu( -class=>'bookmark', -name=>'bookmark', -onchange=>'return bookmarkChanged(this.options[this.selectedIndex].value);', -values=>\@bookmarks, -labels=>\%labels, -attributes=>\%attributes);
 	$cgi->autoEscape($e);
-	return $content;
+	return ' ' . $cgi->span({-id=>'bookmarks'}, $content) 
+		. ' '. $cgi->a({-id=>'addbookmark',-class=>($isBookmarked ? 'hidden' : undef),-onclick=>'return addBookmark()', -href=>'#', -title=>_tl('addbookmarktitle')}, _tl('addbookmark'))
+		. ' '. $cgi->a({-id=>'rmbookmark',-class=>($isBookmarked ? undef : 'hidden'),-onclick=>'return rmBookmark()', -href=>'#', -title=>_tl('rmbookmarktitle')}, _tl('rmbookmark')) ;
 }
 sub getQuickNavPath {
 	my ($ru, $query) = @_;
@@ -5031,6 +5042,11 @@ sub start_html {
 			}; 
 			return true;
 		}
+		function handleNameFilter(el,ev) {
+			if (!ev) ev=window.event;
+			if (ev && el && ev.keyCode==13) window.location.href='?namefilter='+encodeURIComponent(el.value);
+			return true;
+		}
 		var shiftsel = new Object();
 		function handleCheckboxClick(o,id,e) {
 			if (!e) e = window.event;
@@ -5175,10 +5191,27 @@ sub start_html {
 				}
 			}
 		}
+		function selcheck() {
+			var i = 1;
+			var el;
+			while ((el = document.getElementById('f'+i))) {
+				if (el.checked) toggleClassNameById("tr_f"+i, "tr_selected", el.checked); 
+				i++;
+			}
+		}
+		function namefiltercheck() {
+			var el;
+			if ( (el=document.getElementById('namefilter')) && el.value!='') {
+				if ( el.size < el.value.length || (el.value.length< el.size && el.value.length>5)) el.size = el.value.length;
+				el.select();
+			}
+		}
 		function check() {
+			selcheck();
 			clpcheck();
 			togglecheck();
 			bookmarkcheck();
+			namefiltercheck();
 		}
 		</script>
 EOS
