@@ -705,7 +705,7 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
-				namefilter=>'filter current folder',
+				namefilter=>', Filter: ', namefiltertooltip=>'filter current folder',
 			},
 		'de' => 
 			{
@@ -796,7 +796,7 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
-				namefilter=>'aktuelle Datei/Ordner-Liste filtern',
+				namefilter=>', Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern',
 			},
 
 		);
@@ -1534,10 +1534,8 @@ sub _GET {
 							.$cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut')})
 							.$cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -id=>'paste', -class=>'pastebutton',-value=>_tl('paste')})
 						) if ($ENABLE_CLIPBOARD); 
-				my $namefilter = $ENABLE_NAMEFILTER ? $cgi->div({-class=>'namefilter'},$cgi->input({-size=>5, -id=>'namefilter', -value=>$cgi->param('namefilter')||'',-name=>'namefilter', -onkeypress=>'javascript:return handleNameFilter(this,event)', -onkeyup=>'javascript: if (this.size<this.value.length || (this.value.length<this.size && this.value.length>5)) this.size = this.value.length;',-title=>_tl('namefilter')})) : '';
 				$content.= $cgi->div({-class=>'toolbar'}, 
 							$clpboard
-							.$namefilter
 							.$cgi->div({-class=>'functions'}, 
 								(!$ALLOW_ZIP_DOWNLOAD ? '' : $cgi->span({-title=>_tl('zipdownloadtext')}, $cgi->submit(-name=>'zip', -disabled=>'disabled', -value=>_tl('zipdownloadbutton'))))
 								.'&nbsp;&nbsp;'
@@ -4564,7 +4562,7 @@ sub getPageNavBar {
 	return $content if $limit <1 || $count <= $limit;
 
 	if ($showall) {
-		return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')));
+		return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')). renderNameFilterForm());
 	}
 
 
@@ -4644,6 +4642,7 @@ sub getFolderList {
 							._tl('quotaavailable').$cgi->span({-title=>sprintf("= %.2f GB",($ql-$qu)/1024)},sprintf("%.2f MB",($ql-$qu))));
 		}
 	}
+	#$content .= renderNameFilterForm();
 	my $row = "";
 	$list="";
 	
@@ -5042,10 +5041,26 @@ sub start_html {
 			}; 
 			return true;
 		}
+		function encodeRegExp(v) { return v.replace(/([\\*\\?\\+\\\$\\^\\{\\}\\[\\]\\(\\)\\\\])/g,'\\\\\$1'); }
 		function handleNameFilter(el,ev) {
 			if (!ev) ev=window.event;
-			if (ev && el && ev.keyCode==13) window.location.href='?namefilter='+encodeURIComponent(el.value);
-			return true;
+			if (el.size<el.value.length || (el.value.length<this.size && el.value.length>5)) el.size = el.value.length;
+			if (ev && el && ev.keyCode != 13) {
+				var regex;
+				try { 
+					regex = new RegExp(el.value, 'gi');
+				} catch (exc) {
+					regex = new RegExp(encodeRegExp(el.value), 'gi');
+				}
+				var i = 1;
+				var e;
+				while ((e = document.getElementById('f'+i))) {
+					toggleClassNameById('tr_f'+i, 'hidden', !e.value.match(regex));
+					i++;
+				}
+				return ev.keyCode!=13;
+			}
+			return false;
 		}
 		var shiftsel = new Object();
 		function handleCheckboxClick(o,id,e) {
@@ -5059,12 +5074,14 @@ sub start_html {
 				for (var i = start + 1; i < end ; i++) {
 					var el = document.getElementById('f'+i);
 					if (el) { 	
+						if (document.getElementById('tr_f'+i).className.match('hidden')) continue;
 						el.checked=!el.checked; 
 						toggleClassNameById("tr_f"+i, "tr_selected", el.checked); 
 					}
 				}
 			}
 			shiftsel.lastId = id;
+			if (document.getElementById('tr_'+id).className.match('hidden')) return false;
 			toggleFileFolderActions(); 
 			toggleClassNameById("tr_"+id, "tr_selected", o.checked); 
 			return true;
@@ -5200,10 +5217,27 @@ sub start_html {
 			}
 		}
 		function namefiltercheck() {
-			var el;
-			if ( (el=document.getElementById('namefilter')) && el.value!='') {
-				if ( el.size < el.value.length || (el.value.length< el.size && el.value.length>5)) el.size = el.value.length;
-				el.select();
+			var els = document.getElementsByName('namefilter');
+			if (!els) return;
+			for (var i=0; i<els.length; i++) {
+				var el = els[i];
+				if (el.value!='') {
+					var regex;
+					try {
+						regex = new RegExp(el.value, 'gi');
+					} catch (exc) {
+						regex = new RegExp(encodeRegExp(el.value), 'gi');
+					}
+					var j = 1;
+					var e;
+					while ((e = document.getElementById('f'+j))) {
+						toggleClassNameById('tr_f'+j, 'hidden', !e.value.match(regex));
+						j++;
+					}
+					if ( el.size < el.value.length )  el.size = el.value.length;
+					el.select();
+					
+				}
 			}
 		}
 		function check() {
@@ -5234,6 +5268,14 @@ sub minify {
 	$_[0]=~s/[\r\n]/ /g;
 	$_[0]=~s/\s{2,}/ /g;
 	return $_[0];
+}
+sub renderNameFilterForm() {
+		return $ENABLE_NAMEFILTER && !$cgi->param('search') ? 
+			$cgi->div({-class=>'namefilter', -title=>_tl('namefiltertooltip')}, _tl('namefilter').
+				$cgi->input({-size=>5, -value=>$cgi->param('namefilter')||'',-name=>'namefilter',  
+						-onkeypress=>'javascript:return catchEnter(event,"undef")', 
+						-onkeyup=>'javascript:return handleNameFilter(this,event);'})) 
+			: '';
 }
 sub renderAFSACLManager {
 	my @entries;
