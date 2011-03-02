@@ -32,6 +32,7 @@
 # CHANGES:
 #   0.6.2: BETA
 #        - Web interface:
+#            - changed message box behavior (GET)
 #            - added file/folder name filtering feature (GET)
 #            - added $ORDER config parameter (GET)
 #            - improved folder list order with cookies (GET)
@@ -388,6 +389,7 @@ input,select { text-shadow: 1px 1px white;  }
 
 .errormsg, .notwriteable, .notreadable { background-color:#ffeeee; border: 1px solid #ff0000; padding: 0px 4px 0px 4px; }
 .infomsg { background-color:#eeeeff; padding: 0px 4px 0px 4px; border: 1px solid #0000ff;}
+#msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 10; }
 .filtered { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
 
 .thumb { border:0px; vertical-align:top;padding: 1px 0px 1px 0px; }
@@ -5246,7 +5248,31 @@ sub start_html {
 			togglecheck();
 			bookmarkcheck();
 			namefiltercheck();
+			hideMsg();
 		}
+		function fadeOut(id) {
+			var obj = document.getElementById(id);
+			if (!obj.fadeOutInterval) {
+				obj.fadeOutInterval = window.setInterval('fadeOut("'+id+'");', 50);
+				obj.fadeOutOpacity = 0.95;
+				obj.style.opacity = obj.fadeOutOpacity;
+				obj.style.filter = "Alpha(opacity="+(obj.fadeOutOpacity*100)+")";
+				obj.fadeOutTop = 10;
+				obj.style.top = obj.fadeOutTop + "px";
+			}
+			if (obj.fadeOutOpacity <= 0) {
+				window.clearInterval(obj.fadeOutInterval);
+				obj.style.display="none";
+			} else  {
+				if (obj.fadeOutOpacity > 0) obj.fadeOutOpacity -= 0.1;
+				if (obj.fadeOutOpacity < 0) obj.fadeOutOpacity = 0;
+				obj.style.opacity = obj.fadeOutOpacity; 
+				obj.style.filter = "Alpha(opacity="+(obj.fadeOutOpacity*100)+")"; 
+				obj.fadeOutTop -= 6;
+				obj.style.top =  obj.fadeOutTop + "px";
+			}
+		}
+		function hideMsg() { if (document.getElementById("msg")) setTimeout("fadeOut('msg');", 60000); }
 		</script>
 EOS
 ;
@@ -5583,7 +5609,7 @@ sub renderMessage {
 			push @params, $cgi->escapeHTML($cgi->param("p$p"));
 			$p++;
 		}
-		$content .= $cgi->div({-class=>$cgi->param($prefix.'errmsg')?'errormsg':'infomsg'}, sprintf(_tl('msg_'.$msg),@params));
+		$content .= $cgi->div({-id=>'msg',-onclick=>'javascript:fadeOut("msg");', -class=>$cgi->param($prefix.'errmsg')?'errormsg':'infomsg'}, sprintf(_tl('msg_'.$msg),@params));
 	}
 	return $content;
 }
