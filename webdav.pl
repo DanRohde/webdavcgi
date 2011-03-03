@@ -32,6 +32,7 @@
 # CHANGES:
 #   0.6.2: BETA
 #        - Web interface:
+#            - improved page navigation (GET)
 #            - changed message box behavior (GET)
 #            - added file/folder name filtering feature (GET)
 #            - added $ORDER config parameter (GET)
@@ -273,7 +274,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $ENABLE_FLOCK $SHOW_MIME $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
-            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER
+            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -412,7 +413,7 @@ input,select { text-shadow: 1px 1px white;  }
 
 .quota { padding-left:30px;font-size:0.8em; }
 
-.pagenav, .showall { font-weight: bold; font-size:0.9em;padding: 10px 0px 10px 0px; }
+.pagenav, .showall { font-weight: bold; font-size:0.9em;padding: 2px 0px 2px 0px; text-align: center; background-color: #efefef;}
 .pagenav a, .showall a { text-decoration: none;}
 
 .filelist a { text-decoration: none; }
@@ -529,6 +530,11 @@ $SHOW_STAT = 1;
 ## EXAMPLE: $PAGE_LIMIT = 20;
 $PAGE_LIMIT=15;
 
+## -- PAGE_LIMITS
+## allowed selectable limits (-1 = show all)
+## EXAMPLE: @PAGE_LIMISTS = ( 5, 10, 15, 20, 30, 50, -1);
+@PAGE_LIMITS = ( 5, 10, 15, 20, 30, 50, -1);
+
 ## -- ENABLE_BOOKMARKS
 ## enables bookmark support in the Web interface (cookie/javascript based)
 ## EXAMPLE: $ENABLE_BOOKMARKS = 1;
@@ -623,7 +629,7 @@ $LANG = 'default';
 				mount => '[M]', mounttooltip => 'View this collection in your WebDAV client (WebDAV mount).',
 				quotalimit => 'Quota limit: ', quotaused => ' used: ', quotaavailable => ' available: ',
 				navpage => 'Page ', navfirst=>' |&lt; ', navprev=>' &lt;&lt; ', navnext=>' &gt;&gt; ', navlast=>' &gt;| ', 
-				navall=>'Show All', navpageview=>'View by page',
+				navall=>'All', navpageview=>'View by page',
 				navfirstblind=>' |&lt; ', navprevblind=>' &lt;&lt; ', navnextblind=>' &gt;&gt; ', navlastblind=>' &gt;| ', 
 				navfirsttooltip=>'First Page', navprevtooltip=>'Previous Page', 
 				navnexttooltip=>'Next Page', navlasttooltip=>'Last Page', navalltooltip=>'Show All',
@@ -708,6 +714,8 @@ $LANG = 'default';
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
 				namefilter=>', Filter: ', namefiltertooltip=>'filter current folder',
+				copytooltip=>'Add files/folders to clipboard for copy operation', cuttooltip=>'Add files/folders to clipboard for move operation',
+				pagelimit=>'Show: ', pagelimittooltip=>'Show per page ...',
 			},
 		'de' => 
 			{
@@ -717,7 +725,7 @@ $LANG = 'default';
 				searchresults => ' Suchergebnisse in', searchresult => ' Suchergebniss in',
 				mount => '[M]', mounttooltip => 'Klicken Sie hier, um diesen Ordner in Ihrem lokalen WebDAV-Clienten anzuzeigen.',
 				quotalimit => 'Quota-Limit: ', quotaused => ' verwendet: ', quotaavailable => ' verf&uuml;gbar: ',
-				navpage => 'Seite ', navall=>'Alles Anzeigen', navpageview=>'Seitenweise anzeigen',
+				navpage => 'Seite ', navall=>'Alles', navpageview=>'Seitenweise anzeigen',
 				navfirsttooltip=>'Erste Seite', navprevtooltip=>'Vorherige Seite',
 				navnexttooltip=>'Nächste Seite', navlasttooltip=>'Letzte Seite', navalltooltip=>'Zeige alles auf einer Seite',
 				togglealltooltip=>'Auswahl umkehren', showproperties=>'Datei/Ordner-Attribute anzeigen',
@@ -799,6 +807,8 @@ $LANG = 'default';
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
 				namefilter=>', Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern',
+				copytooltip=>'Dateien/Ordner zum Kopieren in die Zwischenablage ablegen', cuttooltip=>'Dateien/Ordner zum Verschieben in die Zwischenablage ablegen',
+				pagelimit=>'Zeige: ', pagelimittooltip=>'Zeige pro Seite ...',
 			},
 
 		);
@@ -1064,7 +1074,7 @@ use File::Spec::Link;
 
 use XML::Simple;
 use Date::Parse;
-use POSIX qw(strftime);
+use POSIX qw(strftime ceil);
 
 use URI::Escape;
 use OSSP::uuid;
@@ -1123,6 +1133,10 @@ our $REQUEST_URI = $ENV{REQUEST_URI};
 $LANG = $cgi->param('lang') || $cgi->cookie('lang') || $LANG || 'default';
 $ORDER = $cgi->param('order') || $cgi->cookie('order') || $ORDER || 'name';
 study $ORDER;
+$PAGE_LIMIT = $cgi->param('pagelimit') || $cgi->cookie('pagelimit') || $PAGE_LIMIT;
+$PAGE_LIMIT = ceil($PAGE_LIMIT) if defined $PAGE_LIMIT;
+@PAGE_LIMITS = ( 5, 10, 15, 20, 25, 30, 50, 100, -1 ) unless defined @PAGE_LIMITS;
+unshift @PAGE_LIMITS, $PAGE_LIMIT if defined $PAGE_LIMIT && $PAGE_LIMIT > 0 && grep(/\Q$PAGE_LIMIT\E/, @PAGE_LIMITS) <= 0 ;
 
 debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
@@ -1532,8 +1546,8 @@ sub _GET {
 			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
 				my $clpboard = "";
 				$clpboard = $cgi->div({-class=>'clipboard'},
-							$cgi->button({-onclick=>'clpaction("copy")', -disabled=>'disabled', -name=>'copy', -class=>'copybutton', -value=> _tl('copy')})
-							.$cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut')})
+							$cgi->button({-onclick=>'clpaction("copy")', -disabled=>'disabled', -name=>'copy', -class=>'copybutton', -value=> _tl('copy'), -title=>_tl('copytooltip')})
+							.$cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut'), -title=>_tl('cuttooltip')})
 							.$cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -id=>'paste', -class=>'pastebutton',-value=>_tl('paste')})
 						) if ($ENABLE_CLIPBOARD); 
 				$content.= $cgi->div({-class=>'toolbar'}, 
@@ -3479,6 +3493,7 @@ sub printHeaderAndContent {
 		$cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y'),
 		$cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y'),
 		$cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y'),
+		$cgi->cookie(-name=>'pagelimit',-value=>$PAGE_LIMIT, -expires=>'+10y'),
 	);
 
 	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
@@ -4554,8 +4569,8 @@ sub getQuickNavPath {
 
 	return $content;
 }
-sub getPageNavBar {
-	my ($ru, $count) = @_;
+sub renderPageNavBar {
+	my ($ru, $count, $files) = @_;
 	my $limit = $PAGE_LIMIT || -1;
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 	my $page = $cgi->param('page') || 1;
@@ -4563,34 +4578,42 @@ sub getPageNavBar {
 	my $content = "";
 	return $content if $limit <1 || $count <= $limit;
 
-	if ($showall) {
-		return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')). renderNameFilterForm());
-	}
+	my $maxpages = ceil($count / $limit);
+	return $content if $maxpages == 0;
 
-
-	my $maxpages = int($count / $limit);
-	$maxpages++ if $count % $limit > 0;
-
-	$content .= _tl('navpage')."$page/$maxpages: ";
+	return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')). renderNameFilterForm()) if ($showall);
 
 	$content .= ($page > 1 ) 
-			? $cgi->a({-href=>$ru."?page=1", -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
+			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,1,$limit), -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
 			: _tl('navfirstblind');
 	$content .= ($page > 1 ) 
-			? $cgi->a({-href=>$ru."?page=".($page-1), -title=>_tl('navprevtooltip')}, _tl('navprev')) 
+			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,$page-1,$limit), -title=>_tl('navprevtooltip')}, _tl('navprev')) 
 			: _tl('navprevblind');
+	#$content .= _tl('navpage')."$page/$maxpages: ";
+	$content .= _tl('navpage');
+	my %attributes;
+	if ($maxpages > 1 && $maxpages <= 50) {
+		foreach my $i ( 1 .. $maxpages ) {
+			$attributes{$i}{title}=$cgi->escapeHTML(sprintf('%s,...,%s',substr($$files[($i-1)*$limit],0,8),substr(($i*$limit -1 > $#$files ? $$files[$#$files] : $$files[$i*$limit -1]),0,8)));
+		}
+	}
+
+	$content .= $maxpages < 2 || $maxpages > 50 ? $page : $cgi->popup_menu(-default=>$page, -name=>'page', -values=> [ 1 .. $maxpages ], -attributes=>\%attributes, -onchange=>'javascript:window.location.href=window.location.pathname+"?page="+this.value;' );
+	$content .= " / $maxpages: ";
 
 	$content .= sprintf("%02d-%02d/%d",(($limit * ($page - 1)) + 1) , ( $page < $maxpages || $count % $limit == 0 ? $limit * $page : ($limit*($page-1)) + $count % $limit), $count);
 	
 	$content .= ($page < $maxpages) 
-			? $cgi->a({-href=>$ru."?page=".($page+1), -title=>_tl('navnexttooltip')},_tl('navnext')) 
+			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $page+1, $limit), -title=>_tl('navnexttooltip')},_tl('navnext')) 
 			: _tl('navnextblind');
 
 	$content .= ($page < $maxpages) 
-			? $cgi->a({-href=>$ru."?page=$maxpages", title=>_tl('navlasttooltip')},_tl('navlast')) 
+			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $maxpages, $limit), -title=>_tl('navlasttooltip')},_tl('navlast')) 
 			: _tl('navlastblind');
 
-	$content .= $cgi->a({-href=>$ru."?showall=1", -title=>_tl('navalltooltip')}, _tl('navall'));
+	$content .= ' '.$cgi->span({-title=>_tl('pagelimittooltip')}, _tl('pagelimit').' '.$cgi->popup_menu(-name=>'pagelimit', -onchange=>'javascript: window.location.href=window.location.pathname + (this.value==-1 ? "?showall=1" : "?page=1;pagelimit="+this.value);', -values=>\@PAGE_LIMITS, -default=>$limit, -labels=>{-1=>_tl('navall')}, -attributes=>{-1=>{title=>_tl('navalltooltip')}}));
+
+	##$content .= ' '. $cgi->a({-href=>$ru."?showall=1", -title=>_tl('navalltooltip')}, _tl('navall'));
 
 
 	return $cgi->div({-class=>'pagenav'},$content);
@@ -4668,9 +4691,13 @@ sub getFolderList {
 		) unless $fn eq $DOCUMENT_ROOT || $ru eq '/' || $filter;
 
 	my @files = sort cmp_files @{readDir($fn)};
+
 	my $page = $cgi->param('page') ? $cgi->param('page') - 1 : 0;
 	my $fullcount = $#files + 1;
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
+
+	my $pagenav = $filter ? '' : renderPageNavBar($ru, $fullcount, \@files);
+
 	if (!defined $filter && defined $PAGE_LIMIT && !$showall) {
 		splice(@files, $PAGE_LIMIT * ($page+1) );
 		splice(@files, 0, $PAGE_LIMIT * $page) if $page>0;
@@ -4733,7 +4760,6 @@ sub getFolderList {
 		$filesizes+=$size if $isUnReadable || -f $full;
 
 	}
-	my $pagenav = $filter ? '' : getPageNavBar($ru, $fullcount);
 	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 	$content .= $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
@@ -5046,8 +5072,9 @@ sub start_html {
 		function encodeRegExp(v) { return v.replace(/([\\*\\?\\+\\\$\\^\\{\\}\\[\\]\\(\\)\\\\])/g,'\\\\\$1'); }
 		function handleNameFilter(el,ev) {
 			if (!ev) ev=window.event;
-			if (el.size<el.value.length || (el.value.length<this.size && el.value.length>5)) el.size = el.value.length;
 			if (ev && el && ev.keyCode != 13) {
+				if (el.size>5 && el.value.length<el.size) el.size = 5;
+				if (el.size<el.value.length) el.size = el.value.length;
 				var regex;
 				try { 
 					regex = new RegExp(el.value, 'gi');
@@ -5238,7 +5265,6 @@ sub start_html {
 					}
 					if ( el.size < el.value.length )  el.size = el.value.length;
 					el.select();
-					
 				}
 			}
 		}
