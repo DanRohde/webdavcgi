@@ -36,9 +36,10 @@
 #            - changed message box behavior (GET)
 #            - added file/folder name filtering feature (GET)
 #            - added $ORDER config parameter (GET)
-#            - improved folder list order with cookies (GET)
-#            - fixed sort order bug in search results (GET)
+#            - improved folder list sort with cookies (GET)
+#            - fixed sort bug in search results (GET)
 #            - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
+#            - fixed annoying whitespace wraps (GET)
 #        - fixed file/folder search performance bug in a AFS (GET)
 #   0.6.1: 2011/25/02
 #        - fixed missing HTTP status of inaccessible files (GET)
@@ -431,9 +432,10 @@ input,select { text-shadow: 1px 1px white;  }
 .filelist .tr_odd.tr_copy, .filelist .tr_odd.tr_copy a { color: #224466; }
 .filelist .tr_even.tr_copy, .filelist .tr_even.tr_copy a { color: #113355; }
 .filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
+.filelist .tc_lm  { white-space: nowrap;}
 .th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
 .th_sel { width:1em; }
-.th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { color: black; text-decoration: none; text-shadow: 1px 1px white; }
+.th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { white-space: nowrap; color: black; text-decoration: none; text-shadow: 1px 1px white; }
 .th_highlight { background-color: #bcbcbc; border: 1px inset black; }
 .th_size, .th_perm, .tc_size, .tc_perm { text-align:right; }
 .tr_up { background-color: white; }
@@ -444,6 +446,7 @@ input,select { text-shadow: 1px 1px white;  }
 .clipboard { float:left; margin-right: 30px; }
 .copybutton,.cutbutton,.pastebutton { margin: 0px 5px 0px 5px; }
 .namefilter { display: inline; }
+.namefiltermatches { display: inline; font-size: 0.9em; font-weight: normal; border: none; background-color: #efefef; }
 .functions { float: right; padding: 0px 5px 0px 20px;}
 fieldset { clear: both; }
 
@@ -713,7 +716,7 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
-				namefilter=>', Filter: ', namefiltertooltip=>'filter current folder',
+				namefilter=>', Filter: ', namefiltertooltip=>'filter current folder', namefiltermatches=>'Match(es): ',
 				copytooltip=>'Add files/folders to clipboard for copy operation', cuttooltip=>'Add files/folders to clipboard for move operation',
 				pagelimit=>'Show: ', pagelimittooltip=>'Show per page ...',
 			},
@@ -806,7 +809,7 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
-				namefilter=>', Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern',
+				namefilter=>', Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern', namefiltermatches=>'Treffer: ',
 				copytooltip=>'Dateien/Ordner zum Kopieren in die Zwischenablage ablegen', cuttooltip=>'Dateien/Ordner zum Verschieben in die Zwischenablage ablegen',
 				pagelimit=>'Zeige: ', pagelimittooltip=>'Zeige pro Seite ...',
 			},
@@ -1487,7 +1490,7 @@ sub _GET {
 					     : getQuickNavPath($fullparent,getQueryParams())
 					       .' '.$cgi->a({-href=>$REQUEST_URI}, basename($REQUEST_URI))
 				      ). _tl('properties'));
-		$content .= $cgi->a({href=>$REQUEST_URI,title=>_tl('clickforfullsize')},$cgi->img({-src=>$REQUEST_URI.($ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($ENABLE_THUMBNAIL?$THUMBNAIL_WIDTH:200)})) if hasThumbSupport(getMIMEType($fn));
+		$content .= $cgi->br().$cgi->a({href=>$REQUEST_URI,title=>_tl('clickforfullsize')},$cgi->img({-src=>$REQUEST_URI.($ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($ENABLE_THUMBNAIL?$THUMBNAIL_WIDTH:200)})) if hasThumbSupport(getMIMEType($fn));
 		$content .= $cgi->start_table({-class=>'props'});
 		local(%NAMESPACEELEMENTS);
 		my $dbprops = db_getProperties($fn);
@@ -5081,11 +5084,24 @@ sub start_html {
 				} catch (exc) {
 					regex = new RegExp(encodeRegExp(el.value), 'gi');
 				}
+				var matchcount = 0;
 				var i = 1;
 				var e;
 				while ((e = document.getElementById('f'+i))) {
-					toggleClassNameById('tr_f'+i, 'hidden', !e.value.match(regex));
+					var m = e.value.match(regex);
+					if (m)  matchcount++;
+					toggleClassNameById('tr_f'+i, 'hidden', !m);
 					i++;
+				}
+				var me = document.getElementsByName('namefiltermatches');
+				for (i=0; i<me.length; i++) me[i].value=matchcount;
+				me = document.getElementsByName('namefilter');
+				for (i=0; i<me.length; i++) {
+					if (el!=me[i]) {
+						me[i].value=el.value;
+						if (me[i].size>5 && el.value.length<me[i].size) me[i].size = 5;
+						if (me[i].size<el.value.length) me[i].size = el.value.length;
+					}
 				}
 				return ev.keyCode!=13;
 			}
@@ -5245,35 +5261,11 @@ sub start_html {
 				i++;
 			}
 		}
-		function namefiltercheck() {
-			var els = document.getElementsByName('namefilter');
-			if (!els) return;
-			for (var i=0; i<els.length; i++) {
-				var el = els[i];
-				if (el.value!='') {
-					var regex;
-					try {
-						regex = new RegExp(el.value, 'gi');
-					} catch (exc) {
-						regex = new RegExp(encodeRegExp(el.value), 'gi');
-					}
-					var j = 1;
-					var e;
-					while ((e = document.getElementById('f'+j))) {
-						toggleClassNameById('tr_f'+j, 'hidden', !e.value.match(regex));
-						j++;
-					}
-					if ( el.size < el.value.length )  el.size = el.value.length;
-					el.select();
-				}
-			}
-		}
 		function check() {
 			selcheck();
 			clpcheck();
 			togglecheck();
 			bookmarkcheck();
-			namefiltercheck();
 			hideMsg();
 		}
 		function fadeOut(id) {
@@ -5324,9 +5316,11 @@ sub minify {
 sub renderNameFilterForm() {
 		return $ENABLE_NAMEFILTER && !$cgi->param('search') ? 
 			$cgi->div({-class=>'namefilter', -title=>_tl('namefiltertooltip')}, _tl('namefilter').
-				$cgi->input({-size=>5, -value=>$cgi->param('namefilter')||'',-name=>'namefilter',  
+				$cgi->input({-size=>5, -value=>$cgi->param('namefilter')||'',-name=>'namefilter', 
 						-onkeypress=>'javascript:return catchEnter(event,"undef")', 
-						-onkeyup=>'javascript:return handleNameFilter(this,event);'})) 
+						-onkeyup=>'javascript:return handleNameFilter(this,event);'})
+				.$cgi->span({-class=>'namefiltermatches'}, _tl('namefiltermatches').$cgi->input({-size=>2,-value=>'-',-readonly=>'readonly',-name=>'namefiltermatches',-class=>'namefiltermatches'}))
+			) 
 			: '';
 }
 sub renderAFSACLManager {
