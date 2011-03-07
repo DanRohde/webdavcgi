@@ -419,7 +419,7 @@ input,select { text-shadow: 1px 1px white;  }
 #sidebartable { width: 200px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
-.sidebarfolderview { padding-top: 110px; margin-left: 210px; }
+.sidebarfolderview { padding-top: 110px; margin-left: 220px; }
 .sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
 .sidebaractionviewheader { background-color: #bbbbbb; text-shadow: 1px 1px white; padding: 2px; font-size: 0.9em;}
 .sidebaraction { border: none; padding: 1px; }
@@ -704,7 +704,7 @@ $LANG = 'default';
 				msg_zipuploadmulti=>'%s zip archives (%s) uploaded successfully.',
 				msg_zipuploadnothingerr=>'Please select a local zip archive (Browse...) for upload.',
 				clickforfullsize=>'Click for full size',
-				permissions=>'Permissions', user=>'user: ', group=>'; group: ', others=>'; others: ',
+				permissions=>'Permissions', user=>'user:', group=>'group:', others=>'others:',
 				recursive=>'recursive', changefilepermissions=>'Change file permissions: ', changepermissions=>'Change',
 				readable=>'r', writeable=>'w', executable=>'x', sticky=>'t', setuid=>'s', setgid=>'s',
 				add=>'add (+)', set=>'set (=)', remove=>'remove (-)',
@@ -801,7 +801,7 @@ $LANG = 'default';
 				msg_zipuploadmulti=>'%s zip-Archive (%s) wurden erfolgreich hochgeladen.',
 				msg_zipuploadnothingerr=>'Bitte wählen Sie ein lokales Zip-Archiv zum Hochladen aus.',
 				clickforfullsize=>'Für volle Grösse anklicken',
-				permissions=>'Rechte', user=>'Benutzer: ', group=>'; Gruppe: ', others=>'; Andere: ',
+				permissions=>'Rechte', user=>'Benutzer:', group=>'Gruppe:', others=>'Andere:',
 				recursive=>'rekursiv', changefilepermissions=>'Datei-Rechte ändern: ', changepermissions=>'ändern',
 				readable=>'r', writeable=>'w', executable=>'x', sticky=>'t', setuid=>'s', setgid=>'s', 
 				add=>'hinzufügen (+)', set=>'setzen (=)', remove=>'entfernen (-)',
@@ -4619,31 +4619,39 @@ sub renderDeleteView {
 		.' '._tl('deletefilestext'));
 }
 sub renderChangePermissionsView() {
-	return  _tl('changefilepermissions')
-						.(defined $PERM_USER 
-							? _tl('user')
-								.$cgi->checkbox_group(-name=>'fp_user', -values=>$PERM_USER,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setuid')})
+	return	$cgi->start_table()
+			. $cgi->Tr($cgi->td({-colspan=>2},_tl('changefilepermissions'))
+				)
+			.		
+						(defined $PERM_USER 
+							? $cgi->Tr($cgi->td( _tl('user') )
+								. $cgi->td($cgi->checkbox_group(-name=>'fp_user', -values=>$PERM_USER,
+									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setuid')}))
+								)
 							: ''
-						  )
+						)
 						.(defined $PERM_GROUP
-							? _tl('group')
-								.$cgi->checkbox_group(-name=>'fp_group', -values=>$PERM_GROUP,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setgid')})
+							? $cgi->Tr($cgi->td(_tl('group') )
+								. $cgi->td($cgi->checkbox_group(-name=>'fp_group', -values=>$PERM_GROUP,
+									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setgid')}))
+								)
 							: ''
 						 )
 						.(defined $PERM_OTHERS
-							? _tl('others')
-								.$cgi->checkbox_group(-name=>'fp_others', -values=>$PERM_OTHERS,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 't'=>_tl('sticky')})
+							? $cgi->Tr($cgi->td(_tl('others'))
+								.$cgi->td($cgi->checkbox_group(-name=>'fp_others', -values=>$PERM_OTHERS,
+									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 't'=>_tl('sticky')}))
+								)
 							: ''
 						 )
-						. '; '. $cgi->popup_menu(-name=>'fp_type',-values=>['a','s','r'], -labels=>{ 'a'=>_tl('add'), 's'=>_tl('set'), 'r'=>_tl('remove')})
-						.($ALLOW_CHANGEPERMRECURSIVE ? '; ' .$cgi->checkbox_group(-name=>'fp_recursive', -value=>['recursive'], 
+			. $cgi->Tr( $cgi->td( {-colspan=>2},
+						$cgi->popup_menu(-name=>'fp_type',-values=>['a','s','r'], -labels=>{ 'a'=>_tl('add'), 's'=>_tl('set'), 'r'=>_tl('remove')})
+						.($ALLOW_CHANGEPERMRECURSIVE ? ' '.$cgi->checkbox_group(-name=>'fp_recursive', -value=>['recursive'], 
 								-labels=>{'recursive'=>_tl('recursive')}) : '')
-						. '; '.$cgi->submit(-disabled=>'disabled', -name=>'changeperm',-value=>_tl('changepermissions'),
-								-onclick=>'return window.confirm("'._tl('changepermconfirm').'");')
-				. $cgi->br()._tl('changepermlegend');
+						. ' '. $cgi->submit(-disabled=>'disabled', -name=>'changeperm',-value=>_tl('changepermissions'), -onclick=>'return window.confirm("'._tl('changepermconfirm').'");')
+			))
+		. $cgi->Tr($cgi->td({-colspan=>2},_tl('changepermlegend')))
+		. $cgi->end_table();
 }
 sub renderZipView {
 	my $content = "";
@@ -4678,7 +4686,7 @@ sub renderSideBar {
 	$content .= $cgi->div({-id=>'movefilesviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, 
 				$cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview");',-name=>'rename',-value=>_tl('movefilesbutton')}));
 	$content .= $cgi->div({-id=>'permissionsviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, 
-				$cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'}));
+				$cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 	$content .= $cgi->div({-id=>'afsaclmanagerviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("afsaclmanagerview");', -class=>'sidebaraction'}, $cgi->button({-value=>_tl('afs')})) if $ENABLE_AFSACLMANAGER;
 	$content .= $cgi->hr().$cgi->div({-id=>'afsgroupmanagerviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("afsgroupmanagerview");', -class=>'sidebaraction'}, 
 					$cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
@@ -4694,7 +4702,7 @@ sub renderSideBar {
 	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED));
 	$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView());
 	$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView());
-	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView());
+	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 	$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 	$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
 	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable'}).$cgi->Tr($cgi->td({-id=>'sidebarcontent'},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},'&lt;')).$cgi->end_table()). $av;
@@ -5010,7 +5018,7 @@ sub start_html {
 		<script type="text/javascript">
 		var dragElID = null;
 		var dragOffset = new Object();
-		document.onmousemove = handleMouseMove;
+		document.onmousemove = handleMouseDrag;
 		function getEventPos(e) {
 			var p = new Object();
 			p.x = e.offsetX ? e.offsetX : e.pageX ? e.pageX : e.clientX;
@@ -5023,16 +5031,19 @@ sub start_html {
 			v.h = window.innerHeight || (document.documentElement && document.documentElement.clientHeight ? document.documentElement.cientHeight : 0) || document.getElementsByTagName('body')[0].clientHeight;
 			return v;
 		}
-		function handleMouseMove(event) {
+		function handleMouseDrag(event) {
 			if (!event) event = window.event;	
 			if (dragElID!=null) {
 				var el = document.getElementById(dragElID);	
 				if (el) {
 					var p = getEventPos(event);
+					var v = getViewport();
+					if (p.x+dragOffset.x < 0 || p.y+dragOffset.y <0 || p.x > v.w ||  p.y > v.h ) return false;
 					el.style.left = (p.x+dragOffset.x)+'px';
 					el.style.top = (p.y+dragOffset.y)+'px';
 				}
 			}
+			return true;
 		}
 		function handleWindowMove(event, id, down) {
 			if (!event) event=window.event;
