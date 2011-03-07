@@ -32,6 +32,7 @@
 # CHANGES:
 #   0.6.2: BETA
 #        - Web interface:
+#            - added sidebar view (GET)
 #            - improved page navigation (GET)
 #            - changed message box behavior (GET)
 #            - added file/folder name filtering feature (GET)
@@ -40,6 +41,7 @@
 #            - fixed sort bug in search results (GET)
 #            - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
 #            - fixed annoying whitespace wraps (GET)
+#            - fixed wrong message display for change location/bookmark usage (GET)
 #        - fixed file/folder search performance bug in a AFS (GET)
 #   0.6.1: 2011/25/02
 #        - fixed missing HTTP status of inaccessible files (GET)
@@ -276,6 +278,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
+            $ENABLE_SIDEBAR $VIEW 
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -409,6 +412,25 @@ input,select { text-shadow: 1px 1px white;  }
 .bookmark .func { background-color: #cccccc; font-weight: bold; text-shadow: 1px 1px white;}
 #addbookmark, #rmbookmark { font-size: 0.8em; border: 1px outset black; padding: 0px; margin: 0px; font-family: monospace; background-color: #dddddd; text-shadow: 1px 1px white; color: black; font-weight: bold; text-decoration: none;}
 
+.masterhead { background-color: white; position: fixed; top: 0px; width: 99%; }
+.folderview { padding-top: 110px; }
+
+.sidebar { position: fixed; top: 120px; padding: 2px; background-color: white; z-index: 5;}
+#sidebartable { width: 200px; }
+.sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
+.sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
+.sidebarfolderview { padding-top: 110px; margin-left: 210px; }
+.sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
+.sidebaractionviewheader { background-color: #bbbbbb; text-shadow: 1px 1px white; padding: 2px; font-size: 0.9em;}
+.sidebaraction { border: none; padding: 1px; }
+.sidebaraction input { border: none; background-color: white; margin: 0px;}
+.sidebaraction.highlight, .sidebaraction.highlight input { background-color: #eeeeee; }
+.sidebaraction.active, .sidebaraction.active input { background-color: #dddddd; }
+.sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
+.sidebaractionviewaction { padding: 5px 2px 2px 2px; }
+.sidebartogglebutton { font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
+
+
 .viewtools { display: inline; float:right; margin-top: 4px;  }
 .up, .refresh { font-size: 0.8em; border: 1px outset black; padding: 2px; font-weight: bold; text-decoration: none; color: black; background-color: #dddddd; text-shadow: 1px 1px white;}
 
@@ -442,11 +464,12 @@ input,select { text-shadow: 1px 1px white;  }
 .groupwriteable { color: darkred; }
 .otherwriteable { color: red; }
 
+
 .folderstats, .resultcount, .results { font-size:0.8em; }
 .clipboard { float:left; margin-right: 30px; }
 .copybutton,.cutbutton,.pastebutton { margin: 0px 5px 0px 5px; }
 .namefilter { display: inline; }
-.namefiltermatches { display: inline; font-size: 0.9em; font-weight: normal; border: none; background-color: #efefef; }
+.namefiltermatches { display: inline; font-size: 0.9em; font-weight: normal; border: none; background-color: #efefef; white-space: nowrap;}
 .functions { float: right; padding: 0px 5px 0px 20px;}
 fieldset { clear: both; }
 
@@ -542,6 +565,15 @@ $PAGE_LIMIT=15;
 ## enables bookmark support in the Web interface (cookie/javascript based)
 ## EXAMPLE: $ENABLE_BOOKMARKS = 1;
 $ENABLE_BOOKMARKS = 1;
+
+## -- ENABLE_SIDEBAR
+## enables the sidebar view; you get the classic view only if you disable this:
+## EXAMPLE: $ENABLE_SIDEBAR = 1;
+$ENABLE_SIDEBAR = 1;
+
+## -- VIEW
+## defines the default view (sidebar or classic)
+$VIEW = 'sidebar';
 
 ## -- ALLOW_POST_UPLOADS
 ## enables a upload form in a fancy index of a folder (browser access)
@@ -716,9 +748,11 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
 				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
-				namefilter=>', Filter: ', namefiltertooltip=>'filter current folder', namefiltermatches=>'Match(es): ',
+				namefilter=>'Filter: ', namefiltertooltip=>'filter current folder', namefiltermatches=>'Match(es): ',
 				copytooltip=>'Add files/folders to clipboard for copy operation', cuttooltip=>'Add files/folders to clipboard for move operation',
 				pagelimit=>'Show: ', pagelimittooltip=>'Show per page ...',
+				togglesidebar=>'Toggle Sidebar',
+				viewoptions=>'View Options', classicview =>'Classic View', sidebarview=>'Sidebar View',
 			},
 		'de' => 
 			{
@@ -737,9 +771,9 @@ $LANG = 'default';
 				lastmodifiedformat => '%d.%m.%Y %H:%M:%S Uhr',
 				statfiles => 'Dateien:', statfolders=> 'Ordner:', statsum => 'Gesamt:', statsize => 'Größe:',
 				createfoldertext => 'Ordnername: ', createfolderbutton => 'Ordner anlegen',
-				movefilestext => 'Ausgewählte Dateien nach: ', movefilesbutton => 'umbenennen/veschieben',
+				movefilestext => 'Ausgewählte Dateien nach: ', movefilesbutton => 'Umbenennen/Verschieben',
 				movefilesconfirm => 'Wollen Sie wirklich die ausgewählte(n) Datei(en)/Ordner umbenennen/verschieben?',
-				deletefilesbutton => 'Löschen', deletefilestext => ' alle ausgewählten Dateien/Ordner',
+				deletefilesbutton => 'Löschen', deletefilestext => 'aller ausgewählten Dateien/Ordner',
 				deletefilesconfirm => 'Wollen Sie wirklich alle ausgewählten Dateien/Ordner löschen?',
 				zipdownloadbutton => 'Herunterladen', zipdownloadtext => ' aller ausgewählten Dateien und Ordner als ZIP-Archiv.',
 				zipuploadtext => 'Ein ZIP-Archiv: ', zipuploadbutton => 'hochladen & auspacken.',
@@ -809,9 +843,11 @@ $LANG = 'default';
 				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
 				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
 				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
-				namefilter=>', Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern', namefiltermatches=>'Treffer: ',
+				namefilter=>'Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern', namefiltermatches=>'Treffer: ',
 				copytooltip=>'Dateien/Ordner zum Kopieren in die Zwischenablage ablegen', cuttooltip=>'Dateien/Ordner zum Verschieben in die Zwischenablage ablegen',
 				pagelimit=>'Zeige: ', pagelimittooltip=>'Zeige pro Seite ...',
+				togglesidebar=>'Sidebar anzeigen/verstecken',
+				viewoptions=>'Ansicht', classicview =>'Klassische Ansicht', sidebarview=>'Sidebar Ansicht',
 			},
 
 		);
@@ -900,12 +936,12 @@ $AFS_FSCMD='/usr/bin/fs';
 ## -- ENABLE_AFSACLMANAGER
 ## enables AFS ACL Manager for the Web interface
 ## EXAMPLE: $ENABLE_AFSACLMANAGER = 1;
-$ENABLE_AFSACLMANAGER = 0;
+$ENABLE_AFSACLMANAGER = $ENABLE_AFS;
 
 ## -- ALLOW_AFSACLCHANGES
 ## allows AFS ACL changes. if disabled the AFS ACL Manager shows only the ACLs of a folder.
 ## EXAMLE: $ALLOW_AFSACLCHANGES = 1;
-$ALLOW_AFSACLCHANGES = 0;
+$ALLOW_AFSACLCHANGES = $ENABLE_AFS;
 
 ## -- PROHIBIT_AFS_ACL_CHANGES_FOR
 ## prohibits AFS ACL changes for listed users/groups
@@ -915,12 +951,12 @@ $ALLOW_AFSACLCHANGES = 0;
 ## -- ENABLE_AFSGROUPMANAGER 
 ## enables the AFS Group Manager
 ## EXAMPLE: $ENABLE_AFSGROUPMANAGER = 1;
-$ENABLE_AFSGROUPMANAGER = 0;
+$ENABLE_AFSGROUPMANAGER = $ENABLE_AFS;
 
 ## -- ALLOW_AFSGROUPCHANGES
 ## enables AFS group change support
 ## EXAMPLE: $ALLOW_AFSGROUPCHANGES = 1;
-$ALLOW_AFSGROUPCHANGES = 0;
+$ALLOW_AFSGROUPCHANGES = $ENABLE_AFS;
 
 ## -- AFS_PTSCMD
 ## file path to the AFS pts command
@@ -1140,6 +1176,9 @@ $PAGE_LIMIT = $cgi->param('pagelimit') || $cgi->cookie('pagelimit') || $PAGE_LIM
 $PAGE_LIMIT = ceil($PAGE_LIMIT) if defined $PAGE_LIMIT;
 @PAGE_LIMITS = ( 5, 10, 15, 20, 25, 30, 50, 100, -1 ) unless defined @PAGE_LIMITS;
 unshift @PAGE_LIMITS, $PAGE_LIMIT if defined $PAGE_LIMIT && $PAGE_LIMIT > 0 && grep(/\Q$PAGE_LIMIT\E/, @PAGE_LIMITS) <= 0 ;
+
+$VIEW = $cgi->param('view') || $cgi->cookie('view') || $VIEW || ($ENABLE_SIDEBAR ? 'sidebar' : 'classic');
+$VIEW = 'classic' unless $ENABLE_SIDEBAR;
 
 debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
@@ -1526,122 +1565,77 @@ sub _GET {
 	} elsif (-d $fn) {
 		my $ru = $REQUEST_URI;
 		my $content = "";
+		my $head = "";
 		debug("_GET: directory listing of $fn");
 		$content .= start_html($ru);
-		$content .= $LANGSWITCH if defined $LANGSWITCH;
-		$content .= $HEADER if defined $HEADER;
+		$head .= $LANGSWITCH if defined $LANGSWITCH;
+		$head .= $HEADER if defined $HEADER;
+		$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 		if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
 			my $search = $cgi->param('search');
-			$content .= $cgi->start_form(-method=>'GET');
-			$content .= $cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
-			$content .= $cgi->end_form();
+			$head .= # $cgi->start_form(-method=>'GET')
+				# . 
+				$cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}))
+				#.$cgi->end_form();
+				;
 		}
-		$content.=renderMessage();
+		$head.=renderMessage();
 		if ($cgi->param('search')) {
 			$content.=getSearchResult($cgi->param('search'),$fn,$ru);
 		} else {
-			$content .= $cgi->div({-class=>'notwriteable'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
-			$content .= $cgi->div({-class=>'notreadable'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
-			$content .= $cgi->div({-class=>'filtered', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
+			$head .= $cgi->div({-class=>'notwriteable'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
+			$head .= $cgi->div({-class=>'notreadable'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
+			$head .= $cgi->div({-class=>'filtered', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 
-			my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
-			$content.=$list;
-			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
-				my $clpboard = "";
-				$clpboard = $cgi->div({-class=>'clipboard'},
-							$cgi->button({-onclick=>'clpaction("copy")', -disabled=>'disabled', -name=>'copy', -class=>'copybutton', -value=> _tl('copy'), -title=>_tl('copytooltip')})
-							.$cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut'), -title=>_tl('cuttooltip')})
-							.$cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -id=>'paste', -class=>'pastebutton',-value=>_tl('paste')})
-						) if ($ENABLE_CLIPBOARD); 
-				$content.= $cgi->div({-class=>'toolbar'}, 
-							$clpboard
-							.$cgi->div({-class=>'functions'}, 
-								(!$ALLOW_ZIP_DOWNLOAD ? '' : $cgi->span({-title=>_tl('zipdownloadtext')}, $cgi->submit(-name=>'zip', -disabled=>'disabled', -value=>_tl('zipdownloadbutton'))))
-								.'&nbsp;&nbsp;'
-								.$cgi->input({-name=>'colname1', -size=>10, -onkeypress=>'return catchEnter(event, "createfolder1")'}).$cgi->submit(-id=>'createfolder1', -name=>'mkcol',-value=>_tl('createfolderbutton'))
-								.'&nbsp;&nbsp;'
-								.$cgi->span({-title=>_tl('deletefilestext')},$cgi->submit(-name=>'delete',-disabled=>'disabled',-value=>_tl('deletefilesbutton'),-onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");'))
-							)
-						);
-			}
-			$content .= qq@<fieldset><legend>@.$cgi->escapeHTML(_tl('upload')).'</legend><div id="toggleupload" style="display:block;">'
-				.$cgi->hidden(-name=>'upload',-value=>1)
-				.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
-				.$cgi->span({-id=>'moreuploads'},"")
-				.' '.$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
+			$head .= $cgi->div( { -class=>'foldername'},
+				$cgi->a({-href=>"$ru?action=props"}, 
+						$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
+					)
+				.'&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount'))
 				.' '
-				.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
-				.' ('.($CGI::POST_MAX / 1048576).' MB max)'
-				.'</div></fieldset>'
-				if $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
-			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
-				$content.=qq@<fieldset><legend><span id="togglebuttonmanagement" onclick="toggle('management');" class="toggle">+</span>@.$cgi->escapeHTML(_tl('management')).qq@</legend><div id="togglemanagement" style="display:none;">@;
-				$content.=qq@<fieldset><legend>@.$cgi->escapeHTML(_tl('files')).qq@</legend><div id="togglefiles" style="display:block;">@;
-				$content.=$cgi->div({-class=>'createfolder'},'&bull; '._tl('createfoldertext').$cgi->input({-name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'}).$cgi->submit(-id=>'createfolder', -name=>'mkcol',-value=>_tl('createfolderbutton')));
-				$content.=$cgi->div({-class=>'movefiles'},
-						'&bull; '._tl('movefilestext')
-						.$cgi->input({-name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$cgi->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>_tl('movefilesbutton'),-onclick=>'return window.confirm("'._tl('movefilesconfirm').'");')
-					);
-				$content.=$cgi->div({-class=>'delete'},'&bull; '.$cgi->submit(-disabled=>'disabled', -name=>'delete', -value=>_tl('deletefilesbutton'), -onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");')
-					._tl('deletefilestext')); 
-				$content.="</div></fieldset>";
-				$content .= qq@<fieldset><legend>@.$cgi->escapeHTML(_tl('permissions')).'</legend><div id="togglepermissions" style="display:block;">'
-						._tl('changefilepermissions')
-						.(defined $PERM_USER 
-							? _tl('user')
-								.$cgi->checkbox_group(-name=>'fp_user', -values=>$PERM_USER,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setuid')})
-							: ''
-						  )
-						.(defined $PERM_GROUP
-							? _tl('group')
-								.$cgi->checkbox_group(-name=>'fp_group', -values=>$PERM_GROUP,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setgid')})
-							: ''
-						 )
-						.(defined $PERM_OTHERS
-							? _tl('others')
-								.$cgi->checkbox_group(-name=>'fp_others', -values=>$PERM_OTHERS,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 't'=>_tl('sticky')})
-							: ''
-						 )
-						. '; '. $cgi->popup_menu(-name=>'fp_type',-values=>['a','s','r'], -labels=>{ 'a'=>_tl('add'), 's'=>_tl('set'), 'r'=>_tl('remove')})
-						.($ALLOW_CHANGEPERMRECURSIVE ? '; ' .$cgi->checkbox_group(-name=>'fp_recursive', -value=>['recursive'], 
-								-labels=>{'recursive'=>_tl('recursive')}) : '')
-						. '; '.$cgi->submit(-disabled=>'disabled', -name=>'changeperm',-value=>_tl('changepermissions'),
-								-onclick=>'return window.confirm("'._tl('changepermconfirm').'");')
-						. $cgi->br()._tl('changepermlegend').'</div></fieldset>'
-					if $ALLOW_CHANGEPERM;
-
-				if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD) {
-					$content.=qq@<fieldset><legend>@.$cgi->escapeHTML(_tl('zip')).'</legend><div id="togglezip" style="display:block;">';
-					$content.='&bull; '.$cgi->submit(-disabled=>'disabled',-name=>'zip',-value=>_tl('zipdownloadbutton'))._tl('zipdownloadtext').$cgi->br() if $ALLOW_ZIP_DOWNLOAD; 
-					$content.='&bull; '._tl('zipuploadtext').$cgi->filefield(-name=>'zipfile_upload', -multiple=>'multiple')
-							. $cgi->submit(-name=>'uncompress', -value=>_tl('zipuploadbutton'),-onclick=>'return window.confirm("'._tl('zipuploadconfirm').'");')
-						if $ALLOW_ZIP_UPLOAD;
-					$content.='</div></fieldset>';
+				.getQuickNavPath($ru)
+			);
+			$head.= $cgi->div( { -class=>'viewtools' }, 
+					$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up'))
+					.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
+			if ($SHOW_QUOTA) {
+				my ($ql, $qu) = getQuota($fn);
+				if (defined $ql && defined $qu) {
+					$ql=$ql/1048576; $qu=$qu/1048576;
+					$head.= $cgi->div({-class=>'quota'},
+									_tl('quotalimit').$cgi->span({-title=>sprintf("= %.2f GB",$ql/1024)},sprintf("%.2f MB, ",$ql))
+									._tl('quotaused').$cgi->span({-title=>sprintf("= %.2f GB",$qu/1024)}, sprintf("%.2f MB, ",$qu))
+									._tl('quotaavailable').$cgi->span({-title=>sprintf("= %.2f GB",($ql-$qu)/1024)},sprintf("%.2f MB",($ql-$qu))));
 				}
-				if ($ENABLE_AFSACLMANAGER) {
-					$content.=qq@<fieldset><legend><span id="togglebuttonafs" onclick="toggle('afs');" class="toggle">+</span>@.$cgi->escapeHTML(_tl('afs')).'</legend><div id="toggleafs" style="display:none;">';
-					$content.=renderAFSACLManager();
-					$content.=qq@</div></fieldset>@;
-				}
-				$content.='</div></fieldset>';
 			}
-			$content.=$cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
-			$content.= $cgi->start_form(-method=>'post', -id=>'clpform')
+			$content.=$cgi->div({-class=>'masterhead'}, $head);
+			my $folderview = "";
+			my $manageview = "";
+			my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
+			$folderview.=$list;
+			$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
+			$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
+			$content.=renderSideBar() if $VIEW eq 'sidebar';
+			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
+				my $m = "";
+				$m .= renderFieldSet('files', renderCreateNewFolderView() .renderMoveView() .renderDeleteView());
+				$m .= renderFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
+				$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
+				$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
+				$manageview .= renderToggleFieldSet('management', $m);
+			}
+			$folderview.=$manageview unless $VIEW eq 'sidebar';
+			$folderview.=renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
+			$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview' : 'folderview')}, $folderview);
+			$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', $cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))) : '';
+			$content .=$cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
+			$content .= $cgi->start_form(-method=>'post', -id=>'clpform')
 					.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
 					.$cgi->hidden(-name=>'files', -value=>'') .$cgi->end_form() if ($ALLOW_FILE_MANAGEMENT && $ENABLE_CLIPBOARD);
-			if ($ENABLE_AFSGROUPMANAGER) {
-				$content.=qq@<fieldset><legend><span id="togglebuttonafsgroup" onclick="toggle('afsgroup');" class="toggle">+</span>@.$cgi->escapeHTML(_tl('afsgroup')).'</legend><div id="toggleafsgroup" style="display:none;">';
-				$content.=renderAFSGroupManager();
-				$content.=qq@</div></fieldset>@;
-			}
-
 		}
-
-		$content .= $SIGNATURE if defined $SIGNATURE;
+		$content.= $SIGNATURE if defined $SIGNATURE && $VIEW ne 'sidebar';
 		$content .= $cgi->end_html();
+		###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
 		printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
 	} elsif (-e $fn && (!$IGNOREFILEPERMISSIONS && !-r $fn)) {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
@@ -3497,6 +3491,7 @@ sub printHeaderAndContent {
 		$cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y'),
 		$cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y'),
 		$cgi->cookie(-name=>'pagelimit',-value=>$PAGE_LIMIT, -expires=>'+10y'),
+		$cgi->cookie(-name=>'view',-value=>$VIEW, -expires=>'+10y'),
 	);
 
 	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
@@ -4572,6 +4567,138 @@ sub getQuickNavPath {
 
 	return $content;
 }
+sub renderToggleFieldSet {
+	my($name,$content,$notoggle) = @_;
+	return qq@<fieldset><legend>@
+		.($notoggle ? '' : $cgi->span({-id=>"togglebutton$name",-onclick=>"toggle('$name');", -class=>'toggle'},'+'))
+		.$cgi->escapeHTML(_tl($name))
+		.qq@</legend>@
+		.$cgi->div({-id=>"toggle$name",-style=>($notoggle ? 'display:block;' : 'display:none;')}, $content)
+		.qq@</fieldset>@;
+}
+sub renderFieldSet { return renderToggleFieldSet($_[0],$_[1],1); }
+sub renderDeleteFilesButton { return $cgi->submit(-title=>_tl('deletefilestext'),-name=>'delete',-disabled=>'disabled',-value=>_tl('deletefilesbutton'),-onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");'); }
+sub renderCopyButton { return $cgi->button({-onclick=>'clpaction("copy")', -disabled=>'disabled', -name=>'copy', -class=>'copybutton', -value=> _tl('copy'), -title=>_tl('copytooltip')}); }
+sub renderCutButton { return $cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut'), -title=>_tl('cuttooltip')}); }
+sub renderPasteButton { return $cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -id=>'paste', -class=>'pastebutton',-value=>_tl('paste')}); }
+sub renderToolbar {
+	my $clpboard = "";
+	$clpboard = $cgi->div({-class=>'clipboard'}, renderCopyButton().renderCutButton().renderPasteButton()) if ($ENABLE_CLIPBOARD); 
+	return $cgi->div({-class=>'toolbar'}, 
+			$clpboard
+			.$cgi->div({-class=>'functions'}, 
+				(!$ALLOW_ZIP_DOWNLOAD ? '' : $cgi->span({-title=>_tl('zipdownloadtext')}, $cgi->submit(-name=>'zip', -disabled=>'disabled', -value=>_tl('zipdownloadbutton'))))
+				.'&nbsp;&nbsp;'
+				.$cgi->input({-name=>'colname1', -size=>10, -onkeypress=>'return catchEnter(event, "createfolder1")'}).$cgi->submit(-id=>'createfolder1', -name=>'mkcol',-value=>_tl('createfolderbutton'))
+				.'&nbsp;&nbsp;'
+				.renderDeleteFilesButton()
+			)
+		);
+}
+sub renderFileUploadView {
+	my ($fn) = @_;
+	return $cgi->hidden(-name=>'upload',-value=>1)
+		.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
+		.$cgi->span({-id=>'moreuploads'},"")
+		.' '.$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
+		.' '
+		.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
+		.' ('.($CGI::POST_MAX / 1048576).' MB max)';
+}
+sub renderCreateNewFolderView {
+	return $cgi->div({-class=>'createfolder'},'&bull; '._tl('createfoldertext').$cgi->input({-name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'}).$cgi->submit(-id=>'createfolder', -name=>'mkcol',-value=>_tl('createfolderbutton')))
+}
+sub renderMoveView {
+	return $cgi->div({-class=>'movefiles', -id=>'movefiles'},
+		'&bull; '._tl('movefilestext')
+		.$cgi->input({-name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$cgi->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>_tl('movefilesbutton'),-onclick=>'return window.confirm("'._tl('movefilesconfirm').'");')
+	);
+}
+sub renderDeleteView {
+	return $cgi->div({-class=>'delete', -id=>'delete'},'&bull; '.$cgi->submit(-disabled=>'disabled', -name=>'delete', -value=>_tl('deletefilesbutton'), -onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");') 
+		.' '._tl('deletefilestext'));
+}
+sub renderChangePermissionsView() {
+	return  _tl('changefilepermissions')
+						.(defined $PERM_USER 
+							? _tl('user')
+								.$cgi->checkbox_group(-name=>'fp_user', -values=>$PERM_USER,
+									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setuid')})
+							: ''
+						  )
+						.(defined $PERM_GROUP
+							? _tl('group')
+								.$cgi->checkbox_group(-name=>'fp_group', -values=>$PERM_GROUP,
+									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setgid')})
+							: ''
+						 )
+						.(defined $PERM_OTHERS
+							? _tl('others')
+								.$cgi->checkbox_group(-name=>'fp_others', -values=>$PERM_OTHERS,
+									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 't'=>_tl('sticky')})
+							: ''
+						 )
+						. '; '. $cgi->popup_menu(-name=>'fp_type',-values=>['a','s','r'], -labels=>{ 'a'=>_tl('add'), 's'=>_tl('set'), 'r'=>_tl('remove')})
+						.($ALLOW_CHANGEPERMRECURSIVE ? '; ' .$cgi->checkbox_group(-name=>'fp_recursive', -value=>['recursive'], 
+								-labels=>{'recursive'=>_tl('recursive')}) : '')
+						. '; '.$cgi->submit(-disabled=>'disabled', -name=>'changeperm',-value=>_tl('changepermissions'),
+								-onclick=>'return window.confirm("'._tl('changepermconfirm').'");')
+				. $cgi->br()._tl('changepermlegend');
+}
+sub renderZipView {
+	my $content = "";
+	$content .= '&bull; '.$cgi->submit(-disabled=>'disabled',-name=>'zip',-value=>_tl('zipdownloadbutton'))._tl('zipdownloadtext').$cgi->br() if $ALLOW_ZIP_DOWNLOAD; 
+	$content .='&bull; '._tl('zipuploadtext').$cgi->filefield(-name=>'zipfile_upload', -multiple=>'multiple')
+			. $cgi->submit(-name=>'uncompress', -value=>_tl('zipuploadbutton'),-onclick=>'return window.confirm("'._tl('zipuploadconfirm').'");') 
+		if $ALLOW_ZIP_UPLOAD;
+	return $content;
+}
+sub renderActionView {
+	my ($action, $name, $view) = @_;
+
+	return $cgi->div({-class=>'sidebaractionview',-id=>$action},
+		$cgi->div({-class=>'sidebaractionviewheader', -onmousedown=>"handleWindowMove(event,'$action', 1)", -onmouseup=>"handleWindowMove(event,'$action',0)"}, _tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor: pointer;float:right'},' [X] '))
+		.$cgi->div({-class=>'sidebaractionviewaction'},$view)
+		);
+}
+sub renderSideBar {
+	my $content = "";
+
+	$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
+
+	my $omover = 'javascript:addClassName(this, "highlight");';
+	my $omout  = 'javascript:removeClassName(this, "highlight");';
+
+	$content .= $cgi->div({-id=>'fileuploadviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("fileuploadview")', -class=>'sidebaraction'},$cgi->button({-value=>_tl('upload')}));
+	$content .= $cgi->div({-id=>'copymenu', -onmouseover=>$omover, -onmouseout=>$omout,-title=>_tl('copytooltip'), -class=>'sidebaraction'}, renderCopyButton());
+	$content .= $cgi->div({-id=>'cutmenu', -onmouseover=>$omover, -onmouseout=>$omout, -title=>_tl('cuttooltip'), -class=>'sidebaraction'},renderCutButton());
+	$content .= $cgi->div({-id=>'pastemenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, renderPasteButton());
+	$content .= $cgi->div({-id=>'deleteviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, renderDeleteFilesButton());
+	$content .= $cgi->div({-id=>'createfolderviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("createfolderview");', -class=>'sidebaraction'}, $cgi->button({-value=> _tl('createfolderbutton')}));
+	$content .= $cgi->div({-id=>'movefilesviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, 
+				$cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview");',-name=>'rename',-value=>_tl('movefilesbutton')}));
+	$content .= $cgi->div({-id=>'permissionsviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, 
+				$cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'}));
+	$content .= $cgi->div({-id=>'afsaclmanagerviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("afsaclmanagerview");', -class=>'sidebaraction'}, $cgi->button({-value=>_tl('afs')})) if $ENABLE_AFSACLMANAGER;
+	$content .= $cgi->hr().$cgi->div({-id=>'afsgroupmanagerviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("afsgroupmanagerview");', -class=>'sidebaraction'}, 
+					$cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
+
+	$content .= $cgi->div({-class=>'sidebarheader'},_tl('viewoptions'));
+	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
+	$content .= $cgi->div({-id=>'navpageviewwmenu', -title=>_tl('navpageview'), -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'window.location.href="?showpage=1";', -class=>'sidebaraction'},$cgi->button(-value=>_tl('navpageview'))) if $showall;
+	$content .= $cgi->div({-id=>'navallmenu', -title=>_tl('navalltooltip'), -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'window.location.href="?showall=1";', -class=>'sidebaraction'},$cgi->button(-value=>_tl('navall'))) unless $showall;
+	$content .= $cgi->div({}, renderNameFilterForm().$cgi->div('&nbsp;')) if $showall;
+	$content .= $cgi->div({-id=>'changeviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'javascript:window.location.href="?view=classic";', -class=>'sidebaraction'}, $cgi->button({-value=>_tl('classicview')})); 
+
+	my $av = "";
+	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED));
+	$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView());
+	$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView());
+	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView());
+	$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
+	$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
+	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable'}).$cgi->Tr($cgi->td({-id=>'sidebarcontent'},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},'&lt;')).$cgi->end_table()). $av;
+}
 sub renderPageNavBar {
 	my ($ru, $count, $files) = @_;
 	my $limit = $PAGE_LIMIT || -1;
@@ -4584,7 +4711,7 @@ sub renderPageNavBar {
 	my $maxpages = ceil($count / $limit);
 	return $content if $maxpages == 0;
 
-	return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')). renderNameFilterForm()) if ($showall);
+	return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')). ', '.renderNameFilterForm()) if ($showall);
 
 	$content .= ($page > 1 ) 
 			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,1,$limit), -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
@@ -4649,28 +4776,6 @@ sub getFolderList {
 	my ($fn,$ru,$filter) = @_;
 	my ($content,$list,$count,$filecount,$foldercount,$filesizes) = ("",0,0,0,0);
 
-	$content .= $cgi->div( { -class=>'foldername'},
-				$cgi->a({-href=>"$ru?action=props"}, 
-						$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
-					)
-				.'&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount'))
-				.' '
-				.getQuickNavPath($ru, getQueryParams())
-			);
-	$content .= $cgi->div( { -class=>'viewtools' }, 
-			$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up'))
-			.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh'))) if !$filter;
-	if ($SHOW_QUOTA) {
-		my ($ql, $qu) = getQuota($fn);
-		if (defined $ql && defined $qu) {
-			$ql=$ql/1048576; $qu=$qu/1048576;
-			$content .= $cgi->div({-class=>'quota'},
-							_tl('quotalimit').$cgi->span({-title=>sprintf("= %.2f GB",$ql/1024)},sprintf("%.2f MB, ",$ql))
-							._tl('quotaused').$cgi->span({-title=>sprintf("= %.2f GB",$qu/1024)}, sprintf("%.2f MB, ",$qu))
-							._tl('quotaavailable').$cgi->span({-title=>sprintf("= %.2f GB",($ql-$qu)/1024)},sprintf("%.2f MB",($ql-$qu))));
-		}
-	}
-	#$content .= renderNameFilterForm();
 	my $row = "";
 	$list="";
 	
@@ -4763,7 +4868,7 @@ sub getFolderList {
 		$filesizes+=$size if $isUnReadable || -f $full;
 
 	}
-	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
+	###$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 	$content .= $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
 	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %d Bytes (= %.2f KB = %.2f MB = %.2f GB)", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $filesizes, $filesizes/1024, $filesizes/1048576, $filesizes/1073741824)) if ($SHOW_STAT); 
@@ -4819,7 +4924,7 @@ sub getSearchResult {
 	$$visited{$nfn}=1;
 
 	my ($list,$count)=getFolderList($fn,$ru,$search);
-	$content.=$cgi->hr().$cgi->div({-class=>'resultcount'},$count._tl($count>1?'searchresults':'searchresult')).$list if $count>0 && $isRecursive;
+	$content.=$cgi->hr().$cgi->div({-class=>'resultcount'},$count._tl($count>1?'searchresults':'searchresult')).getQuickNavPath($ru).$list if $count>0 && $isRecursive;
 	$$fullcount+=$count;
 	if (opendir(my $fh,$fn)) {
 		foreach my $filename (sort cmp_files grep {  !/^\.{1,2}$/ } readdir($fh)) {
@@ -4840,7 +4945,7 @@ sub getSearchResult {
 			$content.=$cgi->h2(_tl('searchnothingfound') . "'" .$cgi->escapeHTML($search)."'"._tl('searchgoback').getQuickNavPath($ru));
 		} else {
 			$content=$cgi->h2("$$fullcount "._tl($$fullcount>1?'searchresultsfor':'searchresultfor')."'".$cgi->escapeHTML($search)."'"._tl('searchgoback').getQuickNavPath($ru)) 
-				. ($count>0 ?  $cgi->hr().$cgi->div({-class=>'results'},$count._tl($count>1?'searchresults':'searchresult')).$list : '' )
+				. ($count>0 ?  $cgi->hr().$cgi->div({-class=>'results'},$count._tl($count>1?'searchresults':'searchresult')).getQuickNavPath($ru).$list : '' )
 				. $content;
 		}
 	}
@@ -4903,6 +5008,85 @@ sub start_html {
 	}
 	my $jscript = <<EOS
 		<script type="text/javascript">
+		var dragElID = null;
+		var dragOffset = new Object();
+		document.onmousemove = handleMouseMove;
+		function getEventPos(e) {
+			var p = new Object();
+			p.x = e.offsetX ? e.offsetX : e.pageX ? e.pageX : e.clientX;
+			p.y = e.offsetY ? e.offsetY : e.pageY ? e.pageY : e.clientY;
+			return p;
+		}
+		function getViewport() {
+			var v = new Object();
+			v.w = window.innerWidth || (document.documentElement && document.documentElement.clientWidth ? document.documentElement.cientWidth : 0) || document.getElementsByTagName('body')[0].clientWidth;
+			v.h = window.innerHeight || (document.documentElement && document.documentElement.clientHeight ? document.documentElement.cientHeight : 0) || document.getElementsByTagName('body')[0].clientHeight;
+			return v;
+		}
+		function handleMouseMove(event) {
+			if (!event) event = window.event;	
+			if (dragElID!=null) {
+				var el = document.getElementById(dragElID);	
+				if (el) {
+					var p = getEventPos(event);
+					el.style.left = (p.x+dragOffset.x)+'px';
+					el.style.top = (p.y+dragOffset.y)+'px';
+				}
+			}
+		}
+		function handleWindowMove(event, id, down) {
+			if (!event) event=window.event;
+			var e = document.getElementById(id);
+			if (down) {
+				if (e && event) {
+					dragElID = id;
+					e.style.cursor = 'move';
+					var p = getEventPos(event);
+					dragOffset.x = ( e.style.left ? parseInt(e.style.left) : 220 ) - p.x;
+					dragOffset.y = ( e.style.top ? parseInt(e.style.top) : 120 ) - p.y;
+				}
+			} else {
+				dragElID = null;
+				if (e) { 
+					e.style.cursor = 'auto';
+					setCookie('posX_'+id, e.style.left);
+					setCookie('posY_'+id, e.style.top);
+				}
+			}
+		}
+		function toggleSideBar() {
+			var e = document.getElementById('sidebarcontent');
+			var ison = 1;
+			if (e) {
+				ison = !(e.style.display=='none');
+				e.style.display = ison ? 'none' : 'block';
+				document.getElementById('sidebartable').style.width = ison ? '5px' : '200px';
+				document.getElementById('folderview').style.marginLeft= ison ? '30px' : '220px';
+				document.getElementById('sidebartogglebutton').innerHTML = ison ? '&gt;' : '&lt;'
+			}
+			setCookie('sidebar', !ison);
+		}
+		function showActionView(action) {
+			var e = document.getElementById(action);
+			if (e) { 
+				var v = getViewport();
+				var x = e.style.left ? e.style.left : getCookie('posX_'+action);
+				var y = e.style.top ? e.style.top : getCookie('posY_'+action);
+				if (x!="") if (parseInt(x) < v.w) e.style.left = x; else e.style.left = (v.w-100)+'px';
+				if (y!="") if (parseInt(y) < v.h) e.style.top = y; else e.style.top = (v.h-100)+'px';
+				e.style.visibility='visible';
+				addClassName(document.getElementById(action+'menu'), 'active');
+			}
+		}
+		function hideActionView(action) {
+			var e = document.getElementById(action);
+			if (e) e.style.visibility='hidden';
+			removeClassName(document.getElementById(action+'menu'), 'active');
+		}
+		function toggleActionView(action) {
+			var e = document.getElementById(action);
+			if (e && e.style.visibility=='visible') hideActionView(action); else showActionView(action);
+		}
 		function addUploadField(force) {
 			var e = document.getElementById('moreuploads');
 			var fu = document.getElementsByName('file_upload');
@@ -5046,7 +5230,7 @@ sub start_html {
 			buildBookmarkList();
 		}
 		function changeDir(href) {
-			window.location.href=href + ( window.location.search ? window.location.search : '');
+			window.location.href=href; 
 			return true;
 		}
 		function showChangeDir(show) {
@@ -5235,11 +5419,13 @@ sub start_html {
 				clpcheck();
 			}
 		}
-		function toggle(name) {
+		function toggle(name,cshow,chide) {
 			var button = document.getElementById('togglebutton'+name);
 			var div = document.getElementById('toggle'+name);
+			if (!cshow) cshow = '+';
+			if (!chide) chide = '-';
 			div.style.display=div.style.display=='none'?'block':'none';
-			button.innerHTML = div.style.display=='none'?'+':'-'; 
+			button.innerHTML = div.style.display=='none'?cshow:chide; 
 			setCookie('toggle'+name, div.style.display);
 		}
 		function togglecheck() {
@@ -5261,11 +5447,17 @@ sub start_html {
 				i++;
 			}
 		}
+		function sidebarcheck() {
+			if (document.location.search.match(/acl/)) showActionView('afsaclmanagerview');
+			else if (document.location.search.match(/afs/)) showActionView('afsgroupmanagerview');
+			if (getCookie('sidebar') == 'false') toggleSideBar();
+		}
 		function check() {
 			selcheck();
 			clpcheck();
 			togglecheck();
 			bookmarkcheck();
+			sidebarcheck(); 
 			hideMsg();
 		}
 		function fadeOut(id) {
@@ -5319,6 +5511,7 @@ sub renderNameFilterForm() {
 				$cgi->input({-size=>5, -value=>$cgi->param('namefilter')||'',-name=>'namefilter', 
 						-onkeypress=>'javascript:return catchEnter(event,"undef")', 
 						-onkeyup=>'javascript:return handleNameFilter(this,event);'})
+				.' '
 				.$cgi->span({-class=>'namefiltermatches'}, _tl('namefiltermatches').$cgi->input({-size=>2,-value=>'-',-readonly=>'readonly',-name=>'namefiltermatches',-class=>'namefiltermatches'}))
 			) 
 			: '';
@@ -5498,14 +5691,15 @@ sub renderAFSGroupManager {
 	$rgrp .= $cgi->input({-name=>'afsnewgrpname',-size=>20, -value=>$cgi->param('afsnewgrpname')||'',-onfocus=>'if (this.value == "") { this.value="'.$ru.':"; this.select();}', -onblur=>'if (this.value == "'.$ru.':") this.value="";', -onkeypress=>'return catchEnter(event,"afsrenamegrp");'}).$cgi->submit({-id=>'afsrenamegrp', -name=>'afsrenamegrp', -value=>_tl('afsrenamegroup'), -onclick=>'return window.confirm("'._tl('afsconfirmrenamegrp').'");'}) if $ALLOW_AFSGROUPCHANGES && $#groups > -1;
 
 	return $cgi->a({-id=>'afsgroupmanagerpos'},"").renderMessage('afs')
-		.$cgi->start_form({-name=>'afsgroupmanagerform', -method=>'post'})
+		##.$cgi->start_form({-name=>'afsgroupmanagerform', -method=>'post'})
 		.$cgi->start_table({-class=>'afsgroupmanager'})
 		.$cgi->Tr($cgi->th($hgc).$cgi->th($huc))
 		.$cgi->Tr($cgi->td($gc.$cgi->br().$cb.$cgi->br().$dgrp.$cgi->br().$ngrp.$cgi->br().$rgrp)
 				.$cgi->td($uc.$cgi->br().$dusr.$cgi->br().$nusr))
 		.$cgi->end_table()
 		.$cgi->div({-class=>'afsgrouphelp'}, _tl('afsgrouphelp'))
-		.$cgi->end_form();
+		##.$cgi->end_form();
+		;
 }
 sub doAFSGroupActions {
 	my ($redirtarget ) = @_;
