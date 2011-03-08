@@ -423,7 +423,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
 .sidebaractionviewheader { background-color: #bbbbbb; text-shadow: 1px 1px white; padding: 2px; font-size: 0.9em;}
 .sidebaraction { border: none; padding: 1px; }
-.sidebaraction input { border: none; background-color: white; margin: 0px;}
+.sidebaraction input { border: none; background-color: white; margin: 0px; width: 98%; text-align: left;}
 .sidebaraction.highlight, .sidebaraction.highlight input { background-color: #eeeeee; }
 .sidebaraction.active, .sidebaraction.active input { background-color: #dddddd; }
 .sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
@@ -1624,11 +1624,15 @@ sub _GET {
 				$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
 				$manageview .= renderToggleFieldSet('management', $m);
 			}
-			$folderview.=$manageview unless $VIEW eq 'sidebar';
-			$folderview.=renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
+			$folderview .= $manageview unless $VIEW eq 'sidebar';
+			$folderview .= renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
 			$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview' : 'folderview')}, $folderview);
-			$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', $cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))) : '';
-			$content .=$cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
+			my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
+			$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
+					 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
+					.(!$showall ? '&bull; '.$cgi->a({-href=>'?showall=1'},_tl('navall')) : '' )
+					. $cgi->br().'&bull; '.$cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))) : '';
+			$content .= $cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
 			$content .= $cgi->start_form(-method=>'post', -id=>'clpform')
 					.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
 					.$cgi->hidden(-name=>'files', -value=>'') .$cgi->end_form() if ($ALLOW_FILE_MANAGEMENT && $ENABLE_CLIPBOARD);
@@ -4653,18 +4657,20 @@ sub renderChangePermissionsView() {
 		. $cgi->Tr($cgi->td({-colspan=>2},_tl('changepermlegend')))
 		. $cgi->end_table();
 }
+sub renderZipDownloadButton { return $cgi->submit(-disabled=>'disabled',-name=>'zip',-value=>_tl('zipdownloadbutton'),-title=>_tl('zipdownloadtext')) }
+sub renderZipUploadView {
+	return _tl('zipuploadtext').$cgi->filefield(-name=>'zipfile_upload', -multiple=>'multiple').$cgi->submit(-name=>'uncompress', -value=>_tl('zipuploadbutton'),-onclick=>'return window.confirm("'._tl('zipuploadconfirm').'");');
+}
 sub renderZipView {
 	my $content = "";
-	$content .= '&bull; '.$cgi->submit(-disabled=>'disabled',-name=>'zip',-value=>_tl('zipdownloadbutton'))._tl('zipdownloadtext').$cgi->br() if $ALLOW_ZIP_DOWNLOAD; 
-	$content .='&bull; '._tl('zipuploadtext').$cgi->filefield(-name=>'zipfile_upload', -multiple=>'multiple')
-			. $cgi->submit(-name=>'uncompress', -value=>_tl('zipuploadbutton'),-onclick=>'return window.confirm("'._tl('zipuploadconfirm').'");') 
-		if $ALLOW_ZIP_UPLOAD;
+	$content .= '&bull; '.renderZipDownloadButton()._tl('zipdownloadtext').$cgi->br() if $ALLOW_ZIP_DOWNLOAD; 
+	$content .= '&bull; '.renderZipUploadView() if $ALLOW_ZIP_UPLOAD;
 	return $content;
 }
 sub renderActionView {
 	my ($action, $name, $view) = @_;
 
-	return $cgi->div({-class=>'sidebaractionview',-id=>$action},
+	return $cgi->div({-class=>'sidebaractionview',-id=>$action, -onclick=>'this.style.zIndex=++dragZIndex; return true;'},
 		$cgi->div({-class=>'sidebaractionviewheader', -onmousedown=>"handleWindowMove(event,'$action', 1)", -onmouseup=>"handleWindowMove(event,'$action',0)"}, _tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor: pointer;float:right'},' [X] '))
 		.$cgi->div({-class=>'sidebaractionviewaction'},$view)
 		);
@@ -4678,6 +4684,7 @@ sub renderSideBar {
 	my $omout  = 'javascript:removeClassName(this, "highlight");';
 
 	$content .= $cgi->div({-id=>'fileuploadviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("fileuploadview")', -class=>'sidebaraction'},$cgi->button({-value=>_tl('upload')}));
+	$content .= $cgi->div({-id=>'downloadmenu', -onmouseover=>$omover, -onmouseout=>$omout,-title=>_tl('download'), -class=>'sidebaraction'}, renderZipDownloadButton());
 	$content .= $cgi->div({-id=>'copymenu', -onmouseover=>$omover, -onmouseout=>$omout,-title=>_tl('copytooltip'), -class=>'sidebaraction'}, renderCopyButton());
 	$content .= $cgi->div({-id=>'cutmenu', -onmouseover=>$omover, -onmouseout=>$omout, -title=>_tl('cuttooltip'), -class=>'sidebaraction'},renderCutButton());
 	$content .= $cgi->div({-id=>'pastemenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, renderPasteButton());
@@ -4699,7 +4706,7 @@ sub renderSideBar {
 	$content .= $cgi->div({-id=>'changeviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'javascript:window.location.href="?view=classic";', -class=>'sidebaraction'}, $cgi->button({-value=>_tl('classicview')})); 
 
 	my $av = "";
-	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED));
+	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED).$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()));
 	$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView());
 	$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView());
 	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
@@ -5018,11 +5025,12 @@ sub start_html {
 		<script type="text/javascript">
 		var dragElID = null;
 		var dragOffset = new Object();
-		document.onmousemove = handleMouseDrag;
+		var dragZIndex = 10;
+		var dragOrigHandler;
 		function getEventPos(e) {
 			var p = new Object();
-			p.x = e.offsetX ? e.offsetX : e.pageX ? e.pageX : e.clientX;
-			p.y = e.offsetY ? e.offsetY : e.pageY ? e.pageY : e.clientY;
+			p.x = e.pageX ? e.pageX : e.clientX ? e.clientX : e.offsetX;
+			p.y = e.pageY ? e.pageY : e.clientY ? e.clientY : e.offsetY;
 			return p;
 		}
 		function getViewport() {
@@ -5041,6 +5049,7 @@ sub start_html {
 					if (p.x+dragOffset.x < 0 || p.y+dragOffset.y <0 || p.x > v.w ||  p.y > v.h ) return false;
 					el.style.left = (p.x+dragOffset.x)+'px';
 					el.style.top = (p.y+dragOffset.y)+'px';
+					return false;
 				}
 			}
 			return true;
@@ -5055,15 +5064,24 @@ sub start_html {
 					var p = getEventPos(event);
 					dragOffset.x = ( e.style.left ? parseInt(e.style.left) : 220 ) - p.x;
 					dragOffset.y = ( e.style.top ? parseInt(e.style.top) : 120 ) - p.y;
+					dragOrigHandler = document.onmousemove;
+					document.onmousemove = handleMouseDrag;
+					document.body.focus();
+					document.onselectstart = function () { return false; };
+					e.ondragstart = function() { return false; };
+					e.style.zIndex = ++dragZIndex;
+					return false;
 				}
 			} else {
 				dragElID = null;
+				document.onmousemove = dragOrigHandler;
 				if (e) { 
 					e.style.cursor = 'auto';
 					setCookie('posX_'+id, e.style.left);
 					setCookie('posY_'+id, e.style.top);
 				}
 			}
+			return true;
 		}
 		function toggleSideBar() {
 			var e = document.getElementById('sidebarcontent');
@@ -5086,6 +5104,7 @@ sub start_html {
 				if (x!="") if (parseInt(x) < v.w) e.style.left = x; else e.style.left = (v.w-100)+'px';
 				if (y!="") if (parseInt(y) < v.h) e.style.top = y; else e.style.top = (v.h-100)+'px';
 				e.style.visibility='visible';
+				e.style.zIndex = ++dragZIndex;
 				addClassName(document.getElementById(action+'menu'), 'active');
 			}
 		}
