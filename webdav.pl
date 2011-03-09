@@ -422,6 +422,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
+.sidebaractionview.move { cursor: move; opacity: 0.8; filter: Alpha(opacity=80); }
 .sidebarfolderview { padding-top: 110px; padding-bottom: 50px; margin-left: 220px; }
 .sidebarfolderview.full { margin-left: 30px; }
 .sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
@@ -5062,8 +5063,8 @@ sub start_html {
 			return v;
 		}
 		function getDragZIndex(z) {
-			if (z && z>dragZIndex) dragZIndex = z + 10;
 			dragZIndex = getCookie('dragZIndex')!="" ? parseInt(getCookie('dragZIndex')) : dragZIndex;
+			if (z && z>dragZIndex) dragZIndex = z + 10;
 			setCookie('dragZIndex', ++dragZIndex);
 			return dragZIndex;
 		}
@@ -5088,7 +5089,6 @@ sub start_html {
 			if (down) {
 				if (e && event) {
 					dragElID = id;
-					e.style.cursor = 'move';
 					var p = getEventPos(event);
 					dragOffset.x = ( e.style.left ? parseInt(e.style.left) : 220 ) - p.x;
 					dragOffset.y = ( e.style.top ? parseInt(e.style.top) : 120 ) - p.y;
@@ -5098,17 +5098,14 @@ sub start_html {
 					document.onselectstart = function () { return false; };
 					e.ondragstart = function() { return false; };
 					e.style.zIndex = getDragZIndex(e.style.zIndex);
-					e.style.opacity = 0.8;
-					e.style.filter = "Alpha(opacity=80)";
+					addClassName(e,'move');
 					return false;
 				}
 			} else {
 				dragElID = null;
 				document.onmousemove = dragOrigHandler;
 				if (e) { 
-					e.style.cursor = 'auto';
-					e.style.opacity = 1;
-					e.style.filter = "Alpha(opacity=100)";
+					removeClassName(e,'move');
 					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
 				}
 			}
