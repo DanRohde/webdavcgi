@@ -394,7 +394,9 @@ input,select { text-shadow: 1px 1px white;  }
 
 .errormsg, .notwriteable, .notreadable { background-color:#ffeeee; border: 1px solid #ff0000; padding: 0px 4px 0px 4px; }
 .infomsg { background-color:#eeeeff; padding: 0px 4px 0px 4px; border: 1px solid #0000ff;}
-#msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 10; }
+#msg, .msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 10; }
+.msg { z-index: 8; }
+.filtered_old { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
 .filtered { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
 
 .thumb { border:0px; vertical-align:top;padding: 1px 0px 1px 0px; }
@@ -416,10 +418,12 @@ input,select { text-shadow: 1px 1px white;  }
 .folderview { padding-top: 110px; }
 
 .sidebar { position: fixed; top: 120px; padding: 2px; background-color: white; z-index: 5;}
-#sidebartable { width: 200px; }
+.sidebartable { width: 200px; }
+.sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
-.sidebarfolderview { padding-top: 110px; margin-left: 220px; }
+.sidebarfolderview { padding-top: 110px; padding-bottom: 50px; margin-left: 220px; }
+.sidebarfolderview.full { margin-left: 30px; }
 .sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
 .sidebaractionviewheader { background-color: #bbbbbb; text-shadow: 1px 1px white; padding: 2px; font-size: 0.9em;}
 .sidebaraction { border: none; padding: 1px; }
@@ -430,6 +434,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebaractionviewaction { padding: 5px 2px 2px 2px; }
 .sidebartogglebutton { font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
 
+.sidebarsignature { position: fixed; bottom:0px; left: 0px; width: 100%;  z-index: 1;}
 
 .viewtools { display: inline; float:right; margin-top: 4px;  }
 .up, .refresh { font-size: 0.8em; border: 1px outset black; padding: 2px; font-weight: bold; text-decoration: none; color: black; background-color: #dddddd; text-shadow: 1px 1px white;}
@@ -641,7 +646,7 @@ $HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as 
 ## -- SIGNATURE
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
-$SIGNATURE = '<div class="signature">&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a></div>';
+$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
 
 ## -- LANG
 ## defines the default language for the Web interface
@@ -1559,7 +1564,7 @@ sub _GET {
 				);
 		}
 		$content.=$cgi->end_table();
-		$content.=$cgi->hr().$SIGNATURE if defined $SIGNATURE;
+		$content.=$cgi->hr().$cgi->div({-class=>'signature'},$SIGNATURE) if defined $SIGNATURE;
 		$content.=$cgi->end_html();
 		printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
 	} elsif (-d $fn) {
@@ -1567,7 +1572,6 @@ sub _GET {
 		my $content = "";
 		my $head = "";
 		debug("_GET: directory listing of $fn");
-		$content .= start_html($ru);
 		$head .= $LANGSWITCH if defined $LANGSWITCH;
 		$head .= $HEADER if defined $HEADER;
 		$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
@@ -1583,10 +1587,9 @@ sub _GET {
 		if ($cgi->param('search')) {
 			$content.=getSearchResult($cgi->param('search'),$fn,$ru);
 		} else {
-			$head .= $cgi->div({-class=>'notwriteable'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
-			$head .= $cgi->div({-class=>'notreadable'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
-			$head .= $cgi->div({-class=>'filtered', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
-
+			$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
+			$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
+			$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 			$head .= $cgi->div( { -class=>'foldername'},
 				$cgi->a({-href=>"$ru?action=props"}, 
 						$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
@@ -1626,7 +1629,8 @@ sub _GET {
 			}
 			$folderview .= $manageview unless $VIEW eq 'sidebar';
 			$folderview .= renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
-			$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview' : 'folderview')}, $folderview);
+			my $showsidebar = $cgi->cookie('sidebar') ? $cgi->cookie('sidebar') eq 'true' : 1;
+			$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview'.($showsidebar?'':' full') : 'folderview')}, $folderview);
 			my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 			$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
 					 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
@@ -1637,9 +1641,9 @@ sub _GET {
 					.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
 					.$cgi->hidden(-name=>'files', -value=>'') .$cgi->end_form() if ($ALLOW_FILE_MANAGEMENT && $ENABLE_CLIPBOARD);
 		}
-		$content.= $SIGNATURE if defined $SIGNATURE && $VIEW ne 'sidebar';
-		$content .= $cgi->end_html();
+		$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, $SIGNATURE) if defined $SIGNATURE;
 		###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
+		$content = start_html($ru).$content.$cgi->end_html();
 		printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
 	} elsif (-e $fn && (!$IGNOREFILEPERMISSIONS && !-r $fn)) {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
@@ -4573,11 +4577,13 @@ sub getQuickNavPath {
 }
 sub renderToggleFieldSet {
 	my($name,$content,$notoggle) = @_;
+
+	my $display = $cgi->cookie('toggle'.$name) || 'none';
 	return qq@<fieldset><legend>@
-		.($notoggle ? '' : $cgi->span({-id=>"togglebutton$name",-onclick=>"toggle('$name');", -class=>'toggle'},'+'))
+		.($notoggle ? '' : $cgi->span({-id=>"togglebutton$name",-onclick=>"toggle('$name');", -class=>'toggle'},$display eq 'none' ? '+' : '-'))
 		.$cgi->escapeHTML(_tl($name))
 		.qq@</legend>@
-		.$cgi->div({-id=>"toggle$name",-style=>($notoggle ? 'display:block;' : 'display:none;')}, $content)
+		.$cgi->div({-id=>"toggle$name",-style=>($notoggle ? 'display:block;' : 'display:'.$display.';')}, $content)
 		.qq@</fieldset>@;
 }
 sub renderFieldSet { return renderToggleFieldSet($_[0],$_[1],1); }
@@ -4667,43 +4673,55 @@ sub renderZipView {
 	$content .= '&bull; '.renderZipUploadView() if $ALLOW_ZIP_UPLOAD;
 	return $content;
 }
+sub getActionViewInfos {
+	my ($action) = @_;
+	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef);
+}
 sub renderActionView {
 	my ($action, $name, $view) = @_;
-
-	return $cgi->div({-class=>'sidebaractionview',-id=>$action, -onclick=>'this.style.zIndex=++dragZIndex; return true;'},
+	my $style = '';
+	my ($visible, $x, $y, $z) = getActionViewInfos($action);
+	$style .= $visible eq 'true' ? 'visibility: visible;' :'';
+	$style .= $x ? 'left: '.$x.';' : '';
+	$style .= $y ? 'top: '.$y.';' : '';
+	$style .= $z ? 'z-index: '.$z.';' : '';
+	return $cgi->div({-class=>'sidebaractionview',-id=>$action, -onclick=>'this.style.zIndex = getDragZIndex(this.style.zIndex);', -style=>$style},
 		$cgi->div({-class=>'sidebaractionviewheader', -onmousedown=>"handleWindowMove(event,'$action', 1)", -onmouseup=>"handleWindowMove(event,'$action',0)"}, _tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor: pointer;float:right'},' [X] '))
 		.$cgi->div({-class=>'sidebaractionviewaction'},$view)
 		);
+}
+sub renderSideBarMenuItem {
+	my ($action, $title, $onclick, $content) = @_;
+	my $isactive = (getActionViewInfos($action))[0] eq 'true';
+	return $cgi->div({
+				-id=>$action.'menu', -class=>'sidebaraction'.($isactive?' active':''), 
+				-onmouseover=>'javascript:addClassName(this, "highlight");', -onmouseout=>'javascript:removeClassName(this, "highlight");',
+				-onclick=>$onclick, -title=>$title}, 
+			$content);
 }
 sub renderSideBar {
 	my $content = "";
 
 	$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
 
-	my $omover = 'javascript:addClassName(this, "highlight");';
-	my $omout  = 'javascript:removeClassName(this, "highlight");';
-
-	$content .= $cgi->div({-id=>'fileuploadviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("fileuploadview")', -class=>'sidebaraction'},$cgi->button({-value=>_tl('upload')}));
-	$content .= $cgi->div({-id=>'downloadmenu', -onmouseover=>$omover, -onmouseout=>$omout,-title=>_tl('download'), -class=>'sidebaraction'}, renderZipDownloadButton());
-	$content .= $cgi->div({-id=>'copymenu', -onmouseover=>$omover, -onmouseout=>$omout,-title=>_tl('copytooltip'), -class=>'sidebaraction'}, renderCopyButton());
-	$content .= $cgi->div({-id=>'cutmenu', -onmouseover=>$omover, -onmouseout=>$omout, -title=>_tl('cuttooltip'), -class=>'sidebaraction'},renderCutButton());
-	$content .= $cgi->div({-id=>'pastemenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, renderPasteButton());
-	$content .= $cgi->div({-id=>'deleteviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, renderDeleteFilesButton());
-	$content .= $cgi->div({-id=>'createfolderviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("createfolderview");', -class=>'sidebaraction'}, $cgi->button({-value=> _tl('createfolderbutton')}));
-	$content .= $cgi->div({-id=>'movefilesviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, 
-				$cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview");',-name=>'rename',-value=>_tl('movefilesbutton')}));
-	$content .= $cgi->div({-id=>'permissionsviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -class=>'sidebaraction'}, 
-				$cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
-	$content .= $cgi->div({-id=>'afsaclmanagerviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("afsaclmanagerview");', -class=>'sidebaraction'}, $cgi->button({-value=>_tl('afs')})) if $ENABLE_AFSACLMANAGER;
-	$content .= $cgi->hr().$cgi->div({-id=>'afsgroupmanagerviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'toggleActionView("afsgroupmanagerview");', -class=>'sidebaraction'}, 
-					$cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
+	$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview")',$cgi->button({-value=>_tl('upload')}));
+	$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
+	$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
+	$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
+	$content .= renderSideBarMenuItem('paste', undef, undef, renderPasteButton());
+	$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
+	$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview");', $cgi->button({-value=> _tl('createfolderbutton')}));
+	$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview");',-name=>'rename',-value=>_tl('movefilesbutton')}));
+	$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
+	$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs')})) if $ENABLE_AFSACLMANAGER;
+	$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
 
 	$content .= $cgi->div({-class=>'sidebarheader'},_tl('viewoptions'));
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
-	$content .= $cgi->div({-id=>'navpageviewwmenu', -title=>_tl('navpageview'), -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'window.location.href="?showpage=1";', -class=>'sidebaraction'},$cgi->button(-value=>_tl('navpageview'))) if $showall;
-	$content .= $cgi->div({-id=>'navallmenu', -title=>_tl('navalltooltip'), -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'window.location.href="?showall=1";', -class=>'sidebaraction'},$cgi->button(-value=>_tl('navall'))) unless $showall;
+	$content .= renderSideBarMenuItem('navpageview', _tl('navpageview'), 'window.location.href="?showpage=1";',$cgi->button(-value=>_tl('navpageview'))) if $showall;
+	$content .= renderSideBarMenuItem('navall', _tl('navalltooltip'),'window.location.href="?showall=1";', $cgi->button(-value=>_tl('navall'))) unless $showall;
 	$content .= $cgi->div({}, renderNameFilterForm().$cgi->div('&nbsp;')) if $showall;
-	$content .= $cgi->div({-id=>'changeviewmenu', -onmouseover=>$omover, -onmouseout=>$omout, -onclick=>'javascript:window.location.href="?view=classic";', -class=>'sidebaraction'}, $cgi->button({-value=>_tl('classicview')})); 
+	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button({-value=>_tl('classicview')})); 
 
 	my $av = "";
 	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED).$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()));
@@ -4712,7 +4730,11 @@ sub renderSideBar {
 	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 	$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 	$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
-	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable'}).$cgi->Tr($cgi->td({-id=>'sidebarcontent'},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},'&lt;')).$cgi->end_table()). $av;
+
+	my $showsidebar = ! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true';
+	my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt';
+
+	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -style=>$showsidebar?'':'display:none'},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av;
 }
 sub renderPageNavBar {
 	my ($ru, $count, $files) = @_;
@@ -5035,9 +5057,15 @@ sub start_html {
 		}
 		function getViewport() {
 			var v = new Object();
-			v.w = window.innerWidth || (document.documentElement && document.documentElement.clientWidth ? document.documentElement.cientWidth : 0) || document.getElementsByTagName('body')[0].clientWidth;
-			v.h = window.innerHeight || (document.documentElement && document.documentElement.clientHeight ? document.documentElement.cientHeight : 0) || document.getElementsByTagName('body')[0].clientHeight;
+			v.w = window.innerWidth || (document.documentElement && document.documentElement.clientWidth ? document.documentElement.clientWidth : 0) || document.getElementsByTagName('body')[0].clientWidth;
+			v.h = window.innerHeight || (document.documentElement && document.documentElement.clientHeight ? document.documentElement.clientHeight : 0) || document.getElementsByTagName('body')[0].clientHeight;
 			return v;
+		}
+		function getDragZIndex(z) {
+			if (z && z>dragZIndex) dragZIndex = z + 10;
+			dragZIndex = getCookie('dragZIndex')!="" ? parseInt(getCookie('dragZIndex')) : dragZIndex;
+			setCookie('dragZIndex', ++dragZIndex);
+			return dragZIndex;
 		}
 		function handleMouseDrag(event) {
 			if (!event) event = window.event;	
@@ -5069,7 +5097,9 @@ sub start_html {
 					document.body.focus();
 					document.onselectstart = function () { return false; };
 					e.ondragstart = function() { return false; };
-					e.style.zIndex = ++dragZIndex;
+					e.style.zIndex = getDragZIndex(e.style.zIndex);
+					e.style.opacity = 0.8;
+					e.style.filter = "Alpha(opacity=80)";
 					return false;
 				}
 			} else {
@@ -5077,8 +5107,9 @@ sub start_html {
 				document.onmousemove = dragOrigHandler;
 				if (e) { 
 					e.style.cursor = 'auto';
-					setCookie('posX_'+id, e.style.left);
-					setCookie('posY_'+id, e.style.top);
+					e.style.opacity = 1;
+					e.style.filter = "Alpha(opacity=100)";
+					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
 				}
 			}
 			return true;
@@ -5089,8 +5120,8 @@ sub start_html {
 			if (e) {
 				ison = !(e.style.display=='none');
 				e.style.display = ison ? 'none' : 'block';
-				document.getElementById('sidebartable').style.width = ison ? '5px' : '200px';
-				document.getElementById('folderview').style.marginLeft= ison ? '30px' : '220px';
+				toggleClassNameById('sidebartable','collapsed', ison);
+				toggleClassNameById('folderview','full', ison);
 				document.getElementById('sidebartogglebutton').innerHTML = ison ? '&gt;' : '&lt;'
 			}
 			setCookie('sidebar', !ison);
@@ -5099,19 +5130,22 @@ sub start_html {
 			var e = document.getElementById(action);
 			if (e) { 
 				var v = getViewport();
-				var x = e.style.left ? e.style.left : getCookie('posX_'+action);
-				var y = e.style.top ? e.style.top : getCookie('posY_'+action);
+				var x = e.style.left ? e.style.left : '';
+				var y = e.style.top ? e.style.top : '';
 				if (x!="") if (parseInt(x) < v.w) e.style.left = x; else e.style.left = (v.w-100)+'px';
 				if (y!="") if (parseInt(y) < v.h) e.style.top = y; else e.style.top = (v.h-100)+'px';
 				e.style.visibility='visible';
-				e.style.zIndex = ++dragZIndex;
-				addClassName(document.getElementById(action+'menu'), 'active');
+				e.style.zIndex = getDragZIndex(e.style.zIndex);
+				addClassNameById(action+'menu', 'active');
+				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
 			}
+			return false;
 		}
 		function hideActionView(action) {
 			var e = document.getElementById(action);
 			if (e) e.style.visibility='hidden';
-			removeClassName(document.getElementById(action+'menu'), 'active');
+			removeClassNameById(action+'menu', 'active');
+			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
 		}
 		function toggleActionView(action) {
 			var e = document.getElementById(action);
@@ -5458,17 +5492,6 @@ sub start_html {
 			button.innerHTML = div.style.display=='none'?cshow:chide; 
 			setCookie('toggle'+name, div.style.display);
 		}
-		function togglecheck() {
-			var toggle = new Array('management','files','permissions','zip','upload','afs','afsgroup');
-			for (var i=0; i<toggle.length; i++) {
-				var button = document.getElementById('togglebutton'+toggle[i]);
-				var div = document.getElementById('toggle'+toggle[i]);
-				if (div && getCookie('toggle'+toggle[i])!="") {
-					div.style.display = getCookie('toggle'+toggle[i]) ;
-					if (button) button.innerHTML=div.style.display == 'block'?'-':'+';
-				}
-			}
-		}
 		function selcheck() {
 			var i = 1;
 			var el;
@@ -5477,17 +5500,10 @@ sub start_html {
 				i++;
 			}
 		}
-		function sidebarcheck() {
-			if (document.location.search.match(/acl/)) showActionView('afsaclmanagerview');
-			else if (document.location.search.match(/afs/)) showActionView('afsgroupmanagerview');
-			if (getCookie('sidebar') == 'false') toggleSideBar();
-		}
 		function check() {
 			selcheck();
 			clpcheck();
-			togglecheck();
 			bookmarkcheck();
-			sidebarcheck(); 
 			hideMsg();
 		}
 		function fadeOut(id) {
