@@ -32,6 +32,7 @@
 # CHANGES:
 #   0.6.2: BETA
 #        - Web interface:
+#            - added properties viewer switch (GET)
 #            - added sidebar view (GET)
 #            - improved page navigation (GET)
 #            - changed message box behavior (GET)
@@ -278,7 +279,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
-            $ENABLE_SIDEBAR $VIEW 
+            $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -422,6 +423,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
+.sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
 .sidebaractionview.move { cursor: move; opacity: 0.8; filter: Alpha(opacity=80); }
 .sidebarfolderview { padding-top: 110px; padding-bottom: 50px; margin-left: 220px; }
 .sidebarfolderview.full { margin-left: 30px; }
@@ -433,6 +435,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebaraction.active, .sidebaraction.active input { background-color: #dddddd; }
 .sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
 .sidebaractionviewaction { padding: 5px 2px 2px 2px; }
+.sidebaractionviewaction.collapsed {visibility: hidden; height: 0px; }
 .sidebartogglebutton { font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
 
 .sidebarsignature { position: fixed; bottom:0px; left: 0px; width: 100%;  z-index: 1;}
@@ -571,6 +574,10 @@ $PAGE_LIMIT=15;
 ## enables bookmark support in the Web interface (cookie/javascript based)
 ## EXAMPLE: $ENABLE_BOOKMARKS = 1;
 $ENABLE_BOOKMARKS = 1;
+
+## -- ENABLE_PROPERTIES_VIEWER
+## EXAMPLE: $ENABLE_PROPERTIES_VIEWER
+$ENABLE_PROPERTIES_VIEWER = 0;
 
 ## -- ENABLE_SIDEBAR
 ## enables the sidebar view; you get the classic view only if you disable this:
@@ -1457,16 +1464,16 @@ sub _GET {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($ENABLE_AFS && !checkAFSAccess($fn)) {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
-	} elsif (-d $fn && !$FANCYINDEXING) {
+	} elsif (!$FANCYINDEXING && -d $fn) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
-	} elsif (-e $fn && $cgi->param('action') eq 'davmount') {
+	} elsif ($cgi->param('action') eq 'davmount' && -e $fn) {
 		my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
 		my $bn = basename($fn);
 		$su =~ s/\Q$bn\E\/?//;
 		$bn.='/' if -d $fn && $bn!~/\/$/;
 		printHeaderAndContent('200 OK','application/davmount+xml',
 		       qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@);
-	} elsif ($ENABLE_THUMBNAIL && -d $fn && ($IGNOREFILEPERMISSIONS || -r $fn) && $cgi->param('action') eq 'mediarss') {
+	} elsif ($ENABLE_THUMBNAIL &&  $cgi->param('action') eq 'mediarss' && -d $fn && ($IGNOREFILEPERMISSIONS || -r $fn)) {
 		my $content = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
 		foreach my $file (sort cmp_files @{readDir($fn)}) {
 			my $mime = getMIMEType($file);
@@ -1475,17 +1482,17 @@ sub _GET {
 		}
 		$content.=qq@</channel></rss>@;
 		printHeaderAndContent("200 OK", 'appplication/rss+xml', $content);
-	} elsif ($ENABLE_THUMBNAIL && -f $fn && $cgi->param('action') eq 'image' && hasThumbSupport(getMIMEType($fn))) {
+	} elsif ($ENABLE_THUMBNAIL && $cgi->param('action') eq 'image' && hasThumbSupport(getMIMEType($fn)) && -f $fn) {
 		my $image = Graphics::Magick->new;
 		my $x = $image->Read($fn); warn "$x" if "$x";
 		$image->Set(delay=>200);
 		binmode STDOUT;
 		print $cgi->header(-status=>'200 OK',-type=>'image/gif', -ETag=>getETag($fn));
 		$x = $image->Write('gif:-'); warn "$x" if "$x";
-	} elsif (-d $fn && $cgi->param('action') eq 'opensearch') {
+	} elsif ($cgi->param('action') eq 'opensearch' && -d $fn) {
 		my $content = qq@<?xml version="1.0" encoding="utf-8" ?><OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"><ShortName>WebDAV CGI filename</ShortName><Description>WebDAV CGI filename search in $ENV{SCRIPT_URI}</Description><InputEncoding>utf-8</InputEncoding><Url type="text/html" template="$ENV{SCRIPT_URI}?search={searchTerms}" /></OpenSearchDescription>@;
 		printHeaderAndContent("200 OK", 'text/xml', $content);
-	} elsif ($ENABLE_THUMBNAIL  && -f $fn && ($IGNOREFILEPERMISSIONS || -r $fn) && $cgi->param('action') eq 'thumb') {
+	} elsif ($ENABLE_THUMBNAIL && $cgi->param('action') eq 'thumb' && ($IGNOREFILEPERMISSIONS || -r $fn) && -f $fn) {
 		my $image = Graphics::Magick->new;
 		my $width = $THUMBNAIL_WIDTH || $ICON_WIDTH || 18;
 		if ($ENABLE_THUMBNAIL_CACHE) {
@@ -1524,7 +1531,7 @@ sub _GET {
 			binmode STDOUT;
 			$x = $image->Write('gif:-'); warn "$x" if "$x";
 		}
-	} elsif (-e $fn && $cgi->param('action') eq 'props') {
+	} elsif ($ENABLE_PROPERTIES_VIEWER && $cgi->param('action') eq 'props' && -e $fn) {
 		my $content = "";
 		$content .= start_html("$REQUEST_URI properties");
 		$content .= $LANGSWITCH if defined $LANGSWITCH;
@@ -1592,7 +1599,7 @@ sub _GET {
 			$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
 			$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 			$head .= $cgi->div( { -class=>'foldername'},
-				$cgi->a({-href=>"$ru?action=props"}, 
+				$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
 						$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
 					)
 				.'&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount'))
@@ -3424,7 +3431,7 @@ sub getfancyfilename {
 			$onmouseout = qq@javascript:window.clearInterval(this.intervalObj);this.width=$ICON_WIDTH;@;
 		}
 	}
-	$full.= ($full=~/\?/ ? ';' : '?').'action=props';
+	$full.= ($full=~/\?/ ? ';' : '?').'action=props' if $ENABLE_PROPERTIES_VIEWER;
 	$ret = $cgi->a(  {href=>$full,title=>_tl('showproperties')},
 			 $cgi->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout})
 			).' '.$ret;
@@ -4676,19 +4683,23 @@ sub renderZipView {
 }
 sub getActionViewInfos {
 	my ($action) = @_;
-	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef);
+	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef, 'false');
 }
 sub renderActionView {
 	my ($action, $name, $view) = @_;
 	my $style = '';
-	my ($visible, $x, $y, $z) = getActionViewInfos($action);
+	my ($visible, $x, $y, $z,$collapsed) = getActionViewInfos($action);
 	$style .= $visible eq 'true' ? 'visibility: visible;' :'';
 	$style .= $x ? 'left: '.$x.';' : '';
 	$style .= $y ? 'top: '.$y.';' : '';
 	$style .= $z ? 'z-index: '.$z.';' : '';
-	return $cgi->div({-class=>'sidebaractionview',-id=>$action, -onclick=>'this.style.zIndex = getDragZIndex(this.style.zIndex);', -style=>$style},
-		$cgi->div({-class=>'sidebaractionviewheader', -onmousedown=>"handleWindowMove(event,'$action', 1)", -onmouseup=>"handleWindowMove(event,'$action',0)"}, _tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor: pointer;float:right'},' [X] '))
-		.$cgi->div({-class=>'sidebaractionviewaction'},$view)
+	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'true'?' collapsed':''),-id=>$action, -onclick=>'this.style.zIndex = getDragZIndex(this.style.zIndex);', -style=>$style},
+		$cgi->div({-class=>'sidebaractionviewheader',
+				-ondblclick=>"toggleCollapseAction('$action',event)", 
+				-onmousedown=>"handleWindowMove(event,'$action', 1)", 
+				-onmouseup=>"handleWindowMove(event,'$action',0)"}, 
+			_tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor:pointer;float:right;'},' [X] '))
+		.$cgi->div({-class=>'sidebaractionviewaction'.($collapsed eq 'true'?' collapsed':''),-id=>"v_$action"},$view)
 		);
 }
 sub renderSideBarMenuItem {
@@ -5049,7 +5060,7 @@ sub start_html {
 		var dragElID = null;
 		var dragOffset = new Object();
 		var dragZIndex = 10;
-		var dragOrigHandler;
+		var dragOrigHandler = new Object();
 		function getEventPos(e) {
 			var p = new Object();
 			p.x = e.pageX ? e.pageX : e.clientX ? e.clientX : e.offsetX;
@@ -5092,21 +5103,24 @@ sub start_html {
 					var p = getEventPos(event);
 					dragOffset.x = ( e.style.left ? parseInt(e.style.left) : 220 ) - p.x;
 					dragOffset.y = ( e.style.top ? parseInt(e.style.top) : 120 ) - p.y;
-					dragOrigHandler = document.onmousemove;
+					dragOrigHandler.onmousemove = document.onmousemove;
 					document.onmousemove = handleMouseDrag;
-					document.body.focus();
+					dragOrigHandler.onselectstart = document.onselectstart;
 					document.onselectstart = function () { return false; };
-					e.ondragstart = function() { return false; };
+					document.body.focus();
+					event.ondragstart = function() { return false; };
+					if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 					e.style.zIndex = getDragZIndex(e.style.zIndex);
 					addClassName(e,'move');
 					return false;
 				}
 			} else {
 				dragElID = null;
-				document.onmousemove = dragOrigHandler;
+				document.onmousemove = dragOrigHandler.onmousemove;
+				document.onselectstart = dragOrigHandler.onselectstart;
 				if (e) { 
 					removeClassName(e,'move');
-					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
+					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.collapsed );
 				}
 			}
 			return true;
@@ -5134,7 +5148,7 @@ sub start_html {
 				e.style.visibility='visible';
 				e.style.zIndex = getDragZIndex(e.style.zIndex);
 				addClassNameById(action+'menu', 'active');
-				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
+				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed);
 			}
 			return false;
 		}
@@ -5142,7 +5156,7 @@ sub start_html {
 			var e = document.getElementById(action);
 			if (e) e.style.visibility='hidden';
 			removeClassNameById(action+'menu', 'active');
-			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex);
+			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed);
 		}
 		function toggleActionView(action) {
 			var e = document.getElementById(action);
@@ -5526,6 +5540,20 @@ sub start_html {
 			}
 		}
 		function hideMsg() { if (document.getElementById("msg")) setTimeout("fadeOut('msg');", 60000); }
+		function toggleCollapseAction(action, event) {
+			if (!event) event=window.event;
+			var e = document.getElementById('v_'+action);
+			if (!e) return true;
+			var shown = !e.className.match(/collapsed/);
+			e.collapsed = shown;
+			toggleClassName(e,'collapsed', shown);
+			toggleClassNameById(action, 'collapsed', shown);
+			e = document.getElementById(action);
+			e.collapsed = shown;
+			setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed);
+			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
+			return false;
+		}
 		</script>
 EOS
 ;
