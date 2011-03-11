@@ -424,7 +424,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
-.sidebaractionview.move { cursor: move; opacity: 0.8; filter: Alpha(opacity=80); }
+.sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
 .sidebarfolderview { padding-top: 110px; padding-bottom: 50px; margin-left: 220px; }
 .sidebarfolderview.full { margin-left: 30px; }
 .sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
@@ -436,7 +436,9 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
 .sidebaractionviewaction { padding: 5px 2px 2px 2px; }
 .sidebaractionviewaction.collapsed {visibility: hidden; height: 0px; }
-.sidebartogglebutton { font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
+.sidebartogglebutton { cursor: w-resize; font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
+.collapsed .sidebartogglebutton { cursor: e-resize; }
+
 
 .sidebarsignature { position: fixed; bottom:0px; left: 0px; width: 100%;  z-index: 1;}
 
@@ -447,12 +449,13 @@ input,select { text-shadow: 1px 1px white;  }
 
 .pagenav, .showall { font-weight: bold; font-size:0.9em;padding: 2px 0px 2px 0px; text-align: center; background-color: #efefef;}
 .pagenav a, .showall a { text-decoration: none;}
+.showall input, .pagenav select { border: 0; margin: 0;}
 
 .filelist a { text-decoration: none; }
 .filelist { width:100%;font-family:monospace;border:0; border-spacing:0; padding:2px; font-size: 0.9em; clear: both;}
 .filelist .tr_odd { background-color: white; }
 .filelist .tr_even { background-color: #eeeeee; }
-.filelist .tr_up, .filelist .tr_even, .filelist .tr_odd {  cursor: pointer; }
+.filelist .tr_up, .filelist .tr_even, .filelist .tr_odd { cursor: pointer; }
 .filelist .tr_selected { background-color: #ffeedd; }
 .filelist .tr_highlight { background-color: #aaaaaa; }
 .filelist .tr_even.tr_selected { background-color: #eeddcc; }
@@ -4683,7 +4686,7 @@ sub renderZipView {
 }
 sub getActionViewInfos {
 	my ($action) = @_;
-	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef, 'false');
+	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef, 'null');
 }
 sub renderActionView {
 	my ($action, $name, $view) = @_;
@@ -4693,13 +4696,13 @@ sub renderActionView {
 	$style .= $x ? 'left: '.$x.';' : '';
 	$style .= $y ? 'top: '.$y.';' : '';
 	$style .= $z ? 'z-index: '.$z.';' : '';
-	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'true'?' collapsed':''),-id=>$action, -onclick=>'this.style.zIndex = getDragZIndex(this.style.zIndex);', -style=>$style},
+	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'collapsed'?' collapsed':''),-id=>$action, -onclick=>'this.style.zIndex = getDragZIndex(this.style.zIndex);', -style=>$style},
 		$cgi->div({-class=>'sidebaractionviewheader',
 				-ondblclick=>"toggleCollapseAction('$action',event)", 
 				-onmousedown=>"handleWindowMove(event,'$action', 1)", 
 				-onmouseup=>"handleWindowMove(event,'$action',0)"}, 
 			_tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor:pointer;float:right;'},' [X] '))
-		.$cgi->div({-class=>'sidebaractionviewaction'.($collapsed eq 'true'?' collapsed':''),-id=>"v_$action"},$view)
+		.$cgi->div({-class=>'sidebaractionviewaction'.($collapsed eq 'collapsed'?' collapsed':''),-id=>"v_$action"},$view)
 		);
 }
 sub renderSideBarMenuItem {
@@ -5120,7 +5123,7 @@ sub start_html {
 				document.onselectstart = dragOrigHandler.onselectstart;
 				if (e) { 
 					removeClassName(e,'move');
-					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.collapsed,1);
+					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
 				}
 			}
 			return true;
@@ -5148,7 +5151,7 @@ sub start_html {
 				e.style.visibility='visible';
 				e.style.zIndex = getDragZIndex(e.style.zIndex);
 				addClassNameById(action+'menu', 'active');
-				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed,1);
+				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
 			}
 			return false;
 		}
@@ -5156,7 +5159,7 @@ sub start_html {
 			var e = document.getElementById(action);
 			if (e) e.style.visibility='hidden';
 			removeClassNameById(action+'menu', 'active');
-			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed,1);
+			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
 		}
 		function toggleActionView(action) {
 			var e = document.getElementById(action);
@@ -5545,12 +5548,10 @@ sub start_html {
 			var e = document.getElementById('v_'+action);
 			if (!e) return true;
 			var shown = !e.className.match(/collapsed/);
-			e.collapsed = shown;
 			toggleClassName(e,'collapsed', shown);
 			toggleClassNameById(action, 'collapsed', shown);
 			e = document.getElementById(action);
-			e.collapsed = shown;
-			setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed,1);
+			setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
 			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 			return false;
 		}
