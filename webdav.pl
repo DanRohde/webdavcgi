@@ -4697,7 +4697,8 @@ sub renderActionView {
 	$style .= $x ? 'left: '.$x.';' : '';
 	$style .= $y ? 'top: '.$y.';' : '';
 	$style .= $z ? 'z-index: '.$z.';' : '';
-	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'collapsed'?' collapsed':''),-id=>$action, -onclick=>'this.style.zIndex = getDragZIndex(this.style.zIndex);', -style=>$style},
+	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'collapsed'?' collapsed':''),-id=>$action, 
+				-onclick=>"handleWindowClick(event,'$action')", -style=>$style},
 		$cgi->div({-class=>'sidebaractionviewheader',
 				-ondblclick=>"toggleCollapseAction('$action',event)", 
 				-onmousedown=>"handleWindowMove(event,'$action', 1)", 
@@ -5127,6 +5128,13 @@ sub start_html {
 					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
 				}
 			}
+			return true;
+		}
+		function handleWindowClick(event, id) {
+			var e = document.getElementById(id);
+			if (!e) return true;
+			e.style.zIndex = getDragZIndex(e.style.zIndex);
+			setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
 			return true;
 		}
 		function toggleSideBar() {
