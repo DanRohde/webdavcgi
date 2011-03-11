@@ -5076,7 +5076,7 @@ sub start_html {
 		function getDragZIndex(z) {
 			dragZIndex = getCookie('dragZIndex')!="" ? parseInt(getCookie('dragZIndex')) : dragZIndex;
 			if (z && z>dragZIndex) dragZIndex = z + 10;
-			setCookie('dragZIndex', ++dragZIndex);
+			setCookie('dragZIndex', ++dragZIndex,1);
 			return dragZIndex;
 		}
 		function handleMouseDrag(event) {
@@ -5120,7 +5120,7 @@ sub start_html {
 				document.onselectstart = dragOrigHandler.onselectstart;
 				if (e) { 
 					removeClassName(e,'move');
-					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.collapsed );
+					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.collapsed,1);
 				}
 			}
 			return true;
@@ -5135,7 +5135,7 @@ sub start_html {
 				toggleClassNameById('folderview','full', ison);
 				document.getElementById('sidebartogglebutton').innerHTML = ison ? '&gt;' : '&lt;'
 			}
-			setCookie('sidebar', !ison);
+			setCookie('sidebar', !ison, 1);
 		}
 		function showActionView(action) {
 			var e = document.getElementById(action);
@@ -5148,7 +5148,7 @@ sub start_html {
 				e.style.visibility='visible';
 				e.style.zIndex = getDragZIndex(e.style.zIndex);
 				addClassNameById(action+'menu', 'active');
-				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed);
+				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed,1);
 			}
 			return false;
 		}
@@ -5156,7 +5156,7 @@ sub start_html {
 			var e = document.getElementById(action);
 			if (e) e.style.visibility='hidden';
 			removeClassNameById(action+'menu', 'active');
-			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed);
+			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed,1);
 		}
 		function toggleActionView(action) {
 			var e = document.getElementById(action);
@@ -5237,7 +5237,7 @@ sub start_html {
 			if (bm == '+') addBookmark();
 			else if (bm == '-') rmBookmark();
 			else if (bm == '--') rmAllBookmarks();
-			else if (bm.match(/^time/) || bm.match(/^path/)) { setCookie('bookmarksort',bm); bookmarkcheck(); }
+			else if (bm.match(/^time/) || bm.match(/^path/)) { setCookie('bookmarksort',bm,1); bookmarkcheck(); }
 			else changeDir(bm);
 			return true;
 		}
@@ -5501,7 +5501,7 @@ sub start_html {
 			if (!chide) chide = '-';
 			div.style.display=div.style.display=='none'?'block':'none';
 			button.innerHTML = div.style.display=='none'?cshow:chide; 
-			setCookie('toggle'+name, div.style.display);
+			setCookie('toggle'+name, div.style.display,1);
 		}
 		function selcheck() {
 			var i = 1;
@@ -5550,7 +5550,7 @@ sub start_html {
 			toggleClassNameById(action, 'collapsed', shown);
 			e = document.getElementById(action);
 			e.collapsed = shown;
-			setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed);
+			setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.collapsed,1);
 			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 			return false;
 		}
