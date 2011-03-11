@@ -422,6 +422,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebartable { width: 200px; }
 .sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
+.sidebarcontent.collapsed { display: none; }
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
 .sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
@@ -4749,7 +4750,7 @@ sub renderSideBar {
 	my $showsidebar = ! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true';
 	my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt';
 
-	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -style=>$showsidebar?'':'display:none'},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av;
+	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -class=>'sidebarcontent'.($showsidebar?'':' collapsed')},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av;
 }
 sub renderPageNavBar {
 	my ($ru, $count, $files) = @_;
@@ -5132,8 +5133,8 @@ sub start_html {
 			var e = document.getElementById('sidebarcontent');
 			var ison = 1;
 			if (e) {
-				ison = !(e.style.display=='none');
-				e.style.display = ison ? 'none' : 'block';
+				ison = !e.className.match(/collapsed/);
+				toggleClassName(e, 'collapsed', ison);
 				toggleClassNameById('sidebartable','collapsed', ison);
 				toggleClassNameById('folderview','full', ison);
 				document.getElementById('sidebartogglebutton').innerHTML = ison ? '&gt;' : '&lt;'
