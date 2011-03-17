@@ -43,6 +43,7 @@
 #            - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
 #            - fixed annoying whitespace wraps (GET)
 #            - fixed wrong message display for change location/bookmark usage (GET)
+#        - fixed major quota bug (GET, PROPFIND)
 #        - fixed file/folder search performance bug in a AFS (GET)
 #        - fixed major CardDAV/CalDAV multiget report bugs reported by Steve Waterworth <s@steveww.org> (REPORT)
 #        - fixed major CardDAV/CalDAV empty query report bug (REPORT)
@@ -425,7 +426,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
 .sidebarcontent.collapsed { display: none; }
-.sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
+.sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
 .sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
 .sidebarfolderview { padding-top: 110px; padding-bottom: 50px; margin-left: 220px; }
@@ -529,8 +530,8 @@ EOS
 
 ## -- HIDDEN 
 ## hide some special files/folders (GET/PROPFIND) 
-## EXAMPLES: @HIDDEN = ( '\.DAV/?$', '~$', '\.bak$' );
-@HIDDEN = ('/\.ht','/\.DAV');
+## EXAMPLES: @HIDDEN = ( '\.DAV/?$', '~$', '\.bak$', '/\.ht' );
+@HIDDEN = ();
 
 ## -- ALLOW_INFINITE_PROPFIND
 ## enables/disables infinite PROPFIND requests
@@ -660,7 +661,7 @@ $HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as 
 ## -- SIGNATURE
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
-$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
+$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2011 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
 
 ## -- LANG
 ## defines the default language for the Web interface
@@ -1597,11 +1598,7 @@ sub _GET {
 		$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 		if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
 			my $search = $cgi->param('search');
-			$head .= # $cgi->start_form(-method=>'GET')
-				# . 
-				$cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}))
-				#.$cgi->end_form();
-				;
+			$head .= $cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
 		}
 		$head.=renderMessage();
 		if ($cgi->param('search')) {
@@ -4285,6 +4282,7 @@ sub getQuota {
 	} else {
 		($block_curr, $block_soft, $block_hard, $block_timelimit,
 		    $inode_curr, $inode_soft, $inode_hard, $inode_timelimit) = Quota::query(Quota::getqcarg($fn));
+		$block_curr *= 1024; $block_hard *= 1024;
 	}
 	$CACHE{getQuota}{$fn}{block_hard}=$block_hard;
 	$CACHE{getQuota}{$fn}{block_curr}=$block_curr;
@@ -5364,6 +5362,14 @@ sub start_html {
 				shiftsel.shifted=e.shiftKey; 
 				el.click(); 
 			}; 
+			return true;
+		}
+		function handleSearch(el,ev) {
+			if (!ev) ev = window.event;
+			if (ev && el && ev.keyCode == 13) {
+				window.location.href='?search='+encodeSpecChars(el.value);
+				return false;
+			}
 			return true;
 		}
 		function encodeRegExp(v) { return v.replace(/([\\*\\?\\+\\\$\\^\\{\\}\\[\\]\\(\\)\\\\])/g,'\\\\\$1'); }

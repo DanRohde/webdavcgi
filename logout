@@ -1,0 +1,54 @@
+#!/bin/bash
+##########################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin 
+# Written 2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+# ABOUT 
+# ----
+# This is a simple logout script for a HTTP basic authentication.
+#
+# There is no real logout for a HTTP basic authentication
+# except the Web browser will be terminated but this script
+# simulates a logout. 
+#
+# LICENCSE: GPLv3
+# ------------- 
+:<<LICTXT
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+LICTXT
+
+# SETUP 
+# -----
+### REALM: the basic authentication realm 
+### (must be equal to your AuthName value for Apache)
+REALM="Change Me"
+
+### HOMEURL: the home URL
+HOMEURL="/changemyhomeurl"
+
+### TIMEOUT: the refresh timeout for the logut page
+TIMEOUT=0
+
+# SETUP END
+
+cat - <<EOF
+Status: 401
+WWW-Authenticate: Basic realm="$REALM"
+Refresh: $TIMEOUT;url=$HOMEURL
+Content-Type: text/html
+
+<!DOCTYPE html><html><title>Logout</title></head><body><div style="text-align:center"><a href="$HOMEURL">Login</a></div></body></html>
+EOF
