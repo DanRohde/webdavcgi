@@ -352,7 +352,7 @@ $FANCYINDEXING = 1;
 
 ## -- MAXFILENAMESIZE 
 ## Web interface: width of filename column
-$MAXFILENAMESIZE = 30;
+$MAXFILENAMESIZE = 40;
 
 ## -- MAXLASTMODIFIEDSIZE
 ## Web interface: width of last modified column
@@ -470,7 +470,7 @@ input,select { text-shadow: 1px 1px white;  }
 .filelist .tr_odd.tr_copy, .filelist .tr_odd.tr_copy a { color: #224466; }
 .filelist .tr_even.tr_copy, .filelist .tr_even.tr_copy a { color: #113355; }
 .filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
-.filelist .tc_lm  { white-space: nowrap;}
+.filelist .tc_lm, .filelist .tc_mime, .filelist tc_perm { white-space: nowrap;}
 .th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
 .th_sel { width:1em; }
 .th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { white-space: nowrap; color: black; text-decoration: none; text-shadow: 1px 1px white; }
@@ -3424,7 +3424,8 @@ sub getfancyfilename {
 	$full = '/' if $full eq '//'; # fixes root folder navigation bug
 
 	$full.="?$q" if defined $q && defined $fn && !$isUnReadable && -d $fn;
-	my $fntext = length($s)>$MAXFILENAMESIZE ? substr($s,0,$MAXFILENAMESIZE-3) : $s;
+	my $fntext = $s;
+	$fntext =substr($s,0,$MAXFILENAMESIZE-3) if length($s)>$MAXFILENAMESIZE;
 
 	$ret = $IGNOREFILEPERMISSIONS || (!-d $fn && -r $fn) || -x $fn  ? $cgi->a({href=>$full,title=>$s},$cgi->escapeHTML($fntext)) : $cgi->escapeHTML($fntext);
 	$ret .=  length($s)>$MAXFILENAMESIZE ? '...' : (' 'x($MAXFILENAMESIZE-length($s)));
@@ -4859,7 +4860,7 @@ sub getFolderList {
 	my $dir = $ORDER=~/_desc$/ ? '' : '_desc';
 	my $query = $filter ? 'search=' . $cgi->param('search'):'';
 	my $ochar = ' <span class="orderchar">'.($dir eq '' ? '&darr;' :'&uarr;').'</span>';
-	$row.= $cgi->td({-class=>'th_fn'.($ORDER=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'em;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($ORDER=~/^name/?$ochar:'')))
+	$row.= $cgi->td({-class=>'th_fn'.($ORDER=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'ex;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($ORDER=~/^name/?$ochar:'')))
 		.$cgi->td({-class=>'th_lm'.($ORDER=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($ORDER=~/^lastmodified/?$ochar:'')))
 		.$cgi->td({-class=>'th_size'.($ORDER=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($ORDER=~/^size/?$ochar:'')))
 		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($ORDER=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($ORDER=~/^mode/?$ochar:'')))):'')
@@ -4870,7 +4871,7 @@ sub getFolderList {
 	$list.=$cgi->Tr({-class=>'tr_up',-onmouseover=>'addClassName(this,"tr_highlight");',-onmouseout=>'removeClassName(this,"tr_highlight");', -ondblclick=>qq@window.location.href="..";@},
 				$cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-name=>'hidden',-value=>"",-label=>"", -disabled=>'disabled', -style=>'visibility:hidden')) 
 			      . $cgi->td({-class=>'tc_fn', -ondblclick=>'return false;', -onmousedown=>'return false'},getfancyfilename(dirname($ru).'/','..','< .. >',dirname($fn)))
-			      . $cgi->td('').$cgi->td('').($SHOW_PERM?$cgi->td(''):'').$cgi->td('')
+			      . $cgi->td('').$cgi->td('').($SHOW_PERM?$cgi->td(''):'').($SHOW_MIME?$cgi->td(''):'')
 		) unless $fn eq $DOCUMENT_ROOT || $ru eq '/' || $filter;
 
 	my @files = sort cmp_files @{readDir($fn)};
