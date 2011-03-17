@@ -44,6 +44,8 @@
 #            - fixed annoying whitespace wraps (GET)
 #            - fixed wrong message display for change location/bookmark usage (GET)
 #        - fixed file/folder search performance bug in a AFS (GET)
+#        - fixed major CardDAV/CalDAV multiget report bugs reported by Steve Waterworth <s@steveww.org> (REPORT)
+#        - fixed major CardDAV/CalDAV empty query report bug (REPORT)
 #   0.6.1: 2011/25/02
 #        - fixed missing HTTP status of inaccessible files (GET)
 #        - changed CONFIGFILE default
@@ -681,10 +683,11 @@ $LANG = 'default';
 				mount => '[M]', mounttooltip => 'View this collection in your WebDAV client (WebDAV mount).',
 				quotalimit => 'Quota limit: ', quotaused => ' used: ', quotaavailable => ' available: ',
 				navpage => 'Page ', navfirst=>' |&lt; ', navprev=>' &lt;&lt; ', navnext=>' &gt;&gt; ', navlast=>' &gt;| ', 
-				navall=>'All', navpageview=>'View by page',
+				navall=>'Show All', navpageview=>'View by page', 
+				navpageviewtooltip=> 'Show entries page by page.',
 				navfirstblind=>' |&lt; ', navprevblind=>' &lt;&lt; ', navnextblind=>' &gt;&gt; ', navlastblind=>' &gt;| ', 
 				navfirsttooltip=>'First Page', navprevtooltip=>'Previous Page', 
-				navnexttooltip=>'Next Page', navlasttooltip=>'Last Page', navalltooltip=>'Show All',
+				navnexttooltip=>'Next Page', navlasttooltip=>'Last Page', navalltooltip=>'Show all entries on a single page.',
 				togglealltooltip=>'Toggle All', showproperties=>'Show Properties',
 				properties=>' properties', propertyname=>'Name', propertyvalue=>'Value',
 				names => 'Files/Folders', lastmodified => 'Last Modified', size => 'Size', mimetype => 'MIME Type',
@@ -779,7 +782,8 @@ $LANG = 'default';
 				searchresults => ' Suchergebnisse in', searchresult => ' Suchergebniss in',
 				mount => '[M]', mounttooltip => 'Klicken Sie hier, um diesen Ordner in Ihrem lokalen WebDAV-Clienten anzuzeigen.',
 				quotalimit => 'Quota-Limit: ', quotaused => ' verwendet: ', quotaavailable => ' verf&uuml;gbar: ',
-				navpage => 'Seite ', navall=>'Alles', navpageview=>'Seitenweise anzeigen',
+				navpage => 'Seite ', navall=>'Alles Anzeigen', navpageview=>'Seitenweise anzeigen',
+				navpageviewtooltip=> 'Zeige Einträge Seite für Seite.',
 				navfirsttooltip=>'Erste Seite', navprevtooltip=>'Vorherige Seite',
 				navnexttooltip=>'Nächste Seite', navlasttooltip=>'Letzte Seite', navalltooltip=>'Zeige alles auf einer Seite',
 				togglealltooltip=>'Auswahl umkehren', showproperties=>'Datei/Ordner-Attribute anzeigen',
@@ -1179,7 +1183,7 @@ $DAV.=', 2' if $ENABLE_LOCK;
 $DAV.=', 3, <http://apache.org/dav/propset/fs/1>, extended-mkcol';
 $DAV.=', access-control' if $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV;
 $DAV.=', calendar-access, calendarserver-private-comments' if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE; 
-$DAV.=', calendar-auto-schedule' if  $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
+$DAV.=', calendar-schedule,calendar-availability,calendarserver-principal-property-search,calendarserver-private-events,calendarserver-private-comments,calendarserver-sharing,calendar-auto-schedule' if  $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
 $DAV.=', addressbook' if $ENABLE_CARDDAV;
 $DAV.=', bind' if $ENABLE_BIND;
 
@@ -1281,6 +1285,10 @@ $WEB_ID = 0;
 #    report: address-data
 # from RFC5842 (bind)
 #    resource-id, parent-set (unsupported yet)
+# from http://tools.ietf.org/html/draft-daboo-carddav-directory-gateway-02
+#    directory-gateway (unsupported yet)
+# from ?
+#    calendar-free-busy-set
 
 
 @KNOWN_COLL_PROPS = ( 
@@ -1309,7 +1317,7 @@ $WEB_ID = 0;
 			'getctag',
 		        'principal-URL', 'calendar-home-set', 'schedule-inbox-URL', 'schedule-outbox-URL',
 			'calendar-user-type', 'schedule-calendar-transp', 'schedule-default-calendar-URL',
-			'schedule-tag', 'calendar-user-address-set',
+			'schedule-tag', 'calendar-user-address-set', 'calendar-free-busy-set',
 			);
 @KNOWN_CALDAV_FILE_PROPS = ( 'calendar-data' );
 
@@ -1338,7 +1346,7 @@ push @KNOWN_FILE_PROPS, @KNOWN_CARDDAV_FILE_PROPS if $ENABLE_CARDDAV;
 
 push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
 
-@UNSUPPORTED_PROPS = ( 'checked-in', 'checked-out', 'xmpp-uri', 'dropbox-home-URL' ,'parent-set', 'appledoubleheader' ); 
+@UNSUPPORTED_PROPS = ( 'checked-in', 'checked-out', 'xmpp-uri', 'dropbox-home-URL' ,'parent-set', 'appledoubleheader', 'directory-gateway' ); 
 
 @PROTECTED_PROPS = ( @UNSUPPORTED_PROPS, 
 			'getcontentlength', 'getcontenttype', 'getetag', 'lockdiscovery', 
@@ -1359,7 +1367,7 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
 			'calendar-user-address-set', 'schedule-inbox-URL', 'schedule-outbox-URL', 'schedule-calendar-transp',
 			'schedule-default-calendar-URL', 'schedule-tag', 'supported-address-data', 
 			'supported-collation-set', 'supported-method-set', 'supported-method',
-			'supported-query-grammar'
+			'supported-query-grammar', 'directory-gateway', 'caldav-free-busy-set',
 		);
 
 @ALLPROP_PROPS = ( 'creationdate', 'displayname', 'getcontentlanguage', 'getlastmodified', 
@@ -1387,7 +1395,7 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
 		'executable'=>'lp2','Win32CreationTime'=>'Z', 'Win32LastModifiedTime'=>'Z', 'Win32LastAccessTime'=>'Z', 
 		'authoritative-directory'=>'Repl', 'resourcetag'=>'Repl', 'repl-uid'=>'Repl', 'modifiedby'=>'Office', 'specialFolderType'=>'Office',
 		'Win32CreationTime'=>'Z', 'Win32FileAttributes'=>'Z', 'Win32LastAccessTime'=>'Z', 'Win32LastModifiedTime'=>'Z',default=>'D',
-		'appledoubleheader'=>'Apple',
+		'appledoubleheader'=>'Apple', 'directory-gateway'=>'D', 'calendar-free-busy-set'=>'C',
 );
 
 %NAMESPACEABBR = ( 'D'=>'DAV:', 'lp2'=>'http://apache.org/dav/props/', 'Z'=>'urn:schemas-microsoft-com:', 'Office'=>'urn:schemas-microsoft-com:office:office','Repl'=>'http://schemas.microsoft.com/repl/', 'M'=>'urn:schemas-microsoft-com:datatypes', 'C'=>'urn:ietf:params:xml:ns:caldav', 'CS'=>'http://calendarserver.org/ns/', 'Apple'=>'http://www.apple.com/webdav_fs/props/', 'A'=> 'urn:ietf:params:xml:ns:carddav', 'xs'=>'http://www.w3.org/2001/XMLSchema', 'G'=>'http://groupdav.org/');
@@ -1599,6 +1607,7 @@ sub _GET {
 		if ($cgi->param('search')) {
 			$content.=getSearchResult($cgi->param('search'),$fn,$ru);
 		} else {
+			my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 			$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
 			$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
 			$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
@@ -1630,7 +1639,11 @@ sub _GET {
 			$folderview.=$list;
 			$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
 			$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
-			$content.=renderSideBar() if $VIEW eq 'sidebar';
+			if ($VIEW eq 'sidebar') {
+				$content.=renderSideBar() if $VIEW eq 'sidebar';
+				#$folderview=renderToolbar() . $folderview if $showall;
+				$folderview.=renderToolbar();
+			}
 			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
 				my $m = "";
 				$m .= renderFieldSet('files', renderCreateNewFolderView() .renderMoveView() .renderDeleteView());
@@ -1643,7 +1656,6 @@ sub _GET {
 			$folderview .= renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
 			my $showsidebar = $cgi->cookie('sidebar') ? $cgi->cookie('sidebar') eq 'true' : 1;
 			$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview'.($showsidebar?'':' full') : 'folderview')}, $folderview);
-			my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 			$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
 					 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
 					.(!$showall ? '&bull; '.$cgi->a({-href=>'?showall=1'},_tl('navall')) : '' )
@@ -2528,6 +2540,8 @@ sub _REPORT {
 			}
 			if (ref($$xmldata{$rn}{'{DAV:}href'}) eq 'ARRAY') {
 				@hrefs = @{$$xmldata{$rn}{'{DAV:}href'}};
+			} elsif (ref($$xmldata{$rn}{'{DAV:}href'}) eq 'HASH') {
+				@hrefs = grep(!/DAV:/, values %{$$xmldata{$rn}{'{DAV:}href'}});
 			} else {
 				push @hrefs,  $$xmldata{$rn}{'{DAV:}href'};
 			}
@@ -2543,6 +2557,8 @@ sub _REPORT {
 			}
 			if (ref($$xmldata{$rn}{'{DAV:}href'}) eq 'ARRAY') {
 				@hrefs = @{$$xmldata{$rn}{'{DAV:}href'}};
+			} elsif (ref($$xmldata{$rn}{'{DAV:}href'}) eq 'HASH') {
+				@hrefs = grep(!/DAV:/,values %{$$xmldata{$rn}{'{DAV:}href'}});
 			} else {
 				push @hrefs,  $$xmldata{$rn}{'{DAV:}href'};
 			}
@@ -2557,7 +2573,7 @@ sub _REPORT {
 				$resp_200{status}='HTTP/1.1 200 OK';
 				$resp_404{status}='HTTP/1.1 404 Not Found';
 				my $nhref = $href;
-				$nhref=~s/$VIRTUAL_BASE//;
+				$nhref=~s/^$VIRTUAL_BASE//;
 				my $nfn.=$DOCUMENT_ROOT.$nhref;
 				debug("_REPORT: nfn=$nfn, href=$href");
 				if (!-e $nfn) {
@@ -2573,8 +2589,7 @@ sub _REPORT {
 			}
 			### push @resps, { } if ($#hrefs==-1);  ## empty multistatus response not supported
 		}
-		$content=createXML({multistatus => $#resps>-1 ? { response => \@resps } : undef }) if $#resps>-1;
-
+		$content= $#resps> -1 ? createXML({multistatus => $#resps>-1 ? { response => \@resps } : '' }) : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"/>';
 	}
 	debug("_REPORT: REQUEST: $xml");
 	debug("_REPORT: RESPONSE: $content");
@@ -3226,6 +3241,7 @@ sub getProperty {
 	$$resp_200{prop}{'schedule-calendar-transp'}{transparent} = undef if $prop eq 'schedule-calendar-transp';
 	$$resp_200{prop}{'schedule-default-calendar-URL'}=getCalendarHomeSet($uri) if $prop eq 'schedule-default-calendar-URL';
 	$$resp_200{prop}{'schedule-tag'}=getETag($fn) if $prop eq 'schedule-tag';
+	$$resp_200{prop}{'calendar-free-busy-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-free-busy-set';
 
 	if ($prop eq 'address-data') {
 		if ($fn =~ /\.vcf$/i) {
@@ -3506,13 +3522,14 @@ sub printHeaderAndContent {
 	$type='text/plain' unless defined $type;
 	$content="" unless defined $content;
 
-	my @cookies = ( 
+	my @cookies;
+	@cookies  = ( 
 		$cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y'),
 		$cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y'),
 		$cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y'),
 		$cgi->cookie(-name=>'pagelimit',-value=>$PAGE_LIMIT, -expires=>'+10y'),
 		$cgi->cookie(-name=>'view',-value=>$VIEW, -expires=>'+10y'),
-	);
+	) if $cgi->request_method() =~ /^(GET|POST)$/;
 
 	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
 
@@ -4381,11 +4398,14 @@ sub getACLCurrentUserPrivilegeSet {
 		push @{$$usergrant{privilege}},{read  => undef };
 		push @{$$usergrant{privilege}},{'read-acl'  => undef };
 		push @{$$usergrant{privilege}},{'read-current-user-privilege-set'  => undef };
+		push @{$$usergrant{privilege}},{'read-free-busy'  => undef };
+		push @{$$usergrant{privilege}},{'schedule-query-freebusy'  => undef };
 		if ($IGNOREFILEPERMISSIONS || -w $fn) {
 			push @{$$usergrant{privilege}},{write => undef };
 			push @{$$usergrant{privilege}},{'write-acl' => undef };
 			push @{$$usergrant{privilege}},{'write-content'  => undef };
 			push @{$$usergrant{privilege}},{'write-properties'  => undef };
+			push @{$$usergrant{privilege}},{'unlock'  => undef };
 			push @{$$usergrant{privilege}},{bind=> undef };
 			push @{$$usergrant{privilege}},{unbind=> undef };
 		}
@@ -4602,7 +4622,7 @@ sub renderFieldSet { return renderToggleFieldSet($_[0],$_[1],1); }
 sub renderDeleteFilesButton { return $cgi->submit(-title=>_tl('deletefilestext'),-name=>'delete',-disabled=>'disabled',-value=>_tl('deletefilesbutton'),-onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");'); }
 sub renderCopyButton { return $cgi->button({-onclick=>'clpaction("copy")', -disabled=>'disabled', -name=>'copy', -class=>'copybutton', -value=> _tl('copy'), -title=>_tl('copytooltip')}); }
 sub renderCutButton { return $cgi->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>_tl('cut'), -title=>_tl('cuttooltip')}); }
-sub renderPasteButton { return $cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -id=>'paste', -class=>'pastebutton',-value=>_tl('paste')}); }
+sub renderPasteButton { return $cgi->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -name=>'paste', -class=>'pastebutton',-value=>_tl('paste')}); }
 sub renderToolbar {
 	my $clpboard = "";
 	$clpboard = $cgi->div({-class=>'clipboard'}, renderCopyButton().renderCutButton().renderPasteButton()) if ($ENABLE_CLIPBOARD); 
@@ -4721,23 +4741,23 @@ sub renderSideBar {
 
 	$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
 
-	$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview")',$cgi->button({-value=>_tl('upload')}));
+	$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
 	$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
 	$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
 	$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
 	$content .= renderSideBarMenuItem('paste', undef, undef, renderPasteButton());
 	$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
-	$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview");', $cgi->button({-value=> _tl('createfolderbutton')}));
+	$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
 	$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview");',-name=>'rename',-value=>_tl('movefilesbutton')}));
 	$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
-	$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs')})) if $ENABLE_AFSACLMANAGER;
+	$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
 	$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
 
 	$content .= $cgi->div({-class=>'sidebarheader'},_tl('viewoptions'));
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
-	$content .= renderSideBarMenuItem('navpageview', _tl('navpageview'), 'window.location.href="?showpage=1";',$cgi->button(-value=>_tl('navpageview'))) if $showall;
+	$content .= renderSideBarMenuItem('navpageview', _tl('navpageviewtooltip'), 'window.location.href="?showpage=1";',$cgi->button(-value=>_tl('navpageview'))) if $showall;
 	$content .= renderSideBarMenuItem('navall', _tl('navalltooltip'),'window.location.href="?showall=1";', $cgi->button(-value=>_tl('navall'))) unless $showall;
-	$content .= $cgi->div({}, renderNameFilterForm().$cgi->div('&nbsp;')) if $showall;
+	#$content .= $cgi->div({-style=>'overflow: hidden;'}, renderNameFilterForm(1).$cgi->div('&nbsp;')) if $showall;
 	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button({-value=>_tl('classicview')})); 
 
 	my $av = "";
@@ -4760,40 +4780,43 @@ sub renderPageNavBar {
 	my $page = $cgi->param('page') || 1;
 
 	my $content = "";
-	return $content if $limit <1 || $count <= $limit;
+	return $content if $limit <1; # || $count <= $limit;
 
 	my $maxpages = ceil($count / $limit);
 	return $content if $maxpages == 0;
 
-	return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1"}, _tl('navpageview')). ', '.renderNameFilterForm()) if ($showall);
+	return $cgi->div({-class=>'showall'}, $cgi->a({href=>$ru."?showpage=1", -title=>_tl('navpageviewtooltip')}, _tl('navpageview')). ', '.renderNameFilterForm()) if ($showall);
+	if ($count >$limit) {
 
-	$content .= ($page > 1 ) 
-			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,1,$limit), -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
-			: _tl('navfirstblind');
-	$content .= ($page > 1 ) 
-			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,$page-1,$limit), -title=>_tl('navprevtooltip')}, _tl('navprev')) 
-			: _tl('navprevblind');
-	#$content .= _tl('navpage')."$page/$maxpages: ";
-	$content .= _tl('navpage');
-	my %attributes;
-	if ($maxpages > 1 && $maxpages <= 50) {
-		foreach my $i ( 1 .. $maxpages ) {
-			$attributes{$i}{title}=$cgi->escapeHTML(sprintf('%s,...,%s',substr($$files[($i-1)*$limit],0,8),substr(($i*$limit -1 > $#$files ? $$files[$#$files] : $$files[$i*$limit -1]),0,8)));
+		$content .= ($page > 1 ) 
+				? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,1,$limit), -title=>_tl('navfirsttooltip')}, _tl('navfirst')) 
+				: _tl('navfirstblind');
+		$content .= ($page > 1 ) 
+				? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,$page-1,$limit), -title=>_tl('navprevtooltip')}, _tl('navprev')) 
+				: _tl('navprevblind');
+		#$content .= _tl('navpage')."$page/$maxpages: ";
+		$content .= _tl('navpage');
+
+		my %attributes;
+		if ($maxpages > 1 && $maxpages <= 50) {
+			foreach my $i ( 1 .. $maxpages ) {
+				$attributes{$i}{title}=$cgi->escapeHTML(sprintf('%s,...,%s',substr($$files[($i-1)*$limit],0,8),substr(($i*$limit -1 > $#$files ? $$files[$#$files] : $$files[$i*$limit -1]),0,8)));
+			}
 		}
+
+		$content .= $maxpages < 2 || $maxpages > 50 ? $page : $cgi->popup_menu(-default=>$page, -name=>'page', -values=> [ 1 .. $maxpages ], -attributes=>\%attributes, -onchange=>'javascript:window.location.href=window.location.pathname+"?page="+this.value;' );
+		$content .= " / $maxpages: ";
+
+		$content .= sprintf("%02d-%02d/%d",(($limit * ($page - 1)) + 1) , ( $page < $maxpages || $count % $limit == 0 ? $limit * $page : ($limit*($page-1)) + $count % $limit), $count);
+		
+		$content .= ($page < $maxpages) 
+				? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $page+1, $limit), -title=>_tl('navnexttooltip')},_tl('navnext')) 
+				: _tl('navnextblind');
+
+		$content .= ($page < $maxpages) 
+				? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $maxpages, $limit), -title=>_tl('navlasttooltip')},_tl('navlast')) 
+				: _tl('navlastblind');
 	}
-
-	$content .= $maxpages < 2 || $maxpages > 50 ? $page : $cgi->popup_menu(-default=>$page, -name=>'page', -values=> [ 1 .. $maxpages ], -attributes=>\%attributes, -onchange=>'javascript:window.location.href=window.location.pathname+"?page="+this.value;' );
-	$content .= " / $maxpages: ";
-
-	$content .= sprintf("%02d-%02d/%d",(($limit * ($page - 1)) + 1) , ( $page < $maxpages || $count % $limit == 0 ? $limit * $page : ($limit*($page-1)) + $count % $limit), $count);
-	
-	$content .= ($page < $maxpages) 
-			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $page+1, $limit), -title=>_tl('navnexttooltip')},_tl('navnext')) 
-			: _tl('navnextblind');
-
-	$content .= ($page < $maxpages) 
-			? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $maxpages, $limit), -title=>_tl('navlasttooltip')},_tl('navlast')) 
-			: _tl('navlastblind');
 
 	$content .= ' '.$cgi->span({-title=>_tl('pagelimittooltip')}, _tl('pagelimit').' '.$cgi->popup_menu(-name=>'pagelimit', -onchange=>'javascript: window.location.href=window.location.pathname + (this.value==-1 ? "?showall=1" : "?page=1;pagelimit="+this.value);', -values=>\@PAGE_LIMITS, -default=>$limit, -labels=>{-1=>_tl('navall')}, -attributes=>{-1=>{title=>_tl('navalltooltip')}}));
 
@@ -5134,7 +5157,7 @@ sub start_html {
 			var e = document.getElementById(id);
 			if (!e) return true;
 			e.style.zIndex = getDragZIndex(e.style.zIndex);
-			setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
+			setCookie(id, (e.style.visibility!='hidden')+'/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
 			return true;
 		}
 		function toggleSideBar() {
@@ -5424,13 +5447,16 @@ sub start_html {
 		function toggleFileFolderActions() {
 			var disabled = true;
 			var ea = document.getElementsByName("file"); 
-			for (var i=0; i<ea.length; i++) {
-				if (ea[i].checked) { disabled=false; break; }
-			}
+			for (var i=0; i<ea.length; i++) if (ea[i].checked) { disabled=false; break; }
 			var names = new Array('copy','cut','delete','newname','rename','zip','changeperm');
 			for (var i=0; i<names.length; i++) {
 				ea = document.getElementsByName(names[i]);
 				if (ea) for (var j=0; j<ea.length; j++) ea[j].disabled = disabled;
+			}
+			names = new Array('filesubmit','file_upload','mkcol','saveafsacl','uncompress','zipfile_upload');
+			for (var i=0; i<names.length; i++) {
+				ea = document.getElementsByName(names[i]);
+				if (ea) for (var j=0; j<ea.length; j++) ea[j].disabled = !disabled;
 			}
 		}
 
@@ -5464,11 +5490,15 @@ sub start_html {
 			return "";
 		}
 		function clpcheck() { 
-			if (document.getElementById('paste')) {
-				document.getElementById('paste').disabled=(getCookie('clpfiles') == '' || '$REQUEST_URI' == getCookie('clpuri')); 
+			var pbuttons = document.getElementsByName('paste');
+			for (var i=0; i<pbuttons.length; i++) {
+				var b = pbuttons[i];
+				b.disabled=(getCookie('clpfiles') == '' || '$REQUEST_URI' == getCookie('clpuri')); 
 				if (getCookie('clpfiles')!='') 
-					document.getElementById('paste').title=getCookie('clpaction')+' '
+					b.title=getCookie('clpaction')+' '
 							+getCookie('clpuri')+': '+getCookie('clpfiles').split("\@/\@").join(", ");
+				else
+					b.title='';
 			}
 		}
 		function clpaction(action) {
@@ -5489,20 +5519,18 @@ sub start_html {
 				clpform.srcuri.value=getCookie('clpuri');
 				clpform.files.value=getCookie('clpfiles');
 				if (clpform.files.value!='' && window.confirm('$confirmmsg')) {
-					document.getElementById('paste').disabled=true;
 					if (clpform.action.value != "copy") {
 						setCookie('clpuri','');
 						setCookie('clpaction','');
 						setCookie('clpfiles','');
 					}
+					clpcheck();
 					clpform.submit();
 				}
 			} else {
 				setCookie( 'clpuri','$REQUEST_URI');
 				setCookie( 'clpaction', action);
 				setCookie( 'clpfiles', sel.join('\@/\@'));
-				if (document.getElementById('paste') && sel.length>0) 
-					document.getElementById('paste').title=action+' $REQUEST_URI: '+sel.join(', ');
 				clpcheck();
 			}
 		}
@@ -5586,7 +5614,7 @@ sub minify {
 	$_[0]=~s/\s{2,}/ /g;
 	return $_[0];
 }
-sub renderNameFilterForm() {
+sub renderNameFilterForm {
 		return $ENABLE_NAMEFILTER && !$cgi->param('search') ? 
 			$cgi->div({-class=>'namefilter', -title=>_tl('namefiltertooltip')}, _tl('namefilter').
 				$cgi->input({-size=>5, -value=>$cgi->param('namefilter')||'',-name=>'namefilter', 
