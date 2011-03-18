@@ -43,6 +43,7 @@
 #            - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
 #            - fixed annoying whitespace wraps (GET)
 #            - fixed wrong message display for change location/bookmark usage (GET)
+#            - fixed 'go up' on root folder bug (GET)
 #        - fixed major quota bug (GET, PROPFIND)
 #        - fixed file/folder search performance bug in a AFS (GET)
 #        - fixed major CardDAV/CalDAV multiget report bugs reported by Steve Waterworth <s@steveww.org> (REPORT)
@@ -282,7 +283,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
-            $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER
+            $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -301,8 +302,8 @@ $CONFIGFILE = $ENV{WEBDAVCONF} || '/usr/local/www/cgi-bin/webdav.conf';
 ## only neccassary if you use redirects or rewrites 
 ## from a VIRTUAL_BASE to the DOCUMENT_ROOT
 ## regular expressions are allowed
-## DEFAULT: $VIRTUAL_BASE = "";
-$VIRTUAL_BASE = '(/webdav/|)';
+## EXAMPLE: $VIRTUAL_BASE = '/';
+$VIRTUAL_BASE = '/';
 
 ## -- DOCUMENT_ROOT
 ## by default the server document root
@@ -623,6 +624,18 @@ $SHOW_PERM = 1;
 ## show mime type
 ## DEFAULT: $SHOW_MIME= 0;
 $SHOW_MIME= 1;
+
+## -- SHOW_CURRENT_FOLDER
+## shows the current folder '.' to allow permission changes,...
+$SHOW_CURRENT_FOLDER = 0;
+
+## -- SHOW_CURRENT_FOLDER_ROOTONLY 
+## shows the current folder '.' only in the document root ($DOCUMENT_ROOT)
+$SHOW_CURRENT_FOLDER_ROOTONLY = 0;
+
+## -- SHOW_PARENT_FOLDER
+## shows the parent folder '..' for navigation
+$SHOW_PARENT_FOLDER = 1;
 
 ## -- ALLOW_CHANGEPERM
 ## allow users to change file permissions
@@ -1618,7 +1631,7 @@ sub _GET {
 				.getQuickNavPath($ru)
 			);
 			$head.= $cgi->div( { -class=>'viewtools' }, 
-					$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up'))
+					($ru=~/^$VIRTUAL_BASE\/?$/ ? '' :$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up')))
 					.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
 			if ($SHOW_QUOTA) {
 				my ($ql, $qu) = getQuota($fn);
@@ -4595,10 +4608,23 @@ sub getQuickNavPath {
 	$ru = uri_unescape($ru);
 	my $content = "";
 	my $path = "";
-	foreach my $pe (split(/\//, $ru)) {
+	my $navpath = $ru;
+	my $base = '';
+	$navpath=~s/^($VIRTUAL_BASE)//;
+	$base = $1;
+	if ($base ne '/' ) {
+		$navpath = basename($base)."/$navpath";
+		$base = dirname($base);
+		$base .= '/' if $base ne '/';
+		$content.=$base;
+	} else {
+		$base = '';
+		$navpath = "/$navpath";
+	}
+	foreach my $pe (split(/\//, $navpath)) {
 		$path .= uri_escape($pe) . '/';
 		$path = '/' if $path eq '//';
-		$content .= $cgi->a({-href=>$path.(defined $query?"?$query":""), -title=>$path}," $pe/");
+		$content .= $cgi->a({-href=>"$base$path".(defined $query?"?$query":""), -title=>$path}," $pe/");
 	}
 	$content .= $cgi->a({-href=>'/', -title=>'/'}, '/') if $content eq '';
 
@@ -4841,7 +4867,7 @@ sub readDir {
 	my @files;
 	if ((!defined $FILECOUNTPERDIRLIMIT{$dirname} || $FILECOUNTPERDIRLIMIT{$dirname} >0 ) && opendir(my $dir,$dirname)) {
 		while (my $file = readdir($dir)) {
-			next if $file =~ /^(\.|\.\.)$/;
+			next if $file =~ /^\.{1,2}$/;
 			next if is_hidden("$dirname/$file");
 			next if defined $FILEFILTERPERDIR{$dirname} && $file !~ $FILEFILTERPERDIR{$dirname};
 			last if (defined $FILECOUNTPERDIRLIMIT{$dirname} && $#files+1 >= $FILECOUNTPERDIRLIMIT{$dirname}) 
@@ -4872,13 +4898,15 @@ sub getFolderList {
 	$list .= $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $row);
 			
 
-	$list.=$cgi->Tr({-class=>'tr_up',-onmouseover=>'addClassName(this,"tr_highlight");',-onmouseout=>'removeClassName(this,"tr_highlight");', -ondblclick=>qq@window.location.href="..";@},
-				$cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-name=>'hidden',-value=>"",-label=>"", -disabled=>'disabled', -style=>'visibility:hidden')) 
-			      . $cgi->td({-class=>'tc_fn', -ondblclick=>'return false;', -onmousedown=>'return false'},getfancyfilename(dirname($ru).'/','..','< .. >',dirname($fn)))
-			      . $cgi->td('').$cgi->td('').($SHOW_PERM?$cgi->td(''):'').($SHOW_MIME?$cgi->td(''):'')
-		) unless $fn eq $DOCUMENT_ROOT || $ru eq '/' || $filter;
+###	$list.=$cgi->Tr({-class=>'tr_up',-onmouseover=>'addClassName(this,"tr_highlight");',-onmouseout=>'removeClassName(this,"tr_highlight");', -ondblclick=>qq@window.location.href="..";@},
+###				$cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-name=>'hidden',-value=>"",-label=>"", -disabled=>'disabled', -style=>'visibility:hidden')) 
+###			      . $cgi->td({-class=>'tc_fn', -ondblclick=>'return false;', -onmousedown=>'return false'},getfancyfilename(dirname($ru).'/','..','< .. >',dirname($fn)))
+###			      . $cgi->td('').$cgi->td('').($SHOW_PERM?$cgi->td(''):'').($SHOW_MIME?$cgi->td(''):'')
+###		) unless $fn eq $DOCUMENT_ROOT || $ru eq '/' || $ru=~/^$VIRTUAL_BASE\/?$/ || $filter;
 
 	my @files = sort cmp_files @{readDir($fn)};
+	unshift @files, '.' if  $SHOW_CURRENT_FOLDER || ($SHOW_CURRENT_FOLDER_ROOTONLY && $DOCUMENT_ROOT eq $fn);
+	unshift @files, '..' if $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn;
 
 	my $page = $cgi->param('page') ? $cgi->param('page') - 1 : 0;
 	my $fullcount = $#files + 1;
@@ -4913,8 +4941,8 @@ sub getFolderList {
 		### --- AFS fix
 
 		my $mimetype = '?';
-		$mimetype = -d $full ? '<folder>' : getMIMEType($filename) unless $isUnReadable;
-		$filename.="/" if !$isUnReadable && -d $full;
+		$mimetype = -d $full ? ( $filename eq '..' ? '< .. >' : '<folder>' ) : getMIMEType($filename) unless $isUnReadable;
+		$filename.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && -d $full;
 		$nru.="/" if !$isUnReadable && -d $full;
 
 		next if $filter && $filename !~/$filter/i;
@@ -4930,7 +4958,8 @@ sub getFolderList {
 		my $onclick= $filter ? '' : qq@return handleRowClick("$fid", event);@;
 		my $ignev= qq@return false;@;
 
-		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-id=>$fid, -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'')) if $ALLOW_FILE_MANAGEMENT;
+		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-id=>$fid, -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'')) if $ALLOW_FILE_MANAGEMENT && $filename ne '..';
+		$row.= $cgi->td({-class=>'tc_checkbox'},'&nbsp;') if $ALLOW_FILE_MANAGEMENT && $filename eq '..';
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
