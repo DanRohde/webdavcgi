@@ -429,16 +429,17 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
 .sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
-.sidebarfolderview { padding-top: 110px; padding-bottom: 50px; margin-left: 220px; }
-.sidebarfolderview.full { margin-left: 30px; }
-.sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 2px; font-size: 0.9em;}
-.sidebaractionviewheader { background-color: #bbbbbb; text-shadow: 1px 1px white; padding: 2px; font-size: 0.9em;}
+.sidebarfolderview { padding-top: 110px; padding-bottom: 50px; padding-left: 220px; }
+.sidebarfolderview.full { padding-left: 30px; }
+.sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 0px; margin: 0px; font-size: 0.9em; }
+.sidebaractionviewheader { background-color: #bbbbbb; border: 0px; text-shadow: 1px 1px white; padding: 1px; font-size: 0.9em;}
+.sidebaractionviewclose { cursor:pointer; float:right;}
 .sidebaraction { border: none; padding: 1px; }
 .sidebaraction input { border: none; background-color: white; margin: 0px; width: 98%; text-align: left;}
 .sidebaraction.highlight, .sidebaraction.highlight input { background-color: #eeeeee; }
 .sidebaraction.active, .sidebaraction.active input { background-color: #dddddd; }
 .sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
-.sidebaractionviewaction { padding: 5px 2px 2px 2px; }
+.sidebaractionviewaction { clear: both; padding: 5px 2px 2px 2px; }
 .sidebaractionviewaction.collapsed {visibility: hidden; height: 0px; }
 .sidebartogglebutton { cursor: w-resize; font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
 .collapsed .sidebartogglebutton { cursor: e-resize; }
@@ -470,7 +471,7 @@ input,select { text-shadow: 1px 1px white;  }
 .filelist .tr_odd.tr_copy, .filelist .tr_odd.tr_copy a { color: #224466; }
 .filelist .tr_even.tr_copy, .filelist .tr_even.tr_copy a { color: #113355; }
 .filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
-.filelist .tc_lm, .filelist .tc_mime, .filelist tc_perm { white-space: nowrap;}
+.filelist .tc_lm, .filelist .tc_mime, .filelist .tc_perm, .filelist .tc_fn { white-space: nowrap;}
 .th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
 .th_sel { width:1em; }
 .th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { white-space: nowrap; color: black; text-decoration: none; text-shadow: 1px 1px white; }
@@ -4637,9 +4638,9 @@ sub renderToolbar {
 		);
 }
 sub renderFileUploadView {
-	my ($fn) = @_;
+	my ($fn,$bid) = @_;
 	return $cgi->hidden(-name=>'upload',-value=>1)
-		.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
+		.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-id=>$bid?$bid:'filesubmit'.(++$WEB_ID), -name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
 		.$cgi->span({-id=>'moreuploads'},"")
 		.' '.$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
 		.' '
@@ -4647,12 +4648,12 @@ sub renderFileUploadView {
 		.' ('.($CGI::POST_MAX / 1048576).' MB max)';
 }
 sub renderCreateNewFolderView {
-	return $cgi->div({-class=>'createfolder'},'&bull; '._tl('createfoldertext').$cgi->input({-name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'}).$cgi->submit(-id=>'createfolder', -name=>'mkcol',-value=>_tl('createfolderbutton')))
+	return $cgi->div({-class=>'createfolder'},'&bull; '._tl('createfoldertext').$cgi->input({-id=>$_[0]?$_[0]:'colname'.(++$WEB_ID), -name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'}).$cgi->submit(-id=>'createfolder', -name=>'mkcol',-value=>_tl('createfolderbutton')))
 }
 sub renderMoveView {
 	return $cgi->div({-class=>'movefiles', -id=>'movefiles'},
 		'&bull; '._tl('movefilestext')
-		.$cgi->input({-name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$cgi->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>_tl('movefilesbutton'),-onclick=>'return window.confirm("'._tl('movefilesconfirm').'");')
+		.$cgi->input({-id=>$_[0]?$_[0]:'newname'.(++$WEB_ID), -name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$cgi->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>_tl('movefilesbutton'),-onclick=>'return window.confirm("'._tl('movefilesconfirm').'");')
 	);
 }
 sub renderDeleteView {
@@ -4709,7 +4710,7 @@ sub getActionViewInfos {
 	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef, 'null');
 }
 sub renderActionView {
-	my ($action, $name, $view) = @_;
+	my ($action, $name, $view, $focus) = @_;
 	my $style = '';
 	my ($visible, $x, $y, $z,$collapsed) = getActionViewInfos($action);
 	$style .= $visible eq 'true' ? 'visibility: visible;' :'';
@@ -4717,12 +4718,15 @@ sub renderActionView {
 	$style .= $y ? 'top: '.$y.';' : '';
 	$style .= $z ? 'z-index: '.$z.';' : '';
 	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'collapsed'?' collapsed':''),-id=>$action, 
-				-onclick=>"handleWindowClick(event,'$action')", -style=>$style},
+				-onclick=>"handleWindowClick(event,'$action'".($focus?",'$focus'":'').')', -style=>$style},
 		$cgi->div({-class=>'sidebaractionviewheader',
 				-ondblclick=>"toggleCollapseAction('$action',event)", 
 				-onmousedown=>"handleWindowMove(event,'$action', 1)", 
 				-onmouseup=>"handleWindowMove(event,'$action',0)"}, 
-			_tl($name) . $cgi->span({-onclick=>"hideActionView('$action');",-style=>'cursor:pointer;float:right;'},' [X] '))
+				$cgi->span({-onclick=>"hideActionView('$action');",-class=>'sidebaractionviewclose'},' [X] ')
+				.
+				_tl($name)
+			)
 		.$cgi->div({-class=>'sidebaractionviewaction'.($collapsed eq 'collapsed'?' collapsed':''),-id=>"v_$action"},$view)
 		);
 }
@@ -4740,14 +4744,14 @@ sub renderSideBar {
 
 	$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
 
-	$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
+	$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview","filesubmit")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
 	$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
 	$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
 	$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
 	$content .= renderSideBarMenuItem('paste', undef, undef, renderPasteButton());
 	$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
-	$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
-	$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview");',-name=>'rename',-value=>_tl('movefilesbutton')}));
+	$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview","colname-sidebar");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
+	$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>_tl('movefilesbutton')}));
 	$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 	$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
 	$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
@@ -4760,9 +4764,9 @@ sub renderSideBar {
 	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button({-value=>_tl('classicview')})); 
 
 	my $av = "";
-	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED).$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()));
-	$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView());
-	$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView());
+	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit');
+	$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
+	$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
 	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 	$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 	$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
@@ -5152,11 +5156,12 @@ sub start_html {
 			}
 			return true;
 		}
-		function handleWindowClick(event, id) {
+		function handleWindowClick(event, id, focusId) {
 			var e = document.getElementById(id);
 			if (!e) return true;
 			e.style.zIndex = getDragZIndex(e.style.zIndex);
 			setCookie(id, (e.style.visibility!='hidden')+'/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
+			if (focusId) document.getElementById(focusId).focus();
 			return true;
 		}
 		function toggleSideBar() {
@@ -5171,7 +5176,7 @@ sub start_html {
 			}
 			setCookie('sidebar', !ison, 1);
 		}
-		function showActionView(action) {
+		function showActionView(action, focusId) {
 			var e = document.getElementById(action);
 			if (e) { 
 				var v = getViewport();
@@ -5183,6 +5188,7 @@ sub start_html {
 				e.style.zIndex = getDragZIndex(e.style.zIndex);
 				addClassNameById(action+'menu', 'active');
 				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
+				if (focusId) document.getElementById(focusId).focus();
 			}
 			return false;
 		}
@@ -5192,9 +5198,9 @@ sub start_html {
 			removeClassNameById(action+'menu', 'active');
 			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
 		}
-		function toggleActionView(action) {
+		function toggleActionView(action,focusId) {
 			var e = document.getElementById(action);
-			if (e && e.style.visibility=='visible') hideActionView(action); else showActionView(action);
+			if (e && e.style.visibility=='visible') hideActionView(action); else showActionView(action, focusId); 
 		}
 		function addUploadField(force) {
 			var e = document.getElementById('moreuploads');
@@ -5460,7 +5466,7 @@ sub start_html {
 				ea = document.getElementsByName(names[i]);
 				if (ea) for (var j=0; j<ea.length; j++) ea[j].disabled = disabled;
 			}
-			names = new Array('filesubmit','file_upload','mkcol','saveafsacl','uncompress','zipfile_upload');
+			names = new Array('filesubmit','file_upload','mkcol','colname','saveafsacl','uncompress','zipfile_upload');
 			for (var i=0; i<names.length; i++) {
 				ea = document.getElementsByName(names[i]);
 				if (ea) for (var j=0; j<ea.length; j++) ea[j].disabled = !disabled;
