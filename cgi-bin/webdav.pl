@@ -82,7 +82,7 @@ $INSTALL_BASE=$ENV{INSTALL_BASE} || '';
 ## you can overwrite all variables from this setup section with a config file
 ## (simply copy the complete setup section (without 'use vars ...') or single options to your config file)
 ## EXAMPLE: CONFIGFILE = './webdav.conf';
-$CONFIGFILE = $ENV{WEBDAVCONF} || (-e "${INSTALL_BASE}webdav.conf" ? "${INSTALL_BASE}webdav.conf" : undef) || 'webdav.conf';
+$CONFIGFILE = $ENV{WEBDAVCONF} || (-e "${INSTALL_BASE}webdav.conf" ? "${INSTALL_BASE}webdav.conf" : -e "${INSTALL_BASE}etc/webdav.conf" ? "${INSTALL_BASE}etc/webdav.conf" : undef) || 'webdav.conf';
 
 ## -- VIRTUAL_BASE
 ## only neccassary if you use redirects or rewrites from a VIRTUAL_BASE to the DOCUMENT_ROOT;
@@ -964,6 +964,7 @@ sub _GET {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
 		my $file = $INSTALL_BASE.basename($fn);
+		$file = $INSTALL_BASE.'lib/'.basename($fn) if !-e $file;
 
 		printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
 		if (open(F,"<$file")) {
@@ -1081,7 +1082,7 @@ sub _HEAD {
 		debug("_HEAD: $PATH_TRANSLATED exists!");
 		printFileHeader($PATH_TRANSLATED);
 	} elsif ($PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/ && !-e $PATH_TRANSLATED) {
-		printFileHeader($INSTALL_BASE.basename($PATH_TRANSLATED));
+		printFileHeader(-e $INSTALL_BASE.basename($PATH_TRANSLATED) ? $INSTALL_BASE.basename($PATH_TRANSLATED) : "${INSTALL_BASE}lib/".basename($PATH_TRANSLATED));
 	} else {
 		debug("_HEAD: $PATH_TRANSLATED does not exists!");
 		printHeaderAndContent('404 Not Found');
@@ -4619,7 +4620,7 @@ sub logger {
 }
 sub readTL  {
 	my ($l) = @_;
-	my $fn = -e "${INSTALL_BASE}webdav-ui_${l}.msg" ? "${INSTALL_BASE}webdav-ui_${l}.msg" : undef;
+	my $fn = -e "${INSTALL_BASE}webdav-ui_${l}.msg" ? "${INSTALL_BASE}webdav-ui_${l}.msg" : -e "${INSTALL_BASE}locale/webdav-ui_${l}.msg" ? "${INSTALL_BASE}locale/webdav-ui_${l}.msg" : undef;
 	return unless defined $fn;
 	if (open(I, "<$fn")) { 
 		while (<I>) {
@@ -4631,8 +4632,8 @@ sub readTL  {
 	$TRANSLATION{$l}{x__READ__x}=1;
 }
 sub _tl {
-	readTL('default') if (!exists $TRANSLATION{default}{x__READ__x} && -e "${INSTALL_BASE}webdav-ui_default.msg");
-	readTL($LANG) if (!exists $TRANSLATION{$LANG}{x__READ__x} && -e "${INSTALL_BASE}webdav-ui_${LANG}.msg");
+	readTL('default') if !exists $TRANSLATION{default}{x__READ__x};
+	readTL($LANG) if !exists $TRANSLATION{$LANG}{x__READ__x};
 	return $TRANSLATION{$LANG}{$_[0]} || $TRANSLATION{default}{$_[0]} || $_[0];
 }
 sub createMsgQuery {
