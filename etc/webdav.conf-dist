@@ -1,0 +1,14 @@
+## this is an example if a user starts with home dir (http://mywebdavserver/ -> user home):
+$VIRTUAL_BASE = '';
+$DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
+## if you use a complex home folder structure, try this:
+# $DOCUMENT_ROOT=(getpwnam($ENV{REMOTE_USER}))[7].'/';
+
+
+$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+$DBI_USER='';
+$DBI_PASS=''; 
+$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+
+$THUMBNAIL_CACHEDIR="/tmp";
+
