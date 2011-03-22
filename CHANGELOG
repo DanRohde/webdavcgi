@@ -2,6 +2,7 @@
      - added folder redirect feature if file/folder management disabled requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
      - added (incomplete) french transltations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
      - Web interface:
+	 - moved translations to separate .msg files (GET)
          - moved CSS and javascript to separte files (GET/HEAD)
          - added properties viewer switch (GET)
          - added sidebar view (GET)

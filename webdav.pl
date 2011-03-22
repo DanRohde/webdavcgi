@@ -29,9 +29,9 @@
 # INSTALLATION:
 #    - see http://webdavcgi.sf.net/doc.html#installation
 # CHANGES:
-#    - see http://webdavcgi.sf.net/CHANGELOG
+#    - see CHANGELOG
 # TODO:
-#    - see http://webdavcgi.sf.net/TODO
+#    - see TODO
 # KNOWN PROBLEMS:
 #    - see http://webdavcgi.sf.net/
 #########################################################################
@@ -355,312 +355,18 @@ $SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-
 
 ## -- LANG
 ## defines the default language for the Web interface
-## see %TRANSLATION option for supported languages
 ## DEFAULT: $LANG='default';
 $LANG = 'default';
 #$LANG = 'de';
 
 ## -- TRANSLATION
-## defines text and tooltips for the Web interface
+## DEPRECATED: use webdav-ui_${LANG}.msg files instead
+## defines text and tooltips for the Web interface 
 ## if you add your own translation you don't need to translate all text keys
 ## (there is a fallback to the default)
 ## Don't use entities like &auml; for buttons and table header (names, lastmodified, size, mimetype).
-%TRANSLATION = ( 'default' => 
-			{
-				search => 'Search for file/folder name:', searchtooltip => 'allowed are: file/folder name, regular expression',
-				searchnothingfound => 'Nothing found for ', searchgoback =>' in ',
-				searchresultsfor => ' search results for ', searchresultfor => ' search result for ',
-				searchresults => ' results in', searchresult => ' result in',
-				mount => '[M]', mounttooltip => 'View this collection in your WebDAV client (WebDAV mount).',
-				quotalimit => 'Quota limit: ', quotaused => ' used: ', quotaavailable => ' available: ',
-				navpage => 'Page ', navfirst=>' |&lt; ', navprev=>' &lt;&lt; ', navnext=>' &gt;&gt; ', navlast=>' &gt;| ', 
-				navall=>'Show All', navpageview=>'View by page', 
-				navpageviewtooltip=> 'Show entries page by page.',
-				navfirstblind=>' |&lt; ', navprevblind=>' &lt;&lt; ', navnextblind=>' &gt;&gt; ', navlastblind=>' &gt;| ', 
-				navfirsttooltip=>'First Page', navprevtooltip=>'Previous Page', 
-				navnexttooltip=>'Next Page', navlasttooltip=>'Last Page', navalltooltip=>'Show all entries on a single page.',
-				togglealltooltip=>'Toggle All', showproperties=>'Show Properties',
-				properties=>' properties', propertyname=>'Name', propertyvalue=>'Value',
-				names => 'Files/Folders', lastmodified => 'Last Modified', size => 'Size', mimetype => 'MIME Type',
-				lastmodifiedformat => '%m/%d/%y %r',
-				statfiles => 'files:', statfolders=> 'folders:', statsum => 'sum:', statsize => 'size:',
-				createfoldertext => 'Create new folder: ', createfolderbutton => 'Create Folder',
-				movefilestext => 'Rename/Move selected files/folders to: ', movefilesbutton => 'Rename/Move',
-				movefilesconfirm => 'Do you really want to rename/move selected files/folders to the new file name or folder?',
-				deletefilesbutton => 'Delete', deletefilestext => ' selected files/folders',
-				deletefilesconfirm => 'Do you really want to delete selected files/folders?',
-				zipdownloadbutton => 'Download', zipdownloadtext => ' selected files/folders (zip archive)',
-				zipuploadtext => 'Upload zip archive: ', zipuploadbutton => 'Upload & Extract',
-				zipuploadconfirm => 'Do you really want to upload zip, extract it and replace existing files?',
-				fileuploadtext => 'File: ', fileuploadbutton=> 'Upload', fileuploadmore =>'more files',
-				fileuploadconfirm =>'Do you really want to upload file(s) and replace existing file(s)?',
-				confirm => 'Please confirm.',
-				foldernotwriteable => 'This folder is not writeable (no write permission).',
-				foldernotreadable=> 'This folder is not readable (no read permission).',
-				msg_deletedsingle => '%s file/folder was deleted.',
-				msg_deletedmulti => '%s files/folders were deleted.',
-				msg_deleteerr => 'Could not delete selected files/folders.',
-				msg_deletenothingerr => 'Please select file(s)/folder(s) to delete.',
-				msg_foldercreated=>'Folder \'%s\' was created successfully.',
-				msg_foldererr=>'Could not create folder \'%s\' (%s).',
-				msg_foldernothingerr=>'Please specify a folder to create.',
-				msg_rename=>'Moved files/folders \'%s\' to \'%s\'.',
-				msg_renameerr=>'Could not move files/folders \'%s\' to \'%s\'.',
-				msg_renamenothingerr=>'Please select files/folders to rename/move.',
-				msg_renamenotargeterr=>'Please specify a target folder/name for move/rename.',
-				msg_uploadsingle=>'%s file (%s) uploaded successfully.',
-				msg_uploadmulti=>'%s files (%s) uploaded successfully.',
-				msg_uploadnothingerr=>'Please select a local file (Browse ...) for upload.',
-				msg_zipuploadsingle=>'%s zip archive (%s) uploaded successfully.',
-				msg_zipuploadmulti=>'%s zip archives (%s) uploaded successfully.',
-				msg_zipuploadnothingerr=>'Please select a local zip archive (Browse...) for upload.',
-				clickforfullsize=>'Click for full size',
-				permissions=>'Permissions', user=>'user:', group=>'group:', others=>'others:',
-				recursive=>'recursive', changefilepermissions=>'Change file permissions: ', changepermissions=>'Change',
-				readable=>'r', writeable=>'w', executable=>'x', sticky=>'t', setuid=>'s', setgid=>'s',
-				add=>'add (+)', set=>'set (=)', remove=>'remove (-)',
-				changepermconfirm=>'Do you really want to change file/folder permissions for selected files/folders?',
-				msg_changeperm=>'Changed file/folder permissions successfully.',
-				msg_chpermnothingerr=>'Please select files/folders to change permissions.',
-				changepermlegend=>'r - read, w - write, x - execute, s - setuid/setgid, t - sticky bit',
-				created=>'created',
-				folderisfiltered=>'This folder is filtered (regex: %s).',
-				webdavfolderisfiltered=>'',
-				copy=>'Copy', cut=>'Cut', paste=>'Paste',
-				msg_copysuccess => 'File(s)/Folder(s) %s copied.', msg_cutsuccess=>'File(s)/Folder(s) %s moved.',
-				msg_copyfailed=>'File(s)/Folder(s) %s not copied.', msg_cutfailed=>'File(s)/Folder(s) %s not moved.',
-				management=>'File/Folder Management', files=>'Files/Folders', zip=>'ZIP File Upload/Download', upload=>'File Upload',
-				afs=>'AFS ACL Manager', afsnormalrights=>'Normal Rights', afsnegativerights=>'Negative Rights', afssaveacl=>'Save Permissions',
-				afslookup=>'lookup', afsread=>'read', afswrite=>'write', afsinsert=>'insert', afsdelete=>'delete', afslock=>'lock', afsadmin=>'admin',
-				msg_afsaclchanged=>'AFS ACLs changed.', msg_afsaclnotchanged=>'AFS ACLs not changed: %s',
-				afsgroup=>'AFS Group Manager', afsgroups=>'Groups owned by %s', afsgrpusers=>'Members of group \'%s\'',
-				afschangegroup=>'Manage Members', afscreatenewgroup=>'Create Group', afsrenamegroup=>'Rename Selected Group',
-				afsdeletegroup=>'Delete Selected Group', afsadduser=>'Add Member(s)', afsremoveuser=>'Remove Selected Member(s)',
-				msg_afsgrpnothingsel => 'You should select a group.', msg_afsgrpdeleted => 'Selected group \'%s\' deleted.',
-				msg_afsgrpcreated =>  'Group \'%s\' created.',
-				msg_afsgrpnogroupnamegiven => 'Please give me a group name.', msg_afsnonewgroupnamegiven=>'Please give me the new group name for \'%s\'.',
-				msg_afsusrnothingsel=>'Please select users.', msg_afsuserremoved=>'Selected user(s) \'%s\' removed from \'%s\'.',
-				msg_afsuseradded=>'New user(s) \'%s\' added to \'%s\'.', msg_afsnousersgiven=>'Please give me a space separated list of users to add to \'%s\'.',
-				msg_afsusrremovefailed=>'Could not remove member(s) \'%s\' from \'%s\': \'%s\'', msg_afsadduserfailed =>'Could not add member(s) \'%s\' to \'%s\': \'%s\'',
-				msg_afsgrpdeletefailed => 'Could not remove selected group \'%s\': \'%s\'', msg_afsgrpcreatefailed => 'Could not create group \'%s\': \'%s\'',
-				msg_afsgrprenamed => 'Group \'%s\' renamed to \'%s\'.', msg_afsgrprenamefailed => 'Could not rename group \'%s\' to \'%s\': \'%s\'',
-				afsconfirmdeletegrp => 'Do you really want to delete selected group?', afsconfirmcreategrp=>'Do you really want to create a new group?',
-				afsconfirmrenamegrp => 'Do you really want to rename selected group?', afsconfirmremoveuser=>'Do you really want to remove selected users from group?',
-				afsconfirmadduser=>'Do you really want to add new user(s) to group?',
-				afsaclscurrentfolder=>'ACLs of the current folder <code>%s</code> <br/> (<code>%s</code>):',
-				afsaclhelp => '  ', afsgrouphelp=>'  ',
-				clickchangessort=>'Click here to change sort.',
-				msg_uploadforbidden=>'Sorry, it\'s not possible to upload file(s) "%s" (wrong permissions?)',
-				changedir=>'Change Location', go=>'Go', cancel=>'Cancel',
-				bookmarks=>'-- Bookmarks --',
-				addbookmark=>'Add', addbookmarktitle=>'Add current folder to bookmarks',
-				rmbookmark=>'Remove', rmbookmarktitle=>'Remove current folder from bookmarks', 
-				rmallbookmarks=>'-- Remove All --', rmallbookmarkstitle=>'Remove all bookmarks',
-				sortbookmarkbypath=>'Sort By Path', sortbookmarkbytime=>'Sort By Date',
-				up=>'Go Up &uarr;', uptitle=>'Go up one folder level', refresh=>'Refresh', refreshtitle=>'Refresh page view',
-				rmuploadfield=>'-', rmuploadfieldtitle=>'Remove upload field',
-				namefilter=>'Filter: ', namefiltertooltip=>'filter current folder', namefiltermatches=>'Match(es): ',
-				copytooltip=>'Add files/folders to clipboard for copy operation', cuttooltip=>'Add files/folders to clipboard for move operation',
-				pagelimit=>'Show: ', pagelimittooltip=>'Show per page ...',
-				togglesidebar=>'Toggle Sidebar',
-				viewoptions=>'View Options', classicview =>'Classic View', sidebarview=>'Sidebar View',
-				fileactions=>'Actions', deletefileconfirm=>'Do you really want to delete "%s"?', movefileconfirm=>'Do you really want to rename/move file \n "%s" \n to \n "%s"?',
-			},
-		'de' => 
-			{
-				search => 'Suche nach Datei-/Ordnernamen:', searchtooltip => 'Namen und reguläre Ausdrücke',
-				searchnothingfound => 'Es wurde nichts gefunden für ', searchgoback =>' in ',
-				searchresultsfor => ' Suchergebnisse für ', searchresultfor => ' Suchergebniss für ',
-				searchresults => ' Suchergebnisse in', searchresult => ' Suchergebniss in',
-				mount => '[M]', mounttooltip => 'Klicken Sie hier, um diesen Ordner in Ihrem lokalen WebDAV-Clienten anzuzeigen.',
-				quotalimit => 'Quota-Limit: ', quotaused => ' verwendet: ', quotaavailable => ' verf&uuml;gbar: ',
-				navpage => 'Seite ', navall=>'Alles Anzeigen', navpageview=>'Seitenweise anzeigen',
-				navpageviewtooltip=> 'Zeige Einträge Seite für Seite.',
-				navfirsttooltip=>'Erste Seite', navprevtooltip=>'Vorherige Seite',
-				navnexttooltip=>'Nächste Seite', navlasttooltip=>'Letzte Seite', navalltooltip=>'Zeige alles auf einer Seite',
-				togglealltooltip=>'Auswahl umkehren', showproperties=>'Datei/Ordner-Attribute anzeigen',
-				properties=>' Attribute', propertyname=>'Name', propertyvalue=>'Wert',
-				names => 'Dateien/Ordner', lastmodified => 'Letzte Änderung', size => 'Größe', mimetype => 'MIME Typ',
-				lastmodifiedformat => '%d.%m.%Y %H:%M:%S Uhr',
-				statfiles => 'Dateien:', statfolders=> 'Ordner:', statsum => 'Gesamt:', statsize => 'Größe:',
-				createfoldertext => 'Ordnername: ', createfolderbutton => 'Ordner anlegen',
-				movefilestext => 'Ausgewählte Dateien nach: ', movefilesbutton => 'Umbenennen',
-				movefilesconfirm => 'Wollen Sie wirklich die ausgewählte(n) Datei(en)/Ordner umbenennen/verschieben?',
-				deletefilesbutton => 'Löschen', deletefilestext => 'aller ausgewählten Dateien/Ordner',
-				deletefilesconfirm => 'Wollen Sie wirklich alle ausgewählten Dateien/Ordner löschen?',
-				zipdownloadbutton => 'Herunterladen', zipdownloadtext => ' aller ausgewählten Dateien und Ordner als ZIP-Archiv.',
-				zipuploadtext => 'Ein ZIP-Archiv: ', zipuploadbutton => 'hochladen & auspacken.',
-				zipuploadconfirm => 'Wollen Sie das ZIP-Archiv wirklich hochladen, auspacken und damit alle existierenden Dateien ersetzen?',
-				fileuploadtext => 'Datei: ', fileuploadbutton=> 'Hochladen', fileuploadmore =>'mehrere Dateien hochladen',
-				fileuploadconfirm =>'Wollen Sie wirklich die Datei(en) hochladen und existierenende Dateien ggf. ersetzen?',
-				confirm => 'Bitte bestätigen Sie.',
-				foldernotwriteable => 'In diesem Ordner darf nicht geschrieben werden (fehlende Zugriffsrechte).',
-				foldernotreadable=> 'Dieser Ordner ist nicht lesbar (fehlende Zugriffsrechte).',
-				msg_deletedsingle => '%s Datei/Ordner gelöscht.',
-				msg_deletedmulti => '%s Dateien/Ordner gelöscht.',
-				msg_deleteerr => 'Konnte die ausgewählten Dateien/Ordner nicht löschen.',
-				msg_deletenothingerr => 'Bitte wählen Sie die zu löschenden Dateien/Ordner aus.',
-				msg_foldercreated=>'Der Ordner "%s" wurde erfolgreich angelegt.',
-				msg_foldererr=>'Konnte den Ordner "%s" nicht anlegen (%s).',
-				msg_foldernothingerr=>'Bitte geben Sie einen Ordner an, der angelegt werden soll.',
-				msg_rename=>'Die Dateien/Ordner "%s" wurden nach "%s" verschoben.',
-				msg_renameerr=>'Konnte die gewählten Dateien/Ordner "%s" nicht nach "%s" verschieben.',
-				msg_renamenothingerr=>'Bitte wählen Sie Dateien/Ordner aus, die ubenannt bzw. verschoben werden sollen.',
-				msg_renamenotargeterr=>'Bitte geben Sie einen Ziel-Order/-Dateinamen an:',
-				msg_uploadsingle=>'%s Datei (%s) wurde erfolgreich hochgeladen.',
-				msg_uploadmulti=>'%s Dateien (%s) wurden erfolgreich hochgeladen.',
-				msg_uploadnothingerr=>'Bitte wählen Sie lokale Dateien zum Hochladen aus.',
-				msg_zipuploadsingle=>'%s zip-Archiv (%s) wurde erfolgreich hochgeladen.',
-				msg_zipuploadmulti=>'%s zip-Archive (%s) wurden erfolgreich hochgeladen.',
-				msg_zipuploadnothingerr=>'Bitte wählen Sie ein lokales Zip-Archiv zum Hochladen aus.',
-				clickforfullsize=>'Für volle Grösse anklicken',
-				permissions=>'Rechte', user=>'Benutzer:', group=>'Gruppe:', others=>'Andere:',
-				recursive=>'rekursiv', changefilepermissions=>'Datei-Rechte ändern: ', changepermissions=>'ändern',
-				readable=>'r', writeable=>'w', executable=>'x', sticky=>'t', setuid=>'s', setgid=>'s', 
-				add=>'hinzufügen (+)', set=>'setzen (=)', remove=>'entfernen (-)',
-				changepermconfirm=>'Wolle Sie wirklich die Datei/Ordner-Rechte für die gewählten Dateien/Ordner ändern?',
-				msg_changeperm=>'Datei/Ordner-Rechte erfolgreich geändert.',
-				msg_chpermnothingerr=>'Sie haben keine Dateien/Ordner ausgewählt, für die die Rechte geändert werden sollen.',
-				changepermlegend=>'r - lesen, w - schreiben, x - ausführen, s - setuid/setgid, t - sticky bit',
-				created=>'erzeugt am',
-				folderisfiltered=>'Dieser Ordner-Inhalt wird gefiltert (Regex-Filter: %s).',
-				copy=>'Kopieren', cut=>'Ausschneiden', paste=>'Einfügen',
-				msg_copysuccess => 'Dateien/Ordner %s kopiert.', msg_cutsuccess=>'Datei(en)/Ordner %s verschoben.',
-				msg_copyfailed=>'Dateien/Ordner %s nicht kopiert.', msg_cutfailed=>'Dateien/Ordner %s nicht verschoben.',
-				management=>'Dateien/Ordner-Verwaltung', files=>'Dateien/Ordner', zip=>'ZIP File Upload/Download', upload=>'Datei(en) Hochladen',
-				afs=>'AFS ACL Manager', afsnormalrights=>'Normale Rechte', afsnegativerights=>'Negative Rechte', afssaveacl=>'Rechte Speichern',
-				msg_afsaclchanged=>'AFS ACLs geändert.', msg_afsaclnotchanged=>'AFS ACLs nicht geändert: %s',
-				afsgroup=>'AFS Group Manager', afsgroups=>'Gruppen von %s', afsgrpusers=>'Mitglieder der Gruppe \'%s\'',
-				afschangegroup=>'Mitglieder verwalten', afscreatenewgroup=>'Gruppe erzeugen', afsrenamegroup=>'Gruppe umbenennen',
-				afsdeletegroup=>'Gruppe löschen', afsadduser=>'Mitglied(er) hinzufügen', afsremoveuser=>'Mitglied(er) entfernen',
-				msg_afsgrpnothingsel => 'Bitte wählen Sie eine Gruppe.', msg_afsgrpdeleted => 'Gruppe \'%s\' gelöscht.',
-				msg_afsgrpcreated =>  'Gruppe \'%s\' erzeugt.',
-				msg_afsgrpnogroupnamegiven => 'Bitte geben Sie einen Gruppennamen ein.', msg_afsnonewgroupnamegiven=>'Bitte geben Sie den neuen Gruppennamen für \'%s\' ein.',
-				msg_afsusrnothingsel=>'Bitte wählen Sie mindestens ein Mitglied.', msg_afsuserremoved=>'Ausgewählte(n) Benutzer \'%s\' aus der Gruppe \'%s\' entfernt.',
-				msg_afsuseradded=>'Neue(n) Benutzer \'%s\' zur Gruppe \'%s\' hinzugefügt.', msg_afsnousersgiven=>'Bitte geben Sie eine mit Leerzeichen getrennte Liste von Benutzernamen ein, die zur Gruppe \'%s\' hinzugefügt werden sollen.',
-				msg_afsusrremovefailed=>'Konnte das/die Mitglied(er) \'%s\' aus der Gruppe \'%s\' nicht entfernen: \'%s\'', msg_afsadduserfailed =>'Konnte das/die Mitglied(er) \'%s\' nicht zur Gruppe \'%s\' hinzufügen: \'%s\'',
-				msg_afsgrpdeletefailed => 'Konnte die gewählte Gruppe \'%s\' nicht löschen: \'%s\'', msg_afsgrpcreatefailed => 'Konnte die Gruppe \'%s\' nicht erzeugen: \'%s\'',
-				msg_afsgrprenamed => 'Gruppe \'%s\' nach \'%s\' umbenannt.', msg_afsgrprenamefailed => 'Konnte die Gruppe \'%s\' nicht nach \'%s\' umbenennen: \'%s\'',
-				afsconfirmdeletegrp => 'Wollen Sie wirklich die ausgewählte Gruppe löschen?', afsconfirmcreategrp=>'Wollen Sie wirklich eine neue Gruppe erzeugen?',
-				afsconfirmrenamegrp => 'Wollen Sie wirklich die ausgewählte Gruppe umbenennen?', afsconfirmremoveuser=>'Wollen Sie wirklich die ausgewählten Benutzer aus der Gruppe entfernen?',
-				afsconfirmadduser=>'Wollen Sie wirklich neue Benutzer zur Gruppe hinzufügen?',
-				afsaclscurrentfolder=>'ACLs für den aktuellen Ordner <code>%s</code><br/> (<code>%s</code>):',
-				afsaclhelp => '  ', afsgrouphelp=>'  ',
-				clickchangessort=>'Klicken, um Sortierung zu ändern.',
-				msg_uploadforbidden=>'Sorry, die Datei(en) "%s" kann/können nicht hochgeladen werden (fehlende Rechte?)',
-				changedir=>'Verzeichnis wechseln', go=>'Wechseln', cancel=>'Abbrechen',
-				bookmarks=>'-- Lesezeichen --',
-				addbookmark=>'Hinzufügen', addbookmarktitle=>'Aktuellen Ordner zu Lesezeichen hinzufügen',
-				rmbookmark=>'Entfernen', rmbookmarktitle=>'Aktuellen Ordner aus Lesezeichen entfernen', 
-				rmallbookmarks=>'-- Alle Entfernen --', rmallbookmarkstitle=>'Alle Lesenzeichen entfernen',
-				sortbookmarkbypath=>'Nach Pfad ordnen', sortbookmarkbytime=>'Nach Datum ordnen',
-				up=>'Eine Ebene höher &uarr;', uptitle=>'Eine Ordnerebene höher gehen', refresh=>'Aktualisieren', refreshtitle=>'Ordneransicht aktualisieren',
-				rmuploadfield=>'-', rmuploadfieldtitle=>'Datei-Feld entfernen',
-				namefilter=>'Filter: ', namefiltertooltip=>'aktuelle Datei/Ordner-Liste filtern', namefiltermatches=>'Treffer: ',
-				copytooltip=>'Dateien/Ordner zum Kopieren in die Zwischenablage ablegen', cuttooltip=>'Dateien/Ordner zum Verschieben in die Zwischenablage ablegen',
-				pagelimit=>'Zeige: ', pagelimittooltip=>'Zeige pro Seite ...',
-				togglesidebar=>'Sidebar anzeigen/verstecken',
-				viewoptions=>'Ansicht', classicview =>'Klassische Ansicht', sidebarview=>'Sidebar Ansicht',
-				fileactions=>'Aktionen', deletefileconfirm=>'Wollen Sie wirklich "%s" löschen?', movefileconfirm=>'Wollen Sie wirklich\n "%s" nach\n "%s" \numbenennen/verschieben?',
-			},
-
-		 'fr' =>
-			    {
-				search => 'Chercher un fichier/rértoire:', searchtooltip => 'Saisie valide: nom de fichier/repertoire, expression rationelle',
-				searchnothingfound => 'Rien trouvéour  ', searchgoback =>' dans ',
-				searchresultsfor => ' chercher des resultats pour ', searchresultfor => ' chercher un resultat pour ',
-				searchresults => ' réltats dans', searchresult => ' réltat dans',
-				mount => '[M]', mounttooltip => 'Voir cette collection dans votre client WebDAV (Montage WebDAV).',
-				quotalimit => 'Limite de quota: ', quotaused => ' utilisé: ', quotaavailable => ' disponible: ',
-				navpage => 'Page ', navfirst=>' |&lt; ', navprev=>' &lt;&lt; ', navnext=>' &gt;&gt; ', navlast=>' &gt;| ',
-				navall=>'Tout montrer', navpageview=>'Voir par pages',
-				navfirstblind=>' |&lt; ', navprevblind=>' &lt;&lt; ', navnextblind=>' &gt;&gt; ', navlastblind=>' &gt;| ',
-				navfirsttooltip=>'Premiè Page', navprevtooltip=>'Page Prédante',
-				navnexttooltip=>'Page Suivante', navlasttooltip=>'Derniè Page', navalltooltip=>'Tout montrer',
-				togglealltooltip=>'Basculer toutes les aides', showproperties=>'Montrer les propriés',
-				properties=>' propriés', propertyname=>'Nom', propertyvalue=>'Valeur',
-				names => 'Fichiers/Rértoires', lastmodified => 'Derniè modification', size => 'Taille', mimetype => 'Type MIME',
-				lastmodifiedformat => '%d/%m/%y %r',
-				statfiles => 'fichiers:', statfolders=> 'rértoires:', statsum => 'somme:', statsize => 'taille:',
-				createfoldertext => 'Cré un rértoire: ', createfolderbutton => 'Cré un Rértoire',
-				movefilestext => 'Renommer/Déacer les fichiers/rértoires séctionnévers/en : ', movefilesbutton => 'Renommer/Déacer',
-				movefilesconfirm => 'Voulez vous rélement renommer/déacer les fichiers/rértoires séctionnévers/en les nouveaux fichiers/rértoires?',
-				deletefilesbutton => 'Effacer', deletefilestext => ' fichiers/rértoires séctionné',
-				deletefilesconfirm => 'Voulez vous vraiement éacer les fichiers/rértoires séctionné',
-				zipdownloadbutton => 'Técharger', zipdownloadtext => ' fichiers/rértoires séctionné(archive zip)',
-				zipuploadtext => "Técharger l'archive zip: ", zipuploadbutton => 'Técharger & Extraire',
-				zipuploadconfirm => 'Voulez vous rélement técharger, extraire le fichier zip et remplacer les fichiers existants ?',
-				fileuploadtext => 'Fichier: ', fileuploadbutton=> 'Técharger', fileuploadmore =>'ajouter des fichiers',
-				fileuploadconfirm =>'Voulez vous rélement técharger le(s) fichier(s) et remplacer le(s) fichier(s) existant(s) ?',
-				confirm => 'Confirmez SVP.',
-				foldernotwriteable => 'Ce rértoire est en lecture seule.',
-				foldernotreadable=> 'Ce rértoire n est pas lisible.',
-				msg_deletedsingle => '%s fichier/rértoire est effacé',
-				msg_deletedmulti => '%s fichiers/rértoires sont effacé',
-				msg_deleteerr => "Impossible d'éacer les  fichiers/rértoires séctionné",
-				msg_deletenothingerr => 'Séctionnez les fichier(s)/rértoire(s) a effacer.',
-				msg_foldercreated=>'Rértoire \'%s\' cré',
-				msg_foldererr=>'Ne peut pas cré le rértoire \'%s\' (%s).',
-				msg_foldernothingerr=>"Donnez le nom d'un rértoire àré.",
-				msg_rename=>'Fichier(s)/rértoire(s) déacé) de \'%s\' vers \'%s\'.',
-				msg_renameerr=>'Ne peut pas déacer Fichier(s)/rértoire(s) de \'%s\' vers \'%s\'.',
-				msg_renamenothingerr=>'Séctionnez le fichier/rértoire a renommer/effacer.',
-				msg_renamenotargeterr=>'Fichier/rértoire de destination pour la commande renommer/effacer.',
-				msg_uploadsingle=>'%s fichier (%s) téchargé',
-				msg_uploadmulti=>'%s fichiers (%s) téchargé',
-				msg_uploadnothingerr=>'Selectionnez un fichier local (explorer) pour le téchargement.',
-				msg_zipuploadsingle=>'%s archive zip  (%s) téchargé',
-				msg_zipuploadmulti=>'%s archives zip (%s) téchargé',
-				msg_zipuploadnothingerr=>'Selectionnez une archive zip locale (explorer) pour le téchargement.',
-				clickforfullsize=>'Agrandir',
-				permissions=>'Permissions', user=>'Utilisateur: ', group=>'; Groupe de Login: ', others=>'; Autres: ',
-				recursive=>'recursif', changefilepermissions=>'Changer les permissions de fichiers: ', changepermissions=>'Changer',
-				readable=>'r', writeable=>'w', executable=>'x', sticky=>'t', setuid=>'s', setgid=>'s',
-				add=>'ajouter (+)', set=>'fixer à=)', remove=>'enlever (-)',
-				changepermconfirm=>'Voulez vous rélement changer les permissions pour ces fichiers/rértoires?',
-				msg_changeperm=>'Permissions pour ces fichiers/rértoires changé.',
-				msg_chpermnothingerr=>'Selectionnez les fichiers/rértoires sur lesquels changer les permissions.',
-				changepermlegend=>'r - read, w - write, x - execute, s - setuid/setgid, t - sticky bit',
-				created=>'cré',
-				folderisfiltered=>'Ce repertoire est filtréexpression rationnelle: %s).',
-				webdavfolderisfiltered=>'',
-				copy=>'Copie', cut=>'Couper', paste=>'Coller',
-				msg_copysuccess => 'Fichier(s)/Rértoire(s) %s copié', msg_cutsuccess=>'Fichier(s)/Rértoire(s) %s déacé',
-				msg_copyfailed=>'Fichier(s)/Rértoire(s) %s non copié', msg_cutfailed=>'Fichier(s)/Rértoire(s) %s non déacé',
-				management=>'Fichier(s)/Rértoire(s)', files=>'Fichiers/Rértoires', zip=>'Archive ZIP Déargement/téchargement', upload=>'Déargement de fichiers',
-				afs=>"Gestionnaire d'ACL AFS", afsnormalrights=>'Permissions standards', afsnegativerights=>'Negative Rights', afssaveacl=>'Save Permissions',
-				afslookup=>'lookup', afsread=>'read', afswrite=>'write', afsinsert=>'insert', afsdelete=>'delete', afslock=>'lock', afsadmin=>'admin',
-				msg_afsaclchanged=>'AFS ACLs changed.', msg_afsaclnotchanged=>'AFS ACLs not changed: %s',
-				afsgroup=>'AFS Group Manager', afsgroups=>'Groups owned by %s', afsgrpusers=>'Members of group \'%s\'',
-				afschangegroup=>'Manage Members', afscreatenewgroup=>'Create Group', afsrenamegroup=>'Rename Selected Group',
-				afsdeletegroup=>'Delete Selected Group', afsadduser=>'Add Member(s)', afsremoveuser=>'Remove Selected Member(s)',
-				msg_afsgrpnothingsel => 'You should select a group.', msg_afsgrpdeleted => 'Selected group \'%s\' deleted.',
-				msg_afsgrpcreated =>  'Group \'%s\' created.',
-				msg_afsgrpnogroupnamegiven => 'Please give me a group name.', msg_afsnonewgroupnamegiven=>'Please give me the new group name for \'%s\'.',
-				msg_afsusrnothingsel=>'Please select users.', msg_afsuserremoved=>'Selected user(s) \'%s\' removed from \'%s\'.',
-				msg_afsuseradded=>'New user(s) \'%s\' added to \'%s\'.', msg_afsnousersgiven=>'Please give me a space separated list of users to add to \'%s\'.',
-				msg_afsusrremovefailed=>'Could not remove member(s) \'%s\' from \'%s\': \'%s\'', msg_afsadduserfailed =>'Could not add member(s) \'%s\' to \'%s\': \'%s\'',
-				msg_afsgrpdeletefailed => 'Could not remove selected group \'%s\': \'%s\'', msg_afsgrpcreatefailed => 'Could not create group \'%s\': \'%s\'',
-				msg_afsgrprenamed => 'Group \'%s\' renamed to \'%s\'.', msg_afsgrprenamefailed => 'Could not rename group \'%s\' to \'%s\': \'%s\'',
-				afsconfirmdeletegrp => 'Do you really want to delete selected group?', afsconfirmcreategrp=>'Do you really want to create a new group?',
-				afsconfirmrenamegrp => 'Do you really want to rename selected group?', afsconfirmremoveuser=>'Do you really want to remove selected users from group?',
-				afsconfirmadduser=>'Do you really want to add new user(s) to group?',
-				afsaclscurrentfolder=>'ACLs of the current folder <code>%s</code> <br/> (<code>%s</code>):',
-				afsaclhelp => '  ', afsgrouphelp=>'  ',
-				clickchangessort=>'cliquer ici pour changer le tri.',
-				msg_uploadforbidden=>'Délémpossible de déarger le(s) fichier(s) "%s" (permissions inadéates?)',
-				changedir=>'Changer de rértoire', go=>'Oui', cancel=>'Annuler',
-				bookmarks=>'-- Favoris --',
-				addbookmark=>'Ajout', addbookmarktitle=>'Ajouter le rértoire courant aux favoris',
-				rmbookmark=>'Suppression', rmbookmarktitle=>'Supprimer le rértoire courant des favoris',
-				rmallbookmarks=>'-- Tout Supprimer --', rmallbookmarkstitle=>'Supprimer tout les favoris',
-				sortbookmarkbypath=>'Trier par chemin', sortbookmarkbytime=>'Trier par date',
-				up=>'Remonter &uarr;', uptitle=>"Remonter d'un niveau de rértoire", refresh=>'Rafraichir', refreshtitle=>'Rafraichir la page',
-				rmuploadfield=>'-', rmuploadfieldtitle=>'Enlever le champs de déargement',
-			    },
-		);
-$TRANSLATION{'de_DE'} = $TRANSLATION{de};
-$TRANSLATION{'de_DE.UTF8'} = $TRANSLATION{de};
+## EXAMPLE: %TRANSLATION = ( de => { cancel => 'Abbrechen' } );
+%TRANSLATION = ( mylangcode => { cancel => 'Cancel' } );
 
 ## -- ORDER
 ##  sort order for a folder list (allowed values: name, lastmodified, size, mode, mime, and this values with a _desc suffix)
@@ -916,7 +622,6 @@ use Fcntl qw(:flock);
 use CGI;
 
 use File::Basename;
-
 use File::Spec::Link;
 
 use XML::Simple;
@@ -928,13 +633,9 @@ use OSSP::uuid;
 use Digest::MD5;
 
 use DBI;
-
 use Quota;
-
 use Archive::Zip;
-
 use Graphics::Magick;
-
 
 ## flush immediately:
 $|=1;
@@ -4916,7 +4617,22 @@ sub logger {
 		print STDERR "$0: @_\n";
 	}
 }
+sub readTL  {
+	my ($l) = @_;
+	my $fn = -e "${INSTALL_BASE}webdav-ui_${l}.msg" ? "${INSTALL_BASE}webdav-ui_${l}.msg" : undef;
+	return unless defined $fn;
+	if (open(I, "<$fn")) { 
+		while (<I>) {
+			chomp;
+			$TRANSLATION{$l}{$1}=$2 if /^(\S+)\s+"(.*)"\s*$/;
+		}
+		close(I);
+	} else { warn("Cannot read $fn!"); }
+	$TRANSLATION{$l}{x__READ__x}=1;
+}
 sub _tl {
+	readTL('default') if (!exists $TRANSLATION{default}{x__READ__x} && -e "${INSTALL_BASE}webdav-ui_default.msg");
+	readTL($LANG) if (!exists $TRANSLATION{$LANG}{x__READ__x} && -e "${INSTALL_BASE}webdav-ui_${LANG}.msg");
 	return $TRANSLATION{$LANG}{$_[0]} || $TRANSLATION{default}{$_[0]} || $_[0];
 }
 sub createMsgQuery {
@@ -4948,7 +4664,6 @@ sub start_html {
 	$REQUEST_URI=~/^($VIRTUAL_BASE)/;
 	my $base = $1;
 	$base.='/' unless $base=~/\/$/;
-	$base.=$cgi->escapeHTML($LANG).'/';
 	$content.=qq@<script type="text/javascript">$js</script><script src="${base}webdav-ui.js" type="text/javascript"></script>@;
 	$content.=qq@<link rel="search" type="application/opensearchdescription+xml" title="WebDAV CGI filename search" href="$REQUEST_URI?action=opensearch"/>@ if $ALLOW_SEARCH;
 	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
