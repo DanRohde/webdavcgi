@@ -1,0 +1,216 @@
+0.6.2: BETA
+     - added folder redirect feature if file/folder management disabled requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
+     - added (incomplete) french transltations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
+     - Web interface:
+         - added properties viewer switch (GET)
+         - added sidebar view (GET)
+         - improved page navigation (GET)
+         - changed message box behavior (GET)
+         - added file/folder name filtering feature (GET)
+         - added $ORDER config parameter (GET)
+         - improved folder list sort with cookies (GET)
+         - fixed sort bug in search results (GET)
+         - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
+         - fixed annoying whitespace wraps (GET)
+         - fixed wrong message display for change location/bookmark usage (GET)
+         - fixed 'go up' on root folder bug (GET)
+         - added file action column (GET)
+     - fixed major quota bug (GET, PROPFIND)
+     - fixed file/folder search performance bug in a AFS (GET)
+     - fixed major CardDAV/CalDAV multiget report bugs reported by Steve Waterworth <s@steveww.org> (REPORT)
+     - fixed major CardDAV/CalDAV empty query report bug (REPORT)
+0.6.1: 2011/25/02
+     - fixed missing HTTP status of inaccessible files (GET)
+     - changed CONFIGFILE default 
+     - fixed major AFS performance bug related to AFS ACL rights: list without read right on a folder with unreadable files (GET/PROPFIND)
+     - Web interface:
+         - fixed MIME sorting bug (GET)
+         - added ascending/descending order character to the column name (GET)
+         - fixed POST upload permission denied error message (POST)
+         - fixed rename of file/folder to a existing file/folder error message (POST)
+         - added change location feature (GET)
+         - added bookmark feature (GET)
+         - fixed major AFS quota and ACL command call bug  (special characters in folder names; GET)
+         - moved file upload up (GET)
+         - improved 'view by page'/'show all' (cookie based now, GET)
+         - added go up and refresh buttons (GET)
+         - changed THUMBNAIL_CACHEDIR default to /tmp (GET)
+0.6.0: 2010/19/12
+     - fixed default DOCUMENT_ROOT and VIRTUAL_BASE (Apache's DOCUMENT_ROOT is without a trailing slash by default)
+     - added mime.types file support requested by Hanz Makmur <makmur@cs.rutgers.edu>
+     - added a per folder filter for files/folders listed by PROPFIND and the Web interface (GET/PROPFIND)
+     - added a per folder limit for file/folders listed by PROPFIND and the Web interface (GET/PROPFIND)
+     - fixed hidden file/folder handling (performance issue on MacOS-X) (PROPFIND)
+     - added a switch to ignore file permissions for full AFS support (GET/PUT/PROPFIND/COPY/MKCOL/MOVE/DELETE)
+     - added AFS quota support (GET/PROPFIND)
+     - fixed move/copy with a port in destination URI bug reported by lasse.karstensen@gmail.com (MOVE/COPY)
+     - fixed documenation bug related to MySQL schema reported by lasse.karstensen@gmail.com (MOVE/COPY)
+     - added file locking support (flock) requested by lasse.karstensen@gmail.com (PUT/POST)
+     - improved Web interface (GET/POST)
+         - used HTML table instead of preformatted text for file/folder listing 
+         - added a clipboard (GET/POST)
+         - added stylesheet support ($CSS, $CSSURI)
+         - added row and column highlighting for file/folder listing 
+         - added selection on (shift) click and get on double click feature 
+         - added tooltips to the last modified and size column
+         - changed thumbnail format (only GIFs are used for thumbnails)
+         - added PDF/PostScript/plain text thumbnail support 
+         - fixed minor DVI file icon bug (GET)
+         - fixed minor page navigation bug (GET)
+         - added a switch to hide mime types requested by Hanz Makmur <makmur@cs.rutgers.edu>
+         - added OpenSearch.org support (GET)
+         - added media RSS feed for Cooliris.com support (GET)
+         - added the AFS ACL Manager (GET/POST)
+         - added the AFS Group Manager (GET/POST)
+     - fixed minor documentation bugs
+0.5.3: 2010/10/11
+     - fixed minor link loop bug (depth != infinity => read until depth was reached) (PROPFIND)
+     - improved Web interface (GET/POST):
+         - added missing MIME types and icons (video, source code) (GET)
+         - fixed root folder navigation bug in the Web interface reported by Andre Schaaf (GET)
+         - added file permissions column to the Web interface (GET)
+         - added change file permission feature to the Web interface (GET/POST)
+         - added simple language switch to the Web interface (GET/POST)
+         - fixed German translations (GET)
+         - fixed minor sorting and properties view bug in the Web interface (GET)
+     - improved performance (direct method call instead of eval)
+     - replaced Image::Magick by Graphics::Magick for thumbnail support (GET)
+     - added Speedy support requested by Hanz Makmur (mod_perl and pperl should also work)
+0.5.2: 2010/23/09
+     - added BIND/UNBIND/REBIND methods (RFC5842)
+     - fixed major link loop bug (PROPFIND/GET/SEARCH/LOCK)
+     - fixed major move/copy/delete symbolic link bug (MOVE/COPY/POST)
+     - fixed minor long URL after file upload bug (POST)
+0.5.1: 2010/07/09
+     - fixed minor file not readable bug (GET)
+     - improved Web interface (GET/POST):
+         - fixed property view HTML conformance bug (GET)
+         - fixed major illegal regex bug in file/folder name search (GET)
+         - added image thumbnail support (GET)
+         - fixed minor readable/writeable folder bug (GET)
+         - added (error/acknowledgement) messages for file/folder actions (GET/POST)
+         - changed HTML conformance from XHTML to HTML5 (GET/POST)
+         - added multiple file upload support within a single file field supported by Firefox 3.6, Chrome4, ??? (GET/POST)
+0.5.0: 2010/20/08
+     - improved database performance (indexes)
+     - added WebDAV SEARCH/DASL (RFC5323, SEARCH)
+     - added GroupDAV support (http://groupdav.org/draft-hess-groupdav-01.txt)
+     - improved Web interface (GET/POST):
+         - added localization support (GET)
+         - added paging (GET)
+         - added confirmation dialogs (GET)
+         - added 'Toggle All' button (GET)
+         - added zip upload (GET/POST)
+         - added zip download (GET/POST)
+         - added sorting feature (GET)
+         - added quick folder navigation (GET)
+         - added search feature (GET)
+         - added file/folder statistics (GET)
+     - fixed PUT trouble (empty files) with some Apache configurations reported by Cyril Elkaim
+     - added configuration file feature requested by Cyril Elkaim
+     - fixed SQL bugs to work with MySQL reported by Cyril Elkaim
+     - added missing MIME types (GET,PROPFIND,REPORT)
+     - fixed XML namespace for transparent element (PROPFIND)
+0.4.1: 2010/05/07
+     - added a server-side trash can (DELETE/POST)
+     - added a property view to the web interface (GET)
+     - fixed missing bind/unbind privileges for ACL properties (PROPFIND)
+     - fixed missing data types for some Windows properties (PROPFIND)
+0.4.0: 2010/24/06
+     - added CardDAV support (incomplete: no preconditions, no filter in REPORT queries; PROPFIND/REPORT)
+     - fixed missing current user privileges bug (PROPFIND)
+     - fixed supported-report-set property bug (PROPFIND)
+     - fixed depth greater than one bug in calendar-query REPORT query  (REPORT)
+     - fixed unknown report bug (REPORT)
+0.3.7: 2010/14/06
+     - added current-user-principal property (RFC5397; PROPFIND)
+     - added incomplete CalDAV schedule support (http://tools.ietf.org/html/draft-desruisseaux-caldav-sched-08; REPORT/PROPFIND)
+     - added incomplete CalDAV support (RFC4791; PROPFIND/REPORT)
+     - added incomplete ACL support (RFC3744; PROPFIND/ACL/REPORT)
+     - added extendend MKCOL support (RFC5689; MKCOL)
+     - added mixed content support for user defined properties (PROPPATCH/PROPFIND)
+     - added switches to enable/disable features (LOCK, CalDAV, CalDAV-Schedule, ACL; OPTIONS/ACL/LOCK/UNLOCK/REPORT)
+     - improved performance with caching (PROPFIND/REPORT)
+     - improved XML generation: define only used namespaces (PROPFIND/REPORT/PROPATCH/DELETE/LOCK)
+     - fixed missing property protection bug (PROPPATCH)
+     - fixed OPTIONS bug
+     - fixed lock owner bug (LOCK)
+     - fixed bug: hidden files should not be counted (PROPFIND:childcount,visiblecount,hassubs,objectcount)
+     - fixed isroot bug (PROPFIND)
+0.3.6: 2010/03/06
+     - improved security (POST)
+     - small but safe performance improvements (MOVE)
+     - fixed quota bug (quota-available-bytes; PROPFIND)
+     - added GFS/GFS2 quota support (GET, PROPFIND)
+     - fixed bug: missing '/' in href property of a folder (Dreamweaver works now; PROPFIND)
+     - improved performance with caching (PROPFIND)
+     - added missing source property (PROPFIND)
+0.3.5: 2010/31/05
+     - added logging
+     - fixed redirect bugs reported by Paulo Estrela (POST,MKCOL,...)
+     - added user property support (PROPPATCH/PROPFIND)
+     - fixed datatype bug (PROPFIND)
+     - improved allprop request performance (PROPFIND)
+     - fixed include handling (PROPFIND)
+     - passed all litmus tests (http://www.webdav.org/neon/litmus/)
+     - fixed lock token generation bug (LOCK)
+     - fixed database schema bug (LOCK)
+     - fixed LOCK/UNLOCK shared/exclusive bugs (litmus locks)
+     - fixed PROPFIND bugs (litmus props)
+     - fixed PROPPATCH bugs (litmus props)
+     - fixed COPY bugs (litmus copymove/props)
+     - fixed MOVE bugs (litmus copymove/props)
+     - fixed MCOL bugs (litmus basic)
+     - fixed DELETE bugs (litmus basic)
+0.3.4: 2010/25/05
+     - added WebDAV mount feature (RFC4709 - GET)
+     - added quota properties (RFC4331 - PROPFIND)
+     - added M$ name spaces (PROPFIND/PROPPATCH)
+     - added M$-WDVME support
+     - added M$-WDVSE support
+     - fixed depth handling (PROPFIND)
+0.3.3: 2010/11/05
+     - improved file upload (POST)
+     - fixed Windows file upload bug (POST)
+     - fixed fency indexing header formatting bug (GET)
+     - fixed fency indexing URI encoding bug (GET)
+     - fixed redirect bug (CGI and POST)
+0.3.2: 2010/10/05
+     - added simple file management (mkdir, rename/move, delete)
+     - fixed missing (REDIRECT_)PATH_TRANSLATED environment bug
+     - fixed double URL encoding problem (COPY/MOVE)
+0.3.1: 2010/10/05
+     - fixed Vista/Windows7 problems (PROPFIND)
+0.3.0: 2010/07/05
+     - added LOCK/UNLOCK
+     - added ETag support
+     - fixed account in destination URI bug (COPY/MOVE)
+     - fixed delete none existing resource bug (DELETE)
+     - fixed element order in XML responses bug (PROPFIND/PROPPATCH/DELETE/LOCK)
+     - fixed direct call bug (MKCOL/PUT/LOCK)
+     - fixed MIME type detection bug (GET/PROPFIND)
+0.2.4: 2010/29/04
+     - added fancy indexing setup switch
+     - added additional properties for files/folders
+     - fixed PROPFIND request handling
+0.2.3: 2010/28/04
+     - improved debugging
+     - fixed URI encoded characters in 'Destination' request header bug (MOVE/COPY)
+0.2.2: 2010/27/04
+     - added Apache namespace (executable)
+     - fixed namespace bugs (PROPFIND/PROPPATCH)
+     - added hide feature: hide special files/folders
+     - fixed PROPPATCH bug (Multi-Status)
+0.2.1: 2010/27/04
+     - added PROPPATCH support for getlastmodified updates
+     - fixed MIME types (jpg)
+     - fixed error handling (Method Not Allowed, Not Implemented)
+     - added table header for fancy indexing
+     - code cleanup
+     - added setup documentation
+0.2: 2010/26/04
+     - added umask configuration parameter
+     - fixed invalid HTML encoding for '<folder>'
+       in GET requests on collections
+0.1: 2010/26/04
+     - initial implementation

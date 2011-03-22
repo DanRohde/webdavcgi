@@ -1,0 +1,9 @@
+    - add a property editor to the Web interface
+    - handle LOCK timeouts
+    - RFC5689 (extended MKCOL) is incomplete (error handling/precondition check)
+    - RFC3744 (ACL's) (incomplete)
+    - RFC4791 (CalDAV) incomplete
+    - Collection Synchronization for WebDAV (http://tools.ietf.org/html/draft-daboo-webdav-sync-03)
+    - RFC5842 (Binding Extensions to Web Distributed Authoring and Versioning (WebDAV))
+    - RFC5785 (Defining Well-Known Uniform Resource Identifiers (URIs))
+    - improve/fix precondition checks (If header)

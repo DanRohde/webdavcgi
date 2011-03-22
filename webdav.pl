@@ -25,234 +25,13 @@
 #########################################################################
 # VERSION 0.6.2 BETA
 # REQUIREMENTS:
-#    - see http://webdavcgi.sf.net/doc.html
+#    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:
-#    - see http://webdavcgi.sf.net/doc.html
-#       
+#    - see http://webdavcgi.sf.net/doc.html#installation
 # CHANGES:
-#   0.6.2: BETA
-#        - Web interface:
-#            - added properties viewer switch (GET)
-#            - added sidebar view (GET)
-#            - improved page navigation (GET)
-#            - changed message box behavior (GET)
-#            - added file/folder name filtering feature (GET)
-#            - added $ORDER config parameter (GET)
-#            - improved folder list sort with cookies (GET)
-#            - fixed sort bug in search results (GET)
-#            - fixed selection not higlighted after back button pressed bug using Chrom(e/ium) browser (GET)
-#            - fixed annoying whitespace wraps (GET)
-#            - fixed wrong message display for change location/bookmark usage (GET)
-#            - fixed 'go up' on root folder bug (GET)
-#        - fixed major quota bug (GET, PROPFIND)
-#        - fixed file/folder search performance bug in a AFS (GET)
-#        - fixed major CardDAV/CalDAV multiget report bugs reported by Steve Waterworth <s@steveww.org> (REPORT)
-#        - fixed major CardDAV/CalDAV empty query report bug (REPORT)
-#   0.6.1: 2011/25/02
-#        - fixed missing HTTP status of inaccessible files (GET)
-#        - changed CONFIGFILE default
-#        - fixed major AFS performance bug related to AFS ACL rights: list without read right on a folder with unreadable files (GET/PROPFIND)
-#        - Web interface:
-#            - fixed MIME sorting bug (GET)
-#            - added ascending/descending order character to the column name (GET)
-#            - fixed POST upload permission denied error message (POST)
-#            - fixed rename of file/folder to a existing file/folder error message (POST)
-#            - added change location feature (GET)
-#            - added bookmark feature (GET)
-#            - fixed major AFS quota and ACL command call bug  (special characters in folder names; GET)
-#            - moved file upload up (GET)
-#            - improved 'view by page'/'show all' (cookie based now, GET)
-#            - added go up and refresh buttons (GET)
-#            - changed THUMBNAIL_CACHEDIR default to /tmp (GET)
-#   0.6.0: 2010/19/12
-#        - fixed default DOCUMENT_ROOT and VIRTUAL_BASE (Apache's DOCUMENT_ROOT is without a trailing slash by default)
-#        - added mime.types file support requested by Hanz Makmur <makmur@cs.rutgers.edu>
-#        - added a per folder filter for files/folders listed by PROPFIND and the Web interface (GET/PROPFIND)
-#        - added a per folder limit for file/folders listed by PROPFIND and the Web interface (GET/PROPFIND)
-#        - fixed hidden file/folder handling (performance issue on MacOS-X) (PROPFIND)
-#        - added a switch to ignore file permissions for full AFS support (GET/PUT/PROPFIND/COPY/MKCOL/MOVE/DELETE)
-#        - added AFS quota support (GET/PROPFIND)
-#        - fixed move/copy with a port in destination URI bug reported by lasse.karstensen@gmail.com (MOVE/COPY)
-#        - fixed documenation bug related to MySQL schema reported by lasse.karstensen@gmail.com (MOVE/COPY)
-#        - added file locking support (flock) requested by lasse.karstensen@gmail.com (PUT/POST)
-#        - improved Web interface (GET/POST)
-#            - used HTML table instead of preformatted text for file/folder listing
-#            - added a clipboard (GET/POST)
-#            - added stylesheet support ($CSS, $CSSURI)
-#            - added row and column highlighting for file/folder listing 
-#            - added selection on (shift) click and get on double click feature
-#            - added tooltips to the last modified and size column
-#            - changed thumbnail format (only GIFs are used for thumbnails)
-#            - added PDF/PostScript/plain text thumbnail support
-#            - fixed minor DVI file icon bug (GET)
-#            - fixed minor page navigation bug (GET)
-#            - added a switch to hide mime types requested by Hanz Makmur <makmur@cs.rutgers.edu>
-#            - added OpenSearch.org support (GET)
-#            - added media RSS feed for Cooliris.com support (GET)
-#            - added the AFS ACL Manager (GET/POST)
-#            - added the AFS Group Manager (GET/POST)
-#        - fixed minor documentation bugs
-#   0.5.3: 2010/10/11
-#        - fixed minor link loop bug (depth != infinity => read until depth was reached) (PROPFIND)
-#        - improved Web interface (GET/POST):
-#            - added missing MIME types and icons (video, source code) (GET)
-#            - fixed root folder navigation bug in the Web interface reported by Andre Schaaf (GET)
-#            - added file permissions column to the Web interface (GET)
-#            - added change file permission feature to the Web interface (GET/POST)
-#            - added simple language switch to the Web interface (GET/POST)
-#            - fixed German translations (GET)
-#            - fixed minor sorting and properties view bug in the Web interface (GET)
-#        - improved performance (direct method call instead of eval)
-#        - replaced Image::Magick by Graphics::Magick for thumbnail support (GET)
-#        - added Speedy support requested by Hanz Makmur (mod_perl and pperl should also work)
-#   0.5.2: 2010/23/09
-#        - added BIND/UNBIND/REBIND methods (RFC5842)
-#        - fixed major link loop bug (PROPFIND/GET/SEARCH/LOCK)
-#        - fixed major move/copy/delete symbolic link bug (MOVE/COPY/POST)
-#        - fixed minor long URL after file upload bug (POST)
-#   0.5.1: 2010/07/09
-#        - fixed minor file not readable bug (GET)
-#        - improved Web interface (GET/POST):
-#            - fixed property view HTML conformance bug (GET)
-#            - fixed major illegal regex bug in file/folder name search (GET)
-#            - added image thumbnail support (GET)
-#            - fixed minor readable/writeable folder bug (GET)
-#            - added (error/acknowledgement) messages for file/folder actions (GET/POST)
-#            - changed HTML conformance from XHTML to HTML5 (GET/POST)
-#            - added multiple file upload support within a single file field supported by Firefox 3.6, Chrome4, ??? (GET/POST)
-#   0.5.0: 2010/20/08
-#        - improved database performance (indexes)
-#        - added WebDAV SEARCH/DASL (RFC5323, SEARCH)
-#        - added GroupDAV support (http://groupdav.org/draft-hess-groupdav-01.txt)
-#        - improved Web interface (GET/POST):
-#            - added localization support (GET)
-#            - added paging (GET)
-#            - added confirmation dialogs (GET)
-#            - added 'Toggle All' button (GET)
-#            - added zip upload (GET/POST)
-#            - added zip download (GET/POST)
-#            - added sorting feature (GET)
-#            - added quick folder navigation (GET)
-#            - added search feature (GET)
-#            - added file/folder statistics (GET)
-#        - fixed PUT trouble (empty files) with some Apache configurations reported by Cyril Elkaim
-#        - added configuration file feature requested by Cyril Elkaim
-#        - fixed SQL bugs to work with MySQL reported by Cyril Elkaim
-#        - added missing MIME types (GET,PROPFIND,REPORT)
-#        - fixed XML namespace for transparent element (PROPFIND)
-#   0.4.1: 2010/05/07
-#        - added a server-side trash can (DELETE/POST)
-#        - added a property view to the web interface (GET)
-#        - fixed missing bind/unbind privileges for ACL properties (PROPFIND)
-#        - fixed missing data types for some Windows properties (PROPFIND)
-#   0.4.0: 2010/24/06
-#        - added CardDAV support (incomplete: no preconditions, no filter in REPORT queries; PROPFIND/REPORT)
-#        - fixed missing current user privileges bug (PROPFIND)
-#        - fixed supported-report-set property bug (PROPFIND)
-#        - fixed depth greater than one bug in calendar-query REPORT query  (REPORT)
-#        - fixed unknown report bug (REPORT)
-#   0.3.7: 2010/14/06
-#        - added current-user-principal property (RFC5397; PROPFIND)
-#        - added incomplete CalDAV schedule support (http://tools.ietf.org/html/draft-desruisseaux-caldav-sched-08; REPORT/PROPFIND)
-#        - added incomplete CalDAV support (RFC4791; PROPFIND/REPORT)
-#        - added incomplete ACL support (RFC3744; PROPFIND/ACL/REPORT)
-#        - added extendend MKCOL support (RFC5689; MKCOL)
-#        - added mixed content support for user defined properties (PROPPATCH/PROPFIND)
-#        - added switches to enable/disable features (LOCK, CalDAV, CalDAV-Schedule, ACL; OPTIONS/ACL/LOCK/UNLOCK/REPORT)
-#        - improved performance with caching (PROPFIND/REPORT)
-#        - improved XML generation: define only used namespaces (PROPFIND/REPORT/PROPATCH/DELETE/LOCK)
-#        - fixed missing property protection bug (PROPPATCH)
-#        - fixed OPTIONS bug
-#        - fixed lock owner bug (LOCK)
-#        - fixed bug: hidden files should not be counted (PROPFIND:childcount,visiblecount,hassubs,objectcount)
-#        - fixed isroot bug (PROPFIND)
-#   0.3.6: 2010/03/06
-#        - improved security (POST)
-#        - small but safe performance improvements (MOVE)
-#        - fixed quota bug (quota-available-bytes; PROPFIND)
-#        - added GFS/GFS2 quota support (GET, PROPFIND)
-#        - fixed bug: missing '/' in href property of a folder (Dreamweaver works now; PROPFIND)
-#        - improved performance with caching (PROPFIND)
-#        - added missing source property (PROPFIND)
-#   0.3.5: 2010/31/05
-#        - added logging
-#        - fixed redirect bugs reported by Paulo Estrela (POST,MKCOL,...)
-#        - added user property support (PROPPATCH/PROPFIND)
-#        - fixed datatype bug (PROPFIND)
-#        - improved allprop request performance (PROPFIND)
-#        - fixed include handling (PROPFIND)
-#        - passed all litmus tests (http://www.webdav.org/neon/litmus/)
-#        - fixed lock token generation bug (LOCK)
-#        - fixed database schema bug (LOCK)
-#        - fixed LOCK/UNLOCK shared/exclusive bugs (litmus locks)
-#        - fixed PROPFIND bugs (litmus props)
-#        - fixed PROPPATCH bugs (litmus props)
-#        - fixed COPY bugs (litmus copymove/props)
-#        - fixed MOVE bugs (litmus copymove/props)
-#        - fixed MCOL bugs (litmus basic)
-#        - fixed DELETE bugs (litmus basic)
-#   0.3.4: 2010/25/05
-#        - added WebDAV mount feature (RFC4709 - GET)
-#        - added quota properties (RFC4331 - PROPFIND)
-#        - added M$ name spaces (PROPFIND/PROPPATCH)
-#        - added M$-WDVME support
-#        - added M$-WDVSE support
-#        - fixed depth handling (PROPFIND)
-#   0.3.3: 2010/11/05
-#        - improved file upload (POST)
-#        - fixed Windows file upload bug (POST)
-#        - fixed fency indexing header formatting bug (GET)
-#        - fixed fency indexing URI encoding bug (GET)
-#        - fixed redirect bug (CGI and POST)
-#   0.3.2: 2010/10/05
-#        - added simple file management (mkdir, rename/move, delete)
-#        - fixed missing (REDIRECT_)PATH_TRANSLATED environment bug
-#        - fixed double URL encoding problem (COPY/MOVE)
-#   0.3.1: 2010/10/05
-#        - fixed Vista/Windows7 problems (PROPFIND)
-#   0.3.0: 2010/07/05
-#        - added LOCK/UNLOCK
-#        - added ETag support
-#        - fixed account in destination URI bug (COPY/MOVE)
-#        - fixed delete none existing resource bug (DELETE)
-#        - fixed element order in XML responses bug (PROPFIND/PROPPATCH/DELETE/LOCK)
-#        - fixed direct call bug (MKCOL/PUT/LOCK)
-#        - fixed MIME type detection bug (GET/PROPFIND)
-#   0.2.4: 2010/29/04
-#        - added fancy indexing setup switch
-#        - added additional properties for files/folders
-#        - fixed PROPFIND request handling
-#   0.2.3: 2010/28/04
-#        - improved debugging
-#        - fixed URI encoded characters in 'Destination' request header bug (MOVE/COPY)
-#   0.2.2: 2010/27/04
-#        - added Apache namespace (executable)
-#        - fixed namespace bugs (PROPFIND/PROPPATCH)
-#        - added hide feature: hide special files/folders 
-#        - fixed PROPPATCH bug (Multi-Status)
-#   0.2.1: 2010/27/04
-#        - added PROPPATCH support for getlastmodified updates
-#        - fixed MIME types (jpg)
-#        - fixed error handling (Method Not Allowed, Not Implemented)
-#        - added table header for fancy indexing
-#        - code cleanup
-#        - added setup documentation
-#   0.2: 2010/26/04
-#        - added umask configuration parameter
-#        - fixed invalid HTML encoding for '<folder>' 
-#          in GET requests on collections
-#   0.1: 2010/26/04 
-#        - initial implementation
+#    - see http://webdavcgi.sf.net/CHANGELOG
 # TODO:
-#    - add a property editor to the Web interface
-#    - handle LOCK timeouts 
-#    - RFC5689 (extended MKCOL) is incomplete (error handling/precondition check)
-#    - RFC3744 (ACL's) (incomplete)
-#    - RFC4791 (CalDAV) incomplete
-#    - Collection Synchronization for WebDAV (http://tools.ietf.org/html/draft-daboo-webdav-sync-03)
-#    - RFC5842 (Binding Extensions to Web Distributed Authoring and Versioning (WebDAV))
-#    - RFC5785 (Defining Well-Known Uniform Resource Identifiers (URIs))
-#    - improve/fix precondition checks (If header)
+#    - see http://webdavcgi.sf.net/TODO
 # KNOWN PROBLEMS:
 #    - see http://webdavcgi.sf.net/
 #########################################################################
@@ -284,6 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
+            $SHOW_FILE_ACTIONS $REDIRECT_TO 
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -346,7 +126,7 @@ $UMASK = 0022;
 $MIMEFILE = '/etc/mime.types';
 
 ## -- FANCYINDEXING
-## enables/disables fancy indexing for GET requests on folders
+## enables/disables Web interface
 ## if disabled you get a 404 error for a GET request on a folder
 ## DEFAULT: $FANCYINDEXING = 1;
 $FANCYINDEXING = 1;
@@ -389,130 +169,7 @@ $ICON_WIDTH = 18;
 
 ## -- CSS
 ## defines a stylesheet added to the header of the Web interface
-$CSS = <<EOS
-input,select { text-shadow: 1px 1px white;  }
-.header, .signature { border: 2px outset black; padding-left:3px;background-color:#eeeeee; margin: 2px 0px 2px 0px; }
-.signature a { color: black; text-decoration: none; }
-.search { text-align:right;font-size:0.8em;padding:2px 0 0 0;border:0;margin: 0px 0px 4px 0px; }
-.search input { font-size: 0.8em; }
-
-
-.errormsg, .notwriteable, .notreadable { background-color:#ffeeee; border: 1px solid #ff0000; padding: 0px 4px 0px 4px; }
-.infomsg { background-color:#eeeeff; padding: 0px 4px 0px 4px; border: 1px solid #0000ff;}
-#msg, .msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 10; }
-.msg { z-index: 8; }
-.filtered_old { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
-.filtered { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
-
-.thumb { border:0px; vertical-align:top;padding: 1px 0px 1px 0px; }
-.icon { border:0px; }
-
-.foldername { font-weight: bold; font-size: 1.2em; border:0; padding:0; margin:0; display: inline; }
-#quicknavpath { white-space: nowrap; }
-.foldername img { border: 0; }
-.foldername a { text-decoration: none; }
-.davmount { font-size:0.8em;color:black; }
-.hidden { display: none; }
-.changedirform { display: inline; }
-.bookmark { width: 15em; text-shadow: none; font-family: monospace;}
-.bookmark .title { background-color: #aaaaaa; font-weight: bold; }
-.bookmark .func { background-color: #cccccc; font-weight: bold; text-shadow: 1px 1px white;}
-#addbookmark, #rmbookmark { font-size: 0.8em; border: 1px outset black; padding: 0px; margin: 0px; font-family: monospace; background-color: #dddddd; text-shadow: 1px 1px white; color: black; font-weight: bold; text-decoration: none;}
-
-.masterhead { background-color: white; position: fixed; top: 0px; width: 99%; }
-.folderview { padding-top: 110px; }
-
-.sidebar { position: fixed; top: 120px; padding: 2px; background-color: white; z-index: 5;}
-.sidebartable { width: 200px; }
-.sidebartable.collapsed { width: 5px; }
-.sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa;}
-.sidebarcontent.collapsed { display: none; }
-.sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
-.sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
-.sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
-.sidebarfolderview { padding-top: 110px; padding-bottom: 50px; padding-left: 220px; }
-.sidebarfolderview.full { padding-left: 30px; }
-.sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 0px; margin: 0px; font-size: 0.9em; }
-.sidebaractionviewheader { background-color: #bbbbbb; border: 0px; text-shadow: 1px 1px white; padding: 1px; font-size: 0.9em;}
-.sidebaractionviewclose { cursor:pointer; float:right;}
-.sidebaraction { border: none; padding: 1px; }
-.sidebaraction input { border: none; background-color: white; margin: 0px; width: 98%; text-align: left;}
-.sidebaraction.highlight, .sidebaraction.highlight input { background-color: #eeeeee; }
-.sidebaraction.active, .sidebaraction.active input { background-color: #dddddd; }
-.sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
-.sidebaractionviewaction { clear: both; padding: 5px 2px 2px 2px; }
-.sidebaractionviewaction.collapsed {visibility: hidden; height: 0px; }
-.sidebartogglebutton { cursor: w-resize; font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
-.collapsed .sidebartogglebutton { cursor: e-resize; }
-
-
-.sidebarsignature { position: fixed; bottom:0px; left: 0px; width: 100%;  z-index: 1;}
-
-.viewtools { display: inline; float:right; margin-top: 4px;  }
-.up, .refresh { font-size: 0.8em; border: 1px outset black; padding: 2px; font-weight: bold; text-decoration: none; color: black; background-color: #dddddd; text-shadow: 1px 1px white;}
-
-.quota { padding-left:30px;font-size:0.8em; }
-
-.pagenav, .showall { font-weight: bold; font-size:0.9em;padding: 2px 0px 2px 0px; text-align: center; background-color: #efefef;}
-.pagenav a, .showall a { text-decoration: none;}
-.showall input, .pagenav select { border: 0; margin: 0;}
-
-.filelist a { text-decoration: none; }
-.filelist { width:100%;font-family:monospace;border:0; border-spacing:0; padding:2px; font-size: 0.9em; clear: both;}
-.filelist .tr_odd { background-color: white; }
-.filelist .tr_even { background-color: #eeeeee; }
-.filelist .tr_up, .filelist .tr_even, .filelist .tr_odd { cursor: pointer; }
-.filelist .tr_selected { background-color: #ffeedd; }
-.filelist .tr_highlight { background-color: #aaaaaa; }
-.filelist .tr_even.tr_selected { background-color: #eeddcc; }
-.filelist .tr_even.tr_selected.tr_highlight { background-color: #aa9988; }
-.filelist .tr_odd.tr_selected.tr_highlight { background-color: #aa9988; }
-.filelist .tr_odd.tr_cut, .filelist .tr_odd.tr_cut a { color: #8899aa; }
-.filelist .tr_even.tr_cut, .filelist .tr_even.tr_cut a { color: #aabbcc;}
-.filelist .tr_odd.tr_copy, .filelist .tr_odd.tr_copy a { color: #224466; }
-.filelist .tr_even.tr_copy, .filelist .tr_even.tr_copy a { color: #113355; }
-.filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
-.filelist .tc_lm, .filelist .tc_mime, .filelist .tc_perm, .filelist .tc_fn { white-space: nowrap;}
-.th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
-.th_sel { width:1em; }
-.th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { white-space: nowrap; color: black; text-decoration: none; text-shadow: 1px 1px white; }
-.th_highlight { background-color: #bcbcbc; border: 1px inset black; }
-.th_size, .th_perm, .tc_size, .tc_perm { text-align:right; }
-.tr_up { background-color: white; }
-.groupwriteable { color: darkred; }
-.otherwriteable { color: red; }
-
-
-.folderstats, .resultcount, .results { font-size:0.8em; }
-.clipboard { float:left; margin-right: 30px; }
-.copybutton,.cutbutton,.pastebutton { margin: 0px 5px 0px 5px; }
-.namefilter { display: inline; }
-.namefiltermatches { display: inline; font-size: 0.9em; font-weight: normal; border: none; background-color: #efefef; white-space: nowrap;}
-.functions { float: right; padding: 0px 5px 0px 20px;}
-fieldset { clear: both; }
-
-.rmuploadfield { text-decoration: none; margin: 4px; font-family: monospace; padding: 1px; border: 1px outset black; text-shadow: 1px 1px white; background-color: #dddddd; color: black;}
-
-.toggle { cursor:pointer; border: 1px outset black; font-family: monospace; padding: 0px 4px 1px 3px; margin: 0px 2px 0px 2px; }
-legend {  font-size: 0.8em; font-weight: bold; margin: 5px 0px 2px 0px; padding: 0px; }
-
-.props { width:100%;table-layout:fixed; }
-.props .trhead { background-color:#dddddd;text-align:left; }
-.props .thname { width:25%; }
-.props .thvalue { width:75%; }
-.props tr { text-align: left; }
-.props .tr_odd { background-color: white; }
-.props .tr_even { background-color: #eeeeee; }
-.props .tdname { font-weight: bold; vertical-align: top; }
-.props .tdvalue { vertical-align: bottom; }
-.props .tdvalue pre { margin:0px; overflow:auto; }
-
-.afsacltable th, .afsacltable td { border-bottom: 1px solid black; border-right: 1px dotted black; margin: 0px; padding: 1px;}
-.afssavebutton { text-align: right; }
-
-.afsgroupmanager td { vertical-align: top; padding: 5px; border-right: 1px solid black; border-bottom: 1px solid black; }
-EOS
-;
+$CSS = '';
 
 ## -- CSSURI
 ## additional CSS file to include in the Web interface after $CSS
@@ -544,6 +201,11 @@ $ALLOW_INFINITE_PROPFIND = 1;
 ## enables file management with a web browser
 ## ATTENTATION: locks will be ignored
 $ALLOW_FILE_MANAGEMENT = 1;
+
+## -- REDIRECT_TO
+## redirect all directory/folder requests to the given URL if FANCYINDEXING is disabled 
+## EXAMPLE: $REDIRECT_TO='http:/';
+#$REDIRECT_TO='http:/';
 
 ## -- ALLOW_SEARCH
 ## enable file/folder search in the Web interface
@@ -625,6 +287,10 @@ $SHOW_PERM = 1;
 ## DEFAULT: $SHOW_MIME= 0;
 $SHOW_MIME= 1;
 
+## -- SHOW_FILE_ACTIONS
+## show file actions column
+$SHOW_FILE_ACTIONS = 0;
+
 ## -- SHOW_CURRENT_FOLDER
 ## shows the current folder '.' to allow permission changes,...
 $SHOW_CURRENT_FOLDER = 0;
@@ -666,7 +332,7 @@ $PERM_OTHERS = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a></div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a></div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
@@ -788,6 +454,7 @@ $LANG = 'default';
 				pagelimit=>'Show: ', pagelimittooltip=>'Show per page ...',
 				togglesidebar=>'Toggle Sidebar',
 				viewoptions=>'View Options', classicview =>'Classic View', sidebarview=>'Sidebar View',
+				fileactions=>'Actions', deletefileconfirm=>'Do you really want to delete "%s"?', movefileconfirm=>'Do you really want to rename/move file \n "%s" \n to \n "%s"?',
 			},
 		'de' => 
 			{
@@ -807,7 +474,7 @@ $LANG = 'default';
 				lastmodifiedformat => '%d.%m.%Y %H:%M:%S Uhr',
 				statfiles => 'Dateien:', statfolders=> 'Ordner:', statsum => 'Gesamt:', statsize => 'Größe:',
 				createfoldertext => 'Ordnername: ', createfolderbutton => 'Ordner anlegen',
-				movefilestext => 'Ausgewählte Dateien nach: ', movefilesbutton => 'Umbenennen/Verschieben',
+				movefilestext => 'Ausgewählte Dateien nach: ', movefilesbutton => 'Umbenennen',
 				movefilesconfirm => 'Wollen Sie wirklich die ausgewählte(n) Datei(en)/Ordner umbenennen/verschieben?',
 				deletefilesbutton => 'Löschen', deletefilestext => 'aller ausgewählten Dateien/Ordner',
 				deletefilesconfirm => 'Wollen Sie wirklich alle ausgewählten Dateien/Ordner löschen?',
@@ -884,8 +551,103 @@ $LANG = 'default';
 				pagelimit=>'Zeige: ', pagelimittooltip=>'Zeige pro Seite ...',
 				togglesidebar=>'Sidebar anzeigen/verstecken',
 				viewoptions=>'Ansicht', classicview =>'Klassische Ansicht', sidebarview=>'Sidebar Ansicht',
+				fileactions=>'Aktionen', deletefileconfirm=>'Wollen Sie wirklich "%s" löschen?', movefileconfirm=>'Wollen Sie wirklich\n "%s" nach\n "%s" \numbenennen/verschieben?',
 			},
 
+		 'fr' =>
+			    {
+				search => 'Chercher un fichier/rértoire:', searchtooltip => 'Saisie valide: nom de fichier/repertoire, expression rationelle',
+				searchnothingfound => 'Rien trouvéour  ', searchgoback =>' dans ',
+				searchresultsfor => ' chercher des resultats pour ', searchresultfor => ' chercher un resultat pour ',
+				searchresults => ' réltats dans', searchresult => ' réltat dans',
+				mount => '[M]', mounttooltip => 'Voir cette collection dans votre client WebDAV (Montage WebDAV).',
+				quotalimit => 'Limite de quota: ', quotaused => ' utilisé: ', quotaavailable => ' disponible: ',
+				navpage => 'Page ', navfirst=>' |&lt; ', navprev=>' &lt;&lt; ', navnext=>' &gt;&gt; ', navlast=>' &gt;| ',
+				navall=>'Tout montrer', navpageview=>'Voir par pages',
+				navfirstblind=>' |&lt; ', navprevblind=>' &lt;&lt; ', navnextblind=>' &gt;&gt; ', navlastblind=>' &gt;| ',
+				navfirsttooltip=>'Premiè Page', navprevtooltip=>'Page Prédante',
+				navnexttooltip=>'Page Suivante', navlasttooltip=>'Derniè Page', navalltooltip=>'Tout montrer',
+				togglealltooltip=>'Basculer toutes les aides', showproperties=>'Montrer les propriés',
+				properties=>' propriés', propertyname=>'Nom', propertyvalue=>'Valeur',
+				names => 'Fichiers/Rértoires', lastmodified => 'Derniè modification', size => 'Taille', mimetype => 'Type MIME',
+				lastmodifiedformat => '%d/%m/%y %r',
+				statfiles => 'fichiers:', statfolders=> 'rértoires:', statsum => 'somme:', statsize => 'taille:',
+				createfoldertext => 'Cré un rértoire: ', createfolderbutton => 'Cré un Rértoire',
+				movefilestext => 'Renommer/Déacer les fichiers/rértoires séctionnévers/en : ', movefilesbutton => 'Renommer/Déacer',
+				movefilesconfirm => 'Voulez vous rélement renommer/déacer les fichiers/rértoires séctionnévers/en les nouveaux fichiers/rértoires?',
+				deletefilesbutton => 'Effacer', deletefilestext => ' fichiers/rértoires séctionné',
+				deletefilesconfirm => 'Voulez vous vraiement éacer les fichiers/rértoires séctionné',
+				zipdownloadbutton => 'Técharger', zipdownloadtext => ' fichiers/rértoires séctionné(archive zip)',
+				zipuploadtext => "Técharger l'archive zip: ", zipuploadbutton => 'Técharger & Extraire',
+				zipuploadconfirm => 'Voulez vous rélement técharger, extraire le fichier zip et remplacer les fichiers existants ?',
+				fileuploadtext => 'Fichier: ', fileuploadbutton=> 'Técharger', fileuploadmore =>'ajouter des fichiers',
+				fileuploadconfirm =>'Voulez vous rélement técharger le(s) fichier(s) et remplacer le(s) fichier(s) existant(s) ?',
+				confirm => 'Confirmez SVP.',
+				foldernotwriteable => 'Ce rértoire est en lecture seule.',
+				foldernotreadable=> 'Ce rértoire n est pas lisible.',
+				msg_deletedsingle => '%s fichier/rértoire est effacé',
+				msg_deletedmulti => '%s fichiers/rértoires sont effacé',
+				msg_deleteerr => "Impossible d'éacer les  fichiers/rértoires séctionné",
+				msg_deletenothingerr => 'Séctionnez les fichier(s)/rértoire(s) a effacer.',
+				msg_foldercreated=>'Rértoire \'%s\' cré',
+				msg_foldererr=>'Ne peut pas cré le rértoire \'%s\' (%s).',
+				msg_foldernothingerr=>"Donnez le nom d'un rértoire àré.",
+				msg_rename=>'Fichier(s)/rértoire(s) déacé) de \'%s\' vers \'%s\'.',
+				msg_renameerr=>'Ne peut pas déacer Fichier(s)/rértoire(s) de \'%s\' vers \'%s\'.',
+				msg_renamenothingerr=>'Séctionnez le fichier/rértoire a renommer/effacer.',
+				msg_renamenotargeterr=>'Fichier/rértoire de destination pour la commande renommer/effacer.',
+				msg_uploadsingle=>'%s fichier (%s) téchargé',
+				msg_uploadmulti=>'%s fichiers (%s) téchargé',
+				msg_uploadnothingerr=>'Selectionnez un fichier local (explorer) pour le téchargement.',
+				msg_zipuploadsingle=>'%s archive zip  (%s) téchargé',
+				msg_zipuploadmulti=>'%s archives zip (%s) téchargé',
+				msg_zipuploadnothingerr=>'Selectionnez une archive zip locale (explorer) pour le téchargement.',
+				clickforfullsize=>'Agrandir',
+				permissions=>'Permissions', user=>'Utilisateur: ', group=>'; Groupe de Login: ', others=>'; Autres: ',
+				recursive=>'recursif', changefilepermissions=>'Changer les permissions de fichiers: ', changepermissions=>'Changer',
+				readable=>'r', writeable=>'w', executable=>'x', sticky=>'t', setuid=>'s', setgid=>'s',
+				add=>'ajouter (+)', set=>'fixer à=)', remove=>'enlever (-)',
+				changepermconfirm=>'Voulez vous rélement changer les permissions pour ces fichiers/rértoires?',
+				msg_changeperm=>'Permissions pour ces fichiers/rértoires changé.',
+				msg_chpermnothingerr=>'Selectionnez les fichiers/rértoires sur lesquels changer les permissions.',
+				changepermlegend=>'r - read, w - write, x - execute, s - setuid/setgid, t - sticky bit',
+				created=>'cré',
+				folderisfiltered=>'Ce repertoire est filtréexpression rationnelle: %s).',
+				webdavfolderisfiltered=>'',
+				copy=>'Copie', cut=>'Couper', paste=>'Coller',
+				msg_copysuccess => 'Fichier(s)/Rértoire(s) %s copié', msg_cutsuccess=>'Fichier(s)/Rértoire(s) %s déacé',
+				msg_copyfailed=>'Fichier(s)/Rértoire(s) %s non copié', msg_cutfailed=>'Fichier(s)/Rértoire(s) %s non déacé',
+				management=>'Fichier(s)/Rértoire(s)', files=>'Fichiers/Rértoires', zip=>'Archive ZIP Déargement/téchargement', upload=>'Déargement de fichiers',
+				afs=>"Gestionnaire d'ACL AFS", afsnormalrights=>'Permissions standards', afsnegativerights=>'Negative Rights', afssaveacl=>'Save Permissions',
+				afslookup=>'lookup', afsread=>'read', afswrite=>'write', afsinsert=>'insert', afsdelete=>'delete', afslock=>'lock', afsadmin=>'admin',
+				msg_afsaclchanged=>'AFS ACLs changed.', msg_afsaclnotchanged=>'AFS ACLs not changed: %s',
+				afsgroup=>'AFS Group Manager', afsgroups=>'Groups owned by %s', afsgrpusers=>'Members of group \'%s\'',
+				afschangegroup=>'Manage Members', afscreatenewgroup=>'Create Group', afsrenamegroup=>'Rename Selected Group',
+				afsdeletegroup=>'Delete Selected Group', afsadduser=>'Add Member(s)', afsremoveuser=>'Remove Selected Member(s)',
+				msg_afsgrpnothingsel => 'You should select a group.', msg_afsgrpdeleted => 'Selected group \'%s\' deleted.',
+				msg_afsgrpcreated =>  'Group \'%s\' created.',
+				msg_afsgrpnogroupnamegiven => 'Please give me a group name.', msg_afsnonewgroupnamegiven=>'Please give me the new group name for \'%s\'.',
+				msg_afsusrnothingsel=>'Please select users.', msg_afsuserremoved=>'Selected user(s) \'%s\' removed from \'%s\'.',
+				msg_afsuseradded=>'New user(s) \'%s\' added to \'%s\'.', msg_afsnousersgiven=>'Please give me a space separated list of users to add to \'%s\'.',
+				msg_afsusrremovefailed=>'Could not remove member(s) \'%s\' from \'%s\': \'%s\'', msg_afsadduserfailed =>'Could not add member(s) \'%s\' to \'%s\': \'%s\'',
+				msg_afsgrpdeletefailed => 'Could not remove selected group \'%s\': \'%s\'', msg_afsgrpcreatefailed => 'Could not create group \'%s\': \'%s\'',
+				msg_afsgrprenamed => 'Group \'%s\' renamed to \'%s\'.', msg_afsgrprenamefailed => 'Could not rename group \'%s\' to \'%s\': \'%s\'',
+				afsconfirmdeletegrp => 'Do you really want to delete selected group?', afsconfirmcreategrp=>'Do you really want to create a new group?',
+				afsconfirmrenamegrp => 'Do you really want to rename selected group?', afsconfirmremoveuser=>'Do you really want to remove selected users from group?',
+				afsconfirmadduser=>'Do you really want to add new user(s) to group?',
+				afsaclscurrentfolder=>'ACLs of the current folder <code>%s</code> <br/> (<code>%s</code>):',
+				afsaclhelp => '  ', afsgrouphelp=>'  ',
+				clickchangessort=>'cliquer ici pour changer le tri.',
+				msg_uploadforbidden=>'Délémpossible de déarger le(s) fichier(s) "%s" (permissions inadéates?)',
+				changedir=>'Changer de rértoire', go=>'Oui', cancel=>'Annuler',
+				bookmarks=>'-- Favoris --',
+				addbookmark=>'Ajout', addbookmarktitle=>'Ajouter le rértoire courant aux favoris',
+				rmbookmark=>'Suppression', rmbookmarktitle=>'Supprimer le rértoire courant des favoris',
+				rmallbookmarks=>'-- Tout Supprimer --', rmallbookmarkstitle=>'Supprimer tout les favoris',
+				sortbookmarkbypath=>'Trier par chemin', sortbookmarkbytime=>'Trier par date',
+				up=>'Remonter &uarr;', uptitle=>"Remonter d'un niveau de rértoire", refresh=>'Rafraichir', refreshtitle=>'Rafraichir la page',
+				rmuploadfield=>'-', rmuploadfieldtitle=>'Enlever le champs de déargement',
+			    },
 		);
 $TRANSLATION{'de_DE'} = $TRANSLATION{de};
 $TRANSLATION{'de_DE.UTF8'} = $TRANSLATION{de};
@@ -1214,7 +976,7 @@ $PAGE_LIMIT = ceil($PAGE_LIMIT) if defined $PAGE_LIMIT;
 unshift @PAGE_LIMITS, $PAGE_LIMIT if defined $PAGE_LIMIT && $PAGE_LIMIT > 0 && grep(/\Q$PAGE_LIMIT\E/, @PAGE_LIMITS) <= 0 ;
 
 $VIEW = $cgi->param('view') || $cgi->cookie('view') || $VIEW || ($ENABLE_SIDEBAR ? 'sidebar' : 'classic');
-$VIEW = 'classic' unless $ENABLE_SIDEBAR;
+$VIEW = 'classic' unless $ENABLE_SIDEBAR ;
 
 debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
@@ -1489,10 +1251,28 @@ sub _GET {
 
 	if (is_hidden($fn)) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
+		my $file = basename($fn);
+
+		printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
+		if (open(F,"<$file")) {
+			binmode(STDOUT);
+			while (read(F,my $buffer, $BUFSIZE || 1048576 )>0) {
+				print $buffer;
+			}
+			close(F);
+			
+		} else {
+			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+		}
 	} elsif ($ENABLE_AFS && !checkAFSAccess($fn)) {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
 	} elsif (!$FANCYINDEXING && -d $fn) {
-		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+		if (defined $REDIRECT_TO) {
+			print $cgi->redirect($REDIRECT_TO);
+		} else {
+			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+		}
 	} elsif ($cgi->param('action') eq 'davmount' && -e $fn) {
 		my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
 		my $bn = basename($fn);
@@ -1559,127 +1339,9 @@ sub _GET {
 			$x = $image->Write('gif:-'); warn "$x" if "$x";
 		}
 	} elsif ($ENABLE_PROPERTIES_VIEWER && $cgi->param('action') eq 'props' && -e $fn) {
-		my $content = "";
-		$content .= start_html("$REQUEST_URI properties");
-		$content .= $LANGSWITCH if defined $LANGSWITCH;
-		$content .= $HEADER if defined $HEADER;
-		my $fullparent = dirname($REQUEST_URI) .'/';
-		$fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
-		$content .=$cgi->h2( { -class=>'foldername' }, (-d $fn ? getQuickNavPath($REQUEST_URI,getQueryParams()) 
-					     : getQuickNavPath($fullparent,getQueryParams())
-					       .' '.$cgi->a({-href=>$REQUEST_URI}, basename($REQUEST_URI))
-				      ). _tl('properties'));
-		$content .= $cgi->br().$cgi->a({href=>$REQUEST_URI,title=>_tl('clickforfullsize')},$cgi->img({-src=>$REQUEST_URI.($ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($ENABLE_THUMBNAIL?$THUMBNAIL_WIDTH:200)})) if hasThumbSupport(getMIMEType($fn));
-		$content .= $cgi->start_table({-class=>'props'});
-		local(%NAMESPACEELEMENTS);
-		my $dbprops = db_getProperties($fn);
-		my @bgstyleclasses = ( 'tr_odd', 'tr_even');
-		my (%visited);
-		$content.=$cgi->Tr({-class=>'trhead'}, $cgi->th({-class=>'thname'},_tl('propertyname')), $cgi->th({-class=>'thvalue'},_tl('propertyvalue')));
-		foreach my $prop (sort {nonamespace(lc($a)) cmp nonamespace(lc($b)) } keys %{$dbprops},-d $fn ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS ) {
-			my (%r200);
-			next if exists $visited{$prop} || exists $visited{'{'.getNameSpaceUri($prop).'}'.$prop};
-			if (exists $$dbprops{$prop}) {
-				$r200{prop}{$prop}=$$dbprops{$prop};
-			} else {
-				getProperty($fn, $REQUEST_URI, $prop, undef, \%r200, \my %r404);
-			}
-			$visited{$prop}=1;
-			$NAMESPACEELEMENTS{nonamespace($prop)}=1;
-			my $title = createXML($r200{prop},1);
-			my $value = createXML($r200{prop}{$prop},1);
-			my $namespace = getNameSpaceUri($prop);
-			if ($prop =~ /^\{([^\}]*)\}/) {
-				$namespace = $1;
-			}
-			push @bgstyleclasses,  shift @bgstyleclasses;
-			$content.= $cgi->Tr( {-class=>$bgstyleclasses[0] },
-				 $cgi->td({-title=>$namespace, -class=>'tdname'},nonamespace($prop))
-				.$cgi->td({-title=>$title, -class=>'tdvalue' }, $cgi->pre($cgi->escapeHTML($value)))
-				);
-		}
-		$content.=$cgi->end_table();
-		$content.=$cgi->hr().$cgi->div({-class=>'signature'},$SIGNATURE) if defined $SIGNATURE;
-		$content.=$cgi->end_html();
-		printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
+		renderPropertiesViewer();
 	} elsif (-d $fn) {
-		my $ru = $REQUEST_URI;
-		my $content = "";
-		my $head = "";
-		debug("_GET: directory listing of $fn");
-		$head .= $LANGSWITCH if defined $LANGSWITCH;
-		$head .= $HEADER if defined $HEADER;
-		$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
-		if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
-			my $search = $cgi->param('search');
-			$head .= $cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
-		}
-		$head.=renderMessage();
-		if ($cgi->param('search')) {
-			$content.=getSearchResult($cgi->param('search'),$fn,$ru);
-		} else {
-			my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
-			$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
-			$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
-			$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
-			$head .= $cgi->div( { -class=>'foldername'},
-				$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
-						$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
-					)
-				.'&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount'))
-				.' '
-				.getQuickNavPath($ru)
-			);
-			$head.= $cgi->div( { -class=>'viewtools' }, 
-					($ru=~/^$VIRTUAL_BASE\/?$/ ? '' :$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up')))
-					.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
-			if ($SHOW_QUOTA) {
-				my ($ql, $qu) = getQuota($fn);
-				if (defined $ql && defined $qu) {
-					$ql=$ql/1048576; $qu=$qu/1048576;
-					$head.= $cgi->div({-class=>'quota'},
-									_tl('quotalimit').$cgi->span({-title=>sprintf("= %.2f GB",$ql/1024)},sprintf("%.2f MB, ",$ql))
-									._tl('quotaused').$cgi->span({-title=>sprintf("= %.2f GB",$qu/1024)}, sprintf("%.2f MB, ",$qu))
-									._tl('quotaavailable').$cgi->span({-title=>sprintf("= %.2f GB",($ql-$qu)/1024)},sprintf("%.2f MB",($ql-$qu))));
-				}
-			}
-			$content.=$cgi->div({-class=>'masterhead'}, $head);
-			my $folderview = "";
-			my $manageview = "";
-			my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
-			$folderview.=$list;
-			$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
-			$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
-			if ($VIEW eq 'sidebar') {
-				$content.=renderSideBar() if $VIEW eq 'sidebar';
-				#$folderview=renderToolbar() . $folderview if $showall;
-				$folderview.=renderToolbar();
-			}
-			if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
-				my $m = "";
-				$m .= renderFieldSet('files', renderCreateNewFolderView() .renderMoveView() .renderDeleteView());
-				$m .= renderFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
-				$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
-				$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
-				$manageview .= renderToggleFieldSet('management', $m);
-			}
-			$folderview .= $manageview unless $VIEW eq 'sidebar';
-			$folderview .= renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
-			my $showsidebar = $cgi->cookie('sidebar') ? $cgi->cookie('sidebar') eq 'true' : 1;
-			$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview'.($showsidebar?'':' full') : 'folderview')}, $folderview);
-			$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
-					 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
-					.(!$showall ? '&bull; '.$cgi->a({-href=>'?showall=1'},_tl('navall')) : '' )
-					. $cgi->br().'&bull; '.$cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))) : '';
-			$content .= $cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
-			$content .= $cgi->start_form(-method=>'post', -id=>'clpform')
-					.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
-					.$cgi->hidden(-name=>'files', -value=>'') .$cgi->end_form() if ($ALLOW_FILE_MANAGEMENT && $ENABLE_CLIPBOARD);
-		}
-		$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, $SIGNATURE) if defined $SIGNATURE;
-		###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
-		$content = start_html($ru).$content.$cgi->end_html();
-		printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
+		renderWebInterface();
 	} elsif (-e $fn && (!$IGNOREFILEPERMISSIONS && !-r $fn)) {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
 	} elsif (-e $fn) {
@@ -1707,6 +1369,8 @@ sub _HEAD {
 	} elsif (-e $PATH_TRANSLATED) {
 		debug("_HEAD: $PATH_TRANSLATED exists!");
 		printFileHeader($PATH_TRANSLATED);
+	} elsif ($PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/ && !-e $PATH_TRANSLATED) {
+		printFileHeader(basename($PATH_TRANSLATED));
 	} else {
 		debug("_HEAD: $PATH_TRANSLATED does not exists!");
 		printHeaderAndContent('404 Not Found');
@@ -1730,6 +1394,7 @@ sub _POST {
 			if ($cgi->param('file')) {
 				my $count = 0;
 				foreach my $file ($cgi->param('file')) {
+					$file = "" if $file eq '.';
 					debug("_POST: delete $PATH_TRANSLATED.$file");
 					if ($ENABLE_TRASH) {
 						moveToTrash($PATH_TRANSLATED.$file);
@@ -1810,6 +1475,7 @@ sub _POST {
 				$msg='changeperm';
 				$msgparam=sprintf("p1=%04o",$mode);
 				foreach my $file ($cgi->param('file')) {
+					$file="" if $file eq '.';
 					changeFilePermissions($PATH_TRANSLATED.$file, $mode, $cgi->param('fp_type'), $ALLOW_CHANGEPERMRECURSIVE && $cgi->param('fp_recursive'));
 				}
 			} else {
@@ -2666,7 +2332,7 @@ sub _BIND {
 	} else {
 		my $segment = $$xmldata{'{DAV:}segment'};
 		my $href = $$xmldata{'{DAV:}href'};
-		$href=~s/^https?:\/\/\Q$host\E+$VIRTUAL_BASE//;
+		$href=~s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//;
 		$href=uri_unescape(uri_unescape($href));
 		my $src = $DOCUMENT_ROOT.$href;
 		my $dst = $PATH_TRANSLATED.$segment;
@@ -2724,7 +2390,7 @@ sub _REBIND {
 	} else {
 		my $segment = $$xmldata{'{DAV:}segment'};
 		my $href = $$xmldata{'{DAV:}href'};
-		$href=~s/^https?:\/\/\Q$host\E+$VIRTUAL_BASE//;
+		$href=~s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//;
 		$href=uri_unescape(uri_unescape($href));
 		my $src = $DOCUMENT_ROOT.$href;
 		my $dst = $PATH_TRANSLATED.$segment;
@@ -2944,7 +2610,7 @@ sub handleBasicSearch {
 		my $depth = $$scope{'{DAV:}depth'};
 		my $href = $$scope{'{DAV:}href'};
 		my $base = $href;
-		$base =~ s@^(https?://([^\@]+\@)?\Q$host\E)?$VIRTUAL_BASE@@;
+		$base =~ s@^(https?://([^\@]+\@)?\Q$host\E(:\d+)?)?$VIRTUAL_BASE@@;
 		$base = $DOCUMENT_ROOT.uri_unescape(uri_unescape($base));
 		
 		debug("handleBasicSearch: base=$base (href=$href), depth=$depth, limit=$limit\n");
@@ -3555,13 +3221,15 @@ sub printHeaderAndContent {
 	print $content;
 }
 sub printFileHeader {
-	my ($fn) = @_;
+	my ($fn,$addheader) = @_;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($fn);
-	my $header = $cgi->header(-status=>'200 OK',-type=>getMIMEType($fn),
-				-Content_Length=>$size,	
-				-ETag=>getETag($fn),
-				-Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)),
-				-charset=>$CHARSET);
+	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET);
+	if ($addheader) {
+		foreach my $a (keys %{$addheader}) {
+			$ha{$a} = $$addheader{$a};
+		}
+	}
+	my $header = $cgi->header(\%ha);
 
 	$header = "MS-Author-Via: DAV\r\n$header";
 	$header = "DAV: $DAV\r\n$header";
@@ -4756,6 +4424,138 @@ sub renderActionView {
 		.$cgi->div({-class=>'sidebaractionviewaction'.($collapsed eq 'collapsed'?' collapsed':''),-id=>"v_$action"},$view)
 		);
 }
+sub renderPropertiesViewer {
+	my $fn = $PATH_TRANSLATED;
+	my $content = "";
+	$content .= start_html("$REQUEST_URI properties");
+	$content .= $LANGSWITCH if defined $LANGSWITCH;
+	$content .= $HEADER if defined $HEADER;
+	my $fullparent = dirname($REQUEST_URI) .'/';
+	$fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
+	$content .=$cgi->h2( { -class=>'foldername' }, (-d $fn ? getQuickNavPath($REQUEST_URI,getQueryParams()) 
+				     : getQuickNavPath($fullparent,getQueryParams())
+				       .' '.$cgi->a({-href=>$REQUEST_URI}, basename($REQUEST_URI))
+			      ). _tl('properties'));
+	$content .= $cgi->br().$cgi->a({href=>$REQUEST_URI,title=>_tl('clickforfullsize')},$cgi->img({-src=>$REQUEST_URI.($ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($ENABLE_THUMBNAIL?$THUMBNAIL_WIDTH:200)})) if hasThumbSupport(getMIMEType($fn));
+	$content .= $cgi->start_table({-class=>'props'});
+	local(%NAMESPACEELEMENTS);
+	my $dbprops = db_getProperties($fn);
+	my @bgstyleclasses = ( 'tr_odd', 'tr_even');
+	my (%visited);
+	$content.=$cgi->Tr({-class=>'trhead'}, $cgi->th({-class=>'thname'},_tl('propertyname')), $cgi->th({-class=>'thvalue'},_tl('propertyvalue')));
+	foreach my $prop (sort {nonamespace(lc($a)) cmp nonamespace(lc($b)) } keys %{$dbprops},-d $fn ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS ) {
+		my (%r200);
+		next if exists $visited{$prop} || exists $visited{'{'.getNameSpaceUri($prop).'}'.$prop};
+		if (exists $$dbprops{$prop}) {
+			$r200{prop}{$prop}=$$dbprops{$prop};
+		} else {
+			getProperty($fn, $REQUEST_URI, $prop, undef, \%r200, \my %r404);
+		}
+		$visited{$prop}=1;
+		$NAMESPACEELEMENTS{nonamespace($prop)}=1;
+		my $title = createXML($r200{prop},1);
+		my $value = createXML($r200{prop}{$prop},1);
+		my $namespace = getNameSpaceUri($prop);
+		if ($prop =~ /^\{([^\}]*)\}/) {
+			$namespace = $1;
+		}
+		push @bgstyleclasses,  shift @bgstyleclasses;
+		$content.= $cgi->Tr( {-class=>$bgstyleclasses[0] },
+			 $cgi->td({-title=>$namespace, -class=>'tdname'},nonamespace($prop))
+			.$cgi->td({-title=>$title, -class=>'tdvalue' }, $cgi->pre($cgi->escapeHTML($value)))
+			);
+	}
+	$content.=$cgi->end_table();
+	$content.=$cgi->hr().$cgi->div({-class=>'signature'},$SIGNATURE) if defined $SIGNATURE;
+	$content.=$cgi->end_html();
+	printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
+}
+sub renderWebInterface {
+	my $ru = $REQUEST_URI;
+	my $content = "";
+	my $head = "";
+	my $fn = $PATH_TRANSLATED;
+	debug("_GET: directory listing of $fn");
+	$head .= $LANGSWITCH if defined $LANGSWITCH;
+	$head .= $HEADER if defined $HEADER;
+	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
+	if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
+		my $search = $cgi->param('search');
+		$head .= $cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
+	}
+	$head.=renderMessage();
+	if ($cgi->param('search')) {
+		$content.=getSearchResult($cgi->param('search'),$fn,$ru);
+	} else {
+		my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
+		$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
+		$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
+		$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
+		$head .= $cgi->div( { -class=>'foldername'},
+			$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
+					$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
+				)
+			.'&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount'))
+			.' '
+			.getQuickNavPath($ru)
+		);
+		$head.= $cgi->div( { -class=>'viewtools' }, 
+				($ru=~/^$VIRTUAL_BASE\/?$/ ? '' :$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up')))
+				.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
+		if ($SHOW_QUOTA) {
+			my ($ql, $qu) = getQuota($fn);
+			if (defined $ql && defined $qu) {
+				$ql=$ql/1048576; $qu=$qu/1048576;
+				$head.= $cgi->div({-class=>'quota'},
+								_tl('quotalimit').$cgi->span({-title=>sprintf("= %.2f GB",$ql/1024)},sprintf("%.2f MB, ",$ql))
+								._tl('quotaused').$cgi->span({-title=>sprintf("= %.2f GB",$qu/1024)}, sprintf("%.2f MB, ",$qu))
+								._tl('quotaavailable').$cgi->span({-title=>sprintf("= %.2f GB",($ql-$qu)/1024)},sprintf("%.2f MB",($ql-$qu))));
+			}
+		}
+		$content.=$cgi->div({-class=>'masterhead'}, $head);
+		my $folderview = "";
+		my $manageview = "";
+		my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
+		$folderview.=$list;
+		$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
+		$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_FILE_MANAGEMENT && $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
+		if ($VIEW eq 'sidebar') {
+			$content.=renderSideBar() if $VIEW eq 'sidebar';
+			$folderview.=renderToolbar() if $ALLOW_FILE_MANAGEMENT;
+		}
+		if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
+			my $m = "";
+			$m .= renderFieldSet('files', renderCreateNewFolderView() .renderMoveView() .renderDeleteView());
+			$m .= renderFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
+			$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
+			$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
+			$manageview .= renderToggleFieldSet('management', $m);
+		}
+		$folderview .= $manageview unless $VIEW eq 'sidebar';
+		$folderview .= renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
+		my $showsidebar = $ALLOW_FILE_MANAGEMENT && ( $cgi->cookie('sidebar') ? $cgi->cookie('sidebar') eq 'true' : 1 );
+		$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview'.($showsidebar?'':' full') : 'folderview')}, $folderview);
+		$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
+				 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
+				.(!$showall ? '&bull; '.$cgi->a({-href=>'?showall=1'},_tl('navall')) : '' )
+				. $cgi->br().'&bull; '.$cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))) : '';
+		$content .= $cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
+		$content .= $cgi->start_form(-method=>'post', -id=>'clpform')
+				.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
+				.$cgi->hidden(-name=>'files', -value=>'') .$cgi->end_form() if ($ALLOW_FILE_MANAGEMENT && $ENABLE_CLIPBOARD);
+		$content .= $cgi->start_form(-method=>'post', -id=>'faform') 
+				.$cgi->hidden(-id=>'faction', -name=>'dummy', -value=>'unused')
+				.$cgi->hidden(-id=>'fdst', -name=>'newname',-value=>'')
+				.$cgi->hidden(-id=>'fsrc', -name=>'file', -value=>'')
+				.$cgi->hidden(-id=>'fid', -name=>'fid', -value=>'')
+				.$cgi->div({-id=>'forigcontent', -class=>'hidden'},"")
+				.$cgi->end_form() if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
+	}
+	$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, $SIGNATURE) if defined $SIGNATURE;
+	###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
+	$content = start_html($ru).$content.$cgi->end_html();
+	printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
+}
 sub renderSideBarMenuItem {
 	my ($action, $title, $onclick, $content) = @_;
 	my $isactive = (getActionViewInfos($action))[0] eq 'true';
@@ -4797,10 +4597,10 @@ sub renderSideBar {
 	$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 	$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
 
-	my $showsidebar = ! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true';
+	my $showsidebar =  (! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true');
 	my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt';
 
-	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -class=>'sidebarcontent'.($showsidebar?'':' collapsed')},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av;
+	return $ALLOW_FILE_MANAGEMENT ? $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar ?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -class=>'sidebarcontent'.($showsidebar?'':' collapsed')},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av : '';
 }
 sub renderPageNavBar {
 	my ($ru, $count, $files) = @_;
@@ -4894,7 +4694,9 @@ sub getFolderList {
 		.$cgi->td({-class=>'th_lm'.($ORDER=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($ORDER=~/^lastmodified/?$ochar:'')))
 		.$cgi->td({-class=>'th_size'.($ORDER=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($ORDER=~/^size/?$ochar:'')))
 		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($ORDER=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($ORDER=~/^mode/?$ochar:'')))):'')
-		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($ORDER=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($ORDER=~/^mime/?$ochar:''))):'');
+		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($ORDER=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($ORDER=~/^mime/?$ochar:''))):'')
+		.($ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS ? $cgi->td({-title=>_tl('fileactions'), -class=>'th_actions'}, _tl('fileactions')) : '')
+	;
 	$list .= $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $row);
 			
 
@@ -4963,11 +4765,12 @@ sub getFolderList {
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
-		$row.= $cgi->td({-class=>'tc_fn', -onclick=>$onclick, -onmousedown=>$ignev, -ondblclick=>$ignev}, getfancyfilename($nru,$filename,$mimetype, $full, $isUnReadable));
+		$row.= $cgi->td({-class=>'tc_fn', -id=>"tc_fn_$fid", -onclick=>$onclick, -onmousedown=>$ignev, -ondblclick=>$ignev}, getfancyfilename($nru,$filename,$mimetype, $full, $isUnReadable));
 		$row.= $cgi->td({-class=>'tc_lm', -title=>_tl('created').' '.$ctf, -onclick=>$onclick, -onmousedown=>$ignev}, $lmf);
 		$row.= $cgi->td({-class=>'tc_size', -title=>sprintf("= %.2fKB = %.2fMB = %.2fGB",$size/1024, $size/1048576, $size/1073741824), -onclick=>$onclick, -onmousedown=>$ignev}, $size);
 		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
 		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
+		$row.= $cgi->td({-class=>'tc_actions', -onmousedown=>$ignev}, $filename=~/^\.{1,2}$/ ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
 		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>$isReadable?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
@@ -4984,6 +4787,20 @@ sub getFolderList {
 
 	$content .= $pagenav;
 	return ($content, $count);
+}
+sub renderFileActions {
+	my ($fid, $file, $full) = @_;
+	my @values = ('--','rename','zip','delete');
+	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton') );
+	my %attr;
+	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
+		$attr{rename}{disabled}='disabled';
+		$attr{delete}{disabled}='disabled';
+	}
+	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
+		$attr{zip}{disabled}='disabled';
+	}
+	return $cgi->popup_menu(-name=>'actions', -id=>'fileactions_'.$fid, -onclick=>"handleFileAction(this.value,'$fid',event,'select');", -values=>\@values, -labels=>\%labels, -attributes=>\%attr);
 }
 sub getmodeclass {
 	my ($fn, $m) = @_;
@@ -5105,544 +4922,29 @@ sub createMsgQuery {
 sub start_html {
 	my ($title) = @_;
 	my $content ="";
-	my $confirmmsg = _tl('confirm');
 	$content.="<!DOCTYPE html>\n";
 	$content.='<head><title>'.$cgi->escapeHTML($title).'</title>';
 	$content.=qq@<meta http-equiv="Content-Type" content="text/html; charset=$CHARSET"/>@;
 	$content.=qq@<meta name="author" content="Daniel Rohde"/>@;
 
-	my %tl;
-	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle')) {
-		$tl{$usedtext} = _tl($usedtext);
+	my $js='function tl(k) { var tl = new Array();';
+	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm')) {
+		$js.= qq@tl['$usedtext']='@._tl($usedtext).qq@';@;
 	}
-	my $jscript = <<EOS
-		<script type="text/javascript">
-		var dragElID = null;
-		var dragOffset = new Object();
-		var dragZIndex = 10;
-		var dragOrigHandler = new Object();
-		function getEventPos(e) {
-			var p = new Object();
-			p.x = e.pageX ? e.pageX : e.clientX ? e.clientX : e.offsetX;
-			p.y = e.pageY ? e.pageY : e.clientY ? e.clientY : e.offsetY;
-			return p;
-		}
-		function getViewport() {
-			var v = new Object();
-			v.w = window.innerWidth || (document.documentElement && document.documentElement.clientWidth ? document.documentElement.clientWidth : 0) || document.getElementsByTagName('body')[0].clientWidth;
-			v.h = window.innerHeight || (document.documentElement && document.documentElement.clientHeight ? document.documentElement.clientHeight : 0) || document.getElementsByTagName('body')[0].clientHeight;
-			return v;
-		}
-		function getDragZIndex(z) {
-			dragZIndex = getCookie('dragZIndex')!="" ? parseInt(getCookie('dragZIndex')) : dragZIndex;
-			if (z && z>dragZIndex) dragZIndex = z + 10;
-			setCookie('dragZIndex', ++dragZIndex,1);
-			return dragZIndex;
-		}
-		function handleMouseDrag(event) {
-			if (!event) event = window.event;	
-			if (dragElID!=null) {
-				var el = document.getElementById(dragElID);	
-				if (el) {
-					var p = getEventPos(event);
-					var v = getViewport();
-					if (p.x+dragOffset.x < 0 || p.y+dragOffset.y <0 || p.x > v.w ||  p.y > v.h ) return false;
-					el.style.left = (p.x+dragOffset.x)+'px';
-					el.style.top = (p.y+dragOffset.y)+'px';
-					return false;
-				}
-			}
-			return true;
-		}
-		function handleWindowMove(event, id, down) {
-			if (!event) event=window.event;
-			var e = document.getElementById(id);
-			if (down) {
-				if (e && event) {
-					dragElID = id;
-					var p = getEventPos(event);
-					dragOffset.x = ( e.style.left ? parseInt(e.style.left) : 220 ) - p.x;
-					dragOffset.y = ( e.style.top ? parseInt(e.style.top) : 120 ) - p.y;
-					dragOrigHandler.onmousemove = document.onmousemove;
-					document.onmousemove = handleMouseDrag;
-					dragOrigHandler.onselectstart = document.onselectstart;
-					document.onselectstart = function () { return false; };
-					document.body.focus();
-					event.ondragstart = function() { return false; };
-					if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
-					e.style.zIndex = getDragZIndex(e.style.zIndex);
-					addClassName(e,'move');
-					return false;
-				}
-			} else {
-				dragElID = null;
-				document.onmousemove = dragOrigHandler.onmousemove;
-				document.onselectstart = dragOrigHandler.onselectstart;
-				if (e) { 
-					removeClassName(e,'move');
-					setCookie(id, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
-				}
-			}
-			return true;
-		}
-		function handleWindowClick(event, id, focusId) {
-			var e = document.getElementById(id);
-			if (!e) return true;
-			e.style.zIndex = getDragZIndex(e.style.zIndex);
-			setCookie(id, (e.style.visibility!='hidden')+'/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+ e.className.match(/collapsed/),1);
-			if (focusId) document.getElementById(focusId).focus();
-			return true;
-		}
-		function toggleSideBar() {
-			var e = document.getElementById('sidebarcontent');
-			var ison = 1;
-			if (e) {
-				ison = !e.className.match(/collapsed/);
-				toggleClassName(e, 'collapsed', ison);
-				toggleClassNameById('sidebartable','collapsed', ison);
-				toggleClassNameById('folderview','full', ison);
-				document.getElementById('sidebartogglebutton').innerHTML = ison ? '&gt;' : '&lt;'
-			}
-			setCookie('sidebar', !ison, 1);
-		}
-		function showActionView(action, focusId) {
-			var e = document.getElementById(action);
-			if (e) { 
-				var v = getViewport();
-				var x = e.style.left ? e.style.left : '';
-				var y = e.style.top ? e.style.top : '';
-				if (x!="") if (parseInt(x) < v.w) e.style.left = x; else e.style.left = (v.w-100)+'px';
-				if (y!="") if (parseInt(y) < v.h) e.style.top = y; else e.style.top = (v.h-100)+'px';
-				e.style.visibility='visible';
-				e.style.zIndex = getDragZIndex(e.style.zIndex);
-				addClassNameById(action+'menu', 'active');
-				setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
-				if (focusId) document.getElementById(focusId).focus();
-			}
-			return false;
-		}
-		function hideActionView(action) {
-			var e = document.getElementById(action);
-			if (e) e.style.visibility='hidden';
-			removeClassNameById(action+'menu', 'active');
-			setCookie(action, 'false/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
-		}
-		function toggleActionView(action,focusId) {
-			var e = document.getElementById(action);
-			if (e && e.style.visibility=='visible') hideActionView(action); else showActionView(action, focusId); 
-		}
-		function addUploadField(force) {
-			var e = document.getElementById('moreuploads');
-			var fu = document.getElementsByName('file_upload');
-			if (!force) for (var i = 0; i<fu.length; i++) if (fu[i].value == "") return false;
-			e.id = 'moreuploads'+(new Date()).getTime();
-			var rmid='fileuploadfield'+(new Date()).getTime();
-			e.innerHTML = '<span id="'+rmid+'"><br/>'
-					+ document.getElementById("file_upload").innerHTML 
-				      + '<a class="rmuploadfield" title="$tl{rmuploadfieldtitle}" href="#" onclick="document.getElementById(\\''+rmid+'\\').innerHTML=\\'\\'; return false;">$tl{rmuploadfield}</a></span>'
-					+ '<span id="moreuploads"></span>';
-			return false;
-		}
-		function getBookmarkLocation() {
-			return decodeURIComponent(window.location.pathname);
-		}
-		function addBookmark() {
-			var loc = getBookmarkLocation();
-			var i = 0;
-			while (getCookie('bookmark'+i)!= "-" && getCookie('bookmark'+i) != "" && getCookie('bookmark'+i)!=loc) i++;
-			if (getCookie('bookmark'+i) != loc) {
-				setCookie('bookmark'+i, loc, 1);
-				setCookie('bookmark'+i+'time', (new Date()).getTime(), 1);
-				bookmarkcheck();
-			}
-			return false;
-		}
-		function rmBookmark() {
-			var loc = getBookmarkLocation();
-			var i = 0;
-			while (getCookie('bookmark'+i) != "" && getCookie('bookmark'+i)!=loc) i++;
-			if (getCookie('bookmark'+i) == loc) {
-				setCookie('bookmark'+i, "-", 1);
-				bookmarkcheck();
-			}
-		}
-		function rmAllBookmarks() {
-			var i = 0;
-			while (getCookie('bookmark'+i) != "") {
-				delCookie('bookmark'+i);
-				delCookie('bookmark'+i+'time');
-				i++;
-			}
-			bookmarkcheck();
-		}
-		function isBookmarked() {
-			var loc = getBookmarkLocation();
-			var i = 0;
-			while (getCookie('bookmark'+i)!="") { 
-				if (getCookie('bookmark'+i) == loc) return true; 
-				i++; 
-			}
-			return false;
-		}
-		function toggleBookmarkButtons() {
-			var ib = isBookmarked();
-			if (document.getElementById('addbookmark')) {
-				document.getElementById('addbookmark').style.display = ib ? 'none' : 'inline';
-				document.getElementById('rmbookmark').style.display = ib ? 'inline' : 'none';
-			}
-		}
-		function encodeSpecChars(uri) {
-			uri = uri.replace(/%/g,"%25");
-			uri = uri.replace(/#/g,"%23");
-			uri = uri.replace(/&/g,"%26");
-			uri = uri.replace(/;/g,"%3B");
-			uri = uri.replace(/ /g,"%20");
-			uri = uri.replace(/\\+/g,"%2B");
-			uri = uri.replace(/\\?/g,"%3F");
-			uri = uri.replace(/\\"/g,"%22");
-			return uri;
-		}
-		function bookmarkChanged(bm) {
-			if (bm == '+') addBookmark();
-			else if (bm == '-') rmBookmark();
-			else if (bm == '--') rmAllBookmarks();
-			else if (bm.match(/^time/) || bm.match(/^path/)) { setCookie('bookmarksort',bm,1); bookmarkcheck(); }
-			else changeDir(bm);
-			return true;
-		}
-		function getBookmarkTime(bm) {
-			var i=0;
-			while (getCookie('bookmark'+i) != "" && getCookie('bookmark'+i) != bm) i++;
-			return getCookie('bookmark'+i+'time');
-		}
-		function bookmarkSort(a,b) {
-			var s = getCookie('bookmarksort');
-			if (s == "") s='time-desc';
-			var f = s.match(/desc/) ? -1 : 1;
-
-			if (s.match(/time/)) {
-				a = getBookmarkTime(a);
-				b = getBookmarkTime(b);
-			}
-			return f * (a == b ? 0 : a < b ? -1 : 1);
-		}
-		function buildBookmarkList() {
-			var e = document.getElementById('bookmarks');
-			if (!e) return;
-			var loc = getBookmarkLocation();
-			var b = new Array();
-			var content = "";
-			var i = 0;
-			while (getCookie('bookmark'+i)!="") {
-				var c = getCookie('bookmark'+i);
-				i++;
-				if (c=="-") continue;
-				b.push(c);
-			}
-			b.sort(bookmarkSort);
-			var isBookmarked = false;
-			for (i=0; i<b.length; i++) {
-				var c = b[i];
-				var d = (c == loc) ? ' disabled="disabled"' : '';
-				if (c == loc) isBookmarked = true;
-				var v = c.length <= 25 ? c : c.substr(0,5)+'...'+c.substr(c.length-17);
-				content = content + '<option value="'+encodeSpecChars(c)+'" title="'+c+'"'+d+'>' + v + '</option>';
-			}
-			var bms = getCookie('bookmarksort');
-			if (bms == "") bms='time-desc';
-			var sbparr,sbpadd,sbtarr,sbtadd;
-			sbpadd = ''; sbparr = '';
-			sbtadd = ''; sbtarr = ''; 
-			if (bms.match(/^path/)) {
-				sbpadd = bms.match(/desc/) ? '' : '-desc';
-				sbparr = bms.match(/desc/) ? '&darr;' : '&uarr;';
-			} else if (bms.match(/^time/)) {
-				sbtadd = bms.match(/desc/) ? '' : '-desc';
-				sbtarr = bms.match(/desc/) ? '&darr;' : '&uarr;';
-			}
-			e.innerHTML = '<select class="bookmark" name="bookmark" onchange="return bookmarkChanged(this.options[this.selectedIndex].value);">'
-					+'<option class="title" value="">$tl{bookmarks}</option>'
-					+(!isBookmarked?'<option class="func" title="$tl{addbookmarktitle}" value="+">$tl{addbookmark}</option>' : '')
-					+ (content != "" ?  content : '')
-					+(isBookmarked?'<option disabled="disabled"></option><option class="func" title="$tl{rmbookmarktitle}" value="-">$tl{rmbookmark}</option>' : '')
-					+ (b.length<=1 ? '' : '<option class="func" value="path'+sbpadd+'">$tl{sortbookmarkbypath} '+sbparr+'</option><option class="func" value="time'+sbtadd+'">$tl{sortbookmarkbytime} '+sbtarr+'</option>')
-					+ '<option disabled="disabled"></option><option class="func" title="$tl{rmallbookmarkstitle}" value="--">$tl{rmallbookmarks}</option>' 
-					+ '</select>' ;
-		}
-		function bookmarkcheck() {
-			toggleBookmarkButtons();
-			buildBookmarkList();
-		}
-		function changeDir(href) {
-			window.location.href=href; 
-			return true;
-		}
-		function showChangeDir(show) {
-			document.getElementById('changedir').style.display = show ? 'inline' : 'none';
-			document.getElementById('changedirbutton').style.display = show ? 'none' : 'inline';
-			document.getElementById('quicknavpath').style.display = show ? 'none' : 'inline';
-		}
-		function catchEnter(e, id) {
-			if (!e) e = window.event;
-			if (e.keyCode == 13) {
-				var el = document.getElementById(id);
-				if (el) el.click();
-				return false;
-			}
-			return true;
-		}
-		function handleRowClick(id,e) {
-			if (!e) e = window.event;
-			var el=document.getElementById(id); 
-			if (el) { 
-				shiftsel.shifted=e.shiftKey; 
-				el.click(); 
-			}; 
-			return true;
-		}
-		function handleSearch(el,ev) {
-			if (!ev) ev = window.event;
-			if (ev && el && ev.keyCode == 13) {
-				window.location.href='?search='+encodeSpecChars(el.value);
-				return false;
-			}
-			return true;
-		}
-		function encodeRegExp(v) { return v.replace(/([\\*\\?\\+\\\$\\^\\{\\}\\[\\]\\(\\)\\\\])/g,'\\\\\$1'); }
-		function handleNameFilter(el,ev) {
-			if (!ev) ev=window.event;
-			if (ev && el && ev.keyCode != 13) {
-				if (el.size>5 && el.value.length<el.size) el.size = 5;
-				if (el.size<el.value.length) el.size = el.value.length;
-				var regex;
-				try { 
-					regex = new RegExp(el.value, 'gi');
-				} catch (exc) {
-					regex = new RegExp(encodeRegExp(el.value), 'gi');
-				}
-				var matchcount = 0;
-				var i = 1;
-				var e;
-				while ((e = document.getElementById('f'+i))) {
-					var m = e.value.match(regex);
-					if (m)  matchcount++;
-					toggleClassNameById('tr_f'+i, 'hidden', !m);
-					i++;
-				}
-				var me = document.getElementsByName('namefiltermatches');
-				for (i=0; i<me.length; i++) me[i].value=matchcount;
-				me = document.getElementsByName('namefilter');
-				for (i=0; i<me.length; i++) {
-					if (el!=me[i]) {
-						me[i].value=el.value;
-						if (me[i].size>5 && el.value.length<me[i].size) me[i].size = 5;
-						if (me[i].size<el.value.length) me[i].size = el.value.length;
-					}
-				}
-				return ev.keyCode!=13;
-			}
-			return false;
-		}
-		var shiftsel = new Object();
-		function handleCheckboxClick(o,id,e) {
-			if (!e) e = window.event;
-			var nid = parseInt(id.substr(1));
-			var nlid = shiftsel && shiftsel.lastId ? parseInt(shiftsel.lastId.substr(1)) : nid;
-			if ((e.shiftKey||shiftsel.shifted) && shiftsel.lastId && nid != nlid ) {
-				var start = nid > nlid ? nlid : nid;
-				var end = nid > nlid ? nid : nlid;
-				shiftsel.shifted=false;
-				for (var i = start + 1; i < end ; i++) {
-					var el = document.getElementById('f'+i);
-					if (el) { 	
-						if (document.getElementById('tr_f'+i).className.match('hidden')) continue;
-						el.checked=!el.checked; 
-						toggleClassNameById("tr_f"+i, "tr_selected", el.checked); 
-					}
-				}
-			}
-			shiftsel.lastId = id;
-			if (document.getElementById('tr_'+id).className.match('hidden')) return false;
-			toggleFileFolderActions(); 
-			toggleClassNameById("tr_"+id, "tr_selected", o.checked); 
-			return true;
-		}
-		function addClassName(e, cn) {
-			if (e && e.className) {
-				if (e.className.indexOf(" "+cn)>-1) return;
-				e.className = e.className + " " + cn;
-			}
-		}
-		function addClassNameById(id, cn) { addClassName(document.getElementById(id), cn); }
-		function removeClassName(e,cn) {
-			if (e && e.className) {
-				var a = e.className.split(' ');
-				for (var i=0; i<a.length; i++) {
-					if (a[i] == cn) a.splice(i,1);
-				}
-				e.className = a.join(' ');
-			}
-		}
-		function removeClassNameById(id, cn) { removeClassName(document.getElementById(id),cn); }
-		function toggleClassName(e, cn, s) { if (s) addClassName(e, cn); else removeClassName(e,cn); }
-		function toggleClassNameById(id, cn, s) { toggleClassName(document.getElementById(id), cn, s); }
-		function toggleFileFolderActions() {
-			var disabled = true;
-			var ea = document.getElementsByName("file"); 
-			for (var i=0; i<ea.length; i++) if (ea[i].checked) { disabled=false; break; }
-			var names = new Array('copy','cut','delete','newname','rename','zip','changeperm');
-			for (var i=0; i<names.length; i++) {
-				ea = document.getElementsByName(names[i]);
-				if (ea) for (var j=0; j<ea.length; j++) ea[j].disabled = disabled;
-			}
-			names = new Array('filesubmit','file_upload','mkcol','colname','saveafsacl','uncompress','zipfile_upload');
-			for (var i=0; i<names.length; i++) {
-				ea = document.getElementsByName(names[i]);
-				if (ea) for (var j=0; j<ea.length; j++) ea[j].disabled = !disabled;
-			}
-		}
-
-		function toggleAllFiles(tb) {
-			tb.checked=false; 
-			var ea = document.getElementsByName("file"); 
-			for (var i=0; i<ea.length; i++) ea[i].click();
-		}
-		function setCookie(name,value,e) { 
-			var expires;
-			var date = new Date();
-			date.setTime(date.getTime() + 315360000000);
-			expires = date.toGMTString();
-			document.cookie = name + '=' + escape(value) + ';'+ (e?'expires='+expires+'; ':'') +' path=/; secure;'; 
-		}
-		function delCookie(name) {
-			var date = new Date();
-			date.setTime(date.getTime() - 1000000);
-			document.cookie = name + '=' + escape('-') + '; expires='+date.toGMTString()+'; path=/; secure;';
-		}
-		function getCookie(name) {
-			if (document.cookie.length>0) {
-				var c_start=document.cookie.indexOf(name + "=");
-				if (c_start!=-1) {
-					c_start=c_start + name.length+1;
-					var c_end=document.cookie.indexOf(";",c_start);
-					if (c_end==-1) c_end=document.cookie.length;
-					return unescape(document.cookie.substring(c_start,c_end));
-				}
-			}
-			return "";
-		}
-		function clpcheck() { 
-			var pbuttons = document.getElementsByName('paste');
-			for (var i=0; i<pbuttons.length; i++) {
-				var b = pbuttons[i];
-				b.disabled=(getCookie('clpfiles') == '' || '$REQUEST_URI' == getCookie('clpuri')); 
-				if (getCookie('clpfiles')!='') 
-					b.title=getCookie('clpaction')+' '
-							+getCookie('clpuri')+': '+getCookie('clpfiles').split("\@/\@").join(", ");
-				else
-					b.title='';
-			}
-		}
-		function clpaction(action) {
-			var sel = new Array();
-			var files = document.getElementsByName('file');
-			for (var i=0; i<files.length; i++) { 
-				removeClassNameById("tr_"+files[i].id, "tr_cut");
-				removeClassNameById("tr_"+files[i].id, "tr_copy");
-				if (files[i].checked === true) { 
-					files[i].click(); 
-					sel.push(files[i].value); 
-					addClassNameById("tr_"+files[i].id, "tr_"+action);
-				}
-			}
-			if (action == 'paste') {
-				var clpform = document.getElementById('clpform');
-				clpform.action.value=getCookie('clpaction');
-				clpform.srcuri.value=getCookie('clpuri');
-				clpform.files.value=getCookie('clpfiles');
-				if (clpform.files.value!='' && window.confirm('$confirmmsg')) {
-					if (clpform.action.value != "copy") {
-						setCookie('clpuri','');
-						setCookie('clpaction','');
-						setCookie('clpfiles','');
-					}
-					clpcheck();
-					clpform.submit();
-				}
-			} else {
-				setCookie( 'clpuri','$REQUEST_URI');
-				setCookie( 'clpaction', action);
-				setCookie( 'clpfiles', sel.join('\@/\@'));
-				clpcheck();
-			}
-		}
-		function toggle(name,cshow,chide) {
-			var button = document.getElementById('togglebutton'+name);
-			var div = document.getElementById('toggle'+name);
-			if (!cshow) cshow = '+';
-			if (!chide) chide = '-';
-			div.style.display=div.style.display=='none'?'block':'none';
-			button.innerHTML = div.style.display=='none'?cshow:chide; 
-			setCookie('toggle'+name, div.style.display,1);
-		}
-		function selcheck() {
-			var i = 1;
-			var el;
-			while ((el = document.getElementById('f'+i))) {
-				if (el.checked) toggleClassNameById("tr_f"+i, "tr_selected", el.checked); 
-				i++;
-			}
-		}
-		function check() {
-			selcheck();
-			clpcheck();
-			bookmarkcheck();
-			hideMsg();
-		}
-		function fadeOut(id) {
-			var obj = document.getElementById(id);
-			if (!obj.fadeOutInterval) {
-				obj.fadeOutInterval = window.setInterval('fadeOut("'+id+'");', 50);
-				obj.fadeOutOpacity = 0.95;
-				obj.style.opacity = obj.fadeOutOpacity;
-				obj.style.filter = "Alpha(opacity="+(obj.fadeOutOpacity*100)+")";
-				obj.fadeOutTop = 10;
-				obj.style.top = obj.fadeOutTop + "px";
-			}
-			if (obj.fadeOutOpacity <= 0) {
-				window.clearInterval(obj.fadeOutInterval);
-				obj.style.display="none";
-			} else  {
-				if (obj.fadeOutOpacity > 0) obj.fadeOutOpacity -= 0.1;
-				if (obj.fadeOutOpacity < 0) obj.fadeOutOpacity = 0;
-				obj.style.opacity = obj.fadeOutOpacity; 
-				obj.style.filter = "Alpha(opacity="+(obj.fadeOutOpacity*100)+")"; 
-				obj.fadeOutTop -= 6;
-				obj.style.top =  obj.fadeOutTop + "px";
-			}
-		}
-		function hideMsg() { if (document.getElementById("msg")) setTimeout("fadeOut('msg');", 60000); }
-		function toggleCollapseAction(action, event) {
-			if (!event) event=window.event;
-			var e = document.getElementById('v_'+action);
-			if (!e) return true;
-			var shown = !e.className.match(/collapsed/);
-			toggleClassName(e,'collapsed', shown);
-			toggleClassNameById(action, 'collapsed', shown);
-			e = document.getElementById(action);
-			setCookie(action, 'true/'+e.style.left+'/'+e.style.top+'/'+e.style.zIndex+'/'+e.className.match(/collapsed/),1);
-			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
-			return false;
-		}
-		</script>
-EOS
-;
-	minify($jscript);
-	$content.=$jscript;
+	$js.=' return tl[k] ? tl[k] : k; }';
+	$js.=qq@var REQUEST_URI = '$REQUEST_URI';@;
+	$js.=qq@var MAXFILENAMESIZE= '$MAXFILENAMESIZE';@;
+	
+	$REQUEST_URI=~/^($VIRTUAL_BASE)/;
+	my $base = $1;
+	$base.='/' unless $base=~/\/$/;
+	$base.=$cgi->escapeHTML($LANG).'/';
+	$content.=qq@<script type="text/javascript">$js</script><script src="${base}webdav-ui.js" type="text/javascript"></script>@;
 	$content.=qq@<link rel="search" type="application/opensearchdescription+xml" title="WebDAV CGI filename search" href="$REQUEST_URI?action=opensearch"/>@ if $ALLOW_SEARCH;
 	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
+	$content.=qq@<link href="${base}webdav-ui.css" rel="stylesheet" type="text/css"/>@;
 	minify($CSS);
-	$content.=qq@<style>$CSS</style>@ if defined $CSS;
+	$content.=qq@<style type="text/css">$CSS</style>@ if defined $CSS;
 	$content.=qq@<link href="$CSSURI" rel="stylesheet" type="text/css"/>@ if defined $CSSURI;
 	$content.=$HTMLHEAD if defined $HTMLHEAD;
 	$content.=qq@</head><body onload="check()">@;
