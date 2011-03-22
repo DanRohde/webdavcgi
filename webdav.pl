@@ -63,7 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
-            $SHOW_FILE_ACTIONS $REDIRECT_TO 
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -72,15 +72,20 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 ##  search PATH for binaries 
 $ENV{PATH}="/bin:/usr/bin:/sbin/:/usr/local/bin:/usr/sbin";
 
+## -- INSTALL_BASE
+## folder path to the webdav.conf, .css, .js, and. msg files for the Web interface
+## (don't forget the trailing slash)
+## DEFAULT: $INSTALL_BASE='' # use webdav.pl script path
+$INSTALL_BASE=$ENV{INSTALL_BASE} || '';
+
 ## -- CONFIGFILE
 ## you can overwrite all variables from this setup section with a config file
 ## (simply copy the complete setup section (without 'use vars ...') or single options to your config file)
 ## EXAMPLE: CONFIGFILE = './webdav.conf';
-$CONFIGFILE = $ENV{WEBDAVCONF} || '/usr/local/www/cgi-bin/webdav.conf';
+$CONFIGFILE = $ENV{WEBDAVCONF} || (-e "${INSTALL_BASE}webdav.conf" ? "${INSTALL_BASE}webdav.conf" : undef) || 'webdav.conf';
 
 ## -- VIRTUAL_BASE
-## only neccassary if you use redirects or rewrites 
-## from a VIRTUAL_BASE to the DOCUMENT_ROOT
+## only neccassary if you use redirects or rewrites from a VIRTUAL_BASE to the DOCUMENT_ROOT;
 ## regular expressions are allowed
 ## EXAMPLE: $VIRTUAL_BASE = '/';
 $VIRTUAL_BASE = '/';
@@ -179,7 +184,6 @@ $CSS = '';
 ## additional data included in the HTML <head> tag after $CSS/$CSSURI of the Web interface
 #$HTMLHEAD = "";
 
-
 ## -- FORBIDDEN_UID
 ## a comman separated list of UIDs to block 
 ## (process id of this CGI will be checked against this list)
@@ -227,6 +231,11 @@ $ENABLE_CLIPBOARD = 1;
 ## enables file/folder name filtering on the current folder in the Web interface
 $ENABLE_NAMEFILTER = 1;
 
+## -- ENABLE_DAVMOUNT
+## enables DAV mount button in the folder navigation of the Web interface
+## DEFAULT: $ENABLE_DAVMOUNT = 0;
+$ENABLE_DAVMOUNT = 0;
+
 ## -- SHOW_STAT
 ## shows file statistics after file/folder list in the Web interface
 $SHOW_STAT = 1;
@@ -247,7 +256,8 @@ $PAGE_LIMIT=15;
 $ENABLE_BOOKMARKS = 1;
 
 ## -- ENABLE_PROPERTIES_VIEWER
-## EXAMPLE: $ENABLE_PROPERTIES_VIEWER
+## enables the WebDAV properties viewer in the Web interface
+## DEFAULT: $ENABLE_PROPERTIES_VIEWER = 0;
 $ENABLE_PROPERTIES_VIEWER = 0;
 
 ## -- ENABLE_SIDEBAR
@@ -1252,7 +1262,7 @@ sub _GET {
 	if (is_hidden($fn)) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
-		my $file = basename($fn);
+		my $file = $INSTALL_BASE.basename($fn);
 
 		printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
 		if (open(F,"<$file")) {
@@ -1273,7 +1283,7 @@ sub _GET {
 		} else {
 			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 		}
-	} elsif ($cgi->param('action') eq 'davmount' && -e $fn) {
+	} elsif ($ENABLE_DAVMOUNT && $cgi->param('action') eq 'davmount' && -e $fn) {
 		my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
 		my $bn = basename($fn);
 		$su =~ s/\Q$bn\E\/?//;
@@ -1370,7 +1380,7 @@ sub _HEAD {
 		debug("_HEAD: $PATH_TRANSLATED exists!");
 		printFileHeader($PATH_TRANSLATED);
 	} elsif ($PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/ && !-e $PATH_TRANSLATED) {
-		printFileHeader(basename($PATH_TRANSLATED));
+		printFileHeader($INSTALL_BASE.basename($PATH_TRANSLATED));
 	} else {
 		debug("_HEAD: $PATH_TRANSLATED does not exists!");
 		printHeaderAndContent('404 Not Found');
@@ -3130,7 +3140,7 @@ sub getfancyfilename {
 		}
 	}
 	$full.= ($full=~/\?/ ? ';' : '?').'action=props' if $ENABLE_PROPERTIES_VIEWER;
-	$ret = $cgi->a(  {href=>$full,title=>_tl('showproperties')},
+	$ret = $cgi->a(  {href=>$full,title=>$ENABLE_PROPERTIES_VIEWER ? _tl('showproperties') : $s},
 			 $cgi->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout})
 			).' '.$ret;
 	return $ret;
@@ -4495,7 +4505,7 @@ sub renderWebInterface {
 			$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
 					$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
 				)
-			.'&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount'))
+			.($ENABLE_DAVMOUNT ? '&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount')) : '')
 			.' '
 			.getQuickNavPath($ru)
 		);
@@ -4526,14 +4536,14 @@ sub renderWebInterface {
 		if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
 			my $m = "";
 			$m .= renderFieldSet('files', renderCreateNewFolderView() .renderMoveView() .renderDeleteView());
-			$m .= renderFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 			$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
+			$m .= renderToggleFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 			$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
 			$manageview .= renderToggleFieldSet('management', $m);
 		}
 		$folderview .= $manageview unless $VIEW eq 'sidebar';
 		$folderview .= renderToggleFieldSet('afsgroup',renderAFSGroupManager()) if ($ENABLE_AFSGROUPMANAGER && $VIEW ne 'sidebar');
-		my $showsidebar = $ALLOW_FILE_MANAGEMENT && ( $cgi->cookie('sidebar') ? $cgi->cookie('sidebar') eq 'true' : 1 );
+		my $showsidebar = $cgi->cookie('sidebar') ? $cgi->cookie('sidebar') eq 'true' : 1;
 		$content .= $cgi->div({-id=>'folderview', -class=>($VIEW eq 'sidebar'? 'sidebarfolderview'.($showsidebar?'':' full') : 'folderview')}, $folderview);
 		$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
 				 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
@@ -4567,40 +4577,40 @@ sub renderSideBarMenuItem {
 }
 sub renderSideBar {
 	my $content = "";
+	my $av = "";
 
-	$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
-
-	$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview","filesubmit")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
-	$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
-	$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
-	$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
-	$content .= renderSideBarMenuItem('paste', undef, undef, renderPasteButton());
-	$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
-	$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview","colname-sidebar");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
-	$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>_tl('movefilesbutton')}));
-	$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
-	$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
-	$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
+	if ($ALLOW_FILE_MANAGEMENT) {
+		$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
+		$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview","filesubmit")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
+		$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
+		$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
+		$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
+		$content .= renderSideBarMenuItem('paste', undef, undef, renderPasteButton());
+		$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
+		$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview","colname-sidebar");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
+		$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>_tl('movefilesbutton')}));
+		$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
+		$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
+		$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
+		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit');
+		$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
+		$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
+		$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
+		$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
+		$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
+	}
 
 	$content .= $cgi->div({-class=>'sidebarheader'},_tl('viewoptions'));
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 	$content .= renderSideBarMenuItem('navpageview', _tl('navpageviewtooltip'), 'window.location.href="?showpage=1";',$cgi->button(-value=>_tl('navpageview'))) if $showall;
 	$content .= renderSideBarMenuItem('navall', _tl('navalltooltip'),'window.location.href="?showall=1";', $cgi->button(-value=>_tl('navall'))) unless $showall;
-	#$content .= $cgi->div({-style=>'overflow: hidden;'}, renderNameFilterForm(1).$cgi->div('&nbsp;')) if $showall;
 	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button({-value=>_tl('classicview')})); 
 
-	my $av = "";
-	$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit');
-	$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
-	$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
-	$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
-	$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
-	$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
 
 	my $showsidebar =  (! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true');
 	my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt';
 
-	return $ALLOW_FILE_MANAGEMENT ? $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar ?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -class=>'sidebarcontent'.($showsidebar?'':' collapsed')},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av : '';
+	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar ?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -class=>'sidebarcontent'.($showsidebar?'':' collapsed')},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av ;
 }
 sub renderPageNavBar {
 	my ($ru, $count, $files) = @_;
@@ -4770,7 +4780,7 @@ sub getFolderList {
 		$row.= $cgi->td({-class=>'tc_size', -title=>sprintf("= %.2fKB = %.2fMB = %.2fGB",$size/1024, $size/1048576, $size/1073741824), -onclick=>$onclick, -onmousedown=>$ignev}, $size);
 		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
 		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
-		$row.= $cgi->td({-class=>'tc_actions', -onmousedown=>$ignev}, $filename=~/^\.{1,2}$/ ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
+		$row.= $cgi->td({-class=>'tc_actions' }, $filename=~/^\.{1,2}$/ ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
 		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>$isReadable?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
@@ -4800,7 +4810,7 @@ sub renderFileActions {
 	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
 		$attr{zip}{disabled}='disabled';
 	}
-	return $cgi->popup_menu(-name=>'actions', -id=>'fileactions_'.$fid, -onclick=>"handleFileAction(this.value,'$fid',event,'select');", -values=>\@values, -labels=>\%labels, -attributes=>\%attr);
+	return $cgi->popup_menu(-name=>'actions', -id=>'fileactions_'.$fid, -onchange=>"handleFileAction(this.value,'$fid',event,'select');", -values=>\@values, -labels=>\%labels, -attributes=>\%attr);
 }
 sub getmodeclass {
 	my ($fn, $m) = @_;

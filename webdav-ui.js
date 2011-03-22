@@ -537,7 +537,7 @@ function handleFileAction(action, id, event, type) {
 		if (action == 'rename') {
 			document.getElementById('forigcontent').innerHTML = e.innerHTML;
 			e.onmousedown = function() { return true; };
-			e.innerHTML = '<input size="'+MAXFILENAMESIZE+'" type="text" name="fdst_'+id+'" id="fdst_'+id+'" onfocus="this.select();" value="'+ef.value+'" onkeypress="handleFileAction(&quot;'+action+'&quot;,&quot;'+id+'&quot;,event, &quot;rename&quot;)" />';
+			e.innerHTML = '<input size="'+MAXFILENAMESIZE+'" type="text" name="fdst_'+id+'" id="fdst_'+id+'" onfocus="this.select();" value="'+ef.value+'" onkeypress="handleFileAction(&quot;'+action+'&quot;,&quot;'+id+'&quot;,event, &quot;rename&quot;)" onkeyup="handleFileAction(&quot;'+action+'&quot;,&quot;'+id+'&quot;,event, &quot;escape&quot;)" />';
 			document.getElementById('fdst_'+id).focus();
 		} else {
 			var cfmsg = tl('confirm');
@@ -553,6 +553,7 @@ function handleFileAction(action, id, event, type) {
 				if (window.confirm(cfmsg)) {
 					document.getElementById('fdst').value = dst.value;
 					e.innerHTML = dst.value;
+					if (document.body && document.body.style) document.body.style.cursor='wait';
 					document.getElementById('faform').submit();
 				}
 			}
@@ -560,6 +561,8 @@ function handleFileAction(action, id, event, type) {
 		} else if (event.keyCode == 27)  {
 			ret = handleFileAction(action,id,event,'cancel');
 		}
+	} else if (type == 'escape') {
+		if (event.keyCode == 27)  ret = handleFileAction(action,id,event,'cancel');
 	}
 	return ret;
 }

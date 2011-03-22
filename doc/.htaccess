@@ -1,0 +1,11 @@
+RewriteEngine On
+
+
+#RewriteRule \.(gif|jpg|png)$ /images.php 
+
+RewriteRule ^index.html /index.php
+RewriteRule ^$ /index.php
+
+RewriteRule ^webdav.pl /dl.php?webdav.pl [NE]
+
+php_flag display_errors on

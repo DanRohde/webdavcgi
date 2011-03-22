@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta name="keywords" content="WebDAV CGI wrapper UID" />
+  <meta name="author" content="Daniel Rohde" />
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <script src="script.js" type="text/javascript"></script>
+  <title>WebDAV CGI</title>
+</head>
+<body>
+<div id="content">
+<div style="text-align: right; font-size:0.8em;">
+<a href="http://sourceforge.net/project/project_donations.php?group_id=385775">Donate</a>
+<a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></div>
+<h1>WebDAV CGI</h1>
+<p>
+<a href="images/webdavcgi-webinterface.png"><img id="screenshot1" onmouseover="javascript:startZoom(this,50,200,500,10);" onmouseout="javascript:stopZoom(this);" class="screenshot" style="float:right" src="images/webdavcgi-webinterface.png" alt="Web interface screenshot" title="Web interface screenshot - click for full size" /></a>
+... is a Perl CGI script that enables the <a href="https://secure.wikimedia.org/wikipedia/en/wiki/WebDAV" target="_blank">WebDAV protocol</a> (class 1,2,3)
+for Web server to manage Web sites or to use a Web server as a Web drive for files, or for calendar/addressbook sharing. If you need correct permissions for files and folders 
+you can install this WebDAV CGI script and a UID/GID wrapper. 
+The Apache module mod_dav does not support UID/GID wrapping, 
+so this implementation fills up this gap as a (most complete) replacement.
+</p>
+<div id="toc">
+Content of this site:
+<ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#download">Download</a></li>
+<li><a href="doc.html#installation">Installation</a></li>
+<li><a href="doc.html">Documentation</a></li>
+<li><a href="#client">Client issues</a></li>
+<li><a href="#licensing">Licensing</a></li>
+</ul>
+</div>
+<a name="features"></a>
+<h2>Features</h2>
+WebDAV CGI ...
+<ul>
+<li>supports <a href="https://secure.wikimedia.org/wikipedia/en/wiki/WebDAV" target="_blank">WebDAV</a> compliance classes 1, 2 and 3.</li>
+<li>supports <a href="https://secure.wikimedia.org/wikipedia/en/wiki/CalDAV" target="_blank">CalDAV</a> clients: Sunbird/Lightning, Evolution, iCal, iPhone, iPad.</li>
+<li>supports <a href="https://secure.wikimedia.org/wikipedia/en/wiki/CardDAV" target="_blank">CardDAV</a> clients: Addressbook (Mac OS X 10.6.x+), iPhone 4.</li>
+<li>supports Unix like ACL support: user/group/other read/write permissions (execute only over the http://apache.org/dav/props/:executable property).</li>
+<li>supports <a href="http://www.openafs.org/">AFS</a> and can be used as a WebDAV to AFS bridge or as a AFS Web frontend with <a href="images/webdavcgi-webinterface-afs.png">AFS ACL Manager and AFS Group Manager</a> to replace <a href="http://www.filedrawers.org/">filedrawers (afs file management)</a></li>
+<li>offers a simple <a href="#screenshots" title="screenshots">Web interface</a> for file/folder management: clipboard; file/Zip upload/download; rename, move, create and delete folders; file/folder name search; property viewer; file/folder statistics; change file/folder permissions; shows quota; image thumbnails</li>
+<li>has a server-side trash can.</li>
+<li>implements <a target="_blank" href="https://secure.wikimedia.org/wikipedia/en/wiki/Common_Gateway_Interface">CGI</a> interface.</li>
+<li>is wrappable to change UID/GID for file permissions other than web server permissions.</li>
+</ul>
+Supported RFC's, drafts and M$ specs:
+<ul>
+ <li><a href="http://tools.ietf.org/html/rfc2518">RFC 2518</a> - WebDAV (classes 1,2)</li>
+ <li><a href="http://tools.ietf.org/html/rfc4918">RFC 4918</a> - WebDAV revision (class 3)</li>
+ <li><a href="http://tools.ietf.org/html/rfc4331">RFC 4331</a> - Quota properties</li>
+ <li><a href="http://tools.ietf.org/html/rfc4709">RFC 4709</a> - WebDAV mount</li>
+ <li><a href="http://tools.ietf.org/html/rfc4791">RFC 4791</a> - WebDAV CalDAV (incomplete: no postconditions/preconditions, reports)</li>
+ <li><a href="http://tools.ietf.org/html/rfc3744">RFC 3744</a> - WebDAV ACL (incomplete: no postconditions/preconditions, reports)</li>
+ <li><a href="http://tools.ietf.org/html/rfc5397">RFC 5397</a> - WebDAV Current Principal Extension</li>
+ <li><a href="http://tools.ietf.org/html/rfc5689">RFC 5689</a> - Extended MKCOL for WebDAV</li>
+ <li><a href="http://tools.ietf.org/html/rfc3253">RFC 3253</a> - Versioning Extensions to WebDAV (only properties supported-report-set, supported-method-set)</li>
+ <li><a href="http://tools.ietf.org/html/rfc5323">RFC 5323</a> - WebDAV Search (DASL) - basicsearch</li>
+ <li><a href="http://tools.ietf.org/html/rfc5842">RFC 5842</a> - Binding Extensions to Web Distributed Authoring and Versioning (WebDAV) (incomplete: no post/preconditions)</li>
+ <li><a href="http://tools.ietf.org/html/draft-desruisseaux-caldav-sched-08">CalDAV Scheduling Extensions to WebDAV</a> (Draft; incomplete/ALPHA: only collection/principal properties support)</li>
+ <li><a href="http://www.ics.uci.edu/~ejw/authoring/props/draft-hopmann-collection-props-00.txt">Additional WebDAV Collection Properties</a> (Draft)</li>
+ <li><a href="http://svn.calendarserver.org/repository/calendarserver/CalendarServer/trunk/doc/Extensions/caldav-ctag.txt">Calendar Collection Entity Tag (CTag) in CalDAV</a> (Draft)</li>
+ <li><a href="http://datatracker.ietf.org/doc/draft-ietf-vcarddav-carddav/">vCard Extensions to WebDAV (CardDAV)</a> - CardDAV/iCard support (Draft)</li>
+ <li><a href="http://groupdav.org/draft-hess-groupdav-01.txt">Storage of Groupware Objects in WebDAV (GroupDAV)</a> </li>
+ <li>MS-WDVME - WebDAV Microsoft Extensions</li>
+ <li>MS-WDVSE - WebDAV Server Extensions</li>
+</ul>
+My test environment:
+<ul>
+<li> <a href="http://www.ubuntu.com/">Ubuntu</a> 8.04 LTS </li>
+<li> <a href="http://httpd.apache.org/">Apache</a> 2.2.x</li>
+<li> <a href="http://perl.org/">Perl</a> 5.8.8</li>
+<li> <a href="http://www.webdav.org/neon/litmus/">litmus</a> 0.12.1</li> 
+</ul>
+
+WebDAV CGI is tested with following WebDAV clients (licensing):
+<ul>
+<li> <a href="http://www.mozilla.com/">Firefox</a> web browser - for folder listing, POST uploads and download tests (free)</li>
+<li> <a href="http://www.microsoft.com/windows/internet-explorer/default.aspx">M$ Internet Explorer</a> 7 - for Web interface tests (commercial)</li>
+<li> <a href="http://www.webdav.org/cadaver/">cadaver</a> - a Linux command line WebDAV client (free)</li>
+<li> <a href=" http://savannah.nongnu.org/projects/davfs2">davfs2</a> - mount a WebDAV resource as regular file system (free)</li>
+<li> <a href="http://0pointer.de/lennart/projects/fusedav/">fusedav</a> - is a Linux userspace file system driver for mounting WebDAV shares (free)</li>
+<li> <a href="http://projects.gnome.org/nautilus/">nautilus</a> - the Gnome file manager (free)</li>
+<li> <a href="http://www.konqueror.org/">konqueror</a> - the KDE browser (free)</li>
+<li> <a href="http://www.openoffice.org/">OpenOffice</a> (free)</li>
+<li> Web Folders - Windows XP &amp; Windows Vista (build-in)</li>
+<li> <a href="http://www.novell.com/">Novell</a> netdrive (commercial)</li>
+<li> <a href="http://www.bitkinex.com/">BitKinex</a> WebDAV Client (free)</li>
+<li> <a href="http://www.teamdrive.de/">TeamDrive</a> (free/commercial)</li>
+<li> <a href="http://www.adobe.com">Adobe</a> Dreamweaver (commercial)</li>
+<li> Finder - <a href="http://www.apple.com/de/macosx/">Mac OS X</a>(v10.4,v10.6) file manager (build-in)</li> 
+<li> GNOME Commander - a Linux file manager (free)</li>
+<li> <a href="http://www.webdav.org/perldav/">PerlDAV</a> - A WebDAV client library for Perl5 (free)</li>
+</ul>
+WebDAV CGI is tested with following CalDAV clients (licensing):
+<ul>
+  <li> Sunbird/Lightning 1.0 beta1 (free)</li>
+  <li> Evolution v2.28.1 (free)</li>
+  <li> iCal v2.x/v4.x (Mac OS X build-in)</li>
+  <li> iPhone (iPhone build-in)</li>
+  <li> iPad (iPad build-in)</li>
+</ul>
+WebDAV CGI is tested with following CardDAV clients (licensing):
+<ul>
+  <li> Addressbook - MacOS X 10.6.x (Mac OS X build-in) </li>
+  <li> iPhone 4 - CardDAV Account (build-in)</li>
+</ul>
+
+Known Problems:
+<ul>
+<li><a href="http://daemoninc.com/SpeedyCGI/">Speedy</a> is supported since v0.5.3 but if you get "Out of memory" messages in your Apache error log you must set "MaxRuns", e.g. <code>#!/usr/bin/speedy -- -r20</code></li>
+<li>Windows Web Folder tries to read folders without a trailing '/' and Apache responses with a redirect (Workaround: use Apache rewrite rule instead of direct folder access)</li>
+<li> Windows 7 does not support SSL with Web Folders (yet) and has some trouble with HTTP Basic authentication (<code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WebClient\Parameters\BasicAuthLevel</code> should be <code>2</code>(DWORD))</li>
+<li><a href="http://www.w3.org/Amaya/">Amaya</a> upload does not work yet in some configurations (works only with rewrites not with error handler)</li>
+<li>DAVExplorer has some trouble with XML parsing (PROPFIND) ... sometimes.</li>
+<li>nautilus cannot copy folders via clipboard</li>
+<li> more: <a href="#client">see Client issues</a></li>
+</ul>
+<a name="screenshots"></a>
+<h2>Screenshots</h2>
+<table border="0" cellpadding="10" cellspacing="0" class="screenshottable">
+<tr><th colspan="7">Web interface</th></tr>
+<tr>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-webinterface.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface.png" alt="Web interface file/folder browser" title="Web interface file/folder browser - click for full size"/></a>
+<div class="screenshottitle">file/folder browser</div>
+</td>
+<td>&nbsp;</td>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-webinterface-properties.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface-properties.png" alt="Web interface properties view" title="Web interface properties view - click for full size"/></a>
+<div class="screenshottitle">properties view</div>
+</td>
+<td>&nbsp;</td>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-webinterface-search.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface-search.png" alt="Web interface search view" title="Web interface search view - click for full size"/></a>
+<div class="screenshottitle">search view</div>
+</td>
+</tr>
+<tr>
+<th colspan="7">WebDAV clients</th>
+</tr>
+<tr>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-client-nautilus.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-nautilus.png" alt="Nautilus" title="Nautilus - click for full size"/></a>
+<div class="screenshottitle">Nautilus</div>
+</td>
+<td>&nbsp;</td>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-client-konqueror.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-konqueror.png" alt="Konqueror" title="Konqueror - click for full size"/></a>
+<div class="screenshottitle">Konqueror</div>
+</td>
+<td>&nbsp;</td>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-client-cadaver.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-cadaver.png" alt="cadaver" title="cadaver - click for full size"/></a>
+<div class="screenshottitle">cadaver</div>
+</td>
+</tr>
+<tr>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-client-davfs.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-davfs.png" alt="davfs" title="davfs- click for full size"/></a>
+<div class="screenshottitle">davfs2</div>
+</td>
+<td>&nbsp;</td>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-client-wexplorer.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-wexplorer.png" alt="M$ Windows Explorer" title="M$ Windows Explorer - click for full size"/></a>
+<div class="screenshottitle">M$ Windows Explorer (XP)</div>
+</td>
+<td>&nbsp;</td>
+<td align="center" valign="bottom">
+<a href="images/webdavcgi-client-bitkinex.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-bitkinex.png" alt="BitKinex 3.2.3" title="BitKinex 3.2.3 - click for full size"/></a>
+<div class="screenshottitle">BitKinex 3.2.3</div>
+</td>
+</tr>
+</table>
+
+
+<a name="download"></a>
+<h2>Download</h2>
+Latest version: 0.6.1 (Changes: see <a href="http://sourceforge.net/projects/webdavcgi/files/webdav.pl/download">webdav.pl</a>)
+<ul>
+<li><a href="http://sourceforge.net/projects/webdavcgi/files/webdav.pl/download">webdav.pl</a> - the WebDAV CGI </li>
+<li><a href="http://sourceforge.net/projects/webdavcgi/files/webdavwrapper.c/download">webdavwrapper.c</a> - a sample UID/GID wrapper: takes the UID/GIDs of the authenticated user (REMOTE_USER); prerequisite: <code>getent passwd &lt;user&gt;</code> shows a user entry for all users </li>
+<li><a href="http://sourceforge.net/projects/webdavcgi/files/webdavwrapper-krb.c/download">webdavwrapper-krb.c</a> 
+     - a sample UID/GID wrapper for Kerberos authentication (<a href="http://modauthkerb.sourceforge.net/">mod_auth_kerb</a>)
+     and/or <a href="http://www.openafs.org">AFS</a> 
+     in conjunction with <a href="http://www.modwaklog.org/">mod_waklog</a>
+     (Attention: edit the source and change EXAMPLE.ORG to your Kerberos domain) </li>
+<li><a href="http://sourceforge.net/projects/webdavcgi/files/logout/download">logout</a> - a sample logout script (Bash) for HTTP basic authentication</li>
+</ul>
+
+The latest BETA release is also available: <a href="http://sourceforge.net/projects/webdavcgi/files/webdav-beta.pl/download">webdav-beta.pl</a> 
+
+<a name="installation"></a>
+<h2>Installation</h2>
+
+see <a href="doc.html">Documentation</a>
+
+<a name="client"></a>
+<h2>Client issues</h2>
+Finder (MacOS X 10.x):
+<ul>
+<li> ... is really slow because the MacOS X Finder generates a lot of requests to get Apple doubleheaders and to put .DS_Store files.</li>
+<li> a solution is to use <a href="http://cyberduck.ch/">CyberDuck</a> instead of Finder</li>
+<li> or speed up the Finder a little bit: <a target="_blank" href="http://hints.macworld.com/article.php?story=20011004134523236">disable Finder previews</a> and <a target="_blank" href="http://hints.macworld.com/article.php?story=2005070300463515">prevent .DS_Store file creation</a>.</li>
+</ul>
+iCal:
+<ul>
+  <li>You must specifiy the server port, e.g. cal.example.org:80</li>
+</ul>
+Addressbook (MacOS X 10.6.x):
+<ul>
+   <li>WebDAV CGI must run in a root context (WebDAV CGI must handle the root of your (virtual) server)</li>
+   <li>You must specify the server port, e.g. abook.example.org:80</li>
+</ul>
+iPhone/iPad: 
+<ul>
+   <li> you must change the Account-URL to work with WebDAV CGI: it should be the same as your CalDAV folder URL or principal URL:
+        <ol>
+	 <li>Settings > Other > Add CalDAV Account </li>
+	 <li> Setup Server (e.g. https://www.example.org:443/webdav/caldav/), Username and Password</li>
+	 <li> Next > Advanced Settings > Account URL (e.g. https://www.example.org:443/webdav/caldav/) </li>
+	</ol>
+   </li>
+</ul>
+
+<a name="licensing"></a>
+<h2>Licensing</h2>
+<a href="http://www.gnu.org/licenses/gpl.txt">GPLv3</a>
+
+
+<hr/>
+<div id="contact">
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> | <?=date('F, j\t\h o',filemtime("index.php"))?>
+</div>
+ <p>
+     <a href="http://validator.w3.org/check?uri=referer"><img border="0"
+             src="http://www.w3.org/Icons/valid-xhtml10"
+	             alt="Valid XHTML 1.0 Transitional" height="31" width="88" /></a>
+</p>
+
+<div style="padding:5px">
+<a href="http://s05.flagcounter.com/more/tzd"><img class="flagcounter" src="http://s05.flagcounter.com/count/tzd/bg=FFFFFF/txt=000000/border=CCCCCC/columns=8/maxflags=80/viewers=0/labels=1/pageviews=1/" alt="free counters"/></a>
+</div>
+</div>
+</body>
+</html>
