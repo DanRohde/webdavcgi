@@ -51,7 +51,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET 
             $ENABLE_TRASH $TRASH_FOLDER $ALLOW_SEARCH $SHOW_STAT $HEADER $CONFIGFILE $ALLOW_ZIP_UPLOAD $ALLOW_ZIP_DOWNLOAD
             $PAGE_LIMIT $ENABLE_SEARCH $ENABLE_GROUPDAV %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS
-            @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXLASTMODIFIEDSIZE $MAXSIZESIZE
+            @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXLASTMODIFIEDSIZE 
             $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
             $ENABLE_BIND $SHOW_PERM $ALLOW_CHANGEPERM $ALLOW_CHANGEPERMRECURSIVE $LANGSWITCH
             $PERM_USER $PERM_GROUP $PERM_OTHERS
@@ -63,7 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
-            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -144,10 +144,6 @@ $MAXFILENAMESIZE = 40;
 ## Web interface: width of last modified column
 $MAXLASTMODIFIEDSIZE = 20;
 
-## -- MAXSIZESIZE
-## Web interface: width of size column
-$MAXSIZESIZE = 12;
-
 ## -- ICONS
 ## for fancy indexing (you need a server alias /icons to your Apache icons directory):
 %ICONS = (
@@ -166,6 +162,15 @@ $MAXSIZESIZE = 12;
 	'video/mpeg'=>'/icons/movie.gif', 'video/quicktime'=>'/icons/movie.gif',
 	default => '/icons/unknown.gif',
 );
+
+
+## -- ALLOW_EDIT
+## allow changing text files (@EDITABLEFILES) with the Web interface
+$ALLOW_EDIT = 1;
+
+## -- EDITABLEFILES
+## text file names (regex)
+@EDITABLEFILES = ( '\.(txt|php|html?|tex|inc|cc?|java|hh?)$', '^\.ht' );
 
 ## -- ICON_WIDTH
 ## specifies the icon width for the folder listings of the Web interface
@@ -1100,7 +1105,7 @@ sub _POST {
 	my $redirtarget = $REQUEST_URI;
 	$redirtarget =~s/\?.*$//; # remove query
 	
-	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm'))) {
+	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata'))) {
 		debug("_POST: file management ".join(",",$cgi->param('file')));
 		if ($cgi->param('delete')) {
 			if ($cgi->param('file')) {
@@ -1193,6 +1198,24 @@ sub _POST {
 			} else {
 				$errmsg='chpermnothingerr';
 			}
+		} elsif ($cgi->param('edit')) {
+			my $file = $PATH_TRANSLATED. $cgi->param('file');
+			if (-f $file && -w $file) {
+				$msgparam='edit='.$cgi->escape($cgi->param('file')).'#editpos';
+			} else {
+				$errmsg='editerr';
+				$msgparam='p1='.$cgi->escape($cgi->param('file'));
+			}
+		} elsif ($cgi->param('savetextdata')) {
+			my $file = $PATH_TRANSLATED . $cgi->param('filename');
+			if (-f $file && -w $file && open(F, ">$file")) {
+				print F $cgi->param('textdata');
+				close(F);
+				$msg='textsaved';
+			} else {
+				$errmsg='savetexterr';
+			}
+			$msgparam='p1='.$cgi->escape(''.$cgi->param('filename'));
 		}
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam, $errmsg, $msgparam));
 	} elsif ($ALLOW_POST_UPLOADS && -d $PATH_TRANSLATED && defined $cgi->param('filesubmit')) {
@@ -4066,7 +4089,21 @@ sub renderDeleteView {
 	return $cgi->div({-class=>'delete', -id=>'delete'},'&bull; '.$cgi->submit(-disabled=>'disabled', -name=>'delete', -value=>_tl('deletefilesbutton'), -onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");') 
 		.' '._tl('deletefilestext'));
 }
-sub renderChangePermissionsView() {
+sub renderEditTextView {
+
+	my $file = $PATH_TRANSLATED. $cgi->param('edit');
+
+	return $cgi->a({-id=>'editpos'},"").$cgi->div($cgi->param('edit').':')
+	      .$cgi->div(
+		 $cgi->hidden(-id=>'filename', -name=>'filename', -value=>$cgi->param('edit'))
+		.$cgi->hidden(-id=>'mimetype',-name=>'mimetype', -value=>getMIMEType($file))
+		.$cgi->div($cgi->textarea({-id=>'textdata',-class=>'textdata',-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>15, -cols=>70}))
+		.$cgi->div(
+				$cgi->button(-value=>_tl('cancel'), -onclick=>'window.location.href="'.$REQUEST_URI.'";')
+				. $cgi->submit(-style=>'float:right',-name=>'savetextdata', -value=>_tl('savebutton')))
+	      );
+}
+sub renderChangePermissionsView {
 	return	$cgi->start_table()
 			. $cgi->Tr($cgi->td({-colspan=>2},_tl('changefilepermissions'))
 				)
@@ -4116,20 +4153,20 @@ sub getActionViewInfos {
 	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef, 'null');
 }
 sub renderActionView {
-	my ($action, $name, $view, $focus) = @_;
+	my ($action, $name, $view, $focus, $forcevisible) = @_;
 	my $style = '';
 	my ($visible, $x, $y, $z,$collapsed) = getActionViewInfos($action);
-	$style .= $visible eq 'true' ? 'visibility: visible;' :'';
+	$style .= $forcevisible || $visible eq 'true' ? 'visibility: visible;' :'';
 	$style .= $x ? 'left: '.$x.';' : '';
 	$style .= $y ? 'top: '.$y.';' : '';
 	$style .= $z ? 'z-index: '.$z.';' : '';
 	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'collapsed'?' collapsed':''),-id=>$action, 
 				-onclick=>"handleWindowClick(event,'$action'".($focus?",'$focus'":'').')', -style=>$style},
 		$cgi->div({-class=>'sidebaractionviewheader',
-				-ondblclick=>"toggleCollapseAction('$action',event)", 
+				-ondblclick=>$forcevisible ? undef : "toggleCollapseAction('$action',event)", 
 				-onmousedown=>"handleWindowMove(event,'$action', 1)", 
 				-onmouseup=>"handleWindowMove(event,'$action',0)"}, 
-				$cgi->span({-onclick=>"hideActionView('$action');",-class=>'sidebaractionviewclose'},' [X] ')
+				($forcevisible ? '' : $cgi->span({-onclick=>"hideActionView('$action');",-class=>'sidebaractionviewclose'},' [X] '))
 				.
 				_tl($name)
 			)
@@ -4230,6 +4267,7 @@ sub renderWebInterface {
 		my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
 		$folderview.=$list;
 		$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
+		$manageview.= renderFieldSet('editbutton',renderEditTextView()) if $ALLOW_EDIT && $cgi->param('edit');
 		$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_FILE_MANAGEMENT && $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
 		if ($VIEW eq 'sidebar') {
 			$content.=renderSideBar() if $VIEW eq 'sidebar';
@@ -4300,6 +4338,10 @@ sub renderSideBar {
 		$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 		$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 		$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
+	
+		
+		$cgi->cookie('editview', 'true,50,50,10,undef') if $ALLOW_EDIT && $cgi->param('edit');
+		$av.= renderActionView('editview','editbutton',renderEditTextView(),'textdata',1) if $ALLOW_EDIT && $cgi->param('edit'); 
 	}
 
 	$content .= $cgi->div({-class=>'sidebarheader'},_tl('viewoptions'));
@@ -4502,8 +4544,8 @@ sub getFolderList {
 }
 sub renderFileActions {
 	my ($fid, $file, $full) = @_;
-	my @values = ('--','rename','zip','delete');
-	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton') );
+	my @values = ('--','rename','edit','zip','delete');
+	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton') );
 	my %attr;
 	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
 		$attr{rename}{disabled}='disabled';
@@ -4512,6 +4554,14 @@ sub renderFileActions {
 	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
 		$attr{zip}{disabled}='disabled';
 	}
+
+	if ($ALLOW_EDIT) {
+		my $ef = '('.join('|',@EDITABLEFILES).')';
+		$attr{edit}{disabled}='disabled' unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || -w $full);
+	} else {
+		@values = grep(!/^edit$/,@values);
+	}
+
 	return $cgi->popup_menu(-name=>'actions', -id=>'fileactions_'.$fid, -onchange=>"handleFileAction(this.value,'$fid',event,'select');", -values=>\@values, -labels=>\%labels, -attributes=>\%attr);
 }
 sub getmodeclass {
@@ -4641,7 +4691,7 @@ sub createMsgQuery {
 	$prefix='' unless defined $prefix;
 	my $query ="";
 	$query.=";${prefix}msg=$msg" if defined $msg;
-	$query.=";$msgparam" if defined $msg && $msgparam;
+	$query.=";$msgparam" if $msgparam;
 	$query.=";${prefix}errmsg=$errmsg" if defined $errmsg;
 	$query.=";$errmsgparam" if defined $errmsg && $errmsgparam;
 	return "?t=".time().$query;
