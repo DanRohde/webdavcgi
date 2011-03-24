@@ -38,6 +38,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
 .sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
+.sidebaractionview.resize { cursor: se-resize; opacity: 0.6; filter: Alpha(opacity=60); }
 .sidebarfolderview { padding-top: 110px; padding-bottom: 50px; padding-left: 220px; }
 .sidebarfolderview.full { padding-left: 30px; }
 .sidebarheader { background-color: #aaaaaa; text-shadow: 1px 1px #eeeeee; padding: 0px; margin: 0px; font-size: 0.9em; }
@@ -49,7 +50,8 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebaraction.active, .sidebaraction.active input { background-color: #dddddd; }
 .sidebaraction.active.highlight, .sidebaraction.active.highlight, .sidebaraction.highlight.active, .sidebaraction.highlight.active input { background-color: #cccccc; }
 .sidebaractionviewaction { clear: both; padding: 5px 2px 2px 2px; }
-.sidebaractionviewaction.collapsed {visibility: hidden; height: 0px; }
+.sidebaractionviewaction.collapsed, .sidebaractionviewfooter.collapsed {visibility: hidden; height: 0px; }
+.sidebaractionviewresizer { border-bottom: 3px double #aaaaaa; border-right: 3px double #aaaaaa; clear:both; position:absolute; bottom: 0px; right: 0px; width: 1em; margin: 0px; padding:0px;cursor: se-resize;}
 .sidebartogglebutton { cursor: w-resize; font-size: 0.8em; margin: 0px; padding:0px; border: 1px solid #aaaaaa; background-color:#eeeeee; width: 5px; height: 100px;}
 .collapsed .sidebartogglebutton { cursor: e-resize; }
 

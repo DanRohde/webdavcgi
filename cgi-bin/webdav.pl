@@ -1105,7 +1105,7 @@ sub _POST {
 	my $redirtarget = $REQUEST_URI;
 	$redirtarget =~s/\?.*$//; # remove query
 	
-	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata'))) {
+	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata')||$cgi->param('savetextdatacont'))) {
 		debug("_POST: file management ".join(",",$cgi->param('file')));
 		if ($cgi->param('delete')) {
 			if ($cgi->param('file')) {
@@ -1206,7 +1206,7 @@ sub _POST {
 				$errmsg='editerr';
 				$msgparam='p1='.$cgi->escape($cgi->param('file'));
 			}
-		} elsif ($cgi->param('savetextdata')) {
+		} elsif ($cgi->param('savetextdata') || $cgi->param('savetextdatacont')) {
 			my $file = $PATH_TRANSLATED . $cgi->param('filename');
 			if (-f $file && -w $file && open(F, ">$file")) {
 				print F $cgi->param('textdata');
@@ -1216,7 +1216,8 @@ sub _POST {
 				$errmsg='savetexterr';
 			}
 			$msgparam='p1='.$cgi->escape(''.$cgi->param('filename'));
-		}
+			$msgparam.=';edit='.$cgi->escape($cgi->param('filename')) if $cgi->param('savetextdatacont');
+		} 
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam, $errmsg, $msgparam));
 	} elsif ($ALLOW_POST_UPLOADS && -d $PATH_TRANSLATED && defined $cgi->param('filesubmit')) {
 		my @filelist;
@@ -4100,35 +4101,36 @@ sub renderEditTextView {
 		.$cgi->div($cgi->textarea({-id=>'textdata',-class=>'textdata',-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>15, -cols=>70}))
 		.$cgi->div(
 				$cgi->button(-value=>_tl('cancel'), -onclick=>'window.location.href="'.$REQUEST_URI.'";')
-				. $cgi->submit(-style=>'float:right',-name=>'savetextdata', -value=>_tl('savebutton')))
+				. $cgi->submit(-style=>'float:right',-name=>'savetextdata', -value=>_tl('savebutton'))
+				. $cgi->submit(-style=>'float:right',-name=>'savetextdatacont', -value=>_tl('savecontbutton'))
+		)
 	      );
 }
 sub renderChangePermissionsView {
-	return	$cgi->start_table()
+	return $cgi->start_table()
 			. $cgi->Tr($cgi->td({-colspan=>2},_tl('changefilepermissions'))
 				)
-			.		
-						(defined $PERM_USER 
-							? $cgi->Tr($cgi->td( _tl('user') )
-								. $cgi->td($cgi->checkbox_group(-name=>'fp_user', -values=>$PERM_USER,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setuid')}))
-								)
-							: ''
-						)
-						.(defined $PERM_GROUP
-							? $cgi->Tr($cgi->td(_tl('group') )
-								. $cgi->td($cgi->checkbox_group(-name=>'fp_group', -values=>$PERM_GROUP,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setgid')}))
-								)
-							: ''
-						 )
-						.(defined $PERM_OTHERS
-							? $cgi->Tr($cgi->td(_tl('others'))
-								.$cgi->td($cgi->checkbox_group(-name=>'fp_others', -values=>$PERM_OTHERS,
-									-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 't'=>_tl('sticky')}))
-								)
-							: ''
-						 )
+			.(defined $PERM_USER 
+				? $cgi->Tr($cgi->td( _tl('user') )
+					. $cgi->td($cgi->checkbox_group(-name=>'fp_user', -values=>$PERM_USER,
+						-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setuid')}))
+					)
+				: ''
+			)
+			.(defined $PERM_GROUP
+				? $cgi->Tr($cgi->td(_tl('group') )
+					. $cgi->td($cgi->checkbox_group(-name=>'fp_group', -values=>$PERM_GROUP,
+						-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 's'=>_tl('setgid')}))
+					)
+				: ''
+			 )
+			.(defined $PERM_OTHERS
+				? $cgi->Tr($cgi->td(_tl('others'))
+					.$cgi->td($cgi->checkbox_group(-name=>'fp_others', -values=>$PERM_OTHERS,
+						-labels=>{'r'=>_tl('readable'), 'w'=>_tl('writeable'), 'x'=>_tl('executable'), 't'=>_tl('sticky')}))
+					)
+				: ''
+			 )
 			. $cgi->Tr( $cgi->td( {-colspan=>2},
 						$cgi->popup_menu(-name=>'fp_type',-values=>['a','s','r'], -labels=>{ 'a'=>_tl('add'), 's'=>_tl('set'), 'r'=>_tl('remove')})
 						.($ALLOW_CHANGEPERMRECURSIVE ? ' '.$cgi->checkbox_group(-name=>'fp_recursive', -value=>['recursive'], 
@@ -4153,7 +4155,7 @@ sub getActionViewInfos {
 	return $cgi->cookie($action) ? split(/\//, $cgi->cookie($action)) : ( 'false', undef, undef, undef, 'null');
 }
 sub renderActionView {
-	my ($action, $name, $view, $focus, $forcevisible) = @_;
+	my ($action, $name, $view, $focus, $forcevisible, $resizeable) = @_;
 	my $style = '';
 	my ($visible, $x, $y, $z,$collapsed) = getActionViewInfos($action);
 	$style .= $forcevisible || $visible eq 'true' ? 'visibility: visible;' :'';
@@ -4171,6 +4173,9 @@ sub renderActionView {
 				_tl($name)
 			)
 		.$cgi->div({-class=>'sidebaractionviewaction'.($collapsed eq 'collapsed'?' collapsed':''),-id=>"v_$action"},$view)
+		.($resizeable ? $cgi->div({-class=>'sidebaractionviewresizer'.($collapsed eq 'collapsed'?' collapsed':''), -onmousedown=>"handleWindowResize(event,'$action',1);", -onmouseup=>"handleWindowResize(event,'$action',0);"},'&nbsp') : '')
+					
+				
 		);
 }
 sub renderPropertiesViewer {
@@ -4332,7 +4337,7 @@ sub renderSideBar {
 		$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 		$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
 		$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
-		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit');
+		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit',0,0);
 		$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
 		$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
 		$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
