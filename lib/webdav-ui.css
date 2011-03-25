@@ -7,7 +7,7 @@ input,select { text-shadow: 1px 1px white;  }
 
 .errormsg, .notwriteable, .notreadable { background-color:#ffeeee; border: 1px solid #ff0000; padding: 0px 4px 0px 4px; }
 .infomsg { background-color:#eeeeff; padding: 0px 4px 0px 4px; border: 1px solid #0000ff;}
-#msg, .msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 10; }
+#msg, .msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 100000; }
 .msg { z-index: 8; }
 .filtered_old { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
 .filtered { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
@@ -126,4 +126,10 @@ legend {  font-size: 0.8em; font-weight: bold; margin: 5px 0px 2px 0px; padding:
 #editview { overflow: visible; max-width: 100%; max-height: 100%; }
 #editview.sidebaractionview.move div div { visibility: hidden; }
 #editview .sidebaractionviewaction.collapsed { display: none; }
-.textdata { white-space: nowrap; }
+.textdata { white-space: nowrap; margin: 2px 2ex 5px 2px;}
+.textdatatools { position: absolute; width: 2ex; bottom: 3em; right: 0.5ex; text-align: center; cursor: pointer; font-size: 0.7em; padding: 20px 4px 0px 2px;}
+.textdatatools div { padding: 0px 0px 1ex 0px; }
+.textdatastdsize { font-weight: bold;}
+#textdatafontfamilytoggle { border: 1px solid #999999; padding: 1px 1px 1px 1px;}
+.sans { font-family: serif; }
+.mono { font-family: monospace; }

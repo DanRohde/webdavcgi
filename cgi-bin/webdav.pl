@@ -2,7 +2,7 @@
 ###!/usr/bin/speedy --  -r20 -M5
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -4094,11 +4094,25 @@ sub renderEditTextView {
 
 	my $file = $PATH_TRANSLATED. $cgi->param('edit');
 
+	my ($cols,$rows,$ff) = $cgi->cookie('textdata') ? split(/\//,$cgi->cookie('textdata')) : (70,15,'mono');
+	my $fftoggle = $ff eq 'mono' ? 'sans' : 'mono';
+
 	return $cgi->a({-id=>'editpos'},"").$cgi->div($cgi->param('edit').':')
 	      .$cgi->div(
 		 $cgi->hidden(-id=>'filename', -name=>'filename', -value=>$cgi->param('edit'))
 		.$cgi->hidden(-id=>'mimetype',-name=>'mimetype', -value=>getMIMEType($file))
-		.$cgi->div($cgi->textarea({-id=>'textdata',-class=>'textdata',-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>15, -cols=>70}))
+		.$cgi->div(
+			$cgi->textarea({-id=>'textdata',-class=>'textdata '.$ff,-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>$rows, -cols=>$cols})
+			.($VIEW eq 'sidebar' ? $cgi->div({-class=>'textdatatools'},
+				$cgi->div({-id=>'textdatafontfamilytoggle', -class=>'textdatafontfamilytoggle '.$fftoggle, -onclick=>'handleTextAreaFontFamily("textdata","textdatafontfamilytoggle")',-title=>_tl('textdatafontfamilytoggletitle')},_tl('textdatafontfamilytoggle'))
+				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",2,0)',-title=>_tl('textdatahenlargetooltip')}, _tl('textdatahenlarge'))
+				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",-2,0)',-title=>_tl('textdatahshrinktooltip')}, _tl('textdatahshrink') )
+				.$cgi->div({-class=>'textdatastdsize',-onclick=>'handleTextAreaSize("textdata",0,0,70,15)',-title=>_tl('textdatastdsizetooltip')}, _tl('textdatastdsize'))
+				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",0,-2);',-title=>_tl('textdatavshrinktooltip')},_tl('textdatavshrink'))
+				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",0,2);',-title=>_tl('textdatavenlargetooltip')},_tl('textdatavenlarge'))
+				)
+			  : '')
+			)
 		.$cgi->div(
 				$cgi->button(-value=>_tl('cancel'), -onclick=>'window.location.href="'.$REQUEST_URI.'";')
 				. $cgi->submit(-style=>'float:right',-name=>'savetextdata', -value=>_tl('savebutton'))
