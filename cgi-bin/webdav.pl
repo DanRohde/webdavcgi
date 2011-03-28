@@ -170,7 +170,7 @@ $ALLOW_EDIT = 1;
 
 ## -- EDITABLEFILES
 ## text file names (regex)
-@EDITABLEFILES = ( '\.(txt|php|html?|tex|inc|cc?|java|hh?)$', '^\.ht' );
+@EDITABLEFILES = ( '\.(txt|php|html?|tex|inc|cc?|java|hh?|ini|pl|py|css|js|inc)$', '^\.ht' );
 
 ## -- ICON_WIDTH
 ## specifies the icon width for the folder listings of the Web interface
@@ -1105,7 +1105,7 @@ sub _POST {
 	my $redirtarget = $REQUEST_URI;
 	$redirtarget =~s/\?.*$//; # remove query
 	
-	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata')||$cgi->param('savetextdatacont'))) {
+	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata')||$cgi->param('savetextdatacont')||$cgi->param('createnewfile'))) {
 		debug("_POST: file management ".join(",",$cgi->param('file')));
 		if ($cgi->param('delete')) {
 			if ($cgi->param('file')) {
@@ -1217,7 +1217,18 @@ sub _POST {
 			}
 			$msgparam='p1='.$cgi->escape(''.$cgi->param('filename'));
 			$msgparam.=';edit='.$cgi->escape($cgi->param('filename')) if $cgi->param('savetextdatacont');
-		} 
+		} elsif ($cgi->param('createnewfile')) {
+			my $fn = $cgi->param('cnfname');
+			my $full = $PATH_TRANSLATED.$fn;
+			if (($IGNOREFILEPERMISSIONS || -w $PATH_TRANSLATED) && ($IGNOREFILEPERMISSIONS || !-e $full) && ($fn !~ /\//) && open(F,">$full")) {
+				$msg='newfilecreated';
+				print F "";
+				close(F);
+			} else {
+				$errmsg='createnewfileerr';
+			}
+			$msgparam='p1='.$cgi->escape($fn);
+		}
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam, $errmsg, $msgparam));
 	} elsif ($ALLOW_POST_UPLOADS && -d $PATH_TRANSLATED && defined $cgi->param('filesubmit')) {
 		my @filelist;
@@ -2857,7 +2868,7 @@ sub getfancyfilename {
 	$id=~s/\"//g;
 	
 	my $cssclass='icon';
-	if ($ENABLE_THUMBNAIL && !$isUnReadable && -r $fn && hasThumbSupport(getMIMEType($fn)))  {
+	if ($ENABLE_THUMBNAIL && !$isUnReadable && -r $fn && !-z $fn && hasThumbSupport(getMIMEType($fn)))  {
 		$icon=$full.($full=~/\?.*/?';':'?').'action=thumb';
 		if ($THUMBNAIL_WIDTH && $ICON_WIDTH < $THUMBNAIL_WIDTH) {
 			$cssclass='thumb';
@@ -4090,30 +4101,27 @@ sub renderDeleteView {
 	return $cgi->div({-class=>'delete', -id=>'delete'},'&bull; '.$cgi->submit(-disabled=>'disabled', -name=>'delete', -value=>_tl('deletefilesbutton'), -onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");') 
 		.' '._tl('deletefilestext'));
 }
+sub renderCreateNewFileView {
+	return $cgi->div(_tl('newfilename').$cgi->input({-id=>'cnfname',-size=>30,-type=>'text',-name=>'cnfname',-onkeypress=>'return catchEnter(event,"createnewfile")'}).$cgi->submit({-id=>'createnewfile',-name=>'createnewfile',-value=>_tl('createnewfilebutton')}));
+}
+sub renderEditTextResizer {
+	my ($text, $pid) = @_;
+	return $text.$cgi->div({-class=>'textdataresizer', -onmousedown=>'handleTextAreaResize(event,"textdata","'.$pid.'",1);',-onmouseup=>'handleTextAreaResize(event,"textdata","'.$pid.'",0)'},'&nbsp;');
+}
 sub renderEditTextView {
-
 	my $file = $PATH_TRANSLATED. $cgi->param('edit');
 
 	my ($cols,$rows,$ff) = $cgi->cookie('textdata') ? split(/\//,$cgi->cookie('textdata')) : (70,15,'mono');
-	my $fftoggle = $ff eq 'mono' ? 'sans' : 'mono';
+	my $fftoggle = $ff eq 'mono' ? 'prop' : 'mono';
 
-	return $cgi->a({-id=>'editpos'},"").$cgi->div($cgi->param('edit').':')
+	return $cgi->div($cgi->param('edit').':')
 	      .$cgi->div(
 		 $cgi->hidden(-id=>'filename', -name=>'filename', -value=>$cgi->param('edit'))
 		.$cgi->hidden(-id=>'mimetype',-name=>'mimetype', -value=>getMIMEType($file))
-		.$cgi->div(
+		.$cgi->div({-class=>'textdata'},
 			$cgi->textarea({-id=>'textdata',-class=>'textdata '.$ff,-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>$rows, -cols=>$cols})
-			.($VIEW eq 'sidebar' ? $cgi->div({-class=>'textdatatools'},
-				$cgi->div({-id=>'textdatafontfamilytoggle', -class=>'textdatafontfamilytoggle '.$fftoggle, -onclick=>'handleTextAreaFontFamily("textdata","textdatafontfamilytoggle")',-title=>_tl('textdatafontfamilytoggletitle')},_tl('textdatafontfamilytoggle'))
-				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",2,0)',-title=>_tl('textdatahenlargetooltip')}, _tl('textdatahenlarge'))
-				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",-2,0)',-title=>_tl('textdatahshrinktooltip')}, _tl('textdatahshrink') )
-				.$cgi->div({-class=>'textdatastdsize',-onclick=>'handleTextAreaSize("textdata",0,0,70,15)',-title=>_tl('textdatastdsizetooltip')}, _tl('textdatastdsize'))
-				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",0,-2);',-title=>_tl('textdatavshrinktooltip')},_tl('textdatavshrink'))
-				.$cgi->div({-onclick=>'handleTextAreaSize("textdata",0,2);',-title=>_tl('textdatavenlargetooltip')},_tl('textdatavenlarge'))
-				)
-			  : '')
 			)
-		.$cgi->div(
+		.$cgi->div({-class=>'textdatabuttons'},
 				$cgi->button(-value=>_tl('cancel'), -onclick=>'window.location.href="'.$REQUEST_URI.'";')
 				. $cgi->submit(-style=>'float:right',-name=>'savetextdata', -value=>_tl('savebutton'))
 				. $cgi->submit(-style=>'float:right',-name=>'savetextdatacont', -value=>_tl('savecontbutton'))
@@ -4172,10 +4180,11 @@ sub renderActionView {
 	my ($action, $name, $view, $focus, $forcevisible, $resizeable) = @_;
 	my $style = '';
 	my ($visible, $x, $y, $z,$collapsed) = getActionViewInfos($action);
+	my $dzi = $cgi->cookie('dragZIndex') ? $cgi->cookie('dragZIndex') : $z ? $z : 10;
 	$style .= $forcevisible || $visible eq 'true' ? 'visibility: visible;' :'';
 	$style .= $x ? 'left: '.$x.';' : '';
 	$style .= $y ? 'top: '.$y.';' : '';
-	$style .= $z ? 'z-index: '.$z.';' : '';
+	$style .= 'z-index:'.($forcevisible ? $dzi : $z ? $z : $dzi).';';
 	return $cgi->div({-class=>'sidebaractionview'.($collapsed eq 'collapsed'?' collapsed':''),-id=>$action, 
 				-onclick=>"handleWindowClick(event,'$action'".($focus?",'$focus'":'').')', -style=>$style},
 		$cgi->div({-class=>'sidebaractionviewheader',
@@ -4286,7 +4295,7 @@ sub renderWebInterface {
 		my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
 		$folderview.=$list;
 		$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
-		$manageview.= renderFieldSet('editbutton',renderEditTextView()) if $ALLOW_EDIT && $cgi->param('edit');
+		$manageview.= renderFieldSet('editbutton',$cgi->a({-id=>'editpos'},"").renderEditTextView()) if $ALLOW_EDIT && $cgi->param('edit');
 		$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_FILE_MANAGEMENT && $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
 		if ($VIEW eq 'sidebar') {
 			$content.=renderSideBar() if $VIEW eq 'sidebar';
@@ -4294,7 +4303,7 @@ sub renderWebInterface {
 		}
 		if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
 			my $m = "";
-			$m .= renderFieldSet('files', renderCreateNewFolderView() .renderMoveView() .renderDeleteView());
+			$m .= renderFieldSet('files', renderCreateNewFolderView().renderCreateNewFileView() .renderMoveView() .renderDeleteView());
 			$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
 			$m .= renderToggleFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 			$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
@@ -4347,20 +4356,20 @@ sub renderSideBar {
 		$content .= renderSideBarMenuItem('paste', undef, undef, renderPasteButton());
 		$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
 		$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview","colname-sidebar");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
+		$content .= renderSideBarMenuItem('createnewfileview', _tl('createnewfilebutton'), 'toggleActionView("createnewfileview","cnfname");', $cgi->button({-value=>_tl('createnewfilebutton'),-name=>'createnewfile'}));
 		$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>_tl('movefilesbutton')}));
 		$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 		$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
 		$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
 		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit',0,0);
 		$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
+		$av.= renderActionView('createnewfileview', 'createnewfilebutton', renderCreateNewFileView(),'cnfname');
 		$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
 		$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 		$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 		$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
 	
-		
-		$cgi->cookie('editview', 'true,50,50,10,undef') if $ALLOW_EDIT && $cgi->param('edit');
-		$av.= renderActionView('editview','editbutton',renderEditTextView(),'textdata',1) if $ALLOW_EDIT && $cgi->param('edit'); 
+		$av.= renderActionView('editview','editbutton',renderEditTextResizer(renderEditTextView(),'editview'),'textdata',1) if $ALLOW_EDIT && $cgi->param('edit'); 
 	}
 
 	$content .= $cgi->div({-class=>'sidebarheader'},_tl('viewoptions'));
@@ -4533,8 +4542,7 @@ sub getFolderList {
 		my $onclick= $filter ? '' : qq@return handleRowClick("$fid", event);@;
 		my $ignev= qq@return false;@;
 
-		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-id=>$fid, -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'')) if $ALLOW_FILE_MANAGEMENT && $filename ne '..';
-		$row.= $cgi->td({-class=>'tc_checkbox'},'&nbsp;') if $ALLOW_FILE_MANAGEMENT && $filename eq '..';
+		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-id=>$fid, -style=>$filename eq '..' ? 'visibility: hidden;display:none':'', -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'')) if $ALLOW_FILE_MANAGEMENT;
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));

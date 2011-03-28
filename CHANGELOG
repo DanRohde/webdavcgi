@@ -2,6 +2,7 @@
      - added folder redirect feature if file/folder management disabled requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
      - added (incomplete) french transltations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
      - Web interface:
+         - added new file feature (GET/POST)
 	 - added edit feature (GET/POST)
 	 - moved translations to separate .msg files (GET)
          - moved CSS and javascript to separte files (GET/HEAD)
@@ -18,6 +19,7 @@
          - fixed wrong message display for change location/bookmark usage (GET)
          - fixed 'go up' on root folder bug (GET)
          - added file action column (GET)
+	 - fixed icon for empty file bug ((GET)
      - fixed major quota bug (GET, PROPFIND)
      - fixed file/folder search performance bug in a AFS (GET)
      - fixed major CardDAV/CalDAV multiget report bugs reported by Steve Waterworth <s@steveww.org> (REPORT)

@@ -35,7 +35,7 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa; vertical-align: top;}
 .sidebarcontent.collapsed { display: none; }
-.sidebaractionview { z-index: 8; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
+.sidebaractionview { z-index: 10; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
 .sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
 .sidebaractionview.resize { cursor: se-resize; opacity: 0.6; filter: Alpha(opacity=60); }
@@ -126,10 +126,9 @@ legend {  font-size: 0.8em; font-weight: bold; margin: 5px 0px 2px 0px; padding:
 #editview { overflow: visible; max-width: 100%; max-height: 100%; }
 #editview.sidebaractionview.move div div { visibility: hidden; }
 #editview .sidebaractionviewaction.collapsed { display: none; }
-.textdata { white-space: nowrap; margin: 2px 2ex 5px 2px;}
-.textdatatools { position: absolute; width: 2ex; bottom: 3em; right: 0.5ex; text-align: center; cursor: pointer; font-size: 0.7em; padding: 20px 4px 0px 2px;}
-.textdatatools div { padding: 0px 0px 1ex 0px; }
-.textdatastdsize { font-weight: bold;}
-#textdatafontfamilytoggle { border: 1px solid #999999; padding: 1px 1px 1px 1px;}
-.sans { font-family: serif; }
+div.textdata { margin: 2px 2px 15px 2px;}
+.prop { font-family: serif; }
 .mono { font-family: monospace; }
+.textdataresizer { cursor: se-resize; width: 1em; border-bottom: 3px double #aaaaaa; border-right: 3px double #aaaaaa; margin: 0px; padding:0px; position:absolute; bottom: 0px; right: 0px; }
+.textdatabuttons { padding-right: 1em; }
+.textdatabuttons input { margin-left: 1em; }
