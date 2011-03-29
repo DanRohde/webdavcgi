@@ -170,7 +170,7 @@ $ALLOW_EDIT = 1;
 
 ## -- EDITABLEFILES
 ## text file names (regex)
-@EDITABLEFILES = ( '\.(txt|php|html?|tex|inc|cc?|java|hh?|ini|pl|py|css|js|inc)$', '^\.ht' );
+@EDITABLEFILES = ( '\.(txt|php|html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc)$', '^\.ht' );
 
 ## -- ICON_WIDTH
 ## specifies the icon width for the folder listings of the Web interface
@@ -4108,11 +4108,18 @@ sub renderEditTextResizer {
 	my ($text, $pid) = @_;
 	return $text.$cgi->div({-class=>'textdataresizer', -onmousedown=>'handleTextAreaResize(event,"textdata","'.$pid.'",1);',-onmouseup=>'handleTextAreaResize(event,"textdata","'.$pid.'",0)'},'&nbsp;');
 }
+sub escapeQuotes {
+	my ($q) = @_;
+	$q=~s/(["'])/\\$1/g;
+	return $q;
+}
 sub renderEditTextView {
 	my $file = $PATH_TRANSLATED. $cgi->param('edit');
 
 	my ($cols,$rows,$ff) = $cgi->cookie('textdata') ? split(/\//,$cgi->cookie('textdata')) : (70,15,'mono');
 	my $fftoggle = $ff eq 'mono' ? 'prop' : 'mono';
+
+	my $cmsg = _tl('confirmsavetextdata',escapeQuotes($cgi->param('edit')));
 
 	return $cgi->div($cgi->param('edit').':')
 	      .$cgi->div(
@@ -4122,9 +4129,9 @@ sub renderEditTextView {
 			$cgi->textarea({-id=>'textdata',-class=>'textdata '.$ff,-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>$rows, -cols=>$cols})
 			)
 		.$cgi->div({-class=>'textdatabuttons'},
-				$cgi->button(-value=>_tl('cancel'), -onclick=>'window.location.href="'.$REQUEST_URI.'";')
-				. $cgi->submit(-style=>'float:right',-name=>'savetextdata', -value=>_tl('savebutton'))
-				. $cgi->submit(-style=>'float:right',-name=>'savetextdatacont', -value=>_tl('savecontbutton'))
+				$cgi->button(-value=>_tl('cancel'), -onclick=>'if (window.confirm("'._tl('canceledit').'")) window.location.href="'.$REQUEST_URI.'";')
+				. $cgi->submit(-style=>'float:right',-name=>'savetextdata',-onclick=>"return window.confirm('$cmsg');", -value=>_tl('savebutton'))
+				. $cgi->submit(-style=>'float:right',-name=>'savetextdatacont',-onclick=>"return window.confirm('$cmsg');", -value=>_tl('savecontbutton'))
 		)
 	      );
 }
@@ -4255,7 +4262,8 @@ sub renderWebInterface {
 	debug("_GET: directory listing of $fn");
 	$head .= $LANGSWITCH if defined $LANGSWITCH;
 	$head .= $HEADER if defined $HEADER;
-	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
+	##$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
+	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru ) if $ALLOW_FILE_MANAGEMENT;
 	if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
 		my $search = $cgi->param('search');
 		$head .= $cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
@@ -4267,7 +4275,7 @@ sub renderWebInterface {
 		my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 		$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
 		$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
-		$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, sprintf(_tl('folderisfiltered'), $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
+		$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, _tl('folderisfiltered', $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 		$head .= $cgi->div( { -class=>'foldername'},
 			$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
 					$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
@@ -4561,7 +4569,6 @@ sub getFolderList {
 		$filesizes+=$size if $isUnReadable || -f $full;
 
 	}
-	###$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 	$content .= $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
 	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %d Bytes (= %.2f KB = %.2f MB = %.2f GB)", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $filesizes, $filesizes/1024, $filesizes/1048576, $filesizes/1073741824)) if ($SHOW_STAT); 
@@ -4711,7 +4718,10 @@ sub readTL  {
 sub _tl {
 	readTL('default') if !exists $TRANSLATION{default}{x__READ__x};
 	readTL($LANG) if !exists $TRANSLATION{$LANG}{x__READ__x};
-	return $TRANSLATION{$LANG}{$_[0]} || $TRANSLATION{default}{$_[0]} || $_[0];
+	my $key = $_[0];
+	my $val = $TRANSLATION{$LANG}{$key} || $TRANSLATION{default}{$key} || $key;
+	shift @_;
+	return $#_>-1 ? sprintf( $val, @_) : $val;
 }
 sub createMsgQuery {
 	my ($msg,$msgparam,$errmsg,$errmsgparam,$prefix) = @_;
@@ -4825,7 +4835,7 @@ sub renderAFSACLManager {
 		return $content;
 	}
 	my $content = $cgi->a({-id=>'afsaclmanagerpos'},"").renderMessage('acl')
-			.$cgi->div(sprintf(_tl('afsaclscurrentfolder'),$PATH_TRANSLATED, $REQUEST_URI))
+			.$cgi->div(_tl('afsaclscurrentfolder',$PATH_TRANSLATED, $REQUEST_URI))
 			.$cgi->start_table({-class=>'afsacltable'});
 	$content .= _renderACLData(\@entries, 1);
 	$content .= _renderACLData(\@entries, 0);
