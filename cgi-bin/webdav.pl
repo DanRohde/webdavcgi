@@ -1220,7 +1220,7 @@ sub _POST {
 		} elsif ($cgi->param('createnewfile')) {
 			my $fn = $cgi->param('cnfname');
 			my $full = $PATH_TRANSLATED.$fn;
-			if (($IGNOREFILEPERMISSIONS || -w $PATH_TRANSLATED) && ($IGNOREFILEPERMISSIONS || !-e $full) && ($fn !~ /\//) && open(F,">$full")) {
+			if (($IGNOREFILEPERMISSIONS || -w $PATH_TRANSLATED) && ($IGNOREFILEPERMISSIONS || !-e $full) && ($fn !~ /\//) && open(F,">>$full")) {
 				$msg='newfilecreated';
 				print F "";
 				close(F);
