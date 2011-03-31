@@ -63,7 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
-            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -616,6 +616,11 @@ $LIMIT_FOLDER_DEPTH = 20;
 ## you can find the debug output in your web server error log
 $DEBUG = 0;
 
+## -- ENABLE_SYSINFO
+## enables sysinfo.html (only useful for debugging)
+## just call /<my virtual path>/sysinfo.html to system information
+$ENABLE_SYSINFO = $DEBUG;
+
 ############  S E T U P - END ###########################################
 #########################################################################
 
@@ -967,6 +972,8 @@ sub _GET {
 
 	if (is_hidden($fn)) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+	} elsif ($ENABLE_SYSINFO && $fn =~/\/sysinfo.html$/) {
+		printHeaderAndContent('200 OK', 'text/html', renderSysInfo());
 	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
 		my $file = $INSTALL_BASE.basename($fn);
 		$file = $INSTALL_BASE.'lib/'.basename($fn) if !-e $file;
@@ -5111,6 +5118,50 @@ sub readMIMETypes {
 		warn "Cannot open $mimefile";
 	}
 	$MIMETYPES{default}='application/octet-stream';
+}
+sub renderSysInfo {
+	my $i = "";
+	$i.= start_html();
+	
+	$i.= $cgi->h1('WebDAV CGI SysInfo');
+	$i.= $cgi->h2('Process - '.$0);
+	$i.= $cgi->start_table()
+             .$cgi->Tr($cgi->td('BASETIME').$cgi->td(''.localtime($^T)))
+             .$cgi->Tr($cgi->td('OSNAME').$cgi->td($^O))
+             .$cgi->Tr($cgi->td('PID').$cgi->td($$))
+	     .$cgi->Tr($cgi->td('REAL UID').$cgi->td($<))
+             .$cgi->Tr($cgi->td('EFFECTIVE UID').$cgi->td($>))
+             .$cgi->Tr($cgi->td('REAL GID').$cgi->td($())
+	     .$cgi->Tr($cgi->td('EFFECTIVE GID').$cgi->td($)))
+	     
+	     .$cgi->end_table();
+        $i.= $cgi->h2('Perl');
+	$i.= $cgi->start_table()
+		.$cgi->Tr($cgi->td('version').$cgi->td(sprintf('%vd',$^V)))
+		.$cgi->Tr($cgi->td('debugging').$cgi->td($^D))
+                .$cgi->Tr($cgi->td('taint mode').$cgi->td(${^TAINT}))
+                .$cgi->Tr($cgi->td('unicode').$cgi->td(${^UNICODE}))
+                .$cgi->Tr($cgi->td('warning').$cgi->td($^W))
+                .$cgi->Tr($cgi->td('executable name').$cgi->td($^X))
+		.$cgi->end_table();
+	$i.= $cgi->h2('System Times');
+	my ($user,$system,$cuser,$csystem) = times;
+	$i.=  $cgi->start_table()
+	     .$cgi->Tr($cgi->td('user (s)').$cgi->td($user))
+	     .$cgi->Tr($cgi->td('system (s)').$cgi->td($system))
+             .$cgi->Tr($cgi->td('cuser (s)').$cgi->td($cuser))
+	     .$cgi->Tr($cgi->td('csystem (s)').$cgi->td($csystem))
+	     .$cgi->end_table();
+	$i.= $cgi->h2('Environment');
+	$i.= $cgi->start_table();
+	foreach my $e (sort keys %ENV) {
+		$i.=$cgi->Tr($cgi->td($e).$cgi->td($ENV{$e}));
+	}
+	$i.= $cgi->end_table();
+	
+	$i.=$cgi->end_html();
+
+	return $i;
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;
