@@ -4,6 +4,8 @@
 *             and Daniel Stoye <stoyedan@cms.hu-berlin.de>
 **********************************************************/
 /*** CHANGES:
+  2011-31-03:
+      - fixed minor direct call bug reported by Tony H. Wijnhard <Tony.Wijnhard@mymojo.nl>
   2010-22-11:
       - fixed effective groups bug reported by Hanz Makmur <makmur@cs.rugers.edu>
 */
@@ -42,12 +44,11 @@ int main(int argc, char *argv[])
 	if (remote_user == NULL) remote_user = getenv("REMOTE_USER");
 	if (remote_user == NULL) remote_user = getenv("REDIRECT_REMOTE_USER");
 
-	int pos = strstr(remote_user, "@EXAMPLE.ORG") != NULL ? strcspn(remote_user, "@") : 0;
-
-	if (pos > 0)
-		remote_user[pos]='\0';
-
-	if (remote_user != NULL) pw = getpwnam(remote_user);
+	if (remote_user != NULL) {
+		int pos = strstr(remote_user, "@EXAMPLE.ORG") != NULL ? strcspn(remote_user, "@") : 0;
+		if (pos > 0) remote_user[pos]='\0';
+		pw = getpwnam(remote_user);
+	}
 
 	if ((pw != NULL)  && ( pw->pw_uid != 0)) {
 		if (initgroups(pw->pw_name,pw->pw_gid)==0 && setgid(pw->pw_gid)==0 && setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
@@ -55,8 +56,8 @@ int main(int argc, char *argv[])
 	} else {
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-Type: text/plain\r\n\r\n");
-		printf("404 Not Found - your wrapper");
-		printf("remote_user: %s",remote_user);
+		printf("404 Not Found - your wrapper\n");
+		printf("remote_user: %s\n",remote_user);
 
 	}
 }

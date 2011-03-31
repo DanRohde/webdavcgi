@@ -483,7 +483,7 @@ $ALLOW_AFSGROUPCHANGES = $ENABLE_AFS;
 $AFS_PTSCMD = '/usr/bin/pts';
 
 ## -- ENABLE_LOCK
-## enable/disable lock/unlock support (WebDAV compiance class 2) 
+## enable/disable lock/unlock support (WebDAV compliance class 2) 
 ## if disabled it's unsafe for shared collections/files but improves performance 
 $ENABLE_LOCK = 1;
 
