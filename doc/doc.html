@@ -375,28 +375,28 @@ EOF
 
 Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
 <ol>
-<li> Download and install CKEditor (e.g. into the <code>/srv</code> folder - or use another server)</li>
-<li> Configure the web server to access all CKEditor files, e.g. <code>RewriteRule /ckeditor /srv/ckeditor [PT,L]</code></li>
+<li> <a href="http://ckeditor.com/">Download</a> and install CKEditor&trade; (e.g. into the <code>/srv</code> folder - or use another server)</li>
+<li> Configure the web server to access all CKEditor&trade; files, e.g. <code>RewriteRule /ckeditor /srv/ckeditor [PT,L]</code></li>
 <li> Configure WebDAV CGI:
 <pre>
-$HTMLHEAD = '
-  &lt;script type="text/javascript" src="/ckeditor/ckeditor.js"&gt;&lt;/script&gt;
-  &lt;style&gt;.textdataresizer { display: none; }&lt;/style&gt;
-' if $cgi-&gt;param('edit') &amp;&amp; $cgi-&gt;param('edit') =~ /\.html?$/i;
-
-my $_lang = $cgi-&gt;param('lang') || $cgi-&gt;cookie('lang') || $LANG;
-$SIGNATURE .= '
-	&lt;script&gt;
-	if (document.getElementById('textdata') 
-			&amp;&amp; document.getElementById('mimetype').value == 'text/html') 
+if ($cgi-&gt;param('edit') &amp;&amp; $cgi-&gt;param('edit') =~ /\.html?$/i) {
+	$HTMLHEAD = q@
+		  &lt;script type="text/javascript" src="/ckeditor/ckeditor.js"&gt;&lt;/script&gt;
+		  &lt;style&gt;.textdataresizer { display: none; }&lt;/style&gt;
+	@; 
+	my $_lang = $cgi-&gt;param('lang') || $cgi-&gt;cookie('lang') || $LANG;
+	$SIGNATURE .= qq@
+		&lt;script&gt;
 		CKEDITOR.replace('textdata', 
 			{ fullPage : true, language: '$_lang', removePlugins: 'save', 
-			  baseFloatZIndex: (parseInt(getCookie('dragZIndex')) == 'NaN') 
-			  				?  editor.config.baseFloatZIndex 
-							:  parseInt(getCookie('dragZIndex'))+1000 
-			});
-	&lt;/script&gt;
-';
+			  baseFloatZIndex: 
+			  	(parseInt(getCookie('dragZIndex')) == 'NaN') 
+						?  editor.config.baseFloatZIndex 
+						:  parseInt(getCookie('dragZIndex'))+1000 
+		});
+		&lt;/script&gt; 
+	@;
+}
 </pre>
 </li>
 </ol>
