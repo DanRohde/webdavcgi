@@ -7,6 +7,10 @@
 CGIPATHS="/usr/lib/cgi-bin /usr/local/cgi-bin /usr/local/www/cgi-bin /etc/apache2/cgi-bin /etc/apache/cgi-bin /srv/cgi-bin"
 
 
+
+wd=$(dirname $0)
+test "$wd" = "." && wd=$(pwd)
+
 if test "$UID" != 0 ; then
 	echo "Please start this script with root rights"
 	echo "sudo bash $0"
@@ -31,26 +35,28 @@ fi
 
 usekrb=0
 read -p "Do you use Kerberos authentication? (N/y): " krb
-test "$krb" = "y" -o "$krb" = "Y"  && usekrb=1
+if test "$krb" = "y" -o "$krb" = "Y" ; then
+	usekrb=1
+	read -p "Please enter your Kerberos domain (without @ and with uppercase letters (e.g. EXAMPLE.ORG): " domain
+fi
 
 echo -n "Compiling wrapper ..."
 if test "$usekrb" = 0 ; then
-	gcc -o cgi-bin/webdavwrapper helper/webdavwrapper.c
+	gcc -o $wd/cgi-bin/webdavwrapper helper/webdavwrapper.c
 else
-	read -p "Please enter your Kerberos domain (without @ and with uppercase letters (e.g. EXAMPLE.ORG): " domain
-	sed -e 's/@EXAMPLE.ORG/@'$domain'/g' < helper/webdavwrapper-krb.c > helper/webdavwrapper-krb-custom.c
-	test "$usekrb" = 1 && gcc -o cgi-bin/webdavwrapper helper/webdavwrapper-krb-custom.c
+	sed -e 's/@EXAMPLE.ORG/@'$domain'/g' < $wd/helper/webdavwrapper-krb.c > $wd/helper/webdavwrapper-krb-custom.c
+	gcc -o $wd/cgi-bin/webdavwrapper $wd/helper/webdavwrapper-krb-custom.c
 fi
 echo "done."
 
 
 echo -n "Fixing owner/group and rights ..."
 
-strip cgi-bin/webdavwrapper
+strip $wd/cgi-bin/webdavwrapper
 
-chown root:root cgi-bin/webdavwrapper 
-chmod a+rx,ug+s cgi-bin/webdavwrapper 
-chmod a+rx cgi-bin/webdav.pl
+chown root:root $wd/cgi-bin/webdavwrapper 
+chmod a+rx,ug+s $wd/cgi-bin/webdavwrapper 
+chmod a+rx $wd/cgi-bin/webdav.pl
 
 echo "done."
 
@@ -60,8 +66,8 @@ echo -n "Linking webdav.pl and webdavwrapper to your cgi-bin ($cgibin) ..."
 test -e $cgibin/webdav.pl && mv $cgibin/webdav.pl $cgibin/webdav.pl.$(date +%Y%m%d-%H%M%S)
 test -e $cgibin/webdavwrapper && mv $cgibin/webdavwrapper $cgibin/webdavwrapper.$(date +%Y%m%d-%H%M%S)
 
-ln -s $(pwd)/cgi-bin/webdav.pl $cgibin/webdav.pl
-ln -s $(pwd)/cgi-bin/webdavwrapper $cgibin/webdavwrapper
+ln -s $wd/cgi-bin/webdav.pl $cgibin/webdav.pl
+ln -s $wd/cgi-bin/webdavwrapper $cgibin/webdavwrapper
 echo "done."
 
 if perl $cgibin/webdav.pl 1>/dev/null 2>&1; then
@@ -77,6 +83,5 @@ fi
 
 echo "Please don't forget to configure WebDAV CGI and your web server."
 echo "That's it."
-
 
 

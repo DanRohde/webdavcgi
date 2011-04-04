@@ -1,10 +1,12 @@
+
+$INSTALL_BASE='/etc/webdavcgi/';
+
 ## this is an example if a user starts with home dir (http://mywebdavserver/ -> user home):
 $VIRTUAL_BASE = '';
 $DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
 ## if you use a complex home folder structure, try this:
 # $DOCUMENT_ROOT=(getpwnam($ENV{REMOTE_USER}))[7].'/';
 
-$INSTALL_BASE='../';
 
 $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $DBI_USER='';
