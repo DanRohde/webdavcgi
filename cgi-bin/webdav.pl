@@ -4090,11 +4090,9 @@ sub renderFileUploadView {
 	return $cgi->hidden(-name=>'upload',-value=>1)
 		.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-id=>$bid?$bid:'filesubmit'.(++$WEB_ID), -name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
 		.$cgi->span({-id=>'moreuploads'},"")
-		.$cgi->div(
+		.' '.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
+		.$cgi->div({-class=>'uploadfuncs'},
 			$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
-			.' '
-			.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
-			.' ('.($CGI::POST_MAX / 1048576).' MB max)'
 		);
 }
 sub renderCreateNewFolderView {
@@ -4180,7 +4178,7 @@ sub renderChangePermissionsView {
 }
 sub renderZipDownloadButton { return $cgi->submit(-disabled=>'disabled',-name=>'zip',-value=>_tl('zipdownloadbutton'),-title=>_tl('zipdownloadtext')) }
 sub renderZipUploadView {
-	return _tl('zipuploadtext').$cgi->filefield(-name=>'zipfile_upload', -multiple=>'multiple').$cgi->submit(-name=>'uncompress', -value=>_tl('zipuploadbutton'),-onclick=>'return window.confirm("'._tl('zipuploadconfirm').'");');
+	return _tl('zipuploadtext').$cgi->filefield(-name=>'zipfile_upload', -id=>'zipfile_upload',-multiple=>'multiple').$cgi->submit(-name=>'uncompress', -value=>_tl('zipuploadbutton'),-onclick=>'return window.confirm("'._tl('zipuploadconfirm').'");');
 }
 sub renderZipView {
 	my $content = "";
@@ -4367,6 +4365,7 @@ sub renderSideBar {
 	if ($ALLOW_FILE_MANAGEMENT) {
 		$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
 		$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview","filesubmit")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
+		$content .= renderSideBarMenuItem('zipfileuploadview',_tl('zipupload'), 'toggleActionView("zipfileuploadview","zipfile_upload")',$cgi->button({-value=>_tl('zipfileupload'), -name=>'uncompress'}));
 		$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
 		$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
 		$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
@@ -4378,7 +4377,8 @@ sub renderSideBar {
 		$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 		$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
 		$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
-		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit').$cgi->br().'&nbsp;'.$cgi->br().$cgi->div(renderZipUploadView()), 'filesubmit',0,0);
+		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit'), 'filesubmit',0,0);
+		$av.= renderActionView('zipfileuploadview', 'zipfileupload', renderZipUploadView(), 'zipfile_upload',0,0);
 		$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
 		$av.= renderActionView('createnewfileview', 'createnewfilebutton', renderCreateNewFileView(),'cnfname');
 		$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');

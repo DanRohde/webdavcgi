@@ -105,6 +105,8 @@ fieldset { clear: both; }
 
 .rmuploadfield { text-decoration: none; margin: 4px; font-family: monospace; padding: 1px; border: 1px outset black; text-shadow: 1px 1px white; background-color: #dddddd; color: black;}
 
+.uploadfuncs { padding: 5px; }
+
 .toggle { cursor:pointer; border: 1px outset black; font-family: monospace; padding: 0px 4px 1px 3px; margin: 0px 2px 0px 2px; }
 legend {  font-size: 0.8em; font-weight: bold; margin: 5px 0px 2px 0px; padding: 0px; }
 
