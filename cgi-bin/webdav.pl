@@ -5144,6 +5144,13 @@ sub renderSysInfo {
                 .$cgi->Tr($cgi->td('warning').$cgi->td($^W))
                 .$cgi->Tr($cgi->td('executable name').$cgi->td($^X))
 		.$cgi->end_table();
+	$i.= $cgi->h2('Includes');
+	$i.= $cgi->start_table();
+	foreach my $e (sort keys %INC) {
+		$i.=$cgi->Tr($cgi->td($e).$cgi->td($ENV{$e}));
+	}
+	$i.= $cgi->end_table();
+
 	$i.= $cgi->h2('System Times');
 	my ($user,$system,$cuser,$csystem) = times;
 	$i.=  $cgi->start_table()

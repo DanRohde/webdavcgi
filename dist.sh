@@ -1,5 +1,4 @@
 #!/bin/bash
-FILES="webdav.pl webdav-ui.css  webdav-ui.js  webdav-ui_de.msg  webdav-ui_default.msg  webdav-ui_fr.msg webdavwrapper-krb.c  webdavwrapper.c logout CHANGELOG LICENSE TODO doc"
 RELEASE=`cat RELEASE`
 TMPPATH=/tmp/webdav-${RELEASE}
 

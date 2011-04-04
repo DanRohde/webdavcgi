@@ -1,6 +1,6 @@
 0.6.2: BETA
-     - added folder redirect feature if file/folder management disabled requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
-     - added (incomplete) french transltations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
+     - added folder redirect feature for disabled file/folder management requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
+     - added (incomplete) french translatations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
      - added sysinfo feature (GET)
      - Web interface:
          - added new file feature (GET/POST)
