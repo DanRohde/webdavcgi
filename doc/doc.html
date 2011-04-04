@@ -115,7 +115,7 @@ ln -s `pwd`/cgi-bin/webdav.pl /usr/lib/cgi-bin
 ### (Prerequisites: /cgi-bin/webdavwrapper is a script alias and
 ###      'AllowOverride AuthConfig FileInfo' is set for the current folder)
 RewriteEngine On
-RewriteRule .* /cgi-bin/webdavwrapper
+RewriteRule .* /cgi-bin/webdavwrapper [E=WEBDAVCONF:/path/to/my/config/file]
 
 AuthType Basic
 AuthName "A protected WebDAV folder"
@@ -134,7 +134,7 @@ require valid-user
 &lt;/Location>
 RewriteEngine On
 RewriteRule ^/icons(.*) /usr/share/apache2/icons$1 [L]
-RewriteRule ^/ /cgi-bin/webdavwrapper [PT,L]
+RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,L]
     </pre>
 <br/>
     <pre>
@@ -148,7 +148,7 @@ RewriteRule ^/ /cgi-bin/webdavwrapper [PT,L]
 # if you want to map this to a real path, do that:
 # (end setup $VIRTUAL_BASE and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
-RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,L]
+RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/config/file,L]
     </pre>
 
 </li>
