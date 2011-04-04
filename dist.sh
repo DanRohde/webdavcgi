@@ -1,6 +1,6 @@
 #!/bin/bash
 RELEASE=`cat RELEASE`
-TMPPATH=/tmp/webdav-${RELEASE}
+TMPPATH=/tmp/webdavcgi-${RELEASE}
 
 test -e ${TMPPATH} && rm -rf ${TMPPATH}
 

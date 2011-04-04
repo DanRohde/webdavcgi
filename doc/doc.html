@@ -29,10 +29,10 @@ Content of this topic:
 	<li><a href="#caldavcarddav">CalDAV &amp; CardDAV support</a></li>
 	<li><a href="#afs">AFS Support</a></li>
 	<li><a href="#performance">Performance</a></li>
-	<li><a href="#security">Security</a></li>
+	<!--[<li><a href="#security">Security</a></li>]-->
 	<li><a href="#troubleshooting">Troubleshooting</a></li>
 </ul>
-<a href="/"><br/>Back to the WebDAV CGI home</a>
+<a href="index.html"><br/>Back to the WebDAV CGI home</a>
 
 </div>
 <a id="requirements"></a>
@@ -50,6 +50,7 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
 
 <a id="installation"></a>
 <h2>Installation</h2>
+Note: All steps are done with root rights.
 <ol>
 <li><a href="index.html#download">download WebDAV CGI</a></li>
 <li>install required CPAN modules (Debian/Ubuntu package name):
@@ -76,28 +77,27 @@ perl -MCPAN -e "install File::Spec::Link"
 </li>
 <li>change directory to your preferred installation path, e.g. <code>cd /etc</code></li>
 <li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jtf webdavcgi-latest.tar.gz2</code></li>
-<li>change directory <code>cd webdavcgi*</code> and call <code>bash install.sh</code> or install CGI script and wrapper manually <a href="#" title="click here to show install steps" style="text-decoration: none;"  onclick="document.getElementById('maninstall').style.display='block'; return false;">&darr;</a>
+<li>change directory to the source base (e.g: <code>cd webdavcgi*</code>) and call <code>bash install.sh</code> 
+   <br/>OR install CGI script and wrapper by hand<a href="#" title="click here to show install steps" style="text-decoration: none;"  onclick="document.getElementById('maninstall').style.display='block'; return false;">&darr;</a>
 	<div id="maninstall" style="display:none">
 	<ol>
 	<li>compile your wrapper, change the permissions, and put it into your cgi-bin, e.g:
 <pre>
-gcc -o webdavwrapper webdavwrapper.c
-strip webdavwrapper
+gcc -o cgi-bin/webdavwrapper helper/webdavwrapper.c
+strip cgi-bin/webdavwrapper
 
-chown root:root webdavwrapper
-chmod ug+s webdavwrapper
+chown root:root cgi-bin/webdavwrapper
+chmod ug+s,a+rx cgi-bin/webdavwrapper
 
-cp -p webdavwrapper /usr/lib/cgi-bin/
+ln -s `pwd`/cgi-bin/webdavwrapper /usr/lib/cgi-bin
+
 </pre>
 </li>
-<li>put the WebDAV CGI <code>webdav.pl</code> into your cgi-bin, e.g:
+<li> fix permissions and put the WebDAV CGI <code>webdav.pl</code> into your cgi-bin, e.g:
 <pre>
-cp webdav.pl /usr/lib/cgi-bin
-</pre>
-</li>
-<li> fix permissions, e.g:
-<pre>
-chmod a+rx webdav.pl
+chmod a+rx cgi-bin/webdav.pl
+
+ln -s `pwd`/cgi-bin/webdav.pl /usr/lib/cgi-bin
 </pre>
 </li>
 </ol>
@@ -177,8 +177,6 @@ $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $DBI_USER='';
 $DBI_PASS=''; 
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-
-$THUMBNAIL_CACHEDIR="/tmp";
 
 </pre>
 </li>
@@ -494,6 +492,7 @@ RewriteRule  ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.
 
 <code>webdav.conf</code> example:
 <pre>
+$INSTALL_BASE = '/etc/webdavcgi';
 $DOCUMENT_ROOT = '/afs/';
 $VIRTUAL_BASE='/';
 
@@ -501,8 +500,6 @@ $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $DBI_USER='';
 $DBI_PASS=''; 
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-
-$THUMBNAIL_CACHEDIR="/tmp";
 
 $AFSQUOTA='/usr/bin/fs listquota $FS';
 
@@ -548,6 +545,7 @@ $MIMEFILE='/etc/mime.types';
   <li> Since WebDAV CGI v0.5.3 you can use Speedy to improve the performance. Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
 </ul>
+<!--[
 <a id="security"></a>
 <h2>Security</h2>
 
@@ -558,7 +556,7 @@ $MIMEFILE='/etc/mime.types';
   <li> Up-to-date: OS, Apache (auth module), Perl (CGI)</li>
 
 </ul>
-
+]-->
 <a id="troubleshooting"></a>
 <h2>Troubleshooting</h2>
 <h3>Timeout</h3>
@@ -613,7 +611,29 @@ Content-Type: text/plain
 404 Not Found - your wrapper
 </pre>
 </li>
+<li> <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Contact the author</a></li>
+</li>
 </ol>
+<h3>FreeBSD/OpenBSD: all LOCK requests end with a segmentation fault (signal 11)</h3>
+In some installations OSSP::uuid module lets Perl crashing with a segmentation fault. A solution is to replace OSSP::uuid with UUID::Tiny (thx Tony Wijnhard):
+<ol>
+<li> install UUID::Tiny: <code>perl -MCPAN -e 'install UUID::Tiny'</code></li>
+<li> replace <code>use OSSP:uuid;</code> with <code>use UUID::Tiny;</code>: <pre>sed -i -e 's@use OSSP::uuid;@use UUID::Tiny;@g' webdav.pl</pre></li>
+<li> replace <code>sub getuuid {</code> with <code>sub _unused_getuuuid {</code>: <pre>sed -i -e 's@^sub getuuid@sub _unused_getuuid@g' webdav.pl</li>
+<li> add a new getuuid routine to webdav.pl: 
+<pre>
+cat - &gt;&gt;webdav.pl &lt;&lt;'EOF'
+sub getuuid {
+        my ($fn) = @_;
+        my $uuid_ns = create_UUID(UUID_V1, "opaquelocktoken:$fn");
+        my $uuid = create_UUID(UUID_V3, $uuid_ns, "$fn".time());
+        debug("_LOCK after uuid made in method:");
+        return UUID_to_string($uuid);
+}
+EOF
+</pre>
+</ol>
+
 
 <h3>Web interface: Copy/Cut/Paste and bookmarks do not work as expected.</h3>
 WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface without encryption (http instead of https) all cookie based actions do not work.
