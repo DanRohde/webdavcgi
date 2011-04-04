@@ -351,17 +351,15 @@ Attention: You need a single database for all users to share WebDAV locks and pr
 <a id="webinterface"></a>
 <h2>Web interface</h2>
 <h3>How to add a new translation</h3>
-Put the following to your WebDAV CGI configuration file:
-<pre>
-$TRANSLATION{'mylang'} = {
-	## copy all key=&gt;val data from 'default' part of %TRANSLATION 
-	## in webdav.pl and change the values
-	search =&gt; 'Search for file/folder name:', ...
-};
-</pre>
-<h3>How to change CSS styles</h3>
 
-Simply add the following to your configuration file:
+Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
+
+<h3>How to change CSS styles</h3>
+There are three ways to do it:
+
+<ul>
+<li> Add a <code>webdav-ui-custom.css</code> to the <code>lib/</code> directory of the WebDAV CGI installation (recommended; Note: webdav.pl delivers this style file with a cache timeout of one week). </li>
+<li> Add the following to your WebDAV CGI configuration file:
 <pre>
 $CSS .= &lt;&lt;EOF 
 
@@ -370,15 +368,23 @@ $CSS .= &lt;&lt;EOF
 EOF
 ;
 </pre>
+</li>
+<li> Set the <code>$HTMLHEAD</code> variable in your WebDAV CGI config (e.g. <code>$HTMLHEAD='&lt;link .../&gt;';</code> or <code>$HTMLHEAD='&lt;style&gt;...&lt;/style&gt;';</code>)</li>
+</ul>
 <a id="logout"></a>
 <h2>Web interface and Logout</h2>
-The WebDAV CGI Web interface has no logout button by default. A logout depends on the authentication. For a simple HTTP basic authentication you can use the sample logout script (see <a href="/#download">Download section</a>).
+The WebDAV CGI Web interface has no logout button by default. A logout depends on the used authentication type. For a simple HTTP basic authentication you can use the sample logout script (see <code>cgi-bin/logout-dist</code> in your WebDAV CGI source base).
 
 It's quiet easy to integrate a logout button:
 <ol>
-<li> install you logout script (put it into your cgi-bin folder, e.g. <code>cp logout /usr/lib/cgi-bin/</code>)</li>
-<li> add a rewrite rule to your Apache configuration, e.g: <code>RewriteRule /logout /usr/lib/cgi-bin/logout [PT,L]</code></li>
-<li> add the following to your WebDAV CGI config: 
+<li> install logout script,e.g (be in the WebDAV CGI source base): 
+<pre>cp cgi-bin/logout-dist cgi-bin/logout
+chmod a+rx cgi-bin/logout
+ln -s `pwd`/cgi-bin/logout /usr/lib/cgi-bin
+</pre></li>
+<li> Add a rewrite rule to your Apache configuration, e.g: <code>RewriteRule /logout /usr/lib/cgi-bin/logout [PT,L]</code>
+<br/>Note: this rule should precede the webdavwrapper rule</li>
+<li> Add the following to your WebDAV CGI config: 
 <pre>$HEADER = '&lt;div class="header"&gt;WebDAV CGI - Web interface: You are logged in as &lt;span title="'.`id -a`.'"&gt;'
 	.$ENV{REMOTE_USER}.'</span> (&lt;a href="/logout"&gt;Logout&lt;/a&gt;).&lt;/div&gt;';
 </pre>
