@@ -82,7 +82,7 @@ $INSTALL_BASE=$ENV{INSTALL_BASE} || '';
 ## you can overwrite all variables from this setup section with a config file
 ## (simply copy the complete setup section (without 'use vars ...') or single options to your config file)
 ## EXAMPLE: CONFIGFILE = './webdav.conf';
-$CONFIGFILE = $ENV{WEBDAVCONF} || (-e "${INSTALL_BASE}webdav.conf" ? "${INSTALL_BASE}webdav.conf" : -e "${INSTALL_BASE}etc/webdav.conf" ? "${INSTALL_BASE}etc/webdav.conf" : undef) || 'webdav.conf';
+$CONFIGFILE = $ENV{REDIRECT_WEBDAVCONF} || $ENV{WEBDAVCONF} || 'webdav.conf';
 
 ## -- VIRTUAL_BASE
 ## only neccassary if you use redirects or rewrites from a VIRTUAL_BASE to the DOCUMENT_ROOT;
@@ -974,9 +974,9 @@ sub _GET {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($ENABLE_SYSINFO && $fn =~/\/sysinfo.html$/) {
 		printHeaderAndContent('200 OK', 'text/html', renderSysInfo());
-	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
-		my $file = $INSTALL_BASE.basename($fn);
-		$file = $INSTALL_BASE.'lib/'.basename($fn) if !-e $file;
+	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
+		my $file = $INSTALL_BASE.'lib/'.basename($fn);
+		$file = $INSTALL_BASE.basename($fn) if !-e $file;
 
 		printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
 		if (open(F,"<$file")) {
@@ -4090,10 +4090,12 @@ sub renderFileUploadView {
 	return $cgi->hidden(-name=>'upload',-value=>1)
 		.$cgi->span({-id=>'file_upload'},_tl('fileuploadtext').$cgi->filefield(-id=>$bid?$bid:'filesubmit'.(++$WEB_ID), -name=>'file_upload', -class=>'fileuploadfield', -multiple=>'multiple', -onchange=>'return addUploadField()' ))
 		.$cgi->span({-id=>'moreuploads'},"")
-		.' '.$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
-		.' '
-		.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
-		.' ('.($CGI::POST_MAX / 1048576).' MB max)';
+		.$cgi->div(
+			$cgi->submit(-name=>'filesubmit',-value=>_tl('fileuploadbutton'),-onclick=>'return window.confirm("'._tl('fileuploadconfirm').'");')
+			.' '
+			.$cgi->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},_tl('fileuploadmore'))
+			.' ('.($CGI::POST_MAX / 1048576).' MB max)'
+		);
 }
 sub renderCreateNewFolderView {
 	return $cgi->div({-class=>'createfolder'},'&bull; '._tl('createfoldertext').$cgi->input({-id=>$_[0]?$_[0]:'colname'.(++$WEB_ID), -name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'}).$cgi->submit(-id=>'createfolder', -name=>'mkcol',-value=>_tl('createfolderbutton')))
@@ -4395,7 +4397,7 @@ sub renderSideBar {
 
 
 	my $showsidebar =  (! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true');
-	my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt';
+	my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt;';
 
 	return $cgi->div({-id=>'sidebar', -class=>'sidebar'}, $cgi->start_table({-id=>'sidebartable',-class=>'sidebartable'.($showsidebar ?'':' collapsed')}).$cgi->Tr($cgi->td({-id=>'sidebarcontent', -class=>'sidebarcontent'.($showsidebar?'':' collapsed')},$content).$cgi->td({-id=>'sidebartogglebutton', -title=>_tl('togglesidebar'), -class=>'sidebartogglebutton', -onclick=>'toggleSideBar()'},$sidebartogglebutton)).$cgi->end_table()). $av ;
 }
@@ -4528,6 +4530,10 @@ sub getFolderList {
 		my $fid = "f$WEB_ID";
 		my $full = $fn.$filename;
 		my $nru = $ru.uri_escape($filename);
+
+		$nru = dirname($ru) if $filename eq '..';
+		$nru = $ru if $filename eq '.';
+
 		### +++ AFS fix
 		my $isReadable = 1;	
 		my $isUnReadable = 0;
@@ -4763,6 +4769,8 @@ sub start_html {
 	$content.=qq@<link rel="search" type="application/opensearchdescription+xml" title="WebDAV CGI filename search" href="$REQUEST_URI?action=opensearch"/>@ if $ALLOW_SEARCH;
 	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
 	$content.=qq@<link href="${base}webdav-ui.css" rel="stylesheet" type="text/css"/>@;
+	$content.=qq@<link href="${base}webdav-ui-custom.css" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.css";
+	$content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.js";
 	minify($CSS);
 	$content.=qq@<style type="text/css">$CSS</style>@ if defined $CSS;
 	$content.=qq@<link href="$CSSURI" rel="stylesheet" type="text/css"/>@ if defined $CSSURI;

@@ -160,14 +160,14 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <h2>WebDAV CGI Setup</h2>
 The WebDAV CGI can be easier upgraded if you use a configuration file instead of changing the setup section of <code>webdav.pl</code>.
 <ol>
-<li> Create a <code>webdav.conf</code> with a minimal setup (and don't forget to fix file permissions: <code>chmod a+r webdav.conf</code>):
+<li> Create a <code>webdav.conf</code> wherever you want (e.g. /etc/webdav.conf or /etc/apache2/webdav.conf) with a minimal setup and don't forget to fix file permissions: <code>chmod a+r webdav.conf</code>:
 <pre>
 ## the install base is needed to find webdav-ui.* and locale files 
 ## (don't forget the trailing slash):
 $INSTALL_BASE = '/etc/webdavcgi/';
 
 ## this is an example if a user starts with home dir (http://mywebdavserver/ -&gt; user home):
-$VIRTUAL_BASE = '';
+$VIRTUAL_BASE = '/';
 $DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
 ## if you use a complex home folder structure, try this:
 # $DOCUMENT_ROOT=(getpwnam($ENV{REMOTE_USER}))[7].'/';
