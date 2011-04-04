@@ -40,7 +40,7 @@ Content of this topic:
 
 <ul>
 <li> all required Perl modules: see <a href="#installation">Installation</a> </li>
-<li> a <a href="#database">database</a> (SQLite3, PostgreSQL, MySQL, ... (all supported by a Perl DBI driver))</a></li>
+<li> a <a href="#database">database</a> (SQLite3, PostgreSQL, MySQL, ... (all supported by a Perl DBI driver))</li>
 <li> a little bit configuration: Apache setup (see <a href="#installation">Installation</a>) and a <a href="#setup">WebDAV CGI Setup</a></li>
 <li> a Web server software (Apache recommended)</li>
 <li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu recommended, Windows/MacOS-X not tested and not supported) </li>
@@ -126,12 +126,12 @@ require valid-user
     <pre>
 ### EXAMPLE 2: a complete (virtual) server root handled by WebDAV CGI:
 ### (you don't need actions, handler, or error documents)
-&lt;Location />
+&lt;Location /&gt;
         AuthType Basic
         AuthName "WebDAV/CalDAV/CardDAV space"
         AuthUserFile /path-to-my-auth-file
         Require valid-user
-&lt;/Location>
+&lt;/Location&gt;
 RewriteEngine On
 RewriteRule ^/icons(.*) /usr/share/apache2/icons$1 [L]
 RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,L]
@@ -139,12 +139,12 @@ RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,L
 <br/>
     <pre>
 ### EXAMPLE 3: a virtual path /webdav
-&lt;Location /webdav>
+&lt;Location /webdav&gt;
         AuthType Basic
         AuthName "WebDAV space"
         AuthUserFile /path-to-my-auth-file
         Require valid-user
-&lt;/Location>
+&lt;/Location&gt;
 # if you want to map this to a real path, do that:
 # (end setup $VIRTUAL_BASE and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
@@ -350,11 +350,11 @@ Attention: You need a single database for all users to share WebDAV locks and pr
 
 <a id="webinterface"></a>
 <h2>Web interface</h2>
-<h3>How to add a new translation</h3>
+<h3>How to add a new translation?</h3>
 
 Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
 
-<h3>How to change CSS styles</h3>
+<h3>How to change CSS styles?</h3>
 There are three ways to do it:
 
 <ul>
@@ -371,6 +371,47 @@ EOF
 </li>
 <li> Set the <code>$HTMLHEAD</code> variable in your WebDAV CGI config (e.g. <code>$HTMLHEAD='&lt;link .../&gt;';</code> or <code>$HTMLHEAD='&lt;style&gt;...&lt;/style&gt;';</code>)</li>
 </ul>
+<h3>Howto integrate a WYSIWYG editor?</h3>
+
+Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
+<ol>
+<li> Download and install CKEditor (e.g. into the <code>/srv</code> folder - or use another server)</li>
+<li> Configure the web server to access all CKEditor files, e.g. <code>RewriteRule /ckeditor /srv/ckeditor [PT,L]</code></li>
+<li> Configure WebDAV CGI:
+<pre>
+$HTMLHEAD = '
+  &lt;script type="text/javascript" src="/ckeditor/ckeditor.js"&gt;&lt;/script&gt;
+  &lt;style&gt;.textdataresizer { display: none; }&lt;/style&gt;
+' if $cgi-&gt;param('edit') &amp;&amp; $cgi-&gt;param('edit') =~ /\.html?$/i;
+
+my $_lang = $cgi-&gt;param('lang') || $cgi-&gt;cookie('lang') || $LANG;
+$SIGNATURE .= '
+	&lt;script&gt;
+	if (document.getElementById('textdata') 
+			&amp;&amp; document.getElementById('mimetype').value == 'text/html') 
+		CKEDITOR.replace('textdata', 
+			{ fullPage : true, language: '$_lang', removePlugins: 'save', 
+			  baseFloatZIndex: (parseInt(getCookie('dragZIndex')) == 'NaN') 
+			  				?  editor.config.baseFloatZIndex 
+							:  parseInt(getCookie('dragZIndex'))+1000 
+			});
+	&lt;/script&gt;
+';
+</pre>
+</li>
+</ol>
+Consider this if you integrate a WYSIWYG editor:
+<ol>
+ <li>Allow only HTML files to edit with a WYSIWYG editor.</li>
+ <li>Disable 'save' button or reconfigure it to submit 'savetextdata'.</li>
+ <li>Use the id 'textdata' for the editor replacement.</li>
+ <li>Disable the WebDAV CGI integrated resizer if the editor comes with its own (set display to none for style  .textdataresizer).</li>
+ <li>Enable full page editing to allow changing complete HTML pages.</li>
+ <li>Setup z-index style for editor to a value larger than 'dragZIndex' cookie value.</li>
+</ol>
+
+
+
 <a id="logout"></a>
 <h2>Web interface and Logout</h2>
 The WebDAV CGI Web interface has no logout button by default. A logout depends on the used authentication type. For a simple HTTP basic authentication you can use the sample logout script (see <code>cgi-bin/logout-dist</code> in your WebDAV CGI source base).
@@ -387,7 +428,7 @@ ln -s `pwd`/cgi-bin/logout /usr/lib/cgi-bin
 <br/>Note: this rule should precede the webdavwrapper rule</li>
 <li> Add the following to your WebDAV CGI config: 
 <pre>$HEADER = '&lt;div class="header"&gt;WebDAV CGI - Web interface: You are logged in as &lt;span title="'.`id -a`.'"&gt;'
-	.$ENV{REMOTE_USER}.'</span> (&lt;a href="/logout"&gt;Logout&lt;/a&gt;).&lt;/div&gt;';
+	.$ENV{REMOTE_USER}.'&lt;/span&gt; (&lt;a href="/logout"&gt;Logout&lt;/a&gt;).&lt;/div&gt;';
 </pre>
 </li>
 </ol>
@@ -417,7 +458,7 @@ mkdir("${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar")
 ...
 </pre>
 </li>
-</ul>
+</ol>
 </div>
 <h3>CardDAV</h3>
 <div>
@@ -476,7 +517,7 @@ Requirements:
 <li><a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu package: libapache2-mod-auth-kerb)</li>
 <li><a href="http://www.modwaklog.org/">mod_waklog</a> installed</li>
 <li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured (<code>kinit ...; aklog</code> should work)</li>
-<li><a href="http://webdavcgi.sf.net/files/webdavwrapper-krb.c">webdavwrapper-krb.c</a>: <code> gcc -o webdavwrapper webdavwrapper-krb.c && cp webdavwrapper /usr/lib/cgi-bin && chown root:root  /usr/lib/cgi-bin/webdavwrapper; chmod ug+s,a+rx /usr/lib/cgi-bin/webdavwrapper</code>
+<li><a href="http://webdavcgi.sf.net/files/webdavwrapper-krb.c">webdavwrapper-krb.c</a>: <code> gcc -o webdavwrapper webdavwrapper-krb.c &amp;&amp; cp webdavwrapper /usr/lib/cgi-bin &amp;&amp; chown root:root  /usr/lib/cgi-bin/webdavwrapper; chmod ug+s,a+rx /usr/lib/cgi-bin/webdavwrapper</code></li>
 </ol>
 
 Apache example:
@@ -600,7 +641,7 @@ webdav.pl syntax OK
 <li> Call webdav.pl from a shell:
 <pre>
 #&gt; ./webdav.pl
-DAV: 1, 2, 3, <http://apache.org/dav/propset/fs/1>, extended-mkcol, access-control, calendar-access, calendarserver-private-comments, calendar-auto-schedule, addressbook, bind
+DAV: 1, 2, 3, &lt;http://apache.org/dav/propset/fs/1&gt;, extended-mkcol, access-control, calendar-access, calendarserver-private-comments, calendar-auto-schedule, addressbook, bind
 MS-Author-Via: DAV
 Status: 404 Not Found
 Date: Mon, 14 Mar 2011 12:51:35 GMT
@@ -619,14 +660,13 @@ Content-Type: text/plain
 </pre>
 </li>
 <li> <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Contact the author</a></li>
-</li>
 </ol>
 <h3>FreeBSD/OpenBSD: all LOCK requests end with a segmentation fault (signal 11)</h3>
 In some installations OSSP::uuid module lets Perl crashing with a segmentation fault. A solution is to replace OSSP::uuid with UUID::Tiny (thx Tony Wijnhard):
 <ol>
 <li> install UUID::Tiny: <code>perl -MCPAN -e 'install UUID::Tiny'</code></li>
 <li> replace <code>use OSSP:uuid;</code> with <code>use UUID::Tiny;</code>: <pre>sed -i -e 's@use OSSP::uuid;@use UUID::Tiny;@g' webdav.pl</pre></li>
-<li> replace <code>sub getuuid {</code> with <code>sub _unused_getuuuid {</code>: <pre>sed -i -e 's@^sub getuuid@sub _unused_getuuid@g' webdav.pl</li>
+<li> replace <code>sub getuuid {</code> with <code>sub _unused_getuuuid {</code>: <pre>sed -i -e 's@^sub getuuid@sub _unused_getuuid@g' webdav.pl</pre></li>
 <li> add a new getuuid routine to webdav.pl: 
 <pre>
 cat - &gt;&gt;webdav.pl &lt;&lt;'EOF'
@@ -639,6 +679,7 @@ sub getuuid {
 }
 EOF
 </pre>
+</li>
 </ol>
 
 
