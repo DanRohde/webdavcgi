@@ -667,12 +667,12 @@ Content-Type: text/plain
 </li>
 <li> <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Contact the author</a></li>
 </ol>
-<h3>FreeBSD/OpenBSD: all LOCK requests end with a segmentation fault (signal 11)</h3>
+<h3>FreeBSD/OpenBSD: all LOCK requests result in a segmentation fault error (signal 11)</h3>
 In some installations OSSP::uuid module lets Perl crashing with a segmentation fault. A solution is to replace OSSP::uuid with UUID::Tiny (thx Tony Wijnhard):
 <ol>
 <li> install UUID::Tiny: <code>perl -MCPAN -e 'install UUID::Tiny'</code></li>
 <li> replace <code>use OSSP:uuid;</code> with <code>use UUID::Tiny;</code>: <pre>sed -i -e 's@use OSSP::uuid;@use UUID::Tiny;@g' webdav.pl</pre></li>
-<li> replace <code>sub getuuid {</code> with <code>sub _unused_getuuuid {</code>: <pre>sed -i -e 's@^sub getuuid@sub _unused_getuuid@g' webdav.pl</pre></li>
+<li> replace <code>sub getuuid {</code> with <code>sub _unused_getuuid {</code>: <pre>sed -i -e 's@^sub getuuid@sub _unused_getuuid@g' webdav.pl</pre></li>
 <li> add a new getuuid routine to webdav.pl: 
 <pre>
 cat - &gt;&gt;webdav.pl &lt;&lt;'EOF'
