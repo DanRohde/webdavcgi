@@ -324,7 +324,7 @@ Attention: for AFS and/or Kerberos support you need the <code>webdavwrapper-krb.
 
 <a id="foldersharing"></a>
 <h2>Folder Sharing / Group Access</h2>
-There are two ways to share a folder between users of a group:
+There are two ways to share a folder between users of a group (not for AFS users - see AFS note below):
 <ol>
 <li> Add all users to UNIX/Posix group (/etc/groups, a LDAP group, ...) - recommended:
 	<ul>
@@ -334,6 +334,7 @@ There are two ways to share a folder between users of a group:
 		<li> set set-GID-flag to the folder and make it readable/executable/writeable for the group: <code>chmod g+srwx SHAREDFOLDER</code></li>
 		<li> set the <code>$UMASK</code> parameter in your WebDAV CGI config file: <code>$UMASK = 0002;</code></li>
 	</ul>
+Attention: You need a single database for all users to share WebDAV locks and properties. If you use a file based database like SQLite you have to use a singe file writeable for all users.
 
 </li>
 <li> Use the UID/GID Wrapper to map all users to a common user:
@@ -346,7 +347,12 @@ There are two ways to share a folder between users of a group:
 </li>
 </ol>
 
-Attention: You need a single database for all users to share WebDAV locks and properties. If you use a file based database like SQLite you have to use a singe file writeable for all users.
+AFS note: If you use AFS you have to use AFS groups and AFS ACLs to share folders instead of folder permissions because AFS ignores all Linux/UNIX permissions:
+<ol>
+<li> Create a AFS group and add AFS users to the group. </li>
+<li> Set lookup, read, write, delete, insert, and lock rights for that group to the shared folder.</li>
+<li> Don't forget to set lookup rights for the AFS group to all upper folders.</li>
+</ol>
 
 <a id="webinterface"></a>
 <h2>Web interface</h2>
