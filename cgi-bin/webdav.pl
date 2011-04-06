@@ -4365,7 +4365,7 @@ sub renderSideBar {
 	if ($ALLOW_FILE_MANAGEMENT) {
 		$content .= $cgi->div({-class=>'sidebarheader'}, _tl('management'));
 		$content .= renderSideBarMenuItem('fileuploadview',_tl('upload'), 'toggleActionView("fileuploadview","filesubmit")',$cgi->button({-value=>_tl('upload'), -name=>'filesubmit'}));
-		$content .= renderSideBarMenuItem('zipfileuploadview',_tl('zipupload'), 'toggleActionView("zipfileuploadview","zipfile_upload")',$cgi->button({-value=>_tl('zipfileupload'), -name=>'uncompress'}));
+		$content .= renderSideBarMenuItem('zipfileuploadview',_tl('zipfileupload'), 'toggleActionView("zipfileuploadview","zipfile_upload")',$cgi->button({-value=>_tl('zipfileupload'), -name=>'uncompress'}));
 		$content .= renderSideBarMenuItem('download', _tl('download'), undef, renderZipDownloadButton());
 		$content .= renderSideBarMenuItem('copy',_tl('copytooltip'), undef, renderCopyButton());
 		$content .= renderSideBarMenuItem('cut', _tl('cuttooltip'), undef, renderCutButton());
