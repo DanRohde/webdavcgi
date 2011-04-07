@@ -3,9 +3,10 @@
      - added (incomplete) french translatations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
      - added sysinfo feature (GET)
      - Web interface:
+         - added htdocs support (GET)
          - added new file feature (GET/POST)
-	 - added edit feature (GET/POST)
-	 - moved translations to separate .msg files (GET)
+         - added edit feature (GET/POST)
+         - moved translations to separate .msg files (GET)
          - moved CSS and javascript to separte files (GET/HEAD)
          - added properties viewer switch (GET)
          - added sidebar view (GET)

@@ -63,7 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
-            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -135,6 +135,14 @@ $MIMEFILE = '/etc/mime.types';
 ## if disabled you get a 404 error for a GET request on a folder
 ## DEFAULT: $FANCYINDEXING = 1;
 $FANCYINDEXING = 1;
+
+## -- VHTDOCS
+## virtual path name to "${INSTALL_BASE}htdocs",
+## e.g. access to ${VHTDOCS}icons/test.png delivers ${INSTALL_BASE}htdocs/icons/test.png
+## note: all delivered data from htdocs expires in one week
+## (don't forget the trailing slash)
+## EXAMPLE: $VHTDOCS='/_webdavcgi_/';
+$VHTDOCS='_webdavcgi_/';
 
 ## -- MAXFILENAMESIZE 
 ## Web interface: width of filename column
@@ -300,7 +308,7 @@ $SHOW_PERM = 1;
 ## -- SHOW_MIME
 ## show mime type
 ## DEFAULT: $SHOW_MIME= 0;
-$SHOW_MIME= 1;
+$SHOW_MIME= 0;
 
 ## -- SHOW_FILE_ACTIONS
 ## show file actions column
@@ -969,23 +977,20 @@ sub gotomethod {
 sub _GET {
 	my $fn = $PATH_TRANSLATED;
 	debug("_GET: $fn");
-
 	if (is_hidden($fn)) {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($ENABLE_SYSINFO && $fn =~/\/sysinfo.html$/) {
 		printHeaderAndContent('200 OK', 'text/html', renderSysInfo());
-	} elsif ($FANCYINDEXING && $fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ && ($ENABLE_AFS || !-e $fn)) {
-		my $file = $INSTALL_BASE.'lib/'.basename($fn);
-		$file = $INSTALL_BASE.basename($fn) if !-e $file;
-
-		printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
+	} elsif ($FANCYINDEXING && ($fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ || $fn =~ /\Q$VHTDOCS\E(.*)$/) && ($ENABLE_AFS || !-e $fn)) {
+		my $file = $fn =~ /\Q$VHTDOCS\E(.*)/ ? $INSTALL_BASE.'htdocs/'.$1 : $INSTALL_BASE.'lib/'.basename($fn);
+		$file=~s/\/\.\.\///g;
 		if (open(F,"<$file")) {
+			printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
 			binmode(STDOUT);
 			while (read(F,my $buffer, $BUFSIZE || 1048576 )>0) {
 				print $buffer;
 			}
 			close(F);
-			
 		} else {
 			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 		}
