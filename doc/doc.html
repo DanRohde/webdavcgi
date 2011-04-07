@@ -361,7 +361,7 @@ AFS note: If you use AFS you have to use AFS groups and AFS ACLs to share folder
 Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
 
 <h3>How to change CSS styles?</h3>
-There are three ways to do it:
+There are many ways to do it:
 
 <ul>
 <li> Add a <code>webdav-ui-custom.css</code> to the <code>lib/</code> directory of the WebDAV CGI installation (recommended; Note: webdav.pl delivers this style file with a cache timeout of one week). </li>
@@ -376,6 +376,7 @@ EOF
 </pre>
 </li>
 <li> Set the <code>$HTMLHEAD</code> variable in your WebDAV CGI config (e.g. <code>$HTMLHEAD='&lt;link .../&gt;';</code> or <code>$HTMLHEAD='&lt;style&gt;...&lt;/style&gt;';</code>)</li>
+<li>...</li>
 </ul>
 <h3>Howto integrate a WYSIWYG editor?</h3>
 
