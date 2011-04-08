@@ -355,7 +355,7 @@ $PERM_OTHERS = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> ($LANG) $CLOCK</div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> ($LANG) <span title="$TL{vartimeformat}">$CLOCK</span></div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
@@ -4779,20 +4779,11 @@ sub start_html {
 	$content.=qq@<link href="${base}webdav-ui.css" rel="stylesheet" type="text/css"/>@;
 	$content.=qq@<link href="${base}webdav-ui-custom.css" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.css";
 	$content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.js";
-	minify($CSS);
 	$content.=qq@<style type="text/css">$CSS</style>@ if defined $CSS;
 	$content.=qq@<link href="$CSSURI" rel="stylesheet" type="text/css"/>@ if defined $CSSURI;
 	$content.=$HTMLHEAD if defined $HTMLHEAD;
 	$content.=qq@</head><body onload="check()">@;
 	return $content;
-}
-sub minify {
-	return $_[0] unless defined $_[0];
-	$_[0]=~s/\/{2,}.*$//g;
-	$_[0]=~s/\/\*.*?\*\///sg;
-	$_[0]=~s/[\r\n]/ /g;
-	$_[0]=~s/\s{2,}/ /g;
-	return $_[0];
 }
 sub renderNameFilterForm {
 		return $ENABLE_NAMEFILTER && !$cgi->param('search') ? 
@@ -5146,6 +5137,7 @@ sub replaceVars {
 	my $clockfmt = _tl('vartimeformat');
 	$t=~s@\$CLOCK@<span id="clock"></span><script>startClock('clock','$clockfmt',1000);</script>@;
 	$t=~s/\$LANG/$LANG/g;
+	$t=~s/\$TL{([^}]+)}/_tl($1)/eg;
 	return $t;
 }
 sub renderSysInfo {
