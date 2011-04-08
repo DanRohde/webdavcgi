@@ -355,11 +355,11 @@ $PERM_OTHERS = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a></div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> ($LANG) $CLOCK</div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
-$HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as <span title="'.`id -a`.'">'.($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'</span>.</div>';
+$HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as <span title="'.`id -a`.'">$USER</span>.<div style="float:right;font-size:0.8em;">$NOW</div></div>';
 
 ## -- SIGNATURE
 ## for fancy indexing
@@ -644,7 +644,7 @@ use File::Spec::Link;
 
 use XML::Simple;
 use Date::Parse;
-use POSIX qw(strftime ceil);
+use POSIX qw(strftime ceil setlocale LC_CTYPE LC_NUMERIC LC_COLLATE LC_TIME);
 
 use URI::Escape;
 use OSSP::uuid;
@@ -695,10 +695,10 @@ $DAV.=', bind' if $ENABLE_BIND;
 
 our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
 our $REQUEST_URI = $ENV{REQUEST_URI};
+our $REMOTE_USER = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
 
 $LANG = $cgi->param('lang') || $cgi->cookie('lang') || $LANG || 'default';
 $ORDER = $cgi->param('order') || $cgi->cookie('order') || $ORDER || 'name';
-study $ORDER;
 $PAGE_LIMIT = $cgi->param('pagelimit') || $cgi->cookie('pagelimit') || $PAGE_LIMIT;
 $PAGE_LIMIT = ceil($PAGE_LIMIT) if defined $PAGE_LIMIT;
 @PAGE_LIMITS = ( 5, 10, 15, 20, 25, 30, 50, 100, -1 ) unless defined @PAGE_LIMITS;
@@ -2621,7 +2621,7 @@ sub getProperty {
 	$$resp_200{prop}{'authoritative-directory'}=($isDir?'t':'f') if $prop eq 'authoritative-directory';
 	$$resp_200{prop}{resourcetag}=$REQUEST_URI if $prop eq 'resourcetag';
 	$$resp_200{prop}{'repl-uid'}=getuuid($fn) if $prop eq 'repl-uid';
-	$$resp_200{prop}{modifiedby}=$ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER} if $prop eq 'modifiedby';
+	$$resp_200{prop}{modifiedby}=$REMOTE_USER if $prop eq 'modifiedby';
 	$$resp_200{prop}{Win32CreationTime}=strftime('%a, %d %b %Y %T GMT' ,gmtime($ctime)) if $prop eq 'Win32CreationTime';
 	if ($prop eq 'Win32FileAttributes') {
 		my $fileattr = 128 + 32; # 128 - Normal, 32 - Archive, 4 - System, 2 - Hidden, 1 - Read-Only
@@ -3899,14 +3899,14 @@ sub getACLProp {
 sub getCalendarHomeSet {
 	my ($uri) = @_;
 	return $uri unless defined %CALENDAR_HOME_SET;
-	my $rmuser = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
+	my $rmuser = $REMOTE_USER;
 	$rmuser = $< unless exists $CALENDAR_HOME_SET{$rmuser};
 	return  ( exists $CALENDAR_HOME_SET{$rmuser} ? $CALENDAR_HOME_SET{$rmuser} : $CALENDAR_HOME_SET{default} );
 }
 sub getAddressbookHomeSet {
 	my ($uri) = @_;
 	return $uri unless defined %ADDRESSBOOK_HOME_SET;
-	my $rmuser = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
+	my $rmuser = $REMOTE_USER;
 	$rmuser = $< unless exists $ADDRESSBOOK_HOME_SET{$rmuser};
 	return ( exists $ADDRESSBOOK_HOME_SET{$rmuser} ? $ADDRESSBOOK_HOME_SET{$rmuser} : $ADDRESSBOOK_HOME_SET{default} );
 }
@@ -4222,10 +4222,12 @@ sub renderActionView {
 }
 sub renderPropertiesViewer {
 	my $fn = $PATH_TRANSLATED;
+	my $locale = getLocale();
+	setlocale(LC_COLLATE, $locale); setlocale(LC_TIME, $locale); setlocale(LC_CTYPE, $locale); setlocale(LC_NUMERIC, $locale);
 	my $content = "";
 	$content .= start_html("$REQUEST_URI properties");
-	$content .= $LANGSWITCH if defined $LANGSWITCH;
-	$content .= $HEADER if defined $HEADER;
+	$content .= replaceVars($LANGSWITCH) if defined $LANGSWITCH;
+	$content .= replaceVars($HEADER) if defined $HEADER;
 	my $fullparent = dirname($REQUEST_URI) .'/';
 	$fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
 	$content .=$cgi->h2( { -class=>'foldername' }, (-d $fn ? getQuickNavPath($REQUEST_URI,getQueryParams()) 
@@ -4262,7 +4264,7 @@ sub renderPropertiesViewer {
 			);
 	}
 	$content.=$cgi->end_table();
-	$content.=$cgi->hr().$cgi->div({-class=>'signature'},$SIGNATURE) if defined $SIGNATURE;
+	$content.=$cgi->hr().$cgi->div({-class=>'signature'},replaceVars($SIGNATURE)) if defined $SIGNATURE;
 	$content.=$cgi->end_html();
 	printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
 }
@@ -4272,8 +4274,10 @@ sub renderWebInterface {
 	my $head = "";
 	my $fn = $PATH_TRANSLATED;
 	debug("_GET: directory listing of $fn");
-	$head .= $LANGSWITCH if defined $LANGSWITCH;
-	$head .= $HEADER if defined $HEADER;
+	my $locale = getLocale();
+	setlocale(LC_COLLATE, $locale); setlocale(LC_TIME, $locale); setlocale(LC_CTYPE, $locale); setlocale(LC_NUMERIC, $locale);
+	$head .= replaceVars($LANGSWITCH) if defined $LANGSWITCH;
+	$head .= replaceVars($HEADER) if defined $HEADER;
 	##$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru ) if $ALLOW_FILE_MANAGEMENT;
 	if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
@@ -4349,7 +4353,7 @@ sub renderWebInterface {
 				.$cgi->div({-id=>'forigcontent', -class=>'hidden'},"")
 				.$cgi->end_form() if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
 	}
-	$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, $SIGNATURE) if defined $SIGNATURE;
+	$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, replaceVars($SIGNATURE)) if defined $SIGNATURE;
 	###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
 	$content = start_html($ru).$content.$cgi->end_html();
 	printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
@@ -4713,8 +4717,7 @@ sub nonamespace {
 }
 sub logger {
 	if (defined $LOGFILE && open(LOG,">>$LOGFILE")) {
-		my $ru = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOET_USR};
-		print LOG localtime()." - $<($ru)\@$ENV{REMOTE_ADDR}: @_\n";
+		print LOG localtime()." - $<($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
 		close(LOG);
 	} else {
 		print STDERR "$0: @_\n";
@@ -4928,7 +4931,7 @@ sub checkAFSAccess {
 	return $ret;
 }
 sub renderAFSGroupManager {
-	my $ru = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
+	my $ru = $REMOTE_USER;
 	my $grp =  $cgi->param('afsgrp') || "";
 	my @usrs = $cgi->param('afsusrs') || ( );
 
@@ -5132,6 +5135,19 @@ sub readMIMETypes {
 	}
 	$MIMETYPES{default}='application/octet-stream';
 }
+sub replaceVars {
+	my ($t) = @_;
+	$t=~s/\$NOW/strftime(_tl('varnowformat'), localtime())/eg;
+	$t=~s/\$TIME/strftime(_tl('vartimeformat'), localtime())/eg;
+	$t=~s/\$USER/$REMOTE_USER/g;
+	$t=~s/\$REQUEST_URI/$REQUEST_URI/g;
+	$t=~s/\$PATH_TRANSLATED/$PATH_TRANSLATED/g;
+	$t=~s/\$ENV{([^}]+?)}/$ENV{$1}/eg;
+	my $clockfmt = _tl('vartimeformat');
+	$t=~s@\$CLOCK@<span id="clock"></span><script>startClock('clock','$clockfmt',1000);</script>@;
+	$t=~s/\$LANG/$LANG/g;
+	return $t;
+}
 sub renderSysInfo {
 	my $i = "";
 	$i.= start_html();
@@ -5182,6 +5198,14 @@ sub renderSysInfo {
 	$i.=$cgi->end_html();
 
 	return $i;
+}
+sub getLocale {
+        return "en_US.\U$CHARSET\E" if $LANG eq 'default';
+        $LANG =~ /^(\w{2})(_(\w{2})(\.(\S+))?)?$/;
+        my ($c1,$c,$c3,$c4,$c5) = ($1, $2, $3, $4, $5);
+        $c3=uc($c1) unless $c3;
+        $c5=uc($CHARSET) unless $c5 && uc($c5) eq uc($CHARSET);
+        return "${c1}_${c3}.${c5}";
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;

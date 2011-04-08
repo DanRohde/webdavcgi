@@ -417,6 +417,21 @@ Consider this if you integrate a WYSIWYG editor:
  <li>Setup z-index style for editor to a value larger than 'dragZIndex' cookie value.</li>
 </ol>
 
+<h3>Variable substitution in $HEADER, $SIGNATURE, and $LANGSWITCH</h3>
+
+Following variables are substituted:
+<table>
+<tr><td>$CLOCK</td><td>a clock with client time formatted with locale key 'vartimeformat'</td></tr>
+<tr><td>$ENV{_VAR_}</td><td>value of environment variable _VAR_</td></tr>
+<tr><td>$LANG</td><td>current language code</td></tr>
+<tr><td>$NOW</td><td>current date formatted with locale key 'varnowformat'</td></tr>
+<tr><td>$PATH_TRANSLATED</td><td>locale folder name corresponding to the request URI</td></tr>
+<tr><td>$REQUEST_URI</td><td>request URI without query string</td></tr>
+<tr><td>$TIME</td><td>current time formatted with locale key 'vartimeformat'</td></tr>
+<tr><td>$USER</td><td>current user id</td></tr>
+</table>
+
+
 
 
 <a id="logout"></a>

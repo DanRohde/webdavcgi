@@ -3,6 +3,8 @@
      - added (incomplete) french translatations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
      - added sysinfo feature (GET)
      - Web interface:
+         - added variable substitution for $HEADER, $LANGSWITCH, $SIGNATURE (GET)
+         - fixed localization bug (GET)
          - added htdocs support (GET)
          - added new file feature (GET/POST)
          - added edit feature (GET/POST)
