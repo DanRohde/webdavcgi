@@ -1095,13 +1095,25 @@ sub _GET {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
 	} elsif (-e $fn) {
 		debug("_GET: DOWNLOAD");
-		printFileHeader($fn);
-		if (open(F,"<$fn")) {
+		if (open(my $F,"<$fn")) {
 			binmode(STDOUT);
-			while (read(F,my $buffer, $BUFSIZE || 1048576 )>0) {
-				print $buffer;
+			my $enc = $cgi->http('Accept-Encoding');
+			my $mime = getMIMEType($fn);
+			my @stat = lstat($fn);
+			if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i) {
+				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate');
+				if ($enc =~ /gzip/i) {
+					gzip $F => \*STDOUT;
+				} elsif ($enc =~ /deflate/i) {
+					deflate $F => \*STDOUT;
+				}
+			} else {
+				printFileHeader($fn);
+				while (read($F,my $buffer, $BUFSIZE || 1048576 )>0) {
+					print $buffer;
+				}
 			}
-			close(F);
+			close($F);
 		} else {
 			printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (cannot open file)');
 		}
@@ -1470,7 +1482,7 @@ sub _PROPFIND {
 	debug("_PROPFIND: status=$status, type=$type");
 	debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
 	debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
-	printHeaderAndContent($status,$type,$content);
+	printCompressedHeaderAndContent($status,$type,$content);
 	
 }
 sub _PROPPATCH {
@@ -1508,7 +1520,7 @@ sub _PROPPATCH {
 		$status='404 Not Found';
 	}
 	debug("_PROPPATCH: RESPONSE: $content");
-	printHeaderAndContent($status, $type, $content);
+	printCompressedHeaderAndContent($status, $type, $content);
 }
 
 sub _PUT {
@@ -2049,7 +2061,7 @@ sub _REPORT {
 	}
 	debug("_REPORT: REQUEST: $xml");
 	debug("_REPORT: RESPONSE: $content");
-	printHeaderAndContent($status, $type, $content);
+	printCompressedHeaderAndContent($status, $type, $content);
 }
 sub _SEARCH {
 	my @resps;
@@ -2095,7 +2107,7 @@ sub _SEARCH {
 	} else {
 		$content = createXML({multistatus=>{ response=> { href=>$REQUEST_URI, status=>'404 Not Found' }}});
 	}
-	printHeaderAndContent($status, $type, $content);
+	printCompressedHeaderAndContent($status, $type, $content);
 }
 sub _BIND {
 	my ($status,$type,$content) = ('200 OK', undef, undef);
