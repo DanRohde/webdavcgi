@@ -63,7 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
-            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -136,9 +136,14 @@ $MIMEFILE = '/etc/mime.types';
 ## DEFAULT: $FANCYINDEXING = 1;
 $FANCYINDEXING = 1;
 
+## -- ENABLE_COMPRESSION
+## enables/disables gzip content encoding for the Web interface
+## EXAMPLE: $ENABLE_COMPRESSION = 1;
+$ENABLE_COMPRESSION = 1;
+
 ## -- VHTDOCS
 ## virtual path name to "${INSTALL_BASE}htdocs",
-## e.g. access to ${VHTDOCS}icons/test.png delivers ${INSTALL_BASE}htdocs/icons/test.png
+## e.g. access to ${VHTDOCS}icons/test.png delivers ${INSTALL_BASE}htdocs${VHTDOCS}icons/test.png
 ## note: all delivered data from htdocs expires in one week
 ## (don't forget the trailing slash)
 ## EXAMPLE: $VHTDOCS='/_webdavcgi_/';
@@ -154,21 +159,22 @@ $MAXLASTMODIFIEDSIZE = 20;
 
 ## -- ICONS
 ## for fancy indexing (you need a server alias /icons to your Apache icons directory):
+## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
 %ICONS = (
-	'< .. >' => '/icons/back.gif',
-	'<folder>' => '/icons/folder.gif',
-	'text/plain' => '/icons/text.gif', 'text/html' => '/icons/text.gif',
-	'application/zip'=> '/icons/compressed.gif', 'application/x-gzip'=>'/icons/compressed.gif',
-	'image/gif'=>'/icons/image2.gif', 'image/jpg'=>'/icons/image2.gif',
-	'image/png'=>'/icons/image2.gif', 
-	'application/pdf'=>'/icons/pdf.gif', 'application/ps' =>'/icons/ps.gif',
-	'application/msword' => '/icons/text.gif',
-	'application/vnd.ms-powerpoint' => '/icons/world2.gif',
-	'application/vnd.ms-excel' => '/icons/quill.gif',
-	'application/x-dvi'=>'/icons/dvi.gif', 'text/x-chdr' =>'/icons/c.gif', 'text/x-csrc'=>'/icons/c.gif',
-	'video/x-msvideo'=>'/icons/movie.gif', 'video/x-ms-wmv'=>'/icons/movie.gif', 'video/ogg'=>'/icons/movie.gif',
-	'video/mpeg'=>'/icons/movie.gif', 'video/quicktime'=>'/icons/movie.gif',
-	default => '/icons/unknown.gif',
+	'< .. >' => '$VHTDOCSicons/back.gif',
+	'<folder>' => '$VHTDOCSicons/folder.gif',
+	'text/plain' => '$VHTDOCSicons/text.gif', 'text/html' => '$VHTDOCSicons/text.gif',
+	'application/zip'=> '$VHTDOCSicons/compressed.gif', 'application/x-gzip'=>'$VHTDOCSicons/compressed.gif',
+	'image/gif'=>'$VHTDOCSicons/image2.gif', 'image/jpg'=>'$VHTDOCSicons/image2.gif',
+	'image/png'=>'$VHTDOCSicons/image2.gif', 
+	'application/pdf'=>'$VHTDOCSicons/pdf.gif', 'application/ps' =>'$VHTDOCSicons/ps.gif',
+	'application/msword' => '$VHTDOCSicons/text.gif',
+	'application/vnd.ms-powerpoint' => '$VHTDOCSicons/world2.gif',
+	'application/vnd.ms-excel' => '$VHTDOCSicons/quill.gif',
+	'application/x-dvi'=>'$VHTDOCSicons/dvi.gif', 'text/x-chdr' =>'$VHTDOCSicons/c.gif', 'text/x-csrc'=>'$VHTDOCSicons/c.gif',
+	'video/x-msvideo'=>'$VHTDOCSicons/movie.gif', 'video/x-ms-wmv'=>'$VHTDOCSicons/movie.gif', 'video/ogg'=>'$VHTDOCSicons/movie.gif',
+	'video/mpeg'=>'$VHTDOCSicons/movie.gif', 'video/quicktime'=>'$VHTDOCSicons/movie.gif',
+	default => '$VHTDOCSicons/unknown.gif',
 );
 
 
@@ -656,6 +662,8 @@ use DBI;
 use Quota;
 use Archive::Zip;
 use Graphics::Magick;
+
+use IO::Compress::Gzip qw(gzip);
 
 ## flush immediately:
 $|=1;
@@ -2881,7 +2889,7 @@ sub getfancyfilename {
 
 	$full=~/([^\.]+)$/;
 	my $suffix = $1 || $m;
-	my $icon = defined $ICONS{$m}?$ICONS{$m}:$ICONS{default};
+	my $icon = getIcon($m);
 	my $width = $ICON_WIDTH || 18;
 	my $onmouseover="";
 	my $onmouseout="";
@@ -2988,6 +2996,14 @@ sub printHeaderAndContent {
 	print $header;
 	binmode(STDOUT);
 	print $content;
+}
+sub printCompressedHeaderAndContent {
+	my ($status, $type, $content, $addHeader) = @_;
+	my $orig = $content;
+	gzip \$orig => \$content;	
+	$addHeader ="" unless defined $addHeader;
+	$addHeader.="\r\nContent-Encoding: gzip";
+	printHeaderAndContent($status, $type, $content, $addHeader);
 }
 sub printFileHeader {
 	my ($fn,$addheader) = @_;
@@ -4270,7 +4286,8 @@ sub renderPropertiesViewer {
 	$content.=$cgi->end_table();
 	$content.=$cgi->hr().$cgi->div({-class=>'signature'},replaceVars($SIGNATURE)) if defined $SIGNATURE;
 	$content.=$cgi->end_html();
-	printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
+	printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') unless $ENABLE_COMPRESSION;
+	printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') if $ENABLE_COMPRESSION;
 }
 sub renderWebInterface {
 	my $ru = $REQUEST_URI;
@@ -4297,7 +4314,7 @@ sub renderWebInterface {
 		$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, _tl('folderisfiltered', $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 		$head .= $cgi->div( { -class=>'foldername'},
 			$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
-					$cgi->img({-src=>$ICONS{'<folder>'} || $ICONS{default},-title=>_tl('showproperties'), -alt=>'folder'})
+					$cgi->img({-src=>getIcon('<folder>'),-title=>_tl('showproperties'), -alt=>'folder'})
 				)
 			.($ENABLE_DAVMOUNT ? '&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount')) : '')
 			.' '
@@ -4359,7 +4376,9 @@ sub renderWebInterface {
 	$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, replaceVars($SIGNATURE)) if defined $SIGNATURE;
 	###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
 	$content = start_html($ru).$content.$cgi->end_html();
-	printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
+
+	printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' ) unless $ENABLE_COMPRESSION;
+	printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' ) if $ENABLE_COMPRESSION;
 }
 sub renderSideBarMenuItem {
 	my ($action, $title, $onclick, $content) = @_;
@@ -5143,6 +5162,12 @@ sub replaceVars {
 	$t=~s@\$CLOCK@<span id="clock"></span><script>startClock('clock','$clockfmt');</script>@;
 	$t=~s/\$LANG/$LANG/g;
 	$t=~s/\$TL{([^}]+)}/_tl($1)/eg;
+
+	$REQUEST_URI =~ /^($VIRTUAL_BASE)/;
+	my $vbase= $1;
+	$t=~s/\$VBASE/$vbase/g;
+	$t=~s/\$VHTDOCS/$vbase$VHTDOCS/g;
+
 	return $t;
 }
 sub renderSysInfo {
@@ -5195,6 +5220,10 @@ sub renderSysInfo {
 	$i.=$cgi->end_html();
 
 	return $i;
+}
+sub getIcon {
+	my ($type) = @_;
+	return replaceVars(exists $ICONS{$type} ? $ICONS{$type} : $ICONS{default});
 }
 sub setLocale {
 	my $locale;

@@ -65,6 +65,7 @@ Note: All steps are done with root rights.
     <li><strike>Image::Magick (perlmagick) - (since v0.5.1)</strike> (since v0.5.3 replaced by Graphics::Magick)</li>
     <li>Graphics::Magick (libgraphics-magick-perl) - (since v0.5.3)</li>
     <li>File::Spec::Link (CPAN only) - (since v0.5.2)</li>
+    <li>IO::Compress::Gzip (included in most Linux dists) - (since. 0.7.0)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -610,6 +611,7 @@ $MIMEFILE='/etc/mime.types';
 		</li>
 	</ul>
   </li>
+  <li> Compression is enabled by default (<code>$ENABLE_COMPRESSION = 1;</code>) but this option can increase the load on your server.</li>
   <li> Filter and limit large folders (<code>$FILECOUNTLIMIT</code>, <code>$FILECOUNTPERDIRLIMIT</code>, <code>$FILEFILTERPERDIR</code>)</li>
   <li> Limit folder depth for copy/move operations (<code>$LIMIT_FOLDER_DEPTH</code>)</li>
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
