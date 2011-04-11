@@ -664,6 +664,7 @@ use Archive::Zip;
 use Graphics::Magick;
 
 use IO::Compress::Gzip qw(gzip);
+use IO::Compress::Deflate qw(deflate);
 
 ## flush immediately:
 $|=1;
@@ -2999,10 +3000,17 @@ sub printHeaderAndContent {
 }
 sub printCompressedHeaderAndContent {
 	my ($status, $type, $content, $addHeader) = @_;
-	my $orig = $content;
-	gzip \$orig => \$content;	
-	$addHeader ="" unless defined $addHeader;
-	$addHeader.="\r\nContent-Encoding: gzip";
+	if ($ENABLE_COMPRESSION && (my $enc = $cgi->http('Accept-Encoding'))) {
+		my $orig = $content;
+		$addHeader ="" unless defined $addHeader;
+		if ($enc =~ /gzip/i) {
+			gzip \$orig => \$content;	
+			$addHeader.="\r\nContent-Encoding: gzip";
+		} elsif ($enc =~ /deflate/i) {
+			deflate \$orig => \$content;
+			$addHeader.="\r\nContent-Encoding: deflate";
+		}
+	}
 	printHeaderAndContent($status, $type, $content, $addHeader);
 }
 sub printFileHeader {
@@ -4286,8 +4294,7 @@ sub renderPropertiesViewer {
 	$content.=$cgi->end_table();
 	$content.=$cgi->hr().$cgi->div({-class=>'signature'},replaceVars($SIGNATURE)) if defined $SIGNATURE;
 	$content.=$cgi->end_html();
-	printHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') unless $ENABLE_COMPRESSION;
-	printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') if $ENABLE_COMPRESSION;
+	printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
 }
 sub renderWebInterface {
 	my $ru = $REQUEST_URI;
@@ -4377,8 +4384,7 @@ sub renderWebInterface {
 	###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
 	$content = start_html($ru).$content.$cgi->end_html();
 
-	printHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' ) unless $ENABLE_COMPRESSION;
-	printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' ) if $ENABLE_COMPRESSION;
+	printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
 }
 sub renderSideBarMenuItem {
 	my ($action, $title, $onclick, $content) = @_;

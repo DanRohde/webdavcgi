@@ -66,6 +66,7 @@ Note: All steps are done with root rights.
     <li>Graphics::Magick (libgraphics-magick-perl) - (since v0.5.3)</li>
     <li>File::Spec::Link (CPAN only) - (since v0.5.2)</li>
     <li>IO::Compress::Gzip (included in most Linux dists) - (since. 0.7.0)</li>
+    <li>IO::Compress::Deflate (included in most Linux dists) - (since. 0.7.0)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -431,6 +432,8 @@ Following variables are substituted:
 <tr><td>$TIME</td><td>current time formatted with locale value for key 'vartimeformat'</td></tr>
 <tr><td>$TL{_KEY_}</td><td>locale value for key  _KEY_</td></tr>
 <tr><td>$USER</td><td>current user id</td></tr>
+<tr><td>$VBASE</td><td>virtual host base matching <code>$VIRTUAL_BASE</code></td></tr>
+<tr><td>$VHTDOCS</td><td>virtual htdocs path <code>$VHTDOCS</code> to the <code>$INSTALL_BASE/htdocs</code></td></tr>
 </table>
 
 
