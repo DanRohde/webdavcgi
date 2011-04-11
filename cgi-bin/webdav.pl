@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.7.0 RC1
+# VERSION 0.7.0 RC2
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:
@@ -355,7 +355,7 @@ $PERM_OTHERS = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> ($LANG) <span title="$TL{vartimeformat}">$CLOCK</span></div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <span title="$TL{vartimeformat}">$CLOCK</span></div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
@@ -635,6 +635,8 @@ $ENABLE_SYSINFO = $DEBUG;
 use strict;
 #use warnings;
 
+use locale;
+
 use Fcntl qw(:flock);
 
 use CGI;
@@ -644,7 +646,7 @@ use File::Spec::Link;
 
 use XML::Simple;
 use Date::Parse;
-use POSIX qw(strftime ceil setlocale LC_CTYPE LC_NUMERIC LC_COLLATE LC_TIME);
+use POSIX qw(strftime ceil locale_h);
 
 use URI::Escape;
 use OSSP::uuid;
@@ -984,8 +986,16 @@ sub _GET {
 	} elsif ($FANCYINDEXING && ($fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ || $fn =~ /\Q$VHTDOCS\E(.*)$/) && ($ENABLE_AFS || !-e $fn)) {
 		my $file = $fn =~ /\Q$VHTDOCS\E(.*)/ ? $INSTALL_BASE.'htdocs/'.$1 : $INSTALL_BASE.'lib/'.basename($fn);
 		$file=~s/\/\.\.\///g;
+		my $compression = !-e $file && -e "$file.gz";
+		my $nfile = $file;
+		$file = "$nfile.gz" if $compression;
 		if (open(F,"<$file")) {
-			printFileHeader($file, { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' });
+			my $header = { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' };
+			if ($compression) {
+				$$header{-Content_Encoding}='gzip';
+				$$header{-Content_Length}=(stat($file))[7];
+			}
+			printFileHeader($nfile, $header);
 			binmode(STDOUT);
 			while (read(F,my $buffer, $BUFSIZE || 1048576 )>0) {
 				print $buffer;
@@ -2983,18 +2993,13 @@ sub printFileHeader {
 	my ($fn,$addheader) = @_;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($fn);
 	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET);
-	if ($addheader) {
-		foreach my $a (keys %{$addheader}) {
-			$ha{$a} = $$addheader{$a};
-		}
-	}
+	%ha = (%ha, %{$addheader}) if $addheader;
 	my $header = $cgi->header(\%ha);
 
 	$header = "MS-Author-Via: DAV\r\n$header";
 	$header = "DAV: $DAV\r\n$header";
 	$header = "Translate: f\r\n$header" if defined $cgi->http('Translate');
 	print $header;
-
 }
 sub is_hidden {
 	my ($fn) = @_;
@@ -4222,8 +4227,7 @@ sub renderActionView {
 }
 sub renderPropertiesViewer {
 	my $fn = $PATH_TRANSLATED;
-	my $locale = getLocale();
-	setlocale(LC_COLLATE, $locale); setlocale(LC_TIME, $locale); setlocale(LC_CTYPE, $locale); setlocale(LC_NUMERIC, $locale);
+	setLocale();
 	my $content = "";
 	$content .= start_html("$REQUEST_URI properties");
 	$content .= replaceVars($LANGSWITCH) if defined $LANGSWITCH;
@@ -4274,8 +4278,7 @@ sub renderWebInterface {
 	my $head = "";
 	my $fn = $PATH_TRANSLATED;
 	debug("_GET: directory listing of $fn");
-	my $locale = getLocale();
-	setlocale(LC_COLLATE, $locale); setlocale(LC_TIME, $locale); setlocale(LC_CTYPE, $locale); setlocale(LC_NUMERIC, $locale);
+	setLocale();
 	$head .= replaceVars($LANGSWITCH) if defined $LANGSWITCH;
 	$head .= replaceVars($HEADER) if defined $HEADER;
 	##$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
@@ -4540,8 +4543,9 @@ sub getFolderList {
 		my $full = $fn.$filename;
 		my $nru = $ru.uri_escape($filename);
 
-		$nru = dirname($ru) if $filename eq '..';
+		$nru = dirname($ru).'/' if $filename eq '..';
 		$nru = $ru if $filename eq '.';
+		$nru = '/' if $nru eq '//';
 
 		### +++ AFS fix
 		my $isReadable = 1;	
@@ -4557,7 +4561,7 @@ sub getFolderList {
 		my $mimetype = '?';
 		$mimetype = -d $full ? ( $filename eq '..' ? '< .. >' : '<folder>' ) : getMIMEType($filename) unless $isUnReadable;
 		$filename.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && -d $full;
-		$nru.="/" if !$isUnReadable && -d $full;
+		$nru.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && -d $full;
 
 		next if $filter && $filename !~/$filter/i;
 
@@ -4730,6 +4734,7 @@ sub readTL  {
 	if (open(I, "<$fn")) { 
 		while (<I>) {
 			chomp;
+			next if /^#/;
 			$TRANSLATION{$l}{$1}=$2 if /^(\S+)\s+"(.*)"\s*$/;
 		}
 		close(I);
@@ -5135,7 +5140,7 @@ sub replaceVars {
 	$t=~s/\$PATH_TRANSLATED/$PATH_TRANSLATED/g;
 	$t=~s/\$ENV{([^}]+?)}/$ENV{$1}/eg;
 	my $clockfmt = _tl('vartimeformat');
-	$t=~s@\$CLOCK@<span id="clock"></span><script>startClock('clock','$clockfmt',1000);</script>@;
+	$t=~s@\$CLOCK@<span id="clock"></span><script>startClock('clock','$clockfmt');</script>@;
 	$t=~s/\$LANG/$LANG/g;
 	$t=~s/\$TL{([^}]+)}/_tl($1)/eg;
 	return $t;
@@ -5191,13 +5196,21 @@ sub renderSysInfo {
 
 	return $i;
 }
-sub getLocale {
-        return "en_US.\U$CHARSET\E" if $LANG eq 'default';
-        $LANG =~ /^(\w{2})(_(\w{2})(\.(\S+))?)?$/;
-        my ($c1,$c,$c3,$c4,$c5) = ($1, $2, $3, $4, $5);
-        $c3=uc($c1) unless $c3;
-        $c5=uc($CHARSET) unless $c5 && uc($c5) eq uc($CHARSET);
-        return "${c1}_${c3}.${c5}";
+sub setLocale {
+	my $locale;
+	if ($LANG eq 'default') {
+        	$locale = "en_US.\U$CHARSET\E" 
+	} else {
+		$LANG =~ /^(\w{2})(_(\w{2})(\.(\S+))?)?$/;
+		my ($c1,$c,$c3,$c4,$c5) = ($1, $2, $3, $4, $5);
+		$c3 = uc($c1) unless $c3;
+		$c5 = uc($CHARSET) unless $c5 && uc($c5) eq uc($CHARSET);
+		$locale = "${c1}_${c3}.${c5}";
+	}
+	setlocale(LC_COLLATE, $locale); 
+	setlocale(LC_TIME, $locale); 
+	setlocale(LC_CTYPE, $locale); 
+	setlocale(LC_NUMERIC, $locale);
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;
