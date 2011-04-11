@@ -366,7 +366,8 @@ Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt
 There are many ways to do it:
 
 <ul>
-<li> Add a <code>webdav-ui-custom.css</code> to the <code>lib/</code> directory of the WebDAV CGI installation (recommended; Note: webdav.pl delivers this style file with a cache timeout of one week). </li>
+<li> Add a <code>webdav-ui-custom.css</code> to the <code>lib/</code> directory of the WebDAV CGI installation (recommended). Note: webdav.pl delivers this style file with a cache timeout of one week. 
+     You can compress the style sheet to speed up file transfers: (<code>gzip webdav-ui-custom.css</code>). If webdav-ui-custom.css and webdav-ui-custom.css.gz exist then the uncompressed version is delivered.</li>
 <li> Add the following to your WebDAV CGI configuration file:
 <pre>
 $CSS .= &lt;&lt;EOF 
@@ -380,6 +381,14 @@ EOF
 <li> Set the <code>$HTMLHEAD</code> variable in your WebDAV CGI config (e.g. <code>$HTMLHEAD='&lt;link .../&gt;';</code> or <code>$HTMLHEAD='&lt;style&gt;...&lt;/style&gt;';</code>)</li>
 <li>...</li>
 </ul>
+<h3>Howto add or change icons?</h3>
+
+Here are some examples to do that in the WebDAV CGI configuration file:
+<ul>
+<li><code>$ICONS{'mymime/type'}='/path/to/my/icons/test.gif';</code></li>
+<li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=>'/path/to/my/icons/test1.gif', 'mymime/type2'=>'/path/to/my/icons/test2.gif',   ) );</code></li>
+</ul>
+
 <h3>Howto integrate a WYSIWYG editor?</h3>
 
 Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:

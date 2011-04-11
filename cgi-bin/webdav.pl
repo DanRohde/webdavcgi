@@ -174,6 +174,7 @@ $MAXLASTMODIFIEDSIZE = 20;
 	'application/x-dvi'=>'$VHTDOCSicons/dvi.gif', 'text/x-chdr' =>'$VHTDOCSicons/c.gif', 'text/x-csrc'=>'$VHTDOCSicons/c.gif',
 	'video/x-msvideo'=>'$VHTDOCSicons/movie.gif', 'video/x-ms-wmv'=>'$VHTDOCSicons/movie.gif', 'video/ogg'=>'$VHTDOCSicons/movie.gif',
 	'video/mpeg'=>'$VHTDOCSicons/movie.gif', 'video/quicktime'=>'$VHTDOCSicons/movie.gif',
+	'audio/mpeg'=>'$VHTDOCSicons/sound2.gif',
 	default => '$VHTDOCSicons/unknown.gif',
 );
 
