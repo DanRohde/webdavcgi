@@ -161,21 +161,21 @@ $MAXLASTMODIFIEDSIZE = 20;
 ## for fancy indexing (you need a server alias /icons to your Apache icons directory):
 ## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
 %ICONS = (
-	'< .. >' => '$VHTDOCSicons/back.gif',
-	'<folder>' => '$VHTDOCSicons/folder.gif',
-	'text/plain' => '$VHTDOCSicons/text.gif', 'text/html' => '$VHTDOCSicons/text.gif',
-	'application/zip'=> '$VHTDOCSicons/compressed.gif', 'application/x-gzip'=>'$VHTDOCSicons/compressed.gif',
-	'image/gif'=>'$VHTDOCSicons/image2.gif', 'image/jpg'=>'$VHTDOCSicons/image2.gif',
-	'image/png'=>'$VHTDOCSicons/image2.gif', 
-	'application/pdf'=>'$VHTDOCSicons/pdf.gif', 'application/ps' =>'$VHTDOCSicons/ps.gif',
-	'application/msword' => '$VHTDOCSicons/text.gif',
-	'application/vnd.ms-powerpoint' => '$VHTDOCSicons/world2.gif',
-	'application/vnd.ms-excel' => '$VHTDOCSicons/quill.gif',
-	'application/x-dvi'=>'$VHTDOCSicons/dvi.gif', 'text/x-chdr' =>'$VHTDOCSicons/c.gif', 'text/x-csrc'=>'$VHTDOCSicons/c.gif',
-	'video/x-msvideo'=>'$VHTDOCSicons/movie.gif', 'video/x-ms-wmv'=>'$VHTDOCSicons/movie.gif', 'video/ogg'=>'$VHTDOCSicons/movie.gif',
-	'video/mpeg'=>'$VHTDOCSicons/movie.gif', 'video/quicktime'=>'$VHTDOCSicons/movie.gif',
-	'audio/mpeg'=>'$VHTDOCSicons/sound2.gif',
-	default => '$VHTDOCSicons/unknown.gif',
+	'< .. >' => '${VHTDOCS}icons/back.gif',
+	'<folder>' => '${VHTDOCS}icons/folder.gif',
+	'text/plain' => '${VHTDOCS}icons/text.gif', 'text/html' => '${VHTDOCS}icons/text.gif',
+	'application/zip'=> '${VHTDOCS}icons/compressed.gif', 'application/x-gzip'=>'${VHTDOCS}icons/compressed.gif',
+	'image/gif'=>'${VHTDOCS}icons/image2.gif', 'image/jpg'=>'${VHTDOCS}icons/image2.gif',
+	'image/png'=>'${VHTDOCS}icons/image2.gif', 
+	'application/pdf'=>'${VHTDOCS}icons/pdf.gif', 'application/ps' =>'${VHTDOCS}icons/ps.gif',
+	'application/msword' => '${VHTDOCS}icons/text.gif',
+	'application/vnd.ms-powerpoint' => '${VHTDOCS}icons/world2.gif',
+	'application/vnd.ms-excel' => '${VHTDOCS}icons/quill.gif',
+	'application/x-dvi'=>'${VHTDOCS}icons/dvi.gif', 'text/x-chdr' =>'${VHTDOCS}icons/c.gif', 'text/x-csrc'=>'${VHTDOCS}icons/c.gif',
+	'video/x-msvideo'=>'${VHTDOCS}icons/movie.gif', 'video/x-ms-wmv'=>'${VHTDOCS}icons/movie.gif', 'video/ogg'=>'${VHTDOCS}icons/movie.gif',
+	'video/mpeg'=>'${VHTDOCS}icons/movie.gif', 'video/quicktime'=>'${VHTDOCS}icons/movie.gif',
+	'audio/mpeg'=>'${VHTDOCS}icons/sound2.gif',
+	default => '${VHTDOCS}icons/unknown.gif',
 );
 
 
@@ -5171,21 +5171,21 @@ sub readMIMETypes {
 }
 sub replaceVars {
 	my ($t) = @_;
-	$t=~s/\$NOW/strftime(_tl('varnowformat'), localtime())/eg;
-	$t=~s/\$TIME/strftime(_tl('vartimeformat'), localtime())/eg;
-	$t=~s/\$USER/$REMOTE_USER/g;
-	$t=~s/\$REQUEST_URI/$REQUEST_URI/g;
-	$t=~s/\$PATH_TRANSLATED/$PATH_TRANSLATED/g;
-	$t=~s/\$ENV{([^}]+?)}/$ENV{$1}/eg;
+	$t=~s/\${?NOW}?/strftime(_tl('varnowformat'), localtime())/eg;
+	$t=~s/\${?TIME}?/strftime(_tl('vartimeformat'), localtime())/eg;
+	$t=~s/\${?USER}?/$REMOTE_USER/g;
+	$t=~s/\${?REQUEST_URI}?/$REQUEST_URI/g;
+	$t=~s/\${?PATH_TRANSLATED}?/$PATH_TRANSLATED/g;
+	$t=~s/\${?ENV{([^}]+?)}}?/$ENV{$1}/eg;
 	my $clockfmt = _tl('vartimeformat');
-	$t=~s@\$CLOCK@<span id="clock"></span><script>startClock('clock','$clockfmt');</script>@;
-	$t=~s/\$LANG/$LANG/g;
-	$t=~s/\$TL{([^}]+)}/_tl($1)/eg;
+	$t=~s@\${?CLOCK}?@<span id="clock"></span><script>startClock('clock','$clockfmt');</script>@;
+	$t=~s/\${?LANG}?/$LANG/g;
+	$t=~s/\${?TL{([^}]+)}}?/_tl($1)/eg;
 
 	$REQUEST_URI =~ /^($VIRTUAL_BASE)/;
 	my $vbase= $1;
-	$t=~s/\$VBASE/$vbase/g;
-	$t=~s/\$VHTDOCS/$vbase$VHTDOCS/g;
+	$t=~s/\${?VBASE}?/$vbase/g;
+	$t=~s/\${?VHTDOCS}?/$vbase$VHTDOCS/g;
 
 	return $t;
 }
