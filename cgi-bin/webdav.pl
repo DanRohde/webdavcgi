@@ -2881,11 +2881,11 @@ sub cmp_files {
 	return 1 if !-d $fp_a && -d $fp_b;
 	if ($ORDER =~ /^(lastmodified|size|mode)/) {
 		my $idx = $ORDER=~/lastmodified/? 9 : $ORDER=~/mode/? 2 : 7;
-		return $factor * ( (stat($fp_a))[$idx] <=> (stat($fp_b))[$idx] || lc($a) cmp lc($b) );
+		return $factor * ( (stat($fp_a))[$idx] <=> (stat($fp_b))[$idx] || $a cmp $b );
 	} elsif ($ORDER =~ /mime/) {
-		return $factor * ( getMIMEType($a) cmp getMIMEType($b) || lc($a) cmp lc($b));
+		return $factor * ( getMIMEType($a) cmp getMIMEType($b) || $a cmp $b);
 	}
-	return $factor * (lc($a) cmp lc($b));
+	return $factor * ($a cmp $b);
 }
 sub getfancyfilename {
 	my ($full,$s,$m,$fn,$isUnReadable) = @_;
@@ -2897,8 +2897,9 @@ sub getfancyfilename {
 	$full.="?$q" if defined $q && defined $fn && !$isUnReadable && -d $fn;
 	my $fntext = $s;
 	$fntext =substr($s,0,$MAXFILENAMESIZE-3) if length($s)>$MAXFILENAMESIZE;
+	my $linkit =  $IGNOREFILEPERMISSIONS || $fn=~/^\.{1,2}$/ || (!-d $fn && -r $fn) || -x $fn ;
 
-	$ret = $IGNOREFILEPERMISSIONS || (!-d $fn && -r $fn) || -x $fn  ? $cgi->a({href=>$full,title=>$s},$cgi->escapeHTML($fntext)) : $cgi->escapeHTML($fntext);
+	$ret = $linkit ? $cgi->a({href=>$full,title=>$s},$cgi->escapeHTML($fntext)) : $cgi->escapeHTML($fntext);
 	$ret .=  length($s)>$MAXFILENAMESIZE ? '...' : (' 'x($MAXFILENAMESIZE-length($s)));
 
 	$full=~/([^\.]+)$/;
@@ -2921,9 +2922,8 @@ sub getfancyfilename {
 		}
 	}
 	$full.= ($full=~/\?/ ? ';' : '?').'action=props' if $ENABLE_PROPERTIES_VIEWER;
-	$ret = $cgi->a(  {href=>$full,title=>$ENABLE_PROPERTIES_VIEWER ? _tl('showproperties') : $s},
-			 $cgi->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout})
-			).' '.$ret;
+	my $img =  $cgi->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout});
+	$ret = ($linkit ? $cgi->a(  {href=>$full,title=>$ENABLE_PROPERTIES_VIEWER ? _tl('showproperties') : $s}, $img):$img).' '.$ret;
 	return $ret;
 }
 sub deltree {
@@ -4549,12 +4549,6 @@ sub getFolderList {
 	$list .= $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $row);
 			
 
-###	$list.=$cgi->Tr({-class=>'tr_up',-onmouseover=>'addClassName(this,"tr_highlight");',-onmouseout=>'removeClassName(this,"tr_highlight");', -ondblclick=>qq@window.location.href="..";@},
-###				$cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-name=>'hidden',-value=>"",-label=>"", -disabled=>'disabled', -style=>'visibility:hidden')) 
-###			      . $cgi->td({-class=>'tc_fn', -ondblclick=>'return false;', -onmousedown=>'return false'},getfancyfilename(dirname($ru).'/','..','< .. >',dirname($fn)))
-###			      . $cgi->td('').$cgi->td('').($SHOW_PERM?$cgi->td(''):'').($SHOW_MIME?$cgi->td(''):'')
-###		) unless $fn eq $DOCUMENT_ROOT || $ru eq '/' || $ru=~/^$VIRTUAL_BASE\/?$/ || $filter;
-
 	my @files = sort cmp_files @{readDir($fn)};
 	unshift @files, '.' if  $SHOW_CURRENT_FOLDER || ($SHOW_CURRENT_FOLDER_ROOTONLY && $DOCUMENT_ROOT eq $fn);
 	unshift @files, '..' if $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn;
@@ -4624,7 +4618,7 @@ sub getFolderList {
 		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
 		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
 		$row.= $cgi->td({-class=>'tc_actions' }, $filename=~/^\.{1,2}$/ ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
-		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>$isReadable?qq@window.location.href="$nru";@ : ''}, $row);
+		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
 		$count++;
