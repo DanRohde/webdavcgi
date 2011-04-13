@@ -4612,7 +4612,9 @@ sub getFolderList {
 		my $onclick= $filter ? '' : qq@return handleRowClick("$fid", event);@;
 		my $ignev= qq@return false;@;
 
-		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(-id=>$fid, -style=>$filename eq '..' ? 'visibility: hidden;display:none':'', -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'')) if $ALLOW_FILE_MANAGEMENT;
+		my %checkboxattr = (-id=>$fid, -style=>$filename eq '..' ? 'visibility: hidden;display:none':'', -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'');
+		$checkboxattr{disabled}='disabled' if $filename eq '..';
+		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(\%checkboxattr)) if $ALLOW_FILE_MANAGEMENT;
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
