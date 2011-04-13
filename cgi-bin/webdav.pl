@@ -64,6 +64,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
+	    @UNSELECTABLE_FOLDERS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -217,13 +218,21 @@ $CSS = '';
 ## EXAMPLES: @HIDDEN = ( '\.DAV/?$', '~$', '\.bak$', '/\.ht' );
 @HIDDEN = ();
 
+## -- @UNSELECTABLE_FOLDERS
+## listed files/folders are unselectable in the Web interface to
+## avoid archive downloads, deletes, ... of large folders.
+## It's a list of regular expressions and a expression must match a full path.
+## EXAMPLE: @UNSELECTABLE_FOLDERS = ('/afs/[^/]+(/[^/]+)?/?'); 
+##    # disallow selection of a AFS cell and all subfolders but subsubfolders are selectable for file/folder actions
+@UNSELECTABLE_FOLDERS = ('/afs/[^/]+(/[^/]+)?/?');
+
 ## -- ALLOW_INFINITE_PROPFIND
 ## enables/disables infinite PROPFIND requests
 ## if disabled the default depth is set to 0
 $ALLOW_INFINITE_PROPFIND = 1;
 
 ## -- ALLOW_FILE_MANAGEMENT
-## enables file management with a web browser
+## enables file management with a Web browser
 ## ATTENTATION: locks will be ignored
 $ALLOW_FILE_MANAGEMENT = 1;
 
@@ -4571,12 +4580,14 @@ sub getFolderList {
 	eval qq@/$filter/;@;
 	$filter="\Q$filter\E" if ($@);
 
+	my $unselregex = @UNSELECTABLE_FOLDERS ? '('.join('|',@UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
+
 	my @rowclass = ( 'tr_odd', 'tr_even' );
 	my $odd = 0;
 	foreach my $filename (@files) {
 		$WEB_ID++;
 		my $fid = "f$WEB_ID";
-		my $full = $fn.$filename;
+		my $full = $filename eq '.' ? $fn : $fn.$filename;
 		my $nru = $ru.uri_escape($filename);
 
 		$nru = dirname($ru).'/' if $filename eq '..';
@@ -4612,9 +4623,18 @@ sub getFolderList {
 		my $onclick= $filter ? '' : qq@return handleRowClick("$fid", event);@;
 		my $ignev= qq@return false;@;
 
-		my %checkboxattr = (-id=>$fid, -style=>$filename eq '..' ? 'visibility: hidden;display:none':'', -onfocus=>$focus,-onblur=>$blur, -onclick=>qq@return handleCheckboxClick(this, "$fid", event);@, -name=>'file', -value=>$filename, -label=>'');
-		$checkboxattr{disabled}='disabled' if $filename eq '..';
-		$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(\%checkboxattr)) if $ALLOW_FILE_MANAGEMENT;
+		my $unsel = $full =~ /^$unselregex$/;
+
+		if ($ALLOW_FILE_MANAGEMENT) {
+			my %checkboxattr = (-id=>$fid, -onfocus=>$focus, -onblur=>$blur, -name=>'file', -value=>$filename, -label=>'');
+			if ($filename eq '..' || $unsel) {
+				$checkboxattr{-disabled}='disabled'; 
+				$checkboxattr{-style}='visibility: hidden;display:none'; 
+			} else {
+				$checkboxattr{-onclick}=qq@return handleCheckboxClick(this, "$fid", event);@;
+			}
+			$row.= $cgi->td({-class=>'tc_checkbox'},$cgi->checkbox(\%checkboxattr));
+		}
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
@@ -4623,7 +4643,7 @@ sub getFolderList {
 		$row.= $cgi->td({-class=>'tc_size', -title=>sprintf("= %.2fKB = %.2fMB = %.2fGB",$size/1024, $size/1048576, $size/1073741824), -onclick=>$onclick, -onmousedown=>$ignev}, $size);
 		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
 		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
-		$row.= $cgi->td({-class=>'tc_actions' }, $filename=~/^\.{1,2}$/ ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
+		$row.= $cgi->td({-class=>'tc_actions' }, $filename=~/^\.{1,2}$/ || $unsel ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
 		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
