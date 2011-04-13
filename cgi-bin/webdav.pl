@@ -4630,6 +4630,7 @@ sub getFolderList {
 			if ($filename eq '..' || $unsel) {
 				$checkboxattr{-disabled}='disabled'; 
 				$checkboxattr{-style}='visibility: hidden;display:none'; 
+				$checkboxattr{-value}='__not_allowed__';
 			} else {
 				$checkboxattr{-onclick}=qq@return handleCheckboxClick(this, "$fid", event);@;
 			}
