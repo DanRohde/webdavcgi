@@ -4817,14 +4817,14 @@ sub start_html {
 	$REQUEST_URI=~/^($VIRTUAL_BASE)/;
 	my $base = $1;
 	$base.='/' unless $base=~/\/$/;
-	$content.=qq@<script type="text/javascript">$js</script><script src="${base}webdav-ui.js" type="text/javascript"></script>@;
 	$content.=qq@<link rel="search" type="application/opensearchdescription+xml" title="WebDAV CGI filename search" href="$REQUEST_URI?action=opensearch"/>@ if $ALLOW_SEARCH;
 	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
 	$content.=qq@<link href="${base}webdav-ui.css" rel="stylesheet" type="text/css"/>@;
-	$content.=qq@<link href="${base}webdav-ui-custom.css" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.css";
-	$content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.js";
+	$content.=qq@<link href="${base}webdav-ui-custom.css" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.css" || ($ENABLE_COMPRESSION && -e "${INSTALL_BASE}lib/webdav-ui-custom.css.gz");
 	$content.=qq@<style type="text/css">$CSS</style>@ if defined $CSS;
 	$content.=qq@<link href="$CSSURI" rel="stylesheet" type="text/css"/>@ if defined $CSSURI;
+	$content.=qq@<script type="text/javascript">$js</script><script src="${base}webdav-ui.js" type="text/javascript"></script>@;
+	$content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.js";
 	$content.=$HTMLHEAD if defined $HTMLHEAD;
 	$content.=qq@</head><body onload="check()">@;
 	return $content;
