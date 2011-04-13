@@ -158,7 +158,7 @@ $MAXFILENAMESIZE = 40;
 $MAXLASTMODIFIEDSIZE = 20;
 
 ## -- ICONS
-## for fancy indexing (you need a server alias /icons to your Apache icons directory):
+## for fancy indexing 
 ## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
 %ICONS = (
 	'< .. >' => '${VHTDOCS}icons/back.gif',
@@ -184,8 +184,9 @@ $MAXLASTMODIFIEDSIZE = 20;
 $ALLOW_EDIT = 1;
 
 ## -- EDITABLEFILES
-## text file names (regex)
-@EDITABLEFILES = ( '\.(txt|php|html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc)$', '^\.ht' );
+## text file names (regex; case insensitive)
+@EDITABLEFILES = ( '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt)$', 
+		'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' );
 
 ## -- ICON_WIDTH
 ## specifies the icon width for the folder listings of the Web interface
@@ -362,7 +363,7 @@ $PERM_OTHERS = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <span title="$TL{vartimeformat}">$CLOCK</span></div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> $CLOCK</div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
@@ -1184,8 +1185,10 @@ sub _POST {
 						$msgparam = 'p1='.$cgi->escape(join(', ',@files))
 						          . ';p2='.$cgi->escape($cgi->param('newname'));
 						foreach my $file (@files) {
-							if (rmove($PATH_TRANSLATED.$file, $PATH_TRANSLATED.$cgi->param('newname'))) {
-								logger("MOVE($PATH_TRANSLATED,$PATH_TRANSLATED".$cgi->param('newname').") via POST");
+							my $target = $PATH_TRANSLATED.$cgi->param('newname');
+							$target.='/'.$file if -d $target;
+							if (rmove($PATH_TRANSLATED.$file, $target)) {
+								logger("MOVE $PATH_TRANSLATED$file to $target via POST");
 							} else {
 								$errmsg='renameerr';
 							}
@@ -2913,7 +2916,7 @@ sub getfancyfilename {
 	$id=~s/\"//g;
 	
 	my $cssclass='icon';
-	if ($ENABLE_THUMBNAIL && !$isUnReadable && -r $fn && !-z $fn && hasThumbSupport(getMIMEType($fn)))  {
+	if ($ENABLE_THUMBNAIL && !$isUnReadable && -r $fn && !-z $fn && hasThumbSupport($m))  {
 		$icon=$full.($full=~/\?.*/?';':'?').'action=thumb';
 		if ($THUMBNAIL_WIDTH && $ICON_WIDTH < $THUMBNAIL_WIDTH) {
 			$cssclass='thumb';
@@ -4531,22 +4534,23 @@ sub getFolderList {
 	my ($fn,$ru,$filter) = @_;
 	my ($content,$list,$count,$filecount,$foldercount,$filesizes) = ("",0,0,0,0);
 
-	my $row = "";
 	$list="";
+	my $tablehead ="";
 	
-	$row.=$cgi->td({-class=>'th_sel'},$cgi->checkbox(-onclick=>'javascript:toggleAllFiles(this);', -name=>'selectall',-value=>"",-label=>"", -title=>_tl('togglealltooltip'))) if $ALLOW_FILE_MANAGEMENT;
+	$tablehead.=$cgi->td({-class=>'th_sel'},$cgi->checkbox(-onclick=>'javascript:toggleAllFiles(this);', -name=>'selectall',-value=>"",-label=>"", -title=>_tl('togglealltooltip'))) if $ALLOW_FILE_MANAGEMENT;
 
 	my $dir = $ORDER=~/_desc$/ ? '' : '_desc';
 	my $query = $filter ? 'search=' . $cgi->param('search'):'';
 	my $ochar = ' <span class="orderchar">'.($dir eq '' ? '&darr;' :'&uarr;').'</span>';
-	$row.= $cgi->td({-class=>'th_fn'.($ORDER=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'ex;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($ORDER=~/^name/?$ochar:'')))
+	$tablehead .= $cgi->td({-class=>'th_fn'.($ORDER=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'ex;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($ORDER=~/^name/?$ochar:'')))
 		.$cgi->td({-class=>'th_lm'.($ORDER=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($ORDER=~/^lastmodified/?$ochar:'')))
 		.$cgi->td({-class=>'th_size'.($ORDER=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($ORDER=~/^size/?$ochar:'')))
 		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($ORDER=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($ORDER=~/^mode/?$ochar:'')))):'')
 		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($ORDER=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($ORDER=~/^mime/?$ochar:''))):'')
 		.($ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS ? $cgi->td({-title=>_tl('fileactions'), -class=>'th_actions'}, _tl('fileactions')) : '')
 	;
-	$list .= $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $row);
+	$tablehead = $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $tablehead);
+	$list .= $tablehead;
 			
 
 	my @files = sort cmp_files @{readDir($fn)};
@@ -4626,7 +4630,10 @@ sub getFolderList {
 		$filecount++ if $isUnReadable || -f $full;
 		$filesizes+=$size if $isUnReadable || -f $full;
 
+		##$list .= $tablehead if $count % 50 == 0;
+
 	}
+	$list .= $tablehead if $count > 20; ## && $count % 50 != 0 && $count % 50 > 20;
 	$content .= $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
 	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %d Bytes (= %.2f KB = %.2f MB = %.2f GB)", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $filesizes, $filesizes/1024, $filesizes/1048576, $filesizes/1073741824)) if ($SHOW_STAT); 
@@ -4649,7 +4656,7 @@ sub renderFileActions {
 
 	if ($ALLOW_EDIT) {
 		my $ef = '('.join('|',@EDITABLEFILES).')';
-		$attr{edit}{disabled}='disabled' unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || -w $full);
+		$attr{edit}{disabled}='disabled' unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || (-f $full && -w $full));
 	} else {
 		@values = grep(!/^edit$/,@values);
 	}
