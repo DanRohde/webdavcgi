@@ -677,6 +677,7 @@ use Graphics::Magick;
 use IO::Compress::Gzip qw(gzip);
 use IO::Compress::Deflate qw(deflate);
 
+
 ## flush immediately:
 $|=1;
 
@@ -2117,10 +2118,10 @@ sub _SEARCH {
 	} elsif ($#resps > -1) {
 		$content = createXML({multistatus=>{ response=>\@resps }});
 	} else {
-		$content = createXML({multistatus=>{ response=> { href=>$REQUEST_URI, status=>'404 Not Found' }}});
+		$content = createXML({multistatus=>{ }}); ## rfc5323 allows empty multistatus
 	}
 	debug("_SEARCH: status=$status, type=$type, request:\n$xml\n\n response:\n $content\n\n");
-	printHeaderAndContent($status, $type, $content);
+	printCompressedHeaderAndContent($status, $type, $content);
 }
 sub _BIND {
 	my ($status,$type,$content) = ('200 OK', undef, undef);
@@ -2452,12 +2453,10 @@ sub handleBasicSearch {
 			$sortfunc.="$ta $cmp $tb" if $type eq 'ascending';
 			$sortfunc.="$tb $cmp $ta" if $type eq 'descending';
 		}
-
-		debug("orderby: sortfunc=$sortfunc");
 	}
-	$sortfunc = 'return $a cmp $b ' if $sortfunc eq '';
+	$sortfunc = 'return $$a{fn} cmp $$b{fn} ' if $sortfunc eq '';
 
-	debug("handleBasicSearch: matches=$#matches, sortfunc=$sortfunc");
+	debug("handleBasicSearch: matches=$#matches, orderby=$sortfunc");
 	foreach my $match ( sort { eval($sortfunc) } @matches ) {
 		push @{$resps}, { href=> $$match{href}, propstat=>getPropStat($$match{fn},$$match{href},$propsref,$all,$noval) };
 	}
