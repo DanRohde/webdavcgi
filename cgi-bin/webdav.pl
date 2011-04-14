@@ -2077,7 +2077,7 @@ sub _REPORT {
 }
 sub _SEARCH {
 	my @resps;
-	my $status = 'HTTP/1.1 207 Multistatus';
+	my $status = '207 Multistatus';
 	my $content = "";
 	my $type='application/xml';
 	my @errors;
@@ -2119,7 +2119,8 @@ sub _SEARCH {
 	} else {
 		$content = createXML({multistatus=>{ response=> { href=>$REQUEST_URI, status=>'404 Not Found' }}});
 	}
-	printCompressedHeaderAndContent($status, $type, $content);
+	debug("_SEARCH: status=$status, type=$type, request:\n$xml\n\n response:\n $content\n\n");
+	printHeaderAndContent($status, $type, $content);
 }
 sub _BIND {
 	my ($status,$type,$content) = ('200 OK', undef, undef);
@@ -2454,8 +2455,9 @@ sub handleBasicSearch {
 
 		debug("orderby: sortfunc=$sortfunc");
 	}
+	$sortfunc = 'return $a cmp $b ' if $sortfunc eq '';
 
-	debug("handleBasicSearch: matches=$#matches");
+	debug("handleBasicSearch: matches=$#matches, sortfunc=$sortfunc");
 	foreach my $match ( sort { eval($sortfunc) } @matches ) {
 		push @{$resps}, { href=> $$match{href}, propstat=>getPropStat($$match{fn},$$match{href},$propsref,$all,$noval) };
 	}

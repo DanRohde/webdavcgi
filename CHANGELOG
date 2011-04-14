@@ -1,4 +1,5 @@
 0.7.0: RC1
+     - fixed major search bug (SEARCH; thx jfotop@ath.forthnet.gr)
      - added folder redirect feature for disabled file/folder management requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
      - added (incomplete) french translatations for the Web interface (thanx Laurent Bardi <Laurent.Bardi@ipbs.fr>)
      - added sysinfo feature (GET)
