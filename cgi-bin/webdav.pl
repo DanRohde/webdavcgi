@@ -64,7 +64,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -193,6 +193,12 @@ $ALLOW_EDIT = 1;
 ## specifies the icon width for the folder listings of the Web interface
 ## DEFAULT: $ICON_WIDTH = 18;
 $ICON_WIDTH = 18;
+
+
+## -- TITLEPREFIX
+## defines a prefix for the page title of the Web interface
+## EXAMPLE: $TITLEPREFIX='WebDAV CGI:';
+$TITLEPREFIX='WebDAV CGI:';
 
 ## -- CSS
 ## defines a stylesheet added to the header of the Web interface
@@ -2354,7 +2360,7 @@ sub getPropValue {
 
 	$CACHE{getPropValue}{$fn}{$prop} = $propval;
 
-	debug("getPropValue: $prop = $propval");
+	#debug("getPropValue: $prop = $propval");
 
 	return $propval;
 }
@@ -2602,7 +2608,7 @@ sub getPropStat {
 }
 sub getProperty {
 	my ($fn, $uri, $prop, $statRef, $resp_200, $resp_404) = @_;
-	debug("getProperty: fn=$fn, uri=$uri, prop=$prop");
+	#debug("getProperty: fn=$fn, uri=$uri, prop=$prop");
 
 	### +++ AFS fix
 	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
@@ -2749,6 +2755,7 @@ sub getProperty {
 						{ report=>{ 'free-busy-query'=>undef } },
 						{ report=>{ 'addressbook-query'=>undef} },
 						{ report=>{ 'addressbook-multiget'=>undef} },
+						## { report=>{ 'expand-property'=>undef} },
 					]
 				} if $prop eq 'supported-report-set';
 
@@ -3903,6 +3910,7 @@ sub getACLCurrentUserPrivilegeSet {
 			push @{$$usergrant{privilege}},{'unlock'  => undef };
 			push @{$$usergrant{privilege}},{bind=> undef };
 			push @{$$usergrant{privilege}},{unbind=> undef };
+			push @{$$usergrant{privilege}},{all=> undef };
 		}
 	}
 
@@ -4279,7 +4287,7 @@ sub renderPropertiesViewer {
 	my $fn = $PATH_TRANSLATED;
 	setLocale();
 	my $content = "";
-	$content .= start_html("$REQUEST_URI properties");
+	$content .= start_html("$TITLEPREFIX $REQUEST_URI properties");
 	$content .= replaceVars($LANGSWITCH) if defined $LANGSWITCH;
 	$content .= replaceVars($HEADER) if defined $HEADER;
 	my $fullparent = dirname($REQUEST_URI) .'/';
@@ -4408,7 +4416,7 @@ sub renderWebInterface {
 	}
 	$content.= $cgi->div({-class=>$VIEW eq 'classic' ? 'signature' : 'signature sidebarsignature'}, replaceVars($SIGNATURE)) if defined $SIGNATURE;
 	###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
-	$content = start_html($ru).$content.$cgi->end_html();
+	$content = start_html("$TITLEPREFIX $ru").$content.$cgi->end_html();
 
 	printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
 }
@@ -5216,7 +5224,7 @@ sub replaceVars {
 }
 sub renderSysInfo {
 	my $i = "";
-	$i.= start_html();
+	$i.= start_html("$TITLEPREFIX SysInfo");
 	
 	$i.= $cgi->h1('WebDAV CGI SysInfo');
 	$i.= $cgi->h2('Process - '.$0);
