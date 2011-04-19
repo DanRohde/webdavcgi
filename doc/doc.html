@@ -488,9 +488,17 @@ $ENABLE_CALDAV = 1;
 
 %CALENDAR_HOME_SET = ( default => "/$ENV{REMOTE_USER}/.calendar/" );
 
-## create .calendar folder if it does not exists:
+## Create .calendar folder (home set) if it does not exists:
+## Note: The home set folder is not a useable calendar folder. 
+##       Current clients need subfolders for calendar entries.
 mkdir("${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar") 
 		unless -e "${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar";
+## Create default calendar(s)  (subfolder(s) of the home set):
+## Note: Without a default calendar a iPhone, iPod, ... cannot use CalDAV.
+foreach my $cal (('calendar','private')) {
+	mkdir("${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar/$cal") 
+			unless -e "${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar/$cal";
+}
 
 ...
 </pre>
