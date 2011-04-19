@@ -1501,7 +1501,7 @@ sub _PROPFIND {
 	debug("_PROPFIND: status=$status, type=$type");
 	debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
 	debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
-	printCompressedHeaderAndContent($status,$type,$content);
+	printHeaderAndContent($status,$type,$content);
 	
 }
 sub _PROPPATCH {
@@ -1539,7 +1539,7 @@ sub _PROPPATCH {
 		$status='404 Not Found';
 	}
 	debug("_PROPPATCH: RESPONSE: $content");
-	printCompressedHeaderAndContent($status, $type, $content);
+	printHeaderAndContent($status, $type, $content);
 }
 
 sub _PUT {
@@ -1960,7 +1960,7 @@ sub _REPORT {
 		$status='400 Bad Request';
 		$type='text/plain';
 		$content='400 Bad Request';
-	} elsif (!-e $fn) {
+	} elsif (!-e $fn && $ru ne $CURRENT_USER_PRINCIPAL) {
 		$status = '404 Not Found';
 		$type = 'text/plain';
 		$content='404 Not Found';
@@ -2076,11 +2076,11 @@ sub _REPORT {
 			}
 			### push @resps, { } if ($#hrefs==-1);  ## empty multistatus response not supported
 		}
-		$content= $#resps> -1 ? createXML({multistatus => $#resps>-1 ? { response => \@resps } : '' }) : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"/>';
+		$content= $#resps> -1 ? createXML({multistatus => $#resps>-1 ? { response => \@resps } : '' }) : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"></D:multistatus>';
 	}
 	debug("_REPORT: REQUEST: $xml");
 	debug("_REPORT: RESPONSE: $content");
-	printCompressedHeaderAndContent($status, $type, $content);
+	printHeaderAndContent($status, $type, $content);
 }
 sub _SEARCH {
 	my @resps;
@@ -2127,7 +2127,7 @@ sub _SEARCH {
 		$content = createXML({multistatus=>{ }}); ## rfc5323 allows empty multistatus
 	}
 	debug("_SEARCH: status=$status, type=$type, request:\n$xml\n\n response:\n $content\n\n");
-	printCompressedHeaderAndContent($status, $type, $content);
+	printHeaderAndContent($status, $type, $content);
 }
 sub _BIND {
 	my ($status,$type,$content) = ('200 OK', undef, undef);
@@ -2571,6 +2571,7 @@ sub getPropStat {
 	my $isDir = $ENABLE_AFS ? checkAFSAccess($nfn) && -d $nfn : -d $fn;
 	### --- AFS fix
 
+	$fn .= '/' if $isDir && $fn!~/\/$/;
 	foreach my $prop (@{$props}) {
 		my ($xmlnsuri,$propname) = ('DAV:',$prop);
 		if ($prop=~/^{([^}]*)}(.*)$/) {
@@ -2626,7 +2627,7 @@ sub getProperty {
 	$$resp_200{prop}{getlastmodified}=strftime('%a, %d %b %Y %T GMT' ,gmtime($mtime)) if $prop eq 'getlastmodified';
 	$$resp_200{prop}{lockdiscovery}=getLockDiscovery($fn) if $prop eq 'lockdiscovery';
 	$$resp_200{prop}{resourcetype}=($isDir?{collection=>undef}:undef) if $prop eq 'resourcetype';
-	$$resp_200{prop}{resourcetype}{calendar}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV && $isDir;
+	$$resp_200{prop}{resourcetype}{calendar}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV && $isDir && getCalendarHomeSet($uri) ne $uri;
 	$$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
 	$$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
 	$$resp_200{prop}{resourcetype}{addressbook}=undef if $prop eq 'resourcetype' && $ENABLE_CARDDAV && $isDir;
@@ -2722,12 +2723,12 @@ sub getProperty {
 	$$resp_200{prop}{'principal-URL'}{href}=$CURRENT_USER_PRINCIPAL if $prop eq 'principal-URL';
 	$$resp_200{prop}{'calendar-home-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-home-set';
 	$$resp_200{prop}{'calendar-user-address-set'}{href}= $CURRENT_USER_PRINCIPAL if $prop eq 'calendar-user-address-set';
-	$$resp_200{prop}{'schedule-inbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-inbox-URL';
-	$$resp_200{prop}{'schedule-outbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-outbox-URL';
+	$$resp_200{prop}{'schedule-inbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-inbox-URL' && $ENABLE_CALDAV_SCHEDULE;
+	$$resp_200{prop}{'schedule-outbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-outbox-URL' && $ENABLE_CALDAV_SCHEDULE;
 	$$resp_200{prop}{'calendar-user-type'}='INDIVIDUAL' if $prop eq 'calendar-user-type';
 	$$resp_200{prop}{'schedule-calendar-transp'}{transparent} = undef if $prop eq 'schedule-calendar-transp';
 	$$resp_200{prop}{'schedule-default-calendar-URL'}=getCalendarHomeSet($uri) if $prop eq 'schedule-default-calendar-URL';
-	$$resp_200{prop}{'schedule-tag'}=getETag($fn) if $prop eq 'schedule-tag';
+	$$resp_200{prop}{'schedule-tag'}=getETag($fn) if $prop eq 'schedule-tag' && $ENABLE_CALDAV_SCHEDULE;
 	$$resp_200{prop}{'calendar-free-busy-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-free-busy-set';
 
 	if ($prop eq 'address-data') {
