@@ -736,6 +736,12 @@ EOF
 
 <h3>Web interface: Copy/Cut/Paste and bookmarks do not work as expected.</h3>
 WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface without encryption (http instead of https) all cookie based actions do not work.
+<h3>Web interface: missing stylesheets, locales, and/or icons</h3>
+<ol>
+<li>Check your <code>$INSTALL_BASE</code> variable in your <code>webdav.conf</code></li>
+<li>Check webdav.conf syntax: <code>perl -c webdav.conf</code></li>
+<li>Check your Apache rewrite rule: the path to your webdav.conf must be correct:  <code>E=WEBDAVCONF:/path/to/my/webdav.conf</code></li>
+</ol>
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
 </div>
