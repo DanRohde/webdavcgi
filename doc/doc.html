@@ -359,8 +359,13 @@ AFS note: If you use AFS you have to use AFS groups and AFS ACLs to share folder
 <a id="webinterface"></a>
 <h2>Web interface</h2>
 <h3>How to add a new translation?</h3>
-
+<div>
 Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
+
+</div>
+<div>
+And don't forget to sent <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">me</a> your translation. Thanx :-)
+</div>
 
 <h3>How to change CSS styles?</h3>
 There are many ways to do it:
@@ -480,24 +485,24 @@ ln -s `pwd`/cgi-bin/logout /usr/lib/cgi-bin
 <li> Setup WebDAV CGI:
 <pre>
 ...
-### https://myhost/userid -> /home/userid
-$DOCUMENT_ROOT = '/home/';
+### https://myhost/ -> /home/userid/
+$DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
 $VIRTUAL_BASE = '/';
 
 $ENABLE_CALDAV = 1;
 
-%CALENDAR_HOME_SET = ( default => "/$ENV{REMOTE_USER}/.calendar/" );
+%CALENDAR_HOME_SET = ( default => '/.calendar/' );
 
 ## Create .calendar folder (home set) if it does not exists:
 ## Note: The home set folder is not a useable calendar folder. 
 ##       Current clients need subfolders for calendar entries.
-mkdir("${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar") 
-		unless -e "${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar";
+mkdir("${DOCUMENT_ROOT}.calendar") 
+		unless -e "${DOCUMENT_ROOT}.calendar";
 ## Create default calendar(s)  (subfolder(s) of the home set):
 ## Note: Without a default calendar a iPhone, iPod, ... cannot use CalDAV.
 foreach my $cal (('calendar','private')) {
-	mkdir("${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar/$cal") 
-			unless -e "${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.calendar/$cal";
+	mkdir("${DOCUMENT_ROOT}.calendar/$cal") 
+			unless -e "${DOCUMENT_ROOT}.calendar/$cal";
 }
 
 ...
@@ -537,17 +542,17 @@ Listen 8888
 After that you have to configure WebDAV CGI, e.g:
 <pre>
 ...
-### https://myhost/userid -> /home/userid
-$DOCUMENT_ROOT = '/home/';
+### https://myhost/ -> /home/userid/
+$DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
 $VIRTUAL_BASE = '/';
 
 $ENABLE_CARDDAV = 1;
 
-%ADDRESSBOOK_HOME_SET = ( default => "/$ENV{REMOTE_USER}/.addressbook/" );
+%ADDRESSBOOK_HOME_SET = ( default => '/.addressbook/' );
 
 ## create .addressbook folder if it does not exists:
-mkdir("${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.addressbook") 
-		unless -e "${DOCUMENT_ROOT}$ENV{REMOTE_USER}/.addressbook";
+mkdir("${DOCUMENT_ROOT}.addressbook") 
+		unless -e "${DOCUMENT_ROOT}.addressbook";
 
 ...
 </pre>
