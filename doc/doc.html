@@ -465,7 +465,7 @@ It's quiet easy to integrate a logout button:
 chmod a+rx cgi-bin/logout
 ln -s `pwd`/cgi-bin/logout /usr/lib/cgi-bin
 </pre></li>
-<li> Setup <code>cgi-bin/logout</code>: change <code>REALM</code> and <code>HOMEURL</code> values</li>
+<li> Edit <code>cgi-bin/logout</code>: change <code>REALM</code> and <code>HOMEURL</code> values</li>
 <li> Add a rewrite rule to your Apache configuration, e.g: <code>RewriteRule /logout /usr/lib/cgi-bin/logout [PT,L]</code>
 <br/>Note: this rule should precede the webdavwrapper rule</li>
 <li> Add the following to your WebDAV CGI config: 
