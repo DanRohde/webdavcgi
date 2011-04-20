@@ -5,6 +5,7 @@
      - added sysinfo feature (GET)
      - added gzip, deflate encoding support (GET, PROPFIND, PROPPATCH, SEARCH, REPORT)
      - Web interface:
+         - fixed mkdir/rename security bug (POST)
          - added UNSELECTABLE_FOLDERS feature (GET)
          - fixed move/rename behavior for folders (POST)
          - added gzip content encoding support (GET)

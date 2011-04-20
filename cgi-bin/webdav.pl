@@ -64,7 +64,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -388,6 +388,12 @@ $HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as 
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
 $SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2011 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
+
+
+## -- AUTOREFRESHVALUES 
+## values (seconds; 0 = off) for the autorefresh feature of the Web interface
+## EXAMPLE: @AUTOREFRESHVALUES = (0, 10, 30, 60, 300, 600);
+@AUTOREFRESHVALUES = ( 0, 10, 30, 60, 300, 600);
 
 ## -- LANG
 ## defines the default language for the Web interface
@@ -1196,6 +1202,8 @@ sub _POST {
 					my @files = $cgi->param('file');
 					if (($#files > 0)&&(! -d $PATH_TRANSLATED.$cgi->param('newname'))) {
 						$errmsg='renameerr';
+					} elsif ($cgi->param('newname')=~/\//) {
+						$errmsg='renamenotargeterr';
 					} else {
 						$msg='rename';
 						$msgparam = 'p1='.$cgi->escape(join(', ',@files))
@@ -1220,7 +1228,7 @@ sub _POST {
 			my $colname = $cgi->param('colname') || $cgi->param('colname1');
 			if ($colname ne "") {
 				$msgparam="p1=".$cgi->escape($colname);
-				if (mkdir($PATH_TRANSLATED.$colname)) {
+				if ($colname!~/\// && mkdir($PATH_TRANSLATED.$colname)) {
 					logger("MKCOL($PATH_TRANSLATED$colname via POST");
 					$msg='foldercreated';
 				} else {
@@ -1262,12 +1270,14 @@ sub _POST {
 				$errmsg='chpermnothingerr';
 			}
 		} elsif ($cgi->param('edit')) {
-			my $file = $PATH_TRANSLATED. $cgi->param('file');
-			if (-f $file && -w $file) {
-				$msgparam='edit='.$cgi->escape($cgi->param('file')).'#editpos';
+			my $file = $cgi->param('file');
+			my $full = $PATH_TRANSLATED. $file;
+			my $regex = '('.join('|',@EDITABLEFILES).')';
+			if ($file!~/\// && $file=~/$regex/ && -f $full && -w $full) {
+				$msgparam='edit='.$cgi->escape($file).'#editpos';
 			} else {
 				$errmsg='editerr';
-				$msgparam='p1='.$cgi->escape($cgi->param('file'));
+				$msgparam='p1='.$cgi->escape($file);
 			}
 		} elsif ($cgi->param('savetextdata') || $cgi->param('savetextdatacont')) {
 			my $file = $PATH_TRANSLATED . $cgi->param('filename');
@@ -2627,20 +2637,15 @@ sub getProperty {
 	$$resp_200{prop}{getlastmodified}=strftime('%a, %d %b %Y %T GMT' ,gmtime($mtime)) if $prop eq 'getlastmodified';
 	$$resp_200{prop}{lockdiscovery}=getLockDiscovery($fn) if $prop eq 'lockdiscovery';
 	$$resp_200{prop}{resourcetype}=($isDir?{collection=>undef}:undef) if $prop eq 'resourcetype';
-	$$resp_200{prop}{resourcetype}{calendar}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV && $isDir && getCalendarHomeSet($uri) ne $uri;
-	$$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
-	$$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
-	$$resp_200{prop}{resourcetype}{addressbook}=undef if $prop eq 'resourcetype' && $ENABLE_CARDDAV && $isDir;
-	$$resp_200{prop}{resourcetype}{'vevent-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && $isDir;
-	$$resp_200{prop}{resourcetype}{'vtodo-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && $isDir;
-	$$resp_200{prop}{resourcetype}{'vcard-collection'}=undef if $prop eq 'resourcetype' && $ENABLE_GROUPDAV && $isDir;
-	$$resp_200{prop}{'component-set'}='VEVENT,VTODO,VCARD' if $prop eq 'component-set';
-	if ($prop eq 'supportedlock') {
-		$$resp_200{prop}{supportedlock}{lockentry}[0]{lockscope}{exclusive}=undef;
-		$$resp_200{prop}{supportedlock}{lockentry}[0]{locktype}{write}=undef;
-		$$resp_200{prop}{supportedlock}{lockentry}[1]{lockscope}{shared}=undef;
-		$$resp_200{prop}{supportedlock}{lockentry}[1]{locktype}{write}=undef;
+	if ($ENABLE_LOCK) {
+		if ($prop eq 'supportedlock') {
+			$$resp_200{prop}{supportedlock}{lockentry}[0]{lockscope}{exclusive}=undef;
+			$$resp_200{prop}{supportedlock}{lockentry}[0]{locktype}{write}=undef;
+			$$resp_200{prop}{supportedlock}{lockentry}[1]{lockscope}{shared}=undef;
+			$$resp_200{prop}{supportedlock}{lockentry}[1]{locktype}{write}=undef;
+		}
 	}
+
 	$$resp_200{prop}{executable}=($isReadable && -x $fn )?'T':'F' if $prop eq 'executable';
 
 	$$resp_200{prop}{source}={ 'link'=> { 'src'=>$uri, 'dst'=>$uri }} if $prop eq 'source';
@@ -2692,58 +2697,77 @@ sub getProperty {
 	$$resp_200{prop}{contentclass}=($isDir?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'contentclass';
 	$$resp_200{prop}{lastaccessed}=strftime('%m/%d/%Y %I:%M:%S %p' ,gmtime($atime)) if $prop eq 'lastaccessed';
 
-	$$resp_200{prop}{owner} = { href=>$uri } if $prop eq 'owner';
-	$$resp_200{prop}{group} = { href=>$uri } if $prop eq 'group';
-	$$resp_200{prop}{'supported-privilege-set'}= getACLSupportedPrivilegeSet($fn) if $prop eq 'supported-privilege-set';
-	$$resp_200{prop}{'current-user-privilege-set'} = getACLCurrentUserPrivilegeSet($fn) if $prop eq 'current-user-privilege-set';
-	$$resp_200{prop}{acl} = getACLProp($mode) if $prop eq 'acl';
-	$$resp_200{prop}{'acl-restrictions'} = {'no-invert'=>undef,'required-principal'=>{all=>undef,property=>[{owner=>undef},{group=>undef}]}} if $prop eq 'acl-restrictions';
-	$$resp_200{prop}{'inherited-acl-set'} = undef if $prop eq 'inherited-acl-set';
-	$$resp_200{prop}{'principal-collection-set'} = { href=> $PRINCIPAL_COLLECTION_SET }, if $prop eq 'principal-collection-set';
-
-	$$resp_200{prop}{'calendar-description'} = undef if $prop eq 'calendar-description';
-	$$resp_200{prop}{'calendar-timezone'} = undef if $prop eq 'calendar-timezone';
-	$$resp_200{prop}{'supported-calendar-component-set'} = '<C:comp name="VEVENT"/><C:comp name="VTODO"/><C:comp name="VJOURNAL"/><C:comp name="VTIMEZONE"/>' if $prop eq 'supported-calendar-component-set';
-	$$resp_200{prop}{'supported-calendar-data'}='<C:calendar-data content-type="text/calendar" version="2.0"/>' if $prop eq 'supported-calendar-data';
-	$$resp_200{prop}{'max-resource-size'}=20000000 if $prop eq 'max-resource-size';
-	$$resp_200{prop}{'min-date-time'}='19000101T000000Z' if $prop eq 'min-date-time';
-	$$resp_200{prop}{'max-date-time'}='20491231T235959Z' if $prop eq 'max-date-time';
-	$$resp_200{prop}{'max-instances'}=100 if $prop eq 'max-instances';
-	$$resp_200{prop}{'max-attendees-per-instance'}=100 if $prop eq 'max-attendees-per-instance';
-	##$$resp_200{prop}{'calendar-data'}='<![CDATA['.getFileContent($fn).']]>' if $prop eq 'calendar-data';
-	if ($prop eq 'calendar-data') {
-		if ($fn=~/\.ics$/i) {
-			$$resp_200{prop}{'calendar-data'}=$cgi->escapeHTML(getFileContent($fn));
-		} else {
-			$$resp_404{prop}{'calendar-data'}=undef;
-		}
-	}
-	$$resp_200{prop}{'getctag'}=getETag($fn)  if $prop eq 'getctag';
 	$$resp_200{prop}{'current-user-principal'}{href}=$CURRENT_USER_PRINCIPAL if $prop eq 'current-user-principal';
-	$$resp_200{prop}{'principal-URL'}{href}=$CURRENT_USER_PRINCIPAL if $prop eq 'principal-URL';
-	$$resp_200{prop}{'calendar-home-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-home-set';
-	$$resp_200{prop}{'calendar-user-address-set'}{href}= $CURRENT_USER_PRINCIPAL if $prop eq 'calendar-user-address-set';
-	$$resp_200{prop}{'schedule-inbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-inbox-URL' && $ENABLE_CALDAV_SCHEDULE;
-	$$resp_200{prop}{'schedule-outbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-outbox-URL' && $ENABLE_CALDAV_SCHEDULE;
-	$$resp_200{prop}{'calendar-user-type'}='INDIVIDUAL' if $prop eq 'calendar-user-type';
-	$$resp_200{prop}{'schedule-calendar-transp'}{transparent} = undef if $prop eq 'schedule-calendar-transp';
-	$$resp_200{prop}{'schedule-default-calendar-URL'}=getCalendarHomeSet($uri) if $prop eq 'schedule-default-calendar-URL';
-	$$resp_200{prop}{'schedule-tag'}=getETag($fn) if $prop eq 'schedule-tag' && $ENABLE_CALDAV_SCHEDULE;
-	$$resp_200{prop}{'calendar-free-busy-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-free-busy-set';
 
-	if ($prop eq 'address-data') {
-		if ($fn =~ /\.vcf$/i) {
-			$$resp_200{prop}{'address-data'}=$cgi->escapeHTML(getFileContent($fn));
-		} else {
-			$$resp_404{prop}{'address-data'}=undef;
-		}
+	if ($ENABLE_ACL  || $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV) {
+		$$resp_200{prop}{owner} = { href=>$uri } if $prop eq 'owner';
+		$$resp_200{prop}{group} = { href=>$uri } if $prop eq 'group';
+		$$resp_200{prop}{'supported-privilege-set'}= getACLSupportedPrivilegeSet($fn) if $prop eq 'supported-privilege-set';
+		$$resp_200{prop}{'current-user-privilege-set'} = getACLCurrentUserPrivilegeSet($fn) if $prop eq 'current-user-privilege-set';
+		$$resp_200{prop}{acl} = getACLProp($mode) if $prop eq 'acl';
+		$$resp_200{prop}{'acl-restrictions'} = {'no-invert'=>undef,'required-principal'=>{all=>undef,property=>[{owner=>undef},{group=>undef}]}} if $prop eq 'acl-restrictions';
+		$$resp_200{prop}{'inherited-acl-set'} = undef if $prop eq 'inherited-acl-set';
+		$$resp_200{prop}{'principal-collection-set'} = { href=> $PRINCIPAL_COLLECTION_SET }, if $prop eq 'principal-collection-set';
 	}
-	$$resp_200{prop}{'addressbook-description'} = $cgi->escape(basename($fn)) if $prop eq 'addressbook-description';
-	$$resp_200{prop}{'supported-address-data'}='<A:address-data-type content-type="text/vcard" version="3.0"/>' if $prop eq 'supported-address-data';
-	$$resp_200{prop}{'{urn:ietf:params:xml:ns:carddav}max-resource-size'}=20000000 if $prop eq 'max-resource-size' && $ENABLE_CARDDAV;
-	$$resp_200{prop}{'addressbook-home-set'}{href}=getAddressbookHomeSet($uri) if $prop eq 'addressbook-home-set';
-	$$resp_200{prop}{'principal-address'}{href}=$uri if $prop eq 'principal-address';
-	
+
+	if ($ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE) {
+		$$resp_200{prop}{'calendar-description'} = undef if $prop eq 'calendar-description';
+		$$resp_200{prop}{'calendar-timezone'} = undef if $prop eq 'calendar-timezone';
+		$$resp_200{prop}{'supported-calendar-component-set'} = '<C:comp name="VEVENT"/><C:comp name="VTODO"/><C:comp name="VJOURNAL"/><C:comp name="VTIMEZONE"/>' if $prop eq 'supported-calendar-component-set';
+		$$resp_200{prop}{'supported-calendar-data'}='<C:calendar-data content-type="text/calendar" version="2.0"/>' if $prop eq 'supported-calendar-data';
+		$$resp_200{prop}{'max-resource-size'}=20000000 if $prop eq 'max-resource-size';
+		$$resp_200{prop}{'min-date-time'}='19000101T000000Z' if $prop eq 'min-date-time';
+		$$resp_200{prop}{'max-date-time'}='20491231T235959Z' if $prop eq 'max-date-time';
+		$$resp_200{prop}{'max-instances'}=100 if $prop eq 'max-instances';
+		$$resp_200{prop}{'max-attendees-per-instance'}=100 if $prop eq 'max-attendees-per-instance';
+		$$resp_200{prop}{'principal-URL'}{href}=$CURRENT_USER_PRINCIPAL if $prop eq 'principal-URL';
+		$$resp_200{prop}{'getctag'}=getETag($fn)  if $prop eq 'getctag';
+		$$resp_200{prop}{resourcetype}{calendar}=undef if $prop eq 'resourcetype' && $isDir && getCalendarHomeSet($uri) ne $uri;
+
+		$$resp_200{prop}{'calendar-home-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-home-set';
+		$$resp_200{prop}{'calendar-user-address-set'}{href}= $CURRENT_USER_PRINCIPAL if $prop eq 'calendar-user-address-set';
+		$$resp_200{prop}{'calendar-user-type'}='INDIVIDUAL' if $prop eq 'calendar-user-type';
+		##$$resp_200{prop}{'calendar-data'}='<![CDATA['.getFileContent($fn).']]>' if $prop eq 'calendar-data';
+		if ($prop eq 'calendar-data') {
+			if ($fn=~/\.ics$/i) {
+				$$resp_200{prop}{'calendar-data'}=$cgi->escapeHTML(getFileContent($fn));
+			} else {
+				$$resp_404{prop}{'calendar-data'}=undef;
+			}
+		}
+		$$resp_200{prop}{'calendar-free-busy-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-free-busy-set';
+	}
+	if ($ENABLE_CALDAV_SCHEDULE) {
+		$$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
+		$$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $ENABLE_CALDAV_SCHEDULE && $isDir;
+		$$resp_200{prop}{'schedule-inbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-inbox-URL';
+		$$resp_200{prop}{'schedule-outbox-URL'}{href} = getCalendarHomeSet($uri) if $prop eq 'schedule-outbox-URL';
+		$$resp_200{prop}{'schedule-calendar-transp'}{transparent} = undef if $prop eq 'schedule-calendar-transp';
+		$$resp_200{prop}{'schedule-default-calendar-URL'}=getCalendarHomeSet($uri) if $prop eq 'schedule-default-calendar-URL';
+		$$resp_200{prop}{'schedule-tag'}=getETag($fn) if $prop eq 'schedule-tag';
+	}
+	if ($ENABLE_CARDDAV) {
+		if ($prop eq 'address-data') {
+			if ($fn =~ /\.vcf$/i) {
+				$$resp_200{prop}{'address-data'}=$cgi->escapeHTML(getFileContent($fn));
+			} else {
+				$$resp_404{prop}{'address-data'}=undef;
+			}
+		}
+		$$resp_200{prop}{'addressbook-description'} = $cgi->escape(basename($fn)) if $prop eq 'addressbook-description';
+		$$resp_200{prop}{'supported-address-data'}='<A:address-data-type content-type="text/vcard" version="3.0"/>' if $prop eq 'supported-address-data';
+		$$resp_200{prop}{'{urn:ietf:params:xml:ns:carddav}max-resource-size'}=20000000 if $prop eq 'max-resource-size' && $ENABLE_CARDDAV;
+		$$resp_200{prop}{'addressbook-home-set'}{href}=getAddressbookHomeSet($uri) if $prop eq 'addressbook-home-set';
+		$$resp_200{prop}{'principal-address'}{href}=$uri if $prop eq 'principal-address';
+		$$resp_200{prop}{resourcetype}{addressbook}=undef if $prop eq 'resourcetype' && $ENABLE_CARDDAV && $isDir;
+	}
+	if ($ENABLE_GROUPDAV) {
+		$$resp_200{prop}{resourcetype}{'vevent-collection'}=undef if $prop eq 'resourcetype' && $isDir;
+		$$resp_200{prop}{resourcetype}{'vtodo-collection'}=undef if $prop eq 'resourcetype' && $isDir;
+		$$resp_200{prop}{resourcetype}{'vcard-collection'}=undef if $prop eq 'resourcetype' && $isDir;
+		$$resp_200{prop}{'component-set'}='VEVENT,VTODO,VCARD' if $prop eq 'component-set'  && $isDir;
+	}
+		
 	
 	$$resp_200{prop}{'supported-report-set'} = 
 				{ 'supported-report' => 
@@ -4430,6 +4454,9 @@ sub renderSideBarMenuItem {
 				-onclick=>$onclick, -title=>$title}, 
 			$content);
 }
+sub renderAutoRefresh {
+	return _tl('autorefresh').$cgi->popup_menu(-onchange=>'setAutoRefresh(this.value)', -id=>'autorefresh',-name=>'autorefresh', -values=> \@AUTOREFRESHVALUES, -labels=> { 0=>_tl('off'), 10=>'10s', 30=>'30s', 60 => '1min', 300=>'5min',600=>'10min',1800=>'30min',3600=>'1h' }, -default=>[$cgi->cookie('autorefresh')]);
+}
 sub renderSideBar {
 	my $content = "";
 	my $av = "";
@@ -4465,7 +4492,9 @@ sub renderSideBar {
 	my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
 	$content .= renderSideBarMenuItem('navpageview', _tl('navpageviewtooltip'), 'window.location.href="?showpage=1";',$cgi->button(-value=>_tl('navpageview'))) if $showall;
 	$content .= renderSideBarMenuItem('navall', _tl('navalltooltip'),'window.location.href="?showall=1";', $cgi->button(-value=>_tl('navall'))) unless $showall;
-	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button({-value=>_tl('classicview')})); 
+	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button(-value=>_tl('classicview'))); 
+	#$content .= renderSideBarMenuItem('autorefreshview',_tl('autorefresh'),'javascript:toggleActionView("autorefreshview","autorefresh")', $cgi->button(-value=>_tl('autorefreshbutton')));
+	#$av.=renderActionView('autorefreshview','autorefreshbutton',renderAutoRefresh());
 
 
 	my $showsidebar =  (! defined $cgi->cookie('sidebar') || $cgi->cookie('sidebar') eq 'true');
