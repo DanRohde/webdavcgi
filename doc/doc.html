@@ -391,8 +391,8 @@ EOF
 
 Here are some examples to do that in the WebDAV CGI configuration file:
 <ul>
-<li><code>$ICONS{'mymime/type'}='/path/to/my/icons/test.gif';</code></li>
-<li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=>'/path/to/my/icons/test1.gif', 'mymime/type2'=>'/path/to/my/icons/test2.gif',   ) );</code></li>
+<li><code>$ICONS{'mymime/type'}='/uripath/to/my/icons/test.gif';</code></li>
+<li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=>'/uripath/to/my/icons/test1.gif', 'mymime/type2'=>'/uripath/to/my/icons/test2.gif',   ) );</code></li>
 </ul>
 
 <h3>How to integrate a WYSIWYG editor?</h3>
@@ -415,7 +415,7 @@ if ($cgi-&gt;param('edit') &amp;&amp; $cgi-&gt;param('edit') =~ /\.html?$/i) {
 			{ fullPage : true, language: '$_lang', removePlugins: 'save', 
 			  baseFloatZIndex: 
 			  	(parseInt(getCookie('dragZIndex')) == 'NaN') 
-						?  editor.config.baseFloatZIndex 
+						?  10000 
 						:  parseInt(getCookie('dragZIndex'))+1000 
 		});
 		&lt;/script&gt; 
@@ -491,6 +491,8 @@ $VIRTUAL_BASE = '/';
 
 $ENABLE_CALDAV = 1;
 
+## Note: all listed folders are not CalDAV enabled;
+## you must create and use subfolders for calendars:
 %CALENDAR_HOME_SET = ( default => '/.calendar/' );
 
 ## Create .calendar folder (home set) if it does not exists:

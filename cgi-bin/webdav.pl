@@ -544,7 +544,9 @@ $ENABLE_CALDAV = 1;
 
 ## -- CALENDAR_HOME_SET
 ## maps UID numbers or remote users (accounts) to calendar folders
-%CALENDAR_HOME_SET = ( default=> '/', 1000 =>  '/caldav'  );
+## Note: all listed folders are not CalDAV enabled; 
+##       you must create and use subfolders for calendars
+%CALENDAR_HOME_SET = ( default=> '/', );
 
 ## -- ENABLE_CALDAV_SCHEDULE
 ## really incomplete (ALPHA) - properties exist but POST requests are not supported yet
