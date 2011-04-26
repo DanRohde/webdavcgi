@@ -294,7 +294,7 @@ $ENABLE_BOOKMARKS = 1;
 ## -- ENABLE_PROPERTIES_VIEWER
 ## enables the WebDAV properties viewer in the Web interface
 ## DEFAULT: $ENABLE_PROPERTIES_VIEWER = 0;
-$ENABLE_PROPERTIES_VIEWER = 0;
+$ENABLE_PROPERTIES_VIEWER = 1;
 
 ## -- ENABLE_SIDEBAR
 ## enables the sidebar view; you get the classic view only if you disable this:
@@ -2968,9 +2968,8 @@ sub getfancyfilename {
 			$onmouseout = qq@javascript:window.clearInterval(this.intervalObj);this.width=$ICON_WIDTH;@;
 		}
 	}
-	$full.= ($full=~/\?/ ? ';' : '?').'action=props' if $ENABLE_PROPERTIES_VIEWER;
 	my $img =  $cgi->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout});
-	$ret = ($linkit ? $cgi->a(  {href=>$full,title=>$ENABLE_PROPERTIES_VIEWER ? _tl('showproperties') : $s}, $img):$img).' '.$ret;
+	$ret = ($linkit ? $cgi->a(  {href=>$full,title=>$s}, $img):$img).' '.$ret;
 	return $ret;
 }
 sub deltree {
@@ -4382,7 +4381,7 @@ sub renderWebInterface {
 		$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, _tl('folderisfiltered', $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 		$head .= $cgi->div( { -class=>'foldername'},
 			$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
-					$cgi->img({-src=>getIcon('<folder>'),-title=>_tl('showproperties'), -alt=>'folder'})
+					$cgi->img({-src=>getIcon('<folder>'),-title=>$ENABLE_PROPERTIES_VIEWER?_tl('showproperties'):$ru, -alt=>'folder'})
 				)
 			.($ENABLE_DAVMOUNT ? '&nbsp;'.$cgi->a({-href=>'?action=davmount',-class=>'davmount',-title=>_tl('mounttooltip')},_tl('mount')) : '')
 			.' '
@@ -4708,7 +4707,7 @@ sub getFolderList {
 sub renderFileActions {
 	my ($fid, $file, $full) = @_;
 	my @values = ('--','rename','edit','zip','delete');
-	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton') );
+	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
 	my %attr;
 	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
 		$attr{rename}{disabled}='disabled';
@@ -4717,6 +4716,7 @@ sub renderFileActions {
 	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
 		$attr{zip}{disabled}='disabled';
 	}
+	push @values, 'props' if $ENABLE_PROPERTIES_VIEWER;
 
 	if ($ALLOW_EDIT) {
 		my $ef = '('.join('|',@EDITABLEFILES).')';
