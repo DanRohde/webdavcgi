@@ -64,7 +64,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %ACTION_ICONS $FILE_ACTIONS_TYPE
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -159,7 +159,7 @@ $MAXFILENAMESIZE = 40;
 $MAXLASTMODIFIEDSIZE = 20;
 
 ## -- ICONS
-## for fancy indexing 
+## MIME icons for fancy indexing 
 ## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
 %ICONS = (
 	'< .. >' => '${VHTDOCS}icons/back.gif',
@@ -179,6 +179,17 @@ $MAXLASTMODIFIEDSIZE = 20;
 	default => '${VHTDOCS}icons/unknown.gif',
 );
 
+## -- ACTION_ICONS
+## file action icons
+## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
+%ACTION_ICONS = (
+	rename => '${VHTDOCS}actions/Actions-edit-rename-icon.png',
+	##edit => '${VHTDOCS}actions/txt-icon.png',
+	edit => '${VHTDOCS}actions/desktop-icon.png',
+	zip => '${VHTDOCS}actions/tgz-icon.png',
+	delete => '${VHTDOCS}actions/trashcan-full-icon.png',
+	props => '${VHTDOCS}actions/readme-icon.png',
+);
 
 ## -- ALLOW_EDIT
 ## allow changing text files (@EDITABLEFILES) with the Web interface
@@ -294,7 +305,7 @@ $ENABLE_BOOKMARKS = 1;
 ## -- ENABLE_PROPERTIES_VIEWER
 ## enables the WebDAV properties viewer in the Web interface
 ## DEFAULT: $ENABLE_PROPERTIES_VIEWER = 0;
-$ENABLE_PROPERTIES_VIEWER = 1;
+$ENABLE_PROPERTIES_VIEWER = 0;
 
 ## -- ENABLE_SIDEBAR
 ## enables the sidebar view; you get the classic view only if you disable this:
@@ -335,7 +346,12 @@ $SHOW_MIME= 0;
 
 ## -- SHOW_FILE_ACTIONS
 ## show file actions column
-$SHOW_FILE_ACTIONS = 0;
+$SHOW_FILE_ACTIONS = 1;
+
+## -- FILE_ACTIONS_TYPE
+## select the file action type: 'icons' or form 'select'
+## EXAMPLE: $FILE_ACTIONS_TYPE = 'select';
+$FILE_ACTIONS_TYPE = 'icons';
 
 ## -- SHOW_CURRENT_FOLDER
 ## shows the current folder '.' to allow permission changes,...
@@ -4704,19 +4720,54 @@ sub getFolderList {
 	$content .= $pagenav;
 	return ($content, $count);
 }
+sub renderFileActionsWithIcons {
+	my ($fid, $file, $full) = @_;
+	my %attr= ();
+	my @actions = ('rename','edit','zip','delete');
+	push @actions, 'props' if $ENABLE_PROPERTIES_VIEWER;
+	my %labels = ( rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
+	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
+		$attr{rename}{-disabled}='disabled';
+		$attr{delete}{-disabled}='disabled';
+	}
+	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
+		$attr{zip}{-disabled}='disabled';
+		$attr{props}{-disabled}='disabled' if $ENABLE_PROPERTIES_VIEWER;
+	}
+	if ($ALLOW_EDIT) {
+		my $ef = '('.join('|',@EDITABLEFILES).')';
+		$attr{edit}{-disabled}='disabled' unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || (-f $full && -w $full));
+	}
+	my $content="";	
+	foreach my $action (@actions) {
+		$attr{$action}{-id}=qq@fileactions_${action}_${fid}@;
+		###$attr{$action}{-name}='actions';
+		$attr{$action}{-class}='actionicon'.($attr{$action}{-disabled}?' disabled':'');
+		$attr{$action}{-onclick}=$attr{$action}{-disabled} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
+		$attr{$action}{-ondblclick}=$attr{$action}{-disabled} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
+		$attr{$action}{-src}=getActionIcon($action);
+		$attr{$action}{-title}=$labels{$action};
+		$content.= $cgi->img($attr{$action});
+	}
+	return $content;
+}
 sub renderFileActions {
+	return $FILE_ACTIONS_TYPE && $FILE_ACTIONS_TYPE eq 'select' ? renderFileActionsWithSelect(@_) : renderFileActionsWithIcons(@_);
+}
+sub renderFileActionsWithSelect {
 	my ($fid, $file, $full) = @_;
 	my @values = ('--','rename','edit','zip','delete');
 	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
 	my %attr;
+	push @values, 'props' if $ENABLE_PROPERTIES_VIEWER;
 	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
 		$attr{rename}{disabled}='disabled';
 		$attr{delete}{disabled}='disabled';
 	}
 	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
 		$attr{zip}{disabled}='disabled';
+		$attr{props}{disabled}='disabled' if $ENABLE_PROPERTIES_VIEWER;
 	}
-	push @values, 'props' if $ENABLE_PROPERTIES_VIEWER;
 
 	if ($ALLOW_EDIT) {
 		my $ef = '('.join('|',@EDITABLEFILES).')';
@@ -5308,6 +5359,10 @@ sub renderSysInfo {
 sub getIcon {
 	my ($type) = @_;
 	return replaceVars(exists $ICONS{$type} ? $ICONS{$type} : $ICONS{default});
+}
+sub getActionIcon {
+	my ($action) = @_;
+	return replaceVars(exists $ACTION_ICONS{$action} ? $ACTION_ICONS{$action} : $ACTION_ICONS{default});
 }
 sub setLocale {
 	my $locale;

@@ -32,7 +32,9 @@ input,select { text-shadow: 1px 1px white;  }
 .filtered { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
 
 .thumb { border:0px; vertical-align:top;padding: 1px 0px 1px 0px; }
-.icon { border:0px; }
+.icon,.actionicon { border:0px; }
+.actionicon { height: 20px; margin-left: 4px; padding: 0px; }
+.actionicon.disabled { visibility: hidden; }
 
 .foldername { font-weight: bold; font-size: 1.2em; border:0; padding:0; margin:0; display: inline; }
 #quicknavpath { white-space: nowrap; }
