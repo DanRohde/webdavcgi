@@ -4723,28 +4723,29 @@ sub getFolderList {
 sub renderFileActionsWithIcons {
 	my ($fid, $file, $full) = @_;
 	my %attr= ();
+	my %disabled = ();
 	my @actions = ('rename','edit','zip','delete');
 	push @actions, 'props' if $ENABLE_PROPERTIES_VIEWER;
 	my %labels = ( rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
 	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
-		$attr{rename}{-disabled}='disabled';
-		$attr{delete}{-disabled}='disabled';
+		$disabled{rename}=1;
+		$disabled{delete}=1;
 	}
 	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
-		$attr{zip}{-disabled}='disabled';
-		$attr{props}{-disabled}='disabled' if $ENABLE_PROPERTIES_VIEWER;
+		$disabled{zip}=1;
+		$disabled{props}=1 if $ENABLE_PROPERTIES_VIEWER;
 	}
 	if ($ALLOW_EDIT) {
 		my $ef = '('.join('|',@EDITABLEFILES).')';
-		$attr{edit}{-disabled}='disabled' unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || (-f $full && -w $full));
+		$disabled{edit} = 1 unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || (-f $full && -w $full));
 	}
 	my $content="";	
 	foreach my $action (@actions) {
 		$attr{$action}{-id}=qq@fileactions_${action}_${fid}@;
 		###$attr{$action}{-name}='actions';
-		$attr{$action}{-class}='actionicon'.($attr{$action}{-disabled}?' disabled':'');
-		$attr{$action}{-onclick}=$attr{$action}{-disabled} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
-		$attr{$action}{-ondblclick}=$attr{$action}{-disabled} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
+		$attr{$action}{-class}='actionicon'.($disabled{$action}?' disabled':'');
+		$attr{$action}{-onclick}=$disabled{$action}? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
+		$attr{$action}{-ondblclick}=$disabled{$action} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
 		$attr{$action}{-src}=getUIIcon($action);
 		$attr{$action}{-title}=$labels{$action};
 		$content.= $cgi->img($attr{$action});
