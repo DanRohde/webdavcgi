@@ -1034,6 +1034,13 @@ sub _GET {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($ENABLE_SYSINFO && $fn =~/\/sysinfo.html$/) {
 		printHeaderAndContent('200 OK', 'text/html', renderSysInfo());
+###  redirect relative VHTDOCS pathes to the root for better caching, but I have trouble yet (endless redirects)
+#	} elsif ($FANCYINDEXING && $fn =~ /\Q${VHTDOCS}\E(.*)$/ && ($ENABLE_AFS || !-e $fn) && $fn !~ /^${VIRTUAL_BASE}\Q${VHTDOCS}\E/) {
+#		$PATH_TRANSLATED =~ /^(${VIRTUAL_BASE})/;
+#		my $rtarget = $1;
+#		$fn=~/(\Q${VHTDOCS}\E.*)$/;
+#		$rtarget.=$1;
+#		print $cgi->redirect($rtarget);
 	} elsif ($FANCYINDEXING && ($fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ || $fn =~ /\Q$VHTDOCS\E(.*)$/) && ($ENABLE_AFS || !-e $fn)) {
 		my $file = $fn =~ /\Q$VHTDOCS\E(.*)/ ? $INSTALL_BASE.'htdocs/'.$1 : $INSTALL_BASE.'lib/'.basename($fn);
 		$file=~s/\/\.\.\///g;
@@ -1251,7 +1258,7 @@ sub _POST {
 					$msg='foldercreated';
 				} else {
 					$errmsg='foldererr'; 
-					$msgparam.=';p2='.$cgi->escape(_tl($!));
+					$msgparam.=';p2='.(-e $PATH_TRANSLATED.$colname ? $cgi->escape(_tl('folderexists')) : $cgi->escape(_tl($!)));
 				}
 			} else {
 				$errmsg='foldernothingerr';
@@ -1315,10 +1322,11 @@ sub _POST {
 				$msg='newfilecreated';
 				print F "";
 				close(F);
+				$msgparam='p1='.$cgi->escape($fn);
 			} else {
+				$msgparam='p1='.$cgi->escape($fn).';p2='.(-e $full ? $cgi->escape(_tl('fileexists')) : $cgi->escape(_tl($!)));
 				$errmsg='createnewfileerr';
 			}
-			$msgparam='p1='.$cgi->escape($fn);
 		}
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam, $errmsg, $msgparam));
 	} elsif ($ALLOW_POST_UPLOADS && -d $PATH_TRANSLATED && defined $cgi->param('filesubmit')) {
