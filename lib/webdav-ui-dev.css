@@ -24,12 +24,32 @@ input,select { text-shadow: 1px 1px white;  }
 .search input { font-size: 0.8em; }
 
 
-.errormsg, .notwriteable, .notreadable { background-color:#ffeeee; border: 1px solid #ff0000; padding: 0px 4px 0px 4px; }
-.infomsg { background-color:#eeeeff; padding: 0px 4px 0px 4px; border: 1px solid #0000ff;}
 #msg, .msg { left: 50%; padding: 15px; margin-left: -300px; top: 10px; position: fixed; text-align:center; width: 600px; z-index: 100000; }
 .msg { z-index: 8; }
-.filtered_old { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
-.filtered { background-color: yellow; padding: 0px 4px 0px 4px; border: 1px solid black; }
+.errormsg, .notwriteable, .notreadable { 
+	min-height: 50px;
+	background: #ffeeee url(_webdavcgi_/actions/Status-dialog-error-icon.png) no-repeat left;
+	border: 1px solid #ff0000; 
+	padding: 1ex;
+	opacity: 0.95;
+	filter: Alpha(opacity=95);
+}
+.infomsg { 
+	min-height: 50px;
+	background: #eeeeff url(_webdavcgi_/actions/Apps-preferences-desktop-notification-icon.png) no-repeat left; 
+	padding: 1ex;
+	border: 1px solid #0000ff;
+	opacity: 0.95;
+	filter: Alpha(opacity=95);
+}
+.filtered { 
+	min-height: 50px; 
+	background: yellow url(_webdavcgi_/actions/Status-dialog-warning-icon.png) no-repeat left; 
+	padding: 1ex;
+	border: 1px solid black; 
+	opacity: 0.95;
+	filter: Alpha(opacity=95);
+}
 
 .thumb { border:0px; vertical-align:top;padding: 1px 0px 1px 0px; }
 .icon,.actionicon { border:0px; }

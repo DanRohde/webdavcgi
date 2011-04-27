@@ -64,7 +64,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %ACTION_ICONS $FILE_ACTIONS_TYPE
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -179,10 +179,10 @@ $MAXLASTMODIFIEDSIZE = 20;
 	default => '${VHTDOCS}icons/unknown.gif',
 );
 
-## -- ACTION_ICONS
-## file action icons
+## -- UI_ICONS
+## user interface icons
 ## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
-%ACTION_ICONS = (
+%UI_ICONS = (
 	rename => '${VHTDOCS}actions/Actions-edit-rename-icon.png',
 	##edit => '${VHTDOCS}actions/txt-icon.png',
 	edit => '${VHTDOCS}actions/desktop-icon.png',
@@ -4745,7 +4745,7 @@ sub renderFileActionsWithIcons {
 		$attr{$action}{-class}='actionicon'.($attr{$action}{-disabled}?' disabled':'');
 		$attr{$action}{-onclick}=$attr{$action}{-disabled} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
 		$attr{$action}{-ondblclick}=$attr{$action}{-disabled} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
-		$attr{$action}{-src}=getActionIcon($action);
+		$attr{$action}{-src}=getUIIcon($action);
 		$attr{$action}{-title}=$labels{$action};
 		$content.= $cgi->img($attr{$action});
 	}
@@ -5360,9 +5360,9 @@ sub getIcon {
 	my ($type) = @_;
 	return replaceVars(exists $ICONS{$type} ? $ICONS{$type} : $ICONS{default});
 }
-sub getActionIcon {
+sub getUIIcon {
 	my ($action) = @_;
-	return replaceVars(exists $ACTION_ICONS{$action} ? $ACTION_ICONS{$action} : $ACTION_ICONS{default});
+	return replaceVars(exists $UI_ICONS{$action} ? $UI_ICONS{$action} : $UI_ICONS{default});
 }
 sub setLocale {
 	my $locale;
