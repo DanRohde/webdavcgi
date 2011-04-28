@@ -4932,7 +4932,7 @@ sub start_html {
 	$content.=qq@<meta name="author" content="Daniel Rohde"/>@;
 
 	my $js='function tl(k) { var tl = new Array();';
-	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm','pastecopyconfirm','pastecutconfirm')) {
+	foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm','pastecopyconfirm','pastecutconfirm','msgtimeouttooltip')) {
 		$js.= qq@tl['$usedtext']='@._tl($usedtext).qq@';@;
 	}
 	$js.=' return tl[k] ? tl[k] : k; }';
