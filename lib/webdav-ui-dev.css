@@ -53,6 +53,7 @@ input,select { text-shadow: 1px 1px white;  }
 
 .thumb { border:0px; vertical-align:top;padding: 1px 0px 1px 0px; }
 .icon,.actionicon { border:0px; }
+.actionicons { white-space: nowrap; }
 .actionicon { height: 20px; margin-left: 4px; padding: 0px; }
 .actionicon.disabled { visibility: hidden; }
 
@@ -107,6 +108,8 @@ input,select { text-shadow: 1px 1px white;  }
 .pagenav, .showall { font-weight: bold; font-size:0.9em;padding: 2px 0px 2px 0px; text-align: center; background-color: #efefef;}
 .pagenav a, .showall a { text-decoration: none;}
 .showall input, .pagenav select { border: 0; margin: 0;}
+
+.pagelimit { float: right; padding-right: 10px; }
 
 .filelist a { text-decoration: none; }
 .filelist { width:100%;font-family:monospace;border:0; border-spacing:0; padding:2px; font-size: 0.9em; clear: both;}

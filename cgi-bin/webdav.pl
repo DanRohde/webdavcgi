@@ -1034,13 +1034,12 @@ sub _GET {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($ENABLE_SYSINFO && $fn =~/\/sysinfo.html$/) {
 		printHeaderAndContent('200 OK', 'text/html', renderSysInfo());
-###  redirect relative VHTDOCS pathes to the root for better caching, but I have trouble yet (endless redirects)
-#	} elsif ($FANCYINDEXING && $fn =~ /\Q${VHTDOCS}\E(.*)$/ && ($ENABLE_AFS || !-e $fn) && $fn !~ /^${VIRTUAL_BASE}\Q${VHTDOCS}\E/) {
-#		$PATH_TRANSLATED =~ /^(${VIRTUAL_BASE})/;
-#		my $rtarget = $1;
-#		$fn=~/(\Q${VHTDOCS}\E.*)$/;
-#		$rtarget.=$1;
-#		print $cgi->redirect($rtarget);
+	} elsif ($FANCYINDEXING && $REQUEST_URI =~ /\Q${VHTDOCS}\E(.*)$/ && ($ENABLE_AFS || !-e $fn) && $REQUEST_URI !~ /^${VIRTUAL_BASE}\Q${VHTDOCS}\E/) {
+		$REQUEST_URI=~ /^(${VIRTUAL_BASE})/;
+		my $rtarget = $1;
+		$fn=~/(\Q${VHTDOCS}\E.*)$/;
+		$rtarget.=$1;
+		print $cgi->redirect(-uri=>$rtarget,-status=>301);
 	} elsif ($FANCYINDEXING && ($fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ || $fn =~ /\Q$VHTDOCS\E(.*)$/) && ($ENABLE_AFS || !-e $fn)) {
 		my $file = $fn =~ /\Q$VHTDOCS\E(.*)/ ? $INSTALL_BASE.'htdocs/'.$1 : $INSTALL_BASE.'lib/'.basename($fn);
 		$file=~s/\/\.\.\///g;
@@ -4570,9 +4569,11 @@ sub renderPageNavBar {
 		$content .= ($page < $maxpages) 
 				? $cgi->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $maxpages, $limit), -title=>_tl('navlasttooltip')},_tl('navlast')) 
 				: _tl('navlastblind');
+	} else {
+		$content .= '&nbsp;';
 	}
 
-	$content .= ' '.$cgi->span({-title=>_tl('pagelimittooltip')}, _tl('pagelimit').' '.$cgi->popup_menu(-name=>'pagelimit', -onchange=>'javascript: window.location.href=window.location.pathname + (this.value==-1 ? "?showall=1" : "?page=1;pagelimit="+this.value);', -values=>\@PAGE_LIMITS, -default=>$limit, -labels=>{-1=>_tl('navall')}, -attributes=>{-1=>{title=>_tl('navalltooltip')}}));
+	$content .= ' '.$cgi->span({-class=>'pagelimit',-title=>_tl('pagelimittooltip')}, _tl('pagelimit').' '.$cgi->popup_menu(-name=>'pagelimit', -onchange=>'javascript: window.location.href=window.location.pathname + (this.value==-1 ? "?showall=1" : "?page=1;pagelimit="+this.value);', -values=>\@PAGE_LIMITS, -default=>$limit, -labels=>{-1=>_tl('navall')}, -attributes=>{-1=>{title=>_tl('navalltooltip')}}));
 
 	##$content .= ' '. $cgi->a({-href=>$ru."?showall=1", -title=>_tl('navalltooltip')}, _tl('navall'));
 
@@ -4732,7 +4733,7 @@ sub renderFileActionsWithIcons {
 	my ($fid, $file, $full) = @_;
 	my %attr= ();
 	my %disabled = ();
-	my @actions = ('rename','edit','zip','delete');
+	my @actions = ('edit','rename','zip','delete');
 	push @actions, 'props' if $ENABLE_PROPERTIES_VIEWER;
 	my %labels = ( rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
 	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
@@ -4758,7 +4759,7 @@ sub renderFileActionsWithIcons {
 		$attr{$action}{-title}=$labels{$action};
 		$content.= $cgi->img($attr{$action});
 	}
-	return $content;
+	return $cgi->div({-class=>'actionicons'},$content);
 }
 sub renderFileActions {
 	return $FILE_ACTIONS_TYPE && $FILE_ACTIONS_TYPE eq 'select' ? renderFileActionsWithSelect(@_) : renderFileActionsWithIcons(@_);
@@ -4943,11 +4944,12 @@ sub start_html {
 	$base.='/' unless $base=~/\/$/;
 	$content.=qq@<link rel="search" type="application/opensearchdescription+xml" title="WebDAV CGI filename search" href="$REQUEST_URI?action=opensearch"/>@ if $ALLOW_SEARCH;
 	$content.=qq@<link rel="alternate" href="$REQUEST_URI?action=mediarss" type="application/rss+xml" title="" id="gallery"/>@ if $ENABLE_THUMBNAIL;
+	$content.=qq@<script type="text/javascript">$js</script>@;
 	$content.=qq@<link href="${base}webdav-ui.css" rel="stylesheet" type="text/css"/>@;
 	$content.=qq@<link href="${base}webdav-ui-custom.css" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.css" || ($ENABLE_COMPRESSION && -e "${INSTALL_BASE}lib/webdav-ui-custom.css.gz");
 	$content.=qq@<style type="text/css">$CSS</style>@ if defined $CSS;
 	$content.=qq@<link href="$CSSURI" rel="stylesheet" type="text/css"/>@ if defined $CSSURI;
-	$content.=qq@<script type="text/javascript">$js</script><script src="${base}webdav-ui.js" type="text/javascript"></script>@;
+	$content.=qq@<script src="${base}webdav-ui.js" type="text/javascript"></script>@;
 	$content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${INSTALL_BASE}lib/webdav-ui-custom.js";
 	$content.=$HTMLHEAD if defined $HTMLHEAD;
 	$content.=qq@</head><body onload="check()">@;
