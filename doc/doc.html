@@ -19,6 +19,7 @@ Content of this topic:
 <ul>
 	<li><a href="#requirements">Requirements</a></li>
 	<li><a href="#installation">Installation</a></li>
+	<li><a href="#upgrade">Upgrade</a></li>
 	<li><a href="#setup">WebDAV CGI Setup</a></li>
 	<li><a href="#hints">Hints</a></li>
 	<li><a href="#database">Database Setup</a></li>
@@ -41,8 +42,8 @@ Content of this topic:
 <ul>
 <li> all required Perl modules: see <a href="#installation">Installation</a> </li>
 <li> a <a href="#database">database</a> (SQLite3, PostgreSQL, MySQL, ... (all supported by a Perl DBI driver))</li>
-<li> a little bit configuration: Apache setup (see <a href="#installation">Installation</a>) and a <a href="#setup">WebDAV CGI Setup</a></li>
 <li> a Web server software (Apache recommended)</li>
+<li> a little bit configuration: Apache setup (see <a href="#installation">Installation</a>) and a <a href="#setup">WebDAV CGI Setup</a></li>
 <li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu recommended, Windows/MacOS-X not tested and not supported) </li>
 </ul>
 
@@ -50,7 +51,8 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
 
 <a id="installation"></a>
 <h2>Installation</h2>
-Note: All steps are done with root rights.
+<p>Note: All steps are done with root rights.</p>
+<p>Upgrade Note: Please take a look at the <a href="#upgrade">Upgrade</a> section for further information.
 <ol>
 <li><a href="index.html#download">download WebDAV CGI</a></li>
 <li>install required CPAN modules (Debian/Ubuntu package name):
@@ -156,6 +158,31 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 </li>
 
 </ol>
+<a id="upgrade"></a>
+<h2>Upgrade</h2>
+<h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
+<ol>
+<li>two new Perl modules are used by WebDAV: <code>CGI: IO::Compress::Gzip</code> and <code>IO::Compress::Deflate</code> (both are integraded in most Linux dists)</li>
+<li>WebDAV CGI is not longer a single file distribution therefore:
+	<ol>
+	<li>unpack the new <a href="index.html#download">installation package</a> in your preferred installlation path, e.g. <code>cd /etc; unzip webdavcgi-0.7.?.zip</code></li>
+	<li>link the path for easier upgrades, e.g. <code>ln -s /etc/webdavcgi-0.7.? /etc/webdavcgi</code></li>
+	<li>copy the webdav.pl script to your CGI directory and allow execution, e.g. 
+<pre>cp /etc/webdavcgi/cgi-bin/webdav.pl /usr/lib/cgi-bin 
+chmod a+x /usr/lib/cgi-bin/webdav.pl </pre></li>
+	<li>add the <code>$INSTALL_BASE</code> variable to your existing <code>webdav.conf</code>, e.g. 
+		<pre>echo "\$INSTALL_BASE='/etc/webdavcgi/';" >> /path/to/my/config/file/webdav.conf</pre></li>
+	<li>check your config file and CGI script, e.g.
+<pre>#&gt; perl -c /path/to/my/config/file/webdav.conf
+webdav.conf syntax OK
+
+#&gt; perl -c /usr/lib/cgi-bin/webdav.pl
+webdav.pl syntax OK</pre></li>
+	</ol>
+</li>
+<li>WebDAV CGI has a new Web interface and some configuration defaults were changed and new options were added. See CHANGELOG in your installation path and take a look into webdav.pl for further information.</li>
+</ol>
+
 
 
 <a id="setup"></a>
