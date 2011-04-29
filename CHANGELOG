@@ -1,3 +1,5 @@
+0.7.1: BETA
+
 0.7.0: 2011/29/04
      - fixed major search bug (SEARCH; thx jfotop@ath.forthnet.gr)
      - added folder redirect feature for disabled file/folder management requested by Laurent Bardi <Laurent.Bardi@ipbs.fr>
