@@ -56,7 +56,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $ENABLE_BIND $SHOW_PERM $ALLOW_CHANGEPERM $ALLOW_CHANGEPERMRECURSIVE $LANGSWITCH
             $PERM_USER $PERM_GROUP $PERM_OTHERS
             $DBI_PERSISTENT
-            $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR $IGNOREFILEPERMISSIONS
+            $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR 
             $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
 	    $ENABLE_FLOCK $SHOW_MIME $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
@@ -64,7 +64,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -491,8 +491,9 @@ $BUFSIZE = 1048576;
 ## EXAMPLE: $GFSQUOTA='/usr/sbin/gfs2_quota -f';
 #$GFSQUOTA='/usr/sbin/gfs_quota -f';
 
-## -- ENABLE_AFS
-## enables AFS support
+## -- ENABLE_AFS -- obsolete - use $BACKEND = 'AFS' instead
+## to enable AFS support set: $BACKEND = 'AFS';
+## $ENABLE_AFS is only used to enable AFS ACL manager and AFS group manager
 # $ENABLE_AFS = 1;
 
 ## -- AFSQUOTA
@@ -652,12 +653,6 @@ $FILECOUNTLIMIT = 5000;
 my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 %FILEFILTERPERDIR = ( '/afs/.cms.hu-berlin.de/user/' => "^$_ru\$", '/usr/local/www/htdocs/rohdedan/links/'=>'^loop[1-4]$');
 
-## -- IGNOREFILEPERMISSIONS
-## if enabled all unreadable files and folders are clickable for full AFS support
-## it's not a security risk because process rights and file permissions will work
-## EXAMPLE: $IGNOREFILEPERMISSIONS = 0;
-$IGNOREFILEPERMISSIONS = $ENABLE_AFS;
-
 ## -- ENABLE_FLOCK
 ## enables file locking support (flock) for PUT/POST uploads to respect existing locks and to set locks for files to change
 $ENABLE_FLOCK = 1;
@@ -665,6 +660,28 @@ $ENABLE_FLOCK = 1;
 ## -- LIMIT_FOLDER_DEPTH
 ## limits the depth a folder is visited for copy/move operations
 $LIMIT_FOLDER_DEPTH = 20;
+
+
+## -- BACKEND
+## defines the WebDAV/Web interface backend (see $INSTALL_BASE/lib/perl/Backend/<BACKEND> for supported backends)
+$BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
+
+## -- SMB
+## SMB backend configuration:
+%SMB = (
+		defaultworkgroup =>'CMS',
+		workgroups => {
+			CMS => {
+					serveraliases => { hucms11c => 'hucms11c.cms.hu-berlin.de', hucms12c=>'hucms12c.cms.hu-berlin.de' },
+					fileserver => [ hucms11c, hucms12c ],
+					sharealiases => {
+								hucms11c => {  home => 'H:(HOME)', },
+								hucms12c => {  temp => 'T:(TEMP)', },
+					},
+				},
+		},
+
+);
 
 ## -- DEBUG
 ## enables/disables debug output
@@ -689,7 +706,6 @@ use Fcntl qw(:flock);
 use CGI;
 
 use File::Basename;
-use File::Spec::Link;
 
 use XML::Simple;
 use Date::Parse;
@@ -701,7 +717,6 @@ use Digest::MD5;
 
 use DBI;
 use Quota;
-use Archive::Zip;
 use Graphics::Magick;
 
 use IO::Compress::Gzip qw(gzip);
@@ -728,6 +743,11 @@ if (defined $CONFIGFILE) {
 		warn "couldn't run $CONFIGFILE" unless $ret;
 	}
 }
+
+use lib dirname($0)."/../lib/perl";
+use Backend::Manager;
+our $backendmanager = new Backend::Manager;
+our $backend = $backendmanager->getBackend($BACKEND);
 
  
 umask $UMASK;
@@ -786,9 +806,9 @@ if (!defined $PATH_TRANSLATED || $PATH_TRANSLATED eq "") {
 	exit();
 }
 
-$PATH_TRANSLATED.='/' if -d $PATH_TRANSLATED && $PATH_TRANSLATED !~ /\/$/; 
+$PATH_TRANSLATED.='/' if $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/; 
 $REQUEST_URI=~s/\?.*$//; ## remove query strings
-$REQUEST_URI.='/' if -d $PATH_TRANSLATED && $REQUEST_URI !~ /\/$/;
+$REQUEST_URI.='/' if $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/;
 
 $TRASH_FOLDER.='/' if $TRASH_FOLDER !~ /\/$/;
 
@@ -1034,13 +1054,13 @@ sub _GET {
 		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 	} elsif ($ENABLE_SYSINFO && $fn =~/\/sysinfo.html$/) {
 		printHeaderAndContent('200 OK', 'text/html', renderSysInfo());
-	} elsif ($FANCYINDEXING && $REQUEST_URI =~ /\Q${VHTDOCS}\E(.*)$/ && ($ENABLE_AFS || !-e $fn) && $REQUEST_URI !~ /^${VIRTUAL_BASE}\Q${VHTDOCS}\E/) {
+	} elsif ($FANCYINDEXING && $REQUEST_URI =~ /\Q${VHTDOCS}\E(.*)$/ && $REQUEST_URI !~ /^${VIRTUAL_BASE}\Q${VHTDOCS}\E/) {
 		$REQUEST_URI=~ /^(${VIRTUAL_BASE})/;
 		my $rtarget = $1;
 		$fn=~/(\Q${VHTDOCS}\E.*)$/;
 		$rtarget.=$1;
 		print $cgi->redirect(-uri=>$rtarget,-status=>301);
-	} elsif ($FANCYINDEXING && ($fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ || $fn =~ /\Q$VHTDOCS\E(.*)$/) && ($ENABLE_AFS || !-e $fn)) {
+	} elsif ($FANCYINDEXING && ($fn =~ /\/webdav-ui(-custom)?\.(js|css)$/ || $fn =~ /\Q$VHTDOCS\E(.*)$/))  {
 		my $file = $fn =~ /\Q$VHTDOCS\E(.*)/ ? $INSTALL_BASE.'htdocs/'.$1 : $INSTALL_BASE.'lib/'.basename($fn);
 		$file=~s/\/\.\.\///g;
 		my $compression = !-e $file && -e "$file.gz";
@@ -1061,41 +1081,41 @@ sub _GET {
 		} else {
 			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 		}
-	} elsif ($ENABLE_AFS && !checkAFSAccess($fn)) {
-		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
-	} elsif (!$FANCYINDEXING && -d $fn) {
+	} elsif (!$FANCYINDEXING && $backend->isDir($fn)) {
 		if (defined $REDIRECT_TO) {
 			print $cgi->redirect($REDIRECT_TO);
 		} else {
 			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
 		}
-	} elsif ($ENABLE_DAVMOUNT && $cgi->param('action') eq 'davmount' && -e $fn) {
+	} elsif ($ENABLE_DAVMOUNT && $cgi->param('action') eq 'davmount' && $backend->exists($fn)) {
 		my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
 		my $bn = basename($fn);
 		$su =~ s/\Q$bn\E\/?//;
-		$bn.='/' if -d $fn && $bn!~/\/$/;
+		$bn.='/' if $backend->isDir($fn) && $bn!~/\/$/;
 		printHeaderAndContent('200 OK','application/davmount+xml',
 		       qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@);
-	} elsif ($ENABLE_THUMBNAIL &&  $cgi->param('action') eq 'mediarss' && -d $fn && ($IGNOREFILEPERMISSIONS || -r $fn)) {
+	} elsif ($ENABLE_THUMBNAIL &&  $cgi->param('action') eq 'mediarss' && $backend->isDir($fn) && $backend->isReadable($fn)) {
 		my $content = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
-		foreach my $file (sort cmp_files @{readDir($fn)}) {
+		foreach my $file (sort cmp_files @{$backend->readDir($fn)}) {
 			my $mime = getMIMEType($file);
 			$mime='image/gif' if hasThumbSupport($mime) && $mime !~ /^image/i;
-			$content.=qq@<item><title>$file</title><link>$REQUEST_URI$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if hasThumbSupport($mime) && ($IGNOREFILEPERMISSIONS || -r "$fn$file");
+			$content.=qq@<item><title>$file</title><link>$REQUEST_URI$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if hasThumbSupport($mime) && $backend->isReadable("$fn$file");
 		}
 		$content.=qq@</channel></rss>@;
 		printHeaderAndContent("200 OK", 'appplication/rss+xml', $content);
-	} elsif ($ENABLE_THUMBNAIL && $cgi->param('action') eq 'image' && hasThumbSupport(getMIMEType($fn)) && -f $fn) {
+	} elsif ($ENABLE_THUMBNAIL && $cgi->param('action') eq 'image' && hasThumbSupport(getMIMEType($fn)) && $backend->isFile($fn)) {
+		$fn = $backend->getLocalFilename($fn);
 		my $image = Graphics::Magick->new;
 		my $x = $image->Read($fn); warn "$x" if "$x";
 		$image->Set(delay=>200);
 		binmode STDOUT;
 		print $cgi->header(-status=>'200 OK',-type=>'image/gif', -ETag=>getETag($fn));
 		$x = $image->Write('gif:-'); warn "$x" if "$x";
-	} elsif ($cgi->param('action') eq 'opensearch' && -d $fn) {
+	} elsif ($cgi->param('action') eq 'opensearch' && $backend->isDir($fn)) {
 		my $content = qq@<?xml version="1.0" encoding="utf-8" ?><OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"><ShortName>WebDAV CGI filename</ShortName><Description>WebDAV CGI filename search in $ENV{SCRIPT_URI}</Description><InputEncoding>utf-8</InputEncoding><Url type="text/html" template="$ENV{SCRIPT_URI}?search={searchTerms}" /></OpenSearchDescription>@;
 		printHeaderAndContent("200 OK", 'text/xml', $content);
-	} elsif ($ENABLE_THUMBNAIL && $cgi->param('action') eq 'thumb' && ($IGNOREFILEPERMISSIONS || -r $fn) && -f $fn) {
+	} elsif ($ENABLE_THUMBNAIL && $cgi->param('action') eq 'thumb' && $backend->isReadable($fn) && $backend->isFile($fn)) {
+		my $lfn = $backend->getLocalFilename($fn);
 		my $image = Graphics::Magick->new;
 		my $width = $THUMBNAIL_WIDTH || $ICON_WIDTH || 18;
 		if ($ENABLE_THUMBNAIL_CACHE) {
@@ -1103,11 +1123,11 @@ sub _GET {
 			$uniqname=~s/\//_/g;
 			my $cachefile = "$THUMBNAIL_CACHEDIR/$uniqname.thumb.gif";
 			mkdir($THUMBNAIL_CACHEDIR) if ! -e $THUMBNAIL_CACHEDIR;
-			if (! -e $cachefile || (stat($fn))[9] > (stat($cachefile))[9]) {
+			if (! -e $cachefile || ($backend->stat($fn))[9] > (stat($cachefile))[9]) {
 				my $x;
-				my ($w, $h,$s,$f) = $image->Ping($fn);
+				my ($w, $h,$s,$f) = $image->Ping($lfn);
 				
-				$x = $image->Read($fn); warn "$x" if "$x";
+				$x = $image->Read($lfn); warn "$x" if "$x";
 				$image->Set(delay=>200);
 				$image->Crop(height=>$h / ${width} ) if ($h > $width && $w < $width); 
 				$image->Resize(geometry=>$width,filter=>'Gaussian') if ($w > $width);
@@ -1124,9 +1144,9 @@ sub _GET {
 			}
 		} else {
 			print $cgi->header(-status=>'200 OK',-type=>'image/gif', -ETag=>getETag($fn));
-			my ($w, $h,$s,$f) = $image->Ping($fn);
+			my ($w, $h,$s,$f) = $image->Ping($lfn);
 			my $x;
-			$x = $image->Read($fn); warn "$x" if "$x";
+			$x = $image->Read($lfn); warn "$x" if "$x";
 			$image->Set(delay=>200);
 			$image->Crop(height=>$h / ${width} ) if ($h > $width && $w < $width); 
 			$image->Resize(geometry=>$width,filter=>'Gaussian') if ($w > $width);
@@ -1134,19 +1154,19 @@ sub _GET {
 			binmode STDOUT;
 			$x = $image->Write('gif:-'); warn "$x" if "$x";
 		}
-	} elsif ($ENABLE_PROPERTIES_VIEWER && $cgi->param('action') eq 'props' && -e $fn) {
+	} elsif ($ENABLE_PROPERTIES_VIEWER && $cgi->param('action') eq 'props' && $backend->exists($fn)) {
 		renderPropertiesViewer();
-	} elsif (-d $fn) {
+	} elsif ($backend->isDir($fn)) {
 		renderWebInterface();
-	} elsif (-e $fn && (!$IGNOREFILEPERMISSIONS && !-r $fn)) {
+	} elsif ($backend->exists($fn) && !$backend->isReadable($fn)) {
 		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
-	} elsif (-e $fn) {
+	} elsif ($backend->exists($fn)) {
 		debug("_GET: DOWNLOAD");
-		if (open(my $F,"<$fn")) {
+		if ($backend->openFileHandle(my $F, $fn)) {
 			binmode(STDOUT);
 			my $enc = $cgi->http('Accept-Encoding');
 			my $mime = getMIMEType($fn);
-			my @stat = lstat($fn);
+			my @stat = $backend->stat($fn);
 			if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i) {
 				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate');
 				if ($enc =~ /gzip/i) {
@@ -1160,9 +1180,7 @@ sub _GET {
 					print $buffer;
 				}
 			}
-			close($F);
-		} else {
-			printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (cannot open file)');
+			$backend->closeFileHandle($F);
 		}
 	} else {
 		debug("GET: $fn NOT FOUND!");
@@ -1171,13 +1189,13 @@ sub _GET {
 	
 }
 sub _HEAD {
-	if (-d $PATH_TRANSLATED) {
+	if ($backend->isDir($PATH_TRANSLATED)) {
 		debug("_HEAD: $PATH_TRANSLATED is a folder!");
 		printHeaderAndContent('200 OK','httpd/unix-directory');
-	} elsif (-e $PATH_TRANSLATED) {
+	} elsif ($backend->exists($PATH_TRANSLATED)) {
 		debug("_HEAD: $PATH_TRANSLATED exists!");
 		printFileHeader($PATH_TRANSLATED);
-	} elsif ($PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/ && !-e $PATH_TRANSLATED) {
+	} elsif ($PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/ && !$backend->exists($PATH_TRANSLATED)) {
 		printFileHeader(-e $INSTALL_BASE.basename($PATH_TRANSLATED) ? $INSTALL_BASE.basename($PATH_TRANSLATED) : "${INSTALL_BASE}lib/".basename($PATH_TRANSLATED));
 	} else {
 		debug("_HEAD: $PATH_TRANSLATED does not exists!");
@@ -1205,9 +1223,9 @@ sub _POST {
 					$file = "" if $file eq '.';
 					debug("_POST: delete $PATH_TRANSLATED.$file");
 					if ($ENABLE_TRASH) {
-						moveToTrash($PATH_TRANSLATED.$file);
+						$backend->moveToTrash($PATH_TRANSLATED.$file);
 					} else {
-						$count += deltree($PATH_TRANSLATED.$file, \my @err);
+						$count += $backend->deltree($PATH_TRANSLATED.$file, \my @err);
 					}
 					logger("DELETE($PATH_TRANSLATED) via POST");
 				}
@@ -1224,7 +1242,7 @@ sub _POST {
 			if ($cgi->param('file')) {
 				if ($cgi->param('newname')) {
 					my @files = $cgi->param('file');
-					if (($#files > 0)&&(! -d $PATH_TRANSLATED.$cgi->param('newname'))) {
+					if (($#files > 0)&&(! $backend->isDir($PATH_TRANSLATED.$cgi->param('newname')))) {
 						$errmsg='renameerr';
 					} elsif ($cgi->param('newname')=~/\//) {
 						$errmsg='renamenotargeterr';
@@ -1234,7 +1252,7 @@ sub _POST {
 						          . ';p2='.$cgi->escape($cgi->param('newname'));
 						foreach my $file (@files) {
 							my $target = $PATH_TRANSLATED.$cgi->param('newname');
-							$target.='/'.$file if -d $target;
+							$target.='/'.$file if $backend->isDir($target);
 							if (rmove($PATH_TRANSLATED.$file, $target)) {
 								logger("MOVE $PATH_TRANSLATED$file to $target via POST");
 							} else {
@@ -1252,12 +1270,12 @@ sub _POST {
 			my $colname = $cgi->param('colname') || $cgi->param('colname1');
 			if ($colname ne "") {
 				$msgparam="p1=".$cgi->escape($colname);
-				if ($colname!~/\// && mkdir($PATH_TRANSLATED.$colname)) {
+				if ($colname!~/\// && $backend->mkcol($PATH_TRANSLATED.$colname)) {
 					logger("MKCOL($PATH_TRANSLATED$colname via POST");
 					$msg='foldercreated';
 				} else {
 					$errmsg='foldererr'; 
-					$msgparam.=';p2='.(-e $PATH_TRANSLATED.$colname ? $cgi->escape(_tl('folderexists')) : $cgi->escape(_tl($!)));
+					$msgparam.=';p2='.($backend->exists($PATH_TRANSLATED.$colname) ? $cgi->escape(_tl('folderexists')) : $cgi->escape(_tl($!)));
 				}
 			} else {
 				$errmsg='foldernothingerr';
@@ -1288,7 +1306,7 @@ sub _POST {
 				$msgparam=sprintf("p1=%04o",$mode);
 				foreach my $file ($cgi->param('file')) {
 					$file="" if $file eq '.';
-					changeFilePermissions($PATH_TRANSLATED.$file, $mode, $cgi->param('fp_type'), $ALLOW_CHANGEPERMRECURSIVE && $cgi->param('fp_recursive'));
+					$backend->changeFilePermissions($PATH_TRANSLATED.$file, $mode, $cgi->param('fp_type'), $ALLOW_CHANGEPERMRECURSIVE && $cgi->param('fp_recursive'));
 				}
 			} else {
 				$errmsg='chpermnothingerr';
@@ -1297,7 +1315,7 @@ sub _POST {
 			my $file = $cgi->param('file');
 			my $full = $PATH_TRANSLATED. $file;
 			my $regex = '('.join('|',@EDITABLEFILES).')';
-			if ($file!~/\// && $file=~/$regex/ && -f $full && -w $full) {
+			if ($file!~/\// && $file=~/$regex/ && $backend->isFile($full) && $backend->isWriteable($full)) {
 				$msgparam='edit='.$cgi->escape($file).'#editpos';
 			} else {
 				$errmsg='editerr';
@@ -1305,9 +1323,7 @@ sub _POST {
 			}
 		} elsif ($cgi->param('savetextdata') || $cgi->param('savetextdatacont')) {
 			my $file = $PATH_TRANSLATED . $cgi->param('filename');
-			if (-f $file && -w $file && open(F, ">$file")) {
-				print F $cgi->param('textdata');
-				close(F);
+			if ($backend->isFile($file) && $backend->isWriteable($file) && $backend->saveData($file, $cgi->param('textdata'))) {
 				$msg='textsaved';
 			} else {
 				$errmsg='savetexterr';
@@ -1317,18 +1333,16 @@ sub _POST {
 		} elsif ($cgi->param('createnewfile')) {
 			my $fn = $cgi->param('cnfname');
 			my $full = $PATH_TRANSLATED.$fn;
-			if (($IGNOREFILEPERMISSIONS || -w $PATH_TRANSLATED) && ($IGNOREFILEPERMISSIONS || !-e $full) && ($fn !~ /\//) && open(F,">>$full")) {
+			if ($backend->isWriteable($PATH_TRANSLATED) && !$backend->exists($full) && ($fn !~ /\//) && $backend->saveData($full,"",1)) {
 				$msg='newfilecreated';
-				print F "";
-				close(F);
 				$msgparam='p1='.$cgi->escape($fn);
 			} else {
-				$msgparam='p1='.$cgi->escape($fn).';p2='.(-e $full ? $cgi->escape(_tl('fileexists')) : $cgi->escape(_tl($!)));
+				$msgparam='p1='.$cgi->escape($fn).';p2='.($backend->exists($full) ? $cgi->escape(_tl('fileexists')) : $cgi->escape(_tl($!)));
 				$errmsg='createnewfileerr';
 			}
 		}
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam, $errmsg, $msgparam));
-	} elsif ($ALLOW_POST_UPLOADS && -d $PATH_TRANSLATED && defined $cgi->param('filesubmit')) {
+	} elsif ($ALLOW_POST_UPLOADS && $backend->isDir($PATH_TRANSLATED) && defined $cgi->param('filesubmit')) {
 		my @filelist;
 		$errmsg=undef;
 		$msgparam='';
@@ -1340,21 +1354,9 @@ sub _POST {
 			my $destination = $PATH_TRANSLATED.basename($rfn);
 			debug("_POST: save $filename to $destination.");
 			push(@filelist, basename($rfn));
-			if (open(O,">$destination")) {
-				if ($ENABLE_FLOCK && !flock(O, LOCK_EX | LOCK_NB)) {
-					close(O);
-					printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (flock failed)');
-					last;
-				}
-				while (read($filename,my $buffer,$BUFSIZE || 1048576)>0) {
-					print O $buffer;
-				}
-				flock(O, LOCK_UN) if $ENABLE_FLOCK;
-				close(O);
-			} else {
+			if (!$backend->saveStream($destination, $filename)) {
 				$errmsg='uploadforbidden';
 				if ($msgparam eq '') { $msgparam='p1='.$rfn; } else { $msgparam.=', '.$rfn; }
-				next;
 			}
 		}
 		if (!defined $errmsg) {
@@ -1367,34 +1369,20 @@ sub _POST {
 		}
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam,$errmsg,$msgparam));
 	} elsif ($ALLOW_ZIP_DOWNLOAD && defined $cgi->param('zip')) {
-		my $zip =  Archive::Zip->new();		
-		foreach my $file ($cgi->param('file')) {
-			if (-d $PATH_TRANSLATED.$file) {
-				$zip->addTree($PATH_TRANSLATED.$file, $file);
-			} else {
-				$zip->addFile($PATH_TRANSLATED.$file, $file);
-			}
-		}
 		my $zfn = basename($PATH_TRANSLATED).'.zip';
 		$zfn=~s/ /_/;
 		print $cgi->header(-status=>'200 OK', -type=>'application/zip',-Content_disposition=>'attachment; filename='.$zfn);
-		$zip->writeToFileHandle(\*STDOUT,0);
+		$backend->compressFiles(\*STDOUT, $PATH_TRANSLATED, $cgi->param('file'));
 	} elsif ($ALLOW_ZIP_UPLOAD && defined $cgi->param('uncompress')) {
 		my @zipfiles;
 		foreach my $fh ($cgi->param('zipfile_upload')) {
 			my $rfn= $fh;
 			$rfn=~s/\\/\//g; # fix M$ Windows backslashes
 			$rfn=basename($rfn);
-			if (open(F,">$PATH_TRANSLATED$rfn")) {
+
+			if ($backend->saveStream("$PATH_TRANSLATED$rfn", $fh)) {
 				push @zipfiles, $rfn;
-				print F $_ while (<$fh>);
-				close(F);
-				my $zip = Archive::Zip->new();
-				my $status = $zip->read($PATH_TRANSLATED.$rfn);
-				if ($status eq $zip->AZ_OK) {
-					$zip->extractTree(undef, $PATH_TRANSLATED);
-					unlink($PATH_TRANSLATED.$rfn);
-				}
+				$backend->unlinkFile($PATH_TRANSLATED.$rfn) if $backend->uncompressArchive("$PATH_TRANSLATED$rfn", $PATH_TRANSLATED);
 			}
 		}
 		if ($#zipfiles>-1) {
@@ -1429,7 +1417,7 @@ sub _POST {
 		$msg= undef if defined $errmsg;
 		$msgparam='p1='.$cgi->escape(substr(join(', ', defined $msg ? @success : @failed),0,150));
 		print $cgi->redirect($redirtarget.createMsgQuery($msg,$msgparam,$errmsg,$msgparam));
-	} elsif ($ENABLE_CALDAV_SCHEDULE && -d $PATH_TRANSLATED) {
+	} elsif ($ENABLE_CALDAV_SCHEDULE && $backend->isDir($PATH_TRANSLATED)) {
 		## NOT IMPLEMENTED YET
 	} else {
 		debug("_POST: forbidden POST to $PATH_TRANSLATED");
@@ -1441,8 +1429,8 @@ sub _OPTIONS {
 	my $methods;
 	my $status = '200 OK';
 	my $type;
-	if (-e $PATH_TRANSLATED) {
-		$type = -d $PATH_TRANSLATED ? 'httpd/unix-directory' : getMIMEType($PATH_TRANSLATED);
+	if ($backend->exists($PATH_TRANSLATED)) {
+		$type = $backend->isDir($PATH_TRANSLATED) ? 'httpd/unix-directory' : getMIMEType($PATH_TRANSLATED);
 		$methods = join(', ', @{getSupportedMethods($PATH_TRANSLATED)});
 	} else {
 		$status = '404 Not Found';
@@ -1470,12 +1458,12 @@ sub _GETLIB {
 	my $type=undef;
 	my $content="";
 	my $addheader="";
-	if (!-e $fn) {
+	if (!$backend->exists($fn)) {
 		$status='404 Not Found';
 		$type='text/plain';
 	} else {
 		my $su = $ENV{SCRIPT_URI};
-		$su=~s/\/[^\/]+$/\// if !-d $fn;
+		$su=~s/\/[^\/]+$/\// if !$backend->isDir($fn);
 		$addheader="MS-Doclib: $su";
 	}
 	printHeaderAndContent($status,$type,$content,$addheader);
@@ -1519,7 +1507,7 @@ sub _PROPFIND {
 		$depth=0;
 	}
 
-	if (!is_hidden($fn) && -e $fn) {
+	if (!is_hidden($fn) && $backend->exists($fn)) {
 		my ($props, $all, $noval) =  handlePropFindElement($xmldata);
 		if (defined $props) {
 			readDirRecursive($fn, $ru, \@resps, $props, $all, $noval, $depth, $noroot);
@@ -1545,9 +1533,9 @@ sub _PROPPATCH {
 	my $status = '403 Forbidden';
 	my $type = 'text/plain';
 	my $content = "";
-	if (-e $fn && !isAllowed($fn)) {
+	if ($backend->exists($fn) && !isAllowed($fn)) {
 		$status = '423 Locked';
-	} elsif (-e $fn) {
+	} elsif ($backend->exists($fn)) {
 		my $xml = join("",<>);
 
 
@@ -1587,7 +1575,7 @@ sub _PUT {
 
 	if (defined $cgi->http('Content-Range'))  {
 		$status='501 Not Implemented';
-	} elsif (-d dirname($PATH_TRANSLATED) && (!$IGNOREFILEPERMISSIONS  && !-w dirname($PATH_TRANSLATED))) {
+	} elsif ($backend->isDir($backend->getParent(($PATH_TRANSLATED))) && !$backend->isWriteable($backend->getParent(($PATH_TRANSLATED)))) {
 		$status='403 Forbidden';
 	} elsif (preConditionFailed($PATH_TRANSLATED)) {
 		$status='412 Precondition Failed';
@@ -1595,36 +1583,17 @@ sub _PUT {
 		$status='423 Locked';
 	#} elsif (defined $ENV{HTTP_EXPECT} && $ENV{HTTP_EXPECT} =~ /100-continue/) {
 	#	$status='417 Expectation Failed';
-	} elsif (-d dirname($PATH_TRANSLATED)) {
-		if (! -e $PATH_TRANSLATED) {
+	} elsif ($backend->isDir($backend->getParent(($PATH_TRANSLATED)))) {
+		if (! $backend->exists($PATH_TRANSLATED)) {
 			debug("_PUT: created...");
 			$status='201 Created';
 			$type='text/html';
 			$content = qq@<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head><title>201 Created</title></head>@
 				 . qq@<<body><h1>Created</h1><p>Resource $ENV{'QUERY_STRING'} has been created.</p></body></html>\n@;
 		}
-		if (open(my $f,">$PATH_TRANSLATED")) {
-			if ($ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
-				$status = '423 Locked';
-				$content=""; 
-				$type='text/plain';
-			} else {
-				binmode STDIN;
-				binmode $f;
-				my $maxread = 0;
-				while (my $read = read(STDIN, $buffer, $BUFSIZE || 1048576)>0) {
-					print $f $buffer;
-					$maxread+=$read;
-				}
-				flock($f, LOCK_UN) if $ENABLE_FLOCK;
-				close($f);
-				inheritLock();
-				if (exists $ENV{CONTENT_LENGTH} && $maxread != $ENV{CONTENT_LENGTH}) {
-					debug("_PUT: ERROR: maxread=$maxread, content-length: $ENV{CONTENT_LENGTH}");
-					#$status='400';
-				}
-				logger("PUT($PATH_TRANSLATED)");
-			}
+		if ($backend->saveStream($PATH_TRANSLATED, \*STDIN)) {
+			inheritLock();
+			logger("PUT($PATH_TRANSLATED)");
 		} else {
 			$status='403 Forbidden';
 			$content="";
@@ -1650,24 +1619,24 @@ sub _COPY {
 
 	if ( (!defined $destination) || ($destination eq "") || ($PATH_TRANSLATED eq $destination) ) {
 		$status = '403 Forbidden';
-	} elsif ( -e $destination && $overwrite eq "F") {
+	} elsif ( $backend->exists($destination) && $overwrite eq "F") {
 		$status = '412 Precondition Failed';
-	} elsif ( ! -d dirname($destination)) {
+	} elsif ( ! $backend->isDir($backend->getParent(($destination)))) {
 		$status = "409 Conflict - $destination";
-	} elsif ( !isAllowed($destination,-d $PATH_TRANSLATED) ) {
+	} elsif ( !isAllowed($destination,$backend->isDir($PATH_TRANSLATED)) ) {
 		$status = '423 Locked';
-	} elsif ( -d $PATH_TRANSLATED && $depth == 0 ) {
-		if (-e $destination) {
+	} elsif ( $backend->isDir($PATH_TRANSLATED) && $depth == 0 ) {
+		if ($backend->exists($destination)) {
 			$status = '204 No Content' ;
 		} else {
-			if (mkdir $destination) {
+			if ($backend->mkcol($destination)) {
 				inheritLock($destination);
 			} else {
 				$status = '403 Forbidden';
 			}
 		}
 	} else {
-		$status = '204 No Content' if -e $destination;
+		$status = '204 No Content' if $backend->exists($destination);
 		if (rcopy($PATH_TRANSLATED, $destination)) {
 			inheritLock($destination,1);
 			logger("COPY($PATH_TRANSLATED, $destination)");
@@ -1691,15 +1660,15 @@ sub _MOVE {
 
 	if ( (!defined $destination) || ($destination eq "") || ($PATH_TRANSLATED eq $destination) ) {
 		$status = '403 Forbidden';
-	} elsif ( -e $destination && $overwrite eq "F") {
+	} elsif ( $backend->exists($destination) && $overwrite eq "F") {
 		$status = '412 Precondition Failed';
-	} elsif ( ! -d dirname($destination)) {
+	} elsif ( ! $backend->isDir($backend->getParent($destination))) {
 		$status = "409 Conflict - ".dirname($destination);
-	} elsif (!isAllowed($PATH_TRANSLATED,-d $PATH_TRANSLATED) || !isAllowed($destination, -d $destination)) {
+	} elsif (!isAllowed($PATH_TRANSLATED,$backend->isDir($PATH_TRANSLATED)) || !isAllowed($destination, $backend->isDir($destination))) {
 		$status = '423 Locked';
 	} else {
-		unlink($destination) if -f $destination;
-		$status = '204 No Content' if -e $destination;
+		$backend->unlinkFile($destination) if $backend->isFile($destination);
+		$status = '204 No Content' if $backend->exists($destination);
 		if (rmove($PATH_TRANSLATED, $destination)) {
 			db_moveProperties($PATH_TRANSLATED, $destination);
 			db_delete($PATH_TRANSLATED);
@@ -1719,7 +1688,7 @@ sub _DELETE {
 	debug("_DELETE: $PATH_TRANSLATED");
 
 	my @resps = ();
-	if (!-e $PATH_TRANSLATED) {
+	if (!$backend->exists($PATH_TRANSLATED)) {
 		$status='404 Not Found';
 	} elsif (($REQUEST_URI=~/\#/ && $PATH_TRANSLATED!~/\#/) || (defined $ENV{QUERY_STRING} && $ENV{QUERY_STRING} ne "")) {
 		$status='400 Bad Request';
@@ -1727,9 +1696,9 @@ sub _DELETE {
 		$status='423 Locked';
 	} else {
 		if ($ENABLE_TRASH) {
-			$status='404 Forbidden' unless moveToTrash($PATH_TRANSLATED);
+			$status='404 Forbidden' unless $backend->moveToTrash($PATH_TRANSLATED);
 		} else {
-			deltree($PATH_TRANSLATED, \my @err);
+			$backend->deltree($PATH_TRANSLATED, \my @err);
 			logger("DELETE($PATH_TRANSLATED)");
 			for my $diag (@err) {
 				my ($file, $message) = each %$diag;
@@ -1773,22 +1742,22 @@ sub _MKCOL {
 			return;
 		}
 	} 
-	if (-e $PATH_TRANSLATED) {
+	if ($backend->exists($PATH_TRANSLATED)) {
+		debug("_MKCOL: folder exists (405 Method Not Allowed)!");
 		$status = '405 Method Not Allowed';
-	} elsif (!-e dirname($PATH_TRANSLATED)) {
+	} elsif (!$backend->exists($backend->getParent($PATH_TRANSLATED))) {
+		debug("_MKCOL: parent does not exists (409 Conflict)!");
 		$status = '409 Conflict';
-	} elsif (!$IGNOREFILEPERMISSIONS && !-w dirname($PATH_TRANSLATED)) {
+	} elsif (!$backend->isWriteable($backend->getParent($PATH_TRANSLATED))) {
+		debug("_MKCOL: parent is not writeable (403 Forbidden)!");
 		$status = '403 Forbidden';
 	} elsif (!isAllowed($PATH_TRANSLATED)) {
 		debug("_MKCOL: not allowed!");
 		$status = '423 Locked';
-	} elsif (-e $PATH_TRANSLATED) {
-		$status = '409 Conflict';
-	} elsif (-d dirname($PATH_TRANSLATED)) {
+	} elsif ($backend->isDir($backend->getParent($PATH_TRANSLATED))) {
 		debug("_MKCOL: create $PATH_TRANSLATED");
 
-
-		if (mkdir($PATH_TRANSLATED)) {
+		if ($backend->mkcol($PATH_TRANSLATED)) {
 			my (%resp_200, %resp_403);
 			handlePropertyRequest($body, $dataRef, \%resp_200, \%resp_403);
 			## ignore errors from property request
@@ -1820,7 +1789,7 @@ sub _LOCK {
 
 	my $token ="opaquelocktoken:".getuuid($fn);
 
-	if (!-e $fn && !-e dirname($fn)) {
+	if (!$backend->exists($fn) && !$backend->exists($backend->getParent($fn))) {
 		$status='409 Conflict';
 		$type='text/plain';
 	} elsif (!isLockable($fn, $xmldata)) {
@@ -1833,10 +1802,8 @@ sub _LOCK {
 			$status='423 Locked';
 			$type='text/plain';
 		}
-	} elsif (!-e $fn) {
-		if (open(F,">$fn")) {
-			print F '';
-			close(F);
+	} elsif (!$backend->exists($fn)) {
+		if ($backend->saveData($fn,'')) {
 			my $resp = lockResource($fn, $ru, $xmldata, $depth, $timeout,$token);
 			if (defined $$resp{multistatus}) {
 				$status = '207 Multi-Status'; 
@@ -1895,7 +1862,7 @@ sub _ACL {
 		$status='400 Bad Request';
 		$type='text/plain';
 		$content='400 Bad Request';
-	} elsif (!-e $fn) {
+	} elsif (!$backend->exists($fn)) {
 		$status = '404 Not Found';
 		$type = 'text/plain';
 		$content='404 Not Found';
@@ -1951,7 +1918,7 @@ sub _ACL {
 				printHeaderAndContent('400 Bad Request');
 				return;
 			}
-			my @stat = stat($fn);
+			my @stat = $backend->stat($fn);
 			my $mode = $stat[2];
 			$mode = $mode & 07777;
 			
@@ -1965,7 +1932,7 @@ sub _ACL {
 				$newperm = ($write>0) ? $newperm | $mask : $newperm & ~$mask;
 			}
 			debug("_ACL: old perm=".sprintf('%4o',$mode).", new perm=".sprintf('%4o',$newperm));
-			if (!chmod($newperm, $fn)) {
+			if (!$backend->changeMod($fn, $newperm)) {
 				$status='403 Forbidden';
 				$type='text/plain';
 				$content='403 Forbidden';
@@ -1995,7 +1962,7 @@ sub _REPORT {
 		$status='400 Bad Request';
 		$type='text/plain';
 		$content='400 Bad Request';
-	} elsif (!-e $fn && $ru ne $CURRENT_USER_PRINCIPAL) {
+	} elsif (!$backend->exists($fn) && $ru ne $CURRENT_USER_PRINCIPAL) {
 		$status = '404 Not Found';
 		$type = 'text/plain';
 		$content='404 Not Found';
@@ -2098,10 +2065,10 @@ sub _REPORT {
 				$nhref=~s/^$VIRTUAL_BASE//;
 				my $nfn.=$DOCUMENT_ROOT.$nhref;
 				debug("_REPORT: nfn=$nfn, href=$href");
-				if (!-e $nfn) {
+				if (!$backend->exists($nfn)) {
 					push @resps, { href=>$href, status=>'HTTP/1.1 404 Not Found' };
 					next;
-				} elsif (-d $nfn) {
+				} elsif ($backend->isDir($nfn)) {
 					push @resps, { href=>$href, status=>'HTTP/1.1 403 Forbidden' };
 					next;
 				}
@@ -2186,16 +2153,16 @@ sub _BIND {
 		my $ndst = $dst;
 		$ndst=~s /\/$//;
 
-		if (!-e $src) { 
+		if (!$backend->exists($src)) { 
 			$status ='404 Not Found';
-		} elsif ( -e $dst && ! -l $ndst) {
+		} elsif ($backend->exists($dst) && ! $backend->isLink($ndst)) {
 			$status = '403 Forbidden';
-		} elsif (-e $dst && -l $ndst && $overwrite eq "F") {
+		} elsif ($backend->exists($dst) && $backend->isLink($ndst) && $overwrite eq "F") {
 			$status = '403 Forbidden';
 		} else {
-			$status = -l $ndst ? '204 No Content' : '201 Created';
-			unlink($ndst) if -l $ndst;
-			$status = '403 Forbidden' if (!symlink($src, $dst));
+			$status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
+			$backend->unlinkFile($ndst) if $backend->isLink($ndst);
+			$status = '403 Forbidden' if (!$backend->createSymLink($src, $dst));
 		}
 	}
 	printHeaderAndContent($status, $type, $content);
@@ -2212,11 +2179,11 @@ sub _UNBIND {
 	} else {
 		my $segment = $$xmldata{'{DAV:}segment'};
 		my $dst = $PATH_TRANSLATED.$segment;
-		if (!-e $dst ) {
+		if (!$backend->exists($dst) ) {
 			$status = '404 Not Found';
-		} elsif (!-l $dst) {
+		} elsif (!$backend->isLink($dst)) {
 			$status = '403 Forbidden';
-		} elsif (!unlink($dst)) {
+		} elsif (!$backend->unlinkFile($dst)) {
 			$status = '403 Forbidden';
 		}
 	}
@@ -2244,49 +2211,24 @@ sub _REBIND {
 		my $nsrc = $src; $nsrc =~ s/\/$//;
 		my $ndst = $dst; $ndst =~ s/\/$//;
 
-		if (!-e $src) {
+		if (!$backend->exists($src)) {
 			$status = '404 Not Found';
-		} elsif (!-l $nsrc) { 
+		} elsif (!$backend->isLink($nsrc)) { 
 			$status = '403 Forbidden';
-		} elsif (-e $dst && $overwrite ne 'T') {
+		} elsif ($backend->exists($dst) && $overwrite ne 'T') {
 			$status = '403 Forbidden';
-		} elsif (-e $dst && !-l $ndst) {
+		} elsif ($backend->exists($dst) && !$backend->isLink($ndst)) {
 			$status = '403 Forbidden';
 		} else {
-			$status = -l $ndst ? '204 No Content' : '201 Created';
-			unlink($ndst) if -l $ndst;
-			if (!rename($nsrc, $ndst)) {
-				my $orig = readlink($nsrc);
-				$status = '403 Forbidden' unless symlink($orig, $dst) && unlink($nsrc);
+			$status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
+			$backend->unlinkFile($ndst) if $backend->isLink($ndst);
+			if (!rmove($nsrc, $ndst)) { ### check rename->rmove OK?
+				my $orig = $backend->getLinkSrc($nsrc);
+				$status = '403 Forbidden' unless $backend->createSymLink($orig, $dst) && $backend->unlinkFile($nsrc);
 			}
 		}
 	}
 	printHeaderAndContent($status, $type, $content);
-}
-sub changeFilePermissions {
-	my ($fn, $mode, $type, $recurse, $visited) = @_;
-	if ($type eq 's') {
-		chmod($mode, $fn);
-	} else {
-		my @stat = stat($fn);
-		my $newmode;
-		$newmode = $stat[2] | $mode if $type eq 'a';
-		$newmode = $stat[2] ^ ($stat[2] & $mode ) if $type eq 'r';
-		chmod($newmode, $fn);
-	}
-	my $nfn = File::Spec::Link->full_resolve($fn);
-	return if exists $$visited{$nfn};
-	$$visited{$nfn}=1;
-
-	if ($recurse && -d $fn) {
-		if (opendir(my $dir, $fn)) {
-			foreach my $f ( grep { !/^\.{1,2}$/ } readdir($dir)) {
-				$f.='/' if -d "$fn$f" && $f!~/\/$/;
-				changeFilePermissions($fn.$f, $mode, $type, $recurse, $visited);
-			}
-			closedir($dir);
-		}
-	}
 }
 sub buildExprFromBasicSearchWhereClause {
 	my ($op, $xmlref, $superop) = @_;
@@ -2354,7 +2296,7 @@ sub buildExprFromBasicSearchWhereClause {
 		my $content = ref($xmlref) eq "" ? $xmlref : $$xmlref{content};
 		my $cl = ref($xmlref) eq "" ? 'yes' : ($$xmlref{caseless} || $$xmlref{'{DAV:}caseless'} || 'yes');
 		$content=~s/\//\\\//g;
-		$expr="getFileContent(\$filename) =~ /\\Q$content\\E/s".($cl eq 'no'?'':'i');
+		$expr="\$backend->getFileContent(\$filename) =~ /\\Q$content\\E/s".($cl eq 'no'?'':'i');
 	} elsif ($op eq 'prop') {
 		my @props = keys %{$xmlref};
 		$props[0] =~ s/'/\\'/sg;
@@ -2405,8 +2347,8 @@ sub doBasicSearch {
 
 	return if defined $depth && $depth ne 'infinity' && $depth < 0 ;
 
-	$base.='/' if -d $base && $base !~ /\/$/;
-	$href.='/' if -d $base && $href !~ /\/$/;
+	$base.='/' if $backend->isDir($base) && $base !~ /\/$/;
+	$href.='/' if $backend->isDir($base) && $href !~ /\/$/;
 
 	my $filename = $base;
 	my $request_uri = $href;
@@ -2418,17 +2360,16 @@ sub doBasicSearch {
 		debug("doBasicSearch: $base MATCHED");
 		push @{$matches}, { fn=> $base, href=> $href };
 	}
-	my $nbase = File::Spec::Link->full_resolve($base);
+	my $nbase = $backend->resolve($base);
 	return if exists $$visited{$nbase} && ($depth eq 'infinity' || $depth < 0);
 	$$visited{$nbase}=1;
 
-	if ((-d $base)&&(opendir(my $d, $base))) {
-		foreach my $sf (grep { !/^\.{1,2}$/ } readdir($d)) {
+	if (($backend->isDir($base))&&(my @files = $backend->readDir($base))) {
+		foreach my $sf (grep { !/^\.{1,2}$/ } @files) {
 			my $nbase = $base.$sf;
 			my $nhref = $href.$sf;
 			doBasicSearch($expr, $base.$sf, $href.$sf, defined $depth  && $depth ne 'infinity' ? $depth - 1 : $depth, $limit, $matches, $visited);
 		}
-		closedir($d);
 	}
 }
 sub handleBasicSearch {
@@ -2461,7 +2402,7 @@ sub handleBasicSearch {
 		
 		debug("handleBasicSearch: base=$base (href=$href), depth=$depth, limit=$limit\n");
 
-		if (!-e $base) {
+		if (!$backend->exists($base)) {
 			push @{$error}, { 'search-scope-valid'=> { response=> { href=>$href, status=>'HTTP/1.1 404 Not Found' } } };
 			return;
 		}
@@ -2515,20 +2456,19 @@ sub readDirBySuffix {
 	my ($fn, $base, $hrefs, $suffix, $depth, $visited) = @_;
 	debug("readDirBySuffix($fn, ..., $suffix, $depth)");
 
-	my $nfn = File::Spec::Link->full_resolve($fn);
+	my $nfn = $backend->resolve($fn);
 	return if exists $$visited{$nfn} && ($depth eq 'infinity' || $depth < 0);
 	$$visited{$nfn}=1;
 
-	if (opendir(DIR,$fn)) {
-		foreach my $sf (grep { !/^\.{1,2}$/ } readdir(DIR)) {
-			$sf.='/' if -d $fn.$sf;
+	if (my @files = $backend->readDir($fn)) {
+		foreach my $sf (grep { !/^\.{1,2}$/ } @files) {
+			$sf.='/' if $backend->isDir($fn.$sf);
 			my $nbase=$base.$sf;
-			push @{$hrefs}, $nbase if -f $fn.$sf && $sf =~ /\.\Q$suffix\E/;
-			readDirBySuffix($fn.$sf, $nbase, $hrefs, $suffix, $depth - 1, $visited) if $depth!=0 && -d $fn.$sf;
+			push @{$hrefs}, $nbase if $backend->isFile($fn.$sf) && $sf =~ /\.\Q$suffix\E/;
+			readDirBySuffix($fn.$sf, $nbase, $hrefs, $suffix, $depth - 1, $visited) if $depth!=0 && $backend->isDir($fn.$sf);
 			## XXX add only files with requested components 
 			## XXX filter (comp-filter > comp-filter >)
 		}
-		closedir(DIR);
 	}
 }
 sub handlePropFindElement {
@@ -2592,19 +2532,15 @@ sub getPropStat {
 
 	debug("getPropStat($fn,$uri,...)");
 
-	### +++ AFS fix
-	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
-	### --- AFS fix
+	my $isReadable = $backend->isReadable($fn);
 
-	my $nfn = $isReadable ? File::Spec::Link->full_resolve($fn) : $fn;
+	my $nfn = $isReadable ? $backend->resolve($fn) : $fn;
 
-	my @stat = $isReadable ? stat($fn) : ();
+	my @stat = $isReadable ? $backend->stat($fn) : ();
 	my %resp_200 = (status=>'HTTP/1.1 200 OK');
 	my %resp_404 = (status=>'HTTP/1.1 404 Not Found');
 
-	### +++ AFS fix
-	my $isDir = $ENABLE_AFS ? checkAFSAccess($nfn) && -d $nfn : -d $fn;
-	### --- AFS fix
+	my $isDir = $backend->isDir($nfn);
 
 	$fn .= '/' if $isDir && $fn!~/\/$/;
 	foreach my $prop (@{$props}) {
@@ -2646,12 +2582,10 @@ sub getProperty {
 	my ($fn, $uri, $prop, $statRef, $resp_200, $resp_404) = @_;
 	#debug("getProperty: fn=$fn, uri=$uri, prop=$prop");
 
-	### +++ AFS fix
-	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
-	my $isDir = $isReadable && -d $fn;
-	### --- AFS fix
+	my $isReadable = $backend->isReadable($fn);
+	my $isDir = $backend->isDir($fn);
 
-	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : ($isReadable ? stat($fn) : ());
+	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : ($isReadable ? $backend->stat($fn) : ());
 
 	$$resp_200{prop}{creationdate}=strftime('%Y-%m-%dT%H:%M:%SZ' ,gmtime($ctime)) if $prop eq 'creationdate';
 	$$resp_200{prop}{displayname}=$cgi->escape(basename($uri)) if $prop eq 'displayname' && !defined $$resp_200{prop}{displayname};
@@ -2671,7 +2605,7 @@ sub getProperty {
 		}
 	}
 
-	$$resp_200{prop}{executable}=($isReadable && -x $fn )?'T':'F' if $prop eq 'executable';
+	$$resp_200{prop}{executable}=($isReadable && $backend->isExecutable($fn) )?'T':'F' if $prop eq 'executable';
 
 	$$resp_200{prop}{source}={ 'link'=> { 'src'=>$uri, 'dst'=>$uri }} if $prop eq 'source';
 
@@ -2693,7 +2627,7 @@ sub getProperty {
 	$$resp_200{prop}{ishidden}=(basename($fn)=~/^\./?1:0) if $prop eq 'ishidden';
 	$$resp_200{prop}{isstructureddocument}=0 if $prop eq 'isstructureddocument';
 	$$resp_200{prop}{hassubs}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'hassubs';
-	$$resp_200{prop}{nosubs}=($isDir?(-w $fn?1:0):1) if $prop eq 'nosubs';
+	$$resp_200{prop}{nosubs}=($isDir?($backend->isWriteable($fn)?1:0):1) if $prop eq 'nosubs';
 	$$resp_200{prop}{objectcount}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'objectcount';
 	$$resp_200{prop}{reserved}=0 if $prop eq 'reserved';
 	$$resp_200{prop}{visiblecount}=($isDir?getDirInfo($fn,$prop,\%FILEFILTERPERDIR,\%FILECOUNTPERDIRLIMIT,$FILECOUNTLIMIT):0) if $prop eq 'visiblecount';
@@ -2707,7 +2641,7 @@ sub getProperty {
 	$$resp_200{prop}{Win32CreationTime}=strftime('%a, %d %b %Y %T GMT' ,gmtime($ctime)) if $prop eq 'Win32CreationTime';
 	if ($prop eq 'Win32FileAttributes') {
 		my $fileattr = 128 + 32; # 128 - Normal, 32 - Archive, 4 - System, 2 - Hidden, 1 - Read-Only
-		$fileattr+=1 unless !$IGNOREFILEPERMISSIONS && -w $fn;
+		$fileattr+=1 unless $backend->isWriteable($fn);
 		$fileattr+=2 if basename($fn)=~/^\./;
 		$$resp_200{prop}{Win32FileAttributes}=sprintf("%08x",$fileattr);
 	}
@@ -2716,7 +2650,7 @@ sub getProperty {
 	$$resp_200{prop}{name}=$cgi->escape(basename($fn)) if $prop eq 'name';
 	$$resp_200{prop}{href}=$uri if $prop eq 'href';
 	$$resp_200{prop}{parentname}=$cgi->escape(basename(dirname($uri))) if $prop eq 'parentname';
-	$$resp_200{prop}{isreadonly}=(!$IGNOREFILEPERMISSIONS && !-w $fn?1:0) if $prop eq 'isreadonly';
+	$$resp_200{prop}{isreadonly}=(!$backend->isWriteable($fn)?1:0) if $prop eq 'isreadonly';
 	$$resp_200{prop}{isroot}=($fn eq $DOCUMENT_ROOT?1:0) if $prop eq 'isroot';
 	$$resp_200{prop}{getcontentclass}=($isDir?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'getcontentclass';
 	$$resp_200{prop}{contentclass}=($isDir?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'contentclass';
@@ -2752,10 +2686,10 @@ sub getProperty {
 		$$resp_200{prop}{'calendar-home-set'}{href}=getCalendarHomeSet($uri) if $prop eq 'calendar-home-set';
 		$$resp_200{prop}{'calendar-user-address-set'}{href}= $CURRENT_USER_PRINCIPAL if $prop eq 'calendar-user-address-set';
 		$$resp_200{prop}{'calendar-user-type'}='INDIVIDUAL' if $prop eq 'calendar-user-type';
-		##$$resp_200{prop}{'calendar-data'}='<![CDATA['.getFileContent($fn).']]>' if $prop eq 'calendar-data';
+		##$$resp_200{prop}{'calendar-data'}='<![CDATA['.$backend->getFileContent($fn).']]>' if $prop eq 'calendar-data';
 		if ($prop eq 'calendar-data') {
 			if ($fn=~/\.ics$/i) {
-				$$resp_200{prop}{'calendar-data'}=$cgi->escapeHTML(getFileContent($fn));
+				$$resp_200{prop}{'calendar-data'}=$cgi->escapeHTML($backend->getFileContent($fn));
 			} else {
 				$$resp_404{prop}{'calendar-data'}=undef;
 			}
@@ -2774,7 +2708,7 @@ sub getProperty {
 	if ($ENABLE_CARDDAV) {
 		if ($prop eq 'address-data') {
 			if ($fn =~ /\.vcf$/i) {
-				$$resp_200{prop}{'address-data'}=$cgi->escapeHTML(getFileContent($fn));
+				$$resp_200{prop}{'address-data'}=$cgi->escapeHTML($backend->getFileContent($fn));
 			} else {
 				$$resp_404{prop}{'address-data'}=undef;
 			}
@@ -2817,7 +2751,7 @@ sub getProperty {
 	}
 
 	if ($prop eq 'resource-id') {
-		my $e = getETag(File::Spec::Link->full_resolve($fn));
+		my $e = getETag($backend->resolve($fn));
 		$e=~s/"//g;
 		$$resp_200{prop}{'resource-id'} = 'urn:uuid:'.$e;
 	}
@@ -2938,25 +2872,6 @@ sub getMIMEType {
 	my @t = grep /\b\Q$extension\E\b/i, keys %MIMETYPES;
 	return $#t>-1 ? $MIMETYPES{$t[0]} : $MIMETYPES{default};
 }
-sub cmp_files {
-	my $fp_a = $PATH_TRANSLATED.$a;
-	my $fp_b = $PATH_TRANSLATED.$b;
-	my $factor = ($ORDER =~/_desc$/) ? -1 : 1;
-	## +++ AFS fix
-	return $factor * ( $a cmp $b ) if $ENABLE_AFS && !checkAFSAccess($fp_a) && !checkAFSAccess($fp_b);
-	return $factor if $ENABLE_AFS && !checkAFSAccess($fp_a);
-	return $factor if $ENABLE_AFS && !checkAFSAccess($fp_b);
-	## --- AFS fix
-	return -1 if -d $fp_a && !-d $fp_b;
-	return 1 if !-d $fp_a && -d $fp_b;
-	if ($ORDER =~ /^(lastmodified|size|mode)/) {
-		my $idx = $ORDER=~/lastmodified/? 9 : $ORDER=~/mode/? 2 : 7;
-		return $factor * ( (stat($fp_a))[$idx] <=> (stat($fp_b))[$idx] || $a cmp $b );
-	} elsif ($ORDER =~ /mime/) {
-		return $factor * ( getMIMEType($a) cmp getMIMEType($b) || $a cmp $b);
-	}
-	return $factor * ($a cmp $b);
-}
 sub getfancyfilename {
 	my ($full,$s,$m,$fn,$isUnReadable) = @_;
 	my $ret = $s;
@@ -2964,10 +2879,10 @@ sub getfancyfilename {
 
 	$full = '/' if $full eq '//'; # fixes root folder navigation bug
 
-	$full.="?$q" if defined $q && defined $fn && !$isUnReadable && -d $fn;
+	$full.="?$q" if defined $q && defined $fn && !$isUnReadable && $backend->isDir($fn);
 	my $fntext = $s;
 	$fntext =substr($s,0,$MAXFILENAMESIZE-3) if length($s)>$MAXFILENAMESIZE;
-	my $linkit =  $IGNOREFILEPERMISSIONS || $fn=~/^\.{1,2}$/ || (!-d $fn && -r $fn) || -x $fn ;
+	my $linkit =  $fn=~/^\.{1,2}$/ || (!$backend->isDir($fn) && $backend->isReadable($fn)) || $backend->isExecutable($fn);
 
 	$ret = $linkit ? $cgi->a({href=>$full,title=>$s},$cgi->escapeHTML($fntext)) : $cgi->escapeHTML($fntext);
 	$ret .=  length($s)>$MAXFILENAMESIZE ? '...' : (' 'x($MAXFILENAMESIZE-length($s)));
@@ -2983,7 +2898,7 @@ sub getfancyfilename {
 	$id=~s/\"//g;
 	
 	my $cssclass='icon';
-	if ($ENABLE_THUMBNAIL && !$isUnReadable && -r $fn && !-z $fn && hasThumbSupport($m))  {
+	if ($ENABLE_THUMBNAIL && $backend->isReadable($fn) && !$backend->isEmpty($fn) && hasThumbSupport($m))  {
 		$icon=$full.($full=~/\?.*/?';':'?').'action=thumb';
 		if ($THUMBNAIL_WIDTH && $ICON_WIDTH < $THUMBNAIL_WIDTH) {
 			$cssclass='thumb';
@@ -2995,58 +2910,10 @@ sub getfancyfilename {
 	$ret = ($linkit ? $cgi->a(  {href=>$full,title=>$s}, $img):$img).' '.$ret;
 	return $ret;
 }
-sub deltree {
-	my ($f,$errRef) = @_;
-	$errRef=[] unless defined $errRef;
-	my $count = 0;
-	my $nf = $f; $nf=~s/\/$//;
-	if (!isAllowed($f,1)) {
-		debug("Cannot delete $f: not allowed");
-		push(@$errRef, { $f => "Cannot delete $f" });
-	} elsif (-l $nf) {
-		if (unlink($nf)) {
-			$count++;
-			db_deleteProperties($f);
-			db_delete($f);
-		} else {
-			push(@$errRef, { $f => "Cannot delete '$f': $!" });
-		}
-	} elsif (-d $f) {
-		if (opendir(DIR,$f)) {
-			foreach my $sf (grep { !/^\.{1,2}$/ } readdir(DIR)) {
-				my $full = $f.$sf;
-				$full.='/' if -d $full && $full!~/\/$/;
-				$count+=deltree($full,$errRef);
-			}
-			closedir(DIR);
-			if (rmdir $f) {
-				$count++;
-				$f.='/' if $f!~/\/$/;
-				db_deleteProperties($f);
-				db_delete($f);
-			} else {
-				push(@$errRef, { $f => "Cannot delete '$f': $!" });
-			}
-		} else {
-			push(@$errRef, { $f => "Cannot open '$f': $!" });
-		}
-	} elsif (-e $f) {
-		if (unlink($f)) {	
-			$count++;
-			db_deleteProperties($f);
-			db_delete($f);
-		} else {
-			push(@$errRef, { $f  => "Cannot delete '$f' : $!" }) ;
-		}
-	} else {
-		push(@$errRef, { $f => "File/Folder '$f' not found" });
-	}
-	return $count;
-}
 sub getETag {
 	my ($file) = @_;
 	$file = $PATH_TRANSLATED unless defined $file;
-	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
+	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $backend->stat($file);
 	my $digest = new Digest::MD5;
 	$digest->add($file);
 	$digest->add($size);
@@ -3097,7 +2964,7 @@ sub printCompressedHeaderAndContent {
 }
 sub printFileHeader {
 	my ($fn,$addheader) = @_;
-	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($fn);
+	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $backend->stat($fn);
 	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET);
 	%ha = (%ha, %{$addheader}) if $addheader;
 	my $header = $cgi->header(\%ha);
@@ -3134,7 +3001,7 @@ sub isLockedRecurse {
 }
 sub isLocked {
 	my ($fn) = @_;
-	$fn.='/' if -d $fn && $fn !~/\/$/;
+	$fn.='/' if $backend->isDir($fn) && $fn !~/\/$/;
 	my $rows = db_get($fn);
 	return ($#{$rows}>-1)?1:0;
 }
@@ -3144,9 +3011,9 @@ sub isLockable  { # check lock and exclusive
 	my $lockscope = @lockscopes && $#lockscopes >-1 ? $lockscopes[0] : 'exclusive';
 
 	my $rowsRef;
-	if (! -e $fn) {
-		$rowsRef = db_get(dirname($fn).'/');
-	} elsif (-d $fn) {
+	if (! $backend->exists($fn)) {
+		$rowsRef = db_get($backend->getParent($fn).'/');
+	} elsif ($backend->isDir($fn)) {
 		$rowsRef = db_getLike("$fn\%");
 	} else {
 		$rowsRef = db_get($fn);
@@ -3217,19 +3084,18 @@ sub lockResource {
 		$resp{multistatus}{response}[$n]{href}=$ru;
 		$resp{multistatus}{response}[$n]{status}='HTTP/1.1 403 Forbidden';
 	}
-	my $nfn = File::Spec::Link->full_resolve($fn);
+	my $nfn = $backend->resolve($fn);
 	return \%resp if exists $$visited{$nfn};
 	$$visited{$nfn}=1;
 
-	if (-d $fn && (lc($depth) eq 'infinity' || $depth>0)) {
+	if ($backend->isDir($fn) && (lc($depth) eq 'infinity' || $depth>0)) {
 		debug("lockResource: depth=$depth");
-		if (opendir(DIR,$fn)) {
-
-			foreach my $f ( grep { !/^(\.|\.\.)$/ } readdir(DIR)) {
+		if (my @files = $backend->readDir($fn)) {
+			foreach my $f ( grep { !/^(\.|\.\.)$/ } @files) {
 				my $nru = $ru.$f;
 				my $nfn = $fn.$f;
-				$nru.='/' if -d $nfn;
-				$nfn.='/' if -d $nfn;
+				$nru.='/' if $backend->isDir($nfn);
+				$nfn.='/' if $backend->isDir($nfn);
 				debug("lockResource: $nfn, $nru");
 				my $subreqresp = lockResource($nfn, $nru, $xmldata, lc($depth) eq 'infinity'?$depth:$depth-1, $timeout, $token, defined $base?$base:$fn, $visited);
 				if (defined $$subreqresp{multistatus}) {
@@ -3238,7 +3104,6 @@ sub lockResource {
 					push @prop, @{$$subreqresp{prop}{lockdiscovery}} if exists $$subreqresp{prop};
 				}
 			}
-			closedir(DIR);
 		} else {
 			my $n = $#{$resp{multistatus}{response}} +1;
 			$resp{multistatus}{response}[$n]{href}=$ru;
@@ -3256,7 +3121,7 @@ sub unlockResource {
 }
 sub preConditionFailed {
 	my ($fn) = @_;
-	$fn = dirname($fn).'/' if ! -e $fn;
+	$fn = $backend->getParent($fn).'/' if ! $backend->exists($fn);
 	my $ifheader = getIfHeaderComponents($cgi->http('If'));
 	my $rowsRef = db_get( $fn );
 	my $t =0; # token found
@@ -3284,7 +3149,7 @@ sub preConditionFailed {
 sub isAllowed {
 	my ($fn, $recurse) = @_;
 	
-	$fn = dirname($fn).'/' if ! -e $fn;
+	$fn = $backend->getParent($fn).'/' if ! $backend->exists($fn);
 	debug("isAllowed($fn,$recurse) called.");
 
 	return 1 unless $ENABLE_LOCK;
@@ -3292,7 +3157,7 @@ sub isAllowed {
 	my $ifheader = getIfHeaderComponents($cgi->http('If'));
 	my $rowsRef = $recurse ? db_getLike("$fn%") : db_get( $fn );
 
-	return 0 if -e $fn && (!$IGNOREFILEPERMISSIONS && !-w $fn); # not writeable
+	return 0 if $backend->exists($fn) && !$backend->isWriteable($fn); # not writeable
 	return 1 if $#{$rowsRef}==-1; # no lock
 	return 0 unless defined $ifheader;
 	my $ret = 0;
@@ -3314,11 +3179,11 @@ sub inheritLock {
 	my ($fn,$checkContent, $visited) = @_;
 	$fn =  $PATH_TRANSLATED unless defined $fn;
 
-	my $nfn = File::Spec::Link->full_resolve($fn);
+	my $nfn = $backend->resolve($fn);
 	return if exists $$visited{$nfn};
 	$$visited{$nfn}=1;
 
-	my $bfn = dirname($fn).'/';
+	my $bfn = $backend->getParent($fn).'/';
 
 	debug("inheritLock: check lock for $bfn ($fn)");
 	my $rows = db_get($bfn);
@@ -3330,17 +3195,16 @@ sub inheritLock {
 		debug("inheritLock: $fn is locked");
 	}
 	my $row = $$rows[0];
-	if (-d $fn) {
+	if ($backend->isDir($fn)) {
 		debug("inheritLock: $fn is a collection");
 		db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
-		if (opendir(DIR,$fn)) {
-			foreach my $f (grep { !/^(\.|\.\.)$/ } readdir(DIR)) {
+		if (my @files = $backend->readDir($fn)) {
+			foreach my $f (grep { !/^(\.|\.\.)$/ } @files) {
 				my $full = $fn.$f;
-				$full .='/' if -d $full && $full !~/\/$/;
+				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
 				db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 				inheritLock($full,undef,$visited);
 			}
-			closedir(DIR);
 		}
 	} else {
 		db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
@@ -3363,10 +3227,8 @@ sub getIfHeaderComponents {
 sub readDirRecursive {
 	my ($fn, $ru, $respsRef, $props, $all, $noval, $depth, $noroot, $visited) = @_;
 	return if is_hidden($fn);
-	### +++ AFS fix
-	my $isReadable = $ENABLE_AFS ? checkAFSAccess($fn) : 1;
-	### --- AFS fix
-	my $nfn = $isReadable ?  File::Spec::Link->full_resolve($fn) : $fn;
+	my $isReadable = $backend->isReadable($fn);
+	my $nfn = $isReadable ?  $backend->resolve($fn) : $fn;
 	unless ($noroot) {
 		my %response = ( href=>$ru );
 		$response{href}=$ru;
@@ -3381,7 +3243,7 @@ sub readDirRecursive {
 	}
 	return if exists $$visited{$nfn} && !$noroot && ($depth eq 'infinity' || $depth<0);
 	$$visited{$nfn} = 1;
-	if ($depth!=0 &&  $isReadable && -d $nfn ) {
+	if ($depth!=0 &&  $isReadable && $backend->isDir($nfn) ) {
 		if (!defined $FILECOUNTPERDIRLIMIT{$fn} || $FILECOUNTPERDIRLIMIT{$fn}>0) {
 			if (defined $FILEFILTERPERDIR{$fn} && _tl('webdavfolderisfiltered') ne 'webdavfolderisfiltered') {
 				my $fru = $ru.$cgi->escape(_tl('webdavfolderisfiltered'));
@@ -3391,12 +3253,11 @@ sub readDirRecursive {
 					propstat=> getPropStat($nfn,$fru,$props,$all,$noval),
 				};
 			}
-			foreach my $f ( sort cmp_files @{readDir($fn)}) {
+			foreach my $f ( sort cmp_files @{$backend->readDir($fn)}) {
 				my $fru=$ru.$cgi->escape($f);
-				###$fru.='/' if -d "$nfn/$f" && $fru!~/\/$/;
-				$isReadable = $ENABLE_AFS ? checkAFSAccess("$nfn/$f") : 1;
-				my $nnfn = $isReadable ? File::Spec::Link->full_resolve("$nfn/$f") : "$nfn/$f";
-				$fru.='/' if $isReadable && -d $nnfn && $fru!~/\/$/;
+				$isReadable = $backend->isReadable("$nfn/$f");
+				my $nnfn = $isReadable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
+				$fru.='/' if $isReadable && $backend->isDir($nnfn) && $fru!~/\/$/;
 				readDirRecursive($nnfn, $fru, $respsRef, $props, $all, $noval, $depth>0?$depth-1:$depth, 0, $visited);
 			}
 		}
@@ -3683,7 +3544,7 @@ sub setProperty {
 	if ($propname eq '{http://apache.org/dav/props/}executable') {
 		my $executable = $$elementParentRef{$propname}{'content'};
 		if (defined $executable) {
-			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($fn);
+			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $backend->stat($fn);
 			chmod( ($executable=~/F/) ? $mode & 0666 : $mode | 0111, $fn);
 			$$resp_200{href}=$ru;
 			$$resp_200{propstat}{prop}{executable}=$executable;
@@ -3733,87 +3594,6 @@ sub setProperty {
 		}
 	}
 }
-sub rcopy {
-	my ($src,$dst,$move,$depth) = @_;
-	
-	$depth=0 unless defined $depth;
-
-	return 0 if defined $LIMIT_FOLDER_DEPTH && $LIMIT_FOLDER_DEPTH > 0 && $depth > $LIMIT_FOLDER_DEPTH;
-
-	# src == dst ?
-	return 0 if $src eq $dst;
-
-	# src in dst?
-	return 0 if -d $src && $dst =~ /^\Q$src\E/;
-
-	# src exists and readable?
-	return 0 if ! -e $src || (!$IGNOREFILEPERMISSIONS && !-r $src);
-
-	# dst writeable?
-	return 0 if -e $dst && (!$IGNOREFILEPERMISSIONS && !-w $dst);
-
-	my $nsrc = $src;
-	$nsrc =~ s/\/$//; ## remove trailing slash for link test (-l)
-	
-	if ( -l $nsrc) { # link
-		if (!$move || !rename($nsrc, $dst)) {
-			my $orig = readlink($nsrc);
-			return 0 if ( !$move || unlink($nsrc) ) && !symlink($orig,$dst); 
-		}
-	} elsif ( -f $src ) { # file
-		if (-d $dst) {
-			$dst.='/' if $dst !~/\/$/;
-			$dst.=basename($src);
-		}
-		if (!$move || !rename($src,$dst)) {
-			return 0 unless open(SRC,"<$src");
-			return 0 unless open(DST,">$dst");
-			my $buffer;
-			while (read(SRC,$buffer,$BUFSIZE || 1048576)>0) {
-				print DST $buffer;
-			}
-
-			close(SRC);
-			close(DST);
-			if ($move) {
-				return 0 if !$IGNOREFILEPERMISSIONS && !-w $src;
-				return 0 unless unlink($src);
-			}
-		}
-	} elsif ( -d $src ) {
-		# cannot write folders to files:
-		return 0 if -f $dst;
-
-		$dst.='/' if $dst !~ /\/$/;
-		$src.='/' if $src !~ /\/$/;
-
-		if (!$move || getDirInfo($src,'realchildcount')>0 || !rename($src,$dst)) {
-			mkdir $dst unless -e $dst;
-
-			return 0 unless opendir(SRC,$src);
-			my $rret = 1;
-			foreach my $filename (grep { !/^\.{1,2}$/ } readdir(SRC)) {
-				$rret = $rret && rcopy($src.$filename, $dst.$filename, $move, $depth+1);
-			}
-			closedir(SRC);
-			if ($move) {
-				return 0 if !$IGNOREFILEPERMISSIONS && !-w $src;
-				return 0 unless $rret && rmdir($src);
-			}
-		}
-	} else {
-		return 0;
-	}
-	db_deleteProperties($dst);
-	db_copyProperties($src,$dst);
-	db_deleteProperties($src) if $move;
-	
-	return 1;
-}
-sub rmove {
-	my ($src, $dst) = @_;
-	return rcopy($src, $dst, 1);
-}
 sub getQuota {
 	my ($fn) = @_;
 	$fn = $PATH_TRANSLATED unless defined $fn;
@@ -3853,18 +3633,17 @@ sub getDirInfo {
 	my ($fn, $prop, $filter, $limit, $max) = @_;
 	return $CACHE{getDirInfo}{$fn}{$prop} if defined $CACHE{getDirInfo}{$fn}{$prop};
 	my %counter = ( childcount=>0, visiblecount=>0, objectcount=>0, hassubs=>0 );
-	if (opendir(DIR,$fn)) {
-		foreach my $f ( grep { !/^\.{1,2}$/ } readdir(DIR)) {
+	if (my @files = $backend->readDir($fn)) { 
+		foreach my $f ( grep { !/^\.{1,2}$/ } @files) {
 			$counter{realchildcount}++;
 			if (!is_hidden("$fn/$f")) {
 				next if defined $filter && defined $$filter{$fn} && $f !~ $$filter{$fn};
 				$counter{childcount}++;
 				last if (defined $limit && defined $$limit{$fn} && $counter{childcount} >= $$limit{$fn}) || (!defined $$limit{$fn} && defined $max && $counter{childcount} >= $max);
-				$counter{visiblecount}++ if !-d "$fn/$f" && $f !~/^\./;
-				$counter{objectcount}++ if !-d "$fn/$f";
+				$counter{visiblecount}++ if !$backend->isDir("$fn/$f") && $f !~/^\./;
+				$counter{objectcount}++ if !$backend->isDir("$fn/$f");
 			}
 		}
-		closedir(DIR);
 	}
 	$counter{hassubs} = ($counter{childcount}-$counter{objectcount} > 0 )? 1:0;
 
@@ -3945,13 +3724,13 @@ sub getACLCurrentUserPrivilegeSet {
 	my ($fn) = @_;
 
 	my $usergrant;
-	if ($IGNOREFILEPERMISSIONS || -r $fn) {
+	if ($backend->isReadable($fn)) {
 		push @{$$usergrant{privilege}},{read  => undef };
 		push @{$$usergrant{privilege}},{'read-acl'  => undef };
 		push @{$$usergrant{privilege}},{'read-current-user-privilege-set'  => undef };
 		push @{$$usergrant{privilege}},{'read-free-busy'  => undef };
 		push @{$$usergrant{privilege}},{'schedule-query-freebusy'  => undef };
-		if ($IGNOREFILEPERMISSIONS || -w $fn) {
+		if ($backend->isWriteable($fn)) {
 			push @{$$usergrant{privilege}},{write => undef };
 			push @{$$usergrant{privilege}},{'write-acl' => undef };
 			push @{$$usergrant{privilege}},{'write-content'  => undef };
@@ -4029,41 +3808,6 @@ sub getNameSpace {
 sub getNameSpaceUri {
 	my  ($prop) = @_;
 	return $NAMESPACEABBR{getNameSpace($prop)};
-}
-sub getFileContent {
-	my ($fn) = @_;
-	debug("getFileContent($fn)");
-	my $content="";
-	if (-e $fn && !-d $fn && open(F,"<$fn")) {
-		$content = join("",<F>);
-		close(F);
-	}
-	return $content;
-}
-sub moveToTrash  {
-	my ($fn) = @_;
-
-	my $ret = 0;
-	my $etag = getETag($fn); ## get a unique name for trash folder
-	$etag=~s/\"//g;
-	my $trash = "$TRASH_FOLDER$etag/";
-
-	if ($fn =~ /^\Q$TRASH_FOLDER\E/) { ## delete within trash
-		my @err;
-		deltree($fn, \@err);
-		$ret = 1 if $#err == -1;
-		debug("moveToTrash($fn)->/dev/null = $ret");
-	} elsif (-e $TRASH_FOLDER || mkdir($TRASH_FOLDER)) {
-		if (-e $trash) {
-			my $i=0;
-			while (-e $trash) { ## find unused trash folder
-				$trash="$TRASH_FOLDER$etag".($i++).'/';
-			}
-		}
-		$ret = 1 if mkdir($trash) && rmove($fn, $trash.basename($fn));
-		debug("moveToTrash($fn)->$trash = $ret");
-	}
-	return $ret;
 }
 sub getChangeDirForm {
 	my ($ru) = @_;
@@ -4250,7 +3994,7 @@ sub renderEditTextView {
 		 $cgi->hidden(-id=>'filename', -name=>'filename', -value=>$cgi->param('edit'))
 		.$cgi->hidden(-id=>'mimetype',-name=>'mimetype', -value=>getMIMEType($file))
 		.$cgi->div({-class=>'textdata'},
-			$cgi->textarea({-id=>'textdata',-class=>'textdata '.$ff,-name=>'textdata', -autofocus=>'autofocus',-default=>getFileContent($file), -rows=>$rows, -cols=>$cols})
+			$cgi->textarea({-id=>'textdata',-class=>'textdata '.$ff,-name=>'textdata', -autofocus=>'autofocus',-default=>$backend->getFileContent($file), -rows=>$rows, -cols=>$cols})
 			)
 		.$cgi->div({-class=>'textdatabuttons'},
 				$cgi->button(-value=>_tl('cancel'), -onclick=>'if (window.confirm("'._tl('canceledit').'")) window.location.href="'.$REQUEST_URI.'";')
@@ -4341,7 +4085,7 @@ sub renderPropertiesViewer {
 	$content .= replaceVars($HEADER) if defined $HEADER;
 	my $fullparent = dirname($REQUEST_URI) .'/';
 	$fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
-	$content .=$cgi->h2( { -class=>'foldername' }, (-d $fn ? getQuickNavPath($REQUEST_URI,getQueryParams()) 
+	$content .=$cgi->h2( { -class=>'foldername' }, ($backend->isDir($fn) ? getQuickNavPath($REQUEST_URI,getQueryParams()) 
 				     : getQuickNavPath($fullparent,getQueryParams())
 				       .' '.$cgi->a({-href=>$REQUEST_URI}, basename($REQUEST_URI))
 			      ). _tl('properties'));
@@ -4352,7 +4096,7 @@ sub renderPropertiesViewer {
 	my @bgstyleclasses = ( 'tr_odd', 'tr_even');
 	my (%visited);
 	$content.=$cgi->Tr({-class=>'trhead'}, $cgi->th({-class=>'thname'},_tl('propertyname')), $cgi->th({-class=>'thvalue'},_tl('propertyvalue')));
-	foreach my $prop (sort {nonamespace(lc($a)) cmp nonamespace(lc($b)) } keys %{$dbprops},-d $fn ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS ) {
+	foreach my $prop (sort {nonamespace(lc($a)) cmp nonamespace(lc($b)) } keys %{$dbprops},$backend->isDir($fn) ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS ) {
 		my (%r200);
 		next if exists $visited{$prop} || exists $visited{'{'.getNameSpaceUri($prop).'}'.$prop};
 		if (exists $$dbprops{$prop}) {
@@ -4390,7 +4134,7 @@ sub renderWebInterface {
 	$head .= replaceVars($HEADER) if defined $HEADER;
 	##$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return window.confirm("'._tl('confirm').'");') if $ALLOW_FILE_MANAGEMENT;
 	$content.=$cgi->start_multipart_form(-method=>'post', -action=>$ru ) if $ALLOW_FILE_MANAGEMENT;
-	if ($ALLOW_SEARCH && ($IGNOREFILEPERMISSIONS || -r $fn)) {
+	if ($ALLOW_SEARCH && $backend->isReadable($fn)) {
 		my $search = $cgi->param('search');
 		$head .= $cgi->div({-class=>'search'}, _tl('search'). ' '. $cgi->input({-title=>_tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
 	}
@@ -4399,8 +4143,8 @@ sub renderWebInterface {
 		$content.=getSearchResult($cgi->param('search'),$fn,$ru);
 	} else {
 		my $showall = $cgi->param('showpage') ? 0 : $cgi->param('showall') || $cgi->cookie('showall') || 0;
-		$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if (!$IGNOREFILEPERMISSIONS && !-w $fn) ;
-		$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if (!$IGNOREFILEPERMISSIONS && !-r $fn) ;
+		$head .= $cgi->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, _tl('foldernotwriteable')) if !$backend->isWriteable($fn);
+		$head .= $cgi->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  _tl('foldernotreadable')) if !$backend->isReadable($fn);
 		$head .= $cgi->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$FILEFILTERPERDIR{$fn}}, _tl('folderisfiltered', $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef) )) if $FILEFILTERPERDIR{$fn} || ($ENABLE_NAMEFILTER && $cgi->param('namefilter'));
 		$head .= $cgi->div( { -class=>'foldername'},
 			$cgi->a({-href=>$ru.($ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')}, 
@@ -4428,14 +4172,14 @@ sub renderWebInterface {
 		my $manageview = "";
 		my ($list, $count) = getFolderList($fn,$ru, $ENABLE_NAMEFILTER ? $cgi->param('namefilter') : undef);
 		$folderview.=$list;
-		$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) ;
+		$manageview.= renderToolbar() if ($ALLOW_FILE_MANAGEMENT && $backend->isWriteable($fn)) ;
 		$manageview.= renderFieldSet('editbutton',$cgi->a({-id=>'editpos'},"").renderEditTextView()) if $ALLOW_EDIT && $cgi->param('edit');
-		$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_FILE_MANAGEMENT && $ALLOW_POST_UPLOADS && ($IGNOREFILEPERMISSIONS || -w $fn);
+		$manageview.= renderFieldSet('upload',renderFileUploadView($fn)) if $ALLOW_FILE_MANAGEMENT && $ALLOW_POST_UPLOADS && $backend->isWriteable($fn);
 		if ($VIEW eq 'sidebar') {
 			$content.=renderSideBar() if $VIEW eq 'sidebar';
 			$folderview.=renderToolbar() if $ALLOW_FILE_MANAGEMENT;
 		}
-		if ($ALLOW_FILE_MANAGEMENT && ($IGNOREFILEPERMISSIONS || -w $fn)) {
+		if ($ALLOW_FILE_MANAGEMENT && $backend->isWriteable($fn)) {
 			my $m = "";
 			$m .= renderFieldSet('files', renderCreateNewFolderView().renderCreateNewFileView() .renderMoveView() .renderDeleteView());
 			$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
@@ -4588,22 +4332,6 @@ sub getQueryParams {
 	}
 	return $#query>-1 ? join(';',@query) : undef;
 }
-sub readDir {
-	my ($dirname) = @_;
-	my @files;
-	if ((!defined $FILECOUNTPERDIRLIMIT{$dirname} || $FILECOUNTPERDIRLIMIT{$dirname} >0 ) && opendir(my $dir,$dirname)) {
-		while (my $file = readdir($dir)) {
-			next if $file =~ /^\.{1,2}$/;
-			next if is_hidden("$dirname/$file");
-			next if defined $FILEFILTERPERDIR{$dirname} && $file !~ $FILEFILTERPERDIR{$dirname};
-			last if (defined $FILECOUNTPERDIRLIMIT{$dirname} && $#files+1 >= $FILECOUNTPERDIRLIMIT{$dirname}) 
-				|| (!defined $FILECOUNTPERDIRLIMIT{$dirname} && defined $FILECOUNTLIMIT && $#files+1 > $FILECOUNTLIMIT);
-			push @files, $file;
-		}
-		closedir(DIR);
-	}
-	return \@files;
-}
 sub getFolderList {
 	my ($fn,$ru,$filter) = @_;
 	my ($content,$list,$count,$filecount,$foldercount,$filesizes) = ("",0,0,0,0);
@@ -4627,7 +4355,7 @@ sub getFolderList {
 	$list .= $tablehead;
 			
 
-	my @files = sort cmp_files @{readDir($fn)};
+	my @files = sort cmp_files @{$backend->readDir($fn)};
 	unshift @files, '.' if  $SHOW_CURRENT_FOLDER || ($SHOW_CURRENT_FOLDER_ROOTONLY && $DOCUMENT_ROOT eq $fn);
 	unshift @files, '..' if $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn;
 
@@ -4659,25 +4387,17 @@ sub getFolderList {
 		$nru = $ru if $filename eq '.';
 		$nru = '/' if $nru eq '//';
 
-		### +++ AFS fix
-		my $isReadable = 1;	
-		my $isUnReadable = 0;
-		if (!$ENABLE_AFS || checkAFSAccess($full)) {
-			$isReadable = $IGNOREFILEPERMISSIONS  || (-d $full && -x $full) || (-f $full && -r $full);
-		} else {
-			$isReadable = 0;
-			$isUnReadable = 1;
-		}
-		### --- AFS fix
+		my $isReadable = ($backend->isDir($full) && $backend->isExecutable($full)) || ($backend->isFile($full) && $backend->isReadable($full));
+		my $isUnReadable = !$isReadable;
 
 		my $mimetype = '?';
-		$mimetype = -d $full ? ( $filename eq '..' ? '< .. >' : '<folder>' ) : getMIMEType($filename) unless $isUnReadable;
-		$filename.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && -d $full;
-		$nru.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && -d $full;
+		$mimetype = $backend->isDir($full) ? ( $filename eq '..' ? '< .. >' : '<folder>' ) : getMIMEType($filename) unless $isUnReadable;
+		$filename.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && $backend->isDir($full);
+		$nru.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && $backend->isDir($full);
 
 		next if $filter && $filename !~/$filter/i;
 
-		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = !$isUnReadable ? stat($full) : (0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = !$isUnReadable ? $backend->stat($full) : (0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 		
 		push @rowclass,shift @rowclass;
 
@@ -4714,9 +4434,9 @@ sub getFolderList {
 		$odd = ! $odd;
 
 		$count++;
-		$foldercount++ if !$isUnReadable && -d $full;
-		$filecount++ if $isUnReadable || -f $full;
-		$filesizes+=$size if $isUnReadable || -f $full;
+		$foldercount++ if !$isUnReadable && $backend->isDir($full);
+		$filecount++ if $isUnReadable || $backend->isFile($full);
+		$filesizes+=$size if $isUnReadable || $backend->isFile($full);
 
 		##$list .= $tablehead if $count % 50 == 0;
 
@@ -4736,17 +4456,17 @@ sub renderFileActionsWithIcons {
 	my @actions = ('edit','rename','zip','delete');
 	push @actions, 'props' if $ENABLE_PROPERTIES_VIEWER;
 	my %labels = ( rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
-	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
+	if (! $backend->isWriteable($full)) {
 		$disabled{rename}=1;
 		$disabled{delete}=1;
 	}
-	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
+	if (! $backend->isReadable($full)) {
 		$disabled{zip}=1;
 		$disabled{props}=1 if $ENABLE_PROPERTIES_VIEWER;
 	}
 	if ($ALLOW_EDIT) {
 		my $ef = '('.join('|',@EDITABLEFILES).')';
-		$disabled{edit} = 1 unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || (-f $full && -w $full));
+		$disabled{edit} = 1 unless basename($file) =~/$ef/i && $backend->isFile($full) && $backend->isWriteable($full);
 	}
 	my $content="";	
 	foreach my $action (@actions) {
@@ -4770,18 +4490,18 @@ sub renderFileActionsWithSelect {
 	my %labels = ( '--'=> '', rename=>_tl('movefilesbutton'),edit=>_tl('editbutton'),delete=>_tl('deletefilesbutton'), zip=>_tl('zipdownloadbutton'), props=>_tl('showproperties') );
 	my %attr;
 	push @values, 'props' if $ENABLE_PROPERTIES_VIEWER;
-	if (!$IGNOREFILEPERMISSIONS && ! -w $full) {
+	if (! $backend->isWriteable($full)) {
 		$attr{rename}{disabled}='disabled';
 		$attr{delete}{disabled}='disabled';
 	}
-	if (!$IGNOREFILEPERMISSIONS && ! -r $full) {
+	if (! $backend->isReadable($full)) {
 		$attr{zip}{disabled}='disabled';
 		$attr{props}{disabled}='disabled' if $ENABLE_PROPERTIES_VIEWER;
 	}
 
 	if ($ALLOW_EDIT) {
 		my $ef = '('.join('|',@EDITABLEFILES).')';
-		$attr{edit}{disabled}='disabled' unless basename($file) =~/$ef/i && ($IGNOREFILEPERMISSIONS || (-f $full && -w $full));
+		$attr{edit}{disabled}='disabled' unless basename($file) =~/$ef/i && ($backend->isFile($full) && $backend->isWriteable($full));
 	} else {
 		@values = grep(!/^edit$/,@values);
 	}
@@ -4799,28 +4519,28 @@ sub getmodeclass {
 sub mode2str {
 	my ($fn,$m) = @_;
 
-	$m = (lstat($fn))[2] if -l $fn;
+	$m = ($backend->lstat($fn))[2] if $backend->isLink($fn);
 	my @ret = split(//,'-' x 10);
 
-	$ret[0] = 'd' if -d $fn;
-	$ret[0] = 'b' if -b $fn;
-	$ret[0] = 'c' if -c $fn;
-	$ret[0] = 'l' if -l $fn;
+	$ret[0] = 'd' if $backend->isDir($fn);
+	$ret[0] = 'b' if $backend->isBlockDevice($fn);
+	$ret[0] = 'c' if $backend->isCharDevice($fn);
+	$ret[0] = 'l' if $backend->isLink($fn);
 
 	$ret[1] = 'r' if ($m & 0400) == 0400;
 	$ret[2] = 'w' if ($m & 0200) == 0200;
 	$ret[3] = 'x' if ($m & 0100) == 0100;
-	$ret[3] = 's' if -u $fn;
+	$ret[3] = 's' if $backend->hasSetUidBit($fn);
 	
 	$ret[4] = 'r' if ($m & 0040) == 0040;
 	$ret[5] = 'w' if ($m & 0020) == 0020;
 	$ret[6] = 'x' if ($m & 0010) == 0010;
-	$ret[6] = 's' if -g $fn;
+	$ret[6] = 's' if $backend->hasSetGidBit($fn);
 
 	$ret[7] = 'r' if ($m & 0004) == 0004;
 	$ret[8] = 'w' if ($m & 0002) == 0002;
 	$ret[9] = 'x' if ($m & 0001) == 0001;
-	$ret[9] = 't' if -k $fn;
+	$ret[9] = 't' if $backend->hasStickyBit($fn);
 	
 
 	return join('',@ret);
@@ -4831,26 +4551,25 @@ sub getSearchResult {
 	$ALLOW_FILE_MANAGEMENT=0;
 
 	## link loop detection:
-	my $nfn = File::Spec::Link->full_resolve($fn);
+	my $nfn = $backend->resolve($fn);
 	return $content if $$visited{$nfn};
 	$$visited{$nfn}=1;
 
 	my ($list,$count)=getFolderList($fn,$ru,$search);
 	$content.=$cgi->hr().$cgi->div({-class=>'resultcount'},$count._tl($count>1?'searchresults':'searchresult')).getQuickNavPath($ru).$list if $count>0 && $isRecursive;
 	$$fullcount+=$count;
-	if (opendir(my $fh,$fn)) {
-		foreach my $filename (sort cmp_files grep {  !/^\.{1,2}$/ } readdir($fh)) {
+	if (my @files = $backend->readDir($fn)) {
+		foreach my $filename (sort cmp_files grep {  !/^\.{1,2}$/ } @files) {
 			local($PATH_TRANSLATED);
 			my $full = $fn.$filename;
 			next if is_hidden($full);
 			my $nru = $ru.uri_escape($filename);
-			my $isDir = $ENABLE_AFS ? checkAFSAccess($full) && -d $full : -d $full;
+			my $isDir = $backend->isDir($full);
 			$full.="/" if $isDir;
 			$nru.="/" if $isDir;
 			$PATH_TRANSLATED = $full;
 			$content.=getSearchResult($search,$full,$nru,1,$fullcount,$visited) if $isDir;
 		}
-		closedir($fh);
 	}
 	if (!$isRecursive) {
 		if ($$fullcount==0) {
@@ -4875,7 +4594,7 @@ sub getSupportedMethods {
 	push @wmethods, 'MKCALENDAR' if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
 	push @wmethods, 'BIND', 'UNBIND', 'REBIND' if $ENABLE_BIND;
 	@methods = @rmethods;
-	push @methods, @wmethods if !defined $path || ($IGNOREFILEPERMISSIONS || -w $path);
+	push @methods, @wmethods if !defined $path || $backend->isWriteable($path);
 	return \@methods;
 }
 sub nonamespace {
@@ -5074,22 +4793,6 @@ sub doAFSSaveACL() {
 		$msgparam='p1='.$cgi->escape($output);
 	}
 	print $cgi->redirect($redirtarget.createMsgQuery($msg, $msgparam, $errmsg, $msgparam,'acl').'#afsaclmanagerpos');
-}
-sub checkAFSAccess {
-	my ($f) =@_;
-	my $ret = 0;
-
-	return $CACHE{checkAFSAccess}{$f} if exists $CACHE{checkAFSAccess}{$f};
-
-	$ret = lstat($f) ? 1 : 0;
-
-	#$f=~s/([\'\\])/\\$1/g;
-	#system("$AFS_FSCMD getcalleraccess '$f'>/dev/null 2>&1");
-	#$ret = $?>>8 == 0 ? 1 : 0;
-
-	$CACHE{checkAFSAccess}{$f} = $ret;
-
-	return $ret;
 }
 sub renderAFSGroupManager {
 	my $ru = $REMOTE_USER;
@@ -5341,6 +5044,11 @@ sub renderSysInfo {
                 .$cgi->Tr($cgi->td('warning').$cgi->td($^W))
                 .$cgi->Tr($cgi->td('executable name').$cgi->td($^X))
 		.$cgi->end_table();
+	$i.= $cgi->h2('Perl Variables');
+	$i.= $cgi->start_table()
+		.$cgi->Tr($cgi->td('@INC').$cgi->td(join(" ",@INC)))
+		.$cgi->end_table();
+	
 	$i.= $cgi->h2('Includes');
 	$i.= $cgi->start_table();
 	foreach my $e (sort keys %INC) {
@@ -5374,6 +5082,33 @@ sub getIcon {
 sub getUIIcon {
 	my ($action) = @_;
 	return replaceVars(exists $UI_ICONS{$action} ? $UI_ICONS{$action} : $UI_ICONS{default});
+}
+sub cmp_files {
+        my $fp_a = $PATH_TRANSLATED.$a;
+        my $fp_b = $PATH_TRANSLATED.$b;
+        my $factor = ($ORDER =~/_desc$/) ? -1 : 1;
+        return -1 if $backend->isDir($fp_a) && !$backend->isDir($fp_b);
+        return 1 if !$backend->isDir($fp_a) && $backend->isDir($fp_b);
+        if ($ORDER =~ /^(lastmodified|size|mode)/) {
+                my $idx = $ORDER=~/lastmodified/? 9 : $ORDER=~/mode/? 2 : 7;
+                return $factor * ( ($backend->stat($fp_a))[$idx] <=> ($backend->stat($fp_b))[$idx] || $a cmp $b );
+        } elsif ($ORDER =~ /mime/) {
+                return $factor * ( getMIMEType($a) cmp getMIMEType($b) || $a cmp $b);
+        }
+        return $factor * ($a cmp $b);
+}
+
+sub rcopy {
+	my ($src,$dst,$move,$depth) = @_;
+	my $ret = $backend->rcopy(@_);
+	db_deleteProperties($dst);
+	db_copyProperties($src,$dst);
+	db_deleteProperties($src) if $move;
+	return $ret;
+}
+sub rmove {
+	my ($src, $dst) = @_;
+	return rcopy($src,$dst,1);
 }
 sub setLocale {
 	my $locale;

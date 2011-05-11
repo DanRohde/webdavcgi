@@ -7,3 +7,7 @@
     - RFC5842 (Binding Extensions to Web Distributed Authoring and Versioning (WebDAV))
     - RFC5785 (Defining Well-Known Uniform Resource Identifiers (URIs))
     - improve/fix precondition checks (If header)
+
+    - write a backend module:
+    	check: open, dirname, basename, -f, -e, -w, -d, -l, -x, -z, -b, -c, -k, -u, -g
+		mkdir, rename, unlink, chmod, umask, stat, lstat

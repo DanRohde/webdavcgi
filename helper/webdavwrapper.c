@@ -23,6 +23,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -33,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[])
 {
 	struct passwd *pw = NULL;
+	int errcode = 0;
 
 	char *remote_user = getenv("WEBDAV_USER");
 	if (remote_user == NULL) remote_user = getenv("REDIRECT_WEBDAV_USER");
@@ -40,10 +43,14 @@ int main(int argc, char *argv[])
 	if (remote_user == NULL) remote_user = getenv("REDIRECT_REMOTE_USER");
 
 	if (remote_user != NULL) pw = getpwnam(remote_user);
-
+	
 	if ((pw != NULL)  && ( pw->pw_uid != 0)) {
-		if (initgroups(pw->pw_name,pw->pw_gid)==0 && setgid(pw->pw_gid)==0 && setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
-		else printf("Status: 500 Internal Sever Error");
+		if (initgroups(pw->pw_name,pw->pw_gid)==0)
+			if (setgid(pw->pw_gid)==0)
+				if (setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
+				else printf("Status: 500 Internal Server Error: setuid failed for %s",pw->pw_name);
+			else printf("Status: 500 Internal Server Error: setgid failed for %s",pw->pw_name);
+		else printf("Status: 500 Internal Sever Error: initgroups failed for %s (errno=%d,%s)",pw->pw_name,errno,strerror(errno));
 	} else {
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-Type: text/plain\r\n\r\n");
