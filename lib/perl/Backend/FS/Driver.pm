@@ -25,7 +25,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = 0.1;
 our @EXPORT = qw(new);
-our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent rcopy rmove mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles moveToTrash changeMod createSymLink resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename openFileHandle closeFileHandle);
+our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles changeMod createSymLink resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename printFile openFileHandle readFileHandle writeFileHandle closeFileHandle getDisplayName rename readlink symlink getQuota );
 
 
 use File::Basename;
@@ -36,6 +36,8 @@ use File::Spec::Link;
 
 use Archive::Zip;
 
+use Quota;
+
 sub new {
 	my $class = shift;
 	my $self = {};
@@ -43,174 +45,56 @@ sub new {
 }
 
 sub exists {
-	shift;
-	return -e shift;
+	return -e $_[1];
 }
 sub isDir {
-	shift;
-	return -d shift;
+	return -d $_[1];
 }
 sub isFile {
-	return !isDir(@_);
+	return -f $_[1];
 }
 sub isLink {
-	shift;
-	return -l shift;
+	return -l $_[1];
 }
 sub isBlockDevice {
-	shift;
-	return -b shift;
+	return -b $_[1];
 }
 sub isCharDevice {
-	shift;
-	return -c shift;
+	return -c $_[1];
 }
 sub isEmpty {
-	shift;
-	return -z shift;
+	return -z $_[1];
 }
 sub isReadable {
-	shift;
-	return -r shift;
+	return -r $_[1];
 }
 sub isWriteable {
-	shift;
-	return -w shift;
+	return -w $_[1];
 }
 sub isExecutable {
-	shift;
-	return -x shift;
+	return -x $_[1];
 }
 sub getParent {
-	shift;
-	return dirname(shift);
-}
-sub rcopy {
-        my ($self,$src,$dst,$move,$depth) = @_;
-
-	main::debug("rcopy: src=$src, dst=$dst, move=$move, depth=$depth");
-
-        $depth=0 unless defined $depth;
-
-        return 0 if defined $main::LIMIT_FOLDER_DEPTH && $main::LIMIT_FOLDER_DEPTH > 0 && $depth > $main::LIMIT_FOLDER_DEPTH;
-
-        # src == dst ?
-        return 0 if $src eq $dst;
-
-        # src in dst?
-        return 0 if -d $src && $dst =~ /^\Q$src\E/;
-
-        # src exists and readable?
-        return 0 if ! -e $src || (!$main::IGNOREFILEPERMISSIONS && !-r $src);
-
-        # dst writeable?
-        return 0 if -e $dst && (!$main::IGNOREFILEPERMISSIONS && !-w $dst);
-
-        my $nsrc = $src;
-        $nsrc =~ s/\/$//; ## remove trailing slash for link test (-l)
-
-        if ( -l $nsrc) { # link
-                if (!$move || !rename($nsrc, $dst)) {
-                        my $orig = readlink($nsrc);
-                        return 0 if ( !$move || unlink($nsrc) ) && !symlink($orig,$dst);
-                }
-        } elsif ( -f $src ) { # file
-                if (-d $dst) {
-                        $dst.='/' if $dst !~/\/$/;
-                        $dst.=basename($src);
-                }
-                if (!$move || !rename($src,$dst)) {
-                        return 0 unless open(SRC,"<$src");
-                        return 0 unless open(DST,">$dst");
-                        my $buffer;
-                        while (read(SRC,$buffer,$main::BUFSIZE || 1048576)>0) {
-                                print DST $buffer;
-                        }
-
-                        close(SRC);
-                        close(DST);
-                        if ($move) {
-                                return 0 if !$main::IGNOREFILEPERMISSIONS && !-w $src;
-                                return 0 unless unlink($src);
-                        }
-                }
-        } elsif ( -d $src ) {
-                # cannot write folders to files:
-                return 0 if -f $dst;
-
-                $dst.='/' if $dst !~ /\/$/;
-                $src.='/' if $src !~ /\/$/;
-
-                if (!$move || getDirInfo($self, $src,'realchildcount')>0 || !rename($src,$dst)) {
-                        mkdir $dst unless -e $dst;
-
-                        return 0 unless opendir(SRC,$src);
-                        my $rret = 1;
-                        foreach my $filename (grep { !/^\.{1,2}$/ } readdir(SRC)) {
-                                $rret = $rret && rcopy($self,$src.$filename, $dst.$filename, $move, $depth+1);
-                        }
-                        closedir(SRC);
-                        if ($move) {
-                                return 0 if !$main::IGNOREFILEPERMISSIONS && !-w $src;
-                                return 0 unless $rret && rmdir($src);
-                        }
-                }
-        } else {
-                return 0;
-        }
-
-        return 1;
-}
-sub rmove {
-        return rcopy(@_, 1);
+	return dirname($_[1]);
 }
 
 sub mkcol {
-	shift;
-	mkdir(shift);
+	return CORE::mkdir($_[1]);
 }
 sub unlinkFile {
-	shift;
-	unlink(shift);
-}
-sub getDirInfo {
-        my ($self, $fn, $prop, $filter, $limit, $max) = @_;
-        return $main::CACHE{getDirInfo}{$fn}{$prop} if defined $main::CACHE{getDirInfo}{$fn}{$prop};
-        my %counter = ( childcount=>0, visiblecount=>0, objectcount=>0, hassubs=>0 );
-        if (opendir(DIR,$fn)) {
-                foreach my $f ( grep { !/^\.{1,2}$/ } readdir(DIR)) {
-                        $counter{realchildcount}++;
-                        if (!main::is_hidden("$fn/$f")) {
-                                next if defined $filter && defined $$filter{$fn} && $f !~ $$filter{$fn};
-                                $counter{childcount}++;
-                                last if (defined $limit && defined $$limit{$fn} && $counter{childcount} >= $$limit{$fn}) || (!defined $$limit{$fn} && defined $max && $counter{childcount} >= $max);
-                                $counter{visiblecount}++ if !-d "$fn/$f" && $f !~/^\./;
-                                $counter{objectcount}++ if !-d "$fn/$f";
-                        }
-                }
-                closedir(DIR);
-        }
-        $counter{hassubs} = ($counter{childcount}-$counter{objectcount} > 0 )? 1:0;
-
-        foreach my $k (keys %counter) {
-                $main::CACHE{getDirInfo}{$fn}{$k}=$counter{$k};
-        }
-        return $counter{$prop};
+	return CORE::unlink($_[1]);
 }
 sub readDir {
         my ($self, $dirname) = @_;
         my @files;
-        if ((!defined $main::FILECOUNTPERDIRLIMIT{$dirname} || $main::FILECOUNTPERDIRLIMIT{$dirname} >0 ) && opendir(my $dir,$dirname)) {
+        if (opendir(my $dir,$dirname)) {
                 while (my $file = readdir($dir)) {
-                        next if $file =~ /^\.{1,2}$/;
-                        next if main::is_hidden("$dirname/$file");
-                        next if defined $main::FILEFILTERPERDIR{$dirname} && $file !~ $main::FILEFILTERPERDIR{$dirname};
-                        last if (defined $main::FILECOUNTPERDIRLIMIT{$dirname} && $#files+1 >= $main::FILECOUNTPERDIRLIMIT{$dirname})
-                                || (!defined $main::FILECOUNTPERDIRLIMIT{$dirname} && defined $main::FILECOUNTLIMIT && $#files+1 > $main::FILECOUNTLIMIT);
-                        push @files, $file;
+                        push @files, $file unless $file=~/^\.{1,2}$/;
                 }
                 closedir(DIR);
-        }
+	} else {
+		return 0;
+	}
         return \@files;
 }
 sub stat {
@@ -226,7 +110,6 @@ sub deltree {
         my $count = 0;
         my $nf = $f; $nf=~s/\/$//;
         if (!main::isAllowed($f,1)) {
-                debug("Cannot delete $f: not allowed");
                 push(@$errRef, { $f => "Cannot delete $f" });
         } elsif (-l $nf) {
                 if (unlink($nf)) {
@@ -356,29 +239,6 @@ sub compressFiles {
 	$zip->writeToFileHandle($desthandle,0);
 }
 
-sub moveToTrash  {
-        my ($self,$fn) = @_;
-
-        my $ret = 0;
-        my $etag = main::getETag($fn); ## get a unique name for trash folder
-        $etag=~s/\"//g;
-        my $trash = "$main::TRASH_FOLDER$etag/";
-
-        if ($fn =~ /^\Q$main::TRASH_FOLDER\E/) { ## delete within trash
-                my @err;
-                deltree($self,$fn, \@err);
-                $ret = 1 if $#err == -1;
-        } elsif (-e $main::TRASH_FOLDER || mkdir($main::TRASH_FOLDER)) {
-                if (-e $trash) {
-                        my $i=0;
-                        while (-e $trash) { ## find unused trash folder
-                                $trash="$main::TRASH_FOLDER$etag".($i++).'/';
-                        }
-                }
-                $ret = 1 if mkdir($trash) && rmove($self, $fn, $trash.basename($fn));
-        }
-        return $ret;
-}
 sub changeMod {
 	chmod($_[1], $_[2]);
 }
@@ -394,7 +254,6 @@ sub resolve {
 
 sub getFileContent {
         my ($self,$fn) = @_;
-        main::debug("getFileContent($fn)");
         my $content="";
         if (-e $fn && !-d $fn && open(F,"<$fn")) {
                 $content = join("",<F>);
@@ -416,10 +275,45 @@ sub getLocalFilename {
 }
 
 sub openFileHandle {
-	return open($_[1],"<$_[2]");
+	return open($_[1],"$_[2]$_[3]");
+}
+sub readFileHandle {
+	return CORE::read($_[1],$_[2],$_[3],$_[4]);
+}
+sub writeFileHandle {
+	syswrite($_[1],$_[2]);
 }
 sub closeFileHandle {
 	return close($_[1]);
+}
+sub printFile {
+	my ($self, $file, $to) =@_;
+	$to = \*STDOUT unless defined $to;
+	if (open(my $fh, $file)) {
+		binmode $fh;
+		binmode $to;
+		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
+			print $to $buffer;
+		}
+		close($fh);
+	}
+}
+sub getDisplayName {
+	return basename($_[1]) . ($_[0]->isDir($_[1]) && $_[1] ne '/'? '/':'');
+}
+sub rename {
+	return CORE::rename($_[1],$_[2]);
+}
+sub readlink {
+	return CORE::readlink($_[1]);
+}
+sub symlink {
+	return CORE::symlink($_[1],$_[2]);
+}
+sub getQuota {
+	my ($self, $fn) = @_;
+	my @quota =  Quota::query(Quota::getqcarg($fn));
+	return ( $quota[0] * 1024, $quota[2] * 1024 );
 }
 	
 1;

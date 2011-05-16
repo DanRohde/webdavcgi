@@ -36,31 +36,55 @@ sub isReadable {
 sub isWriteable { 
 	return _checkAFSAccess($_[1]) && -w $_[1]; 
 }
-
 sub isDir {
 	return _checkAFSAccess($_[1]) && -d $_[1];
 }
 sub isFile {
-	return !_checkAFSAccess($_[1]) || -f $_[1];
+	return _checkAFSAccess($_[1]) && -f $_[1];
 }
 sub isExecutable {
 	return _checkAFSAccess($_[1]) && -x $_[1];
 }
-
+sub hasSetUidBit { 
+	return _checkAFSAccess($_[1]) && -u $_[1];
+}
+sub hasSetGidBit { 
+	return _checkAFSAccess($_[1]) && -g $_[1];
+}
+sub hasStickyBit { 
+	return _checkAFSAccess($_[1]) && -k $_[1];
+}
+sub isBlockDevice { 
+	return _checkAFSAccess($_[1]) && -b $_[1];
+}
+sub isCharDevice { 
+	return _checkAFSAccess($_[1]) && -c $_[1];
+}
 sub exists { 
 	return _checkAFSAccess($_[1]) && -e $_[1];
 }
 sub isEmpty {
-	return !_checkAFSAccess($_[1]) || -z $_[1];
+	return _checkAFSAccess($_[1]) && -z $_[1];
 }
 sub stat {
 	return _checkAFSAccess($_[1]) ? CORE::stat($_[1]) : CORE::lstat($_[1]);
 }
 
+sub getQuota {
+	my ($self, $fn) = @_;
+	$fn=~s/(["\$\\])/\\$1/g;
+	if (defined $main::AFSQUOTA && open(my $cmd, "$main::AFSQUOTA \"$fn\"|")) {
+		my @lines = <$cmd>;
+		close($cmd);
+		my @vals = split(/\s+/, $lines[1]);
+		return ($vals[1] * 1024, $vals[2] * 1024);
+	}
+	return (0,0);
+}
+
 sub _checkAFSAccess {
-        my ($f) =@_;
-        return $CACHE{_checkAFSAccess}{$f} if exists $CACHE{_checkAFSAccess}{$f};
-        return $CACHE{_checkAFSAccess}{$f} = (lstat($f) ? 1 : 0);
+        return $CACHE{_checkAFSAccess}{$_[0]} if exists $CACHE{_checkAFSAccess}{$_[0]};
+        return $CACHE{_checkAFSAccess}{$_[0]} = (CORE::lstat($_[0]) ? 1 : 0);
 }
 
 1;
