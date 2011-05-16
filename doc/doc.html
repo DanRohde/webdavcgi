@@ -29,6 +29,8 @@ Content of this topic:
 	<li><a href="#logout">Web interface and Logout</a></li>
 	<li><a href="#caldavcarddav">CalDAV &amp; CardDAV support</a></li>
 	<li><a href="#afs">AFS Support</a></li>
+	<li><a href="#gfs">GFS Support</a></li>
+	<li><a href="#smb">SMB/CIFS Support</a></li>
 	<li><a href="#performance">Performance</a></li>
 	<!--[<li><a href="#security">Security</a></li>]-->
 	<li><a href="#troubleshooting">Troubleshooting</a></li>
@@ -67,15 +69,18 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
     <li><strike>Image::Magick (perlmagick) - (since v0.5.1)</strike> (since v0.5.3 replaced by Graphics::Magick)</li>
     <li>Graphics::Magick (libgraphics-magick-perl) - (since v0.5.3)</li>
     <li>File::Spec::Link (CPAN only) - (since v0.5.2)</li>
-    <li>IO::Compress::Gzip (included in most Linux dists) - (since. 0.7.0)</li>
-    <li>IO::Compress::Deflate (included in most Linux dists) - (since. 0.7.0)</li>
+    <li>IO::Compress::Gzip (included in most Linux dists) - (since 0.7.0)</li>
+    <li>IO::Compress::Deflate (included in most Linux dists) - (since 0.7.0)</li>
+    <li>Module::Load (included in most Linux dists, older need libmodule-load-perl) - (since 0.7.1)</li>
+    <li><span style="optional">optional (for SMB backend):</span>Filesys::SmbClient (libfilesys-smbclient-perl) - (since 0.7.1)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
 ## Debian/Ubuntu quick install: 
 apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libossp-uuid-perl libxml-simple-perl libquota-perl \
-                libarchive-zip-perl libgraphics-magick-perl
+                libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl
+
 perl -MCPAN -e "install File::Spec::Link"
    </pre>
 </li>
@@ -194,6 +199,9 @@ The WebDAV CGI can be easier upgraded if you use a configuration file instead of
 ## the install base is needed to find webdav-ui.* and locale files 
 ## (don't forget the trailing slash):
 $INSTALL_BASE = '/etc/webdavcgi/';
+
+## the backend module (supported: FS, AFS, GFS, SMB):
+$BACKEND = 'FS';
 
 ## this is an example if a user starts with home dir (http://mywebdavserver/ -&gt; user home):
 $VIRTUAL_BASE = '/';
@@ -594,6 +602,7 @@ WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It'
 Requirements:
 <ol>
 <li><a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu package: libapache2-mod-auth-kerb)</li>
+<li>a keytab file for your server (service name: HTTP/&lt;YOUR SERVER NAME&gt;@&lt;YOUR DOMAIN&gt;, e.g. HTTP/webafs.cms.hu-berlin.de@CMS.HU-BERLIN.DE)</li>
 <li><a href="http://www.modwaklog.org/">mod_waklog</a> installed</li>
 <li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured (<code>kinit ...; aklog</code> should work)</li>
 <li><a href="http://webdavcgi.sf.net/files/webdavwrapper-krb.c">webdavwrapper-krb.c</a>: <code> gcc -o webdavwrapper webdavwrapper-krb.c &amp;&amp; cp webdavwrapper /usr/lib/cgi-bin &amp;&amp; chown root:root  /usr/lib/cgi-bin/webdavwrapper; chmod ug+s,a+rx /usr/lib/cgi-bin/webdavwrapper</code></li>
@@ -620,6 +629,9 @@ RewriteRule  ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.
 <code>webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi';
+
+$BACKEND = 'AFS';
+
 $DOCUMENT_ROOT = '/afs/';
 $VIRTUAL_BASE='/';
 
@@ -645,6 +657,140 @@ $IGNOREFILEPERMISSIONS = 1;
 $MIMEFILE='/etc/mime.types';
 
 </pre>
+
+<a id="gfs"></a>
+<h2>GFS Support</h2>
+The GFS backend replaces only the quota command.
+Requirements:
+<ol>
+<li> a mounted GFS filesystem </li>
+<li> <code>gfs_quota</code> executable for a user</li>
+</ol>
+<code>webdav.conf</code> example:
+<pre>
+$INSTALL_BASE = '/etc/webdavcgi/';
+
+$DOCUMENT_ROOT = '/mygfsmountpoint/';
+$VIRTUAL_BASE = '/';
+
+$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+$DBI_USER='';
+$DBI_PASS=''; 
+$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+
+$GFSQUOTA='/usr/sbin/gfs_quota -f';
+</pre>
+
+<a id="smb"></a>
+<h2>SMB/CIFS Support</h2>
+Requirements:
+<ol>
+<li> <a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu: libapache2-mod-auth-kerb)</li>
+<li> a keytab file for the kerberos module:
+	<ol>
+	<li>create a Windows/ADS user account with a good password (e.g. <code>exampleuser</code>)</li>
+	<li>disable password change requirements (policies) for your Windows/ADS user account</li>
+	<li>create a keytab file as a domain admin on your domain controller:
+	<pre>C:&gt;ktpass -princ HTTP/my_www_server_name@MY.EXAMPLE.DOMAIN.ORG -mapuser exampleuser@MY.EXAMPLE.DOMAIN.ORG -pass MySeCreTexampleuserPassw0rd -out keytab.HTTP</pre>
+	</li>
+	<li>copy the keytab file <code>keytab.HTTP</code> to a Web server path, e.g. <code>/etc/keytab.HTTP</code>
+	</ol>
+</li>
+<li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
+<li> You <b>must not use a setuid/setgid wrapper</b> because mod_auth_kerberos creates a ticket cache file and the WebDAV CGI script needs read rights for the Kerberos ticket cache.</li>
+</ol>
+
+Apache example:
+<pre>
+KrbVerifyKDC off
+KrbMethodNegotiate on
+KrbMethodK5Passwd on
+KrbAuthoritative on
+KrbServiceName HTTP
+Krb5Keytab /etc/keytab.HTTP
+KrbSaveCredentials on
+KrbAuthRealms MY.EXAMPLE.DOMAIN.ORG MYSECOND.EXAMPLE.DOMAIN.ORG
+
+AuthType Kerberos
+AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
+
+require valid-user
+
+RewriteEngine on
+RewriteRule  ^/ /cgi-bin/webdav.pl [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,L]
+</pre>
+
+<code>webdav.conf</code> example:
+<pre>
+$INSTALL_BASE = '/etc/webdavcgi/';
+
+$DOCUMENT_ROOT = '/';
+$VIRTUAL_BASE = '/';
+
+$BACKEND='SMB';
+
+$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+$DBI_USER='';
+$DBI_PASS=''; 
+$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+
+$SHOW_QUOTA = 0;
+$SHOW_PERM = 0;
+$ALLOW_CHANGEPERM = 0;
+
+#### SMB backend setup:
+### required entries: domains, fileserver
+### optional entries: sharefilter, usersharefilter, shares, sharealiases
+%SMB = (
+  defaultdomain => 'MY.EXAMPLE.DOMAIN.ORG',
+
+  ## a global share filter (filter out admin shares with trailing $):
+  sharefilter => [ qr/\$$/, ],  #optional
+
+  usersharefilter => {  #optional
+    ## admin has no matching filter so he can see all shares (overwrites sharefilter):
+    myadminexample => [ qr/__NEVER_MATCH/, ],
+  }, 
+  domains => { #required
+    'MY.EXAMPLE.DOMAIN.ORG' => {	#required (multiple domain entries allowed for forrests)
+      ## a domain based filter (overwrites sharefilter and userfilter above):
+      sharefilter => [ qr/\$$/, ],	#optional
+      usersharefilter => {		#optional
+        ## a domain based user filter (overwrites all sharefilter and global filter):
+        myadminexample => [ qr/__NEVER_MATCH/, ], 
+      }, 
+      fileserver => {			#required
+        'mywindowsfileserver1.my.example.domain.org' => {	#required
+
+          ## a fileserver based share filter (overwrites all domain based filter):
+          sharefilter => [ qr/\$/, ],	#optional
+
+          usersharefilter => {		#optional
+            ## overwrites all sharefilter and domain based filter
+            myadminexample => [ qr/__NEVER_MATCH/ ] 
+          }, 
+
+          ## disables all filter and (slow) automatic share detection:
+          shares => [ 'MyFirstShare', 'MySecondShare' ],	#optional
+
+          sharealiases => {		#optional
+            ## shows 'H: (Home)' instead of 
+            ## 'mywindowsfileserver1.my.example.domain.org:MyFirstShare' in the Web interface
+            'MyFirstShare' => 'H: (Home)',
+            ## shows 'S: (Scratch)' instead of 
+            ## 'mywindowsfileserver1.my.example.domain.org:MySecondShare' in the Web interface
+            'MySecondShare' => 'S: (Scratch)',
+          },
+        },
+      },
+    },
+  },
+);
+
+
+
+</pre>
+
 
 
 <a id="performance"></a>
