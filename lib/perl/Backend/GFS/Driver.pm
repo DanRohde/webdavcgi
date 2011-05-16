@@ -30,7 +30,7 @@ our $VERSION = 0.1;
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $GFSQUOTA && open(my $cmd,"$GFSQUOTA \"$fn\"|")) {
+	if (defined $main::GFSQUOTA && open(my $cmd,"$main::GFSQUOTA \"$fn\"|")) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/,$lines[0]);
