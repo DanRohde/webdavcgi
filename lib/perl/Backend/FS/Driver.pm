@@ -92,8 +92,6 @@ sub readDir {
                         push @files, $file unless $file=~/^\.{1,2}$/;
                 }
                 closedir(DIR);
-	} else {
-		return 0;
 	}
         return \@files;
 }

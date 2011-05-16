@@ -112,7 +112,6 @@ sub readDir {
 		}
 	} else {
 		main::debug("readDir:: unkown path $base: _getSmbURL="._getSmbURL($base));
-		return 0;
 	}
 	$self->_setCacheEntry('readDir:list',$base,\@files);
 	return \@files;
