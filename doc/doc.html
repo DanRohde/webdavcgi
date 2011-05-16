@@ -739,10 +739,10 @@ $SHOW_PERM = 0;
 $ALLOW_CHANGEPERM = 0;
 
 #### SMB backend setup:
-### required entries: domains, fileserver
+### required entries: defaultdomain, domains, fileserver
 ### optional entries: sharefilter, usersharefilter, shares, sharealiases
 %SMB = (
-  defaultdomain => 'MY.EXAMPLE.DOMAIN.ORG',
+  defaultdomain => 'MY.EXAMPLE.DOMAIN.ORG',	#required
 
   ## a global share filter (filter out admin shares with trailing $):
   sharefilter => [ qr/\$$/, ],  #optional
