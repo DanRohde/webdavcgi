@@ -65,7 +65,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB $cgi
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -683,6 +683,19 @@ $ENABLE_SYSINFO = $DEBUG;
 
 ############  S E T U P - END ###########################################
 #########################################################################
+use CGI;
+
+## flush immediately:
+$|=1;
+
+## before 'new CGI' to read POST requests:
+$ENV{REQUEST_METHOD}=$ENV{REDIRECT_REQUEST_METHOD} if (defined $ENV{REDIRECT_REQUEST_METHOD}) ;
+
+$CGI::POST_MAX = $POST_MAX_SIZE;
+$CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS?0:1;
+
+## create CGI instance
+our $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? new CGI({}) : new CGI;
 if (defined $CONFIGFILE) {
 	unless (my $ret = do($CONFIGFILE)) {
 		warn "couldn't parse $CONFIGFILE: $@" if $@;
@@ -690,6 +703,7 @@ if (defined $CONFIGFILE) {
 		warn "couldn't run $CONFIGFILE" unless $ret;
 	}
 }
+
 } ## BEGIN {
 use strict;
 #use warnings;
@@ -698,7 +712,6 @@ use locale;
 
 use Fcntl qw(:flock);
 
-use CGI;
 
 use File::Basename;
 
@@ -718,17 +731,6 @@ use IO::Compress::Deflate qw(deflate);
 
 use lib $INSTALL_BASE."lib/perl";
 
-## flush immediately:
-$|=1;
-
-## before 'new CGI' to read POST requests:
-$ENV{REQUEST_METHOD}=$ENV{REDIRECT_REQUEST_METHOD} if (defined $ENV{REDIRECT_REQUEST_METHOD}) ;
-
-$CGI::POST_MAX = $POST_MAX_SIZE;
-$CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS?0:1;
-
-## create CGI instance
-our $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? new CGI({}) : new CGI;
 
 my $method = $cgi->request_method();
 
