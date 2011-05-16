@@ -696,6 +696,7 @@ $CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS?0:1;
 
 ## create CGI instance
 our $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? new CGI({}) : new CGI;
+
 if (defined $CONFIGFILE) {
 	unless (my $ret = do($CONFIGFILE)) {
 		warn "couldn't parse $CONFIGFILE: $@" if $@;
@@ -703,7 +704,6 @@ if (defined $CONFIGFILE) {
 		warn "couldn't run $CONFIGFILE" unless $ret;
 	}
 }
-
 } ## BEGIN {
 use strict;
 #use warnings;
@@ -4363,7 +4363,7 @@ sub getFolderList {
 	$list .= $tablehead;
 			
 
-	my @files = sort cmp_files @{$backend->readDir($fn)};
+	my @files = $backend->isReadable($fn) ? sort cmp_files @{$backend->readDir($fn)} : ();
 	unshift @files, '.' if  $SHOW_CURRENT_FOLDER || ($SHOW_CURRENT_FOLDER_ROOTONLY && $DOCUMENT_ROOT eq $fn);
 	unshift @files, '..' if $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn;
 
@@ -5163,16 +5163,13 @@ sub rcopy {
 			}
                 }
         } elsif ( $backend->isDir($src) ) {
-		debug("rcopy: ##1");
                 # cannot write folders to files:
                 return 0 if $backend->isFile($dst);
 
                 $dst.='/' if $dst !~ /\/$/;
                 $src.='/' if $src !~ /\/$/;
-		debug("rcopy: ##1.1 move=$move, getDirInfo: ".getDirInfo($src, 'realchildcount'));
 
                 if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {
-			debug("rcopy: ##2");
                         $backend->mkcol($dst) unless $backend->exists($dst);
 
 			return 0 unless $backend->isReadable($src);
