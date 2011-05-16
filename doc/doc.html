@@ -54,7 +54,7 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
 <a id="installation"></a>
 <h2>Installation</h2>
 <p>Note: All steps are done with root rights.</p>
-<p>Upgrade Note: Please take a look at the <a href="#upgrade">Upgrade</a> section for further information.
+<p>Upgrade Note: Please take a look at the <a href="#upgrade">Upgrade</a> section for further information.</p>
 <ol>
 <li><a href="index.html#download">download WebDAV CGI</a></li>
 <li>install required CPAN modules (Debian/Ubuntu package name):
@@ -165,6 +165,12 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 </ol>
 <a id="upgrade"></a>
 <h2>Upgrade</h2>
+<h3>Upgrading from 0.7.0 to &ge;0.7.1</h3>
+<ol>
+<li>a new perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
+<li> <code>$IGNOREFILEPERMISSIONS</code> config variable was removed</li>
+<li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB') </li>
+</ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>
 <li>two new Perl modules are used by WebDAV: <code>CGI: IO::Compress::Gzip</code> and <code>IO::Compress::Deflate</code> (both are integraded in most Linux dists)</li>
@@ -693,7 +699,7 @@ Requirements:
 	<li>create a keytab file as a domain admin on your domain controller:
 	<pre>C:&gt;ktpass -princ HTTP/my_www_server_name@MY.EXAMPLE.DOMAIN.ORG -mapuser exampleuser@MY.EXAMPLE.DOMAIN.ORG -pass MySeCreTexampleuserPassw0rd -out keytab.HTTP</pre>
 	</li>
-	<li>copy the keytab file <code>keytab.HTTP</code> to a Web server path, e.g. <code>/etc/keytab.HTTP</code>
+	<li>copy the keytab file <code>keytab.HTTP</code> to a Web server path, e.g. <code>/etc/keytab.HTTP</code></li>
 	</ol>
 </li>
 <li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
