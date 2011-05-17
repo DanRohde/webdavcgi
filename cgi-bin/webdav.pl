@@ -2866,8 +2866,8 @@ sub getfancyfilename {
 	$full = '/' if $full eq '//'; # fixes root folder navigation bug
 
 	$full.="?$q" if defined $q && defined $fn && !$isUnReadable && $backend->isDir($fn);
-	my $fntext = $backend->getDisplayName($fn);
-	$fntext =substr($s,0,$MAXFILENAMESIZE-3) if length($s)>$MAXFILENAMESIZE;
+	my $fntext = $s eq '.' ? $s : $backend->getDisplayName($fn);
+	$fntext =substr($fntext,0,$MAXFILENAMESIZE-3) if length($s)>$MAXFILENAMESIZE;
 	my $linkit =  $fn=~/^\.{1,2}$/ || (!$backend->isDir($fn) && $backend->isReadable($fn)) || $backend->isExecutable($fn);
 
 	$ret = $linkit ? $cgi->a({href=>$full,title=>$s},$cgi->escapeHTML($fntext)) : $cgi->escapeHTML($fntext);
