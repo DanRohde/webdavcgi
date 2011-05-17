@@ -85,12 +85,13 @@ sub unlinkFile {
 	return CORE::unlink($_[1]);
 }
 sub readDir {
-        my ($self, $dirname, $limit, $filter) = @_;
+        my ($self, $dirname, $limit, $filter, $hidden) = @_;
         my @files;
         if (opendir(my $dir,$dirname)) {
                 while (my $file = readdir($dir)) {
 			last if defined $limit && $#files >= $limit;
 			next if defined $filter && $file !~ $filter;
+			next if defined $hidden && "$dir$file" =~ /$hidden/;
                         push @files, $file unless $file=~/^\.{1,2}$/;
                 }
                 closedir(DIR);

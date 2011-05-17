@@ -1085,7 +1085,7 @@ sub _GET {
 		       qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@);
 	} elsif ($ENABLE_THUMBNAIL &&  $cgi->param('action') eq 'mediarss' && $backend->isDir($fn) && $backend->isReadable($fn)) {
 		my $content = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
-		foreach my $file (sort cmp_files @{$backend->readDir($fn, getFileLimit($fn), getFileFilter($fn))}) {
+		foreach my $file (sort cmp_files @{$backend->readDir($fn, getFileLimit($fn), getFileFilter($fn), getHiddenFilter())}) {
 			my $mime = getMIMEType($file);
 			$mime='image/gif' if hasThumbSupport($mime) && $mime !~ /^image/i;
 			$content.=qq@<item><title>$file</title><link>$REQUEST_URI$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if hasThumbSupport($mime) && $backend->isReadable("$fn$file");
@@ -2351,7 +2351,7 @@ sub doBasicSearch {
 	$$visited{$nbase}=1;
 
 	if ($backend->isDir($base) && $backend->isReadable($base)) {
-		foreach my $sf (@{$backend->readDir($base,getFileLimit($base),getFileFilter($base))}) {
+		foreach my $sf (@{$backend->readDir($base,getFileLimit($base),getFileFilter($base),getHiddenFilter())}) {
 			my $nbase = $base.$sf;
 			my $nhref = $href.$sf;
 			doBasicSearch($expr, $base.$sf, $href.$sf, defined $depth  && $depth ne 'infinity' ? $depth - 1 : $depth, $limit, $matches, $visited);
@@ -2447,7 +2447,7 @@ sub readDirBySuffix {
 	$$visited{$nfn}=1;
 
 	if ($backend->isReadable($fn)) {
-		foreach my $sf (@{$backend->readDir($fn, getFileLimit($fn), getFileFilter($fn))}) {
+		foreach my $sf (@{$backend->readDir($fn, getFileLimit($fn), getFileFilter($fn), getHiddenFilter())}) {
 			$sf.='/' if $backend->isDir($fn.$sf);
 			my $nbase=$base.$sf;
 			push @{$hrefs}, $nbase if $backend->isFile($fn.$sf) && $sf =~ /\.\Q$suffix\E/;
@@ -2974,12 +2974,8 @@ sub printFileHeader {
 }
 sub is_hidden {
 	my ($fn) = @_;
-	if (defined @HIDDEN && $#HIDDEN>-1) {
-		my $regex = '('.join('|',@HIDDEN).')';
-		return $fn=~/$regex/?1:0;
-	} else {
-		return 0;
-	}
+	my $filter = getHiddenFilter();
+	return $filter && $fn =~ /$filter/;
 }
 sub simpleXMLParser {
 	my ($text,$keepRoot) = @_;
@@ -3087,7 +3083,7 @@ sub lockResource {
 	if ($backend->isDir($fn) && (lc($depth) eq 'infinity' || $depth>0)) {
 		debug("lockResource: depth=$depth");
 		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn))}) {
+			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn),getHiddenFilter())}) {
 				my $nru = $ru.$f;
 				my $nfn = $fn.$f;
 				$nru.='/' if $backend->isDir($nfn);
@@ -3193,7 +3189,7 @@ sub inheritLock {
 		debug("inheritLock: $fn is a collection");
 		db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn))}) {
+			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn),getHiddenFilter())}) {
 				my $full = $fn.$f;
 				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
 				db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
@@ -3247,7 +3243,7 @@ sub readDirRecursive {
 					propstat=> getPropStat($nfn,$fru,$props,$all,$noval),
 				};
 			}
-			foreach my $f ( sort cmp_files @{$backend->readDir($fn, getFileLimit($fn),getFileFilter($fn))}) {
+			foreach my $f ( sort cmp_files @{$backend->readDir($fn, getFileLimit($fn),getFileFilter($fn),getHiddenFilter())}) {
 				my $fru=$ru.$cgi->escape($f);
 				$isReadable = $backend->isReadable("$nfn/$f");
 				my $nnfn = $isReadable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
@@ -3610,15 +3606,11 @@ sub getDirInfo {
 	return $CACHE{getDirInfo}{$fn}{$prop} if defined $CACHE{getDirInfo}{$fn}{$prop};
 	my %counter = ( childcount=>0, visiblecount=>0, objectcount=>0, hassubs=>0 );
 	if ($backend->isReadable($fn)) {
-		foreach my $f (@{$backend->readDir($fn, $$limit{$fn} || $max, $$filter{$fn})}) {
+		foreach my $f (@{$backend->readDir($fn, $$limit{$fn} || $max, $$filter{$fn},getHiddenFilter())}) {
 			$counter{realchildcount}++;
-			if (!is_hidden("$fn/$f")) {
-				##next if defined $filter && defined $$filter{$fn} && $f !~ $$filter{$fn};
-				$counter{childcount}++;
-				##last if (defined $limit && defined $$limit{$fn} && $counter{childcount} >= $$limit{$fn}) || (!defined $$limit{$fn} && defined $max && $counter{childcount} >= $max);
-				$counter{visiblecount}++ if !$backend->isDir("$fn/$f") && $f !~/^\./;
-				$counter{objectcount}++ if !$backend->isDir("$fn/$f");
-			}
+			$counter{childcount}++;
+			$counter{visiblecount}++ if !$backend->isDir("$fn$f") && $f !~/^\./;
+			$counter{objectcount}++ if !$backend->isDir("$fn$f");
 		}
 	}
 	$counter{hassubs} = ($counter{childcount}-$counter{objectcount} > 0 )? 1:0;
@@ -4363,7 +4355,7 @@ sub getFolderList {
 	$list .= $tablehead;
 			
 
-	my @files = $backend->isReadable($fn) ? sort cmp_files @{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn))} : ();
+	my @files = $backend->isReadable($fn) ? sort cmp_files @{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn),getHiddenFilter())} : ();
 	unshift @files, '.' if  $SHOW_CURRENT_FOLDER || ($SHOW_CURRENT_FOLDER_ROOTONLY && $DOCUMENT_ROOT eq $fn);
 	unshift @files, '..' if $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn;
 
@@ -4441,10 +4433,12 @@ sub getFolderList {
 		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
-		$count++;
-		$foldercount++ if !$isUnReadable && $backend->isDir($full);
-		$filecount++ if $isUnReadable || $backend->isFile($full);
-		$filesizes+=$size if $isUnReadable || $backend->isFile($full);
+		if ($filename!~/^\.{1,2}$/) {
+			$count++;
+			$foldercount++ if !$isUnReadable && $backend->isDir($full);
+			$filecount++ if $isUnReadable || $backend->isFile($full);
+			$filesizes+=$size if $isUnReadable || $backend->isFile($full);
+		}
 
 		##$list .= $tablehead if $count % 50 == 0;
 
@@ -5218,6 +5212,10 @@ sub getFileFilter {
 sub getFileLimit {
 	my ($path) = @_;
 	return $FILECOUNTPERDIRLIMIT{$path} || $FILECOUNTLIMIT;
+}
+sub getHiddenFilter {
+	my ($path) = @_,
+	return @HIDDEN ? '('.join('|',@HIDDEN).')' : undef;
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;

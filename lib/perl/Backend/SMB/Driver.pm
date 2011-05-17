@@ -72,7 +72,7 @@ my $DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
 
 
 sub readDir {
-	my ($self, $base, $limit, $filter) = @_;
+	my ($self, $base, $limit, $filter, $hidden) = @_;
 
 	my @files;
 
@@ -105,6 +105,7 @@ sub readDir {
 			while (my $f = $smb->readdir_struct($dir)) {
 				last if defined $limit && $#files>=$limit;
 				next if defined $filter && $$f[1] !~ $filter;
+				next if defined $hidden && "$base$$f[1]" =~ /$hidden/;
 				$self->_setCacheEntry('readDir',"$base$$f[1]", { type=>$$f[0], comment=>$$f[2] });
 				push @files, $$f[1] unless $$f[1] =~ /^\.{1,2}$/;
 			}
