@@ -4158,13 +4158,28 @@ sub renderWebInterface {
 				($ru=~/^$VIRTUAL_BASE\/?$/ ? '' :$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up')))
 				.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
 		if ($SHOW_QUOTA) {
-			my ($ql, $qu) = getQuota($fn);
-			if (defined $ql && defined $qu) {
-				$ql=$ql/1048576; $qu=$qu/1048576;
+			my(%ql, %qu);
+			($ql{B}, $qu{B}) = getQuota($fn);
+			if (defined $ql{B} && defined $qu{B}) {
+				my %qa;
+				my $showunit = 'B';
+				my ($ltitle, $utitle, $atitle) = ('','','');
+				my %uf = (B=>1, MB => 1048576, GB => 1073741824, TB => 1099511627776 );
+				my @unitorder = ( 'B', 'MB', 'GB', 'TB' );
+				foreach my $unit (@unitorder) {
+					$ql{$unit} = $ql{B} / $uf{$unit};
+					$qu{$unit} = $qu{B} / $uf{$unit};
+					$qa{$unit} = $ql{$unit} - $qu{$unit};
+					$ltitle .= sprintf("= %.2f %s ",$ql{$unit},$unit) if $ql{$unit} > 0.009;
+					$utitle .= sprintf("= %.2f %s ",$qu{$unit},$unit) if $qu{$unit} > 0.009;
+					$atitle .= sprintf("= %.2f %s ",$qa{$unit},$unit) if $qa{$unit} > 0.009;
+					$showunit = $unit if $ql{$unit} > 2 && $qu{$unit} > 2;
+				}
+
 				$head.= $cgi->div({-class=>'quota'},
-								_tl('quotalimit').$cgi->span({-title=>sprintf("= %.2f GB",$ql/1024)},sprintf("%.2f MB, ",$ql))
-								._tl('quotaused').$cgi->span({-title=>sprintf("= %.2f GB",$qu/1024)}, sprintf("%.2f MB, ",$qu))
-								._tl('quotaavailable').$cgi->span({-title=>sprintf("= %.2f GB",($ql-$qu)/1024)},sprintf("%.2f MB",($ql-$qu))));
+								_tl('quotalimit').$cgi->span({-title=>$ltitle},sprintf("%.2f %s, ",$ql{$showunit},$showunit))
+								._tl('quotaused').$cgi->span({-title=>$utitle}, sprintf("%.2f %s, ",$qu{$showunit},$showunit))
+								._tl('quotaavailable').$cgi->span({-title=>$atitle},sprintf("%.2f %s",$qa{$showunit},$showunit)));
 			}
 		}
 		$content.=$cgi->div({-class=>'masterhead'}, $head);
