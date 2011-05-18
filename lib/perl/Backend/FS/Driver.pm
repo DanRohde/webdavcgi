@@ -314,7 +314,7 @@ sub symlink {
 sub getQuota {
 	my ($self, $fn) = @_;
 	my @quota =  Quota::query(Quota::getqcarg($fn));
-	return ( $quota[0] * 1024, $quota[2] * 1024 );
+	return ( $quota[2] * 1024, $quota[0] * 1024 );
 }
 	
 1;
