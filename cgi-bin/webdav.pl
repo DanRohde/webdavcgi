@@ -4164,7 +4164,7 @@ sub renderWebInterface {
 				my %qa;
 				my $showunit = 'B';
 				my ($ltitle, $utitle, $atitle) = ('','','');
-				my %uf = (B=>1, KB=>1024 MB => 1048576, GB => 1073741824, TB => 1099511627776 );
+				my %uf = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776 );
 				my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB' );
 				foreach my $unit (@unitorder) {
 					$ql{$unit} = $ql{B} / $uf{$unit};
