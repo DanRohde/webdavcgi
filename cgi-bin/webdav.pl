@@ -4228,7 +4228,7 @@ sub renderByteValue {
 	foreach my $unit (@unitorder) {
 		$rv{$unit} = $v / $cf{$unit};
 		$showunit=$unit if $rv{$unit} >  1-(1/(10^$f));
-		$title.= ($unit eq 'B' ? sprintf(' = %d B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} > 1-(1/(10^$ft));
+		$title.= ($unit eq 'B' ? sprintf(' = %l B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} > 1-(1/(10^$ft));
 	}
 	return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f %s',$rv{$showunit},$showunit)), $title);
 }
