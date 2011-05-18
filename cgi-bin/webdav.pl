@@ -4164,15 +4164,15 @@ sub renderWebInterface {
 				my %qa;
 				my $showunit = 'B';
 				my ($ltitle, $utitle, $atitle) = ('','','');
-				my %uf = (B=>1, MB => 1048576, GB => 1073741824, TB => 1099511627776 );
-				my @unitorder = ( 'B', 'MB', 'GB', 'TB' );
+				my %uf = (B=>1, KB=>1024 MB => 1048576, GB => 1073741824, TB => 1099511627776 );
+				my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB' );
 				foreach my $unit (@unitorder) {
 					$ql{$unit} = $ql{B} / $uf{$unit};
 					$qu{$unit} = $qu{B} / $uf{$unit};
 					$qa{$unit} = $ql{$unit} - $qu{$unit};
-					$ltitle .= sprintf("= %.2f %s ",$ql{$unit},$unit) if $ql{$unit} > 0.009;
-					$utitle .= sprintf("= %.2f %s ",$qu{$unit},$unit) if $qu{$unit} > 0.009;
-					$atitle .= sprintf("= %.2f %s ",$qa{$unit},$unit) if $qa{$unit} > 0.009;
+					$ltitle .= sprintf("= %.0f %s ",$ql{$unit},$unit) if $ql{$unit} > 0.9;
+					$utitle .= sprintf("= %.0f %s ",$qu{$unit},$unit) if $qu{$unit} > 0.9;
+					$atitle .= sprintf("= %.0f %s ",$qa{$unit},$unit) if $qa{$unit} > 0.9;
 					$showunit = $unit if $ql{$unit} > 2 && $qu{$unit} > 2;
 				}
 
