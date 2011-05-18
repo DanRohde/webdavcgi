@@ -4158,28 +4158,16 @@ sub renderWebInterface {
 				($ru=~/^$VIRTUAL_BASE\/?$/ ? '' :$cgi->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>_tl('uptitle')}, _tl('up')))
 				.' '.$cgi->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>_tl('refreshtitle')},_tl('refresh')));
 		if ($SHOW_QUOTA) {
-			my(%ql, %qu);
-			($ql{B}, $qu{B}) = getQuota($fn);
-			if (defined $ql{B} && defined $qu{B}) {
-				my %qa;
-				my $showunit = 'B';
-				my ($ltitle, $utitle, $atitle) = ('','','');
-				my %uf = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776 );
-				my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB' );
-				foreach my $unit (@unitorder) {
-					$ql{$unit} = $ql{B} / $uf{$unit};
-					$qu{$unit} = $qu{B} / $uf{$unit};
-					$qa{$unit} = $ql{$unit} - $qu{$unit};
-					$ltitle .= sprintf("= %.0f %s ",$ql{$unit},$unit) if $ql{$unit} > 0.9;
-					$utitle .= sprintf("= %.0f %s ",$qu{$unit},$unit) if $qu{$unit} > 0.9;
-					$atitle .= sprintf("= %.0f %s ",$qa{$unit},$unit) if $qa{$unit} > 0.9;
-					$showunit = $unit if $ql{$unit} > 2 && $qu{$unit} > 2;
-				}
+			my($ql, $qu) = getQuota($fn);
+			if (defined $ql && defined $qu) {
+				my ($ql_v, $ql_t ) = renderByteValue($ql,2,0);
+				my ($qu_v, $qu_t ) = renderByteValue($qu,2,0);
+				my ($qa_v, $qa_t ) = renderByteValue($ql-$qu,2,0);
 
 				$head.= $cgi->div({-class=>'quota'},
-								_tl('quotalimit').$cgi->span({-title=>$ltitle},sprintf("%.2f %s, ",$ql{$showunit},$showunit))
-								._tl('quotaused').$cgi->span({-title=>$utitle}, sprintf("%.2f %s, ",$qu{$showunit},$showunit))
-								._tl('quotaavailable').$cgi->span({-title=>$atitle},sprintf("%.2f %s",$qa{$showunit},$showunit)));
+								_tl('quotalimit').$cgi->span({-title=>$ql_t}, $ql_v)
+								._tl('quotaused').$cgi->span({-title=>$qu_t}, $qu_v)
+								._tl('quotaavailable').$cgi->span({-title=>$qa_t},$qa_v));
 			}
 		}
 		$content.=$cgi->div({-class=>'masterhead'}, $head);
@@ -4227,6 +4215,22 @@ sub renderWebInterface {
 	$content = start_html("$TITLEPREFIX $ru").$content.$cgi->end_html();
 
 	printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
+}
+sub renderByteValue {
+	my ($v, $f, $ft) = @_;
+	$f = 2 unless defined $f;
+	$ft = $f unless defined $ft;
+	my %cf = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
+	my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB' );
+	my $showunit = 'B';
+	my %rv;
+	my $title = '';
+	foreach my $unit (@unitorder) {
+		$rv{$unit} = $v / $cf{$unit};
+		$showunit=$unit if $rv{$unit} >  1-(1/(10^$f));
+		$title.= ($unit eq 'B' ? sprintf(' = %d B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} > 1-(1/(10^$ft));
+	}
+	return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f %s',$rv{$showunit},$showunit)), $title);
 }
 sub renderSideBarMenuItem {
 	my ($action, $title, $onclick, $content) = @_;
@@ -4441,7 +4445,8 @@ sub getFolderList {
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
 		$row.= $cgi->td({-class=>'tc_fn', -id=>"tc_fn_$fid", -onclick=>$onclick, -onmousedown=>$ignev, -ondblclick=>$ignev}, getfancyfilename($nru,$filename,$mimetype, $full, $isUnReadable));
 		$row.= $cgi->td({-class=>'tc_lm', -title=>_tl('created').' '.$ctf, -onclick=>$onclick, -onmousedown=>$ignev}, $lmf);
-		$row.= $cgi->td({-class=>'tc_size', -title=>sprintf("= %.2fKB = %.2fMB = %.2fGB",$size/1024, $size/1048576, $size/1073741824), -onclick=>$onclick, -onmousedown=>$ignev}, $size);
+		my ($size_v, $size_t) = renderByteValue($size,0,2);
+		$row.= $cgi->td({-class=>'tc_size', -title=>$size_t, -onclick=>$onclick, -onmousedown=>$ignev}, $size_v);
 		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
 		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
 		$row.= $cgi->td({-class=>'tc_actions' }, $filename=~/^\.{1,2}$/ || $unsel ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
