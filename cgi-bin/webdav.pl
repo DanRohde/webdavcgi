@@ -4225,10 +4225,14 @@ sub renderByteValue {
 	my $showunit = 'B';
 	my %rv;
 	my $title = '';
+	my $lowerlimitf = 10**(-$f);
+	my $lowerlimitft = 10**(-$ft);
+	my $upperlimit = 10**10;
 	foreach my $unit (@unitorder) {
 		$rv{$unit} = $v / $cf{$unit};
-		$showunit=$unit if $rv{$unit} >  1-(1/(10^$f));
-		$title.= ($unit eq 'B' ? sprintf(' = %.0f B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} > 1-(1/(10^$ft));
+		last if $rv{$unit} < $lowerlimitf;
+		$showunit=$unit if $rv{$unit} > 1;
+		$title.= ($unit eq 'B' ? sprintf(' = %.0f B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
 	}
 	return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f %s',$rv{$showunit},$showunit)), $title);
 }
