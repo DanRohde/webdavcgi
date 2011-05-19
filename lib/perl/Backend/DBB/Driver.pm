@@ -30,7 +30,7 @@ our $VERSION = 0.1;
 use DBI qw( :sql_types );
 
 use File::Basename;
-use File::Temp qw( tempfile );
+use File::Temp qw( tempfile tempdir );
 
 use constant {
 	TYPE_DIR => 1,
@@ -136,7 +136,7 @@ sub copy {
 }
 
 sub mkcol {
-	return $_[0]->_addDBEntry($_[1], TYPE_DIR);
+	return $_[0]->exists($_[1]) ? 0 : $_[0]->_addDBEntry($_[1], TYPE_DIR);
 }
 
 sub isReadable { return 1;}
@@ -289,13 +289,61 @@ sub getLocalFilename {
 	$self->printFile($fn, $fh);
 	return $filename;
 }
+sub _copytolocal {
+	my ($self, $dir, $file) = @_;
 
+	my $nn = "$dir".basename($file);
+	if ($self->isFile($file) && open(my $f, ">$nn")) {
+		my $e = $self->_getDBEntry($file,1);
+		print $f $$e{basename($file)}{data};
+		close($f);
+	} elsif ($self->isDir($file)) {
+		mkdir($nn);
+		$file.='/' unless $file =~ /\/$/;
+		foreach my $f (@{$self->readDir($file)}) {
+			$self->_copytolocal("$nn/", "$file$f"); 
+		}
+	}
+	my @stat = $self->stat($file);
+	utime($stat[8], $stat[9], $nn);
+}
 sub compressFiles {
-	return 0;
-	
+	my ($self, $desthandle, $basepath, @files) = @_;
+        my $tempdir = tempdir(CLEANUP => 1);
+	foreach my $file (@files) {
+		$self->_copytolocal("$tempdir/", "$basepath$file");
+	}
+	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
+}
+sub _copytodb {
+	my ($self, $src, $dst) = @_;
+	my $ret = 0;
+	if (opendir(my $d, $src)) {
+		$ret = 1;
+		while (my $f = readdir($d)) {
+			next if $f=~/^\.{1,2}$/;
+			my $nn = "$src$f";
+			my $nd = "$dst$f";
+			if (-d $nn) {
+				$self->mkcol($nd);
+				$ret &= $self->_copytodb("$nn/", "$nd/");
+			} else {
+				if (open(my $fh,"<$nn")) {
+					$self->saveStream($nd, $fh);
+					close($fh);
+				} else {
+					$ret = 0;
+				}
+			}
+		}
+		closedir($d);
+	}
+	return $ret;
 }
 sub uncompressArchive {
-	return 0;
+	my ($self, $zipfile, $destination) = @_;
+        my $tempdir = tempdir(CLEANUP => 1);
+	return $self->SUPER::uncompressArchive($self->getLocalFilename($zipfile), "$tempdir/") && $self->_copytodb("$tempdir/",$destination);
 }
 
 1;

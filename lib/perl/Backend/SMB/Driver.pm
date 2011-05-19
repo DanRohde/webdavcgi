@@ -404,10 +404,12 @@ sub _copytoshare {
 	if (opendir(my $dir, $src)) {
 		$ret = 1;
 		while (my $file = readdir($dir)) {
-			my $nsrc = "$src/$file";
-			my $ndst = "$dst/$file";
+			next if $file=~/^\.{1,2}$/;
+			my $nsrc = "$src$file";
+			my $ndst = "$dst$file";
 			if (-d $nsrc) {
-				$ret &= $self->_copytoshare("$nsrc/", "$ndst/") if $self->mkcol($ndst);
+				$self->mkcol($ndst);
+				$ret &= $self->_copytoshare("$nsrc/", "$ndst/");
 			} else {
 				if (open(my $fh, "<$nsrc")) {
 					$ret &= $self->saveStream($ndst, $fh);
@@ -443,6 +445,8 @@ sub _copytolocal {
 				$self->printFile($file, $fh);
 				close($fh);
 			}
+			my @stat = $self->stat($file);
+			utime($stat[8],$stat[9],$ndestdir);
 		}
 	}
 }
