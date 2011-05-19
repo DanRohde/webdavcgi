@@ -31,10 +31,10 @@ use vars qw ( %CACHE );
 
 
 sub isReadable { 
-	return _checkAFSAccess($_[1]) && -r $_[1];
+	return 1;
 }
 sub isWriteable { 
-	return _checkAFSAccess($_[1]) && -w $_[1]; 
+	return 1;
 }
 sub isDir {
 	return _checkAFSAccess($_[1]) && -d $_[1];
@@ -43,22 +43,22 @@ sub isFile {
 	return _checkAFSAccess($_[1]) && -f $_[1];
 }
 sub isExecutable {
-	return _checkAFSAccess($_[1]) && -x $_[1];
+	return 1;
 }
 sub hasSetUidBit { 
-	return _checkAFSAccess($_[1]) && -u $_[1];
+	return 0;
 }
 sub hasSetGidBit { 
-	return _checkAFSAccess($_[1]) && -g $_[1];
+	return 0;
 }
 sub hasStickyBit { 
-	return _checkAFSAccess($_[1]) && -k $_[1];
+	return 0;
 }
 sub isBlockDevice { 
-	return _checkAFSAccess($_[1]) && -b $_[1];
+	return 0;
 }
 sub isCharDevice { 
-	return _checkAFSAccess($_[1]) && -c $_[1];
+	return 0;
 }
 sub exists { 
 	return _checkAFSAccess($_[1]) && -e $_[1];
