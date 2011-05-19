@@ -4221,7 +4221,7 @@ sub renderByteValue {
 	$f = 2 unless defined $f;
 	$ft = $f unless defined $ft;
 	my %cf = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
-	my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB' );
+	my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PB' );
 	my $showunit = 'B';
 	my %rv;
 	my $title = '';
@@ -5156,7 +5156,7 @@ sub rcopy {
         if ( $backend->isLink($nsrc)) { # link
                 if (!$move || !$backend->rename($nsrc, $dst)) {
                         my $orig = readlink($nsrc);
-                        return 0 if ( !$move || $backend->unlinkFile($nsrc) ) && !symlink($orig,$dst); 
+                        return 0 if ( !$move || $backend->unlinkFile($nsrc) ) && !$backend->symlink($orig,$dst); 
                 }
         } elsif ( $backend->isFile($src) ) { # file
 		debug("rcopy($src,$dst,$move,$depth) #2");
@@ -5165,17 +5165,7 @@ sub rcopy {
                         $dst.=basename($src);
                 }
                 if (!$move || !$backend->rename($src,$dst)) {
-			my($SRC_FH, $DST_FH);
-                        return 0 unless $backend->openFileHandle($SRC_FH,"<",$src);
-                        return 0 unless $backend->openFileHandle($DST_FH,">",$dst);
-                        my $buffer;
-                        while ($backend->readFileHandle($SRC_FH,$buffer,$BUFSIZE || 1048576)>0) {
-                                $backend->writeFileHandle($DST_FH, $buffer);
-                        }
-
-                        $backend->closeFileHandle($SRC_FH);
-                        $backend->closeFileHandle($DST_FH);
-
+			return 0 unless $backend->copy($src,$dst);
 			if ($move) {
 				return 0 unless $backend->isWriteable($src) && $backend->unlinkFile($src);
 			}

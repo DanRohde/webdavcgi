@@ -177,21 +177,17 @@ sub lstat {
 	return $self->stat($file);
 }
 
-sub openFileHandle {
-	#my ($self, $mode, $fh, $file) = @_;
-	return $_[1] = $smb->open($_[2]._getSmbURL($_[3]), $main::UMASK);
-}
-sub writeFileHandle {
-	#my ($self, $fh, $buf) =@_,
-	return $smb->write($_[1], $_[2]);
-}
-sub readFileHandle {
-	#my ($self, $fh, $buffer, $size) = @_;
-	return length($_[2] = $smb->read($_[1], $_[3]));
-}
-sub closeFileHandle {
-	#my ($self, $fh) = @_;
-	return $smb->close($_[1]);
+sub copy {
+	my ($self, $src, $dst) = @_;
+	if ( (my $srcfh=$smb->open('<'._getSmbURL($src))) && (my $dstfh=$smb->open('>'._getSmbURL($dst), 07777 ^ $main::UMASK))) {
+		while (my $buffer = $smb->read($srcfh, $main::BUFSIZE || 1048576)) {
+			$smb->write($dstfh, $buffer);
+		}
+		$smb->close($srcfh);
+		$smb->close($dstfh);
+		return 1;
+	} 
+	return 0;
 }
 sub printFile {
 	my ($self, $file, $fh) = @_;

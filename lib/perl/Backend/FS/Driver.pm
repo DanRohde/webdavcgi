@@ -25,7 +25,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = 0.1;
 our @EXPORT = qw(new);
-our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles changeMod createSymLink resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename printFile openFileHandle readFileHandle writeFileHandle closeFileHandle getDisplayName rename readlink symlink getQuota );
+our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles changeMod createSymLink resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename printFile getDisplayName rename readlink symlink getQuota copy);
 
 
 use File::Basename;
@@ -275,18 +275,6 @@ sub getLocalFilename {
 	return $_[1];
 }
 
-sub openFileHandle {
-	return open($_[1],"$_[2]$_[3]");
-}
-sub readFileHandle {
-	return CORE::read($_[1],$_[2],$_[3],$_[4]);
-}
-sub writeFileHandle {
-	syswrite($_[1],$_[2]);
-}
-sub closeFileHandle {
-	return close($_[1]);
-}
 sub printFile {
 	my ($self, $file, $to) =@_;
 	$to = \*STDOUT unless defined $to;
@@ -315,6 +303,19 @@ sub getQuota {
 	my ($self, $fn) = @_;
 	my @quota =  Quota::query(Quota::getqcarg($fn));
 	return ( $quota[2] * 1024, $quota[0] * 1024 );
+}
+sub copy {
+	my ($self, $src, $dst) = @_;
+
+	if (open(my $srcfh,"<$src") && open(my $dstfh, ">$dst")) {
+		while (read($srcfh, my $buffer, $main::BUFSIZE || 1048576)) {
+			syswrite($dstfh, $buffer);
+		}
+		close($srcfh);
+		close($dstfh);
+		return 1;
+	}
+	return 0;
 }
 	
 1;
