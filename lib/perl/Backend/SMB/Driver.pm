@@ -20,7 +20,6 @@
 package Backend::SMB::Driver;
 
 use strict;
-use Data::Dumper;
 
 use Backend::FS::Driver;
 
@@ -472,13 +471,17 @@ sub symlink { return 0; }
 sub hasStickyBit { return 0; }
 sub getQuota { 
 	my ($server,$share,$path) = _getPathInfo($_[1]);
-	if ($server && open(my $c, "/usr/bin/smbclient -k //$server/$share -c du 2>/dev/null|")) {
+	$server=~s/'/\\'/g if $server;
+	$share=~s/'/\\'/g if $share;
+	$path=~s/'/\\'/g if $path;
+	$path='/' unless $path;
+	if ($server && open(my $c, "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du 2>/dev/null|")) {
 		my @l= <$c>;
 		close($c);
 		
-		$l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d)/;
+		$l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/;
 		my ($b,$s,$a) = ($1,$2,$3);
-		return ($b*$s, $a*$s);
+		return ($b*$s, ($b-$a)*$s);
 	}
 	return (0,0); 
 }

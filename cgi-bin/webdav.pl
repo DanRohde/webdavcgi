@@ -198,7 +198,7 @@ $ALLOW_EDIT = 1;
 
 ## -- EDITABLEFILES
 ## text file names (regex; case insensitive)
-@EDITABLEFILES = ( '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt)$', 
+@EDITABLEFILES = ( '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi)$', 
 		'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' );
 
 ## -- ICON_WIDTH
@@ -4160,9 +4160,9 @@ sub renderWebInterface {
 		if ($SHOW_QUOTA) {
 			my($ql, $qu) = getQuota($fn);
 			if (defined $ql && defined $qu) {
-				my ($ql_v, $ql_t ) = renderByteValue($ql,2,0);
-				my ($qu_v, $qu_t ) = renderByteValue($qu,2,0);
-				my ($qa_v, $qa_t ) = renderByteValue($ql-$qu,2,0);
+				my ($ql_v, $ql_t ) = renderByteValue($ql,2,2);
+				my ($qu_v, $qu_t ) = renderByteValue($qu,2,2);
+				my ($qa_v, $qa_t ) = renderByteValue($ql-$qu,2,2);
 
 				$head.= $cgi->div({-class=>'quota'},
 								_tl('quotalimit').$cgi->span({-title=>$ql_t}, $ql_v)
@@ -4231,7 +4231,7 @@ sub renderByteValue {
 	foreach my $unit (@unitorder) {
 		$rv{$unit} = $v / $cf{$unit};
 		last if $rv{$unit} < $lowerlimitf;
-		$showunit=$unit if $rv{$unit} > 1;
+		$showunit=$unit if $rv{$unit} >= 1;
 		$title.= ($unit eq 'B' ? sprintf(' = %.0f B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
 	}
 	return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f %s',$rv{$showunit},$showunit)), $title);
