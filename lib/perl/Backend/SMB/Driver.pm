@@ -153,7 +153,7 @@ sub stat {
 
 	my @stat;
 	my $time = time();
-	if (_isRoot($file) || _isShare($file)) {
+	if (_isRoot($file)) {
 		@stat = (0,0,0755,0,0,0,0,0,$time,$time,$time,0,0);
 	} else {
 		if ($file=~/^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E.*$/) {
@@ -470,7 +470,18 @@ sub isCharDevice { return 0; }
 sub readlink { $!='not supported'; return undef; }
 sub symlink { return 0; }
 sub hasStickyBit { return 0; }
-sub getQuota { return (0,0); }
+sub getQuota { 
+	my ($server,$share,$path) = _getPathInfo($_[1]);
+	if ($server && open(my $c, "/usr/bin/smbclient -k //$server/$share -c du 2>/dev/null|")) {
+		my @l= <$c>;
+		close($c);
+		
+		$l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d)/;
+		my ($b,$s,$a) = ($1,$2,$3);
+		return ($b*$s, $a*$s);
+	}
+	return (0,0); 
+}
 
 
 1;

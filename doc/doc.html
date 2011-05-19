@@ -703,6 +703,7 @@ Requirements:
 	</ol>
 </li>
 <li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
+<li> optional the <code>/usr/bin/smbclient</code> binary for quota information</li>
 <li> You <b>must not use a setuid/setgid wrapper</b> because mod_auth_kerberos creates a ticket cache file and the WebDAV CGI script needs read rights for the Kerberos ticket cache.</li>
 </ol>
 
@@ -740,7 +741,7 @@ $DBI_USER='';
 $DBI_PASS=''; 
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
-$SHOW_QUOTA = 0;
+$SHOW_QUOTA = -x '/usr/bin/smbclient';
 $SHOW_PERM = 0;
 $ALLOW_CHANGEPERM = 0;
 
