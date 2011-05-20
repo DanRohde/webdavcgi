@@ -91,7 +91,6 @@ sub unlinkFile {
 sub deltree {
 	my ($self, $fn) = @_;
 	$fn = $self->normalize($fn);
-	print STDERR "deltree($fn)";
 	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE parent = ? OR parent like ?");
 	if ($sth && $sth->execute($fn,$fn.'/%')) {
 		$sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
@@ -157,6 +156,7 @@ sub hasStickyBit { return 0; }
 
 sub exists {
 	my ($self, $fn) = @_;
+	return 1 if $self->_isRoot($fn);
 	$fn = $self->normalize($fn);
 	my $h =$self->_getDBEntry($fn);
 	return defined $h && exists $$h{basename($fn)};
@@ -195,7 +195,6 @@ sub _addDBEntry {
 	$sth->bind_param(8,07777 ^ $main::UMASK);
 	$sth->bind_param(9,$_[3],SQL_BLOB) if defined $_[3];
 	my $ret  = $sth->execute();
-	print STDERR "_addDBEntry($name,$type) parent=$parent";
 	if (!$self->_isRoot($parent) && $ret) {
 		$ret &= $self->_changeDBEntry($parent);
 	}
