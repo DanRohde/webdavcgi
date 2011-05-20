@@ -431,23 +431,22 @@ sub uncompressArchive {
 sub _copytolocal {
 	my ($self, $destdir, @files) = @_;
 	foreach my $file (@files) {
+		my $ndestdir=$destdir.basename($file);
 		if ($self->isDir($file)) {
-			my $ndestdir=$destdir.basename($file).'/';
 			$file.='/' if $file!~/\/$/;
 			if ($self->SUPER::mkcol($ndestdir)) {
 				foreach my $nfile (@{$self->readDir($file)}) {
-					$self->_copytolocal($ndestdir, "$file$nfile");
+					$self->_copytolocal("$ndestdir/", "$file$nfile");
 				}
 			}
 		} else {
-			my $ndestdir ="$destdir".basename($file);
 			if (open(my $fh, ">$ndestdir")) {
 				$self->printFile($file, $fh);
 				close($fh);
 			}
-			my @stat = $self->stat($file);
-			utime($stat[8],$stat[9],$ndestdir);
 		}
+		my @stat = $self->stat($file);
+		utime($stat[8],$stat[9],$ndestdir);
 	}
 }
 sub compressFiles {

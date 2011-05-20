@@ -26,11 +26,12 @@ Content of this topic:
 	<li><a href="#wrapper">UID/GID Wrapper</a></li>
 	<li><a href="#foldersharing">Folder Sharing / Group Access</a></li>
 	<li><a href="#webinterface">Web interface</a></li>
-	<li><a href="#logout">Web interface and Logout</a></li>
+	<li><a href="#logout">Web interface and logout button</a></li>
 	<li><a href="#caldavcarddav">CalDAV &amp; CardDAV support</a></li>
 	<li><a href="#afs">AFS Support</a></li>
 	<li><a href="#gfs">GFS Support</a></li>
 	<li><a href="#smb">SMB/CIFS Support</a></li>
+	<li><a href="#dbb">DBB database backend</a></li>
 	<li><a href="#performance">Performance</a></li>
 	<!--[<li><a href="#security">Security</a></li>]-->
 	<li><a href="#troubleshooting">Troubleshooting</a></li>
@@ -496,7 +497,7 @@ Following variables are substituted:
 
 
 <a id="logout"></a>
-<h2>Web interface and Logout</h2>
+<h2>Web interface and logout button</h2>
 The WebDAV CGI Web interface has no logout button by default. A logout depends on the used authentication type. For a simple HTTP basic authentication you can use the sample logout script (see <code>cgi-bin/logout-dist</code> in your WebDAV CGI source base).
 
 It's quiet easy to integrate a logout button:
@@ -691,6 +692,7 @@ $GFSQUOTA='/usr/sbin/gfs_quota -f';
 <h2>SMB/CIFS Support</h2>
 Requirements:
 <ol>
+<li> a Active Directory integrated Windows or Samba file server</li>
 <li> <a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu: libapache2-mod-auth-kerb)</li>
 <li> a keytab file for the kerberos module:
 	<ol>
@@ -705,6 +707,7 @@ Requirements:
 <li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
 <li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
 <li> You <b>must not use a setuid/setgid wrapper</b> because mod_auth_kerberos creates a ticket cache file and the WebDAV CGI script needs read rights for the Kerberos ticket cache.</li>
+<li> unough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
 
 Apache example:
@@ -797,8 +800,41 @@ $ALLOW_CHANGEPERM = 0;
 
 
 </pre>
+<a id="dbb"></a>
+<h2>DBD database backend</h2>
+<p>The DBD backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
+Features:
+<ul>
+<li> puts all data to a single database table (binaries too)</li>
+<li> the requrired database table will be created by the backend</li>
+</ul>
+Requirements:
+<ul>
+<li> a database driver (DBD perl module; by default SQLite; Ubuntu/Debian package: libdbd-sqlite3-perl) </li>
+</ul>
+<code>webdav.conf</code> example:
+<pre>
+$INSTALL_BASE='/etc/webdavcgi/';
+$VIRTUAL_BASE = '/';
+$DOCUMENT_ROOT='/';
 
 
+$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+$DBI_USER='';
+$DBI_PASS=''; 
+$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
+
+$THUMBNAIL_CACHEDIR="/tmp";
+
+$BACKEND = 'DBB';
+
+%DBB = (
+	dsn => 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db',
+	username => '',
+	password => '',
+);
+
+</pre>
 
 <a id="performance"></a>
 <h2>Performance</h2>

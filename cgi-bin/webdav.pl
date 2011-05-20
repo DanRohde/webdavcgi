@@ -65,7 +65,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB $cgi
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $cgi
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -695,7 +695,7 @@ $CGI::POST_MAX = $POST_MAX_SIZE;
 $CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS?0:1;
 
 ## create CGI instance
-our $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? new CGI({}) : new CGI;
+$cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? new CGI({}) : new CGI;
 
 if (defined $CONFIGFILE) {
 	unless (my $ret = do($CONFIGFILE)) {
@@ -4470,7 +4470,9 @@ sub getFolderList {
 	$list .= $tablehead if $count > 20; ## && $count % 50 != 0 && $count % 50 > 20;
 	$content .= $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
-	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %d Bytes (= %.2f KB = %.2f MB = %.2f GB)", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $filesizes, $filesizes/1024, $filesizes/1048576, $filesizes/1073741824)) if ($SHOW_STAT); 
+	my ($sizetext,$sizetitle) = renderByteValue($filesizes,2,2);
+	$sizetext.=$sizetitle ne "" ? " ($sizetitle)" : $sizetitle;
+	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %s", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $sizetext)) if ($SHOW_STAT); 
 
 	$content .= $pagenav;
 	return ($content, $count);
