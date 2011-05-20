@@ -5152,6 +5152,10 @@ sub getUIIcon {
 	my ($action) = @_;
 	return replaceVars(exists $UI_ICONS{$action} ? $UI_ICONS{$action} : $UI_ICONS{default});
 }
+sub cmp_strings {
+	my ($_a,$_b) = @_;
+	return substr($_a,0,1) cmp substr($_b,0,1) || $_a cmp $_b;
+}
 sub cmp_files {
         my $fp_a = $PATH_TRANSLATED.$a;
         my $fp_b = $PATH_TRANSLATED.$b;
@@ -5160,11 +5164,11 @@ sub cmp_files {
         return 1 if !$backend->isDir($fp_a) && $backend->isDir($fp_b);
         if ($ORDER =~ /^(lastmodified|size|mode)/) {
                 my $idx = $ORDER=~/lastmodified/? 9 : $ORDER=~/mode/? 2 : 7;
-                return $factor * ( ($backend->stat($fp_a))[$idx] <=> ($backend->stat($fp_b))[$idx] || $backend->getDisplayName($fp_a) cmp $backend->getDisplayName($fp_b) );
+                return $factor * ( ($backend->stat($fp_a))[$idx] <=> ($backend->stat($fp_b))[$idx] || cmp_strings($backend->getDisplayName($fp_a),$backend->getDisplayName($fp_b)) );
         } elsif ($ORDER =~ /mime/) {
-                return $factor * ( getMIMEType($a) cmp getMIMEType($b) || $backend->getDisplayName($fp_a) cmp $backend->getDisplayName($fp_b));
+                return $factor * ( cmp_strings(getMIMEType($a), getMIMEType($b)) || cmp_strings($backend->getDisplayName($fp_a),$backend->getDisplayName($fp_b)));
         }
-        return $factor * ($backend->getDisplayName($fp_a) cmp $backend->getDisplayName($fp_b));
+        return $factor * cmp_strings($backend->getDisplayName($fp_a),$backend->getDisplayName($fp_b));
 }
 
 
