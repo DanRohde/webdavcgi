@@ -170,7 +170,7 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <ol>
 <li>a new perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
 <li> <code>$IGNOREFILEPERMISSIONS</code> config variable was removed</li>
-<li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB') </li>
+<li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB', 'DBB') </li>
 </ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>
@@ -207,7 +207,7 @@ The WebDAV CGI can be easier upgraded if you use a configuration file instead of
 ## (don't forget the trailing slash):
 $INSTALL_BASE = '/etc/webdavcgi/';
 
-## the backend module (supported: FS, AFS, GFS, SMB):
+## the backend module (supported: FS, AFS, GFS, SMB, DBB):
 $BACKEND = 'FS';
 
 ## this is an example if a user starts with home dir (http://mywebdavserver/ -&gt; user home):

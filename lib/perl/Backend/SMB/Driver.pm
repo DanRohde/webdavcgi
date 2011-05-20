@@ -287,15 +287,16 @@ sub rename {
 	return $smb->rename(_getSmbURL($on), _getSmbURL($nn));
 }
 sub resolve {
-	my ($self, $file) = @_;
-	return $file;	
+        my ($self, $fn) = @_;
+        $fn=~s/([^\/]*)\/\.\.(\/?.*)/$1/;
+        $fn=~s/(.+)\/$/$1/;
+        $fn=~s/\/\//\//g;
+        return $fn;
 }
-
 sub getParent {
 	my ($self, $file) = @_;
 	return dirname($file);
 }
-
 sub getDisplayName {
 	my ($self, $file) = @_;
 	my $name;

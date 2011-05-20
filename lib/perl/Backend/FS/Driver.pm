@@ -163,7 +163,7 @@ sub changeFilePermissions {
                 $newmode = $stat[2] ^ ($stat[2] & $mode ) if $type eq 'r';
                 chmod($newmode, $fn);
         }
-        my $nfn = File::Spec::Link->full_resolve($fn);
+        my $nfn = $self->resolve($fn);
         return if exists $$visited{$nfn};
         $$visited{$nfn}=1;
 

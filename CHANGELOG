@@ -3,6 +3,7 @@
      - added SMB/CIFS backend module for access to ADS integrated Windows/Samba shares
      - added example DBB backend module (database backend)
      - fixed last AFS performance bugs 
+     - fixed security bug (accessing files outside $DOCUMENT_ROOT)
      - Web interface:
            - improved display of byte sizes (flexible unit change) (GET)
 	   - added symbolic link support (POST)

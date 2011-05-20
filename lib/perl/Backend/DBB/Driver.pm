@@ -70,7 +70,7 @@ sub readDir {
 	my($self, $fn) = @_;
 	my @list;
 	my $sth = $self->{_dbh}->prepare("SELECT name FROM objects WHERE parent = ?");
-	if ($sth && $sth->execute($self->normalize($fn))) {
+	if ($sth && $sth->execute($self->resolve($fn))) {
 		my $data = $sth->fetchall_arrayref();
 		foreach my $e (@${data}) {
 			push @list, $$e[0];
@@ -80,7 +80,7 @@ sub readDir {
 }
 sub unlinkFile {
 	my ($self, $fn) = @_;
-	$fn = $self->normalize($fn);
+	$fn = $self->resolve($fn);
 	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
 	if ($sth && $sth->execute(basename($fn),dirname($fn))) {
 		$$self{_dbh}->commit();
@@ -90,7 +90,7 @@ sub unlinkFile {
 }
 sub deltree {
 	my ($self, $fn) = @_;
-	$fn = $self->normalize($fn);
+	$fn = $self->resolve($fn);
 	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE parent = ? OR parent like ?");
 	if ($sth && $sth->execute($fn,$fn.'/%')) {
 		$sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
@@ -115,8 +115,8 @@ sub isFile {
 
 sub rename { 
 	my ($self, $on, $nn) = @_;
-	$on=$self->normalize($on);
-	$nn=$self->normalize($nn);
+	$on=$self->resolve($on);
+	$nn=$self->resolve($nn);
 	return 0 if $self->isDir($on) && scalar($self->readDir($on))>0;
 	my $sth = $$self{_dbh}->prepare('UPDATE objects SET name = ?, parent = ? WHERE name = ? AND parent = ?');
 	$self->unlinkFile($nn);
@@ -128,8 +128,8 @@ sub rename {
 }
 sub copy {
 	my ($self, $src, $dst) = @_;
-	$src = $self->normalize($src);
-	$dst = $self->normalize($dst);
+	$src = $self->resolve($src);
+	$dst = $self->resolve($dst);
 	my $v = $self->_getDBEntry($src,1);
 	return $self->exists($dst) ?  $self->_changeDBEntry($dst, $$v{basename($src)}{data}) : $self->_addDBEntry($dst, TYPE_FILE, $$v{basename($src)}{data});
 }
@@ -157,14 +157,14 @@ sub hasStickyBit { return 0; }
 sub exists {
 	my ($self, $fn) = @_;
 	return 1 if $self->_isRoot($fn);
-	$fn = $self->normalize($fn);
+	$fn = $self->resolve($fn);
 	my $h =$self->_getDBEntry($fn);
 	return defined $h && exists $$h{basename($fn)};
 }
 sub stat {
 	my ($self,$fn) =@_;
 	return (0,0,$main::UMASK,0,0,0,0,0,0,0,0,0,0) if $self->_isRoot($fn);
-	$fn=$self->normalize($fn);
+	$fn=$self->resolve($fn);
 	my $val = $self->_getDBEntry($fn);
 	return CORE::stat($fn) unless defined $val;
 	$fn = basename($fn);
@@ -174,7 +174,7 @@ sub stat {
 
 sub _getDBValue {
 	my ($self, $fn, $attr, $default) = @_;
-	$fn = $self->normalize($fn);
+	$fn = $self->resolve($fn);
 	my $dbv = $self->_getDBEntry($fn, $attr eq 'data');
 	return defined $dbv ?  $$dbv{basename($fn)}{$attr} : $default;
 }
@@ -207,7 +207,7 @@ sub _addDBEntry {
 }
 sub _changeDBEntry {
 	my ($self, $name) = @_;
-	$name = $self->normalize($name);
+	$name = $self->resolve($name);
 	my $sel = 'UPDATE objects SET modified = ?';
 	$sel.=', data = ?' if defined $_[2];
 	$sel.=', size = ?' if defined $_[2];
@@ -231,7 +231,7 @@ sub _getDBEntry {
 	$sel.=',data' if $withdata;
 	$sel.=' FROM objects WHERE name = ? AND parent = ?';
 	my $sth = $self->{_dbh}->prepare($sel);
-	$sth->execute(basename($self->normalize($fn)), dirname($self->normalize($fn)));
+	$sth->execute(basename($self->resolve($fn)), dirname($self->resolve($fn)));
 	return !$sth->err ? $sth->fetchall_hashref('name') : undef;
 }
 
@@ -239,10 +239,11 @@ sub _isRoot {
 	return $_[1] eq $main::DOCUMENT_ROOT;
 }
 
-sub normalize {
+sub resolve {
 	my ($self, $fn) = @_;
 	$fn=~s/([^\/]*)\/\.\.(\/?.*)/$1/;
 	$fn=~s/(.+)\/$/$1/;
+	$fn=~s/\/\//\//g;
 	return $fn;
 }
 
@@ -252,7 +253,7 @@ sub isEmpty {
 }
 sub saveData {
 	#my ($self, $path, $data, $append) = @_;
-	my $fn = $_[0]->normalize($_[1]);
+	my $fn = $_[0]->resolve($_[1]);
 	my $data;
 	if ($_[0]->exists($_[1])) {
 		if ($_[3]) {
@@ -266,7 +267,7 @@ sub saveData {
 }
 sub saveStream {
 	my ($self, $fn, $fh) = @_;
-	$fn = $self->normalize($fn);
+	$fn = $self->resolve($fn);
 	my $blob;
 	while (read($fh, my $buffer, $main::BUFSIZE || 1048576)) {
 		$blob.=$buffer;
@@ -276,7 +277,7 @@ sub saveStream {
 
 sub printFile {
 	my ($self, $fn, $fh) = @_;
-	$fn=$self->normalize($fn);
+	$fn=$self->resolve($fn);
 	my $v = $self->_getDBEntry($fn,1);
 	print $fh $$v{basename($fn)}{data}
 }
