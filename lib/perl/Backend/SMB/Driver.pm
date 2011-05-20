@@ -465,8 +465,8 @@ sub changeMod { return 0; }
 sub createSymLink { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice { return 0; }
-sub readlink { $!='not supported'; return undef; }
-sub symlink { return 0; }
+sub getLinkSrc { $!='not supported'; return undef; }
+sub createSymLink { return 0; }
 sub hasStickyBit { return 0; }
 sub getQuota { 
 	my ($server,$share,$path) = _getPathInfo($_[1]);

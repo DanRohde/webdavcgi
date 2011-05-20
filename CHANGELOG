@@ -4,7 +4,8 @@
      - added example DBB backend module (database backend)
      - fixed last AFS performance bugs 
      - Web interface:
-           - improved display of byte sizes (flexible unit change)
+           - improved display of byte sizes (flexible unit change) (GET)
+	   - added symbolic link support (POST)
 
 0.7.0: 2011/29/04
      - fixed major search bug (SEARCH; thx jfotop@ath.forthnet.gr)

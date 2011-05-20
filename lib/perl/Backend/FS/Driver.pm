@@ -25,7 +25,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = 0.1;
 our @EXPORT = qw(new);
-our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles changeMod createSymLink resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename printFile getDisplayName rename readlink symlink getQuota copy);
+our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles changeMod createSymLink getLinkSrc resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename printFile getDisplayName rename getQuota copy);
 
 
 use File::Basename;
@@ -116,7 +116,7 @@ sub deltree {
                 if (unlink($nf)) {
                         $count++;
                         main::db_deleteProperties($f);
-                        mani::db_delete($f);
+                        main::db_delete($f);
                 } else {
                         push(@$errRef, { $f => "Cannot delete '$f': $!" });
                 }
@@ -244,10 +244,10 @@ sub changeMod {
 	chmod($_[1], $_[2]);
 }
 sub createSymLink {
-	return symlink($_[1],$_[2]);
+	return CORE::symlink($_[1],$_[2]);
 }
 sub getLinkSrc {
-	return readlink($_[1]);
+	return CORE::readlink($_[1]);
 }
 sub resolve {
 	return File::Spec::Link->full_resolve($_[1]);
@@ -292,12 +292,6 @@ sub getDisplayName {
 }
 sub rename {
 	return CORE::rename($_[1],$_[2]);
-}
-sub readlink {
-	return CORE::readlink($_[1]);
-}
-sub symlink {
-	return CORE::symlink($_[1],$_[2]);
 }
 sub getQuota {
 	my ($self, $fn) = @_;

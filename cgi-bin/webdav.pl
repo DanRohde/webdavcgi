@@ -65,7 +65,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $cgi
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $cgi $ALLOW_SYMLINK
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -270,6 +270,10 @@ $ALLOW_ZIP_UPLOAD = 1;
 ## -- ALLOW_ZIP_DOWNLOAD
 ## enable zip file download 
 $ALLOW_ZIP_DOWNLOAD = 1;
+
+## -- ALLOW_SYMLINK
+## enable symbolic link support
+$ALLOW_SYMLINK = 1;
 
 ## -- ENABLE_CLIPBOARD
 ## enables cut/copy/paste buttons and actions in the Web interface
@@ -1200,7 +1204,7 @@ sub _POST {
 	my $redirtarget = $REQUEST_URI;
 	$redirtarget =~s/\?.*$//; # remove query
 	
-	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata')||$cgi->param('savetextdatacont')||$cgi->param('createnewfile'))) {
+	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata')||$cgi->param('savetextdatacont')||$cgi->param('createnewfile')||$cgi->param('createsymlink'))) {
 		debug("_POST: file management ".join(",",$cgi->param('file')));
 		if ($cgi->param('delete')) {
 			if ($cgi->param('file')) {
@@ -1208,12 +1212,15 @@ sub _POST {
 				foreach my $file ($cgi->param('file')) {
 					$file = "" if $file eq '.';
 					debug("_POST: delete $PATH_TRANSLATED.$file");
-					if ($ENABLE_TRASH) {
-						$backend->moveToTrash($PATH_TRANSLATED.$file);
-					} else {
-						$count += $backend->deltree($PATH_TRANSLATED.$file, \my @err);
+					my $fullname = $backend->resolve("$PATH_TRANSLATED$file");
+					if ($fullname=~/^\Q$DOCUMENT_ROOT\E/) {
+						if ($ENABLE_TRASH) {
+							$backend->moveToTrash($PATH_TRANSLATED.$file);
+						} else {
+							$count += $backend->deltree($PATH_TRANSLATED.$file, \my @err);
+						}
+						logger("DELETE($PATH_TRANSLATED) via POST");
 					}
-					logger("DELETE($PATH_TRANSLATED) via POST");
 				}
 				if ($count>0) {
 					$msg= ($count>1)?'deletedmulti':'deletedsingle';
@@ -1265,6 +1272,27 @@ sub _POST {
 				}
 			} else {
 				$errmsg='foldernothingerr';
+			}
+		} elsif ($cgi->param('createsymlink') && $ALLOW_SYMLINK) {
+			my $lndst = $cgi->param('lndst');
+			my $file = $cgi->param('file');	
+			if ($lndst && $lndst ne "") {
+				if ($file && $file ne "") {
+					$msgparam.="p1=".$cgi->escape($lndst);
+					$msgparam.=";p2=".$cgi->escape($file);
+					$file = $backend->resolve("$PATH_TRANSLATED$file");
+					$lndst = $backend->resolve("$PATH_TRANSLATED$lndst");
+					if ($file=~/^\Q$DOCUMENT_ROOT\E/ && $lndst=~/^\Q$DOCUMENT_ROOT\E/ && $backend->createSymLink($file, $lndst)) {
+						$msg='symlinkcreated';	
+					}  else {
+						$errmsg='createsymlinkerr';
+						$msgparam.=";p3=".$cgi->escape($!);
+					}
+				} else {
+					$errmsg='createsymlinknoneselerr';
+				}
+			} else {
+				$errmsg='createsymlinknolinknameerr';
 			}
 		} elsif ($cgi->param('changeperm')) {
 			if ($cgi->param('file')) {
@@ -3965,6 +3993,14 @@ sub renderMoveView {
 		.$cgi->input({-id=>$_[0]?$_[0]:'newname'.(++$WEB_ID), -name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$cgi->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>_tl('movefilesbutton'),-onclick=>'return window.confirm("'._tl('movefilesconfirm').'");')
 	);
 }
+sub renderCreateSymLinkView {
+	return $cgi->div({-class=>'createsymlink', -title=>_tl('createsymlinkdescr')},
+		'&bull; '._tl('createsymlinktext') 
+		.$cgi->input({-id=>'linkdstname', -disabled=>'disabled', -name=>'lndst', -size=>30, -onkeypress=>'return catchEnter(event,"createsymlink");'})
+		.$cgi->submit(-id=>'createsymlink', -disabled=>'disabled', -name=>'createsymlink',-value=>_tl('createsymlinkbutton'))
+	);
+	
+}
 sub renderDeleteView {
 	return $cgi->div({-class=>'delete', -id=>'delete'},'&bull; '.$cgi->submit(-disabled=>'disabled', -name=>'delete', -value=>_tl('deletefilesbutton'), -onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");') 
 		.' '._tl('deletefilestext'));
@@ -4184,7 +4220,7 @@ sub renderWebInterface {
 		}
 		if ($ALLOW_FILE_MANAGEMENT && $backend->isWriteable($fn)) {
 			my $m = "";
-			$m .= renderFieldSet('files', renderCreateNewFolderView().renderCreateNewFileView() .renderMoveView() .renderDeleteView());
+			$m .= renderFieldSet('files', renderCreateNewFolderView().renderCreateNewFileView().($ALLOW_SYMLINK ? renderCreateSymLinkView():'').renderMoveView() .renderDeleteView());
 			$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
 			$m .= renderToggleFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 			$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
@@ -4263,6 +4299,7 @@ sub renderSideBar {
 		$content .= renderSideBarMenuItem('deleteview', undef, undef, renderDeleteFilesButton());
 		$content .= renderSideBarMenuItem('createfolderview', _tl('createfolderbutton'), 'toggleActionView("createfolderview","colname-sidebar");', $cgi->button({-value=> _tl('createfolderbutton'),-name=>'mkcol'}));
 		$content .= renderSideBarMenuItem('createnewfileview', _tl('createnewfilebutton'), 'toggleActionView("createnewfileview","cnfname");', $cgi->button({-value=>_tl('createnewfilebutton'),-name=>'createnewfile'}));
+		$content .= renderSideBarMenuItem('creatensymlinkview', _tl('createsymlinkdescr'), 'toggleActionView("createsymlinkview","lndst");', $cgi->button({-value=>_tl('createsymlinkbutton'),-name=>'createsymlink',-disabled=>'disabled'})) if $ALLOW_SYMLINK;
 		$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>_tl('movefilesbutton')}));
 		$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 		$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
@@ -4271,6 +4308,7 @@ sub renderSideBar {
 		$av.= renderActionView('zipfileuploadview', 'zipfileupload', renderZipUploadView(), 'zipfile_upload',0,0) if $ALLOW_ZIP_UPLOAD;
 		$av.= renderActionView('createfolderview', 'createfolderbutton', renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
 		$av.= renderActionView('createnewfileview', 'createnewfilebutton', renderCreateNewFileView(),'cnfname');
+		$av.= renderActionView('createsymlinkview', 'createsymlinkbutton', renderCreateSymLinkView(),'lndst') if $ALLOW_SYMLINK;
 		$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
 		$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 		$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
@@ -5157,8 +5195,8 @@ sub rcopy {
         
         if ( $backend->isLink($nsrc)) { # link
                 if (!$move || !$backend->rename($nsrc, $dst)) {
-                        my $orig = readlink($nsrc);
-                        return 0 if ( !$move || $backend->unlinkFile($nsrc) ) && !$backend->symlink($orig,$dst); 
+                        my $orig = $backend->getLinkSrc($nsrc);
+                        return 0 if ( !$move || $backend->unlinkFile($nsrc) ) && !$backend->createSymLink($orig,$dst); 
                 }
         } elsif ( $backend->isFile($src) ) { # file
 		debug("rcopy($src,$dst,$move,$depth) #2");

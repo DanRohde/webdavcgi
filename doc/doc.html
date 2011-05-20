@@ -747,6 +747,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $SHOW_QUOTA = -x '/usr/bin/smbclient';
 $SHOW_PERM = 0;
 $ALLOW_CHANGEPERM = 0;
+$ALLOW_SYMLINK = 0;
 
 #### SMB backend setup:
 ### required entries: defaultdomain, domains, fileserver
@@ -825,6 +826,9 @@ $DBI_PASS='';
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 $THUMBNAIL_CACHEDIR="/tmp";
+
+$ALLOW_CHANGEPERM = 0;
+$ALLOW_SYMLINK = 0;
 
 $BACKEND = 'DBB';
 
