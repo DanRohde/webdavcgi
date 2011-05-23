@@ -148,7 +148,8 @@ input,select { text-shadow: 1px 1px white;  }
 .otherwriteable { color: red; }
 
 
-.folderstats, .resultcount, .results { font-size:0.8em; }
+.folderstats, .resultcount, .results, .filter { font-size:0.8em; }
+.filter { background-color: yellow; }
 .clipboard { float:left; margin-right: 30px; }
 .copybutton,.cutbutton,.pastebutton { margin: 0px 5px 0px 5px; }
 .namefilter { display: inline; }
@@ -187,3 +188,4 @@ div.textdata { margin: 2px 2px 15px 2px;}
 .textdataresizer { cursor: se-resize; width: 1em; border-bottom: 3px double #aaaaaa; border-right: 3px double #aaaaaa; margin: 0px; padding:0px; position:absolute; bottom: 0px; right: 0px; }
 .textdatabuttons { padding-right: 1em; }
 .textdatabuttons input { margin-left: 1em; }
+

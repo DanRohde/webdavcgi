@@ -42,6 +42,9 @@ sub isDir {
 sub isFile {
 	return _checkAFSAccess($_[1]) && -f $_[1];
 }
+sub isLink {
+	return _checkAFSAccess($_[1]) && -l $_[1];
+}
 sub isExecutable {
 	return 1;
 }

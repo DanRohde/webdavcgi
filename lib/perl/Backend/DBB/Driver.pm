@@ -67,12 +67,14 @@ sub initialize {
 }
 
 sub readDir {
-	my($self, $fn) = @_;
+	my($self, $fn, $limit, $filter) = @_;
 	my @list;
 	my $sth = $self->{_dbh}->prepare("SELECT name FROM objects WHERE parent = ?");
 	if ($sth && $sth->execute($self->resolve($fn))) {
 		my $data = $sth->fetchall_arrayref();
 		foreach my $e (@${data}) {
+			last if defined $limit && $#list >= $limit;
+			next if defined $filter && $filter->($fn, $$e[0]);
 			push @list, $$e[0];
 		}
 	}

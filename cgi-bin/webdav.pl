@@ -66,6 +66,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $cgi $ALLOW_SYMLINK
+	    %BYTEUNITS @BYTEUNITORDER
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -675,6 +676,9 @@ $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 ## SMB backend configuration (see docs/smb.html):
 %SMB = ();
 
+%BYTEUNITS = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
+@BYTEUNITORDER = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PB' );
+
 ## -- DEBUG
 ## enables/disables debug output
 ## you can find the debug output in your web server error log
@@ -1089,7 +1093,7 @@ sub _GET {
 		       qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@);
 	} elsif ($ENABLE_THUMBNAIL &&  $cgi->param('action') eq 'mediarss' && $backend->isDir($fn) && $backend->isReadable($fn)) {
 		my $content = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
-		foreach my $file (sort cmp_files @{$backend->readDir($fn, getFileLimit($fn), getFileFilter($fn), getHiddenFilter())}) {
+		foreach my $file (sort cmp_files @{$backend->readDir($fn, getFileLimit($fn), \&frontendFilterCallback )}) {
 			my $mime = getMIMEType($file);
 			$mime='image/gif' if hasThumbSupport($mime) && $mime !~ /^image/i;
 			$content.=qq@<item><title>$file</title><link>$REQUEST_URI$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if hasThumbSupport($mime) && $backend->isReadable("$fn$file");
@@ -2379,7 +2383,7 @@ sub doBasicSearch {
 	$$visited{$nbase}=1;
 
 	if ($backend->isDir($base) && $backend->isReadable($base)) {
-		foreach my $sf (@{$backend->readDir($base,getFileLimit($base),getFileFilter($base),getHiddenFilter())}) {
+		foreach my $sf (@{$backend->readDir($base,getFileLimit($base),\&filterCallback)}) {
 			my $nbase = $base.$sf;
 			my $nhref = $href.$sf;
 			doBasicSearch($expr, $base.$sf, $href.$sf, defined $depth  && $depth ne 'infinity' ? $depth - 1 : $depth, $limit, $matches, $visited);
@@ -2475,7 +2479,7 @@ sub readDirBySuffix {
 	$$visited{$nfn}=1;
 
 	if ($backend->isReadable($fn)) {
-		foreach my $sf (@{$backend->readDir($fn, getFileLimit($fn), getFileFilter($fn), getHiddenFilter())}) {
+		foreach my $sf (@{$backend->readDir($fn, getFileLimit($fn), \&filterCallback)}) {
 			$sf.='/' if $backend->isDir($fn.$sf);
 			my $nbase=$base.$sf;
 			push @{$hrefs}, $nbase if $backend->isFile($fn.$sf) && $sf =~ /\.\Q$suffix\E/;
@@ -3111,7 +3115,7 @@ sub lockResource {
 	if ($backend->isDir($fn) && (lc($depth) eq 'infinity' || $depth>0)) {
 		debug("lockResource: depth=$depth");
 		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn),getHiddenFilter())}) {
+			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),\&filterCallback)}) {
 				my $nru = $ru.$f;
 				my $nfn = $fn.$f;
 				$nru.='/' if $backend->isDir($nfn);
@@ -3217,7 +3221,7 @@ sub inheritLock {
 		debug("inheritLock: $fn is a collection");
 		db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn),getHiddenFilter())}) {
+			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),\&filterCallback)}) {
 				my $full = $fn.$f;
 				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
 				db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
@@ -3271,7 +3275,7 @@ sub readDirRecursive {
 					propstat=> getPropStat($nfn,$fru,$props,$all,$noval),
 				};
 			}
-			foreach my $f ( sort cmp_files @{$backend->readDir($fn, getFileLimit($fn),getFileFilter($fn),getHiddenFilter())}) {
+			foreach my $f ( sort cmp_files @{$backend->readDir($fn, getFileLimit($fn),\&filterCallback)}) {
 				my $fru=$ru.$cgi->escape($f);
 				$isReadable = $backend->isReadable("$nfn/$f");
 				my $nnfn = $isReadable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
@@ -3634,7 +3638,7 @@ sub getDirInfo {
 	return $CACHE{getDirInfo}{$fn}{$prop} if defined $CACHE{getDirInfo}{$fn}{$prop};
 	my %counter = ( childcount=>0, visiblecount=>0, objectcount=>0, hassubs=>0 );
 	if ($backend->isReadable($fn)) {
-		foreach my $f (@{$backend->readDir($fn, $$limit{$fn} || $max, $$filter{$fn},getHiddenFilter())}) {
+		foreach my $f (@{$backend->readDir($fn, $$limit{$fn} || $max, \&filterCallback)}) {
 			$counter{realchildcount}++;
 			$counter{childcount}++;
 			$counter{visiblecount}++ if !$backend->isDir("$fn$f") && $f !~/^\./;
@@ -4001,6 +4005,60 @@ sub renderCreateSymLinkView {
 	);
 	
 }
+sub renderViewFilterView {
+	my $content ="";
+
+	my @typesdefault;
+	my $filter = $cgi->cookie('filter.types');
+	if (defined $filter && $filter =~ /^[fdl]+$/i) {
+		push @typesdefault, 'l' if $filter=~/l/i;
+		push @typesdefault, 'd' if $filter=~/d/i;
+		push @typesdefault, 'f' if $filter=~/f/i;
+	} else {
+		@typesdefault = ( 'f','d','l' );
+	}
+
+	my($sizeopdefault,$sizevaldefault,$sizeunitdefault) = ('==','','B');
+	$filter = $cgi->cookie('filter.size');
+	if (defined $filter && $filter =~ /^([\<\>\=]+)(\d+)(\w+)$/) {
+		($sizeopdefault, $sizevaldefault, $sizeunitdefault) = ($1,$2,$3);
+	}
+
+	my($timeopdefault, $timevaldefault) = ('==','');
+	$filter = $cgi->cookie('filter.time');
+	if (defined $filter && $filter =~ /^([\<\>\=]+)(\d+)$/) {
+		($timeopdefault, $timevaldefault) = ($1,$2);
+	}
+
+
+	$content.=$cgi->div({},
+			_tl('filter.types.title')
+			._tl('filter.types.showonly')
+			.$cgi->checkbox_group(-values=>['f','d','l'],-name=>'filter.types', defaults=>\@typesdefault, labels=>{d=>_tl('filter.types.folder'), l=>_tl('filter.types.links'),f=>_tl('filter.types.files')})
+			);
+	$content.=$cgi->div({},
+		_tl('filter.size.title') 
+		._tl('filter.size.showonly') 
+		. $cgi->popup_menu( -name=>'filter.size.op', defaults=>$sizeopdefault, -values=>['<','<=','==','>=','>'], labels=>{'=='=>'=', '>='=>'≥', '<='=>'≤'})
+		.$cgi->input({-size=>10, -name=>'filter.size.val', -value=>$sizevaldefault}) 
+		. $cgi->popup_menu(-name=>'filter.size.unit', -values=>['B','KB','MB','GB','TB','PB'], defaults=>$sizeunitdefault));
+###	$content.=$cgi->div({},
+###		_tl('filter.time.title')
+###		._tl('filter.time.showonly') 
+###		.$cgi->popup_menu( -name=>'filter.time.op', -defaults=>$timeopdefault, -value=>['<','<=','==','>=','>'], labels=>{'=='=>'=', '>='=>'≥', '<='=>'≤'})
+###		.$cgi->input({-size=>20, -name=>'filter.time.val', -value=>$timevaldefault})
+###		);
+
+	$content.=$cgi->div({}, 
+		 $cgi->button(-name=>'filter.reset',-value=>_tl('filter.reset'), -onclick=>'return resetFilters();')
+		.'&nbsp;&nbsp;'
+		.$cgi->button(-name=>'filter.apply',-value=>_tl('filter.apply'), -onclick=>'return applyFilters();')
+		);
+
+
+
+	return $content;
+}
 sub renderDeleteView {
 	return $cgi->div({-class=>'delete', -id=>'delete'},'&bull; '.$cgi->submit(-disabled=>'disabled', -name=>'delete', -value=>_tl('deletefilesbutton'), -onclick=>'return window.confirm("'._tl('deletefilesconfirm').'");') 
 		.' '._tl('deletefilestext'));
@@ -4233,7 +4291,9 @@ sub renderWebInterface {
 		$content .= $VIEW ne 'sidebar' && $ENABLE_SIDEBAR ? renderFieldSet('viewoptions', 
 				 ( $showall ? '&bull; '.$cgi->a({-href=>'?showpage=1'},_tl('navpageview')) : '' )
 				.(!$showall ? '&bull; '.$cgi->a({-href=>'?showall=1'},_tl('navall')) : '' )
-				. $cgi->br().'&bull; '.$cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))) : '';
+				. $cgi->br().'&bull; '.$cgi->a({-href=>'?view=sidebar'},_tl('sidebarview'))
+				.renderToggleFieldSet('filter.title',renderViewFilterView())
+				) : '';
 		$content .= $cgi->end_form() if $ALLOW_FILE_MANAGEMENT;
 		$content .= $cgi->start_form(-method=>'post', -id=>'clpform')
 				.$cgi->hidden(-name=>'action', -value=>'') .$cgi->hidden(-name=>'srcuri', -value>'')
@@ -4256,16 +4316,14 @@ sub renderByteValue {
 	my ($v, $f, $ft) = @_;
 	$f = 2 unless defined $f;
 	$ft = $f unless defined $ft;
-	my %cf = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
-	my @unitorder = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PB' );
 	my $showunit = 'B';
 	my %rv;
 	my $title = '';
 	my $lowerlimitf = 10**(-$f);
 	my $lowerlimitft = 10**(-$ft);
 	my $upperlimit = 10**10;
-	foreach my $unit (@unitorder) {
-		$rv{$unit} = $v / $cf{$unit};
+	foreach my $unit (@BYTEUNITORDER) {
+		$rv{$unit} = $v / $BYTEUNITS{$unit};
 		last if $rv{$unit} < $lowerlimitf;
 		$showunit=$unit if $rv{$unit} >= 1;
 		$title.= ($unit eq 'B' ? sprintf(' = %.0f B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
@@ -4322,6 +4380,8 @@ sub renderSideBar {
 	$content .= renderSideBarMenuItem('navpageview', _tl('navpageviewtooltip'), 'window.location.href="?showpage=1";',$cgi->button(-value=>_tl('navpageview'))) if $showall;
 	$content .= renderSideBarMenuItem('navall', _tl('navalltooltip'),'window.location.href="?showall=1";', $cgi->button(-value=>_tl('navall'))) unless $showall;
 	$content .= renderSideBarMenuItem('changeview', _tl('classicview'), 'javascript:window.location.href="?view=classic";', $cgi->button(-value=>_tl('classicview'))); 
+	$content .= renderSideBarMenuItem('filterview',_tl('filter.title'), 'toggleActionView("filterview","filter.size.op");', $cgi->button(-value=>_tl('filter.title'), -name=>'filter'));
+	$content .= renderActionView('filterview', 'filter.title', renderViewFilterView());
 	#$content .= renderSideBarMenuItem('autorefreshview',_tl('autorefresh'),'javascript:toggleActionView("autorefreshview","autorefresh")', $cgi->button(-value=>_tl('autorefreshbutton')));
 	#$av.=renderActionView('autorefreshview','autorefreshbutton',renderAutoRefresh());
 
@@ -4416,7 +4476,7 @@ sub getFolderList {
 	$list .= $tablehead;
 			
 
-	my @files = $backend->isReadable($fn) ? sort cmp_files @{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn),getHiddenFilter())} : ();
+	my @files = $backend->isReadable($fn) ? sort cmp_files @{$backend->readDir($fn,getFileLimit($fn),\&frontendFilterCallback)} : ();
 	unshift @files, '.' if  $SHOW_CURRENT_FOLDER || ($SHOW_CURRENT_FOLDER_ROOTONLY && $DOCUMENT_ROOT eq $fn);
 	unshift @files, '..' if $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn;
 
@@ -4511,9 +4571,41 @@ sub getFolderList {
 	my ($sizetext,$sizetitle) = renderByteValue($filesizes,2,2);
 	$sizetext.=$sizetitle ne "" ? " ($sizetitle)" : $sizetitle;
 	$content .= $cgi->div({-class=>'folderstats'},sprintf("%s %d, %s %d, %s %d, %s %s", _tl('statfiles'), $filecount, _tl('statfolders'), $foldercount, _tl('statsum'), $count, _tl('statsize'), $sizetext)) if ($SHOW_STAT); 
+	$content .= renderFrontendFilter($fn);
 
 	$content .= $pagenav;
 	return ($content, $count);
+}
+sub renderFrontendFilter {
+
+	my $content  = "";
+	if ($cgi->cookie('filter.types') && $cgi->cookie('filter.types')=~/^[dfl]+$/ && length($cgi->cookie('filter.types'))<3) {
+		my $filter = $cgi->cookie('filter.types');
+		my $t=$filter=~/d/ ? _tl('filter.types.folder') : '';
+		if ($filter=~/f/) {
+			$t.=', ' if $t ne '';
+			$t.=_tl('filter.types.files');
+		}
+		if ($filter=~/l/) {
+			$t.=', ' if $t ne '';
+			$t.=_tl('filter.types.links');
+		}
+		$content.=_tl('filter.types.showonly').$t;
+	}
+
+	if ($cgi->cookie('filter.size') && $cgi->cookie('filter.size')  =~ /^([\<\>\=]{1,2})(\d+)(\w*)$/) {
+		my ($op,$val,$unit) = ($1,$2,$3);
+		my ($v,$t) = renderByteValue($val*($BYTEUNITS{$unit}||1),2,2);
+		$content.='; ' if $content ne '';
+		$content.=_tl('filter.size.showonly').$op.$cgi->span({-title=>$t},$v);
+	}
+	if ($cgi->cookie('filter.time') && $cgi->cookie('filter.time') =~ /^([\<\>\=]{1,2})(\d+)$/) {
+		my ($op,$val) = ($1,$2);
+		$content.='; ' if $content ne '';
+		$content.=_tl('filter.time.showonly').$op.localtime($val);
+	}
+
+	return $content ne "" ? $cgi->div({-class=>'filter'},_tl('filter').$content) : $content;
 }
 sub renderFileActionsWithIcons {
 	my ($fid, $file, $full) = @_;
@@ -4628,7 +4720,7 @@ sub getSearchResult {
 	$content.=$cgi->hr().$cgi->div({-class=>'resultcount'},$count._tl($count>1?'searchresults':'searchresult')).getQuickNavPath($fn,$ru).$list if $count>0 && $isRecursive;
 	$$fullcount+=$count;
 	if ($backend->isReadable($fn)) {
-		foreach my $filename (sort cmp_files @{$backend->readDir($fn,getFileLimit($fn),getFileFilter($fn))}) {
+		foreach my $filename (sort cmp_files @{$backend->readDir($fn,getFileLimit($fn),\&filterCallback)}) {
 			local($PATH_TRANSLATED);
 			my $full = $fn.$filename;
 			next if is_hidden($full);
@@ -5263,9 +5355,44 @@ sub setLocale {
 	setlocale(LC_CTYPE, $locale); 
 	setlocale(LC_NUMERIC, $locale);
 }
-sub getFileFilter {
-	my ($path) =@_;
-	return $FILEFILTERPERDIR{$path};
+sub filterCallback {
+	my ($path, $file) = @_;
+	my $hidden = getHiddenFilter();
+	my $filter = defined $path ? $FILEFILTERPERDIR{$path} : undef;
+	print STDERR "filterCallback($path,$file)";
+	return 1 if defined $file && $file =~ /^\.{1,2}$/;
+	return 1 if defined $filter && defined $file && $file !~ $filter;
+	return 1 if defined $hidden && defined $file && defined $path && "$path$file" =~ /$hidden/;
+	return 0;
+}
+sub frontendFilterCallback {
+	my ($path, $file) = @_;
+	return 1 if filterCallback($path,$file);
+	my $ret = 0;
+	my $filter = $cgi->cookie('filter.types');
+	if ( defined $filter ) {
+		$ret|=1 if $filter!~/d/ && $backend->isDir("$path$file");
+		$ret|=1 if $filter!~/f/ && $backend->isFile("$path$file");
+		$ret|=1 if $filter!~/l/ && $backend->isLink("$path$file");
+	}
+	return 1 if $ret;
+	$filter = $cgi->cookie('filter.size');
+	print STDERR "frontendFilterCallback($path$file): filter.size: $filter";
+	if ( defined $filter && $backend->isFile("$path$file") &&  $filter=~/^([\<\>\=]{1,2})(\d+)(\w*)$/ ) {
+		my ($op, $val,$unit) = ($1,$2,$3);
+		$val = $val * $BYTEUNITS{$unit} if exists $BYTEUNITS{$unit};
+		my $size = ($backend->stat("$path$file"))[7];
+		my $fop = "$val $op $size";
+		$ret|=eval("$val $op $size");
+	}
+	return 1 if $ret;
+	$filter = $cgi->cookie('filter.time');
+	if ( defined $filter && $filter=~/^([\<\>\=]{1,2})(\d+)$/) {
+		my ($op, $val) = ($1, $2);
+		my $mtime = ($backend->stat("$path$file"))[9];
+		$ret|=eval("$val $op $mtime");
+	}
+	return $ret;
 }
 sub getFileLimit {
 	my ($path) = @_;
