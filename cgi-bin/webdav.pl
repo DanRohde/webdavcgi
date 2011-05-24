@@ -4051,7 +4051,7 @@ sub renderViewFilterView {
 					    'le' => _tl('filter.name.lessorequal'),
 					    'ge' => _tl('filter.name.greaterorequal')
 					 })
-			.$cgi->input({-name=>'filter.name.val', -size=>20, -value=>$nameval})
+			.$cgi->input({-name=>'filter.name.val', -size=>20, -value=>$nameval, -onkeypress=>'return catchEnter(event,"filter.apply")'})
 	);
 
 	$content.=$cgi->div({},
@@ -4070,7 +4070,7 @@ sub renderViewFilterView {
 				  '>'=>_tl('filter.size.greaterthan'),
 				  '>='=>_tl('filter.size.greaterorequal'), ### '≥', '≤'
 				  })
-		.$cgi->input({-size=>10, -name=>'filter.size.val', -value=>$sizevaldefault}) 
+		.$cgi->input({-size=>10, -name=>'filter.size.val', -value=>$sizevaldefault, -onkeypress=>'return catchEnter(event,"filter.apply")'}) 
 		. $cgi->popup_menu(-name=>'filter.size.unit', -values=>['B','KB','MB','GB','TB','PB'], defaults=>$sizeunitdefault));
 ###	$content.=$cgi->div({},
 ###		_tl('filter.time.title')
@@ -4080,11 +4080,11 @@ sub renderViewFilterView {
 ###		);
 
 	$content.=$cgi->div({-style=>'clear:both'}, 
-		$cgi->div({-style=>'float:right'},$cgi->button(-name=>'filter.reset',-value=>_tl('filter.reset'), -onclick=>'return resetFilters();'))
-		.$cgi->div(
+		$cgi->div({-style=>'float: right'},
+			###$cgi->checkbox(-name=>'filter.pathonly', -value=>$REQUEST_URI, -label=>_tl('filter.pathonly'), -checked=>'checked').
 			$cgi->button(-name=>'filter.apply',-value=>_tl('filter.apply'), -onclick=>'return applyFilters();')
-			.'&nbsp;'.$cgi->checkbox(-name=>'filter.pathonly', -value=>$REQUEST_URI, -label=>_tl('filter.pathonly'), -checked=>'checked')
 		)
+		.$cgi->div({-style=>'float:left'},$cgi->button(-name=>'filter.reset',-value=>_tl('filter.reset'), -onclick=>'return resetFilters();'))
 		);
 
 
