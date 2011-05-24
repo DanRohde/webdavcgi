@@ -4010,7 +4010,7 @@ sub renderViewFilterView {
 
 	my @typesdefault;
 	my $filter = $cgi->cookie('filter.types');
-	if (defined $filter && $filter =~ /^[fdl]+$/i) {
+	if (defined $filter && $filter =~ /^[fdl\-]+$/i) {
 		push @typesdefault, 'l' if $filter=~/l/i;
 		push @typesdefault, 'd' if $filter=~/d/i;
 		push @typesdefault, 'f' if $filter=~/f/i;
@@ -4030,6 +4030,29 @@ sub renderViewFilterView {
 		($timeopdefault, $timevaldefault) = ($1,$2);
 	}
 
+	my ($nameop, $nameval) = ( '=~', '');
+	$filter = $cgi->cookie('filter.name');
+	if (defined $filter && $filter =~ /^(\=\~|\^|\$|eq|ne|lt|gt|le|ge) (.*)$/) {
+		($nameop, $nameval) = ($1,$2);
+	}
+
+	$content.=$cgi->div({},
+			_tl('filter.name.title')
+			._tl('filter.name.showonly')
+			.$cgi->popup_menu(-name=>'filter.name.op', -default=>$nameop,
+				-values=>['=~','^','$','eq','ne','lt','gt','ge','le'],
+				-labels=>{ '=~' => _tl('filter.name.regexmatch'),
+					     '^' => _tl('filter.name.startswith'),
+					     '$' => _tl('filter.name.endswith'),
+				            'eq' => _tl('filter.name.equal'),
+				            'ne' => _tl('filter.name.notequal'),
+					    'lt' => _tl('filter.name.lessthan'),
+					    'gt' => _tl('filter.name.greaterthan'),
+					    'le' => _tl('filter.name.lessorequal'),
+					    'ge' => _tl('filter.name.greaterorequal')
+					 })
+			.$cgi->input({-name=>'filter.name.val', -size=>20, -value=>$nameval})
+	);
 
 	$content.=$cgi->div({},
 			_tl('filter.types.title')
@@ -4039,7 +4062,14 @@ sub renderViewFilterView {
 	$content.=$cgi->div({},
 		_tl('filter.size.title') 
 		._tl('filter.size.showonly') 
-		. $cgi->popup_menu( -name=>'filter.size.op', defaults=>$sizeopdefault, -values=>['<','<=','==','>=','>'], labels=>{'=='=>'=', '>='=>'≥', '<='=>'≤'})
+		. $cgi->popup_menu( -name=>'filter.size.op', -defaults=>$sizeopdefault, -values=>['<','<=','==','>=','>'], 
+			-labels=>{
+				  '<'=>_tl('filter.size.lessthan'),
+				  '<='=>_tl('filter.size.lessorequal'),
+				   '=='=> _tl('filter.size.equal'),
+				  '>'=>_tl('filter.size.greaterthan'),
+				  '>='=>_tl('filter.size.greaterorequal'), ### '≥', '≤'
+				  })
 		.$cgi->input({-size=>10, -name=>'filter.size.val', -value=>$sizevaldefault}) 
 		. $cgi->popup_menu(-name=>'filter.size.unit', -values=>['B','KB','MB','GB','TB','PB'], defaults=>$sizeunitdefault));
 ###	$content.=$cgi->div({},
@@ -4049,10 +4079,12 @@ sub renderViewFilterView {
 ###		.$cgi->input({-size=>20, -name=>'filter.time.val', -value=>$timevaldefault})
 ###		);
 
-	$content.=$cgi->div({}, 
-		 $cgi->button(-name=>'filter.reset',-value=>_tl('filter.reset'), -onclick=>'return resetFilters();')
-		.'&nbsp;&nbsp;'
-		.$cgi->button(-name=>'filter.apply',-value=>_tl('filter.apply'), -onclick=>'return applyFilters();')
+	$content.=$cgi->div({-style=>'clear:both'}, 
+		$cgi->div({-style=>'float:right'},$cgi->button(-name=>'filter.reset',-value=>_tl('filter.reset'), -onclick=>'return resetFilters();'))
+		.$cgi->div(
+			$cgi->button(-name=>'filter.apply',-value=>_tl('filter.apply'), -onclick=>'return applyFilters();')
+			.'&nbsp;'.$cgi->checkbox(-name=>'filter.pathonly', -value=>$REQUEST_URI, -label=>_tl('filter.pathonly'), -checked=>'checked')
+		)
 		);
 
 
@@ -4579,6 +4611,12 @@ sub getFolderList {
 sub renderFrontendFilter {
 
 	my $content  = "";
+	if ($cgi->cookie('filter.name') && $cgi->cookie('filter.name')=~/^(\=\~|\^|\$|eq|ne|lt|le|gt|ge) (.*)$/) {
+		my ($nameop, $nameval) = ($1,$2);
+		my %nameops = ( '=~' => _tl('filter.name.regexmatch'), '^' => _tl('filter.name.startswith'), '$' => _tl('filter.name.endswith'), 'eq' => _tl('filter.name.equal'), 'ne' => _tl('filter.name.notequal'), 'lt' => _tl('filter.name.lessthan'), 'gt' => _tl('filter.name.greaterthan'), 'le' => _tl('filter.name.lessorequal'), 'ge' => _tl('filter.name.greaterorequal'));
+		$content.=_tl('filter.name.showonly').$nameops{$nameop}.'&nbsp;"'.$cgi->span($nameval).'"';
+
+	}
 	if ($cgi->cookie('filter.types') && $cgi->cookie('filter.types')=~/^[dfl]+$/ && length($cgi->cookie('filter.types'))<3) {
 		my $filter = $cgi->cookie('filter.types');
 		my $t=$filter=~/d/ ? _tl('filter.types.folder') : '';
@@ -4590,14 +4628,16 @@ sub renderFrontendFilter {
 			$t.=', ' if $t ne '';
 			$t.=_tl('filter.types.links');
 		}
+		$content.='; ' if $content ne '';
 		$content.=_tl('filter.types.showonly').$t;
 	}
 
 	if ($cgi->cookie('filter.size') && $cgi->cookie('filter.size')  =~ /^([\<\>\=]{1,2})(\d+)(\w*)$/) {
 		my ($op,$val,$unit) = ($1,$2,$3);
 		my ($v,$t) = renderByteValue($val*($BYTEUNITS{$unit}||1),2,2);
+		my %sizeops = ( '<'=>_tl('filter.size.lessthan'), '<='=>_tl('filter.size.lessorequal'), '=='=> _tl('filter.size.equal'), '>'=>_tl('filter.size.greaterthan'), '>='=>_tl('filter.size.greaterorequal'),);
 		$content.='; ' if $content ne '';
-		$content.=_tl('filter.size.showonly').$op.$cgi->span({-title=>$t},$v);
+		$content.=_tl('filter.size.showonly').$sizeops{$op}.$cgi->span({-title=>$t},$v);
 	}
 	if ($cgi->cookie('filter.time') && $cgi->cookie('filter.time') =~ /^([\<\>\=]{1,2})(\d+)$/) {
 		my ($op,$val) = ($1,$2);
@@ -5359,7 +5399,6 @@ sub filterCallback {
 	my ($path, $file) = @_;
 	my $hidden = getHiddenFilter();
 	my $filter = defined $path ? $FILEFILTERPERDIR{$path} : undef;
-	print STDERR "filterCallback($path,$file)";
 	return 1 if defined $file && $file =~ /^\.{1,2}$/;
 	return 1 if defined $filter && defined $file && $file !~ $filter;
 	return 1 if defined $hidden && defined $file && defined $path && "$path$file" =~ /$hidden/;
@@ -5377,20 +5416,34 @@ sub frontendFilterCallback {
 	}
 	return 1 if $ret;
 	$filter = $cgi->cookie('filter.size');
-	print STDERR "frontendFilterCallback($path$file): filter.size: $filter";
 	if ( defined $filter && $backend->isFile("$path$file") &&  $filter=~/^([\<\>\=]{1,2})(\d+)(\w*)$/ ) {
 		my ($op, $val,$unit) = ($1,$2,$3);
 		$val = $val * $BYTEUNITS{$unit} if exists $BYTEUNITS{$unit};
 		my $size = ($backend->stat("$path$file"))[7];
-		my $fop = "$val $op $size";
-		$ret|=eval("$val $op $size");
+		$ret=!eval("$size $op $val");
 	}
 	return 1 if $ret;
+	$filter = $cgi->cookie('filter.name');
+	if (defined $filter && defined $file && $filter =~ /^(\=\~|\^|\$|eq|ne|lt|gt|le|ge) (.*)$/) {
+		my ($nameop,$nameval) = ($1,$2);
+		$nameval=~s/\//\/\//g;
+		if ($nameop eq '^') {
+			$ret=!eval(qq@'$file' =~ /\^\Q$nameval\E/i@);
+		} elsif ($nameop eq '$') {
+			$ret=!eval(qq@'$file' =~ /\Q$nameval\E\$/i@);
+		} elsif ($nameop eq '=~') {
+			$ret=!eval("'$file' $nameop /$nameval/i");
+		} else {
+			$ret=!eval("lc('$file') $nameop lc(q/$nameval/)");
+		}
+	}
+	return 1 if $ret;
+
 	$filter = $cgi->cookie('filter.time');
 	if ( defined $filter && $filter=~/^([\<\>\=]{1,2})(\d+)$/) {
 		my ($op, $val) = ($1, $2);
 		my $mtime = ($backend->stat("$path$file"))[9];
-		$ret|=eval("$val $op $mtime");
+		$ret=!eval("$val $op $mtime");
 	}
 	return $ret;
 }
