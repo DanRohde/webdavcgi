@@ -54,19 +54,19 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $PAGE_LIMIT $ENABLE_SEARCH $ENABLE_GROUPDAV %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS
             @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXLASTMODIFIEDSIZE 
             $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
-            $ENABLE_BIND $SHOW_PERM $ALLOW_CHANGEPERM $ALLOW_CHANGEPERMRECURSIVE $LANGSWITCH
+            $ENABLE_BIND $ALLOW_CHANGEPERM $ALLOW_CHANGEPERMRECURSIVE $LANGSWITCH
             $PERM_USER $PERM_GROUP $PERM_OTHERS
             $DBI_PERSISTENT
             $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR 
             $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
-	    $ENABLE_FLOCK $SHOW_MIME $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
+	    $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $cgi $ALLOW_SYMLINK
-	    %BYTEUNITS @BYTEUNITORDER
+	    %BYTEUNITS @BYTEUNITORDER @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -340,15 +340,17 @@ $POST_MAX_SIZE = 1073741824;
 ## DEFAULT: $SHOW_QUOTA = 0;
 $SHOW_QUOTA = 1;
 
-## -- SHOW_PERM
-## show file permissions
-## DEFAULT: $SHOW_PERM = 0;
-$SHOW_PERM = 1;
+## -- @ALLOWED_TABLE_COLUMNS
+## defines the allowed columns for the file list in the Web interface
+## supported values: name, lastmodified, created, size, mode, mime, fileaction
+@ALLOWED_TABLE_COLUMNS = ('name','lastmodified','created','size','mode','mime');
+push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
-## -- SHOW_MIME
-## show mime type
-## DEFAULT: $SHOW_MIME= 0;
-$SHOW_MIME= 0;
+## -- @VISIBLE_TABLE_COLUMNS
+## defines the visible columns for the file list in the Web interface
+## supported values (see @ALLOWED_TABLE_COLUMNS)
+@VISIBLE_TABLE_COLUMNS = ('name','lastmodified','size','mode' );
+push @VISIBLE_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
 ## -- SHOW_FILE_ACTIONS
 ## show file actions column
@@ -4312,7 +4314,7 @@ sub renderWebInterface {
 			my $m = "";
 			$m .= renderFieldSet('files', renderCreateNewFolderView().renderCreateNewFileView().($ALLOW_SYMLINK ? renderCreateSymLinkView():'').renderMoveView() .renderDeleteView());
 			$m .= renderFieldSet('zip', renderZipView()) if ($ALLOW_ZIP_UPLOAD || $ALLOW_ZIP_DOWNLOAD);
-			$m .= renderToggleFieldSet('permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
+			$m .= renderToggleFieldSet('mode', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 			$m .= renderToggleFieldSet('afs', renderAFSACLManager()) if ($ENABLE_AFSACLMANAGER);
 			$manageview .= renderToggleFieldSet('management', $m);
 		}
@@ -4391,7 +4393,7 @@ sub renderSideBar {
 		$content .= renderSideBarMenuItem('createnewfileview', _tl('createnewfilebutton'), 'toggleActionView("createnewfileview","cnfname");', $cgi->button({-value=>_tl('createnewfilebutton'),-name=>'createnewfile'}));
 		$content .= renderSideBarMenuItem('creatensymlinkview', _tl('createsymlinkdescr'), 'toggleActionView("createsymlinkview","lndst");', $cgi->button({-value=>_tl('createsymlinkbutton'),-name=>'createsymlink',-disabled=>'disabled'})) if $ALLOW_SYMLINK;
 		$content .= renderSideBarMenuItem('movefilesview', _tl('movefilesbutton'), undef, $cgi->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>_tl('movefilesbutton')}));
-		$content .= renderSideBarMenuItem('permissionsview', _tl('permissions'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('permissions'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
+		$content .= renderSideBarMenuItem('permissionsview', _tl('mode'), undef, $cgi->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>_tl('mode'),-name=>'changeperm',-disabled=>'disabled'})) if $ALLOW_CHANGEPERM;
 		$content .= renderSideBarMenuItem('afsaclmanagerview', _tl('afs'), 'toggleActionView("afsaclmanagerview");', $cgi->button({-value=>_tl('afs'),-name=>'saveafsacl'})) if $ENABLE_AFSACLMANAGER;
 		$content .= $cgi->hr().renderSideBarMenuItem('afsgroupmanagerview', _tl('afsgroup'), 'toggleActionView("afsgroupmanagerview");', $cgi->button({-value=>_tl('afsgroup')})).$cgi->hr() if $ENABLE_AFSGROUPMANAGER;
 		$av.= renderActionView('fileuploadview', 'upload', renderFileUploadView($PATH_TRANSLATED,'filesubmit'), 'filesubmit',0,0);
@@ -4400,7 +4402,7 @@ sub renderSideBar {
 		$av.= renderActionView('createnewfileview', 'createnewfilebutton', renderCreateNewFileView(),'cnfname');
 		$av.= renderActionView('createsymlinkview', 'createsymlinkbutton', renderCreateSymLinkView(),'lndst') if $ALLOW_SYMLINK;
 		$av.= renderActionView('movefilesview', 'movefilesbutton', renderMoveView("newname"),'newname');
-		$av.= renderActionView('permissionsview', 'permissions', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
+		$av.= renderActionView('permissionsview', 'mode', renderChangePermissionsView()) if $ALLOW_CHANGEPERM;
 		$av.= renderActionView('afsaclmanagerview', 'afs', renderAFSACLManager()) if $ENABLE_AFSACLMANAGER;
 		$av.= renderActionView('afsgroupmanagerview', 'afsgroup', renderAFSGroupManager()) if $ENABLE_AFSGROUPMANAGER;
 	
@@ -4477,6 +4479,55 @@ sub renderPageNavBar {
 
 	return $cgi->div({-class=>'pagenav'},$content);
 }
+sub renderTableConfig {
+	my $content = "";
+
+	my $sortingcolumndefault ='name';
+	my $sortingorderdefault = 'asc';
+	if ($cgi->cookie('order') && $cgi->cookie('order') =~/^([^_]+)(_(.*))?$/) {
+		($sortingcolumndefault,$sortingorderdefault) = ($1, $3 || 'asc');
+	}
+	print STDERR "sortingorderdefault=$sortingorderdefault";
+
+	my @tablecolumns = @ALLOWED_TABLE_COLUMNS;
+	my @sortingcolumns = grep(!/^fileactions$/,@ALLOWED_TABLE_COLUMNS);
+	my @visiblecolumns = getVisibleTableColumns();
+	my %tablecolumnlabels;
+	my @tablecolumndefaults;
+	foreach my $col  (@tablecolumns) { 
+		$tablecolumnlabels{$col} = _tl($col); 
+		push @tablecolumndefaults, $col if grep(/^\Q$col\E$/,@visiblecolumns);
+	}
+	my %tablecolumnattributes = ( 'name'=>{ -disabled=>'disabled' } );
+
+	$content.=$cgi->div({-class=>'tableconfigbutton', -title=>_tl('tableconfig.button.title'), -onclick=>'toggleClassNameById("tableconfig","hidden",!document.getElementById("tableconfig").className.match(/hidden/));'}, _tl('tableconfig.button'));
+
+	$content.=$cgi->div({-id=>'tableconfig',-class=>'tableconfig hidden'},
+		renderFieldSet(_tl('tableconfig.tablecolumns'), $cgi->checkbox_group({-name=>'tablecolumns',-cols=>1,-values=>\@tablecolumns,-labels=>\%tablecolumnlabels,-defaults=>\@tablecolumndefaults, -attributes=>\%tablecolumnattributes}))
+		.renderFieldSet(_tl('tableconfig.sortingcolumns'), $cgi->radio_group({-name=>'sortingcolumns',-cols=>1, -values=>\@sortingcolumns,-labels=>\%tablecolumnlabels,-default=>$sortingcolumndefault}))
+		.renderFieldSet(_tl('tableconfig.sortingorder'), $cgi->radio_group({-name=>'sortingorder',-cols=>1, -values=>['asc','desc'], -labels=>{'asc'=>_tl('tableconfig.ascending'),'desc'=>_tl('tableconfig.descending')}, -default=>$sortingorderdefault}))
+		.$cgi->div({-class=>'tableconfigactions'},
+			$cgi->button({-value=>_tl('cancel'),-onclick=>'toggleClassNameById("tableconfig","hidden",1)'})
+			.$cgi->button({-value=>_tl('savebutton'), -onclick=>'saveTableConfig()'})
+		 )
+	);
+
+	return $content;
+}
+sub getVisibleTableColumns {
+	my @vc;
+
+	if (my $vcs = $cgi->cookie('visibletablecolumns')) {
+		my @cvc = split(',', $vcs);
+		my ($allowed) = 1;
+		foreach my $c (@cvc) {
+			push @vc, $c if grep(/^\Q$c\E$/, @ALLOWED_TABLE_COLUMNS);
+		}
+	} else {
+		@vc = @VISIBLE_TABLE_COLUMNS;
+	}
+	return @vc;
+}
 sub getQueryParams {
 	# preserve query parameters
 	my @query;
@@ -4497,13 +4548,20 @@ sub getFolderList {
 	my $dir = $ORDER=~/_desc$/ ? '' : '_desc';
 	my $query = $filter ? 'search=' . $cgi->param('search'):'';
 	my $ochar = ' <span class="orderchar">'.($dir eq '' ? '&darr;' :'&uarr;').'</span>';
-	$tablehead .= $cgi->td({-class=>'th_fn'.($ORDER=~/^name/?' th_highlight':''), style=>'min-width:'.$MAXFILENAMESIZE.'ex;',-onclick=>"window.location.href='$ru?order=name$dir;$query'"}, $cgi->a({-href=>"$ru?order=name$dir;$query"},_tl('names').($ORDER=~/^name/?$ochar:'')))
-		.$cgi->td({-class=>'th_lm'.($ORDER=~/^lastmodified/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=lastmodified$dir;$query'"}, $cgi->a({-href=>"$ru?order=lastmodified$dir;$query"},_tl('lastmodified').($ORDER=~/^lastmodified/?$ochar:'')))
-		.$cgi->td({-class=>'th_size'.($ORDER=~/^size/i?' th_highlight':''),-onclick=>"window.location.href='$ru?order=size$dir;$query'"},$cgi->a({-href=>"$ru?order=size$dir;$query"},_tl('size').($ORDER=~/^size/?$ochar:'')))
-		.($SHOW_PERM? $cgi->td({-class=>'th_perm'.($ORDER=~/^mode/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mode$dir;$query'"}, $cgi->a({-href=>"$ru?order=mode$dir;$query"},sprintf("%-11s",_tl('permissions').($ORDER=~/^mode/?$ochar:'')))):'')
-		.($SHOW_MIME? $cgi->td({-class=>'th_mime'.($ORDER=~/^mime/?' th_highlight':''),-onclick=>"window.location.href='$ru?order=mime$dir;$query'"},'&nbsp;'.$cgi->a({-href=>"$ru?order=mime$dir;$query"},_tl('mimetype').($ORDER=~/^mime/?$ochar:''))):'')
-		.($ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS ? $cgi->td({-title=>_tl('fileactions'), -class=>'th_actions'}, _tl('fileactions')) : '')
-	;
+
+	my @tablecolumns = getVisibleTableColumns();
+
+	foreach my $column (@tablecolumns) {
+		$tablehead .= $cgi->td({
+						-class=>"th_$column".($ORDER=~/^\Q$column\E/?' th_highlight':''),
+						-style=> $column eq 'name' ? "min-width: ${MAXFILENAMESIZE}ex;" : '',
+						-title=> $column ne 'fileactions' ? _tl('clickchangessort') : _tl($column),
+						-onclick=> $column ne 'fileactions' ? "window.location.href='$ru?order=${column}${dir};$query';" : '',
+					}, $column ne 'fileactions' ?  $cgi->a({-href=>"$ru?order=${column}${dir};$query"}, _tl($column).($ORDER=~/^\Q$column\E/?$ochar:''))
+								: _tl($column)
+		);
+	}
+
 	$tablehead = $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $tablehead);
 	$list .= $tablehead;
 			
@@ -4577,13 +4635,27 @@ sub getFolderList {
 
 		my $lmf = strftime(_tl('lastmodifiedformat'), localtime($mtime));
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
-		$row.= $cgi->td({-class=>'tc_fn', -id=>"tc_fn_$fid", -onclick=>$onclick, -onmousedown=>$ignev, -ondblclick=>$ignev}, getfancyfilename($nru,$filename,$mimetype, $full, $isUnReadable));
-		$row.= $cgi->td({-class=>'tc_lm', -title=>_tl('created').' '.$ctf, -onclick=>$onclick, -onmousedown=>$ignev}, $lmf);
 		my ($size_v, $size_t) = renderByteValue($size,0,2);
-		$row.= $cgi->td({-class=>'tc_size', -title=>$size_t, -onclick=>$onclick, -onmousedown=>$ignev}, $size_v);
-		$row.= $cgi->td({-class=>'tc_perm', -onclick=>$onclick, -onmousedown=>$ignev}, $cgi->span({-class=>getmodeclass($full,$mode),-title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},sprintf("%-11s",mode2str($full,$mode)))) if $SHOW_PERM;
-		$row.= $cgi->td({-class=>'tc_mime', -onclick=>$onclick, -onmousedown=>$ignev},'&nbsp;'. $cgi->escapeHTML($mimetype)) if $SHOW_MIME;
-		$row.= $cgi->td({-class=>'tc_actions' }, $filename=~/^\.{1,2}$/ || $unsel ? '' : renderFileActions($fid, $filename, $full)) if $ALLOW_FILE_MANAGEMENT && $SHOW_FILE_ACTIONS;
+		my %rowdata = (
+			'name'=> { value=>getfancyfilename($nru, $filename, $mimetype, $full, $isUnReadable), title=>$filename},
+			'lastmodified'=>{ value=>$lmf, title=>_tl('created').' '.$ctf},
+			'created'=>{ value=>$ctf, title=>_tl('lastmodified').' '.$lmf},
+			'size'=>{ value=>$size_v, title=>$size_t},
+			'mode'=>{ value=>sprintf("%-11s",mode2str($full,$mode)), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},
+			'fileactions'=> {value=>$filename=~/^\.{1,2}$/ || $unsel ? '' : renderFileActions($fid, $filename, $full), title=>$filename },
+			'mime'=>{ value=>$cgi->escapeHTML($mimetype), title=>$filename},
+		);
+
+		foreach my $column (@tablecolumns) {
+			$row.=$cgi->td({
+						-class=>"tc_$column", 
+						-id=>"tc_${column}_${fid}",
+						-title=>$rowdata{$column}{title}, 
+						-onclick=>$onclick, 
+						-onmousedown=>$ignev, 
+						-ondblclick=>$ignev,
+					}, $rowdata{$column}{value});
+		}
 		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
@@ -4598,7 +4670,7 @@ sub getFolderList {
 
 	}
 	$list .= $tablehead if $count > 20; ## && $count % 50 != 0 && $count % 50 > 20;
-	$content .= $pagenav;
+	$content .= renderTableConfig(). $pagenav;
 	$content .= $cgi->start_table({-class=>'filelist'}).$list.$cgi->end_table();
 	my ($sizetext,$sizetitle) = renderByteValue($filesizes,2,2);
 	$sizetext.=$sizetitle ne "" ? " ($sizetitle)" : $sizetitle;
@@ -5294,8 +5366,8 @@ sub cmp_files {
         my $factor = ($ORDER =~/_desc$/) ? -1 : 1;
         return -1 if $backend->isDir($fp_a) && !$backend->isDir($fp_b);
         return 1 if !$backend->isDir($fp_a) && $backend->isDir($fp_b);
-        if ($ORDER =~ /^(lastmodified|size|mode)/) {
-                my $idx = $ORDER=~/lastmodified/? 9 : $ORDER=~/mode/? 2 : 7;
+        if ($ORDER =~ /^(lastmodified|created|size|mode)/) {
+                my $idx = $ORDER=~/^lastmodified/? 9 : $ORDER=~/^created/ ? 10 : $ORDER=~/^mode/? 2 : 7;
                 return $factor * ( ($backend->stat($fp_a))[$idx] <=> ($backend->stat($fp_b))[$idx] || cmp_strings($backend->getDisplayName($fp_a),$backend->getDisplayName($fp_b)) );
         } elsif ($ORDER =~ /mime/) {
                 return $factor * ( cmp_strings(getMIMEType($a), getMIMEType($b)) || cmp_strings($backend->getDisplayName($fp_a),$backend->getDisplayName($fp_b)));

@@ -171,6 +171,7 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <li>a new perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
 <li> <code>$IGNOREFILEPERMISSIONS</code> config variable was removed</li>
 <li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB', 'DBB') </li>
+<li> <code>$SHOW_MIME</code> and <code>$SHOW_PERM</code> were removed and use the new options <code>@ALLOWED_TABLE_COLUMNS</code> and <code>@VISIBLE_TABLE_COLUMNS</code> instead</li>
 </ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>

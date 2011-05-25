@@ -118,6 +118,46 @@ input,select { text-shadow: 1px 1px white;  }
 .pagenav a, .showall a { text-decoration: none;}
 .showall input, .pagenav select { border: 0; margin: 0;}
 
+.tableconfigbutton {
+	float: left;
+	border: 1px outset #aaaaaa;
+	padding: 0px 1ex 0px 1ex;
+	margin: 0px;
+	background-color: #f0f0f0;
+	color: #888888;
+}
+.tableconfig { 
+	padding: 0px;
+	margin: 0px;
+	border: 1px solid #888888;
+	position: fixed; 
+	left:228px;
+	top:140px;
+	width:auto;
+	background-color: white;
+	opacity: 0.9; 
+	filter: Alpha(opacity=90); 
+}
+.tableconfig fieldset {
+	min-height: 200px;
+	height: 200px;
+	float: left;
+	clear: none;
+	margin: 1ex 1ex 1ex 1ex;
+}
+.tableconfig legend {
+	color: #888888;
+	padding: 0px 1ex 0px 1ex;
+}
+.tableconfigactions {
+	clear: both;
+	text-align: center;
+}
+.tableconfigactions input {
+	margin: 2px 2px 1ex 20px;
+}
+
+
 .pagelimit { float: right; padding-right: 10px; }
 
 .filelist a { text-decoration: none; }
@@ -135,14 +175,14 @@ input,select { text-shadow: 1px 1px white;  }
 .filelist .tr_odd.tr_copy, .filelist .tr_odd.tr_copy a { color: #224466; }
 .filelist .tr_even.tr_copy, .filelist .tr_even.tr_copy a { color: #113355; }
 .filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
-.filelist .tc_lm, .filelist .tc_mime, .filelist .tc_perm, .filelist .tc_fn { white-space: nowrap;}
+.filelist .tc_lastmodified, .filelist .tc_created, .filelist .tc_mime, .filelist .tc_mode, .filelist .tc_name { white-space: nowrap;}
 .filelist select { border: 1px inset #555555; }
-.filelist .th_actions, .filelist .tc_actions { cursor: auto; text-align:center;}
+.filelist .th_fileactions, .filelist .tc_fileactions { cursor: auto; text-align:center;}
 .th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
 .th_sel { width:1em; }
-.th_fn a, .th_lm a, .th_size a, .th_perm a, .th_mime a { white-space: nowrap; color: black; text-decoration: none; text-shadow: 1px 1px white; }
+.th a { white-space: nowrap; color: black; text-decoration: none; text-shadow: 1px 1px white; }
 .th_highlight { background-color: #bcbcbc; border: 1px inset black; }
-.th_size, .th_perm, .tc_size, .tc_perm { text-align:right; }
+.th_size, .th_mode, .tc_size, .tc_mode { text-align:right; }
 .tr_up { background-color: white; }
 .groupwriteable { color: darkred; }
 .otherwriteable { color: red; }
