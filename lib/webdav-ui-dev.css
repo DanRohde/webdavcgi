@@ -126,17 +126,23 @@ input,select { text-shadow: 1px 1px white;  }
 	background-color: #f0f0f0;
 	color: #888888;
 }
+.tableconfigcontainer {
+	position: relative;
+	top: 0px;
+	left: 0px;
+}
 .tableconfig { 
 	padding: 0px;
 	margin: 0px;
 	border: 1px solid #888888;
-	position: fixed; 
-	left:228px;
-	top:140px;
+	position: absolute; 
+	left:0;
+	top:1.5em;
 	width:auto;
 	background-color: white;
 	opacity: 0.9; 
 	filter: Alpha(opacity=90); 
+	z-index: 11;
 }
 .tableconfig fieldset {
 	min-height: 200px;

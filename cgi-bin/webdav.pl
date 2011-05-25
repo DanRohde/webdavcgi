@@ -4512,7 +4512,7 @@ sub renderTableConfig {
 		 )
 	);
 
-	return $content;
+	return $cgi->div({-class=>'tableconfigcontainer'},$content);
 }
 sub getVisibleTableColumns {
 	my @vc;
