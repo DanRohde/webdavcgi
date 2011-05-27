@@ -1209,7 +1209,7 @@ sub _POST {
 	my($msg,$msgparam,$errmsg);
 	my $redirtarget = $REQUEST_URI;
 	$redirtarget =~s/\?.*$//; # remove query
-	
+
 	if ($ALLOW_FILE_MANAGEMENT && ($cgi->param('delete')||$cgi->param('rename')||$cgi->param('mkcol')||$cgi->param('changeperm')||$cgi->param('edit')||$cgi->param('savetextdata')||$cgi->param('savetextdatacont')||$cgi->param('createnewfile')||$cgi->param('createsymlink'))) {
 		debug("_POST: file management ".join(",",$cgi->param('file')));
 		if ($cgi->param('delete')) {
@@ -4550,7 +4550,9 @@ sub getFolderList {
 	my $ochar = ' <span class="orderchar">'.($dir eq '' ? '&darr;' :'&uarr;').'</span>';
 
 	my @tablecolumns = getVisibleTableColumns();
+	my %usedcols;
 
+	my $rowpattern = '';
 	foreach my $column (@tablecolumns) {
 		$tablehead .= $cgi->td({
 						-class=>"th_$column".($ORDER=~/^\Q$column\E/?' th_highlight':''),
@@ -4560,6 +4562,16 @@ sub getFolderList {
 					}, $column ne 'fileactions' ?  $cgi->a({-href=>"$ru?order=${column}${dir};$query"}, _tl($column).($ORDER=~/^\Q$column\E/?$ochar:''))
 								: _tl($column)
 		);
+		$usedcols{$column}=1;
+		$rowpattern .= q@$row.=$cgi->td({
+						-class=>"tc_@.$column.q@", 
+						-id=>"tc_@.${column}.q@_${fid}",
+						-title=>$rowdata{@.$column.q@}{title}, 
+						-onclick=>$onclick, 
+						-onmousedown=>$ignev, 
+						-ondblclick=>$ignev,
+					}, $rowdata{@.$column.q@}{value});
+				@;
 	}
 
 	$tablehead = $cgi->Tr({-class=>'th', -title=>_tl('clickchangessort')}, $tablehead);
@@ -4637,25 +4649,25 @@ sub getFolderList {
 		my $ctf = strftime(_tl('lastmodifiedformat'), localtime($ctime));
 		my ($size_v, $size_t) = renderByteValue($size,0,2);
 		my %rowdata = (
-			'name'=> { value=>getfancyfilename($nru, $filename, $mimetype, $full, $isUnReadable), title=>$filename},
-			'lastmodified'=>{ value=>$lmf, title=>_tl('created').' '.$ctf},
-			'created'=>{ value=>$ctf, title=>_tl('lastmodified').' '.$lmf},
-			'size'=>{ value=>$size_v, title=>$size_t},
-			'mode'=>{ value=>sprintf("%-11s",mode2str($full,$mode)), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)},
-			'fileactions'=> {value=>$filename=~/^\.{1,2}$/ || $unsel ? '' : renderFileActions($fid, $filename, $full), title=>$filename },
-			'mime'=>{ value=>$cgi->escapeHTML($mimetype), title=>$filename},
+			'name'=> $usedcols{name} ? { value=>getfancyfilename($nru, $filename, $mimetype, $full, $isUnReadable), title=>$filename} : '',
+			'lastmodified'=> $usedcols{lastmodified} ? { value=>$lmf, title=>_tl('created').' '.$ctf} : '',
+			'created'=> $usedcols{created} ? { value=>$ctf, title=>_tl('lastmodified').' '.$lmf} : '',
+			'size'=> $usedcols{size} ? { value=>$size_v, title=>$size_t} : '',
+			'mode'=> $usedcols{mode} ? { value=>sprintf("%-11s",mode2str($full,$mode)), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)} : '',
+			'fileactions'=> $usedcols{fileactions} ? {value=>$filename=~/^\.{1,2}$/ || $unsel ? '' : renderFileActions($fid, $filename, $full), title=>$filename } : '',
+			'mime'=> $usedcols{mime} ? { value=>$cgi->escapeHTML($mimetype), title=>$filename} : '',
 		);
-
-		foreach my $column (@tablecolumns) {
-			$row.=$cgi->td({
-						-class=>"tc_$column", 
-						-id=>"tc_${column}_${fid}",
-						-title=>$rowdata{$column}{title}, 
-						-onclick=>$onclick, 
-						-onmousedown=>$ignev, 
-						-ondblclick=>$ignev,
-					}, $rowdata{$column}{value});
-		}
+		eval $rowpattern;
+#		foreach my $column (@tablecolumns) {
+#			$row.=$cgi->td({
+#						-class=>"tc_$column", 
+#						-id=>"tc_${column}_${fid}",
+#						-title=>$rowdata{$column}{title}, 
+#						-onclick=>$onclick, 
+#						-onmousedown=>$ignev, 
+#						-ondblclick=>$ignev,
+#					}, $rowdata{$column}{value});
+#		}
 		$list.=$cgi->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
 		$odd = ! $odd;
 
