@@ -66,7 +66,7 @@ sub renderPropertiesViewer {
         $content .= $$self{cgi}->br().$$self{cgi}->a({href=>$ru,title=>$self->tl('clickforfullsize')},$$self{cgi}->img({-src=>$ru.($main::ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($main::ENABLE_THUMBNAIL?$main::THUMBNAIL_WIDTH:200)})) if $self->hasThumbSupport(main::getMIMEType($fn));
         $content .= $$self{cgi}->start_table({-class=>'props'});
         local(%main::NAMESPACEELEMENTS);
-        my $dbprops = main::db_getProperties($fn);
+        my $dbprops = main::getDBDriver()->db_getProperties($fn);
         my @bgstyleclasses = ( 'tr_odd', 'tr_even');
         my (%visited);
         $content.=$$self{cgi}->Tr({-class=>'trhead'}, $$self{cgi}->th({-class=>'thname'},$self->tl('propertyname')), $$self{cgi}->th({-class=>'thvalue'},$self->tl('propertyvalue')));
@@ -76,7 +76,7 @@ sub renderPropertiesViewer {
                 if (exists $$dbprops{$prop}) {
                         $r200{prop}{$prop}=$$dbprops{$prop};
                 } else {
-                        main::getProperty($fn, $ru, $prop, undef, \%r200, \my %r404);
+                        main::getPropertyModule()->getProperty($fn, $ru, $prop, undef, \%r200, \my %r404);
                 }
                 $visited{$prop}=1;
                 $main::NAMESPACEELEMENTS{main::nonamespace($prop)}=1;
