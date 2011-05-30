@@ -92,4 +92,39 @@ sub unlockResource {
         return $$self{db}->db_isRootFolder($fn, $token) && $$self{db}->db_delete($fn,$token);
 }
 
+sub isLockedRecurse {
+        my ($self,$fn) = @_;
+        $fn = $main::PATH_TRANSLATED unless defined $fn;
+        my $rows = $$self{db}->db_getLike("$fn\%");
+        return $#{$rows} >-1;
+}
+sub isLocked {
+        my ($self,$fn) = @_;
+        $fn.='/' if $$self{backend}->isDir($fn) && $fn !~/\/$/;
+        my $rows = $$self{db}->db_get($fn);
+        return ($#{$rows}>-1)?1:0;
+}
+sub isLockable  { # check lock and exclusive
+        my ($self, $fn,$xmldata) = @_;
+        my @lockscopes = keys %{$$xmldata{'{DAV:}lockscope'}};
+        my $lockscope = @lockscopes && $#lockscopes >-1 ? $lockscopes[0] : 'exclusive';
+
+        my $rowsRef;
+        if (! $$self{backend}->exists($fn)) {
+                $rowsRef = $$self{db}->db_get($$self{backend}->getParent($fn).'/');
+        } elsif ($$self{backend}->isDir($fn)) {
+                $rowsRef = $$self{db}->db_getLike("$fn\%");
+        } else {
+                $rowsRef = $$self{db}->db_get($fn);
+        }
+        my $ret = 0;
+        if ($#{$rowsRef}>-1) {
+                my $row = $$rowsRef[0];
+                $ret =  lc($$row[3]) ne 'exclusive' && $lockscope ne '{DAV:}exclusive'?1:0;
+        } else {
+                $ret = 1;
+        }
+        return $ret;
+}
+
 1;

@@ -1480,7 +1480,7 @@ sub _LOCK {
 	if (!$backend->exists($fn) && !$backend->exists($backend->getParent($fn))) {
 		$status='409 Conflict';
 		$type='text/plain';
-	} elsif (!isLockable($fn, $xmldata)) {
+	} elsif (!getLockModule()->isLockable($fn, $xmldata)) {
 		debug("_LOCK: not lockable ... but...");
 		if (isAllowed($fn)) {
 			$status='200 OK';
@@ -1524,7 +1524,7 @@ sub _UNLOCK {
 	
 	if (!defined $token) {
 		$status = '400 Bad Request';
-	} elsif (isLocked($PATH_TRANSLATED)) {
+	} elsif (getLockModule()->isLocked($PATH_TRANSLATED)) {
 		if (getLockModule()->unlockResource($PATH_TRANSLATED, $token)) {
 			$status = '204 No Content';
 		} else {
@@ -2238,45 +2238,6 @@ sub simpleXMLParser {
 	$param{NSExpand}=1;
 	$param{KeepRoot}=1 if $keepRoot;
 	return XMLin($text,%param);
-}
-sub isLockedRecurse {
-	my ($fn) = @_;
-	$fn = $PATH_TRANSLATED unless defined $fn;
-
-	my $rows = getDBDriver()->db_getLike("$fn\%");
-
-	return $#{$rows} >-1;
-
-}
-sub isLocked {
-	my ($fn) = @_;
-	$fn.='/' if $backend->isDir($fn) && $fn !~/\/$/;
-	my $rows = getDBDriver()->db_get($fn);
-	return ($#{$rows}>-1)?1:0;
-}
-sub isLockable  { # check lock and exclusive
-	my ($fn,$xmldata) = @_;
-	my @lockscopes = keys %{$$xmldata{'{DAV:}lockscope'}};
-	my $lockscope = @lockscopes && $#lockscopes >-1 ? $lockscopes[0] : 'exclusive';
-
-	my $db = getDBDriver();
-	my $rowsRef;
-	if (! $backend->exists($fn)) {
-		$rowsRef = $db->db_get($backend->getParent($fn).'/');
-	} elsif ($backend->isDir($fn)) {
-		$rowsRef = $db->db_getLike("$fn\%");
-	} else {
-		$rowsRef = $db->db_get($fn);
-	}
-	my $ret = 0;
-	debug("isLockable: $#{$rowsRef}, lockscope=$lockscope");
-	if ($#{$rowsRef}>-1) {
-		my $row = $$rowsRef[0];
-		$ret =  lc($$row[3]) ne 'exclusive' && $lockscope ne '{DAV:}exclusive'?1:0;
-	} else {
-		$ret = 1;
-	}
-	return $ret;
 }
 sub getLockDiscovery {
 	my ($fn) = @_;
