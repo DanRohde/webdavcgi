@@ -723,7 +723,6 @@ use Fcntl qw(:flock);
 use File::Basename;
 
 use XML::Simple;
-use Date::Parse;
 use POSIX qw(strftime ceil locale_h);
 
 use URI::Escape;
@@ -1791,21 +1790,13 @@ sub _SEARCH {
 		$content='400 Bad Request';
 	} elsif (exists $$xmldata{'{DAV:}query-schema-discovery'}) {
 		debug("_SEARCH: found query-schema-discovery");
-		push @resps, { href=>$REQUEST_URI, status=>$status, 
-				'query-schema'=> { basicsearchschema=> { properties => { 
-					propdesc => [
-						{ 'any-other-property'=>undef, searchable=>undef, selectable=>undef, caseless=>undef, sortable=>undef }
-					]
-				}, operators => { 'opdesc allow-pcdata="yes"' => 
-								[ 
-									{ like => undef, 'operand-property'=>undef, 'operand-literal'=>undef },
-									{ contains => undef }
-								] 
-				}}}};
+		require WebDAV::Search;
+		(new WebDAV::Search($cgi,$backend))->getSchemaDiscovery($REQUEST_URI, \@resps);
 	} elsif (exists $$xmldata{'{DAV:}searchrequest'}) {
+		require WebDAV::Search;
 		foreach my $s (keys %{$$xmldata{'{DAV:}searchrequest'}}) {
 			if ($s =~ /{DAV:}basicsearch/) {
-				handleBasicSearch($$xmldata{'{DAV:}searchrequest'}{$s}, \@resps,\@errors);
+				(new WebDAV::Search($cgi,$backend))->handleBasicSearch($$xmldata{'{DAV:}searchrequest'}{$s}, \@resps,\@errors);
 			}
 		}
 	}
@@ -1919,220 +1910,7 @@ sub _REBIND {
 	}
 	printHeaderAndContent($status, $type, $content);
 }
-sub buildExprFromBasicSearchWhereClause {
-	my ($op, $xmlref, $superop) = @_;
-	my ($expr,$type) = ( '', '', undef);
-	my $ns = '{DAV:}';
-	if (!defined $op) {
-		my @ops = keys %{$xmlref};
-		return buildExprFromBasicSearchWhereClause($ops[0], $$xmlref{$ops[0]}); 
-	}
 
-	$op=~s/\Q$ns\E//;
-	$type='bool';
-
-	if (ref($xmlref) eq 'ARRAY') {	
-		foreach my $oo (@{$xmlref}) {
-			my ($ne,$nt) = buildExprFromBasicSearchWhereClause($op, $oo, $superop);
-			my ($nes,$nts) = buildExprFromBasicSearchWhereClause($superop, undef, $superop);
-			$expr.= $nes if $expr ne "";
-			$expr.= "($ne)";
-		}
-		return $expr;
-	}
-
-	study $op;
-	if ($op =~ /^(and|or)$/) {
-		if (ref($xmlref) eq 'HASH') {
-			foreach my $o (keys %{$xmlref}) {
-				$expr .= $op eq 'and' ? ' && ' : ' || ' if $expr ne "";
-				my ($ne, $nt) =  buildExprFromBasicSearchWhereClause($o, $$xmlref{$o}, $op);
-				$expr .= "($ne)";
-			}
-		} else {
-			return $op eq 'and' ? ' && ' : ' || ';
-		}
-	} elsif ($op eq 'not') {
-		my @k = keys %{$xmlref};
-		my ($ne,$nt) = buildExprFromBasicSearchWhereClause($k[0], $$xmlref{$k[0]});
-		$expr="!($ne)";
-	} elsif ($op eq 'is-collection') {
-		$expr="getPropValue('{DAV:}iscollection',\$filename,\$request_uri)==1";
-	} elsif ($op eq 'is-defined') {
-		my ($ne,$nt)=buildExprFromBasicSearchWhereClause('{DAV:}prop',$$xmlref{'{DAV:}prop'});
-		$expr="$ne ne '__undef__'";
-	} elsif ($op =~ /^(language-defined|language-matches)$/) {
-		$expr='0!=0';
-	} elsif ($op =~ /^(eq|lt|gt|lte|gte)$/) {
-		my $o = $op;
-		my ($ne1,$nt1) = buildExprFromBasicSearchWhereClause('{DAV:}prop',$$xmlref{'{DAV:}prop'});
-		my ($ne2,$nt2) = buildExprFromBasicSearchWhereClause('{DAV:}literal', $$xmlref{'{DAV:}literal'});
-		$ne2 =~ s/'/\\'/sg;
-		$ne2 = $SEARCH_SPECIALCONV{$nt1} ? $SEARCH_SPECIALCONV{$nt1}."('$ne2')" : "'$ne2'";
-		my $cl= $$xmlref{'caseless'} || $$xmlref{'{DAV:}caseless'} || 'yes';
-		$expr = (($nt1 =~ /(string|xml)/ && $cl ne 'no')?"lc($ne1)":$ne1)
-                      . ' '.($SEARCH_SPECIALOPS{$nt1}{$o} || $o).' '
-		      . (($nt1 =~ /(string|xml)/ && $cl ne 'no')?"lc($ne2)":$ne2);
-	} elsif ($op eq 'like') {
-		my ($ne1,$nt1) = buildExprFromBasicSearchWhereClause('{DAV:}prop',$$xmlref{'{DAV:}prop'});
-		my ($ne2,$nt2) = buildExprFromBasicSearchWhereClause('{DAV:}literal', $$xmlref{'{DAV:}literal'});
-		$ne2=~s/\//\\\//gs;     ## quote slashes 
-		$ne2=~s/(?<!\\)_/./gs;  ## handle unescaped wildcard _ -> .
-		$ne2=~s/(?<!\\)%/.*/gs; ## handle unescaped wildcard % -> .*
-		my $cl= $$xmlref{'caseless'} || $$xmlref{'{DAV:}caseless'} || 'yes';
-		$expr = "$ne1 =~ /$ne2/s" . ($cl eq 'no'?'':'i');
-	} elsif ($op eq 'contains') {
-		my $content = ref($xmlref) eq "" ? $xmlref : $$xmlref{content};
-		my $cl = ref($xmlref) eq "" ? 'yes' : ($$xmlref{caseless} || $$xmlref{'{DAV:}caseless'} || 'yes');
-		$content=~s/\//\\\//g;
-		$expr="\$backend->getFileContent(\$filename) =~ /\\Q$content\\E/s".($cl eq 'no'?'':'i');
-	} elsif ($op eq 'prop') {
-		my @props = keys %{$xmlref};
-		$props[0] =~ s/'/\\'/sg;
-		$expr = "getPropValue('$props[0]',\$filename,\$request_uri)";
-		$type = $SEARCH_PROPTYPES{$props[0]} || $SEARCH_PROPTYPES{default};
-		$expr = $SEARCH_SPECIALCONV{$type}."($expr)" if exists $SEARCH_SPECIALCONV{$type};
-	} elsif ($op eq 'literal') {
-		$expr = ref($xmlref) ne "" ? convXML2Str($xmlref) : $xmlref;
-		$type = $op;
-	} else {
-		$expr= $xmlref;
-		$type= $op;
-	}
-
-	return ($expr, $type);
-}
-sub convXML2Str {
-	my ($xml) = @_;
-	return defined $xml ? lc(createXML($xml,1)) : $xml;
-}
-sub getPropValue {
-	my ($prop, $fn, $uri) = @_;
-	my (%stat,%r200,%r404);
-
-	return $CACHE{getPropValue}{$fn}{$prop} if exists $CACHE{getPropValue}{$fn}{$prop};
-
-	my $propname = $prop;
-	$propname=~s/^{[^}]*}//;
-
-	my $propval = grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0 ? getDBDriver()->db_getProperty($fn, $prop) : undef;
-
-	if (! defined $propval) {
-		getPropertyModule()->getProperty($fn, $uri, $propname, undef, \%r200, \%r404) ;
-		$propval = $r200{prop}{$propname};
-	}
-
-	$propval = defined $propval ? $propval : '__undef__';
-
-	$CACHE{getPropValue}{$fn}{$prop} = $propval;
-
-	#debug("getPropValue: $prop = $propval");
-
-	return $propval;
-}
-sub doBasicSearch {
-	my ($expr, $base, $href, $depth, $limit, $matches, $visited) = @_;
-	return if defined $limit && $limit > 0 && $#$matches + 1 >= $limit;
-
-	return if defined $depth && $depth ne 'infinity' && $depth < 0 ;
-
-	$base.='/' if $backend->isDir($base) && $base !~ /\/$/;
-	$href.='/' if $backend->isDir($base) && $href !~ /\/$/;
-
-	my $filename = $base;
-	my $request_uri = $href;
-
-	my $res = eval  $expr ;
-	if ($@) {
-		debug("doBasicSearch: problem in $expr: $@");
-	} elsif ($res) {
-		debug("doBasicSearch: $base MATCHED");
-		push @{$matches}, { fn=> $base, href=> $href };
-	}
-	my $nbase = $backend->resolve($base);
-	return if exists $$visited{$nbase} && ($depth eq 'infinity' || $depth < 0);
-	$$visited{$nbase}=1;
-
-	if ($backend->isDir($base) && $backend->isReadable($base)) {
-		foreach my $sf (@{$backend->readDir($base,getFileLimit($base),\&filterCallback)}) {
-			my $nbase = $base.$sf;
-			my $nhref = $href.$sf;
-			doBasicSearch($expr, $base.$sf, $href.$sf, defined $depth  && $depth ne 'infinity' ? $depth - 1 : $depth, $limit, $matches, $visited);
-		}
-	}
-}
-sub handleBasicSearch {
-	my ($xmldata, $resps, $error) = @_;
-	# select > (allprop | prop)  
-	my ($propsref,  $all, $noval) = handlePropFindElement($$xmldata{'{DAV:}select'});
-	# where > op > (prop,literal) 
-	my ($expr,$type) =  buildExprFromBasicSearchWhereClause(undef, $$xmldata{'{DAV:}where'});
-	debug("_SEARCH: call buildExpr: expr=$expr");
-	# from > scope+ > (href, depth, include-versions?)
-	my @scopes;
-	if (ref($$xmldata{'{DAV:}from'}{'{DAV:}scope'}) eq 'HASH') {
-		push @scopes, $$xmldata{'{DAV:}from'}{'{DAV:}scope'}; 
-	} elsif (ref($$xmldata{'{DAV:}from'}{'{DAV:}scope'}) eq 'ARRAY') {
-		push @scopes, @{$$xmldata{'{DAV:}from'}{'{DAV:}scope'}};
-	} else { 
-		push @scopes, { '{DAV:}href'=>$REQUEST_URI, '{DAV:}depth'=>'infinity'};
-	}
-	# limit > nresults 
-	my $limit = $$xmldata{'{DAV:}limit'}{'{DAV:}nresults'};
-
-	my $host = $cgi->http('Host');
-	my @matches;
-	foreach my $scope (@scopes) {
-		my $depth = $$scope{'{DAV:}depth'};
-		my $href = $$scope{'{DAV:}href'};
-		my $base = $href;
-		$base =~ s@^(https?://([^\@]+\@)?\Q$host\E(:\d+)?)?$VIRTUAL_BASE@@;
-		$base = $DOCUMENT_ROOT.uri_unescape(uri_unescape($base));
-		
-		debug("handleBasicSearch: base=$base (href=$href), depth=$depth, limit=$limit\n");
-
-		if (!$backend->exists($base)) {
-			push @{$error}, { 'search-scope-valid'=> { response=> { href=>$href, status=>'HTTP/1.1 404 Not Found' } } };
-			return;
-		}
-		doBasicSearch($expr, $base, $href, $depth, $limit, \@matches);
-	}
-	# orderby > order+ (caseless=(yes|no))> (prop|score), (ascending|descending)? 
-	my $sortfunc="";
-	if (exists $$xmldata{'{DAV:}orderby'} && $#matches>0) {
-		my @orders;
-		if (ref($$xmldata{'{DAV:}orderby'}{'{DAV:}order'}) eq 'ARRAY') {
-			push @orders, @{$$xmldata{'{DAV:}orderby'}{'{DAV:}order'}};
-		} elsif (ref($$xmldata{'{DAV:}orderby'}{'{DAV:}order'}) eq 'HASH') {
-			push @orders, $$xmldata{'{DAV:}orderby'}{'{DAV:}order'};
-		}
-		foreach my $order (@orders) {
-			my @props = keys %{$$order{'{DAV:}prop'}};
-			my $prop = $props[0] || '{DAV:}displayname';
-			my $proptype = $SEARCH_PROPTYPES{$prop} || $SEARCH_PROPTYPES{default};
-			my $type = $$order{'{DAV:}descending'} ?  'descending' : 'ascending';
-			debug("orderby: prop=$prop, proptype=$proptype, type=$type");
-			my($ta,$tb,$cmp);
-			$ta = qq@getPropValue('$prop',\$\$a{fn},\$\$a{href})@;
-			$tb = qq@getPropValue('$prop',\$\$b{fn},\$\$b{href})@;
-			if ($SEARCH_SPECIALCONV{$proptype}) {
-				$ta = $SEARCH_SPECIALCONV{$proptype}."($ta)";
-				$tb = $SEARCH_SPECIALCONV{$proptype}."($tb)";
-			}
-			$cmp = $SEARCH_SPECIALOPS{$proptype}{cmp} || 'cmp';
-			$sortfunc.=" || " if $sortfunc ne "";
-			$sortfunc.="$ta $cmp $tb" if $type eq 'ascending';
-			$sortfunc.="$tb $cmp $ta" if $type eq 'descending';
-		}
-	}
-	$sortfunc = 'return $$a{fn} cmp $$b{fn} ' if $sortfunc eq '';
-
-	debug("handleBasicSearch: matches=$#matches, orderby=$sortfunc");
-	foreach my $match ( sort { eval($sortfunc) } @matches ) {
-		push @{$resps}, { href=> $$match{href}, propstat=>getPropStat($$match{fn},$$match{href},$propsref,$all,$noval) };
-	}
-
-}
 sub readDirBySuffix {
 	my ($fn, $base, $hrefs, $suffix, $depth, $visited) = @_;
 	debug("readDirBySuffix($fn, ..., $suffix, $depth)");
@@ -2996,7 +2774,7 @@ sub getHiddenFilter {
 }
 sub getWebInterface {
 	require WebInterface;
-	return new WebInterface($cgi, $backend);
+	return new WebInterface($cgi, $backend, getDBDriver());
 }
 sub getDBDriver {
 	require DB::Driver;
