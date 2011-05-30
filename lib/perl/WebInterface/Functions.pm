@@ -306,14 +306,11 @@ sub doAFSSaveACL() {
                 my $fn = $main::PATH_TRANSLATED;
                 $fn=~s/(["\$\\])/\\$1/g;
                 $cmd= qq@$main::AFS_FSCMD setacl -dir \"$fn\" -acl $pacls -clear 2>&1@;
-                debug($cmd);
                 $output = qx@$cmd@;
                 if ($nacls ne "") {
                         $cmd = qq@$main::AFS_FSCMD setacl -dir \"$fn\" -acl $nacls -negative 2>&1@;
-                        debug($cmd);
                         $output .= qx@$cmd@;
                 }
-                debug("output of $main::AFS_FSCMD = $output");
         } else { $output = $self->tl('empty normal rights'); }
         if ($output eq "") {
                 $msg='afsaclchanged';
