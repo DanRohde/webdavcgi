@@ -682,7 +682,8 @@ sub getFolderList {
 
         }
         $list .= $tablehead if $count > 20; ## && $count % 50 != 0 && $count % 50 > 20;
-        $content .= $self->renderTableConfig(). $pagenav;
+        $content .= $self->renderTableConfig() if !$$self{cgi}->param('search');
+	$content .= $pagenav;
         $content .= $$self{cgi}->start_table({-class=>'filelist'}).$list.$$self{cgi}->end_table();
         my ($sizetext,$sizetitle) = renderByteValue($filesizes,2,2);
         $sizetext.=$sizetitle ne "" ? " ($sizetitle)" : $sizetitle;
@@ -989,14 +990,14 @@ sub getSearchResult {
         return $content if $$visited{$nfn};
         $$visited{$nfn}=1;
 
-        my ($list,$count)=getFolderList($fn,$ru,$search);
-        $content.=$$self{cgi}->hr().$$self{cgi}->div({-class=>'resultcount'},$count.$self->tl($count>1?'searchresults':'searchresult')).getQuickNavPath($fn,$ru).$list if $count>0 && $isRecursive;
+        my ($list,$count)=$self->getFolderList($fn,$ru,$search);
+        $content.=$$self{cgi}->hr().$$self{cgi}->div({-class=>'resultcount'},$count.$self->tl($count>1?'searchresults':'searchresult')).$self->getQuickNavPath($fn,$ru).$list if $count>0 && $isRecursive;
         $$fullcount+=$count;
         if ($$self{backend}->isReadable($fn)) {
-                foreach my $filename (sort { $self->cmp_files } @{$$self{backend}->readDir($fn,getFileLimit($fn),\&main::filterCallback)}) {
+                foreach my $filename (sort { $self->cmp_files } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),\&main::filterCallback)}) {
                         local($main::PATH_TRANSLATED);
                         my $full = $fn.$filename;
-                        next if is_hidden($full);
+                        next if main::is_hidden($full);
                         my $nru = $ru.uri_escape($filename);
                         my $isDir = $$self{backend}->isDir($full);
                         $full.="/" if $isDir;
@@ -1007,10 +1008,10 @@ sub getSearchResult {
         }
         if (!$isRecursive) {
                 if ($$fullcount==0) {
-                        $content.=$$self{cgi}->h2($self->tl('searchnothingfound') . "'" .$$self{cgi}->escapeHTML($search)."'".$self->tl('searchgoback').getQuickNavPath($fn,$ru));
+                        $content.=$$self{cgi}->h2($self->tl('searchnothingfound') . "'" .$$self{cgi}->escapeHTML($search)."'".$self->tl('searchgoback').$self->getQuickNavPath($fn,$ru));
                 } else {
-                        $content=$$self{cgi}->h2("$$fullcount ".$self->tl($$fullcount>1?'searchresultsfor':'searchresultfor')."'".$$self{cgi}->escapeHTML($search)."'".$self->tl('searchgoback').getQuickNavPath($fn,$ru))
-                                . ($count>0 ?  $$self{cgi}->hr().$$self{cgi}->div({-class=>'results'},$count.$self->tl($count>1?'searchresults':'searchresult')).getQuickNavPath($fn,$ru).$list : '' )
+                        $content=$$self{cgi}->h2("$$fullcount ".$self->tl($$fullcount>1?'searchresultsfor':'searchresultfor')."'".$$self{cgi}->escapeHTML($search)."'".$self->tl('searchgoback').$self->getQuickNavPath($fn,$ru))
+                                . ($count>0 ?  $$self{cgi}->hr().$$self{cgi}->div({-class=>'results'},$count.$self->tl($count>1?'searchresults':'searchresult')).$self->getQuickNavPath($fn,$ru).$list : '' )
                                 . $content;
                 }
         }
