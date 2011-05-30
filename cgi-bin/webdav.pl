@@ -1484,7 +1484,7 @@ sub _LOCK {
 		debug("_LOCK: not lockable ... but...");
 		if (isAllowed($fn)) {
 			$status='200 OK';
-			lockResource($fn, $ru, $xmldata, $depth, $timeout, $token);
+			getLockModule()->lockResource($fn, $ru, $xmldata, $depth, $timeout, $token);
 			$content = createXML({prop=>{lockdiscovery => getLockDiscovery($fn)}});	
 		} else {
 			$status='423 Locked';
@@ -1492,7 +1492,7 @@ sub _LOCK {
 		}
 	} elsif (!$backend->exists($fn)) {
 		if ($backend->saveData($fn,'')) {
-			my $resp = lockResource($fn, $ru, $xmldata, $depth, $timeout,$token);
+			my $resp = getLockModule()->lockResource($fn, $ru, $xmldata, $depth, $timeout,$token);
 			if (defined $$resp{multistatus}) {
 				$status = '207 Multi-Status'; 
 			} else {
@@ -1505,7 +1505,7 @@ sub _LOCK {
 			$type='text/plain';
 		}
 	} else {
-		my $resp = lockResource($fn, $ru, $xmldata, $depth, $timeout, $token);
+		my $resp = getLockModule()->lockResource($fn, $ru, $xmldata, $depth, $timeout, $token);
 		$addheader="Lock-Token: $token";
 		$content=createXML($resp);
 		$status = '207 Multi-Status' if defined $$resp{multistatus};
@@ -1525,7 +1525,7 @@ sub _UNLOCK {
 	if (!defined $token) {
 		$status = '400 Bad Request';
 	} elsif (isLocked($PATH_TRANSLATED)) {
-		if (unlockResource($PATH_TRANSLATED, $token)) {
+		if (getLockModule()->unlockResource($PATH_TRANSLATED, $token)) {
 			$status = '204 No Content';
 		} else {
 			$status = '423 Locked';
@@ -2302,69 +2302,6 @@ sub getLockDiscovery {
 	
 	return $#resp >-1 ? \@resp : undef;
 }
-sub lockResource {
-	my ($fn, $ru, $xmldata, $depth, $timeout, $token, $base, $visited) =@_;
-	my %resp = ();
-	my @prop= ();
-
-	debug("lockResource(fn=$fn,ru=$ru,depth=$depth,timeout=$timeout,token=$token,base=$base)");
-
-	my %activelock = ();
-	my @locktypes = keys %{$$xmldata{'{DAV:}locktype'}};
-	my @lockscopes = keys %{$$xmldata{'{DAV:}lockscope'}};
-	my $locktype= $#locktypes>-1 ? $locktypes[0] : undef;
-	my $lockscope = $#lockscopes>-1 ? $lockscopes[0] : undef;
-	my $owner = createXML(defined $$xmldata{'{DAV:}owner'} ?  $$xmldata{'{DAV:}owner'} : $DEFAULT_LOCK_OWNER, 0, 1);
-	$locktype=~s/{[^}]+}//;
-	$lockscope=~s/{[^}]+}//;
-
-	$activelock{locktype}{$locktype}=undef;
-	$activelock{lockscope}{$lockscope}=undef;
-	$activelock{locktoken}{href}=$token;
-	$activelock{depth}=$depth;
-	$activelock{lockroot}=$ru;
-
-	# save lock to database (structure: basefn, fn, type, scope, token, timeout(null), owner(null)):
-	if (getDBDriver()->db_insert(defined $base?$base:$fn,$fn,$locktype,$lockscope,$token,$depth,$timeout, $owner))  {
-		push @prop, { activelock=> \%activelock };
-	} elsif (getDBDriver()->db_update(defined $base?$base:$fn,$fn,$timeout)) {
-		push @prop, { activelock=> \%activelock };
-	} else {
-		push @{$resp{multistatus}{response}},{href=>$ru, status=>'HTTP/1.1 403 Forbidden (db update failed)'};
-	}
-	my $nfn = $backend->resolve($fn);
-	return \%resp if exists $$visited{$nfn};
-	$$visited{$nfn}=1;
-
-	if ($backend->isDir($fn) && (lc($depth) eq 'infinity' || $depth>0)) {
-		debug("lockResource: depth=$depth");
-		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),\&filterCallback)}) {
-				my $nru = $ru.$f;
-				my $nfn = $fn.$f;
-				$nru.='/' if $backend->isDir($nfn);
-				$nfn.='/' if $backend->isDir($nfn);
-				debug("lockResource: $nfn, $nru");
-				my $subreqresp = lockResource($nfn, $nru, $xmldata, lc($depth) eq 'infinity'?$depth:$depth-1, $timeout, $token, defined $base?$base:$fn, $visited);
-				if (defined $$subreqresp{multistatus}) {
-					push @{$resp{multistatus}{response}}, @{$$subreqresp{multistatus}{response}};
-				} else {
-					push @prop, @{$$subreqresp{prop}{lockdiscovery}} if exists $$subreqresp{prop};
-				}
-			}
-		} else {
-			push @{$resp{multistatus}{response}}, { href=>$ru, status=>'HTTP/1.1 403 Forbidden' };
-		}
-	}
-	push @{$resp{multistatus}{response}}, {propstat=>{prop =>{lockdiscovery=>\@prop }}} if exists $resp{multistatus} && $#prop>-1;
-	$resp{prop}{lockdiscovery}=\@prop unless defined $resp{multistatus};
-	
-	return \%resp;
-}
-sub unlockResource {
-	my ($fn, $token) = @_;
-	return getDBDriver()->db_isRootFolder($fn, $token) && getDBDriver()->db_delete($fn,$token);
-}
 sub preConditionFailed {
 	my ($fn) = @_;
 	$fn = $backend->getParent($fn).'/' if ! $backend->exists($fn);
@@ -2783,6 +2720,10 @@ sub getDBDriver {
 sub getPropertyModule {
 	require WebDAV::Properties;
 	return $CACHE{webdavproperties} || ($CACHE{webdavproperties} = new WebDAV::Properties($cgi,$backend,getDBDriver()));
+}
+sub getLockModule {
+	require WebDAV::Lock;
+	return $CACHE{webdavlock} || ($CACHE{webdavlock} = new WebDAV::Lock($cgi,$backend,getDBDriver()));
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;

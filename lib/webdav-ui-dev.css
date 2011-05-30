@@ -181,7 +181,7 @@ input,select { text-shadow: 1px 1px white;  }
 .filelist .tr_odd.tr_copy, .filelist .tr_odd.tr_copy a { color: #224466; }
 .filelist .tr_even.tr_copy, .filelist .tr_even.tr_copy a { color: #113355; }
 .filelist td { border-right: 1px dotted #aaaaaa; border-bottom: 1px solid #aaaaaa; padding: 1px 4px 1px 4px; }
-.filelist .tc_lastmodified, .filelist .tc_created, .filelist .tc_mime, .filelist .tc_mode, .filelist .tc_name { white-space: nowrap;}
+.filelist .tc_lastmodified, .filelist .tc_created, .filelist .tc_mime, .filelist .tc_mode, .filelist .tc_name, .filelist .tc_size { white-space: nowrap;}
 .filelist select { border: 1px inset #555555; }
 .filelist .th_fileactions, .filelist .tc_fileactions { cursor: auto; text-align:center;}
 .th { cursor: pointer; font-weight: bold; background-color: #dddddd; }
