@@ -114,8 +114,8 @@ sub deltree {
         } elsif (-l $nf) {
                 if (unlink($nf)) {
                         $count++;
-                        main::db_deleteProperties($f);
-                        main::db_delete($f);
+                        ##main::db_deleteProperties($f);
+                        ##main::db_delete($f);
                 } else {
                         push(@$errRef, { $f => "Cannot delete '$f': $!" });
                 }
@@ -130,8 +130,8 @@ sub deltree {
                         if (rmdir $f) {
                                 $count++;
                                 $f.='/' if $f!~/\/$/;
-                                main::db_deleteProperties($f);
-                                main::db_delete($f);
+                                ##main::db_deleteProperties($f);
+                                ##main::db_delete($f);
                         } else {
                                 push(@$errRef, { $f => "Cannot delete '$f': $!" });
                         }
@@ -141,8 +141,8 @@ sub deltree {
         } elsif (-e $f) {
                 if (unlink($f)) {
                         $count++;
-                        main::db_deleteProperties($f);
-                        main::db_delete($f);
+                        ##main::db_deleteProperties($f);
+                        ##main::db_delete($f);
                 } else {
                         push(@$errRef, { $f  => "Cannot delete '$f' : $!" }) ;
                 }

@@ -1358,8 +1358,9 @@ sub _MOVE {
 		$backend->unlinkFile($destination) if $backend->exists($destination) && $backend->isFile($destination);
 		$status = '204 No Content' if $backend->exists($destination);
 		if (rmove($PATH_TRANSLATED, $destination)) {
-			db_moveProperties($PATH_TRANSLATED, $destination);
-			db_delete($PATH_TRANSLATED);
+			my $db = getDBDriver();
+			$db->db_moveProperties($PATH_TRANSLATED, $destination);
+			$db->db_delete($PATH_TRANSLATED);
 			inheritLock($destination,1);
 			logger("MOVE($PATH_TRANSLATED, $destination)");
 		} else {
@@ -2014,7 +2015,7 @@ sub getPropValue {
 	my $propname = $prop;
 	$propname=~s/^{[^}]*}//;
 
-	my $propval = grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0 ? db_getProperty($fn, $prop) : undef;
+	my $propval = grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0 ? getDBDriver()->db_getProperty($fn, $prop) : undef;
 
 	if (! defined $propval) {
 		getProperty($fn, $uri, $propname, undef, \%r200, \%r404) ;
@@ -2135,7 +2136,7 @@ sub handleBasicSearch {
 sub removeProperty {
 	my ($propname, $elementParentRef, $resp_200, $resp_403) = @_;
 	debug("removeProperty: $PATH_TRANSLATED: $propname");
-	db_removeProperty($PATH_TRANSLATED, $propname);
+	getDBDriver()->db_removeProperty($PATH_TRANSLATED, $propname);
 	$$resp_200{href}=$REQUEST_URI;
 	$$resp_200{propstat}{status}='HTTP/1.1 200 OK';
 	$$resp_200{propstat}{prop}{$propname} = undef;
@@ -2241,7 +2242,7 @@ sub getPropStat {
 			$resp_404{prop}{$prop}=undef;
 			next;
 		} elsif (( !defined $NAMESPACES{$xmlnsuri} || grep(/^\Q$propname\E$/,$isDir?@KNOWN_COLL_LIVE_PROPS:@KNOWN_FILE_LIVE_PROPS)>0 ) && grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0) { 
-			my $dbval = db_getProperty($fn, $prop=~/{[^}]*}/?$prop:'{'.getNameSpaceUri($prop)."}$prop");
+			my $dbval = getDBDriver()->db_getProperty($fn, $prop=~/{[^}]*}/?$prop:'{'.getNameSpaceUri($prop)."}$prop");
 			if (defined $dbval) {
 				$resp_200{prop}{$prop}=$noval?undef:$dbval;
 				next;
@@ -2652,7 +2653,7 @@ sub isLockedRecurse {
 	my ($fn) = @_;
 	$fn = $PATH_TRANSLATED unless defined $fn;
 
-	my $rows = db_getLike("$fn\%");
+	my $rows = getDBDriver()->db_getLike("$fn\%");
 
 	return $#{$rows} >-1;
 
@@ -2660,7 +2661,7 @@ sub isLockedRecurse {
 sub isLocked {
 	my ($fn) = @_;
 	$fn.='/' if $backend->isDir($fn) && $fn !~/\/$/;
-	my $rows = db_get($fn);
+	my $rows = getDBDriver()->db_get($fn);
 	return ($#{$rows}>-1)?1:0;
 }
 sub isLockable  { # check lock and exclusive
@@ -2668,13 +2669,14 @@ sub isLockable  { # check lock and exclusive
 	my @lockscopes = keys %{$$xmldata{'{DAV:}lockscope'}};
 	my $lockscope = @lockscopes && $#lockscopes >-1 ? $lockscopes[0] : 'exclusive';
 
+	my $db = getDBDriver();
 	my $rowsRef;
 	if (! $backend->exists($fn)) {
-		$rowsRef = db_get($backend->getParent($fn).'/');
+		$rowsRef = $db->db_get($backend->getParent($fn).'/');
 	} elsif ($backend->isDir($fn)) {
-		$rowsRef = db_getLike("$fn\%");
+		$rowsRef = $db->db_getLike("$fn\%");
 	} else {
-		$rowsRef = db_get($fn);
+		$rowsRef = $db->db_get($fn);
 	}
 	my $ret = 0;
 	debug("isLockable: $#{$rowsRef}, lockscope=$lockscope");
@@ -2689,7 +2691,7 @@ sub isLockable  { # check lock and exclusive
 sub getLockDiscovery {
 	my ($fn) = @_;
 
-	my $rowsRef = db_get($fn);
+	my $rowsRef = getDBDriver()->db_get($fn);
 	my @resp = ();
 	if ($#$rowsRef > -1) {
 		debug("getLockDiscovery: rowcount=".$#{$rowsRef});
@@ -2733,9 +2735,9 @@ sub lockResource {
 	$activelock{lockroot}=$ru;
 
 	# save lock to database (structure: basefn, fn, type, scope, token, timeout(null), owner(null)):
-	if (db_insert(defined $base?$base:$fn,$fn,$locktype,$lockscope,$token,$depth,$timeout, $owner))  {
+	if (getDBDriver()->db_insert(defined $base?$base:$fn,$fn,$locktype,$lockscope,$token,$depth,$timeout, $owner))  {
 		push @prop, { activelock=> \%activelock };
-	} elsif (db_update(defined $base?$base:$fn,$fn,$timeout)) {
+	} elsif (getDBDriver()->db_update(defined $base?$base:$fn,$fn,$timeout)) {
 		push @prop, { activelock=> \%activelock };
 	} else {
 		push @{$resp{multistatus}{response}},{href=>$ru, status=>'HTTP/1.1 403 Forbidden (db update failed)'};
@@ -2771,13 +2773,13 @@ sub lockResource {
 }
 sub unlockResource {
 	my ($fn, $token) = @_;
-	return db_isRootFolder($fn, $token) && db_delete($fn,$token);
+	return getDBDriver()->db_isRootFolder($fn, $token) && getDBDriver()->db_delete($fn,$token);
 }
 sub preConditionFailed {
 	my ($fn) = @_;
 	$fn = $backend->getParent($fn).'/' if ! $backend->exists($fn);
 	my $ifheader = getIfHeaderComponents($cgi->http('If'));
-	my $rowsRef = db_get( $fn );
+	my $rowsRef = getDBDriver()->db_get( $fn );
 	my $t =0; # token found
 	my $nnl = 0; # not no-lock found
 	my $nl = 0; # no-lock found
@@ -2809,7 +2811,7 @@ sub isAllowed {
 	return 1 unless $ENABLE_LOCK;
 	
 	my $ifheader = getIfHeaderComponents($cgi->http('If'));
-	my $rowsRef = $recurse ? db_getLike("$fn%") : db_get( $fn );
+	my $rowsRef = $recurse ? getDBDriver()->db_getLike("$fn%") : getDBDriver()->db_get( $fn );
 
 	return 0 if $backend->exists($fn) && !$backend->isWriteable($fn); # not writeable
 	return 1 if $#{$rowsRef}==-1; # no lock
@@ -2840,28 +2842,29 @@ sub inheritLock {
 	my $bfn = $backend->getParent($fn).'/';
 
 	debug("inheritLock: check lock for $bfn ($fn)");
-	my $rows = db_get($bfn);
+	my $db = getDBDriver();
+	my $rows = $db->db_get($bfn);
 	return if $#{$rows} == -1 and !$checkContent;
 	debug("inheritLock: $bfn is locked") if $#{$rows}>-1;
 	if ($checkContent) {
-		$rows = db_get($fn);
+		$rows = $db->db_get($fn);
 		return if $#{$rows} == -1;
 		debug("inheritLock: $fn is locked");
 	}
 	my $row = $$rows[0];
 	if ($backend->isDir($fn)) {
 		debug("inheritLock: $fn is a collection");
-		db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
+		$db->db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 		if ($backend->isReadable($fn)) {
 			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),\&filterCallback)}) {
 				my $full = $fn.$f;
 				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
-				db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
+				$db->db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 				inheritLock($full,undef,$visited);
 			}
 		}
 	} else {
-		db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
+		$db->db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 	}
 }
 sub getIfHeaderComponents {
@@ -2908,232 +2911,6 @@ sub readDirRecursive {
 			}
 		}
 	}
-}
-sub db_isRootFolder {
-	my ($fn, $token) = @_;
-	my $rows =  [];
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner FROM webdav_locks WHERE fn = ? AND basefn = ? AND token = ?');
-	if (defined $sth) {
-		$sth->execute($fn, $fn, $token);
-		$rows = $sth->fetchall_arrayref();
-	}
-	return $#{$rows}>-1;
-}
-sub db_getLike {
-	my ($fn) = @_;
-	my $rows;
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner FROM webdav_locks WHERE fn like ?');
-	if (defined $sth) {
-		$sth->execute($fn);
-		$rows = $sth->fetchall_arrayref();
-	}
-	return $rows;
-}
-sub db_get {
-	my ($fn,$token) = @_;
-	my $rows;
-	my $dbh = db_init();
-	my $sel = 'SELECT basefn,fn,type,scope,token,depth,timeout,owner FROM webdav_locks WHERE fn = ?';
-	my @params;
-	push @params, $fn;
-	if (defined $token) {
-		$sel .= ' AND token = ?';
-		push @params, $token;
-	}
-	
-	my $sth = $dbh->prepare($sel);
-	if (defined $sth) {
-		$sth->execute(@params);
-		$rows = $sth->fetchall_arrayref();
-	}
-	return $rows;
-}
-sub db_insertProperty {
-	my ($fn, $propname, $value) = @_;
-	my $ret = 0;
-	debug("db_insertProperty($fn, $propname, $value)");
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('INSERT INTO webdav_props (fn, propname, value) VALUES ( ?,?,?)');
-	if (defined  $sth) {
-		$sth->execute($fn, $propname, $value);
-		$ret = ($sth->rows >0)?1:0;
-		$dbh->commit();
-		$CACHE{Properties}{$fn}{$propname}=$value;
-	}
-	return $ret;
-}
-sub db_updateProperty {
-	my ($fn, $propname, $value) = @_;
-	my $ret = 0;
-	debug("db_updateProperty($fn, $propname, $value)");
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('UPDATE webdav_props SET value = ? WHERE fn = ? AND propname = ?');
-	if (defined  $sth) {
-		$sth->execute($value, $fn, $propname);
-		$ret=($sth->rows>0)?1:0;
-		$dbh->commit();
-		$CACHE{Properties}{$fn}{$propname}=$value;
-	}
-	return $ret;
-}
-sub db_moveProperties {
-	my($src,$dst) = @_;
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('UPDATE webdav_props SET fn = ? WHERE fn = ?');
-	my $ret = 0;
-	if (defined $sth) {
-		$sth->execute($dst,$src);
-		$ret = ($sth->rows>0)?1:0;
-		$dbh->commit();
-		delete $CACHE{Properties}{$src};
-	}
-	return $ret;
-}
-sub db_copyProperties {
-	my($src,$dst) = @_;
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ?');
-	my $ret = 0;
-	if (defined $sth) {
-		$sth->execute($dst,$src);
-		$ret = ($sth->rows>0)?1:0;
-		$dbh->commit();
-	}
-	return $ret;
-}
-sub db_deleteProperties {
-	my($fn) = @_;
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ?');
-	my $ret = 0;
-	if (defined $sth) {
-		$sth->execute($fn);
-		$ret = ($sth->rows>0)?1:0;
-		$dbh->commit();
-		delete $CACHE{Properties}{$fn};
-	}
-	return $ret;
-	
-}
-sub db_getProperties {
-	my ($fn) = @_;
-	return $CACHE{Properties}{$fn} if exists $CACHE{Properties}{$fn} || $CACHE{Properties_flag}{$fn}; 
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('SELECT fn, propname, value FROM webdav_props WHERE fn like ?');
-	if (defined $sth) {
-		$sth->execute("$fn\%");
-		if (!$sth->err) {
-			my $rows = $sth->fetchall_arrayref();
-			foreach my $row (@{$rows}) {
-				$CACHE{Properties}{$$row[0]}{$$row[1]}=$$row[2];
-			}
-			$CACHE{Properties_flag}{$fn}=1;
-		}
-	}
-	return $CACHE{Properties}{$fn};
-}
-sub db_getProperty {
-	my ($fn,$propname) = @_;
-	debug("db_getProperty($fn, $propname)");
-	my $props = db_getProperties($fn);
-	return $$props{$propname};
-}
-sub db_removeProperty {
-	my ($fn, $propname) = @_;
-	debug("db_removeProperty($fn,$propname)");
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? AND propname = ?');
-	my $ret = 0;
-	if (defined $sth) {
-		$sth->execute($fn, $propname);
-		$ret = ($sth->rows >0)?1:0;
-		$dbh->commit();
-		delete $CACHE{Properties}{$fn}{$propname};
-	}
-	return $ret;
-}
-sub db_insert {
-	my ($basefn, $fn, $type, $scope, $token, $depth, $timeout, $owner) = @_;
-	debug("db_insert($basefn,$fn,$type,$scope,$token,$depth,$timeout,$owner)");
-	my $ret = 0;
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('INSERT INTO webdav_locks (basefn, fn, type, scope, token, depth, timeout, owner) VALUES ( ?,?,?,?,?,?,?,?)');
-	if (defined $sth) {
-		$sth->execute($basefn,$fn,$type,$scope,$token,$depth,$timeout,$owner);
-		$ret=($sth->rows>0)?1:0;
-		$dbh->commit();
-	}
-	return $ret;
-}
-sub db_update {
-	my ($basefn, $fn, $timeout) = @_;
-	debug("db_update($basefn,$fn,$timeout)");
-	my $ret = 0;
-	my $dbh = db_init();
-	my $sth = $dbh->prepare('UPDATE webdav_locks SET timeout=? WHERE basefn = ? AND fn = ?' );
-	if (defined $sth) {
-		$sth->execute($timeout, $basefn, $fn);
-		$ret = ($sth->rows>0)?1:0;
-		$dbh->commit();
-	}
-	return $ret;
-}
-sub db_delete {
-	my ($fn,$token) = @_;
-	my $ret = 0;
-	my $dbh = db_init();
-	debug("db_delete($fn,$token)");
-	my $sel = 'DELETE FROM webdav_locks WHERE ( basefn = ? OR fn = ? )';
-	my @params = ($fn, $fn);
-	if (defined $token) {
-		$sel.=' AND token = ?';
-		push @params, $token;
-	}
-	my $sth = $dbh->prepare($sel);
-	if (defined $sth) {
-		$sth->execute(@params);
-		debug("db_delete: rows=".$sth->rows);
-		$ret = $sth->rows>0?1:0;
-		$dbh->commit();
-	}
-	
-	return $ret;
-}
-sub db_init {
-	return $DBI_INIT if defined $DBI_INIT;
-
-	my $dbh = DBI->connect($DBI_SRC, $DBI_USER, $DBI_PASS, { RaiseError=>0, PrintError=>0, AutoCommit=>0 }) || die("You need a database (see \$DBI_SRC configuration)");
-	if (defined $dbh && $CREATE_DB) {
-		debug("db_init: CREATE TABLE/INDEX...");
-
-		foreach my $query (@DB_SCHEMA) {
-			my $sth = $dbh->prepare($query);
-			if (defined $sth) {
-				$sth->execute();
-				if ($sth->err) {
-					debug("db_init: '$query' execution failed!");
-					$dbh=undef;
-				} else {
-					$dbh->commit();
-					debug("db_init: '$query' done.");
-				}	
-			} else {
-				debug("db_init: '$query' preparation failed!");
-			}
-		}
-	}
-	$DBI_INIT = $dbh;
-	return $dbh;
-}
-sub db_rollback($) {
-	my ($dbh) = @_;
-	$dbh->rollback();
-}
-sub db_commit($) {
-	my ($dbh) = @_;
-	$dbh->commit();
 }
 sub handlePropertyRequest {
 	my ($xml, $dataRef, $resp_200, $resp_403) = @_;
@@ -3224,9 +3001,10 @@ sub setProperty {
 	} else {
 		my $n = $propname;
 		$n='{}'.$n if (ref($$elementParentRef{$propname}) eq 'HASH' && $$elementParentRef{$propname}{xmlns} eq "" && $n!~/^{[^}]*}/);
-		my $dbval = db_getProperty($fn, $n);
+		my $db = getDBDriver();
+		my $dbval = $db->db_getProperty($fn, $n);
 		my $value = createXML($$elementParentRef{$propname},0);
-		my $ret = defined $dbval ? db_updateProperty($fn, $n, $value) : db_insertProperty($fn, $n, $value);
+		my $ret = defined $dbval ? $db->db_updateProperty($fn, $n, $value) : $db->db_insertProperty($fn, $n, $value);
 		if ($ret) {
 			$$resp_200{href}=$ru;
 			$$resp_200{propstat}{prop}{$propname}=undef;
@@ -3582,9 +3360,10 @@ sub rcopy {
         } else {
                 return 0;
         }
-        db_deleteProperties($dst);
-        db_copyProperties($src,$dst);
-        db_deleteProperties($src) if $move;
+	my $db = getDBDriver();
+        $db->db_deleteProperties($dst);
+        $db->db_copyProperties($src,$dst);
+        $db->db_deleteProperties($src) if $move;
         
         return 1;
 }
@@ -3617,6 +3396,10 @@ sub getHiddenFilter {
 sub getWebInterface {
 	require WebInterface;
 	return new WebInterface($cgi, $backend);
+}
+sub getDBDriver {
+	require DB::Driver;
+	return $CACHE{dbdriver} || ($CACHE{dbdriver} = new DB::Driver);
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;
