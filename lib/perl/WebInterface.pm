@@ -46,7 +46,7 @@ sub handleGetRequest {
         } elsif ($main::ENABLE_THUMBNAIL &&  $$self{cgi}->param('action') eq 'mediarss' && $$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) {
                 $self->getRenderer()->printMediaRSS($fn,$ru);
         } elsif ($main::ENABLE_THUMBNAIL && $$self{cgi}->param('action') eq 'image' && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn)) {
-                $self->getRenderer()->printImage();
+                $self->getRenderer()->printImage($fn);
         } elsif ($$self{cgi}->param('action') eq 'opensearch' && $$self{backend}->isDir($fn)) {
                 $self->getRenderer()->printOpenSearch();
         } elsif ($main::ENABLE_THUMBNAIL && $$self{cgi}->param('action') eq 'thumb' && $$self{backend}->isReadable($fn) && $$self{backend}->isFile($fn)) {
