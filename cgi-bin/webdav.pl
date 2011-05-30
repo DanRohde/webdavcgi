@@ -2350,9 +2350,9 @@ sub getProperty {
 	if ($ENABLE_ACL  || $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV) {
 		$$resp_200{prop}{owner} = { href=>$uri } if $prop eq 'owner';
 		$$resp_200{prop}{group} = { href=>$uri } if $prop eq 'group';
-		$$resp_200{prop}{'supported-privilege-set'}= getACLSupportedPrivilegeSet($fn) if $prop eq 'supported-privilege-set';
-		$$resp_200{prop}{'current-user-privilege-set'} = getACLCurrentUserPrivilegeSet($fn) if $prop eq 'current-user-privilege-set';
-		$$resp_200{prop}{acl} = getACLProp($mode) if $prop eq 'acl';
+		$$resp_200{prop}{'supported-privilege-set'}= getACL()->getACLSupportedPrivilegeSet($fn) if $prop eq 'supported-privilege-set';
+		$$resp_200{prop}{'current-user-privilege-set'} = getACL()->getACLCurrentUserPrivilegeSet($fn) if $prop eq 'current-user-privilege-set';
+		$$resp_200{prop}{acl} = getACL()->getACLProp($mode) if $prop eq 'acl';
 		$$resp_200{prop}{'acl-restrictions'} = {'no-invert'=>undef,'required-principal'=>{all=>undef,property=>[{owner=>undef},{group=>undef}]}} if $prop eq 'acl-restrictions';
 		$$resp_200{prop}{'inherited-acl-set'} = undef if $prop eq 'inherited-acl-set';
 		$$resp_200{prop}{'principal-collection-set'} = { href=> $PRINCIPAL_COLLECTION_SET }, if $prop eq 'principal-collection-set';
@@ -3054,141 +3054,6 @@ sub getDirInfo {
 	}
 	return $counter{$prop};
 }
-sub getACLSupportedPrivilegeSet {
-	return { 'supported-privilege' =>
-			{ 
-				privilege => { all => undef }, 
-				abstract => undef,
-				description=>'Any operation',
-				'supported-privilege' => [ 
-					{
-						privilege => { read =>  undef },
-						description => 'Read any object',
-						'supported-privilege' => [
-							{
-								privilege => { 'read-acl' => undef },
-								absract => undef,
-								description => 'Read ACL',
-							},
-							{
-								privilege => { 'read-current-user-privilege-set' => undef },
-								absract => undef,
-								description => 'Read current user privilege set property',
-							},
-							{	privilege => { 'read-free-busy' },
-								abstract => undef,
-								description => 'Read busy time information'
-							},
-						],
-					},
-					{
-						privilege => { write => undef },
-						description => 'Write any object',
-						'supported-privilege' => [
-							{
-								privilege => { 'write-acl' => undef },
-								abstract => undef,
-								description => 'Write ACL',
-							},
-							{
-								privilege => { 'write-properties' => undef },
-								abstract => undef,
-								description => 'Write properties',
-							},
-							{
-								privilege => { 'write-content' => undef },
-								abstract => undef,
-								description => 'Write resource content',
-							},
-						],
-
-					},
-					{
-						privilege => {unlock => undef},
-						abstract => undef,
-						description => 'Unlock resource',
-					},
-					{
-						privilege => {bind => undef},
-						abstract => undef,
-						description => 'Add new files/folders',
-					},
-					{
-						privilege => {unbind => undef},
-						abstract => undef,
-						description => 'Delete or move files/folders',
-					},
-				],
-			}
-	};
-}
-sub getACLCurrentUserPrivilegeSet {
-	my ($fn) = @_;
-
-	my $usergrant;
-	if ($backend->isReadable($fn)) {
-		push @{$$usergrant{privilege}},{read  => undef };
-		push @{$$usergrant{privilege}},{'read-acl'  => undef };
-		push @{$$usergrant{privilege}},{'read-current-user-privilege-set'  => undef };
-		push @{$$usergrant{privilege}},{'read-free-busy'  => undef };
-		push @{$$usergrant{privilege}},{'schedule-query-freebusy'  => undef };
-		if ($backend->isWriteable($fn)) {
-			push @{$$usergrant{privilege}},{write => undef };
-			push @{$$usergrant{privilege}},{'write-acl' => undef };
-			push @{$$usergrant{privilege}},{'write-content'  => undef };
-			push @{$$usergrant{privilege}},{'write-properties'  => undef };
-			push @{$$usergrant{privilege}},{'unlock'  => undef };
-			push @{$$usergrant{privilege}},{bind=> undef };
-			push @{$$usergrant{privilege}},{unbind=> undef };
-			push @{$$usergrant{privilege}},{all=> undef };
-		}
-	}
-
-	return $usergrant;
-}
-sub getACLProp {
-	my ($mode) = @_;
-	my @ace;
-
-	my $ownergrant;
-	my $groupgrant;
-	my $othergrant;
-
-	$mode = $mode & 07777;
-
-	push @{$$ownergrant{privilege}},{read  => undef } if ($mode & 0400) == 0400;
-	push @{$$ownergrant{privilege}},{write => undef } if ($mode & 0200) == 0200;
-	push @{$$ownergrant{privilege}},{bind => undef } if ($mode & 0200) == 0200;
-	push @{$$ownergrant{privilege}},{unbind => undef } if ($mode & 0200) == 0200;
-	push @{$$groupgrant{privilege}},{read  => undef } if ($mode & 0040) == 0040;
-	push @{$$groupgrant{privilege}},{write => undef } if ($mode & 0020) == 0020;
-	push @{$$groupgrant{privilege}},{bind => undef } if ($mode & 0020) == 0020;
-	push @{$$groupgrant{privilege}},{unbind => undef } if ($mode & 0020) == 0020;
-	push @{$$othergrant{privilege}},{read  => undef } if ($mode & 0004) == 0004;
-	push @{$$othergrant{privilege}},{write => undef } if ($mode & 0002) == 0002;
-	push @{$$othergrant{privilege}},{bind => undef } if ($mode & 0002) == 0002;
-	push @{$$othergrant{privilege}},{unbind => undef } if ($mode & 0002) == 0002;
-	
-	push @ace, { principal => { property => { owner => undef } },
-		     grant => $ownergrant
-                   };
-	push @ace, { principal => { property => { owner => undef } },
-	             deny => { privilege => { all => undef } }
-	           };
-
-	push @ace, { principal => { property => { group => undef } },
-		     grant => $groupgrant
-                   };
-	push @ace, { principal => { property => { group => undef } },
-	             deny => { privilege => { all => undef } }
-	           };
-
-	push @ace, { principal => { all => undef },
-		     grant => $othergrant
-                   };
-
-	return { ace => \@ace };
-}
 sub getCalendarHomeSet {
 	my ($uri) = @_;
 	return $uri unless defined %CALENDAR_HOME_SET;
@@ -3400,6 +3265,10 @@ sub getWebInterface {
 sub getDBDriver {
 	require DB::Driver;
 	return $CACHE{dbdriver} || ($CACHE{dbdriver} = new DB::Driver);
+}
+sub getACL {
+	require WebDAV::ACL;
+	return $CACHE{webdavacl} || ($CACHE{webdavacl} = new WebDAV::ACL($cgi,$backend) );
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;
