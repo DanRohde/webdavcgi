@@ -437,6 +437,7 @@ sub _copytolocal {
 			$file.='/' if $file!~/\/$/;
 			if ($self->SUPER::mkcol($ndestdir)) {
 				foreach my $nfile (@{$self->readDir($file)}) {
+					next if $nfile =~ /^\.{1,2}$/;
 					$self->_copytolocal("$ndestdir/", "$file$nfile");
 				}
 			}
@@ -457,7 +458,7 @@ sub compressFiles {
 	foreach my $file (@files) {
 		$self->_copytolocal("$tempdir/", "$basepath$file");
 	}
-	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
+	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/",undef,\&main::simpleFilterCallback)});
 }
 sub getLinkSrc { return $_[1]; }
 sub hasSetUidBit { return 0; }

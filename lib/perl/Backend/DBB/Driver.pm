@@ -291,6 +291,12 @@ sub getLocalFilename {
 	$self->printFile($fn, $fh);
 	return $filename;
 }
+sub getFileContent {
+	my ($self, $fn) = @_;
+	$fn = $self->resolve($fn);
+	my $v = $self->_getDBEntry($fn,1);
+	return $$v{basename($fn)}{data};
+}
 sub _copytolocal {
 	my ($self, $dir, $file) = @_;
 
@@ -315,7 +321,7 @@ sub compressFiles {
 	foreach my $file (@files) {
 		$self->_copytolocal("$tempdir/", "$basepath$file");
 	}
-	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
+	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/",undef,\&main::simpleFilterCallback)});
 }
 sub _copytodb {
 	my ($self, $src, $dst) = @_;
