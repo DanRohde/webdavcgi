@@ -54,7 +54,6 @@ sub tl {
         $self->readTL('default') if !exists $main::TRANSLATION{default}{x__READ__x};
         $self->readTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__READ__x};
         my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $key;
-        shift;
         return $#_>-1 ? sprintf( $val, @_) : $val;
 }
 

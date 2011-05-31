@@ -2513,19 +2513,6 @@ sub moveToTrash  {
         }
         return $ret;
 }
-sub escapeQuotes {
-	my ($q) = @_;
-	$q=~s/(["'])/\\$1/g;
-	return $q;
-}
-sub __unused__getmodeclass {
-	my ($fn, $m) = @_;
-	my $class= "";
-	$class='groupwriteable' if ($m & 0020) == 0020;
-	$class='otherwriteable' if ($m & 0002) == 0002 && !-k $fn;
-
-	return $class;
-}
 sub getSupportedMethods {
 	my ($path) = @_;
 	my @methods;

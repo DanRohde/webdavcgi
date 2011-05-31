@@ -1189,7 +1189,7 @@ sub renderEditTextView {
         my ($cols,$rows,$ff) = $$self{cgi}->cookie('textdata') ? split(/\//,$$self{cgi}->cookie('textdata')) : (70,15,'mono');
         my $fftoggle = $ff eq 'mono' ? 'prop' : 'mono';
 
-        my $cmsg = $self->tl('confirmsavetextdata',escapeQuotes($$self{cgi}->param('edit')));
+        my $cmsg = $self->tl('confirmsavetextdata',$self->escapeQuotes($$self{cgi}->param('edit')));
 
         return $$self{cgi}->div($$self{cgi}->param('edit').':')
               .$$self{cgi}->div(
@@ -1593,6 +1593,12 @@ sub cmp_files {
                 return $factor * ( cmp_strings(getMIMEType($a), getMIMEType($b)) || cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
         }
         return $factor * cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b));
+}
+
+sub escapeQuotes {
+        my ($self,$q) = @_;
+	$q=~s/(["'])/\\$1/g;
+	return $q;
 }
 
 1;
