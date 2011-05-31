@@ -604,6 +604,7 @@ sub getFolderList {
                 $WEB_ID++;
                 my $fid = "f$WEB_ID";
                 my $full = $filename eq '.' ? $fn : $fn.$filename;
+		$full = $$self{backend}->getParent($fn) if $filename eq '..';
                 my $nru = $ru.uri_escape($filename);
 
                 $nru = dirname($ru).'/' if $filename eq '..';
@@ -614,7 +615,7 @@ sub getFolderList {
                 my $isUnReadable = !$isReadable;
 
                 my $mimetype = '?';
-                $mimetype = $$self{backend}->isDir($full) ? ( $filename eq '..' ? '< .. >' : '<folder>' ) : main::getMIMEType($filename) unless $isUnReadable;
+                $mimetype = $filename eq '..' ? '< .. >' : ( $$self{backend}->isDir($full) ? '<folder>' : main::getMIMEType($filename) ) unless $isUnReadable;
                 $filename.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && $$self{backend}->isDir($full);
                 $nru.="/" if !$isUnReadable && $filename !~ /^\.{1,2}$/ && $$self{backend}->isDir($full);
 
@@ -658,16 +659,6 @@ sub getFolderList {
                         'mime'=> $usedcols{mime} ? { value=>$$self{cgi}->escapeHTML($mimetype), title=>$filename} : '',
                 );
                 eval $rowpattern;
-#               foreach my $column (@tablecolumns) {
-#                       $row.=$$self{cgi}->td({
-#                                               -class=>"tc_$column",
-#                                               -id=>"tc_${column}_${fid}",
-#                                               -title=>$rowdata{$column}{title},
-#                                               -onclick=>$onclick,
-#                                               -onmousedown=>$ignev,
-#                                               -ondblclick=>$ignev,
-#                                       }, $rowdata{$column}{value});
-#               }
                 $list.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
                 $odd = ! $odd;
 
@@ -923,7 +914,7 @@ sub getfancyfilename {
         $full = '/' if $full eq '//'; # fixes root folder navigation bug
 
         $full.="?$q" if defined $q && defined $fn && !$isUnReadable && $$self{backend}->isDir($fn);
-        my $fntext = $s eq '.' ? $s : $$self{backend}->getDisplayName($fn);
+        my $fntext = $s =~ /^\.{1,2}$/ ? $s : $$self{backend}->getDisplayName($fn);
         $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-3) if length($s)>$main::MAXFILENAMESIZE;
         my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
 
@@ -941,7 +932,7 @@ sub getfancyfilename {
         $id=~s/\"//g;
 
         my $cssclass='icon';
-        if ($main::ENABLE_THUMBNAIL && $$self{backend}->isReadable($fn) && !$$self{backend}->isEmpty($fn) && $self->hasThumbSupport($m))  {
+        if ($main::ENABLE_THUMBNAIL && $self->hasThumbSupport($m) && $$self{backend}->isReadable($fn) && !$$self{backend}->isEmpty($fn))  {
                 $icon=$full.($full=~/\?.*/?';':'?').'action=thumb';
                 if ($main::THUMBNAIL_WIDTH && $main::ICON_WIDTH < $main::THUMBNAIL_WIDTH) {
                         $cssclass='thumb';
