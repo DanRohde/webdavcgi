@@ -34,7 +34,7 @@ sub isReadable {
 	return _checkAFSAccess($_[1]);
 }
 sub isWriteable { 
-	return _checkAFSAccess($_[1]) && -w $_[1];
+	return _checkAFSAccess($_[1]);
 }
 sub isDir {
 	return _checkAFSAccess($_[1]) && -d $_[1];

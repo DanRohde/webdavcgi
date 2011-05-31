@@ -183,9 +183,14 @@ sub saveData {
 
 	my $mode = $append ? '>>' : '>';
 
-	if (($ret = open(F, "${mode}${file}"))) {
-		print F $data;
-		close(F);
+	if (($ret = open(my $f, "${mode}${file}"))) {
+		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
+			$ret = 0;
+		} else {
+			print $f $data;
+			flock($f, LOCK_UN) if $main::ENABLE_FLOCK;
+		}
+		close($f);
 	}
 	return $ret;
 }
