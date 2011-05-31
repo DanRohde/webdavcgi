@@ -342,8 +342,8 @@ sub renderWebInterface {
                 $content.=$self->getSearchResult($$self{cgi}->param('search'),$fn,$ru);
         } else {
                 my $showall = $$self{cgi}->param('showpage') ? 0 : $$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0;
-                $head .= $$self{cgi}->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, $self->tl('foldernotwriteable')) if !$$self{backend}->isWriteable($fn);
-                $head .= $$self{cgi}->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  $self->tl('foldernotreadable')) if !$$self{backend}->isReadable($fn);
+                ##$head .= $$self{cgi}->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, $self->tl('foldernotwriteable')) if !$$self{backend}->isWriteable($fn);
+                ##$head .= $$self{cgi}->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  $self->tl('foldernotreadable')) if !$$self{backend}->isReadable($fn);
                 $head .= $$self{cgi}->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$main::FILEFILTERPERDIR{$fn}}, $self->tl('folderisfiltered', $main::FILEFILTERPERDIR{$fn} || ($main::ENABLE_NAMEFILTER ? $$self{cgi}->param('namefilter') : undef) )) if $main::FILEFILTERPERDIR{$fn} || ($main::ENABLE_NAMEFILTER && $$self{cgi}->param('namefilter'));
                 $head .= $$self{cgi}->div( { -class=>'foldername'},
                         $$self{cgi}->a({-href=>$ru.($main::ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')},
@@ -647,7 +647,7 @@ sub getFolderList {
 
                 my $lmf = strftime($self->tl('lastmodifiedformat'), localtime($mtime));
                 my $ctf = strftime($self->tl('lastmodifiedformat'), localtime($ctime));
-                my ($size_v, $size_t) = renderByteValue($size,0,2);
+                my ($size_v, $size_t) = renderByteValue($size,1,2);
                 my %rowdata = (
                         'name'=> $usedcols{name} ? { value=>$self->getfancyfilename($nru, $filename, $mimetype, $full, $isUnReadable), title=>$filename} : '',
                         'lastmodified'=> $usedcols{lastmodified} ? { value=>$lmf, title=>$self->tl('created').' '.$ctf} : '',
@@ -682,6 +682,8 @@ sub getFolderList {
 
         }
         $list .= $tablehead if $count > 20; ## && $count % 50 != 0 && $count % 50 > 20;
+	$content .= $$self{cgi}->div({-class=>'notwriteable'}, $self->tl('foldernotwriteable')) if !$$self{backend}->isWriteable($fn);
+	$content .= $$self{cgi}->div({-class=>'notreadable'}, $self->tl('foldernotreadable')) if !$$self{backend}->isReadable($fn);
         $content .= $self->renderTableConfig() if !$$self{cgi}->param('search');
 	$content .= $pagenav;
         $content .= $$self{cgi}->start_table({-class=>'filelist'}).$list.$$self{cgi}->end_table();
@@ -787,7 +789,7 @@ sub renderTableConfig {
         $content.=$$self{cgi}->div({-class=>'tableconfigbutton', -title=>$self->tl('tableconfig.button.title'), -onclick=>'toggleClassNameById("tableconfig","hidden",!document.getElementById("tableconfig").className.match(/hidden/));'}, $self->tl('tableconfig.button'));
 
         $content.=$$self{cgi}->div({-id=>'tableconfig',-class=>'tableconfig hidden'},
-                $self->renderFieldSet($self->tl('tableconfig.tablecolumns'), $$self{cgi}->checkbox_group({-name=>'tablecolumns',-cols=>1,-values=>\@tablecolumns,-labels=>\%tablecolumnlabels,-defaults=>\@tablecolumndefaults, -attributes=>\%tablecolumnattributes}))
+                $self->renderFieldSet($self->tl('tableconfig.tablecolumns'), $$self{cgi}->checkbox_group({-name=>'tablecolumns',-id=>'tablecolumns',-cols=>1,-values=>\@tablecolumns,-labels=>\%tablecolumnlabels,-defaults=>\@tablecolumndefaults, -attributes=>\%tablecolumnattributes}))
                 .$self->renderFieldSet($self->tl('tableconfig.sortingcolumns'), $$self{cgi}->radio_group({-name=>'sortingcolumns',-cols=>1, -values=>\@sortingcolumns,-labels=>\%tablecolumnlabels,-default=>$sortingcolumndefault}))
                 .$self->renderFieldSet($self->tl('tableconfig.sortingorder'), $$self{cgi}->radio_group({-name=>'sortingorder',-cols=>1, -values=>['asc','desc'], -labels=>{'asc'=>$self->tl('tableconfig.ascending'),'desc'=>$self->tl('tableconfig.descending')}, -default=>$sortingorderdefault}))
                 .$$self{cgi}->div({-class=>'tableconfigactions'},

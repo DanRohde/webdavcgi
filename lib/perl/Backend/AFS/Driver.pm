@@ -31,10 +31,10 @@ use vars qw ( %CACHE );
 
 
 sub isReadable { 
-	return 1;
+	return _checkAFSAccess($_[1]);
 }
 sub isWriteable { 
-	return 1;
+	return _checkAFSAccess($_[1]) && -w $_[1];
 }
 sub isDir {
 	return _checkAFSAccess($_[1]) && -d $_[1];
@@ -64,7 +64,7 @@ sub isCharDevice {
 	return 0;
 }
 sub exists { 
-	return _checkAFSAccess($_[1]) && -e $_[1];
+	return _checkAFSAccess($_[1]);
 }
 sub isEmpty {
 	return _checkAFSAccess($_[1]) && -z $_[1];

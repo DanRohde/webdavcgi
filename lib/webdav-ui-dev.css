@@ -39,16 +39,20 @@ input,select { text-shadow: 1px 1px white;  }
 	text-align:center; 
 	z-index: 20000; 
 }
-.errormsg, .notwriteable, .notreadable { 
-	background: #ffeeee url(_webdavcgi_/actions/Status-dialog-error-icon.png) no-repeat left;
+.errormsg {
+	background: #ffeeee url('_webdavcgi_/actions/Status-dialog-error-icon.png') no-repeat left;
 	border: 1px solid #ff0000; 
 }
+.notwriteable, .notreadable {
+	border: 1px solid #ff0000;
+	background-color: #ffeeee;
+}
 .infomsg { 
-	background: #eeeeff url(_webdavcgi_/actions/Apps-preferences-desktop-notification-icon.png) no-repeat left; 
+	background: #eeeeff url('_webdavcgi_/actions/Apps-preferences-desktop-notification-icon.png') no-repeat left; 
 	border: 1px solid #0000ff;
 }
 .filtered { 
-	background: yellow url(_webdavcgi_/actions/Status-dialog-warning-icon.png) no-repeat left; 
+	background: yellow url('_webdavcgi_/actions/Status-dialog-warning-icon.png') no-repeat left; 
 	border: 1px solid black; 
 }
 
@@ -78,7 +82,7 @@ input,select { text-shadow: 1px 1px white;  }
 .bookmark .func { background-color: #cccccc; font-weight: bold; text-shadow: 1px 1px white;}
 #addbookmark, #rmbookmark { font-size: 0.8em; border: 1px outset black; padding: 0px; margin: 0px; font-family: monospace; background-color: #dddddd; text-shadow: 1px 1px white; color: black; font-weight: bold; text-decoration: none;}
 
-.masterhead { background-color: white; position: fixed; top: 0px; width: 99%; }
+.masterhead { background-color: white; position: fixed; top: 0px; width: 99%; z-index: 4; }
 .folderview { padding-top: 110px; }
 
 .sidebar { position: fixed; top: 120px; padding: 2px; background-color: white; z-index: 5;}
@@ -130,6 +134,7 @@ input,select { text-shadow: 1px 1px white;  }
 	position: relative;
 	top: 0px;
 	left: 0px;
+	z-index: 1;
 }
 .tableconfig { 
 	padding: 0px;
