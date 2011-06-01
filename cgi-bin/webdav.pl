@@ -2596,7 +2596,8 @@ sub rcopy {
         if ( $backend->isLink($nsrc)) { # link
                 if (!$move || !$backend->rename($nsrc, $dst)) {
                         my $orig = $backend->getLinkSrc($nsrc);
-                        return 0 if ( !$move || $backend->unlinkFile($nsrc) ) && !$backend->createSymLink($orig,$dst); 
+			$dst=~s/\/$//;
+                        return 0 if !$backend->createSymLink($orig,$dst) && ( !$move || $backend->unlinkFile($nsrc) );
                 }
         } elsif ( $backend->isFile($src) ) { # file
 		debug("rcopy($src,$dst,$move,$depth) #2");

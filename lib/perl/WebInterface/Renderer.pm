@@ -1304,7 +1304,7 @@ sub renderSideBar {
                 $content .= $self->renderSideBarMenuItem('deleteview', undef, undef, $self->renderDeleteFilesButton());
                 $content .= $self->renderSideBarMenuItem('createfolderview', $self->tl('createfolderbutton'), 'toggleActionView("createfolderview","colname-sidebar");', $$self{cgi}->button({-value=> $self->tl('createfolderbutton'),-name=>'mkcol'}));
                 $content .= $self->renderSideBarMenuItem('createnewfileview', $self->tl('createnewfilebutton'), 'toggleActionView("createnewfileview","cnfname");', $$self{cgi}->button({-value=>$self->tl('createnewfilebutton'),-name=>'createnewfile'}));
-                $content .= $self->renderSideBarMenuItem('creatensymlinkview', $self->tl('createsymlinkdescr'), 'toggleActionView("createsymlinkview","lndst");', $$self{cgi}->button({-value=>$self->tl('createsymlinkbutton'),-name=>'createsymlink',-disabled=>'disabled'})) if $main::ALLOW_SYMLINK;
+                $content .= $self->renderSideBarMenuItem('creatensymlinkview', $self->tl('createsymlinkdescr'), 'toggleActionView("createsymlinkview","linkdstname");', $$self{cgi}->button({-value=>$self->tl('createsymlinkbutton'),-name=>'createsymlink',-disabled=>'disabled'})) if $main::ALLOW_SYMLINK;
                 $content .= $self->renderSideBarMenuItem('movefilesview', $self->tl('movefilesbutton'), undef, $$self{cgi}->button({-disabled=>'disabled',-onclick=>'toggleActionView("movefilesview","newname");',-name=>'rename',-value=>$self->tl('movefilesbutton')}));
                 $content .= $self->renderSideBarMenuItem('permissionsview', $self->tl('mode'), undef, $$self{cgi}->button({-disabled=>'disabled', -onclick=>'toggleActionView("permissionsview");', -value=>$self->tl('mode'),-name=>'changeperm',-disabled=>'disabled'})) if $main::ALLOW_CHANGEPERM;
                 $content .= $self->renderSideBarMenuItem('afsaclmanagerview', $self->tl('afs'), 'toggleActionView("afsaclmanagerview");', $$self{cgi}->button({-value=>$self->tl('afs'),-name=>'saveafsacl'})) if $main::ENABLE_AFSACLMANAGER;
@@ -1313,7 +1313,7 @@ sub renderSideBar {
                 $av.= $self->renderActionView('zipfileuploadview', 'zipfileupload', $self->renderZipUploadView(), 'zipfile_upload',0,0) if $main::ALLOW_ZIP_UPLOAD;
                 $av.= $self->renderActionView('createfolderview', 'createfolderbutton', $self->renderCreateNewFolderView("colname-sidebar"),'colname-sidebar');
                 $av.= $self->renderActionView('createnewfileview', 'createnewfilebutton', $self->renderCreateNewFileView(),'cnfname');
-                $av.= $self->renderActionView('createsymlinkview', 'createsymlinkbutton', $self->renderCreateSymLinkView(),'lndst') if $main::ALLOW_SYMLINK;
+                $av.= $self->renderActionView('createsymlinkview', 'createsymlinkbutton', $self->renderCreateSymLinkView(),'linkdstname') if $main::ALLOW_SYMLINK;
                 $av.= $self->renderActionView('movefilesview', 'movefilesbutton', $self->renderMoveView("newname"),'newname');
                 $av.= $self->renderActionView('permissionsview', 'mode', $self->renderChangePermissionsView()) if $main::ALLOW_CHANGEPERM;
                 $av.= $self->renderActionView('afsaclmanagerview', 'afs', $self->renderAFSACLManager()) if $main::ENABLE_AFSACLMANAGER;
