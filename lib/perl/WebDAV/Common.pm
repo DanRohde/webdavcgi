@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package WebInterface::Common;
+package WebDAV::Common;
 
 use strict;
 
@@ -36,29 +36,6 @@ sub initialize() {
 	$$self{cgi} = $$self{config}->getProperty('cgi');
 	$$self{backend} = $$self{config}->getProperty('backend');
 	$$self{utils} = $$self{config}->getProperty('utils');
-}
-
-sub readTL  {
-        my ($self,$l) = @_;
-        my $fn = -e "${main::INSTALL_BASE}webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}webdav-ui_${l}.msg" : -e "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" : undef;
-        return unless defined $fn;
-        if (open(I, "<$fn")) {
-                while (<I>) {
-                        chomp;
-                        next if /^#/;
-                        $main::TRANSLATION{$l}{$1}=$2 if /^(\S+)\s+"(.*)"\s*$/;
-                }
-                close(I);
-        } else { warn("Cannot read $fn!"); }
-        $main::TRANSLATION{$l}{x__READ__x}=1;
-}
-sub tl {
-        my $self = shift;
-        my $key = shift;
-        $self->readTL('default') if !exists $main::TRANSLATION{default}{x__READ__x};
-        $self->readTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__READ__x};
-        my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $key;
-        return $#_>-1 ? sprintf( $val, @_) : $val;
 }
 
 

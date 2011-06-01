@@ -32,9 +32,9 @@ sub new {
        my $class = ref($this) || $this;
        my $self = { };
        bless $self, $class;
-       $$self{cgi}=shift;
-       $$self{backend}=shift;
+       $$self{config}=shift;
        $$self{db}=shift;
+       $self->initialize();
        return $self;
 }
 sub handlePostUpload {

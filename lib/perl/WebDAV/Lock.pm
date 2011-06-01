@@ -21,14 +21,17 @@ package WebDAV::Lock;
 
 use strict;
 
+use WebDAV::Common;
+our @ISA = ( 'WebDAV::Common' );
+
 sub new {
        my $this = shift;
        my $class = ref($this) || $this;
        my $self = { };
        bless $self, $class;
-       $$self{cgi}=shift;
-       $$self{backend}=shift;
+       $$self{config}=shift;
        $$self{db}=shift;
+       $self->initialize();
        return $self;
 }
 
@@ -66,7 +69,7 @@ sub lockResource {
 
         if ($$self{backend}->isDir($fn) && (lc($depth) eq 'infinity' || $depth>0)) {
                 if ($$self{backend}->isReadable($fn)) {
-                        foreach my $f (@{$$self{backend}->readDir($fn,main::getFileLimit($fn),\&main::filterCallback)}) {
+                        foreach my $f (@{$$self{backend}->readDir($fn,main::getFileLimit($fn),$$self{utils})}) {
                                 my $nru = $ru.$f;
                                 my $nfn = $fn.$f;
                                 $nru.='/' if $$self{backend}->isDir($nfn);

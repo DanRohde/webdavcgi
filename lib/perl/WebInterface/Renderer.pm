@@ -40,14 +40,14 @@ use vars qw (%TRANSLATIONS  $WEB_ID %BYTEUNITS @BYTEUNITORDER);
 
 
 sub new {
-       my $this = shift;
-       my $class = ref($this) || $this;
-       my $self = { };
-       bless $self, $class;
-       $$self{cgi}=shift;
-       $$self{backend}=shift;
-       $$self{db}=shift;
-       return $self;
+	my $this = shift;
+	my $class = ref($this) || $this;
+	my $self = { };
+	bless $self, $class;
+	$$self{config}=shift;
+	$$self{db}=shift;
+	$self->initialize();
+	return $self;
 }
 
 sub renderPropertiesViewer {
@@ -274,7 +274,7 @@ sub printImage {
 sub printMediaRSS {
 	my ($self,$fn,$ru) = @_;
 	my $content = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
-	foreach my $file (sort { $self->cmp_files } @{$$self{backend}->readDir($fn, main::getFileLimit($fn), \&frontendFilterCallback)}) {
+	foreach my $file (sort { $self->cmp_files } @{$$self{backend}->readDir($fn, main::getFileLimit($fn), $self)}) {
 		my $mime = main::getMIMEType($file);
 		$mime='image/gif' if $self->hasThumbSupport($mime) && $mime !~ /^image/i;
 		$content.=qq@<item><title>$file</title><link>$ru$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if $self->hasThumbSupport($mime) && $$self{backend}->isReadable("$fn$file");
@@ -578,7 +578,7 @@ sub getFolderList {
         $list .= $tablehead;
 
 
-        my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),\&frontendFilterCallback)} : ();
+        my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$self)} : ();
         unshift @files, '.' if  $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $main::DOCUMENT_ROOT eq $fn);
         unshift @files, '..' if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
 
@@ -780,9 +780,9 @@ sub renderTableConfig {
         $content.=$$self{cgi}->div({-class=>'tableconfigbutton', -title=>$self->tl('tableconfig.button.title'), -onclick=>'toggleClassNameById("tableconfig","hidden",!document.getElementById("tableconfig").className.match(/hidden/));'}, $self->tl('tableconfig.button'));
 
         $content.=$$self{cgi}->div({-id=>'tableconfig',-class=>'tableconfig hidden'},
-                $self->renderFieldSet($self->tl('tableconfig.tablecolumns'), $$self{cgi}->checkbox_group({-name=>'tablecolumns',-id=>'tablecolumns',-cols=>1,-values=>\@tablecolumns,-labels=>\%tablecolumnlabels,-defaults=>\@tablecolumndefaults, -attributes=>\%tablecolumnattributes}))
-                .$self->renderFieldSet($self->tl('tableconfig.sortingcolumns'), $$self{cgi}->radio_group({-name=>'sortingcolumns',-cols=>1, -values=>\@sortingcolumns,-labels=>\%tablecolumnlabels,-default=>$sortingcolumndefault}))
-                .$self->renderFieldSet($self->tl('tableconfig.sortingorder'), $$self{cgi}->radio_group({-name=>'sortingorder',-cols=>1, -values=>['asc','desc'], -labels=>{'asc'=>$self->tl('tableconfig.ascending'),'desc'=>$self->tl('tableconfig.descending')}, -default=>$sortingorderdefault}))
+                $self->renderFieldSet('tableconfig.tablecolumns', $$self{cgi}->checkbox_group({-name=>'tablecolumns',-cols=>1,-values=>\@tablecolumns,-labels=>\%tablecolumnlabels,-defaults=>\@tablecolumndefaults, -attributes=>\%tablecolumnattributes}))
+                .$self->renderFieldSet('tableconfig.sortingcolumns', $$self{cgi}->radio_group({-name=>'sortingcolumns',-cols=>1, -values=>\@sortingcolumns,-labels=>\%tablecolumnlabels,-default=>$sortingcolumndefault}))
+                .$self->renderFieldSet('tableconfig.sortingorder', $$self{cgi}->radio_group({-name=>'sortingorder',-cols=>1, -values=>['asc','desc'], -labels=>{'asc'=>$self->tl('tableconfig.ascending'),'desc'=>$self->tl('tableconfig.descending')}, -default=>$sortingorderdefault}))
                 .$$self{cgi}->div({-class=>'tableconfigactions'},
                         $$self{cgi}->button({-value=>$self->tl('cancel'),-onclick=>'toggleClassNameById("tableconfig","hidden",1)'})
                         .$$self{cgi}->button({-value=>$self->tl('savebutton'), -onclick=>'saveTableConfig()'})
@@ -987,7 +987,7 @@ sub getSearchResult {
         $content.=$$self{cgi}->hr().$$self{cgi}->div({-class=>'resultcount'},$count.$self->tl($count>1?'searchresults':'searchresult')).$self->getQuickNavPath($fn,$ru).$list if $count>0 && $isRecursive;
         $$fullcount+=$count;
         if ($$self{backend}->isReadable($fn)) {
-                foreach my $filename (sort { $self->cmp_files } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),\&main::filterCallback)}) {
+                foreach my $filename (sort { $self->cmp_files } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$$self{utils})}) {
                         local($main::PATH_TRANSLATED);
                         my $full = $fn.$filename;
                         next if main::is_hidden($full);
@@ -1467,9 +1467,9 @@ sub renderAFSGroupManager {
                 ;
 }
 
-sub frontendFilterCallback {
-        my ($path, $file) = @_;
-        return 1 if main::filterCallback($path,$file);
+sub filter {
+        my ($self,$path, $file) = @_;
+        return 1 if $$self{utils}->filter($path,$file);
         my $ret = 0;
         my $filter = $main::cgi->cookie('filter.types');
         if ( defined $filter ) {

@@ -74,7 +74,7 @@ sub readDir {
 		my $data = $sth->fetchall_arrayref();
 		foreach my $e (@${data}) {
 			last if defined $limit && $#list >= $limit;
-			next if defined $filter && $filter->($fn, $$e[0]);
+			next if $self->filter($filter, $fn, $$e[0]);
 			push @list, $$e[0];
 		}
 	}
@@ -321,7 +321,7 @@ sub compressFiles {
 	foreach my $file (@files) {
 		$self->_copytolocal("$tempdir/", "$basepath$file");
 	}
-	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/",undef,\&main::simpleFilterCallback)});
+	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
 }
 sub _copytodb {
 	my ($self, $src, $dst) = @_;

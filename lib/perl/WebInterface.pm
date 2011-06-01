@@ -27,9 +27,10 @@ sub new {
        my $self = { };
        bless $self, $class;
 
-       $$self{cgi}=shift;
-       $$self{backend}=shift;
+       $$self{config}=shift;
        $$self{db}=shift;
+       $$self{cgi} = $$self{config}->getProperty('cgi');
+       $$self{backend} = $$self{config}->getProperty('backend');
        return $self;
 }
 sub handleGetRequest {
@@ -90,12 +91,12 @@ sub handlePostRequest {
 sub getFunctions {
 	my $self = shift;
         require WebInterface::Functions;
-        return new WebInterface::Functions($$self{cgi},$$self{backend},$$self{db});
+        return new WebInterface::Functions($$self{config},$$self{db});
 }
 sub getRenderer {
 	my $self = shift;
         require WebInterface::Renderer;
-        return new WebInterface::Renderer($$self{cgi},$$self{backend},$$self{db});
+        return new WebInterface::Renderer($$self{config},$$self{db});
 }
 
 1;

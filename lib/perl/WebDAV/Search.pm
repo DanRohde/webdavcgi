@@ -25,14 +25,16 @@ use Date::Parse;
 
 use vars qw( %CACHE );
 
+use WebDAV::Common;
+our @ISA = ( 'WebDAV::Common' );
+
 sub new {
        my $this = shift;
        my $class = ref($this) || $this;
        my $self = { };
        bless $self, $class;
-       $$self{cgi}=shift;
-       $$self{backend}=shift;
-       $$self{db}=shift;
+       $$self{config}=shift;
+       $self->initialize();
        return $self;
 }
 
@@ -182,7 +184,7 @@ sub doBasicSearch {
         $$visited{$nbase}=1;
 
         if ($$self{backend}->isDir($base) && $$self{backend}->isReadable($base)) {
-                foreach my $sf (@{$$self{backend}->readDir($base,main::getFileLimit($base),\&main::filterCallback)}) {
+                foreach my $sf (@{$$self{backend}->readDir($base,main::getFileLimit($base),$$self{utils})}) {
                         my $nbase = $base.$sf;
                         my $nhref = $href.$sf;
                         $self->doBasicSearch($expr, $base.$sf, $href.$sf, defined $depth  && $depth ne 'infinity' ? $depth - 1 : $depth, $limit, $matches, $visited);

@@ -740,9 +740,17 @@ use lib $INSTALL_BASE."lib/perl";
 
 my $method = $cgi->request_method();
 
+use RequestConfig;
+my $config = new RequestConfig($cgi);
+
 use Backend::Manager;
 my $backendmanager = new Backend::Manager;
-our $backend = $backendmanager->getBackend($BACKEND);
+my $backend = $backendmanager->getBackend($BACKEND);
+$config->setProperty('backend',$backend);
+
+use Utils;
+my $utils = new Utils();
+$config->setProperty('utils',$utils);
 
  
 umask $UMASK;
@@ -1791,12 +1799,12 @@ sub _SEARCH {
 	} elsif (exists $$xmldata{'{DAV:}query-schema-discovery'}) {
 		debug("_SEARCH: found query-schema-discovery");
 		require WebDAV::Search;
-		(new WebDAV::Search($cgi,$backend))->getSchemaDiscovery($REQUEST_URI, \@resps);
+		(new WebDAV::Search($config))->getSchemaDiscovery($REQUEST_URI, \@resps);
 	} elsif (exists $$xmldata{'{DAV:}searchrequest'}) {
 		require WebDAV::Search;
 		foreach my $s (keys %{$$xmldata{'{DAV:}searchrequest'}}) {
 			if ($s =~ /{DAV:}basicsearch/) {
-				(new WebDAV::Search($cgi,$backend))->handleBasicSearch($$xmldata{'{DAV:}searchrequest'}{$s}, \@resps,\@errors);
+				(new WebDAV::Search($config))->handleBasicSearch($$xmldata{'{DAV:}searchrequest'}{$s}, \@resps,\@errors);
 			}
 		}
 	}
@@ -1920,7 +1928,7 @@ sub readDirBySuffix {
 	$$visited{$nfn}=1;
 
 	if ($backend->isReadable($fn)) {
-		foreach my $sf (@{$backend->readDir($fn, getFileLimit($fn), \&filterCallback)}) {
+		foreach my $sf (@{$backend->readDir($fn, getFileLimit($fn), $utils)}) {
 			$sf.='/' if $backend->isDir($fn.$sf);
 			my $nbase=$base.$sf;
 			push @{$hrefs}, $nbase if $backend->isFile($fn.$sf) && $sf =~ /\.\Q$suffix\E/;
@@ -2344,7 +2352,7 @@ sub inheritLock {
 		debug("inheritLock: $fn is a collection");
 		$db->db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
 		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),\&filterCallback)}) {
+			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),$utils)}) {
 				my $full = $fn.$f;
 				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
 				$db->db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
@@ -2390,7 +2398,7 @@ sub readDirRecursive {
 	$$visited{$nfn} = 1;
 	if ($depth!=0 &&  $isReadable && $backend->isDir($nfn) ) {
 		if (!defined $FILECOUNTPERDIRLIMIT{$fn} || $FILECOUNTPERDIRLIMIT{$fn}>0) {
-			foreach my $f ( @{$backend->readDir($fn, getFileLimit($fn),\&filterCallback)}) {
+			foreach my $f ( @{$backend->readDir($fn, getFileLimit($fn),$utils)}) {
 				my $fru=$ru.$cgi->escape($f);
 				$isReadable = $backend->isReadable("$nfn/$f");
 				my $nnfn = $isReadable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
@@ -2466,7 +2474,7 @@ sub getDirInfo {
 	return $CACHE{getDirInfo}{$fn}{$prop} if defined $CACHE{getDirInfo}{$fn}{$prop};
 	my %counter = ( childcount=>0, visiblecount=>0, objectcount=>0, hassubs=>0 );
 	if ($backend->isReadable($fn)) {
-		foreach my $f (@{$backend->readDir($fn, $$limit{$fn} || $max, \&filterCallback)}) {
+		foreach my $f (@{$backend->readDir($fn, $$limit{$fn} || $max, $utils)}) {
 			$counter{realchildcount}++;
 			$counter{childcount}++;
 			$counter{visiblecount}++ if !$backend->isDir("$fn$f") && $f !~/^\./;
@@ -2614,7 +2622,7 @@ sub rcopy {
 
 			return 0 unless $backend->isReadable($src);
                         my $rret = 1;
-                        foreach my $filename (@{$backend->readDir($src, undef, \&simpleFilterCallback)}) {
+                        foreach my $filename (@{$backend->readDir($src)}) {
                                 $rret = $rret && rcopy($src.$filename, $dst.$filename, $move, $depth+1);
                         }
                         if ($move) {
@@ -2636,19 +2644,6 @@ sub rmove {
 	my ($src, $dst) = @_;
 	return rcopy($src,$dst,1);
 }
-sub simpleFilterCallback {
-	my ($path, $file) =@_;
-	return defined $file && $file =~ /^\.{1,2}$/;
-}
-sub filterCallback {
-	my ($path, $file) = @_;
-	my $hidden = getHiddenFilter();
-	my $filter = defined $path ? $FILEFILTERPERDIR{$path} : undef;
-	return 1 if simpleFilterCallback($path,$file);
-	return 1 if defined $filter && defined $file && $file !~ $filter;
-	return 1 if defined $hidden && defined $file && defined $path && "$path$file" =~ /$hidden/;
-	return 0;
-}
 sub getFileLimit {
 	my ($path) = @_;
 	return $FILECOUNTPERDIRLIMIT{$path} || $FILECOUNTLIMIT;
@@ -2659,7 +2654,7 @@ sub getHiddenFilter {
 }
 sub getWebInterface {
 	require WebInterface;
-	return new WebInterface($cgi, $backend, getDBDriver());
+	return new WebInterface($config, getDBDriver());
 }
 sub getDBDriver {
 	require DB::Driver;
@@ -2667,11 +2662,11 @@ sub getDBDriver {
 }
 sub getPropertyModule {
 	require WebDAV::Properties;
-	return $CACHE{webdavproperties} || ($CACHE{webdavproperties} = new WebDAV::Properties($cgi,$backend,getDBDriver()));
+	return $CACHE{webdavproperties} || ($CACHE{webdavproperties} = new WebDAV::Properties($config,getDBDriver()));
 }
 sub getLockModule {
 	require WebDAV::Lock;
-	return $CACHE{webdavlock} || ($CACHE{webdavlock} = new WebDAV::Lock($cgi,$backend,getDBDriver()));
+	return $CACHE{webdavlock} || ($CACHE{webdavlock} = new WebDAV::Lock($config,getDBDriver()));
 }
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;

@@ -89,11 +89,10 @@ sub readDir {
 			} elsif (exists $$dom{fileserver}{$fserver}{shares}) {
 				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver.$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}));
 			} elsif (my $dir = $smb->opendir("smb://$fserver/")) {
-				my $filter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter(\%main::SMB)));
-				main::debug("readDir: $fserver: filter = $filter") if defined $filter;
+				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter(\%main::SMB)));
 				while (my $f = $smb->readdir_struct($dir)) {
 					$self->_setCacheEntry('readDir',"$DOCUMENT_ROOT$fserver$SHARESEP$$f[1]", { type=>$$f[0], comment=>$$f[2] });
-					push @files, "$fserver$SHARESEP$$f[1]" if $$f[0] == $smb->SMBC_FILE_SHARE && (!defined $filter || $$f[1]!~/$filter/);
+					push @files, "$fserver$SHARESEP$$f[1]" if $$f[0] == $smb->SMBC_FILE_SHARE && (!defined $sfilter || $$f[1]!~/$sfilter/);
 				}
 				$smb->closedir($dir);
 			}
@@ -103,7 +102,7 @@ sub readDir {
 		if (my $dir = $smb->opendir($url)) {
 			while (my $f = $smb->readdir_struct($dir)) {
 				last if defined $limit && $#files>=$limit;
-				next if defined $filter && $filter->($base, $$f[1]); 
+				next if $self->filter($filter, $base, $$f[1]); 
 				$self->_setCacheEntry('readDir',"$base$$f[1]", { type=>$$f[0], comment=>$$f[2] });
 				push @files, $$f[1]; 
 			}
@@ -458,7 +457,7 @@ sub compressFiles {
 	foreach my $file (@files) {
 		$self->_copytolocal("$tempdir/", "$basepath$file");
 	}
-	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/",undef,\&main::simpleFilterCallback)});
+	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
 }
 sub getLinkSrc { return $_[1]; }
 sub hasSetUidBit { return 0; }

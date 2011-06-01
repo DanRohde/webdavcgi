@@ -21,9 +21,13 @@ package WebDAV::Properties;
 
 use strict;
 
+use WebDAV::Common;
+our @ISA = ( 'WebDAV::Common' );
+
 use File::Basename;
 
 use POSIX qw(strftime);
+
 
 
 sub new {
@@ -31,9 +35,9 @@ sub new {
         my $class = ref($this) || $this;
         my $self = { };
         bless $self, $class;
-        $$self{cgi}=shift;
-        $$self{backend}=shift;
+        $$self{config}=shift;
 	$$self{db} = shift;
+	$self->initialize();
         return $self;
 }
 

@@ -90,12 +90,17 @@ sub readDir {
         if (opendir(my $dir,$dirname)) {
                 while (my $file = readdir($dir)) {
 			last if defined $limit && $#files >= $limit;
-			next if defined $filter && $filter->($dirname,$file);
+			next if $self->filter($filter, $dirname, $file);
                         push @files, $file;
                 }
                 closedir(DIR);
 	}
         return \@files;
+}
+sub filter {
+	my ($self, $filter, $dirname, $file) = @_;
+	return 1 if defined $file && $file =~ /^\.{1,2}$/;
+	return defined $filter && ((ref($filter) eq 'CODE' && $filter->($dirname,$file))||(ref($filter) ne 'CODE' && $filter->filter($dirname,$file)));
 }
 sub stat {
 	return CORE::stat($_[1]);
