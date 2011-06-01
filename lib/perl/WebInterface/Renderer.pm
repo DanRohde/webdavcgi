@@ -918,7 +918,15 @@ sub getfancyfilename {
         $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-3) if length($s)>$main::MAXFILENAMESIZE;
         my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
 
-        $ret = $linkit ? $$self{cgi}->a({href=>$full,title=>$s},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
+	my $title = $s;
+	if ($$self{backend}->isLink($fn)) {
+		my $lsrc = $$self{backend}->getLinkSrc($fn);
+		$lsrc=~s/^$main::DOCUMENT_ROOT//;
+		$main::REQUEST_URI=~/^($main::VIRTUAL_BASE)/;
+		$title .= ' -> '.$1.$lsrc;
+	}
+
+        $ret = $linkit ? $$self{cgi}->a({href=>$full,title=>$title},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
         $ret .=  length($s)>$main::MAXFILENAMESIZE ? '...' : (' 'x($main::MAXFILENAMESIZE-length($s)));
 
         $full=~/([^\.]+)$/;
@@ -941,7 +949,7 @@ sub getfancyfilename {
                 }
         }
         my $img =  $$self{cgi}->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout});
-        $ret = ($linkit ? $$self{cgi}->a(  {href=>$full,title=>$s}, $img):$img).' '.$ret;
+        $ret = ($linkit ? $$self{cgi}->a(  {href=>$full,title=>$title}, $img):$img).' '.$ret;
         return $ret;
 }
 sub mode2str {

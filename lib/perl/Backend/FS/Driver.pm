@@ -54,6 +54,8 @@ sub isFile {
 	return -f $_[1];
 }
 sub isLink {
+	my ($self, $fn) = @_;
+	$fn=~s/\/$//;
 	return -l $_[1];
 }
 sub isBlockDevice {
