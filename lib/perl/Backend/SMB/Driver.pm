@@ -35,17 +35,12 @@ use Archive::Zip;
 our @ISA = qw( Backend::FS::Driver );
 
 BEGIN {
-	main::debug("Backend::SMB::Driver starts");
-
 	## backup credential cache
 	if ($ENV{KRB5CCNAME}) {
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/) {
 			my $oldfilename = $1;
 			my $newfilename = "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
-			main::debug("backup krb5 credentials for $ENV{REMOTE_USER} (oldfilename=$oldfilename, newfilename=$newfilename)");
-			
 			if ($oldfilename ne $newfilename && open(my $in, "<$oldfilename") && open(my $out, ">$newfilename")) {
-				main::debug("backup krb5 credentials runs now ");
 				binmode $in;
 				binmode $out;
 				while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
@@ -54,13 +49,11 @@ BEGIN {
 				close($in);
 				close($out);
 			} else {
-				main::debug("maybe cannot open for read ticket file (don't use a setuid/setgid wrapper webdav.pl!):" . (-r $oldfilename)) if ($oldfilename ne $newfilename);
+				warn("Cannot read ticket file (don't use a setuid/setgid wrapper):" . (-r $oldfilename)) if ($oldfilename ne $newfilename);
 			}
 		}
 	}
 	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}" if -e "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
-
-
 }
 
 our $smb = new Filesys::SmbClient(username=> _getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
