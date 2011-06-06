@@ -1591,7 +1591,7 @@ sub cmp_files {
                 my $idx = $main::ORDER=~/^lastmodified/? 9 : $main::ORDER=~/^created/ ? 10 : $main::ORDER=~/^mode/? 2 : 7;
                 return $factor * ( ($$self{backend}->stat($fp_a))[$idx] <=> ($$self{backend}->stat($fp_b))[$idx] || cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)) );
         } elsif ($main::ORDER =~ /mime/) {
-                return $factor * ( cmp_strings(getMIMEType($a), getMIMEType($b)) || cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
+                return $factor * ( cmp_strings(main::getMIMEType($a), main::getMIMEType($b)) || cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
         }
         return $factor * cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b));
 }
