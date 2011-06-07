@@ -763,7 +763,7 @@ sub renderTableConfig {
 
         my $sortingcolumndefault ='name';
         my $sortingorderdefault = 'asc';
-        if ($$self{cgi}->cookie('order') && $$self{cgi}->cookie('order') =~/^([^_]+)(_(.*))?$/) {
+	if ($main::ORDER && $main::ORDER =~/^([^_]+)(_(.*))?$/) {
                 ($sortingcolumndefault,$sortingorderdefault) = ($1, $3 || 'asc');
         }
         my @tablecolumns = @main::ALLOWED_TABLE_COLUMNS;
