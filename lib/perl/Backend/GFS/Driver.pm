@@ -20,6 +20,7 @@
 package Backend::GFS::Driver;
 
 use strict;
+#use warnings;
 
 use Backend::FS::Driver;
 

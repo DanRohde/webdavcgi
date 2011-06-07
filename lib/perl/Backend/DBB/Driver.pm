@@ -20,6 +20,7 @@
 package Backend::DBB::Driver;
 
 use strict;
+#use warnings;
 use Data::Dumper;
 
 use Backend::FS::Driver;
@@ -144,11 +145,9 @@ sub isReadable { return 1;}
 sub isWriteable { return 1;}
 sub isExecutable{ return $_[0]->isDir($_[1]);}
 
-sub getLinkSrc { return $_[1]; }
 sub hasSetUidBit { return 0; }
 sub hasSetGidBit { return 0; }
 sub changeMod { return 0; }
-sub createSymLink { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice { return 0; }
 sub getLinkSrc { $!='not supported'; return undef; }
@@ -178,7 +177,7 @@ sub _getDBValue {
 	my ($self, $fn, $attr, $default) = @_;
 	$fn = $self->resolve($fn);
 	my $dbv = $self->_getDBEntry($fn, $attr eq 'data');
-	return defined $dbv ?  $$dbv{basename($fn)}{$attr} : $default;
+	return defined $dbv ?  ( $$dbv{basename($fn)}{$attr} || $default) : $default;
 }
 sub _addDBEntry {
 	my ($self, $name, $type) = @_;
@@ -196,7 +195,8 @@ sub _addDBEntry {
 	$sth->bind_param(7,$created);
 	$sth->bind_param(8,07777 ^ $main::UMASK);
 	$sth->bind_param(9,$_[3],SQL_BLOB) if defined $_[3];
-	my $ret  = $sth->execute();
+	my $ret = $sth->execute();
+
 	if (!$self->_isRoot($parent) && $ret) {
 		$ret &= $self->_changeDBEntry($parent);
 	}

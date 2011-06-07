@@ -20,6 +20,7 @@
 package WebDAV::Lock;
 
 use strict;
+#use warnings;
 
 use WebDAV::Common;
 our @ISA = ( 'WebDAV::Common' );
@@ -46,11 +47,11 @@ sub lockResource {
         my $locktype= $#locktypes>-1 ? $locktypes[0] : undef;
         my $lockscope = $#lockscopes>-1 ? $lockscopes[0] : undef;
         my $owner = main::createXML(defined $$xmldata{'{DAV:}owner'} ?  $$xmldata{'{DAV:}owner'} : $main::DEFAULT_LOCK_OWNER, 0, 1);
-        $locktype=~s/{[^}]+}//;
-        $lockscope=~s/{[^}]+}//;
+        $locktype=~s/{[^}]+}// if $locktype;
+        $lockscope=~s/{[^}]+}// if $lockscope;
 
-        $activelock{locktype}{$locktype}=undef;
-        $activelock{lockscope}{$lockscope}=undef;
+        $activelock{locktype}{$locktype}=undef if $locktype;
+        $activelock{lockscope}{$lockscope}=undef if $lockscope;
         $activelock{locktoken}{href}=$token;
         $activelock{depth}=$depth;
         $activelock{lockroot}=$ru;

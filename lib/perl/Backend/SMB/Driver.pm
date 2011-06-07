@@ -20,6 +20,7 @@
 package Backend::SMB::Driver;
 
 use strict;
+#use warnings;
 
 use Backend::FS::Driver;
 
@@ -36,8 +37,10 @@ our @ISA = qw( Backend::FS::Driver );
 
 our %CACHE;
 
-my $SHARESEP =  ':';
-my $DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
+use vars qw( $SHARESEP $DOCUMENT_ROOT );
+
+$SHARESEP =  ':';
+$DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
 
 sub new {
 	my $this = shift;
@@ -69,21 +72,18 @@ sub initialize() {
 		}
 	}
 	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}" if -e "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
-
-	$$self{smb} = new Filesys::SmbClient(username=> _getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
+	$$self{smb} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
 }
 sub readDir {
 	my ($self, $base, $limit, $filter) = @_;
 
 	my @files;
 
-	main::debug("readDir($base)");
 
 	return $self->_getCacheEntry('readDir:list',$base) if $self->_getCacheEntry('readDir:list',$base);
 
 	$base .=  '/' if $base !~ /\/$/;
 	if (_isRoot($base)) {
-		main::debug("readDir: list shares for "._getFullUsername());
 		my $dom = $main::SMB{domains}{_getUserDomain()};
 		foreach my $fserver (keys %{$$dom{fileserver}}) {
 			if (exists $$dom{fileserver}{$fserver}{usershares} && exists $$dom{fileserver}{$fserver}{usershares}{_getUsername()}) {
@@ -110,10 +110,10 @@ sub readDir {
 			}
 			$$self{smb}->closedir($dir);
 		} else {
-			main::debug("readDir: nothing to read from $url");
+			warn("Cannot open dir $url");
 		}
 	} else {
-		main::debug("readDir:: unkown path $base: _getSmbURL="._getSmbURL($base));
+		warn("Unknown URI $base: _getSmbURL="._getSmbURL($base));
 	}
 	$self->_setCacheEntry('readDir:list',$base,\@files);
 	return \@files;
@@ -163,14 +163,13 @@ sub stat {
 				push @stat, @a;
 				#$stat[2]=0755;
 			} else {
-				main::debug("stat: $file does not exists: $!");
 				@stat = CORE::lstat($file);
 			}
 		} else {
 			@stat = CORE::lstat($file);
 		}
 	}
-	$self->_setCacheEntry('stat', $file, \@stat) if defined @stat;
+	$self->_setCacheEntry('stat', $file, \@stat) if @stat;
 	return @stat;
 }
 sub lstat {
@@ -274,7 +273,6 @@ sub mkcol {
 sub unlinkFile {
 	my ($self, $file) = @_;
 	my $ret = $self->isDir($file) ? $$self{smb}->rmdir_recurse(_getSmbURL($file)) : $$self{smb}->unlink(_getSmbURL($file));
-	main::debug("unlinkFile($file) : ret=$ret, $!");
 	$self->_removeCacheEntry('readDir', $file) if $ret;
 	$self->_removeCacheEntry('stat', $file) if $ret;
 	return $ret;
@@ -351,7 +349,6 @@ sub _isShare {
 }
 sub _getType {
 	my ($self, $file) = @_;
-	main::debug("_getType($file)");
 	my $type;
 	if (!$self->_getCacheEntry('readDir',$file)) {
 		$self->readDir($self->getParent($file).'/');
@@ -461,18 +458,16 @@ sub compressFiles {
 	}
 	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
 }
-sub getLinkSrc { return $_[1]; }
 sub hasSetUidBit { return 0; }
 sub hasSetGidBit { return 0; }
 sub changeMod { return 0; }
-sub createSymLink { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice { return 0; }
-sub getLinkSrc { $!='not supported'; return undef; }
 sub createSymLink { return 0; }
+sub getLinkSrc { $!='not supported'; return undef; }
 sub hasStickyBit { return 0; }
 sub getQuota { 
-	my ($server,$share,$path) = _getPathInfo($_[1]);
+	my ($self,$server,$share,$path) = _getPathInfo($_[1]);
 	$server=~s/'/\\'/g if $server;
 	$share=~s/'/\\'/g if $share;
 	$path=~s/'/\\'/g if $path;
@@ -481,9 +476,10 @@ sub getQuota {
 		my @l= <$c>;
 		close($c);
 		
-		$l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/;
-		my ($b,$s,$a) = ($1,$2,$3);
-		return ($b*$s, ($b-$a)*$s);
+		if (@l && $l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/) {
+			my ($b,$s,$a) = ($1,$2,$3);
+			return ($b*$s, ($b-$a)*$s);
+		}
 	}
 	return (0,0); 
 }

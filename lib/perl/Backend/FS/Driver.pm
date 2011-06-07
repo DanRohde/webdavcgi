@@ -20,13 +20,7 @@
 package Backend::FS::Driver;
 
 use strict;
-
-require Exporter;
-our @ISA = qw(Exporter);
-our $VERSION = 0.1;
-our @EXPORT = qw(new);
-our @EXPORT_OK = qw(exists isDir isWriteable isReadable isExecutable isFile isLink isBlockDevice isCharDevice isEmpty getParent mkcol unlinkFile readDir stat lstat deltree changeFilePermissions saveData saveStream uncompressArchive compressFiles changeMod createSymLink getLinkSrc resolve getFileContent hasSetUidBit hasSetGidBit hasStickyBit getLocalFilename printFile getDisplayName rename getQuota copy);
-
+#use warnings;
 
 use File::Basename;
 use File::Spec::Link;
@@ -95,7 +89,7 @@ sub readDir {
 			next if $self->filter($filter, $dirname, $file);
                         push @files, $file;
                 }
-                closedir(DIR);
+                closedir($dir);
 	}
         return \@files;
 }
@@ -105,10 +99,10 @@ sub filter {
 	return defined $filter && ((ref($filter) eq 'CODE' && $filter->($dirname,$file))||(ref($filter) ne 'CODE' && $filter->filter($dirname,$file)));
 }
 sub stat {
-	return CORE::stat($_[1]);
+	return CORE::stat($_[1]) || (0,0,0,0,0,0,0,0,0,0,0,0,0);
 }
 sub lstat {
-	return CORE::lstat($_[1]);
+	return CORE::lstat($_[1]) || (0,0,0,0,0,0,0,0,0,0,0,0,0);
 }
 
 sub deltree {
@@ -127,18 +121,16 @@ sub deltree {
                         push(@$errRef, { $f => "Cannot delete '$f': $!" });
                 }
         } elsif (-d $f) {
-                if (opendir(DIR,$f)) {
-                        foreach my $sf (grep { !/^\.{1,2}$/ } readdir(DIR)) {
+                if (opendir(my $dirh,$f)) {
+                        foreach my $sf (grep { !/^\.{1,2}$/ } readdir($dirh)) {
                                 my $full = $f.$sf;
                                 $full.='/' if -d $full && $full!~/\/$/;
                                 $count+=deltree($self,$full,$errRef);
                         }
-                        closedir(DIR);
+                        closedir($dirh);
                         if (rmdir $f) {
                                 $count++;
                                 $f.='/' if $f!~/\/$/;
-                                ##main::db_deleteProperties($f);
-                                ##main::db_delete($f);
                         } else {
                                 push(@$errRef, { $f => "Cannot delete '$f': $!" });
                         }
@@ -148,8 +140,6 @@ sub deltree {
         } elsif (-e $f) {
                 if (unlink($f)) {
                         $count++;
-                        ##main::db_deleteProperties($f);
-                        ##main::db_delete($f);
                 } else {
                         push(@$errRef, { $f  => "Cannot delete '$f' : $!" }) ;
                 }

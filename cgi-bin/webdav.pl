@@ -1,5 +1,6 @@
-#!/usr/bin/perl
-###!/usr/bin/speedy --  -r20 -M5
+#!/usr/bin/perl -I/etc/webdavcgi/lib/perl 
+###!/usr/bin/speedy -I/etc/webdavcgi/lib/perl -- -r20 -M5
+###!/usr/bin/perl -I/etc/webdavcgi/lib/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -35,7 +36,8 @@
 # KNOWN PROBLEMS:
 #    - see http://webdavcgi.sf.net/
 #########################################################################
-BEGIN {
+use strict;
+#use warnings;
 use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
             @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG %ELEMENTORDER
             $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
@@ -65,8 +67,8 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $cgi $ALLOW_SYMLINK
-	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
+	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS 
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -690,6 +692,7 @@ $ENABLE_SYSINFO = $DEBUG;
 
 ############  S E T U P - END ###########################################
 #########################################################################
+use vars qw( $cgi $backend $backendmanager $config);
 use CGI;
 
 ## flush immediately:
@@ -711,10 +714,6 @@ if (defined $CONFIGFILE) {
 		warn "couldn't run $CONFIGFILE" unless $ret;
 	}
 }
-} ## BEGIN {
-use strict;
-#use warnings;
-
 use locale;
 
 use Fcntl qw(:flock);
@@ -735,17 +734,16 @@ use Graphics::Magick;
 use IO::Compress::Gzip qw(gzip);
 use IO::Compress::Deflate qw(deflate);
 
-use lib $INSTALL_BASE."lib/perl";
-
+##use lib "${INSTALL_BASE}lib/perl";
 
 my $method = $cgi->request_method();
 
 use RequestConfig;
-my $config = new RequestConfig($cgi);
+$config = new RequestConfig($cgi);
 
 use Backend::Manager;
-my $backendmanager = new Backend::Manager;
-my $backend = $backendmanager->getBackend($BACKEND);
+$backendmanager = new Backend::Manager;
+$backend = $backendmanager->getBackend($BACKEND);
 $config->setProperty('backend',$backend);
 
 use Utils;
@@ -1090,11 +1088,8 @@ sub _GET {
 	
 }
 sub _HEAD {
-	if ($backend->isDir($PATH_TRANSLATED)) {
-		debug("_HEAD: $PATH_TRANSLATED is a folder!");
-		printHeaderAndContent('200 OK','httpd/unix-directory');
-	} elsif ($PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/) {
-		printLocalFileHeader(-e $INSTALL_BASE.basename($PATH_TRANSLATED) ? $INSTALL_BASE.basename($PATH_TRANSLATED) : "${INSTALL_BASE}lib/".basename($PATH_TRANSLATED));
+	if ($FANCYINDEXING && getWebInterface()->handleHeadRequest()) {
+		debug("_HEAD: WebInterface called");
 	} elsif ($backend->exists($PATH_TRANSLATED)) {
 		debug("_HEAD: $PATH_TRANSLATED exists!");
 		printFileHeader($PATH_TRANSLATED);
@@ -2165,8 +2160,8 @@ sub getETag {
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $backend->stat($file);
 	my $digest = new Digest::MD5;
 	$digest->add($file);
-	$digest->add($size);
-	$digest->add($mtime);
+	$digest->add($size || 0);
+	$digest->add($mtime || 0);
 	return '"'.$digest->hexdigest().'"';
 }
 sub printHeaderAndContent {
@@ -2214,7 +2209,7 @@ sub printCompressedHeaderAndContent {
 sub printLocalFileHeader {
 	my ($fn,$addheader) = @_;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($fn);
-	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET);
+	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime || 0)), -charset=>$CHARSET);
 	%ha = (%ha, %{$addheader}) if $addheader;
 	my $header = $cgi->header(\%ha);
 
@@ -2302,7 +2297,6 @@ sub isAllowed {
 	my ($fn, $recurse) = @_;
 	
 	$fn = $backend->getParent($fn).'/' if ! $backend->exists($fn);
-	debug("isAllowed($fn,$recurse) called.");
 
 	return 1 unless $ENABLE_LOCK;
 	
@@ -2371,7 +2365,7 @@ sub getIfHeaderComponents {
 			$rtag=$1;
 		}
 		while ($if =~ s/^\((Not\s*)?([^\[\)]+\s*)?\s*(\[([^\]\)]+)\])?\)\s*//i) {
-			push @tokens, { token=>"$1$2", etag=>$4 };
+			push @tokens, { token=>($1 ? $1 : '').($2 ? $2 : ''), etag=>$4 };
 		}
 		return {rtag=>$rtag, list=>\@tokens};
 	}
@@ -2486,7 +2480,7 @@ sub getDirInfo {
 	foreach my $k (keys %counter) {
 		$CACHE{getDirInfo}{$fn}{$k}=$counter{$k};
 	}
-	return $counter{$prop};
+	return $counter{$prop} || 0;
 }
 sub getNameSpace {
 	my ($prop) = @_;
@@ -2572,8 +2566,6 @@ sub readMIMETypes {
 sub rcopy {
         my ($src,$dst,$move,$depth) = @_;
 
-	debug("rcopy($src,$dst,$move,$depth) #1");
-
         $depth=0 unless defined $depth;
 
         return 0 if defined $LIMIT_FOLDER_DEPTH && $LIMIT_FOLDER_DEPTH > 0 && $depth > $LIMIT_FOLDER_DEPTH;
@@ -2600,7 +2592,6 @@ sub rcopy {
                         return 0 if !$backend->createSymLink($orig,$dst) && ( !$move || $backend->unlinkFile($nsrc) );
                 }
         } elsif ( $backend->isFile($src) ) { # file
-		debug("rcopy($src,$dst,$move,$depth) #2");
                 if ($backend->isDir($dst)) {
                         $dst.='/' if $dst !~/\/$/;
                         $dst.=basename($src);

@@ -20,6 +20,7 @@
 package WebInterface;
 
 use strict;
+#use warnings;
 
 sub new {
        my $this = shift;
@@ -38,25 +39,40 @@ sub handleGetRequest {
 	my $fn = $main::PATH_TRANSLATED;
 	my $ru = $main::REQUEST_URI;
 	my $handled = 1;
+	my $action = $$self{cgi}->param('action') || '_undef_';
 
 	if ($main::ENABLE_SYSINFO && $fn =~/\/sysinfo.html\/?$/) {
                 $self->getRenderer()->renderSysInfo();
         } elsif ($fn =~ /\/webdav-ui(-custom)?\.(js|css)\/?$/ || $fn =~ /\Q$main::VHTDOCS\E(.*)$/)  {
                 $self->getRenderer()->printStylesAndVHTOCSFiles($fn);
-        } elsif ($main::ENABLE_DAVMOUNT && $$self{cgi}->param('action') eq 'davmount' && $$self{backend}->exists($fn)) {
+        } elsif ($main::ENABLE_DAVMOUNT && $action eq 'davmount' && $$self{backend}->exists($fn)) {
                 $self->getRenderer()->printDAVMount($fn);
-        } elsif ($main::ENABLE_THUMBNAIL &&  $$self{cgi}->param('action') eq 'mediarss' && $$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) {
+        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'mediarss' && $$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) {
                 $self->getRenderer()->printMediaRSS($fn,$ru);
-        } elsif ($main::ENABLE_THUMBNAIL && $$self{cgi}->param('action') eq 'image' && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn)) {
+        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'image' && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn)) {
                 $self->getRenderer()->printImage($fn);
-        } elsif ($$self{cgi}->param('action') eq 'opensearch' && $$self{backend}->isDir($fn)) {
+        } elsif ($action eq 'opensearch' && $$self{backend}->isDir($fn)) {
                 $self->getRenderer()->printOpenSearch();
-        } elsif ($main::ENABLE_THUMBNAIL && $$self{cgi}->param('action') eq 'thumb' && $$self{backend}->isReadable($fn) && $$self{backend}->isFile($fn)) {
+        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'thumb' && $$self{backend}->isReadable($fn) && $$self{backend}->isFile($fn)) {
                 $self->getRenderer()->printThumbnail($fn);
-        } elsif ($main::ENABLE_PROPERTIES_VIEWER && $$self{cgi}->param('action') eq 'props' && $$self{backend}->exists($fn)) {
+        } elsif ($main::ENABLE_PROPERTIES_VIEWER && $action eq 'props' && $$self{backend}->exists($fn)) {
                 $self->getRenderer()->renderPropertiesViewer($fn, $ru);
         } elsif ($$self{backend}->isDir($fn)) {
                 $self->getRenderer()->renderWebInterface($fn,$ru);
+	} else {
+		$handled = 0;
+	}
+	return $handled;
+}
+sub handleHeadRequest {
+	my ($self) = @_;
+	my $handled = 1;
+	if ($$self{backend}->isDir($main::PATH_TRANSLATED)) {
+		main::printHeaderAndContent('200 OK','httpd/unix-directory');
+	} elsif ($main::PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/) {
+		main::printLocalFileHeader(-e $main::INSTALL_BASE.basename($main::PATH_TRANSLATED) ? $main::INSTALL_BASE.basename($main::PATH_TRANSLATED) : "${main::INSTALL_BASE}lib/".basename($main::PATH_TRANSLATED));
+
+
 	} else {
 		$handled = 0;
 	}

@@ -20,6 +20,7 @@
 package WebDAV::Properties;
 
 use strict;
+#use warnings;
 
 use WebDAV::Common;
 our @ISA = ( 'WebDAV::Common' );
@@ -91,7 +92,8 @@ sub setProperty {
                 $$resp_403{propstat}{status}='HTTP/1.1 403 Forbidden';
         } else {
                 my $n = $propname;
-                $n='{}'.$n if (ref($$elementParentRef{$propname}) eq 'HASH' && $$elementParentRef{$propname}{xmlns} eq "" && $n!~/^{[^}]*}/);
+		my $parRef = $$elementParentRef{$propname};
+                $n='{}'.$n if ($parRef && ref($parRef) eq 'HASH' && (!$$parRef{xmlns} || $$parRef{xmlns} eq "") && $n!~/^{[^}]*}/);
                 my $dbval = $$self{db}->db_getProperty($fn, $n);
                 my $value = main::createXML($$elementParentRef{$propname},0);
                 my $ret = defined $dbval ? $$self{db}->db_updateProperty($fn, $n, $value) : $$self{db}->db_insertProperty($fn, $n, $value);

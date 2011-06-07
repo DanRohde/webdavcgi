@@ -20,6 +20,7 @@
 package WebDAV::Search;
 
 use strict;
+#use warnings;
 
 use Date::Parse;
 

@@ -31,7 +31,7 @@ use IO::Compress::Deflate qw(deflate);
 use URI::Escape;
 use Graphics::Magick;
 
-use vars qw (%TRANSLATIONS  $WEB_ID %BYTEUNITS @BYTEUNITORDER);
+use vars qw ($WEB_ID %BYTEUNITS @BYTEUNITORDER);
 
 %BYTEUNITS = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
 @BYTEUNITORDER = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PB' );
