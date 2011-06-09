@@ -1,4 +1,5 @@
-#!/usr/bin/perl -I/etc/webdavcgi/lib/perl 
+#!/usr/bin/perl -I/etc/webdavcgi/lib/perl -d:NYTProf
+##!/usr/bin/perl -I/etc/webdavcgi/lib/perl 
 ###!/usr/bin/speedy -I/etc/webdavcgi/lib/perl -- -r20 -M5
 ###!/usr/bin/perl -I/etc/webdavcgi/lib/perl -d:NYTProf
 #########################################################################
@@ -106,34 +107,10 @@ $DOCUMENT_ROOT = $ENV{DOCUMENT_ROOT}.'/';
 ## DEFAULT: $UMASK = 0002; # read/write/execute for users and groups, others get read/execute permissions
 $UMASK = 0022;
 
-## -- MIMETYPES
-## some MIME types for Web browser access and GET access
-## you can add some missing types ('extension list' => 'mime-type'):
-%MIMETYPES = (
-	'html htm shtm shtml' => 'text/html',
-	'css' => 'text/css', 'xml xsl'=>'text/xml',
-	'js' => 'application/x-javascript',
-	'asc txt text pot brf' => 'text/plain',
-	'c'=> 'text/x-csrc', 'h'=>'text/x-chdr',
-	'gif'=>'image/gif', 'jpeg jpg jpe'=>'image/jpeg', 
-	'png'=>'image/png', 'bmp'=>'image/bmp', 'tiff'=>'image/tiff',
-	'pdf'=>'application/pdf', 'ps'=>'application/ps',
-	'dvi'=>'application/x-dvi','tex'=>'application/x-tex',
-	'zip'=>'application/zip', 'tar'=>'application/x-tar','gz'=>'application/x-gzip',
-	'doc dot' => 'application/msword',
-	'xls xlm xla xlc xlt xlw' => 'application/vnd.ms-excel',
-	'ppt pps pot'=>'application/vnd.ms-powerpoint',
-	'pptx'=>'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-	'ics' => 'text/calendar',
-	'avi' => 'video/x-msvideo', 'wmv' => 'video/x-ms-wmv', 'ogv'=>'video/ogg',
-	'mpeg mpg mpe' => 'video/mpeg', 'qt mov'=>'video/quicktime',
-	default => 'application/octet-stream',
-	); 
-
 ## -- MIMEFILE
-## optionally you can use a mime.types file instead of %MIMETYPES
+## path to your MIME types file
 ## EXAMPLE: $MIMEFILE = '/etc/mime.types';
-$MIMEFILE = '/etc/mime.types';
+$MIMEFILE = $INSTALL_BASE.'/etc/mime.types';
 
 ## -- FANCYINDEXING
 ## enables/disables Web interface
@@ -2145,15 +2122,6 @@ sub createXML {
         return $data;
 }
 
-sub getMIMEType {
-	my ($filename) = @_;
-	my $extension= "default";
-	if ($filename=~/\.([^\.]+)$/) {
-		$extension=$1;
-	}
-	my @t = grep /\b\Q$extension\E\b/i, keys %MIMETYPES;
-	return $#t>-1 ? $MIMETYPES{$t[0]} : $MIMETYPES{default};
-}
 sub getETag {
 	my ($file) = @_;
 	$file = $PATH_TRANSLATED unless defined $file;
@@ -2554,7 +2522,9 @@ sub readMIMETypes {
 		while (my $e = <$f>) {
 			next if $e =~ /^\s*(\#.*)?$/;
 			my ($type,$suffixes) = split(/\s+/, $e, 2);
-			$MIMETYPES{$suffixes}=$type;
+			foreach my $suffix (split(/\s+/,$suffixes)) {
+				$MIMETYPES{$suffix}=$type;
+			}
 		}
 		close($f);
 	} else {
@@ -2562,7 +2532,14 @@ sub readMIMETypes {
 	}
 	$MIMETYPES{default}='application/octet-stream';
 }
-
+sub getMIMEType {
+	my ($filename) = @_;
+	my $extension= "default";
+	if ($filename=~/\.([^\.]+)$/) {
+		$extension=$1;
+	}
+	return $MIMETYPES{$extension} || $MIMETYPES{default};
+}
 sub rcopy {
         my ($src,$dst,$move,$depth) = @_;
 

@@ -189,6 +189,7 @@ sub start_html {
 
 sub replaceVars {
         my ($self,$t) = @_;
+	study $t;
         $t=~s/\${?NOW}?/strftime($self->tl('varnowformat'), localtime())/eg;
         $t=~s/\${?TIME}?/strftime($self->tl('vartimeformat'), localtime())/eg;
         $t=~s/\${?USER}?/$main::REMOTE_USER/g;
