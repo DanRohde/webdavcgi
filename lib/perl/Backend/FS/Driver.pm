@@ -28,9 +28,8 @@ use Fcntl qw(:flock);
 
 use File::Spec::Link;
 
-use Archive::Zip;
 
-use Quota;
+use vars ( '%CACHE' );
 
 sub new {
 	my $class = shift;
@@ -220,6 +219,7 @@ sub saveStream {
 sub uncompressArchive {
 	my ($self, $zipfile, $destination) = @_;
 	my $ret = 1;
+	require Archive::Zip;
 	my $zip = Archive::Zip->new();
 	my $status = $zip->read($zipfile);
 	$ret = $status eq $zip->AZ_OK;
@@ -230,6 +230,7 @@ sub uncompressArchive {
 sub compressFiles {
 	my ($self, $desthandle, $basepath, @files) = @_;
 
+	require Archive::Zip;
 	my $zip =  Archive::Zip->new();
 	foreach my $file (@files) {
 		if (-d $basepath.$file) {
@@ -251,7 +252,7 @@ sub getLinkSrc {
 	return CORE::readlink($_[1]);
 }
 sub resolve {
-	return File::Spec::Link->full_resolve($_[1]);
+	return $CACHE{$_[0]}{resolve}{$_[1]} || ($CACHE{$_[0]}{resolve}{$_[1]} = File::Spec::Link->full_resolve($_[1]));
 }
 
 sub getFileContent {
@@ -296,6 +297,7 @@ sub rename {
 }
 sub getQuota {
 	my ($self, $fn) = @_;
+	require Quota;
 	my @quota =  Quota::query(Quota::getqcarg($fn));
 	return ( $quota[2] * 1024, $quota[0] * 1024 );
 }

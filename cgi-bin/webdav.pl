@@ -668,7 +668,7 @@ $ENABLE_SYSINFO = $DEBUG;
 
 ############  S E T U P - END ###########################################
 #########################################################################
-use vars qw( $cgi $method $backend $backendmanager $config $utils);
+use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props);
 use CGI;
 
 ## flush immediately:
@@ -692,8 +692,9 @@ if (defined $CONFIGFILE) {
 }
 use File::Basename;
 
-use XML::Simple;
 use POSIX qw(strftime);
+
+use XML::Simple;
 
 use URI::Escape;
 use UUID::Tiny;
@@ -979,6 +980,11 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
                            string => { lte=>'le', gte=>'ge' } );
 
 @IGNORE_PROPS = ( 'xmlns', 'CS');
+
+
+map { $known_coll_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_COLL_PROPS;
+map { $known_file_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_FILE_PROPS;
+map { $unsupported_props{$_} = 1; } @UNSUPPORTED_PROPS;
 
 # method handling:
 if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/) { 
@@ -1934,7 +1940,8 @@ sub handlePropElement {
 		} elsif ($ns eq "" && ! defined $$xmldata{$prop}{xmlns}) {
 			printHeaderAndContent('400 Bad Request');
 			exit;
-		} elsif (grep(/\Q$nons\E/, @KNOWN_FILE_PROPS, @KNOWN_COLL_PROPS)>0)  {
+		##} elsif (grep(/\Q$nons\E/, @KNOWN_FILE_PROPS, @KNOWN_COLL_PROPS)>0)  {
+		} elsif (exists $known_filecoll_props{$nons}) {
 			push @{$props}, $nons;
 		} elsif ($ns eq "") {
 			push @{$props}, '{}'.$prop;
@@ -1966,7 +1973,8 @@ sub getPropStat {
 		if ($prop=~/^{([^}]*)}(.*)$/) {
 			($xmlnsuri, $propname) = ($1,$2);
 		} 
-		if (grep(/^\Q$propname\E$/,@UNSUPPORTED_PROPS) >0) {
+		#if (grep(/^\Q$propname\E$/,@UNSUPPORTED_PROPS) >0) {
+		if (exists $unsupported_props{$propname}) {
 			debug("getPropStat: UNSUPPORTED: $propname");
 			$resp_404{prop}{$prop}=undef;
 			next;
@@ -1980,7 +1988,8 @@ sub getPropStat {
 				$resp_404{prop}{$prop}=undef;
 			}
 		} 
-		if (grep(/^\Q$propname\E$/, $isDir ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS)>0) {
+		##if (grep(/^\Q$propname\E$/, $isDir ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS)>0) {
+		if ( ( $isDir ? exists $known_coll_props{$propname} : exists $known_file_props{$propname}) ) {
 			if ($noval) { 
 				$resp_200{prop}{$prop}=undef;
 			} else {
