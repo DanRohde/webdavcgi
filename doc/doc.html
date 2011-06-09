@@ -63,7 +63,8 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
     <li>CGI (included in most Linux dists; older dists need that: libcgi-perl)</li>
     <li>DBI (libdbi-perl) and a database driver, e.g. DBD::SQLite (libdbd-sqlite3-perl) - (since v0.3.0)</li>
     <li>Date::Parse (libtimedate-perl) - (since v0.2.1)</li>
-    <li>OSSP::uuid (libossp-uuid-perl or from <a href="http://www.ossp.org/pkg/lib/uuid/">http://www.ossp.org/pkg/lib/uuid/</a>) - (since v0.3.0)</li>
+    <li><strike>OSSP::uuid (libossp-uuid-perl or from <a href="http://www.ossp.org/pkg/lib/uuid/">http://www.ossp.org/pkg/lib/uuid/</a>) - (since v0.3.0)</strike> (since v0.7.1 replaced by UUID::Tiny)</li>
+    <li>UUID::Tiny (libuuid-tiny-perl) - (since 0.7.1)</li>
     <li>XML::Simple (libxml-simple-perl)</li>
     <li>Quota (libquota-perl) - (since v0.3.4)</li>
     <li>Archive::Zip (libarchive-zip-perl) - (since v0.5.0)</li>
@@ -168,7 +169,8 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <h2>Upgrade</h2>
 <h3>Upgrading from 0.7.0 to &ge;0.7.1</h3>
 <ol>
-<li> a new perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
+<li> a new Perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
+<li> <code>OSSP::uuid</code> Perl module was replaced by <code>UUID::Tiny</code> (Ubuntu/Debian package: libuuid-tiny-perl)</li>
 <li> WebDAV CGI comes with some own modules so you need to set a additional Perl library path:
      <ul>
 	     <li>add <code>E=PERLLIB:/etc/webdavcgi/lib/perl</code> to your rewrite rule options in the Apache configuration</li>
@@ -179,7 +181,7 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <li> <code>$IGNOREFILEPERMISSIONS</code> config variable was removed</li>
 <li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB', 'DBB') </li>
 <li> <code>$SHOW_MIME</code> and <code>$SHOW_PERM</code> were removed: use the new options <code>@ALLOWED_TABLE_COLUMNS</code> and <code>@VISIBLE_TABLE_COLUMNS</code> instead</li>
-<li> <code>%MIMETYPES</code> format was changed: only single filename suffix is allowed as a key; please use <code>$MIMEFILE</code> instead</li>
+<li> <code>%MIMETYPES</code> format was changed: only a single filename suffix is allowed as a key (instead of a space separted list of suffixes); please use <code>$MIMEFILE</code> instead</li>
 </ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>
@@ -197,7 +199,7 @@ chmod a+x /usr/lib/cgi-bin/webdav.pl </pre></li>
 <pre>#&gt; perl -c /path/to/my/config/file/webdav.conf
 webdav.conf syntax OK
 
-#&gt; env WEBDAVCONF=/path/to/my/config/file/webdav.conf perl -c /usr/lib/cgi-bin/webdav.pl
+#&gt; perl -I/etc/webdavcgi/lib/perl -c /usr/lib/cgi-bin/webdav.pl
 webdav.pl syntax OK</pre></li>
 	</ol>
 </li>
@@ -915,7 +917,7 @@ webdav.conf syntax OK
 </li>
 <li> <code>webdav.pl</code> syntax (maybe a broken config or a missing Perl module): 
 <pre>
-#&gt; env WEBDAVCONF=/path/to/my/config/file/webdav.conf perl -c webdav.pl
+#&gt; perl -I/etc/webdavcgi/lib/perl -c webdav.pl
 webdav.pl syntax OK
 </pre>
 </li>

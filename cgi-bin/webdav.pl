@@ -1,7 +1,6 @@
-#!/usr/bin/perl -I/etc/webdavcgi/lib/perl -d:NYTProf
-##!/usr/bin/perl -I/etc/webdavcgi/lib/perl 
-###!/usr/bin/speedy -I/etc/webdavcgi/lib/perl -- -r20 -M5
-###!/usr/bin/perl -I/etc/webdavcgi/lib/perl -d:NYTProf
+#!/usr/bin/perl
+###!/usr/bin/speedy  -- -r20 -M5
+###!/usr/bin/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -702,7 +701,7 @@ use XML::Simple;
 use POSIX qw(strftime ceil locale_h);
 
 use URI::Escape;
-use OSSP::uuid;
+use UUID::Tiny;
 use Digest::MD5;
 
 use DBI;
@@ -2424,12 +2423,10 @@ sub getQuota {
 	return ($block_hard,$block_curr);
 }
 sub getuuid {
-	my ($fn) = @_;
-	my $uuid = new OSSP::uuid;
-	my $uuid_ns = new OSSP::uuid;
-	$uuid_ns->load("opaquelocktoken:$fn");
-	$uuid->make("v3", $uuid_ns, "$fn".time());
-	return $uuid->export("str");
+        my ($fn) = @_;
+	my $uuid_ns = create_UUID(UUID_V1, "opaquelocktoken:$fn");
+	my $uuid = create_UUID(UUID_V3, $uuid_ns, "$fn".time());
+	return UUID_to_string($uuid);
 }
 sub getDirInfo {
 	my ($fn, $prop, $filter, $limit, $max) = @_;
