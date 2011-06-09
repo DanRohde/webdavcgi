@@ -1,13 +1,16 @@
 0.7.1: BETA
+     - replaced OSSP::uuid with UUID::Tiny
      - migrated backend code into modules (FS, AFS, GFS backend modules)
      - added SMB/CIFS backend module for access to ADS integrated Windows/Samba shares
      - added example DBB backend module (database backend)
      - fixed last AFS performance bugs 
      - fixed security bug (accessing files outside $DOCUMENT_ROOT)
+     - fixed MIME types related performace bug 
      - Web interface:
            - improved display of byte sizes (flexible unit change) (GET)
 	   - added symbolic link support (POST)
 	   - added view filter (GET)
+	   - added list options (GET)
 
 0.7.0: 2011/29/04
      - fixed major search bug (SEARCH; thx jfotop@ath.forthnet.gr)
