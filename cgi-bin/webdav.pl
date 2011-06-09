@@ -384,7 +384,7 @@ $LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0
 
 ## -- HEADER
 ## content after body tag in the Web interface
-$HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as <span title="'.`id -a`.'">$USER</span>.<div style="float:right;font-size:0.8em;">$NOW</div></div>';
+$HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as $USER.<div style="float:right;font-size:0.8em;">$NOW</div></div>';
 
 ## -- SIGNATURE
 ## for fancy indexing
@@ -668,7 +668,7 @@ $ENABLE_SYSINFO = $DEBUG;
 
 ############  S E T U P - END ###########################################
 #########################################################################
-use vars qw( $cgi $backend $backendmanager $config);
+use vars qw( $cgi $method $backend $backendmanager $config $utils);
 use CGI;
 
 ## flush immediately:
@@ -699,12 +699,10 @@ use URI::Escape;
 use UUID::Tiny;
 use Digest::MD5;
 
-use Graphics::Magick;
-
 use IO::Compress::Gzip qw(gzip);
 use IO::Compress::Deflate qw(deflate);
 
-my $method = $cgi->request_method();
+$method = $cgi->request_method();
 
 use RequestConfig;
 $config = new RequestConfig($cgi);
@@ -715,7 +713,7 @@ $backend = $backendmanager->getBackend($BACKEND);
 $config->setProperty('backend',$backend);
 
 use Utils;
-my $utils = new Utils();
+$utils = new Utils();
 $config->setProperty('utils',$utils);
 
  
