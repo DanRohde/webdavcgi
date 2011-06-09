@@ -59,8 +59,8 @@ sub renderPropertiesViewer {
         $content .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
         my $fullparent = dirname($ru) .'/';
         $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
-        $content .=$$self{cgi}->h2( { -class=>'foldername' }, ($$self{backend}->isDir($fn) ? $self->getQuickNavPath($fn,$ru,$self->getQueryParams())
-                                    : $self->getQuickNavPath($$self{backend}->getParent($fn), $fullparent,$self->getQueryParams())
+        $content .=$$self{cgi}->h2( { -class=>'foldername' }, ($$self{backend}->isDir($fn) ? $self->getQuickNavPath($fn,$ru)
+                                    : $self->getQuickNavPath($$self{backend}->getParent($fn), $fullparent)
                                        .' '.$$self{cgi}->a({-href=>$ru}, basename($ru))
                               ). $self->tl('properties'));
         $content .= $$self{cgi}->br().$$self{cgi}->a({href=>$ru,title=>$self->tl('clickforfullsize')},$$self{cgi}->img({-src=>$ru.($main::ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($main::ENABLE_THUMBNAIL?$main::THUMBNAIL_WIDTH:200)})) if $self->hasThumbSupport(main::getMIMEType($fn));
@@ -163,9 +163,8 @@ sub start_html {
         $content.=qq@<meta name="author" content="Daniel Rohde"/>@;
 
         my $js='function tl(k) { var tl = new Array();';
-        foreach my $usedtext (('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm','pastecopyconfirm','pastecutconfirm','msgtimeouttooltip')) {
-                $js.= qq@tl['$usedtext']='@.$self->tl($usedtext).qq@';@;
-        }
+	map { $js.= qq@tl['$_']='@.$self->tl($_).qq@';@; }  ('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm','pastecopyconfirm','pastecutconfirm','msgtimeouttooltip') ;
+
         $js.=' return tl[k] ? tl[k] : k; }';
         $js.=qq@var REQUEST_URI = '$main::REQUEST_URI';@;
         $js.=qq@var MAXFILENAMESIZE= '$main::MAXFILENAMESIZE';@;
@@ -207,16 +206,6 @@ sub replaceVars {
         $t=~s/\${?VHTDOCS}?/$vbase$main::VHTDOCS/g;
 
         return $t;
-}
-
-sub getQueryParams {
-	my ($self) = @_;
-        # preserve query parameters
-        my @query;
-        foreach my $param (()) {
-                push @query, $param.'='.$$self{cgi}->param($param) if defined $$self{cgi}->param($param);
-        }
-        return $#query>-1 ? join(';',@query) : undef;
 }
 
 sub printThumbnail {
@@ -910,7 +899,7 @@ sub renderNameFilterForm {
 sub getfancyfilename {
         my ($self, $full,$s,$m,$fn,$isUnReadable) = @_;
         my $ret = $s;
-        my $q = getQueryParams();
+        my $q = '';
 
         $full = '/' if $full eq '//'; # fixes root folder navigation bug
 

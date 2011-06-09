@@ -22,6 +22,8 @@ use strict;
 
 use vars qw( %CACHE );
 
+use DBI;
+
 sub new {
 	my $this = shift;
 	my $class = ref($this) || $this;

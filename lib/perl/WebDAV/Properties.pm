@@ -153,16 +153,16 @@ sub getProperty {
                         $$resp_404{prop}{'quota-used-bytes'} = undef if $prop eq 'quota-used-bytes';
                 }
         }
-        $$resp_200{prop}{childcount}=($isDir?getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'childcount';
+        $$resp_200{prop}{childcount}=($isDir?main::getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'childcount';
         $$resp_200{prop}{id}=$uri if $prop eq 'id';
         $$resp_200{prop}{isfolder}=($isDir?1:0) if $prop eq 'isfolder';
         $$resp_200{prop}{ishidden}=(basename($fn)=~/^\./?1:0) if $prop eq 'ishidden';
         $$resp_200{prop}{isstructureddocument}=0 if $prop eq 'isstructureddocument';
-        $$resp_200{prop}{hassubs}=($isDir?getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'hassubs';
+        $$resp_200{prop}{hassubs}=($isDir?main::getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'hassubs';
         $$resp_200{prop}{nosubs}=($isDir?($$self{backend}->isWriteable($fn)?1:0):1) if $prop eq 'nosubs';
-        $$resp_200{prop}{objectcount}=($isDir?getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'objectcount';
+        $$resp_200{prop}{objectcount}=($isDir?main::getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'objectcount';
         $$resp_200{prop}{reserved}=0 if $prop eq 'reserved';
-        $$resp_200{prop}{visiblecount}=($isDir?getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'visiblecount';
+        $$resp_200{prop}{visiblecount}=($isDir?main::getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'visiblecount';
 
         $$resp_200{prop}{iscollection}=($isDir?1:0) if $prop eq 'iscollection';
         $$resp_200{prop}{isFolder}=($isDir?1:0) if $prop eq 'isFolder';

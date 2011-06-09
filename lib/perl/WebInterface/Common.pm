@@ -21,6 +21,7 @@ package WebInterface::Common;
 
 use strict;
 
+use POSIX qw( ceil );
 sub new {
 	my $this = shift;
 	my $class = ref($this) || $this;
@@ -36,19 +37,30 @@ sub initialize() {
 	$$self{cgi} = $$self{config}->getProperty('cgi');
 	$$self{backend} = $$self{config}->getProperty('backend');
 	$$self{utils} = $$self{config}->getProperty('utils');
+
+	$main::LANG = $$self{cgi}->param('lang') || $$self{cgi}->cookie('lang') || $main::LANG || 'default';
+	$main::ORDER = $$self{cgi}->param('order') || $$self{cgi}->cookie('order') || $main::ORDER || 'name';
+	$main::PAGE_LIMIT = $$self{cgi}->param('pagelimit') || $$self{cgi}->cookie('pagelimit') || $main::PAGE_LIMIT;
+	$main::PAGE_LIMIT = ceil($main::PAGE_LIMIT) if defined $main::PAGE_LIMIT;
+	@main::PAGE_LIMITS = ( 5, 10, 15, 20, 25, 30, 50, 100, -1 ) unless defined @main::PAGE_LIMITS;
+	unshift @main::PAGE_LIMITS, $main::PAGE_LIMIT if defined $main::PAGE_LIMIT && $main::PAGE_LIMIT > 0 && grep(/\Q$main::PAGE_LIMIT\E/, @main::PAGE_LIMITS) <= 0 ;
+
+	$main::VIEW = $$self{cgi}->param('view') || $$self{cgi}->cookie('view') || $main::VIEW || ($main::ENABLE_SIDEBAR ? 'sidebar' : 'classic');
+	$main::VIEW = 'classic' unless $main::ENABLE_SIDEBAR ;
+
 }
 
 sub readTL  {
         my ($self,$l) = @_;
         my $fn = -e "${main::INSTALL_BASE}webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}webdav-ui_${l}.msg" : -e "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" : undef;
         return unless defined $fn;
-        if (open(I, "<$fn")) {
-                while (<I>) {
-                        chomp;
-                        next if /^#/;
-                        $main::TRANSLATION{$l}{$1}=$2 if /^(\S+)\s+"(.*)"\s*$/;
+        if (open(my $i, "<$fn")) {
+                while (my $line = <$i>) {
+                        chomp($line);
+                        next if $line=~/^#/;
+                        $main::TRANSLATION{$l}{$1}=$2 if $line=~/^(\S+)\s+"(.*)"\s*$/;
                 }
-                close(I);
+                close($i);
         } else { warn("Cannot read $fn!"); }
         $main::TRANSLATION{$l}{x__READ__x}=1;
 }

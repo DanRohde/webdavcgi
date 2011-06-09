@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl 
 ###!/usr/bin/speedy  -- -r20 -M5
 ###!/usr/bin/perl -d:NYTProf
 #########################################################################
@@ -690,27 +690,19 @@ if (defined $CONFIGFILE) {
 		warn "couldn't run $CONFIGFILE" unless $ret;
 	}
 }
-use locale;
-
-use Fcntl qw(:flock);
-
-
 use File::Basename;
 
 use XML::Simple;
-use POSIX qw(strftime ceil locale_h);
+use POSIX qw(strftime);
 
 use URI::Escape;
 use UUID::Tiny;
 use Digest::MD5;
 
-use DBI;
 use Graphics::Magick;
 
 use IO::Compress::Gzip qw(gzip);
 use IO::Compress::Deflate qw(deflate);
-
-##use lib "${INSTALL_BASE}lib/perl";
 
 my $method = $cgi->request_method();
 
@@ -746,16 +738,6 @@ $DAV.=', bind' if $ENABLE_BIND;
 our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
 our $REQUEST_URI = $ENV{REQUEST_URI};
 our $REMOTE_USER = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
-
-$LANG = $cgi->param('lang') || $cgi->cookie('lang') || $LANG || 'default';
-$ORDER = $cgi->param('order') || $cgi->cookie('order') || $ORDER || 'name';
-$PAGE_LIMIT = $cgi->param('pagelimit') || $cgi->cookie('pagelimit') || $PAGE_LIMIT;
-$PAGE_LIMIT = ceil($PAGE_LIMIT) if defined $PAGE_LIMIT;
-@PAGE_LIMITS = ( 5, 10, 15, 20, 25, 30, 50, 100, -1 ) unless defined @PAGE_LIMITS;
-unshift @PAGE_LIMITS, $PAGE_LIMIT if defined $PAGE_LIMIT && $PAGE_LIMIT > 0 && grep(/\Q$PAGE_LIMIT\E/, @PAGE_LIMITS) <= 0 ;
-
-$VIEW = $cgi->param('view') || $cgi->cookie('view') || $VIEW || ($ENABLE_SIDEBAR ? 'sidebar' : 'classic');
-$VIEW = 'classic' unless $ENABLE_SIDEBAR ;
 
 debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
@@ -2518,10 +2500,8 @@ sub readMIMETypes {
 	if (open(my $f, "<$mimefile")) {
 		while (my $e = <$f>) {
 			next if $e =~ /^\s*(\#.*)?$/;
-			my ($type,$suffixes) = split(/\s+/, $e, 2);
-			foreach my $suffix (split(/\s+/,$suffixes)) {
-				$MIMETYPES{$suffix}=$type;
-			}
+			my ($type,@suffixes) = split(/\s+/, $e);
+			map  { $MIMETYPES{$_} = $type }  @suffixes;
 		}
 		close($f);
 	} else {
@@ -2531,7 +2511,7 @@ sub readMIMETypes {
 }
 sub getMIMEType {
 	my ($filename) = @_;
-	my $extension= "default";
+	my $extension= 'default';
 	if ($filename=~/\.([^\.]+)$/) {
 		$extension=$1;
 	}
