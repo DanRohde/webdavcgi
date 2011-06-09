@@ -125,7 +125,7 @@ ln -s `pwd`/cgi-bin/webdav.pl /usr/lib/cgi-bin
 ### (Prerequisites: /cgi-bin/webdavwrapper is a script alias and
 ###      'AllowOverride AuthConfig FileInfo' is set for the current folder)
 RewriteEngine On
-RewriteRule .* /cgi-bin/webdavwrapper [E=WEBDAVCONF:/path/to/my/config/file]
+RewriteRule .* /cgi-bin/webdavwrapper [E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl]
 
 AuthType Basic
 AuthName "A protected WebDAV folder"
@@ -136,7 +136,7 @@ require valid-user
     <pre>
 ### EXAMPLE 2: a complete (virtual) server root handled by WebDAV CGI:
 ### (you don't need actions, handler, or error documents)
-&lt;Location /&gt;
+&lt;Location /cgi-bin/webdavwrapper&gt;
         AuthType Basic
         AuthName "WebDAV/CalDAV/CardDAV space"
         AuthUserFile /path-to-my-auth-file
@@ -144,12 +144,12 @@ require valid-user
 &lt;/Location&gt;
 RewriteEngine On
 RewriteRule ^/icons(.*) /usr/share/apache2/icons$1 [L]
-RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,L]
+RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
     </pre>
 <br/>
     <pre>
 ### EXAMPLE 3: a virtual path /webdav
-&lt;Location /webdav&gt;
+&lt;Location /cgi-bin/webdavwrapper&gt;
         AuthType Basic
         AuthName "WebDAV space"
         AuthUserFile /path-to-my-auth-file
@@ -158,7 +158,7 @@ RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,L
 # if you want to map this to a real path, do that:
 # (end setup $VIRTUAL_BASE and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
-RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/config/file,L]
+RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
     </pre>
 
 </li>
@@ -168,10 +168,17 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <h2>Upgrade</h2>
 <h3>Upgrading from 0.7.0 to &ge;0.7.1</h3>
 <ol>
-<li>a new perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
+<li> a new perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
+<li> WebDAV CGI comes with some own modules so you need to set a additional Perl library path:
+     <ul>
+	     <li>add <code>E=PERLLIB:/etc/webdavcgi/lib/perl</code> to your rewrite rule options in the Apache configuration</li>
+	     <li>OR add <code>SetEnv PERLLIB /etc/webdavcgi/lib/perl</code> to your Apache configuration (don't forget to activate/install env module, e.g. <code>a2enmod env; /etc/init.d/apache restart</code>) </li>
+	     <li>OR change shebang of webdav.pl to <code>#!/usr/bin/perl -I/etc/webdavcgi/lib/perl</code></li>
+     </ul>
+</li>
 <li> <code>$IGNOREFILEPERMISSIONS</code> config variable was removed</li>
 <li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB', 'DBB') </li>
-<li> <code>$SHOW_MIME</code> and <code>$SHOW_PERM</code> were removed and use the new options <code>@ALLOWED_TABLE_COLUMNS</code> and <code>@VISIBLE_TABLE_COLUMNS</code> instead</li>
+<li> <code>$SHOW_MIME</code> and <code>$SHOW_PERM</code> were removed: use the new options <code>@ALLOWED_TABLE_COLUMNS</code> and <code>@VISIBLE_TABLE_COLUMNS</code> instead</li>
 <li> <code>%MIMETYPES</code> format was changed: only single filename suffix is allowed as a key; please use <code>$MIMEFILE</code> instead</li>
 </ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
@@ -235,7 +242,7 @@ $CONFIGFILE = '/path/to/my/config/file';
 Hint: Since version 0.6.1 it is possible to pass the config file path to webdav.pl with an environment variable using the Apache rewrite rule so you don't need to change webdav.pl:
 <pre>
 ...
-RewriteRule ^/ /cgi-bin/webdavwrapper [PT,L,E=WEBDAVCONF:/path/to/my/config/file]
+RewriteRule ^/ /cgi-bin/webdavwrapper [PT,L,E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl]
 ...
 </pre>
 </li>
@@ -632,7 +639,7 @@ WaklogEnabled On
 WaklogUseUserTokens On
 
 RewriteRule ^/icons/ - [L]
-RewriteRule  ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,L]
+RewriteRule  ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
 </pre>
 
 <code>webdav.conf</code> example:
@@ -729,7 +736,7 @@ AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
 require valid-user
 
 RewriteEngine on
-RewriteRule  ^/ /cgi-bin/webdav.pl [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,L]
+RewriteRule  ^/ /cgi-bin/webdav.pl [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
 </pre>
 
 <code>webdav.conf</code> example:
