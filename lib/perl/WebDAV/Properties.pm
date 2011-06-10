@@ -25,11 +25,7 @@ use strict;
 use WebDAV::Common;
 our @ISA = ( 'WebDAV::Common' );
 
-use File::Basename;
-
 use POSIX qw(strftime);
-
-
 
 sub new {
         my $this = shift;
@@ -120,7 +116,7 @@ sub getProperty {
         my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : ($isReadable ? $$self{backend}->stat($fn) : ());
 
         $$resp_200{prop}{creationdate}=strftime('%Y-%m-%dT%H:%M:%SZ' ,gmtime($ctime)) if $prop eq 'creationdate';
-        $$resp_200{prop}{displayname}=$$self{cgi}->escape(basename($uri)) if $prop eq 'displayname' && !defined $$resp_200{prop}{displayname};
+        $$resp_200{prop}{displayname}=$$self{cgi}->escape(main::getBaseURIFrag($uri)) if $prop eq 'displayname' && !defined $$resp_200{prop}{displayname};
         $$resp_200{prop}{getcontentlanguage}='en' if $prop eq 'getcontentlanguage';
         $$resp_200{prop}{getcontentlength}= $size if $prop eq 'getcontentlength';
         $$resp_200{prop}{getcontenttype}=($isDir?'httpd/unix-directory':main::getMIMEType($fn)) if $prop eq 'getcontenttype';
@@ -156,7 +152,7 @@ sub getProperty {
         $$resp_200{prop}{childcount}=($isDir?main::getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'childcount';
         $$resp_200{prop}{id}=$uri if $prop eq 'id';
         $$resp_200{prop}{isfolder}=($isDir?1:0) if $prop eq 'isfolder';
-        $$resp_200{prop}{ishidden}=(basename($fn)=~/^\./?1:0) if $prop eq 'ishidden';
+        $$resp_200{prop}{ishidden}=($$self{backend}->basename($fn)=~/^\./?1:0) if $prop eq 'ishidden';
         $$resp_200{prop}{isstructureddocument}=0 if $prop eq 'isstructureddocument';
         $$resp_200{prop}{hassubs}=($isDir?main::getDirInfo($fn,$prop,\%main::FILEFILTERPERDIR,\%main::FILECOUNTPERDIRLIMIT,$main::FILECOUNTLIMIT):0) if $prop eq 'hassubs';
         $$resp_200{prop}{nosubs}=($isDir?($$self{backend}->isWriteable($fn)?1:0):1) if $prop eq 'nosubs';
@@ -174,14 +170,14 @@ sub getProperty {
         if ($prop eq 'Win32FileAttributes') {
                 my $fileattr = 128 + 32; # 128 - Normal, 32 - Archive, 4 - System, 2 - Hidden, 1 - Read-Only
                 $fileattr+=1 unless $$self{backend}->isWriteable($fn);
-                $fileattr+=2 if basename($fn)=~/^\./;
+                $fileattr+=2 if $$self{backend}->basename($fn)=~/^\./;
                 $$resp_200{prop}{Win32FileAttributes}=sprintf("%08x",$fileattr);
         }
         $$resp_200{prop}{Win32LastAccessTime}=strftime('%a, %d %b %Y %T GMT' ,gmtime($atime)) if $prop eq 'Win32LastAccessTime';
         $$resp_200{prop}{Win32LastModifiedTime}=strftime('%a, %d %b %Y %T GMT' ,gmtime($mtime)) if $prop eq 'Win32LastModifiedTime';
-        $$resp_200{prop}{name}=$$self{cgi}->escape(basename($fn)) if $prop eq 'name';
+        $$resp_200{prop}{name}=$$self{cgi}->escape($$self{backend}->basename($fn)) if $prop eq 'name';
         $$resp_200{prop}{href}=$uri if $prop eq 'href';
-        $$resp_200{prop}{parentname}=$$self{cgi}->escape(basename(dirname($uri))) if $prop eq 'parentname';
+        $$resp_200{prop}{parentname}=$$self{cgi}->escape(main::getBaseURIFrag(main::getParentURI($uri))) if $prop eq 'parentname';
         $$resp_200{prop}{isreadonly}=(!$$self{backend}->isWriteable($fn)?1:0) if $prop eq 'isreadonly';
         $$resp_200{prop}{isroot}=($fn eq $main::DOCUMENT_ROOT?1:0) if $prop eq 'isroot';
         $$resp_200{prop}{getcontentclass}=($isDir?'urn:content-classes:folder':'urn:content-classes:document') if $prop eq 'getcontentclass';
@@ -245,7 +241,7 @@ sub getProperty {
                                 $$resp_404{prop}{'address-data'}=undef;
                         }
                 }
-                $$resp_200{prop}{'addressbook-description'} = $$self{cgi}->escape(basename($fn)) if $prop eq 'addressbook-description';
+                $$resp_200{prop}{'addressbook-description'} = $$self{cgi}->escape($$self{backend}->basename($fn)) if $prop eq 'addressbook-description';
                 $$resp_200{prop}{'supported-address-data'}='<A:address-data-type content-type="text/vcard" version="3.0"/>' if $prop eq 'supported-address-data';
                 $$resp_200{prop}{'{urn:ietf:params:xml:ns:carddav}max-resource-size'}=20000000 if $prop eq 'max-resource-size' && $main::ENABLE_CARDDAV;
                 $$resp_200{prop}{'addressbook-home-set'}{href}=$self->getAddressbookHomeSet($uri) if $prop eq 'addressbook-home-set';
@@ -308,6 +304,5 @@ sub getCalendarHomeSet {
         $rmuser = $< unless exists $main::CALENDAR_HOME_SET{$rmuser};
         return  ( exists $main::CALENDAR_HOME_SET{$rmuser} ? $main::CALENDAR_HOME_SET{$rmuser} : $main::CALENDAR_HOME_SET{default} );
 }
-
 
 1;

@@ -27,7 +27,6 @@ use Backend::FS::Driver;
 use POSIX;
 use Filesys::SmbClient;
 
-use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 
 use Archive::Zip;
@@ -294,7 +293,7 @@ sub resolve {
 }
 sub getParent {
 	my ($self, $file) = @_;
-	return dirname($file);
+	return $self->dirname($file);
 }
 sub getDisplayName {
 	my ($self, $file) = @_;
@@ -306,13 +305,13 @@ sub getDisplayName {
 		} elsif (exists $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{_USERNAME_} && $share eq _getUsername()) {
 			$name = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{_USERNAME_};
 		} else {
-			$name = basename($file);
+			$name = $self->basename($file);
 			my $comment = $self->_getCacheEntry('readDir',$file) && exists ${$self->_getCacheEntry('readDir',$file)}{comment} ? ${$self->_getCacheEntry('readDir',$file)}{comment} : '';
 			$name = $name." ( ".${$self->_getCacheEntry('readDir',$file)}{comment}.")" if $comment ne "";
 			$name.="/";
 		}
 	}
-	$name = basename($file) . ($self->isDir($file) ? '/':'') unless $name || basename($file) eq '/';
+	$name = $self->basename($file) . ($self->isDir($file) ? '/':'') unless $name || $self->basename($file) eq '/';
 	return $name ? $name :  $file;
 }
 
@@ -430,7 +429,7 @@ sub uncompressArchive {
 sub _copytolocal {
 	my ($self, $destdir, @files) = @_;
 	foreach my $file (@files) {
-		my $ndestdir=$destdir.basename($file);
+		my $ndestdir=$destdir.$self->basename($file);
 		if ($self->isDir($file)) {
 			$file.='/' if $file!~/\/$/;
 			if ($self->SUPER::mkcol($ndestdir)) {

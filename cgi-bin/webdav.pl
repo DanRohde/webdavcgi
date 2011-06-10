@@ -1,4 +1,5 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl -d:NYTProf
+###!/usr/bin/perl 
 ###!/usr/bin/speedy  -- -r20 -M5
 ###!/usr/bin/perl -d:NYTProf
 #########################################################################
@@ -690,7 +691,6 @@ if (defined $CONFIGFILE) {
 		warn "couldn't run $CONFIGFILE" unless $ret;
 	}
 }
-use File::Basename;
 
 use POSIX qw(strftime);
 
@@ -1223,8 +1223,6 @@ sub _PUT {
 	my $content = "";
 	my $buffer;
 
-	debug("_PUT $PATH_TRANSLATED; dirname=".dirname($PATH_TRANSLATED));
-
 	if (defined $cgi->http('Content-Range'))  {
 		$status='501 Not Implemented';
 	} elsif ($backend->isDir($backend->getParent(($PATH_TRANSLATED))) && !$backend->isWriteable($backend->getParent(($PATH_TRANSLATED)))) {
@@ -1315,7 +1313,7 @@ sub _MOVE {
 	} elsif ( $backend->exists($destination) && $overwrite eq "F") {
 		$status = '412 Precondition Failed';
 	} elsif ( ! $backend->isDir($backend->getParent($destination))) {
-		$status = "409 Conflict - ".dirname($destination);
+		$status = '409 Conflict';
 	} elsif (!isAllowed($PATH_TRANSLATED,$backend->isDir($PATH_TRANSLATED)) || !isAllowed($destination, $backend->isDir($destination))) {
 		$status = '423 Locked';
 	} else {
@@ -2006,12 +2004,9 @@ sub getPropStat {
 	return \@propstat;
 }
 sub cmp_elements {
-	my $aa = defined $ELEMENTORDER{$a} ? $ELEMENTORDER{$a} : $ELEMENTORDER{default};
-	my $bb = defined $ELEMENTORDER{$b} ? $ELEMENTORDER{$b} : $ELEMENTORDER{default};
-	if (defined $ELEMENTORDER{$a} || defined $ELEMENTORDER{$b} ) {
-		return $aa <=> $bb;
-	} 
-	return $a cmp $b;
+	my $aa = $ELEMENTORDER{$a} || $ELEMENTORDER{default};
+	my $bb = $ELEMENTORDER{$b} || $ELEMENTORDER{default};
+	return $aa <=> $bb || $a cmp $b;
 }
 sub createXMLData {
         my ($w,$d,$xmlns) =@_;
@@ -2437,8 +2432,7 @@ sub getDirInfo {
 	return $counter{$prop} || 0;
 }
 sub getNameSpace {
-	my ($prop) = @_;
-	return defined $ELEMENTS{$prop}?$ELEMENTS{$prop}:$ELEMENTS{default};
+	return $ELEMENTS{$_[0]} || $ELEMENTS{default};
 }
 sub getNameSpaceUri {
 	my  ($prop) = @_;
@@ -2464,7 +2458,7 @@ sub moveToTrash  {
                                 $trash="$TRASH_FOLDER$etag".($i++).'/';
                         }
                 }
-                $ret = 1 if $backend->mkcol($trash) && rmove($fn, $trash.basename($fn));
+                $ret = 1 if $backend->mkcol($trash) && rmove($fn, $trash.$backend->basename($fn));
                 debug("moveToTrash($fn)->$trash = $ret");
         }
         return $ret;
@@ -2520,7 +2514,7 @@ sub getMIMEType {
 	my ($filename) = @_;
 	my $extension= 'default';
 	if ($filename=~/\.([^\.]+)$/) {
-		$extension=$1;
+		$extension=lc($1);
 	}
 	return $MIMETYPES{$extension} || $MIMETYPES{default};
 }
@@ -2555,7 +2549,7 @@ sub rcopy {
         } elsif ( $backend->isFile($src) ) { # file
                 if ($backend->isDir($dst)) {
                         $dst.='/' if $dst !~/\/$/;
-                        $dst.=basename($src);
+                        $dst.=$backend->basename($src);
                 }
                 if (!$move || !$backend->rename($src,$dst)) {
 			return 0 unless $backend->copy($src,$dst);
@@ -2621,6 +2615,13 @@ sub getLockModule {
 	require WebDAV::Lock;
 	return $CACHE{webdavlock} || ($CACHE{webdavlock} = new WebDAV::Lock($config,getDBDriver()));
 }
+sub getBaseURIFrag {
+        return $_[0]=~/([^\/]+)\/?$/ ? ( $1 || '/' ) : '/';
+}
+sub getParentURI {
+	return $_[0]=~/^(.*?)\/[^\/]+\/?$/ ? ( $1 || '/' ) : '/';
+}
+
 sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;
 }

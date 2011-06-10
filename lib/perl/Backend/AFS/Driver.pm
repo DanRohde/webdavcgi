@@ -38,7 +38,7 @@ sub isWriteable {
 	return _checkAFSAccess($_[1]);
 }
 sub isDir {
-	return _checkAFSAccess($_[1]) && -d $_[1];
+	return exists $CACHE{$_[0]}{isDir}{$_[1]} ? $CACHE{$_[0]}{isDir}{$_[1]} : ($CACHE{$_[0]}{isDir}{$_[1]} = _checkAFSAccess($_[1]) && -d $_[1]);
 }
 sub isFile {
 	return _checkAFSAccess($_[1]) && -f $_[1];

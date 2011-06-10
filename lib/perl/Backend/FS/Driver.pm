@@ -37,6 +37,13 @@ sub new {
 	return bless $self, $class;
 }
 
+sub basename {
+	return File::Basename::basename($_[1]);
+}
+sub dirname {
+	return File::Basename::dirname($_[1]);
+}
+
 sub exists {
 	return -e $_[1];
 }
@@ -70,7 +77,7 @@ sub isExecutable {
 	return -x $_[1];
 }
 sub getParent {
-	return dirname($_[1]);
+	return $_[0]->dirname($_[1]);
 }
 
 sub mkcol {
@@ -290,7 +297,7 @@ sub printFile {
 	}
 }
 sub getDisplayName {
-	return basename($_[1]) . ($_[0]->isDir($_[1]) && $_[1] ne '/'? '/':'');
+	return $_[0]->basename($_[1]) . ($_[0]->isDir($_[1]) && $_[1] ne '/'? '/':'');
 }
 sub rename {
 	return CORE::rename($_[1],$_[2]);

@@ -24,9 +24,6 @@ use strict;
 use WebInterface::Common;
 our @ISA = ( 'WebInterface::Common' );
 
-
-use File::Basename;
-
 sub new {
        my $this = shift;
        my $class = ref($this) || $this;
@@ -46,8 +43,8 @@ sub handlePostUpload {
 		next unless $$self{cgi}->uploadInfo($filename);
 		my $rfn= $filename;
 		$rfn=~s/\\/\//g; # fix M$ Windows backslashes
-		my $destination = $main::PATH_TRANSLATED.basename($rfn);
-		push(@filelist, basename($rfn));
+		my $destination = $main::PATH_TRANSLATED.$$self{backend}->basename($rfn);
+		push(@filelist, $$self{backend}->basename($rfn));
 		if (!$$self{backend}->saveStream($destination, $filename)) {
 			$errmsg='uploadforbidden';
 			if ($msgparam eq '') { $msgparam='p1='.$rfn; } else { $msgparam.=', '.$rfn; }
@@ -70,7 +67,7 @@ sub handleZipUpload {
 	foreach my $fh ($$self{cgi}->param('zipfile_upload')) {
 		my $rfn= $fh;
 		$rfn=~s/\\/\//g; # fix M$ Windows backslashes
-		$rfn=basename($rfn);
+		$rfn=$$self{backend}->basename($rfn);
 
 		if ($$self{backend}->saveStream("$main::PATH_TRANSLATED$rfn", $fh)) {
 			push @zipfiles, $rfn;
@@ -118,7 +115,7 @@ sub handleClipboardAction {
 }
 sub handleZipDownload {
 	my $self = shift;
-	my $zfn = basename($main::PATH_TRANSLATED).'.zip';
+	my $zfn = $$self{backend}->basename($main::PATH_TRANSLATED).'.zip';
 	$zfn=~s/ /_/;
 	print $$self{cgi}->header(-status=>'200 OK', -type=>'application/zip',-Content_disposition=>'attachment; filename='.$zfn);
 	$$self{backend}->compressFiles(\*STDOUT, $main::PATH_TRANSLATED, $$self{cgi}->param('file'));

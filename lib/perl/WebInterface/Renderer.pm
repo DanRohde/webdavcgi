@@ -25,7 +25,6 @@ use WebInterface::Common;
 our @ISA = ( 'WebInterface::Common' );
 
 use POSIX qw(strftime ceil locale_h);
-use File::Basename;
 use IO::Compress::Gzip qw(gzip);
 use IO::Compress::Deflate qw(deflate);
 use URI::Escape;
@@ -57,11 +56,11 @@ sub renderPropertiesViewer {
         $content .= $self->start_html("$main::TITLEPREFIX $ru properties");
         $content .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
         $content .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
-        my $fullparent = dirname($ru) .'/';
+        my $fullparent = main::getParentURI($ru) .'/';
         $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
         $content .=$$self{cgi}->h2( { -class=>'foldername' }, ($$self{backend}->isDir($fn) ? $self->getQuickNavPath($fn,$ru)
                                     : $self->getQuickNavPath($$self{backend}->getParent($fn), $fullparent)
-                                       .' '.$$self{cgi}->a({-href=>$ru}, basename($ru))
+                                       .' '.$$self{cgi}->a({-href=>$ru}, main::getBaseURIFrag($ru))
                               ). $self->tl('properties'));
         $content .= $$self{cgi}->br().$$self{cgi}->a({href=>$ru,title=>$self->tl('clickforfullsize')},$$self{cgi}->img({-src=>$ru.($main::ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($main::ENABLE_THUMBNAIL?$main::THUMBNAIL_WIDTH:200)})) if $self->hasThumbSupport(main::getMIMEType($fn));
         $content .= $$self{cgi}->start_table({-class=>'props'});
@@ -113,8 +112,8 @@ sub getQuickNavPath {
         $navpath=~s/^($main::VIRTUAL_BASE)//;
         $base = $1;
         if ($base ne '/' ) {
-                $navpath = basename($base)."/$navpath";
-                $base = dirname($base);
+                $navpath = main::getBaseURIFrag($base)."/$navpath";
+                $base = main::getParentURI($base);
                 $base .= '/' if $base ne '/';
                 $content.=$base;
         } else {
@@ -277,7 +276,7 @@ sub printMediaRSS {
 sub printDAVMount {
 	my ($self,$fn) = @_;
 	my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
-	my $bn = basename($fn);
+	my $bn = $$self{backend}->basename($fn);
 	$su =~ s/\Q$bn\E\/?//;
 	$bn.='/' if $$self{backend}->isDir($fn) && $bn!~/\/$/;
 	main::printHeaderAndContent('200 OK','application/davmount+xml',
@@ -292,7 +291,7 @@ sub printOpenSearch {
 
 sub printStylesAndVHTOCSFiles {
 	my ($self,$fn) = @_;
-	my $file = $fn =~ /\Q$main::VHTDOCS\E(.*)/ ? $main::INSTALL_BASE.'htdocs/'.$1 : $main::INSTALL_BASE.'lib/'.basename($fn);
+	my $file = $fn =~ /\Q$main::VHTDOCS\E(.*)/ ? $main::INSTALL_BASE.'htdocs/'.$1 : $main::INSTALL_BASE.'lib/'.$$self{backend}->basename($fn);
 	$file=~s/\/\.\.\///g;
 	my $compression = !-e $file && -e "$file.gz";
 	my $nfile = $file;
@@ -344,7 +343,7 @@ sub renderWebInterface {
                         .$self->getQuickNavPath($fn,$ru)
                 );
                 $head.= $$self{cgi}->div( { -class=>'viewtools' },
-                                ($ru=~/^$main::VIRTUAL_BASE\/?$/ ? '' :$$self{cgi}->a({-class=>'up', -href=>dirname($ru).(dirname($ru) ne '/'?'/':''), -title=>$self->tl('uptitle')}, $self->tl('up')))
+                                ($ru=~/^$main::VIRTUAL_BASE\/?$/ ? '' :$$self{cgi}->a({-class=>'up', -href=>main::getParentURI($ru).(main::getParentURI($ru) ne '/'?'/':''), -title=>$self->tl('uptitle')}, $self->tl('up')))
                                 .' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh')));
                 if ($main::SHOW_QUOTA) {
                         my($ql, $qu) = main::getQuota($fn);
@@ -597,7 +596,7 @@ sub getFolderList {
 		$full = $$self{backend}->getParent($fn) if $filename eq '..';
                 my $nru = $ru.uri_escape($filename);
 
-                $nru = dirname($ru).'/' if $filename eq '..';
+                $nru = main::getParentURI($ru).'/' if $filename eq '..';
                 $nru = $ru if $filename eq '.';
                 $nru = '/' if $nru eq '//';
 
@@ -838,7 +837,7 @@ sub renderFileActionsWithIcons {
         }
         if ($main::ALLOW_EDIT) {
                 my $ef = '('.join('|',@main::EDITABLEFILES).')';
-                $disabled{edit} = 1 unless basename($file) =~/$ef/i && $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full);
+                $disabled{edit} = 1 unless $$self{backend}->basename($file) =~/$ef/i && $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full);
         }
         my $content="";
         foreach my $action (@actions) {
@@ -876,7 +875,7 @@ sub renderFileActionsWithSelect {
 
         if ($main::ALLOW_EDIT) {
                 my $ef = '('.join('|',@main::EDITABLEFILES).')';
-                $attr{edit}{disabled}='disabled' unless basename($file) =~/$ef/i && ($$self{backend}->isFile($full) && $$self{backend}->isWriteable($full));
+                $attr{edit}{disabled}='disabled' unless $$self{backend}->basename($file) =~/$ef/i && ($$self{backend}->isFile($full) && $$self{backend}->isWriteable($full));
         } else {
                 @values = grep(!/^edit$/,@values);
         }
@@ -899,11 +898,9 @@ sub renderNameFilterForm {
 sub getfancyfilename {
         my ($self, $full,$s,$m,$fn,$isUnReadable) = @_;
         my $ret = $s;
-        my $q = '';
 
         $full = '/' if $full eq '//'; # fixes root folder navigation bug
 
-        $full.="?$q" if defined $q && defined $fn && !$isUnReadable && $$self{backend}->isDir($fn);
         my $fntext = $s =~ /^\.{1,2}$/ ? $s : $$self{backend}->getDisplayName($fn);
         $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-3) if length($s)>$main::MAXFILENAMESIZE;
         my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
