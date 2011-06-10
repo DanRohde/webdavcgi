@@ -30,7 +30,6 @@ our $VERSION = 0.1;
 
 use DBI qw( :sql_types );
 
-use File::Basename;
 use File::Temp qw( tempfile tempdir );
 
 use constant {
@@ -85,7 +84,7 @@ sub unlinkFile {
 	my ($self, $fn) = @_;
 	$fn = $self->resolve($fn);
 	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
-	if ($sth && $sth->execute(basename($fn),dirname($fn))) {
+	if ($sth && $sth->execute($self->basename($fn),$self->getParent($fn))) {
 		$$self{_dbh}->commit();
 		return 1;
 	} 
@@ -97,7 +96,7 @@ sub deltree {
 	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE parent = ? OR parent like ?");
 	if ($sth && $sth->execute($fn,$fn.'/%')) {
 		$sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
-		$sth->execute(basename($fn), dirname($fn)) if $sth;
+		$sth->execute($self->basename($fn), $self->getParent($fn)) if $sth;
 		if ($sth && !$sth->err) {
 			$$self{_dbh}->commit();
 			return 1;
@@ -123,7 +122,7 @@ sub rename {
 	return 0 if $self->isDir($on) && scalar($self->readDir($on))>0;
 	my $sth = $$self{_dbh}->prepare('UPDATE objects SET name = ?, parent = ? WHERE name = ? AND parent = ?');
 	$self->unlinkFile($nn);
-	if ($sth && $sth->execute(basename($nn),dirname($nn),basename($on),dirname($on))) {
+	if ($sth && $sth->execute($self->basename($nn),$self->getParent($nn),$self->basename($on),$self->getParent($on))) {
 		$$self{_dbh}->commit();
 		return 1;
 	}
@@ -134,7 +133,7 @@ sub copy {
 	$src = $self->resolve($src);
 	$dst = $self->resolve($dst);
 	my $v = $self->_getDBEntry($src,1);
-	return $self->exists($dst) ?  $self->_changeDBEntry($dst, $$v{basename($src)}{data}) : $self->_addDBEntry($dst, TYPE_FILE, $$v{basename($src)}{data});
+	return $self->exists($dst) ?  $self->_changeDBEntry($dst, $$v{$self->basename($src)}{data}) : $self->_addDBEntry($dst, TYPE_FILE, $$v{$self->basename($src)}{data});
 }
 
 sub mkcol {
@@ -160,7 +159,7 @@ sub exists {
 	return 1 if $self->_isRoot($fn);
 	$fn = $self->resolve($fn);
 	my $h =$self->_getDBEntry($fn);
-	return defined $h && exists $$h{basename($fn)};
+	return defined $h && exists $$h{$self->basename($fn)};
 }
 sub stat {
 	my ($self,$fn) =@_;
@@ -168,7 +167,7 @@ sub stat {
 	$fn=$self->resolve($fn);
 	my $val = $self->_getDBEntry($fn);
 	return CORE::stat($fn) unless defined $val;
-	$fn = basename($fn);
+	$fn = $self->basename($fn);
 	return (0,0,$$val{$fn}{permissions},0,0,0,0,$$val{$fn}{size},0,$$val{$fn}{modified},$$val{$fn}{created},0,0);
 }
 
@@ -177,13 +176,13 @@ sub _getDBValue {
 	my ($self, $fn, $attr, $default) = @_;
 	$fn = $self->resolve($fn);
 	my $dbv = $self->_getDBEntry($fn, $attr eq 'data');
-	return defined $dbv ?  ( $$dbv{basename($fn)}{$attr} || $default) : $default;
+	return defined $dbv ?  ( $$dbv{$self->basename($fn)}{$attr} || $default) : $default;
 }
 sub _addDBEntry {
 	my ($self, $name, $type) = @_;
-	my $parent = dirname($name);
+	my $parent = $self->getParent($name);
 	my $created = time();
-	$name = basename($name);
+	$name = $self->basename($name);
 
 	my $sth = $self->{_dbh}->prepare('INSERT INTO objects (name, parent, type, owner, size, created, modified, permissions,data) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 	$sth->bind_param(1,$name);
@@ -219,8 +218,8 @@ sub _changeDBEntry {
 	$sth->bind_param(++$i,time());
 	$sth->bind_param(++$i,$_[2],SQL_BLOB) if defined $_[2];
 	$sth->bind_param(++$i,length($_[2])) if defined $_[2];
-	$sth->bind_param(++$i,basename($name));
-	$sth->bind_param(++$i,dirname($name));
+	$sth->bind_param(++$i,$self->basename($name));
+	$sth->bind_param(++$i,$self->getParent($name));
 	if ($sth->execute()) {
 		$$self{_dbh}->commit();
 		return 1;
@@ -233,7 +232,7 @@ sub _getDBEntry {
 	$sel.=',data' if $withdata;
 	$sel.=' FROM objects WHERE name = ? AND parent = ?';
 	my $sth = $self->{_dbh}->prepare($sel);
-	$sth->execute(basename($self->resolve($fn)), dirname($self->resolve($fn)));
+	$sth->execute($self->basename($self->resolve($fn)), $self->getParent($self->resolve($fn)));
 	return !$sth->err ? $sth->fetchall_hashref('name') : undef;
 }
 
@@ -260,8 +259,8 @@ sub saveData {
 	if ($_[0]->exists($_[1])) {
 		if ($_[3]) {
 			my $v = _getDBEntry($fn,1);
-			$data = $$v{basename($fn)}{data}.$_[2];
-			return $_[0]->_changeDBEntry($fn,$$v{basename($fn)}{data}.$_[2]);
+			$data = $$v{$_[0]->basename($fn)}{data}.$_[2];
+			return $_[0]->_changeDBEntry($fn,$$v{$_[0]->basename($fn)}{data}.$_[2]);
 		}
 		return $_[0]->_changeDBEntry($fn,$_[2]);
 	} 
@@ -281,7 +280,7 @@ sub printFile {
 	my ($self, $fn, $fh) = @_;
 	$fn=$self->resolve($fn);
 	my $v = $self->_getDBEntry($fn,1);
-	print $fh $$v{basename($fn)}{data}
+	print $fh $$v{$self->basename($fn)}{data}
 }
 sub getLocalFilename {
 	my ($self, $fn) = @_;
@@ -295,15 +294,15 @@ sub getFileContent {
 	my ($self, $fn) = @_;
 	$fn = $self->resolve($fn);
 	my $v = $self->_getDBEntry($fn,1);
-	return $$v{basename($fn)}{data};
+	return $$v{$self->basename($fn)}{data};
 }
 sub _copytolocal {
 	my ($self, $dir, $file) = @_;
 
-	my $nn = "$dir".basename($file);
+	my $nn = "$dir".$self->basename($file);
 	if ($self->isFile($file) && open(my $f, ">$nn")) {
 		my $e = $self->_getDBEntry($file,1);
-		print $f $$e{basename($file)}{data};
+		print $f $$e{$self->basename($file)}{data};
 		close($f);
 	} elsif ($self->isDir($file)) {
 		mkdir($nn);

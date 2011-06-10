@@ -22,14 +22,13 @@ package Backend::FS::Driver;
 use strict;
 #use warnings;
 
-use File::Basename;
 use File::Spec::Link;
 use Fcntl qw(:flock);
 
 use File::Spec::Link;
 
 
-use vars ( '%CACHE' );
+use vars qw( %CACHE );
 
 sub new {
 	my $class = shift;
@@ -38,25 +37,26 @@ sub new {
 }
 
 sub basename {
-	return File::Basename::basename($_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{basename} ? $CACHE{$_[0]}{$_[1]}{basename} : ($CACHE{$_[0]}{$_[1]}{basename} = main::getBaseURIFrag($_[1]));
 }
 sub dirname {
-	return File::Basename::dirname($_[1]);
+	return main::getParentURI($_[1]);
 }
 
 sub exists {
-	return -e $_[1];
+	return exists $CACHE{$_[0]}{$_[1]}{exists} ? $CACHE{$_[0]}{$_[1]}{exists} : ($CACHE{$_[0]}{$_[1]}{exists} = -e $_[1]);
 }
 sub isDir {
-	return -d $_[1];
+	return exists $CACHE{$_[0]}{$_[1]}{isDir} ? $CACHE{$_[0]}{$_[1]}{isDir} : ($CACHE{$_[0]}{$_[1]}{isDir} = -d $_[1]);
 }
 sub isFile {
-	return -f $_[1];
+	return exists $CACHE{$_[0]}{$_[1]}{isFile} ? $CACHE{$_[0]}{$_[1]}{isFile} : ($CACHE{$_[0]}{$_[1]}{isFile} = -f $_[1]);
 }
 sub isLink {
 	my ($self, $fn) = @_;
+	return $CACHE{$self}{$fn}{isLink} if exists $CACHE{$self}{$fn}{isLink};
 	$fn=~s/\/$//;
-	return -l $_[1];
+	return ($CACHE{$self}{$fn}{isLink} = -l $fn);
 }
 sub isBlockDevice {
 	return -b $_[1];
@@ -68,10 +68,10 @@ sub isEmpty {
 	return -z $_[1];
 }
 sub isReadable {
-	return -r $_[1];
+	return exists $CACHE{$_[0]}{$_[1]}{isReadable} ? $CACHE{$_[0]}{$_[1]}{isReadable} : ($CACHE{$_[0]}{$_[1]}{isReadable} = -r $_[1]);
 }
 sub isWriteable {
-	return -w $_[1];
+	return exists $CACHE{$_[0]}{$_[1]}{isWriteable} ? $CACHE{$_[0]}{$_[1]}{isWriteable} : ($CACHE{$_[0]}{$_[1]}{isWriteable} =  -w $_[1]);
 }
 sub isExecutable {
 	return -x $_[1];
@@ -84,7 +84,9 @@ sub mkcol {
 	return CORE::mkdir($_[1]);
 }
 sub unlinkFile {
-	return CORE::unlink($_[1]);
+	my $ret = CORE::unlink($_[1]);
+	delete $CACHE{$_[0]}{$_[1]} if $ret;
+	return $ret;
 }
 sub readDir {
         my ($self, $dirname, $limit, $filter) = @_;
@@ -105,10 +107,10 @@ sub filter {
 	return defined $filter && ((ref($filter) eq 'CODE' && $filter->($dirname,$file))||(ref($filter) ne 'CODE' && $filter->filter($dirname,$file)));
 }
 sub stat {
-	return CORE::stat($_[1]) || (0,0,0,0,0,0,0,0,0,0,0,0,0);
+	return CORE::stat($_[1]);
 }
 sub lstat {
-	return CORE::lstat($_[1]) || (0,0,0,0,0,0,0,0,0,0,0,0,0);
+	return CORE::lstat($_[1]);
 }
 
 sub deltree {
@@ -120,9 +122,8 @@ sub deltree {
                 push(@$errRef, { $f => "Cannot delete $f" });
         } elsif (-l $nf) {
                 if (unlink($nf)) {
+			delete $CACHE{$self}{$f};
                         $count++;
-                        ##main::db_deleteProperties($f);
-                        ##main::db_delete($f);
                 } else {
                         push(@$errRef, { $f => "Cannot delete '$f': $!" });
                 }
@@ -135,6 +136,7 @@ sub deltree {
                         }
                         closedir($dirh);
                         if (rmdir $f) {
+				delete $CACHE{$self}{$f};
                                 $count++;
                                 $f.='/' if $f!~/\/$/;
                         } else {
@@ -259,7 +261,7 @@ sub getLinkSrc {
 	return CORE::readlink($_[1]);
 }
 sub resolve {
-	return $CACHE{$_[0]}{resolve}{$_[1]} || ($CACHE{$_[0]}{resolve}{$_[1]} = File::Spec::Link->full_resolve($_[1]));
+	return $CACHE{$_[0]}{$_[1]}{resolve} || ($CACHE{$_[0]}{$_[1]}{resolve} = File::Spec::Link->full_resolve($_[1]));
 }
 
 sub getFileContent {
@@ -297,7 +299,9 @@ sub printFile {
 	}
 }
 sub getDisplayName {
-	return $_[0]->basename($_[1]) . ($_[0]->isDir($_[1]) && $_[1] ne '/'? '/':'');
+	return $CACHE{$_[0]}{$_[1]}{getDisplayName}
+			? $CACHE{$_[0]}{$_[1]}{getDisplayName}
+			: ( $CACHE{$_[0]}{$_[1]}{getDisplayName} =  $_[0]->basename($_[1]) . ($_[0]->isDir($_[1]) && $_[1] ne '/'? '/':''));
 }
 sub rename {
 	return CORE::rename($_[1],$_[2]);
@@ -306,7 +310,7 @@ sub getQuota {
 	my ($self, $fn) = @_;
 	require Quota;
 	my @quota =  Quota::query(Quota::getqcarg($fn));
-	return ( $quota[2] * 1024, $quota[0] * 1024 );
+	return @quota ? ( $quota[2] * 1024, $quota[0] * 1024 ) : (0, 0);
 }
 sub copy {
 	my ($self, $src, $dst) = @_;

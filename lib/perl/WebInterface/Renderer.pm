@@ -30,7 +30,7 @@ use IO::Compress::Deflate qw(deflate);
 use URI::Escape;
 use Graphics::Magick;
 
-use vars qw ($WEB_ID %BYTEUNITS @BYTEUNITORDER);
+use vars qw ($WEB_ID %BYTEUNITS @BYTEUNITORDER %CACHE);
 
 %BYTEUNITS = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
 @BYTEUNITORDER = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PB' );
@@ -1564,23 +1564,24 @@ sub renderSysInfo {
 }
 
 sub cmp_strings {
-        my ($_a,$_b) = @_;
-        return substr($_a,0,1) cmp substr($_b,0,1) || $_a cmp $_b;
+	$CACHE{$_[0]}{cmp_strings}{$_[1]} = substr($_[1],0,1) unless exists $CACHE{$_[0]}{cmp_strings}{$_[1]};
+	$CACHE{$_[0]}{cmp_strings}{$_[2]} = substr($_[2],0,1) unless exists $CACHE{$_[0]}{cmp_strings}{$_[2]};
+        return  $CACHE{$_[0]}{cmp_strings}{$_[1]} cmp $CACHE{$_[0]}{cmp_strings}{$_[2]} || $_[1] cmp $_[2];
 }
 sub cmp_files {
 	my $self = shift;
         my $fp_a = $main::PATH_TRANSLATED.$a;
         my $fp_b = $main::PATH_TRANSLATED.$b;
-        my $factor = ($main::ORDER =~/_desc$/) ? -1 : 1;
+        my $factor = exists $CACHE{$self}{cmp_files}{$main::ORDER} ? $CACHE{$self}{cmp_files}{$main::ORDER} : ( $CACHE{$self}{cmp_files}{$main::ORDER} =  ($main::ORDER =~/_desc$/) ? -1 : 1 );
         return -1 if $$self{backend}->isDir($fp_a) && !$$self{backend}->isDir($fp_b);
         return 1 if !$$self{backend}->isDir($fp_a) && $$self{backend}->isDir($fp_b);
         if ($main::ORDER =~ /^(lastmodified|created|size|mode)/) {
                 my $idx = $main::ORDER=~/^lastmodified/? 9 : $main::ORDER=~/^created/ ? 10 : $main::ORDER=~/^mode/? 2 : 7;
-                return $factor * ( ($$self{backend}->stat($fp_a))[$idx] <=> ($$self{backend}->stat($fp_b))[$idx] || cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)) );
+                return $factor * ( ($$self{backend}->stat($fp_a))[$idx] <=> ($$self{backend}->stat($fp_b))[$idx] || $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)) );
         } elsif ($main::ORDER =~ /mime/) {
-                return $factor * ( cmp_strings(main::getMIMEType($a), main::getMIMEType($b)) || cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
+                return $factor * ( $self->cmp_strings(main::getMIMEType($a), main::getMIMEType($b)) || $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
         }
-        return $factor * cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b));
+        return $factor * $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b));
 }
 
 sub escapeQuotes {

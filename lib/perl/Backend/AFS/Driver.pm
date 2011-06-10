@@ -28,23 +28,20 @@ our @ISA = qw( Backend::FS::Driver );
 
 our $VERSION = 0.1;
 
-use vars qw ( %CACHE );
-
-
 sub isReadable { 
-	return _checkAFSAccess($_[1]);
+	return $_[0]->_checkAFSAccess($_[1]);
 }
 sub isWriteable { 
-	return _checkAFSAccess($_[1]);
+	return $_[0]->_checkAFSAccess($_[1]);
 }
 sub isDir {
-	return exists $CACHE{$_[0]}{isDir}{$_[1]} ? $CACHE{$_[0]}{isDir}{$_[1]} : ($CACHE{$_[0]}{isDir}{$_[1]} = _checkAFSAccess($_[1]) && -d $_[1]);
+	return $_[0]->_checkAFSAccess($_[1]) && $_[0]->SUPER::isDir($_[1]);
 }
 sub isFile {
-	return _checkAFSAccess($_[1]) && -f $_[1];
+	return $_[0]->_checkAFSAccess($_[1]) && $_[0]->SUPER::isFile($_[1]);
 }
 sub isLink {
-	return _checkAFSAccess($_[1]) && -l $_[1];
+	return $_[0]->_checkAFSAccess($_[1]) && $_[0]->SUPER::isLink($_[1]);
 }
 sub isExecutable {
 	return 1;
@@ -65,13 +62,13 @@ sub isCharDevice {
 	return 0;
 }
 sub exists { 
-	return _checkAFSAccess($_[1]);
+	return $_[0]->_checkAFSAccess($_[1]);
 }
 sub isEmpty {
-	return _checkAFSAccess($_[1]) && -z $_[1];
+	return $_[0]->_checkAFSAccess($_[1]) && -z $_[1];
 }
 sub stat {
-	return _checkAFSAccess($_[1]) ? CORE::stat($_[1]) : CORE::lstat($_[1]);
+	return $_[0]->_checkAFSAccess($_[1]) ? CORE::stat($_[1]) : CORE::lstat($_[1]);
 }
 
 sub getQuota {
@@ -86,9 +83,11 @@ sub getQuota {
 	return (0,0);
 }
 
+our %CACHE;
 sub _checkAFSAccess {
-        return $CACHE{_checkAFSAccess}{$_[0]} if exists $CACHE{_checkAFSAccess}{$_[0]};
-        return $CACHE{_checkAFSAccess}{$_[0]} = (CORE::lstat($_[0]) ? 1 : 0);
+	return exists $CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
+			? $CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
+			: ( $CACHE{$_[0]}{_checkAFSAccess}{$_[1]} = (CORE::lstat($_[1]) ? 1 : 0) );
 }
 
 1;
