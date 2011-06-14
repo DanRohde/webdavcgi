@@ -187,7 +187,6 @@ sub start_html {
 
 sub replaceVars {
         my ($self,$t) = @_;
-	study $t;
         $t=~s/\${?NOW}?/strftime($self->tl('varnowformat'), localtime())/eg;
         $t=~s/\${?TIME}?/strftime($self->tl('vartimeformat'), localtime())/eg;
         $t=~s/\${?USER}?/$main::REMOTE_USER/g;
@@ -1569,12 +1568,16 @@ sub cmp_strings {
         return  $CACHE{$_[0]}{cmp_strings}{$_[1]} cmp $CACHE{$_[0]}{cmp_strings}{$_[2]} || $_[1] cmp $_[2];
 }
 sub cmp_files {
-	my $self = shift;
+	my ($self) = @_;
         my $fp_a = $main::PATH_TRANSLATED.$a;
         my $fp_b = $main::PATH_TRANSLATED.$b;
         my $factor = exists $CACHE{$self}{cmp_files}{$main::ORDER} ? $CACHE{$self}{cmp_files}{$main::ORDER} : ( $CACHE{$self}{cmp_files}{$main::ORDER} =  ($main::ORDER =~/_desc$/) ? -1 : 1 );
-        return -1 if $$self{backend}->isDir($fp_a) && !$$self{backend}->isDir($fp_b);
-        return 1 if !$$self{backend}->isDir($fp_a) && $$self{backend}->isDir($fp_b);
+	$CACHE{$self}{cmp_files}{$fp_a} = $$self{backend}->isDir($fp_a) unless exists $CACHE{$self}{cmp_files}{$fp_a};
+	$CACHE{$self}{cmp_files}{$fp_b} = $$self{backend}->isDir($fp_b) unless exists $CACHE{$self}{cmp_files}{$fp_b};
+
+        return -1 if $CACHE{$self}{cmp_files}{$fp_a} && !$CACHE{$self}{cmp_files}{$fp_b};
+        return 1 if !$CACHE{$self}{cmp_files}{$fp_a} && $CACHE{$self}{cmp_files}{$fp_b};
+
         if ($main::ORDER =~ /^(lastmodified|created|size|mode)/) {
                 my $idx = $main::ORDER=~/^lastmodified/? 9 : $main::ORDER=~/^created/ ? 10 : $main::ORDER=~/^mode/? 2 : 7;
                 return $factor * ( ($$self{backend}->stat($fp_a))[$idx] <=> ($$self{backend}->stat($fp_b))[$idx] || $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)) );

@@ -23,16 +23,12 @@ use strict;
 #use warnings;
 
 use Backend::FS::Driver;
+our @ISA = qw( Backend::FS::Driver );
 
-use POSIX;
 use Filesys::SmbClient;
 
 use File::Temp qw/ tempfile tempdir /;
 
-use Archive::Zip;
-
-
-our @ISA = qw( Backend::FS::Driver );
 
 our %CACHE;
 
@@ -78,8 +74,7 @@ sub readDir {
 
 	my @files;
 
-
-	return $self->_getCacheEntry('readDir:list',$base) if $self->_getCacheEntry('readDir:list',$base);
+	return $self->_getCacheEntry('readDir:list',$base) if $self->_existsCacheEntry('readDir:list',$base);
 
 	$base .=  '/' if $base !~ /\/$/;
 	if (_isRoot($base)) {
@@ -99,7 +94,7 @@ sub readDir {
 			}
 		}
 
-	} elsif ((my $url = _getSmbURL($base)) ne $base) {
+	} elsif ((my $url = $self->_getSmbURL($base)) ne $base) {
 		if (my $dir = $$self{smb}->opendir($url)) {
 			while (my $f = $$self{smb}->readdir_struct($dir)) {
 				last if defined $limit && $#files>=$limit;
@@ -111,8 +106,6 @@ sub readDir {
 		} else {
 			warn("Cannot open dir $url");
 		}
-	} else {
-		warn("Unknown URI $base: _getSmbURL="._getSmbURL($base));
 	}
 	$self->_setCacheEntry('readDir:list',$base,\@files);
 	return \@files;
@@ -131,11 +124,15 @@ sub isFile {
 }
 sub isDir {
 	my ($self, $file) = @_;
-	return _isRoot($file) || _isShare($file) || _getType($self, $file) == $$self{smb}->SMBC_DIR;
+	return $self->_existsCacheEntry('isDir', $file) 
+			?  $self->_getCacheEntry('isDir', $file) 
+			: $self->_setCacheEntry('isDir', $file, _isRoot($file) || _isShare($file) || _getType($self, $file) == $$self{smb}->SMBC_DIR);
 }
 sub isLink {
 	my ($self, $file) = @_;
-	return !_isRoot($file) && !_isShare($file) &&  _getType($self, $file) == $$self{smb}->SMBC_LINK;
+	return $self->_existsCacheEntry('isLink',$file) 
+			? $self->_getCacheEntry('isLink', $file)
+			:!_isRoot($file) && !_isShare($file) &&  _getType($self, $file) == $$self{smb}->SMBC_LINK;
 }
 
 sub isEmpty {
@@ -148,7 +145,7 @@ sub isEmpty {
 sub stat {
 	my ($self, $file) = @_;
 
-	return @{$self->_getCacheEntry('stat',$file)} if $self->_getCacheEntry('stat',$file);
+	return @{$self->_getCacheEntry('stat',$file)} if $self->_existsCacheEntry('stat',$file);
 
 	my @stat;
 	my $time = time();
@@ -156,7 +153,7 @@ sub stat {
 		@stat = (0,0,0755,0,0,0,0,0,$time,$time,$time,0,0);
 	} else {
 		if ($file=~/^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E.*$/) {
-			@stat = $$self{smb}->stat(_getSmbURL($file));
+			@stat = $$self{smb}->stat($self->_getSmbURL($file));
 			if ($#stat>0) {
 				my ( @a ) = splice(@stat,8,2);
 				push @stat, @a;
@@ -178,7 +175,7 @@ sub lstat {
 
 sub copy {
 	my ($self, $src, $dst) = @_;
-	if ( (my $srcfh=$$self{smb}->open('<'._getSmbURL($src))) && (my $dstfh=$$self{smb}->open('>'._getSmbURL($dst), 07777 ^ $main::UMASK))) {
+	if ( (my $srcfh=$$self{smb}->open('<'.$self->_getSmbURL($src))) && (my $dstfh=$$self{smb}->open('>'.$self->_getSmbURL($dst), 07777 ^ $main::UMASK))) {
 		while (my $buffer = $$self{smb}->read($srcfh, $main::BUFSIZE || 1048576)) {
 			$$self{smb}->write($dstfh, $buffer);
 		}
@@ -192,7 +189,7 @@ sub printFile {
 	my ($self, $file, $fh) = @_;
 
 	$fh = \*STDOUT unless defined $fh;
-	if (my $rd = $$self{smb}->open(_getSmbURL($file))) {
+	if (my $rd = $$self{smb}->open($self->_getSmbURL($file))) {
 		while (my $buffer = $$self{smb}->read($rd, $main::BUFSIZE || 1048576)) {
 			print $fh $buffer;
 		}
@@ -204,7 +201,7 @@ sub printFile {
 sub saveStream {
 	my ($self, $path, $fh) = @_;
 
-	if (my $rd = $$self{smb}->open(">"._getSmbURL($path))) {
+	if (my $rd = $$self{smb}->open(">".$self->_getSmbURL($path))) {
 		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
 			$$self{smb}->write($rd, $buffer);
 		}
@@ -215,11 +212,11 @@ sub saveStream {
 }
 sub saveData {
 	#my ($self, $path, $data, $append) = @_;
-	if (my $rd = $_[0]{smb}->open('>'.($_[3]? '>':'')._getSmbURL($_[1]))) {
+	if (my $rd = $_[0]{smb}->open('>'.($_[3]? '>':'').$_[0]->_getSmbURL($_[1]))) {
 		$_[0]{smb}->write($rd, $_[2]);
 		$_[0]{smb}->close($rd);
-		$_[0]->_removeCacheEntry('readDir',$_[0]->getParent($_[1]));
-		$_[0]->_removeCacheEntry('stat',$_[1]);
+		$_[0]->_removeCacheEntry($_[0]->getParent($_[1]));
+		$_[0]->_removeCacheEntry($_[1]);
 		return 1;
 	}
 	return 0;
@@ -237,7 +234,7 @@ sub getLocalFilename {
 }
 sub getFileContent {
 	my $content;
-	if (my $fh = $_[0]{smb}->open("<"._getSmbURL($_[1]))) {
+	if (my $fh = $_[0]{smb}->open("<".$_[0]->_getSmbURL($_[1]))) {
 		$content = "";
 		while (my $buffer = $_[0]{smb}->read($fh, $main::BUFSIZE || 1048576))  {
 			$content.=$buffer;
@@ -248,7 +245,9 @@ sub getFileContent {
 }
 sub isReadable {
 	my ($self, $file) = @_;
-	return _isRoot($file) || _isShare($file) || $self->exists($file);
+	return $self->_existsCacheEntry('isReadable', $file) 
+			? $self->_getCacheEntry('isReadable',$file) 
+			: $self->_setCacheEntry('isReadable',$file,_isRoot($file) || _isShare($file) || $self->exists($file));
 }
 sub isWriteable {
 	my ($self, $file) = @_;
@@ -267,13 +266,12 @@ sub exists {
 
 sub mkcol {
 	my ($self, $file) = @_;
-	return $$self{smb}->mkdir(_getSmbURL($file),$main::UMASK);
+	return $$self{smb}->mkdir($self->_getSmbURL($file),$main::UMASK);
 }
 sub unlinkFile {
 	my ($self, $file) = @_;
-	my $ret = $self->isDir($file) ? $$self{smb}->rmdir_recurse(_getSmbURL($file)) : $$self{smb}->unlink(_getSmbURL($file));
-	$self->_removeCacheEntry('readDir', $file) if $ret;
-	$self->_removeCacheEntry('stat', $file) if $ret;
+	my $ret = $self->isDir($file) ? $$self{smb}->rmdir_recurse($self->_getSmbURL($file)) : $$self{smb}->unlink($self->_getSmbURL($file));
+	$self->_removeCacheEntry($file) if $ret;
 	return $ret;
 }
 sub deltree {
@@ -282,7 +280,7 @@ sub deltree {
 }
 sub rename {
 	my ($self, $on, $nn) = @_;
-	return $$self{smb}->rename(_getSmbURL($on), _getSmbURL($nn));
+	return $$self{smb}->rename($self->_getSmbURL($on), $self->_getSmbURL($nn));
 }
 sub resolve {
         my ($self, $fn) = @_;
@@ -306,12 +304,12 @@ sub getDisplayName {
 			$name = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{_USERNAME_};
 		} else {
 			$name = $self->basename($file);
-			my $comment = $self->_getCacheEntry('readDir',$file) && exists ${$self->_getCacheEntry('readDir',$file)}{comment} ? ${$self->_getCacheEntry('readDir',$file)}{comment} : '';
+			my $comment = $self->_existsCacheEntry('readDir',$file) && exists ${$self->_getCacheEntry('readDir',$file)}{comment} ? ${$self->_getCacheEntry('readDir',$file)}{comment} : '';
 			$name = $name." ( ".${$self->_getCacheEntry('readDir',$file)}{comment}.")" if $comment ne "";
 			$name.="/";
 		}
 	}
-	$name = $self->basename($file) . ($self->isDir($file) ? '/':'') unless $name || $self->basename($file) eq '/';
+	$name = $self->basename($file) . (!$self->_existsCacheEntry('readDir',$file) || $self->isDir($file) ? '/':'') unless $name || $self->basename($file) eq '/';
 	return $name ? $name :  $file;
 }
 
@@ -349,26 +347,32 @@ sub _isShare {
 sub _getType {
 	my ($self, $file) = @_;
 	my $type;
-	if (!$self->_getCacheEntry('readDir',$file)) {
+	if (!$self->_existsCacheEntry('readDir',$file)) {
 		$self->readDir($self->getParent($file).'/');
 	}
 	
-	$type = ${$self->_getCacheEntry('readDir',$file)}{type} if $self->_getCacheEntry('readDir', $file);
+	$type = ${$self->_getCacheEntry('readDir',$file)}{type} if $self->_existsCacheEntry('readDir', $file);
 	return $type || 0;
 }
 sub _getCacheEntry {
 	my ($self, $id, $file) = @_;
-	return exists $CACHE{$self}{$id} && exists $CACHE{$self}{$id}{_stripTrailingSlash($file)} 
-			? $CACHE{$self}{$id}{_stripTrailingSlash($file)} 
-			: 0;
+	$file=~s/\/$//;
+	return $CACHE{$self}{$file}{$id};
 }
 sub _setCacheEntry {
 	my ($self, $id, $file, $value) = @_;
-	$CACHE{$self}{$id}{_stripTrailingSlash($file)} = $value;
+	$file=~s/\/$//;
+	return $CACHE{$self}{$file}{$id} = $value;
 }
 sub _removeCacheEntry {
+	my ($self, $file) = @_;
+	$file=~s/\/$//;
+	delete $CACHE{$self}{$file};
+}
+sub _existsCacheEntry {
 	my ($self, $id, $file) = @_;
-	delete $CACHE{$self}{$id}{_stripTrailingSlash($file)};
+	$file=~s/\/$//;
+	return exists $CACHE{$self}{$file} && exists $CACHE{$self}{$file}{$id};
 }
 sub _getPathInfo {
 	my ($file) = @_;
@@ -381,17 +385,12 @@ sub _getPathInfo {
 }
 
 sub _getSmbURL {
-	my ($file) = @_;
+	my ($self, $file) = @_;
 	my $url = $file;
 	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E(.*)$/) {
 		$url="smb://$1/$2";
 	}
 	return $url;
-}
-sub _stripTrailingSlash {
-	my ($file ) = @_;
-	$file=~s/\/$//;
-	return $file;
 }
 sub changeFilePermissions {
 	return 0;

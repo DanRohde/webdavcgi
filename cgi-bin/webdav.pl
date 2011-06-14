@@ -1,5 +1,4 @@
-#!/usr/bin/perl
-###!/usr/bin/perl 
+#!/usr/bin/perl 
 ###!/usr/bin/speedy  -- -r20 -M5
 ###!/usr/bin/perl -d:NYTProf
 #########################################################################
@@ -700,8 +699,6 @@ use URI::Escape;
 use UUID::Tiny;
 use Digest::MD5;
 
-use IO::Compress::Gzip qw(gzip);
-use IO::Compress::Deflate qw(deflate);
 
 $method = $cgi->request_method();
 
@@ -720,9 +717,6 @@ $config->setProperty('utils',$utils);
  
 umask $UMASK;
 
-## read mime.types file once:
-readMIMETypes($MIMEFILE) if defined $MIMEFILE;
-$MIMEFILE=undef;
 
 ## supported DAV compliant classes:
 our $DAV='1';
@@ -1033,10 +1027,18 @@ sub _GET {
 		my @stat = $backend->stat($fn);
 		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, "<".$backend->getLocalFilename($fn))) {
 				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate');
+				my $c;
 				if ($enc =~ /gzip/i) {
-					gzip $F => \*STDOUT;
+					require IO::Compress::Gzip;
+					$c = new IO::Compress::Gzip(\*STDOUT);
 				} elsif ($enc =~ /deflate/i) {
-					deflate $F => \*STDOUT;
+					require IO::Compress::Deflate;
+					$c = new IO::Compress::Deflate(\*STDOUT);
+				}
+				if ($c) {
+					while (read($F,my $buffer, $BUFSIZE || 1048576)) {
+						$c->write($buffer);
+					}
 				}
 				close($F);
 		} else {
@@ -2148,10 +2150,14 @@ sub printCompressedHeaderAndContent {
 		my $orig = $content;
 		$addHeader ="" unless defined $addHeader;
 		if ($enc =~ /gzip/i) {
-			gzip \$orig => \$content;	
+			require IO::Compress::Gzip;
+			my $g = new IO::Compress::Gzip(\$content);
+			$g->write($orig);
 			$addHeader.="\r\nContent-Encoding: gzip";
 		} elsif ($enc =~ /deflate/i) {
-			deflate \$orig => \$content;
+			require IO::Compress::Deflate;
+			my $d = new IO::Compress::Deflate(\$content);
+			$d->write($orig);
 			$addHeader.="\r\nContent-Encoding: deflate";
 		}
 	}
@@ -2512,6 +2518,9 @@ sub readMIMETypes {
 }
 sub getMIMEType {
 	my ($filename) = @_;
+	## read mime.types file once:
+	readMIMETypes($MIMEFILE) if defined $MIMEFILE;
+	$MIMEFILE=undef;
 	my $extension= 'default';
 	if ($filename=~/\.([^\.]+)$/) {
 		$extension=lc($1);
