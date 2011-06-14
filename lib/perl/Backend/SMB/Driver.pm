@@ -259,7 +259,7 @@ sub isExecutable {
 }
 sub exists {
 	my ($self, $file) = @_;
-	return 1 if _isRoot($file) || _isShare($file);
+	return 1 if _isRoot($file) || _isShare($file) || $self->_existsCacheEntry('readDir', $file);
 	my @stat = $self->stat($file);
 	return $#stat > 0;
 }
