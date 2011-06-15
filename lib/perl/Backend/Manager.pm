@@ -20,16 +20,9 @@ package Backend::Manager;
 
 use strict;
 
-require Exporter;
-
 use Module::Load;
 
-our @ISA = qw( Exporter );
-
 our $VERSION = 0.1;
-
-our @EXPORT_OK = qw ( new getBackend);
-
 
 our %BACKENDS;
 

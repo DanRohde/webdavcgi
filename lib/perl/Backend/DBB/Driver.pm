@@ -21,7 +21,6 @@ package Backend::DBB::Driver;
 
 use strict;
 #use warnings;
-use Data::Dumper;
 
 use Backend::FS::Driver;
 our @ISA = qw( Backend::FS::Driver );
