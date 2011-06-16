@@ -45,7 +45,7 @@ mcheck() {
 			MISSINGMODULES="$MISSINGMODULES $module"
 		fi
 		CHECKEDMODULES="$CHECKEDMODULES $module"
-		echo "  $module: $out"
+		echo "  $module $out"
 	done
 }
 
@@ -56,7 +56,7 @@ bcheck() {
 			out='--- NOT INSTALLED ----'
 			MISSINGBINARIES="$MISSINGBINARIES $binary"
 		fi
-		echo "  $binary: $out"
+		echo "  $binary $out"
 	done
 }
 
