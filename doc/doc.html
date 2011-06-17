@@ -725,6 +725,8 @@ Requirements:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi/';
 
+$BACKEND='GFS';
+
 $DOCUMENT_ROOT = '/mygfsmountpoint/';
 $VIRTUAL_BASE = '/';
 
@@ -997,7 +999,7 @@ All binaries found.
 <li> Check your database setup (<code>$DBI_SRC</code>, <code>$DBI_USER</code>, <code>$DBI_PASS</code>).</li>
 <li> Call webdav.pl from a shell:
 <pre>
-#&gt; ./webdav.pl
+#&gt; env WEBDAVCONF=/etc/webdav.conf perl -I/etc/webdavcgi/lib/perl webdav.pl 
 DAV: 1, 2, 3, &lt;http://apache.org/dav/propset/fs/1&gt;, extended-mkcol, access-control, calendar-access, calendarserver-private-comments, calendar-auto-schedule, addressbook, bind
 MS-Author-Via: DAV
 Status: 404 Not Found
