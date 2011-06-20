@@ -22,6 +22,8 @@ package WebInterface;
 use strict;
 #use warnings;
 
+use WebInterface::Extension::Manager;
+
 sub new {
        my $this = shift;
        my $class = ref($this) || $this;
@@ -32,6 +34,7 @@ sub new {
        $$self{db}=shift;
        $$self{cgi} = $$self{config}->getProperty('cgi');
        $$self{backend} = $$self{config}->getProperty('backend');
+       $$self{config}{extensions} = new WebInterface::Extension::Manager($$self{config}, $$self{db});
        return $self;
 }
 sub handleGetRequest {
@@ -41,8 +44,11 @@ sub handleGetRequest {
 	my $handled = 1;
 	my $action = $$self{cgi}->param('action') || '_undef_';
 
-	if ($main::ENABLE_SYSINFO && $fn =~/\/sysinfo.html\/?$/) {
-                $self->getRenderer()->renderSysInfo();
+	my $retByExt = $$self{config}{extensions}->handle('gethandler', $$self{config});
+	my $handledByExt = $retByExt ?  join('',@{$retByExt}) : '';
+
+	if ($handledByExt =~ /1/) {
+		## done.
         } elsif ($fn =~ /\/webdav-ui(-custom)?\.(js|css)\/?$/ || $fn =~ /\Q$main::VHTDOCS\E(.*)$/)  {
                 $self->getRenderer()->printStylesAndVHTOCSFiles($fn);
         } elsif ($main::ENABLE_DAVMOUNT && $action eq 'davmount' && $$self{backend}->exists($fn)) {
@@ -55,8 +61,6 @@ sub handleGetRequest {
                 $self->getRenderer()->printOpenSearch();
         } elsif ($main::ENABLE_THUMBNAIL && $action eq 'thumb' && $$self{backend}->isReadable($fn) && $$self{backend}->isFile($fn)) {
                 $self->getRenderer()->printThumbnail($fn);
-        } elsif ($main::ENABLE_PROPERTIES_VIEWER && $action eq 'props' && $$self{backend}->exists($fn)) {
-                $self->getRenderer()->renderPropertiesViewer($fn, $ru);
         } elsif ($$self{backend}->isDir($fn)) {
                 $self->getRenderer()->renderWebInterface($fn,$ru);
 	} else {

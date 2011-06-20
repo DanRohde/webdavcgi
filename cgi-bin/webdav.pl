@@ -65,10 +65,10 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    $LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
-            $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
-            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
+            $ENABLE_SIDEBAR $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
-	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS
+	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -285,11 +285,6 @@ $PAGE_LIMIT=15;
 ## enables bookmark support in the Web interface (cookie/javascript based)
 ## EXAMPLE: $ENABLE_BOOKMARKS = 1;
 $ENABLE_BOOKMARKS = 1;
-
-## -- ENABLE_PROPERTIES_VIEWER
-## enables the WebDAV properties viewer in the Web interface
-## DEFAULT: $ENABLE_PROPERTIES_VIEWER = 0;
-$ENABLE_PROPERTIES_VIEWER = 0;
 
 ## -- ENABLE_SIDEBAR
 ## enables the sidebar view; you get the classic view only if you disable this:
@@ -666,10 +661,11 @@ $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 ## you can find the debug output in your web server error log
 $DEBUG = 0;
 
-## -- ENABLE_SYSINFO
-## enables sysinfo.html (only useful for debugging)
-## just call /<my virtual path>/sysinfo.html to system information
-$ENABLE_SYSINFO = $DEBUG;
+## -- EXTENSIONS
+## a list of Web interface extensions:
+## supported: 'SysInfo', 'PropertiesViewer'
+## EXAMPLE: @EXTENSIONS = ( 'SysInfo' , 'PropertiesViewer' );
+#@EXTENSIONS = ( 'SysInfo' );
 
 ############  S E T U P - END ###########################################
 #########################################################################

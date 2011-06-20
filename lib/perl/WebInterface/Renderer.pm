@@ -49,54 +49,6 @@ sub new {
 	return $self;
 }
 
-sub renderPropertiesViewer {
-        my ($self, $fn, $ru) = @_;
-        $self->setLocale();
-        my $content = "";
-        $content .= $self->start_html("$main::TITLEPREFIX $ru properties");
-        $content .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
-        $content .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
-        my $fullparent = main::getParentURI($ru) .'/';
-        $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
-        $content .=$$self{cgi}->h2( { -class=>'foldername' }, ($$self{backend}->isDir($fn) ? $self->getQuickNavPath($fn,$ru)
-                                    : $self->getQuickNavPath($$self{backend}->getParent($fn), $fullparent)
-                                       .' '.$$self{cgi}->a({-href=>$ru}, main::getBaseURIFrag($ru))
-                              ). $self->tl('properties'));
-        $content .= $$self{cgi}->br().$$self{cgi}->a({href=>$ru,title=>$self->tl('clickforfullsize')},$$self{cgi}->img({-src=>$ru.($main::ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($main::ENABLE_THUMBNAIL?$main::THUMBNAIL_WIDTH:200)})) if $self->hasThumbSupport(main::getMIMEType($fn));
-        $content .= $$self{cgi}->start_table({-class=>'props'});
-        local(%main::NAMESPACEELEMENTS);
-        my $dbprops = $$self{db}->db_getProperties($fn);
-        my @bgstyleclasses = ( 'tr_odd', 'tr_even');
-        my (%visited);
-        $content.=$$self{cgi}->Tr({-class=>'trhead'}, $$self{cgi}->th({-class=>'thname'},$self->tl('propertyname')), $$self{cgi}->th({-class=>'thvalue'},$self->tl('propertyvalue')));
-        foreach my $prop (sort {main::nonamespace(lc($a)) cmp main::nonamespace(lc($b)) } keys %{$dbprops},$$self{backend}->isDir($fn) ? @main::KNOWN_COLL_PROPS : @main::KNOWN_FILE_PROPS ) {
-                my (%r200);
-                next if exists $visited{$prop} || exists $visited{'{'.main::getNameSpaceUri($prop).'}'.$prop};
-                if (exists $$dbprops{$prop}) {
-                        $r200{prop}{$prop}=$$dbprops{$prop};
-                } else {
-                        main::getPropertyModule()->getProperty($fn, $ru, $prop, undef, \%r200, \my %r404);
-                }
-                $visited{$prop}=1;
-                $main::NAMESPACEELEMENTS{main::nonamespace($prop)}=1;
-                my $title = main::createXML($r200{prop},1);
-                my $value = main::createXML($r200{prop}{$prop},1);
-                my $namespace = main::getNameSpaceUri($prop);
-                if ($prop =~ /^\{([^\}]*)\}/) {
-                        $namespace = $1;
-                }
-                push @bgstyleclasses,  shift @bgstyleclasses;
-                $content.= $$self{cgi}->Tr( {-class=>$bgstyleclasses[0] },
-                         $$self{cgi}->td({-title=>$namespace, -class=>'tdname'},main::nonamespace($prop))
-                        .$$self{cgi}->td({-title=>$title, -class=>'tdvalue' }, $$self{cgi}->pre($$self{cgi}->escapeHTML($value)))
-                        );
-        }
-        $content.=$$self{cgi}->end_table();
-        $content.=$$self{cgi}->hr().$$self{cgi}->div({-class=>'signature'},$self->replaceVars($main::SIGNATURE)) if defined $main::SIGNATURE;
-        $content.=$$self{cgi}->end_html();
-        main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
-}
-
 sub hasThumbSupport {
         my ($self,$mime) = @_;
         return 1 if $mime =~ /^image\// || $mime =~ /^text\/plain/ || ($main::ENABLE_THUMBNAIL_PDFPS && $mime =~ /^application\/(pdf|ps)$/);
@@ -334,8 +286,8 @@ sub renderWebInterface {
                 ##$head .= $$self{cgi}->div({-id=>'notreadable', -onclick=>'fadeOut("notreadable");',-class=>'notreadable msg'},  $self->tl('foldernotreadable')) if !$$self{backend}->isReadable($fn);
                 $head .= $$self{cgi}->div({-id=>'filtered', -onclick=>'fadeOut("filtered");', -class=>'filtered msg', -title=>$main::FILEFILTERPERDIR{$fn}}, $self->tl('folderisfiltered', $main::FILEFILTERPERDIR{$fn} || ($main::ENABLE_NAMEFILTER ? $$self{cgi}->param('namefilter') : undef) )) if $main::FILEFILTERPERDIR{$fn} || ($main::ENABLE_NAMEFILTER && $$self{cgi}->param('namefilter'));
                 $head .= $$self{cgi}->div( { -class=>'foldername'},
-                        $$self{cgi}->a({-href=>$ru.($main::ENABLE_PROPERTIES_VIEWER ? '?action=props' : '')},
-                                        $$self{cgi}->img({-src=>$self->getIcon('<folder>'),-title=>$main::ENABLE_PROPERTIES_VIEWER?$self->tl('showproperties'):$ru, -alt=>'folder'})
+                        $$self{cgi}->a({-href=>$ru},
+                                        $$self{cgi}->img({-src=>$self->getIcon('<folder>'),-title=>$ru, -alt=>'folder'})
                                 )
                         .($main::ENABLE_DAVMOUNT ? '&nbsp;'.$$self{cgi}->a({-href=>'?action=davmount',-class=>'davmount',-title=>$self->tl('mounttooltip')},$self->tl('mount')) : '')
                         .' '
@@ -835,16 +787,16 @@ sub renderFileActionsWithIcons {
         my %attr= ();
         my %disabled = ();
         my @actions = ('edit','rename','zip','delete');
+        my %labels = ( rename=>$self->tl('movefilesbutton'),edit=>$self->tl('editbutton'),delete=>$self->tl('deletefilesbutton'), zip=>$self->tl('zipdownloadbutton'));
         delete $actions[2] unless $main::ALLOW_ZIP_DOWNLOAD;
-        push @actions, 'props' if $main::ENABLE_PROPERTIES_VIEWER;
-        my %labels = ( rename=>$self->tl('movefilesbutton'),edit=>$self->tl('editbutton'),delete=>$self->tl('deletefilesbutton'), zip=>$self->tl('zipdownloadbutton'), props=>$self->tl('showproperties') );
+	my $extactions = $$self{config}{extensions}->handle('fileaction', { path=>$full });
+	map { push @actions, $$_{action}; $labels{$$_{action}}=$self->tl($$_{label}); $disabled{$$_{action}}=$$_{disabled};  }  @{$extactions};
         if (! $$self{backend}->isWriteable($full)) {
                 $disabled{rename}=1;
                 $disabled{delete}=1;
         }
         if (! $$self{backend}->isReadable($full)) {
                 $disabled{zip}=1;
-                $disabled{props}=1 if $main::ENABLE_PROPERTIES_VIEWER;
         }
         if ($main::ALLOW_EDIT) {
                 my $ef = '('.join('|',@main::EDITABLEFILES).')';
@@ -871,17 +823,18 @@ sub renderFileActionsWithSelect {
         my ($self,$fid, $file, $full) = @_;
         my @values = ('--','rename','edit','zip','delete');
         delete $values[3] unless $main::ALLOW_ZIP_DOWNLOAD;
-
-        my %labels = ( '--'=> '', rename=>$self->tl('movefilesbutton'),edit=>$self->tl('editbutton'),delete=>$self->tl('deletefilesbutton'), zip=>$self->tl('zipdownloadbutton'), props=>$self->tl('showproperties') );
+        my %labels = ( '--'=> '', rename=>$self->tl('movefilesbutton'),edit=>$self->tl('editbutton'),delete=>$self->tl('deletefilesbutton'), zip=>$self->tl('zipdownloadbutton') );
         my %attr;
-        push @values, 'props' if $main::ENABLE_PROPERTIES_VIEWER;
+
+	my $extactions = $$self{config}{extensions}->handle('fileaction', { path=>$full });
+	map { push @values, $$_{action}; $labels{$$_{action}}=$self->tl($$_{label}); $attr{$$_{action}}{disabled}='disabled' if $$_{disabled};  }  @{$extactions};
+
         if (! $$self{backend}->isWriteable($full)) {
                 $attr{rename}{disabled}='disabled';
                 $attr{delete}{disabled}='disabled';
         }
         if (! $$self{backend}->isReadable($full)) {
                 $attr{zip}{disabled}='disabled';
-                $attr{props}{disabled}='disabled' if $main::ENABLE_PROPERTIES_VIEWER;
         }
 
         if ($main::ALLOW_EDIT) {
@@ -1516,64 +1469,6 @@ sub filter {
         }
         return $ret;
 }
-sub renderSysInfo {
-	my $self = shift;
-        my $i = "";
-        $i.= $self->start_html("$main::TITLEPREFIX SysInfo");
-
-        $i.= $$self{cgi}->h1('WebDAV CGI SysInfo');
-        $i.= $$self{cgi}->h2('Process - '.$0);
-        $i.= $$self{cgi}->start_table()
-             .$$self{cgi}->Tr($$self{cgi}->td('BASETIME').$$self{cgi}->td(''.localtime($^T)))
-             .$$self{cgi}->Tr($$self{cgi}->td('OSNAME').$$self{cgi}->td($^O))
-             .$$self{cgi}->Tr($$self{cgi}->td('PID').$$self{cgi}->td($$))
-             .$$self{cgi}->Tr($$self{cgi}->td('REAL UID').$$self{cgi}->td($<))
-             .$$self{cgi}->Tr($$self{cgi}->td('EFFECTIVE UID').$$self{cgi}->td($>))
-             .$$self{cgi}->Tr($$self{cgi}->td('REAL GID').$$self{cgi}->td($())
-             .$$self{cgi}->Tr($$self{cgi}->td('EFFECTIVE GID').$$self{cgi}->td($)))
-
-             .$$self{cgi}->end_table();
-        $i.= $$self{cgi}->h2('Perl');
-        $i.= $$self{cgi}->start_table()
-                .$$self{cgi}->Tr($$self{cgi}->td('version').$$self{cgi}->td(sprintf('%vd',$^V)))
-                .$$self{cgi}->Tr($$self{cgi}->td('debugging').$$self{cgi}->td($^D))
-                .$$self{cgi}->Tr($$self{cgi}->td('taint mode').$$self{cgi}->td(${^TAINT}))
-                .$$self{cgi}->Tr($$self{cgi}->td('unicode').$$self{cgi}->td(${^UNICODE}))
-                .$$self{cgi}->Tr($$self{cgi}->td('warning').$$self{cgi}->td($^W))
-                .$$self{cgi}->Tr($$self{cgi}->td('executable name').$$self{cgi}->td($^X))
-                .$$self{cgi}->end_table();
-        $i.= $$self{cgi}->h2('Perl Variables');
-        $i.= $$self{cgi}->start_table()
-                .$$self{cgi}->Tr($$self{cgi}->td('@INC').$$self{cgi}->td(join(" ",@INC)))
-                .$$self{cgi}->end_table();
-
-        $i.= $$self{cgi}->h2('Includes');
-        $i.= $$self{cgi}->start_table();
-        foreach my $e (sort keys %INC) {
-                $i.=$$self{cgi}->Tr($$self{cgi}->td($e).$$self{cgi}->td($ENV{$e}));
-        }
-        $i.= $$self{cgi}->end_table();
-
-        $i.= $$self{cgi}->h2('System Times');
-        my ($user,$system,$cuser,$csystem) = times;
-        $i.=  $$self{cgi}->start_table()
-             .$$self{cgi}->Tr($$self{cgi}->td('user (s)').$$self{cgi}->td($user))
-             .$$self{cgi}->Tr($$self{cgi}->td('system (s)').$$self{cgi}->td($system))
-             .$$self{cgi}->Tr($$self{cgi}->td('cuser (s)').$$self{cgi}->td($cuser))
-             .$$self{cgi}->Tr($$self{cgi}->td('csystem (s)').$$self{cgi}->td($csystem))
-             .$$self{cgi}->end_table();
-        $i.= $$self{cgi}->h2('Environment');
-        $i.= $$self{cgi}->start_table();
-        foreach my $e (sort keys %ENV) {
-                $i.=$$self{cgi}->Tr($$self{cgi}->td($e).$$self{cgi}->td($ENV{$e}));
-        }
-        $i.= $$self{cgi}->end_table();
-
-        $i.=$$self{cgi}->end_html();
-
-	main::printHeaderAndContent('200 OK', 'text/html', $i);
-}
-
 sub cmp_strings {
 	$CACHE{$_[0]}{cmp_strings}{$_[1]} = substr($_[1],0,1) unless exists $CACHE{$_[0]}{cmp_strings}{$_[1]};
 	$CACHE{$_[0]}{cmp_strings}{$_[2]} = substr($_[2],0,1) unless exists $CACHE{$_[0]}{cmp_strings}{$_[2]};

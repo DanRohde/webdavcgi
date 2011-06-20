@@ -182,6 +182,9 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB', 'DBB') </li>
 <li> <code>$SHOW_MIME</code> and <code>$SHOW_PERM</code> were removed: use the new options <code>@ALLOWED_TABLE_COLUMNS</code> and <code>@VISIBLE_TABLE_COLUMNS</code> instead</li>
 <li> <code>%MIMETYPES</code> format was changed: only a single filename suffix is allowed as a key (instead of a space separted list of suffixes); please use <code>$MIMEFILE</code> instead</li>
+<li> <code>@EXTENSIONS</code> parameter was added: contains a list of extensions </li>
+<li> <code>$ENABLE_SYSINFO</code> was removed: add <code>'SysInfo'</code> to the <code>@EXTENSIONS</code> list</li>
+<li> <code>$ENABLE_PROPERTIES_VIEWER</code> was removed: add <code>'PropertiesViewer'</code> to the <code>@EXTENSIONS</code> list</li>
 </ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>

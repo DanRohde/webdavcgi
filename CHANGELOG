@@ -12,6 +12,7 @@
 	   - added view filter (GET)
 	   - added list options (GET)
 	   - added quota limit exceeded highlighting (GET)
+	   - added extension support (GET)
      - improved performance with the NYT profiler
 
 0.7.0: 2011/29/04
