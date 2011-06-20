@@ -358,10 +358,10 @@ sub renderWebInterface {
 					$exceeded = 'warn';
 				}
 				if ($exceeded) {
-					$style='color: '.$main::QUOTA_LIMITS{$exceeded}{limit}{color} 
-						if exists $main::QUOTA_LIMITS{$exceeded}{limit}{color};
-					$style.=';background-color: '.$main::QUOTA_LIMITS{$exceeded}{limit}{background} 
-							if exists $main::QUOTA_LIMITS{$exceeded}{limit}{background};
+					$style='color: '.$main::QUOTA_LIMITS{$exceeded}{color} 
+						if exists $main::QUOTA_LIMITS{$exceeded}{color};
+					$style.=';background-color: '.$main::QUOTA_LIMITS{$exceeded}{background} 
+							if exists $main::QUOTA_LIMITS{$exceeded}{background};
 				}
                                 $head.= $$self{cgi}->div({-class=>'quota'},
                                                                 $self->tl('quotalimit').$$self{cgi}->span({-title=>$ql_t}, $ql_v)
