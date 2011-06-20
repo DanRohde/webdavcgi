@@ -11,6 +11,8 @@
 	   - added symbolic link support (POST)
 	   - added view filter (GET)
 	   - added list options (GET)
+	   - added quota limit exceeded highlighting (GET)
+     - improved performance with the NYT profiler
 
 0.7.0: 2011/29/04
      - fixed major search bug (SEARCH; thx jfotop@ath.forthnet.gr)

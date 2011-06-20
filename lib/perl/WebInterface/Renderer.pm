@@ -350,10 +350,22 @@ sub renderWebInterface {
                                 my ($ql_v, $ql_t ) = renderByteValue($ql,2,2);
                                 my ($qu_v, $qu_t ) = renderByteValue($qu,2,2);
                                 my ($qa_v, $qa_t ) = renderByteValue($ql-$qu,2,2);
-
+				my $style = '';
+				my $exceeded;
+				if ($ql>0 && $qu  / $ql <= $main::QUOTA_LIMITS{critical}{limit}) {
+					$exceeded = 'critical';
+				} elsif ($ql>0 && $qu / $ql <= $main::QUOTA_LIMITS{warn}{limit}) {
+					$exceeded = 'warn';
+				}
+				if ($exceeded) {
+					$style='color: '.$main::QUOTA_LIMITS{$exceeded}{limit}{color} 
+						if exists $main::QUOTA_LIMITS{$exceeded}{limit}{color};
+					$style.=';background-color: '.$main::QUOTA_LIMITS{$exceeded}{limit}{background} 
+							if exists $main::QUOTA_LIMITS{$exceeded}{limit}{background};
+				}
                                 $head.= $$self{cgi}->div({-class=>'quota'},
                                                                 $self->tl('quotalimit').$$self{cgi}->span({-title=>$ql_t}, $ql_v)
-                                                                .$self->tl('quotaused').$$self{cgi}->span({-title=>$qu_t}, $qu_v)
+                                                                .$self->tl('quotaused').$$self{cgi}->span({-title=>$qu_t,-style=>$style}, $qu_v)
                                                                 .$self->tl('quotaavailable').$$self{cgi}->span({-title=>$qa_t},$qa_v));
                         }
                 }

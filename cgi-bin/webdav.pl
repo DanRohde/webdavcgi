@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $ENABLE_SIDEBAR $VIEW $ENABLE_PROPERTIES_VIEWER $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $ENABLE_SYSINFO $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
-	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS 
+	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -317,6 +317,11 @@ $POST_MAX_SIZE = 1073741824;
 ## enables/disables quota information for fancy indexing
 ## DEFAULT: $SHOW_QUOTA = 0;
 $SHOW_QUOTA = 1;
+
+## -- QUOTA_LIMITS 
+## defines warn limit and critical limit with colors 
+%QUOTA_LIMITS = ( 'warn' => { limit=>0.02, background=>'yellow',  },
+                  'critical'=> { limit=>0.01, color=>'yellow', background => 'red'} );
 
 ## -- @ALLOWED_TABLE_COLUMNS
 ## defines the allowed columns for the file list in the Web interface
