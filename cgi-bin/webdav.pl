@@ -1,4 +1,4 @@
-#!/usr/bin/perl  -d:NYTProf
+#!/usr/bin/perl
 ###!/usr/bin/speedy  -- -r20 -M5
 ###!/usr/bin/perl -d:NYTProf
 #########################################################################
