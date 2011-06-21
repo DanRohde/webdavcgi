@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl  -d:NYTProf
 ###!/usr/bin/speedy  -- -r20 -M5
 ###!/usr/bin/perl -d:NYTProf
 #########################################################################
@@ -2119,22 +2119,13 @@ sub getETag {
 	return '"'.$digest->hexdigest().'"';
 }
 sub printHeaderAndContent {
-	my ($status, $type, $content, $addHeader) = @_;
+	my ($status, $type, $content, $addHeader, $cookies) = @_;
 
 	$status='403 Forbidden' unless defined $status;
 	$type='text/plain' unless defined $type;
 	$content="" unless defined $content;
 
-	my @cookies;
-	@cookies  = ( 
-		$cgi->cookie(-name=>'lang',-value=>$LANG,-expires=>'+10y'),
-		$cgi->cookie(-name=>'showall',-value=>$cgi->param('showpage') ? 0 : ($cgi->param('showall') || $cgi->cookie('showall') || 0), -expires=>'+10y'),
-		$cgi->cookie(-name=>'order',-value=>$ORDER, -expires=>'+10y'),
-		$cgi->cookie(-name=>'pagelimit',-value=>$PAGE_LIMIT, -expires=>'+10y'),
-		$cgi->cookie(-name=>'view',-value=>$VIEW, -expires=>'+10y'),
-	) if $cgi->request_method() =~ /^(GET|POST)$/;
-
-	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>\@cookies );
+	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies );
 
 	$header = "MS-Author-Via: DAV\r\n$header";
 	$header = "DAV: $DAV\r\n$header";
@@ -2146,7 +2137,7 @@ sub printHeaderAndContent {
 	print $content;
 }
 sub printCompressedHeaderAndContent {
-	my ($status, $type, $content, $addHeader) = @_;
+	my ($status, $type, $content, $addHeader, $cookies) = @_;
 	if ($ENABLE_COMPRESSION && (my $enc = $cgi->http('Accept-Encoding'))) {
 		my $orig = $content;
 		$addHeader ="" unless defined $addHeader;
@@ -2162,7 +2153,7 @@ sub printCompressedHeaderAndContent {
 			$addHeader.="\r\nContent-Encoding: deflate";
 		}
 	}
-	printHeaderAndContent($status, $type, $content, $addHeader);
+	printHeaderAndContent($status, $type, $content, $addHeader, $cookies);
 }
 sub printLocalFileHeader {
 	my ($fn,$addheader) = @_;

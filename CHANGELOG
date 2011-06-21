@@ -1,7 +1,7 @@
 0.7.1: BETA
      - replaced OSSP::uuid with UUID::Tiny
      - migrated backend code into modules (FS, AFS, GFS backend modules)
-     - added SMB/CIFS backend module for access to ADS integrated Windows/Samba shares
+     - added SMB/CIFS backend module for access ADS integrated Windows/Samba shares
      - added example DBB backend module (database backend)
      - fixed last AFS performance bugs 
      - fixed security bug (accessing files outside $DOCUMENT_ROOT)

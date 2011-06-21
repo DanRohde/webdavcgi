@@ -367,7 +367,15 @@ sub renderWebInterface {
         ###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
         $content = $self->start_html("$main::TITLEPREFIX $ru").$content.$$self{cgi}->end_html();
 
-        main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store' );
+	my $cookies  = [
+		 $$self{cgi}->cookie(-name=>'lang',-value=>$main::LANG,-expires=>'+10y'),
+		 $$self{cgi}->cookie(-name=>'showall',-value=>$$self{cgi}->param('showpage') ? 0 : ($$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0), -expires=>'+10y'),
+		 $$self{cgi}->cookie(-name=>'order',-value=>$main::ORDER, -expires=>'+10y'),
+		 $$self{cgi}->cookie(-name=>'pagelimit',-value=>$main::PAGE_LIMIT, -expires=>'+10y'),
+		 $$self{cgi}->cookie(-name=>'view',-value=>$main::VIEW, -expires=>'+10y'),
+	];
+
+        main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store', $cookies );
 }
 sub renderByteValue {
         my ($v, $f, $ft) = @_;
