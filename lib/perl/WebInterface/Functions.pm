@@ -158,16 +158,17 @@ sub handleFileActions {
 				} elsif ($newname=~/\//) {
 					$errmsg='renamenotargeterr';
 				} else {
-					$msg='rename';
 					$msgparam = 'p1='.$$self{cgi}->escape(join(', ',@files))
 						  . ';p2='.$$self{cgi}->escape($newname);
 					foreach my $file (@files) {
 						my $target = $main::PATH_TRANSLATED.$newname;
 						$target.='/'.$file if $$self{backend}->isDir($target);
 						if (main::rmove($main::PATH_TRANSLATED.$file, $target)) {
+							$msg='rename';
 							main::logger("MOVE $main::PATH_TRANSLATED$file to $target via POST");
 						} else {
 							$errmsg='renameerr';
+							$msg=undef;
 						}
 					}
 				}
