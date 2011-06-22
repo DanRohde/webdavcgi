@@ -150,18 +150,19 @@ sub handleFileActions {
 		}
 	} elsif ($$self{cgi}->param('rename')) {
 		if ($$self{cgi}->param('file')) {
-			if ($$self{cgi}->param('newname')) {
+			if (my $newname = $$self{cgi}->param('newname')) {
+				$newname=~s/\/$//;
 				my @files = $$self{cgi}->param('file');
-				if (($#files > 0)&&(! $$self{backend}->isDir($main::PATH_TRANSLATED.$$self{cgi}->param('newname')))) {
+				if (($#files > 0)&&(! $$self{backend}->isDir($main::PATH_TRANSLATED.$newname))) {
 					$errmsg='renameerr';
-				} elsif ($$self{cgi}->param('newname')=~/\//) {
+				} elsif ($newname=~/\//) {
 					$errmsg='renamenotargeterr';
 				} else {
 					$msg='rename';
 					$msgparam = 'p1='.$$self{cgi}->escape(join(', ',@files))
-						  . ';p2='.$$self{cgi}->escape($$self{cgi}->param('newname'));
+						  . ';p2='.$$self{cgi}->escape($newname);
 					foreach my $file (@files) {
-						my $target = $main::PATH_TRANSLATED.$$self{cgi}->param('newname');
+						my $target = $main::PATH_TRANSLATED.$newname;
 						$target.='/'.$file if $$self{backend}->isDir($target);
 						if (main::rmove($main::PATH_TRANSLATED.$file, $target)) {
 							main::logger("MOVE $main::PATH_TRANSLATED$file to $target via POST");
