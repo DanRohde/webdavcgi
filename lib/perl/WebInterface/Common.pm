@@ -21,7 +21,7 @@ package WebInterface::Common;
 
 use strict;
 
-use POSIX qw( ceil );
+use POSIX qw( ceil locale_h );
 sub new {
 	my $this = shift;
 	my $class = ref($this) || $this;
@@ -71,6 +71,23 @@ sub tl {
         $self->readTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__READ__x};
         my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $key;
         return $#_>-1 ? sprintf( $val, @_) : $val;
+}
+
+sub setLocale {
+        my $locale;
+        if ($main::LANG eq 'default') {
+                $locale = "en_US.\U$main::CHARSET\E"
+        } else {
+                $main::LANG =~ /^(\w{2})(_(\w{2})(\.(\S+))?)?$/;
+                my ($c1,$c,$c3,$c4,$c5) = ($1, $2, $3, $4, $5);
+                $c3 = uc($c1) unless $c3;
+                $c5 = uc($main::CHARSET) unless $c5 && uc($c5) eq uc($main::CHARSET);
+                $locale = "${c1}_${c3}.${c5}";
+        }
+        setlocale(LC_COLLATE, $locale);
+        setlocale(LC_TIME, $locale);
+        setlocale(LC_CTYPE, $locale);
+        setlocale(LC_NUMERIC, $locale);
 }
 
 1;
