@@ -24,18 +24,6 @@ use strict;
 use WebInterface::View::classic::Renderer;
 our @ISA = ( 'WebInterface::View::classic::Renderer' );
 
-
-sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
-	$$self{config}=shift;
-	$$self{db}=shift;
-	$self->initialize();
-	return $self;
-}
-
 sub render {
 	my ($self,$fn,$ru) = @_;
         my $content = "";
@@ -101,7 +89,7 @@ sub render {
                 $manageview.= $self->renderToolbar() if ($main::ALLOW_FILE_MANAGEMENT && $$self{backend}->isWriteable($fn)) ;
                 $manageview.= $self->renderFieldSet('editbutton',$$self{cgi}->a({-id=>'editpos'},"").$self->renderEditTextView()) if $main::ALLOW_EDIT && $$self{cgi}->param('edit');
                 $manageview.= $self->renderFieldSet('upload',$self->renderFileUploadView($fn)) if $main::ALLOW_FILE_MANAGEMENT && $main::ALLOW_POST_UPLOADS && $$self{backend}->isWriteable($fn);
-		$content.=$self->renderSideBar() if $main::VIEW eq 'sidebar';
+		$content.=$self->renderSideBar();
 		$folderview.=$self->renderToolbar() if $main::ALLOW_FILE_MANAGEMENT;
                 if ($main::ALLOW_FILE_MANAGEMENT && $$self{backend}->isWriteable($fn)) {
                         my $m = "";
@@ -129,15 +117,7 @@ sub render {
         ###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
         $content = $self->start_html("$main::TITLEPREFIX $ru").$content.$$self{cgi}->end_html();
 
-	my $cookies  = [
-		 $$self{cgi}->cookie(-name=>'lang',-value=>$main::LANG,-expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'showall',-value=>$$self{cgi}->param('showpage') ? 0 : ($$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0), -expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'order',-value=>$main::ORDER, -expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'pagelimit',-value=>$main::PAGE_LIMIT, -expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'view',-value=>$main::VIEW, -expires=>'+10y'),
-	];
-
-        main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store', $cookies );
+        main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store', $self->getCookies());
 }
 sub getActionViewInfos {
         my ($self,$action) = @_;

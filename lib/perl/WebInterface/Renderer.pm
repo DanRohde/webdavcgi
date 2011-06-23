@@ -30,16 +30,6 @@ use POSIX qw(strftime);
 
 use vars qw( %renderer );
 
-sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
-	$$self{config}=shift;
-	$$self{db}=shift;
-	$self->initialize();
-	return $self;
-}
 sub _getRenderer {
 	my ($self) = @_;
 	my $view = "WebInterface::View::${main::VIEW}::Renderer";

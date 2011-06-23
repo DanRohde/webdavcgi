@@ -36,19 +36,6 @@ use vars qw ($WEB_ID %BYTEUNITS @BYTEUNITORDER %CACHE);
 @BYTEUNITORDER = ( 'B', 'KB', 'MB', 'GB', 'TB', 'PB' );
 
 
-
-
-sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
-	$$self{config}=shift;
-	$$self{db}=shift;
-	$self->initialize();
-	return $self;
-}
-
 sub hasThumbSupport {
         my ($self,$mime) = @_;
         return 1 if $mime =~ /^image\// || $mime =~ /^text\/plain/ || ($main::ENABLE_THUMBNAIL_PDFPS && $mime =~ /^application\/(pdf|ps)$/);
@@ -225,30 +212,32 @@ sub render {
                                 .$self->renderToggleFieldSet('filter.title',$self->renderViewFilterView())
                                 ) if $main::ENABLE_SIDEBAR;
                 $content .= $$self{cgi}->end_form() if $main::ALLOW_FILE_MANAGEMENT;
-                $content .= $$self{cgi}->start_form(-method=>'post', -id=>'clpform')
-                                .$$self{cgi}->hidden(-name=>'action', -value=>'') .$$self{cgi}->hidden(-name=>'srcuri', -value>'')
-                                .$$self{cgi}->hidden(-name=>'files', -value=>'') .$$self{cgi}->end_form() if ($main::ALLOW_FILE_MANAGEMENT && $main::ENABLE_CLIPBOARD);
-                $content .= $$self{cgi}->start_form(-method=>'post', -id=>'faform')
-                                .$$self{cgi}->hidden(-id=>'faction', -name=>'dummy', -value=>'unused')
-                                .$$self{cgi}->hidden(-id=>'fdst', -name=>'newname',-value=>'')
-                                .$$self{cgi}->hidden(-id=>'fsrc', -name=>'file', -value=>'')
-                                .$$self{cgi}->hidden(-id=>'fid', -name=>'fid', -value=>'')
-                                .$$self{cgi}->div({-id=>'forigcontent', -class=>'hidden'},"")
-                                .$$self{cgi}->end_form() if $main::ALLOW_FILE_MANAGEMENT && $main::SHOW_FILE_ACTIONS;
+		$content .= $self->renderClipboardForm();
+		$content .= $self->renderFileActionForm();
         }
         $content.= $$self{cgi}->div({-class=>'signature'}, $self->replaceVars($main::SIGNATURE)) if defined $main::SIGNATURE;
         ###$content =~ s/(<\/\w+[^>]*>)/$1\n/g;
         $content = $self->start_html("$main::TITLEPREFIX $ru").$content.$$self{cgi}->end_html();
 
-	my $cookies  = [
-		 $$self{cgi}->cookie(-name=>'lang',-value=>$main::LANG,-expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'showall',-value=>$$self{cgi}->param('showpage') ? 0 : ($$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0), -expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'order',-value=>$main::ORDER, -expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'pagelimit',-value=>$main::PAGE_LIMIT, -expires=>'+10y'),
-		 $$self{cgi}->cookie(-name=>'view',-value=>$main::VIEW, -expires=>'+10y'),
-	];
-
-        main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store', $cookies );
+        main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store', $self->getCookies());
+}
+sub renderClipboardForm {
+	my ($self) = @_;
+	return $$self{cgi}->start_form(-method=>'post', -id=>'clpform')
+               .$$self{cgi}->hidden(-name=>'action', -value=>'') .$$self{cgi}->hidden(-name=>'srcuri', -value>'')
+               .$$self{cgi}->hidden(-name=>'files', -value=>'') .$$self{cgi}->end_form() if ($main::ALLOW_FILE_MANAGEMENT && $main::ENABLE_CLIPBOARD);
+	return '';
+}
+sub renderFileActionForm {
+	my ($self) = @_;
+	return $$self{cgi}->start_form(-method=>'post', -id=>'faform')
+		.$$self{cgi}->hidden(-id=>'faction', -name=>'dummy', -value=>'unused')
+		.$$self{cgi}->hidden(-id=>'fdst', -name=>'newname',-value=>'')
+		.$$self{cgi}->hidden(-id=>'fsrc', -name=>'file', -value=>'')
+		.$$self{cgi}->hidden(-id=>'fid', -name=>'fid', -value=>'')
+		.$$self{cgi}->div({-id=>'forigcontent', -class=>'hidden'},"")
+		.$$self{cgi}->end_form() if $main::ALLOW_FILE_MANAGEMENT && $main::SHOW_FILE_ACTIONS;
+	return '';
 }
 sub renderByteValue {
         my ($self, $v, $f, $ft) = @_;
@@ -264,9 +253,9 @@ sub renderByteValue {
                 $rv{$unit} = $v / $BYTEUNITS{$unit};
                 last if $rv{$unit} < $lowerlimitf;
                 $showunit=$unit if $rv{$unit} >= 1;
-                $title.= ($unit eq 'B' ? sprintf(' = %.0f B ',$rv{$unit}) : sprintf('= %.'.$ft.'f %s ', $rv{$unit}, $unit)) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
+                $title.= ($unit eq 'B' ? sprintf(' = %.0fB ',$rv{$unit}) : sprintf('= %.'.$ft.'f%s ', $rv{$unit}, $unit)) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
         }
-        return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f %s',$rv{$showunit},$showunit)), $title);
+        return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f%s',$rv{$showunit},$showunit)), $title);
 }
 sub renderMessage {
         my ($self,$prefix) = @_;

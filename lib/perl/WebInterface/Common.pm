@@ -28,6 +28,7 @@ sub new {
 	my $self = { };
 	bless $self, $class;
 	$$self{config}=shift;
+	$$self{db}=shift;
 	$self->initialize();
 	return $self;
 }
@@ -50,25 +51,39 @@ sub initialize() {
 
 }
 
-sub readTL  {
-        my ($self,$l) = @_;
-        my $fn = -e "${main::INSTALL_BASE}webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}webdav-ui_${l}.msg" : -e "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" : undef;
-        return unless defined $fn;
+sub readTLFile {
+	my ($self, $fn, $dataRef) = @_;
         if (open(my $i, "<$fn")) {
                 while (my $line = <$i>) {
                         chomp($line);
                         next if $line=~/^#/;
-                        $main::TRANSLATION{$l}{$1}=$2 if $line=~/^(\S+)\s+"(.*)"\s*$/;
+                        $$dataRef{$1}=$2 if $line=~/^(\S+)\s+"(.*)"\s*$/;
                 }
                 close($i);
         } else { warn("Cannot read $fn!"); }
+}
+sub readTL  {
+        my ($self,$l) = @_;
+        my $fn = -e "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" ? "${main::INSTALL_BASE}locale/webdav-ui_${l}.msg" : undef;
+        return unless defined $fn;
+	$self->readTLFile($fn, $main::TRANSLATION{$l});
         $main::TRANSLATION{$l}{x__READ__x}=1;
+}
+sub readViewTL  {
+        my ($self,$l) = @_;
+        my $fn = -e "${main::INSTALL_BASE}lib/perl/WebInterface/View/$main::VIEW/locale_${l}.msg" ? "${main::INSTALL_BASE}lib/perl/WebInterface/View/$main::VIEW/locale_${l}.msg" : undef;
+        return unless defined $fn;
+	$self->readTLFile($fn, $main::TRANSLATION{$l});
+        $main::TRANSLATION{$l}{x__VIEWREAD__x}=1;
 }
 sub tl {
         my $self = shift;
         my $key = shift;
         $self->readTL('default') if !exists $main::TRANSLATION{default}{x__READ__x};
+	$self->readViewTL('default') if !exists $main::TRANSLATION{default}{x__VIEWREAD__x};
         $self->readTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__READ__x};
+	$self->readViewTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__VIEWREAD__x};
+
         my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $key;
         return $#_>-1 ? sprintf( $val, @_) : $val;
 }
@@ -88,6 +103,16 @@ sub setLocale {
         setlocale(LC_TIME, $locale);
         setlocale(LC_CTYPE, $locale);
         setlocale(LC_NUMERIC, $locale);
+}
+sub getCookies {
+        my ($self) = @_;
+        return [
+                 $$self{cgi}->cookie(-name=>'lang',-value=>$main::LANG,-expires=>'+10y'),
+                 $$self{cgi}->cookie(-name=>'showall',-value=>$$self{cgi}->param('showpage') ? 0 : ($$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0), -expires=>'+10y'),
+                 $$self{cgi}->cookie(-name=>'order',-value=>$main::ORDER, -expires=>'+10y'),
+                 $$self{cgi}->cookie(-name=>'pagelimit',-value=>$main::PAGE_LIMIT, -expires=>'+10y'),
+                 $$self{cgi}->cookie(-name=>'view',-value=>$main::VIEW, -expires=>'+10y'),
+        ];
 }
 
 1;
