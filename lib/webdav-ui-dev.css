@@ -17,6 +17,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+body.disabled { 
+	opacity: 0.5; 
+	filter: Alpha(opacity=50); 
+	background-color: #aaaaaa; 
+	cursor: wait;
+}
 input,select { text-shadow: 1px 1px white;  }
 .header, .signature { border: 2px outset black; padding-left:3px;background-color:#eeeeee; margin: 2px 0px 2px 0px; }
 .signature a { color: black; text-decoration: none; }
@@ -239,4 +246,3 @@ div.textdata { margin: 2px 2px 15px 2px;}
 .textdataresizer { cursor: se-resize; width: 1em; border-bottom: 3px double #aaaaaa; border-right: 3px double #aaaaaa; margin: 0px; padding:0px; position:absolute; bottom: 0px; right: 0px; }
 .textdatabuttons { padding-right: 1em; }
 .textdatabuttons input { margin-left: 1em; }
-
