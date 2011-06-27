@@ -34,7 +34,7 @@ sub _getRenderer {
 	my ($self) = @_;
 	my $view = "WebInterface::View::${main::VIEW}::Renderer";
 	$view=~s/[\.\/]+//g;
-	$view='"WebInterface::View::classic::Renderer' unless -e "${main::INSTALL_BASE}lib/perl/WebInterface/View/${main::VIEW}/Renderer.pm";
+	$view="WebInterface::View::$main::SUPPORTED_VIEWS[0]::Renderer" unless -f "${main::INSTALL_BASE}lib/perl/WebInterface/View/${main::VIEW}/Renderer.pm";
 	return $renderer{$self}{$view} if exists $renderer{$self}{$view};
 	eval {
 		load $view;

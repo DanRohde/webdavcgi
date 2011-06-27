@@ -204,12 +204,14 @@ sub render {
                 $folderview .= $manageview ;
                 $folderview .= $self->renderToggleFieldSet('afsgroup',$self->renderAFSGroupManager()) if $main::ENABLE_AFSGROUPMANAGER;
                 $content .= $$self{cgi}->div({-id=>'folderview', -class=>'folderview'}, $folderview);
+		my $sviews = "";
+		map { $sviews.=$$self{cgi}->br().'&bull; '.$$self{cgi}->a({-href=>"?view=$_"},$self->tl("${_}view")) unless $main::VIEW eq $_; } @main::SUPPORTED_VIEWS;
                 $content .= $self->renderFieldSet('viewoptions',
                                  ( $showall ? '&bull; '.$$self{cgi}->a({-href=>'?showpage=1'},$self->tl('navpageview')) : '' )
                                 .(!$showall ? '&bull; '.$$self{cgi}->a({-href=>'?showall=1'},$self->tl('navall')) : '' )
-                                . $$self{cgi}->br().'&bull; '.$$self{cgi}->a({-href=>'?view=sidebar'},$self->tl('sidebarview'))
+                                . $sviews
                                 .$self->renderToggleFieldSet('filter.title',$self->renderViewFilterView())
-                                ) if $main::ENABLE_SIDEBAR;
+                                );
                 $content .= $$self{cgi}->end_form() if $main::ALLOW_FILE_MANAGEMENT;
 		$content .= $self->renderClipboardForm();
 		$content .= $self->renderFileActionForm();

@@ -194,7 +194,7 @@ sub renderSideBar {
         my $showall = $$self{cgi}->param('showpage') ? 0 : $$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0;
         $content .= $self->renderSideBarMenuItem('navpageview', $self->tl('navpageviewtooltip'), 'window.location.href="?showpage=1";',$$self{cgi}->button(-value=>$self->tl('navpageview'))) if $showall;
         $content .= $self->renderSideBarMenuItem('navall', $self->tl('navalltooltip'),'window.location.href="?showall=1";', $$self{cgi}->button(-value=>$self->tl('navall'))) unless $showall;
-        $content .= $self->renderSideBarMenuItem('changeview', $self->tl('classicview'), 'javascript:window.location.href="?view=classic";', $$self{cgi}->button(-value=>$self->tl('classicview')));
+        map { $content .= $self->renderSideBarMenuItem("changeviewto$_", $self->tl("${_}view"), qq@javascript:window.location.href="?view=$_";@, $$self{cgi}->button(-value=>$self->tl("${_}view"))) unless $main::VIEW eq $_; } @main::SUPPORTED_VIEWS;
         $content .= $self->renderSideBarMenuItem('filterview',$self->tl('filter.title'), 'toggleActionView("filterview","filter.size.op");', $$self{cgi}->button(-value=>$self->tl('filter.title'), -name=>'filter'));
         $content .= $self->renderActionView('filterview', 'filter.title', $self->renderViewFilterView());
 
