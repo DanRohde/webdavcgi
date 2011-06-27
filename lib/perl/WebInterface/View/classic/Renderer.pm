@@ -737,7 +737,7 @@ sub getfancyfilename {
         $full = '/' if $full eq '//'; # fixes root folder navigation bug
 
         my $fntext = $s =~ /^\.{1,2}$/ ? $s : $$self{backend}->getDisplayName($fn);
-        $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-3) if length($s)>$main::MAXFILENAMESIZE;
+        $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-5) if length($s)>$main::MAXFILENAMESIZE;
         my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
 
 	my $title = $s;
@@ -749,7 +749,7 @@ sub getfancyfilename {
 	}
 
         $ret = $linkit ? $$self{cgi}->a({href=>$full,title=>$title},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
-        $ret .=  length($s)>$main::MAXFILENAMESIZE ? '...' : (' 'x($main::MAXFILENAMESIZE-length($s)));
+        $ret .=  length($s)>$main::MAXFILENAMESIZE ? '[...]' : (' 'x($main::MAXFILENAMESIZE-length($s)));
 
         $full=~/([^\.]+)$/;
         my $suffix = $1 || $m;

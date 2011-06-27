@@ -709,9 +709,7 @@ $ALLOW_AFSGROUPCHANGES = 1;
 
 $ALLOW_SEARCH = 0;
 $ALLOW_CHANGEPERM = 0;
-$SHOW_PERM = 0;
 $ENABLE_AFS = 1;
-$IGNOREFILEPERMISSIONS = 1;
 
 $MIMEFILE='/etc/mime.types';
 
@@ -799,7 +797,6 @@ $DBI_PASS='';
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 $SHOW_QUOTA = -x '/usr/bin/smbclient';
-$SHOW_PERM = 0;
 $ALLOW_CHANGEPERM = 0;
 $ALLOW_SYMLINK = 0;
 
