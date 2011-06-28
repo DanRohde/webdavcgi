@@ -465,7 +465,7 @@ sub createSymLink { return 0; }
 sub getLinkSrc { $!='not supported'; return undef; }
 sub hasStickyBit { return 0; }
 sub getQuota { 
-	my ($self,$server,$share,$path) = _getPathInfo($_[1]);
+	my ($server,$share,$path) = _getPathInfo($_[1]);
 	$server=~s/'/\\'/g if $server;
 	$share=~s/'/\\'/g if $share;
 	$path=~s/'/\\'/g if $path;
@@ -473,7 +473,6 @@ sub getQuota {
 	if ($server && open(my $c, "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du 2>/dev/null|")) {
 		my @l= <$c>;
 		close($c);
-		
 		if (@l && $l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/) {
 			my ($b,$s,$a) = ($1,$2,$3);
 			return ($b*$s, ($b-$a)*$s);
@@ -481,7 +480,4 @@ sub getQuota {
 	}
 	return (0,0); 
 }
-
-
 1;
-
