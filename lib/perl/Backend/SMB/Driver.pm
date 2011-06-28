@@ -29,7 +29,6 @@ use Filesys::SmbClient;
 
 use File::Temp qw/ tempfile tempdir /;
 
-
 our %CACHE;
 
 use vars qw( $SHARESEP $DOCUMENT_ROOT );
@@ -120,19 +119,20 @@ sub _getShareFilter {
 
 sub isFile {
 	my ($self, $file) = @_;
-	return !_isRoot($file) && !_isShare($file) && _getType($self, $file) == $$self{smb}->SMBC_FILE;
+	return !_isRoot($file) && !_isShare($file) && $self->_getType($file) == $$self{smb}->SMBC_FILE;
 }
 sub isDir {
 	my ($self, $file) = @_;
 	return $self->_existsCacheEntry('isDir', $file) 
 			?  $self->_getCacheEntry('isDir', $file) 
-			: $self->_setCacheEntry('isDir', $file, _isRoot($file) || _isShare($file) || _getType($self, $file) == $$self{smb}->SMBC_DIR);
+			: $self->_setCacheEntry('isDir', $file, _isRoot($file) || _isShare($file) || $self->_getType($file) == $$self{smb}->SMBC_DIR);
 }
 sub isLink {
 	my ($self, $file) = @_;
-	return $self->_existsCacheEntry('isLink',$file) 
-			? $self->_getCacheEntry('isLink', $file)
-			:!_isRoot($file) && !_isShare($file) &&  _getType($self, $file) == $$self{smb}->SMBC_LINK;
+	return $self->_existsCacheEntry('isLink', $file) 
+			?  $self->_getCacheEntry('isLink', $file) 
+			: $self->_setCacheEntry('isLink', $file, $self->_getType($file) == $$self{smb}->SMBC_LINK);
+	return 0;
 }
 
 sub isEmpty {
@@ -344,15 +344,17 @@ sub _isRoot {
 sub _isShare {
 	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\:\/]+\:[^\/]+\/?$/;
 }
+sub S_ISLNK { return ($_[0] & 0120000) == 0120000; }
+sub S_ISDIR { return ($_[0] & 0040000) == 0040000; }
+sub S_ISFILE { return ($_[0] & 0100000) == 0100000; }
 sub _getType {
 	my ($self, $file) = @_;
-	my $type;
 	if (!$self->_existsCacheEntry('readDir',$file)) {
-		$self->readDir($self->getParent($file).'/');
+		my @stat = $self->stat($file);
+		return 0 if scalar(@stat)==0;
+		$self->_setCacheEntry('readDir', $file, { type=>S_ISLNK($stat[2]) ? $$self{smb}->SMBC_LINK : S_ISDIR($stat[2]) ? $$self{smb}->SMBC_DIR : $$self{smb}->SMBC_FILE , comment=>'' } );
 	}
-	
-	$type = ${$self->_getCacheEntry('readDir',$file)}{type} if $self->_existsCacheEntry('readDir', $file);
-	return $type || 0;
+	return ${$self->_getCacheEntry('readDir',$file)}{type} || 0;
 }
 sub _getCacheEntry {
 	my ($self, $id, $file) = @_;
