@@ -15,6 +15,7 @@
 	   - added extension support (GET)
 	   - added view support (GET)
      - improved performance with the NYT profiler
+     - fixed symlink move bug
 
 0.7.0: 2011/29/04
      - fixed major search bug (SEARCH; thx jfotop@ath.forthnet.gr)

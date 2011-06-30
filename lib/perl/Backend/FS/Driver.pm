@@ -54,8 +54,8 @@ sub isFile {
 }
 sub isLink {
 	my ($self, $fn) = @_;
-	return $CACHE{$self}{$fn}{isLink} if exists $CACHE{$self}{$fn}{isLink};
 	$fn=~s/\/$//;
+	return $CACHE{$self}{$fn}{isLink} if exists $CACHE{$self}{$fn}{isLink};
 	return ($CACHE{$self}{$fn}{isLink} = -l $fn);
 }
 sub isBlockDevice {

@@ -472,17 +472,24 @@ sub getFolderList {
                 my $lmf = strftime($self->tl('lastmodifiedformat'), localtime($mtime));
                 my $ctf = strftime($self->tl('lastmodifiedformat'), localtime($ctime));
                 my ($size_v, $size_t) = $self->renderByteValue($size,1,2);
+		my $title = $filename;
+		if ($$self{backend}->isLink($full)) {
+			my $lsrc = $$self{backend}->getLinkSrc($full);
+			$lsrc=~s/^$main::DOCUMENT_ROOT//;
+			$main::REQUEST_URI=~/^($main::VIRTUAL_BASE)/;
+			$title .= ' -> '.$1.$lsrc;
+		}
                 my %rowdata = (
-                        'name'=> $usedcols{name} ? { value=>$self->getfancyfilename($nru, $filename, $mimetype, $full, $isUnReadable), title=>$filename} : '',
+                        'name'=> $usedcols{name} ? { value=>$self->getfancyfilename($nru, $filename, $mimetype, $full, $isUnReadable), title=>$title} : '',
                         'lastmodified'=> $usedcols{lastmodified} ? { value=>$lmf, title=>$self->tl('created').' '.$ctf} : '',
                         'created'=> $usedcols{created} ? { value=>$ctf, title=>$self->tl('lastmodified').' '.$lmf} : '',
                         'size'=> $usedcols{size} ? { value=>$size_v, title=>$size_t} : '',
                         'mode'=> $usedcols{mode} ? { value=>sprintf("%-11s",$self->mode2str($full,$mode)), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)} : '',
-                        'fileactions'=> $usedcols{fileactions} ? {value=>$filename=~/^\.{1,2}$/ || $unsel ? '' : $self->renderFileActions($fid, $filename, $full), title=>$filename } : '',
-                        'mime'=> $usedcols{mime} ? { value=>$$self{cgi}->escapeHTML($mimetype), title=>$filename} : '',
+                        'fileactions'=> $usedcols{fileactions} ? {value=>$filename=~/^\.{1,2}$/ || $unsel ? '' : $self->renderFileActions($fid, $filename, $full), title=>$title} : '',
+                        'mime'=> $usedcols{mime} ? { value=>$$self{cgi}->escapeHTML($mimetype), title=>$title} : '',
                 );
                 eval $rowpattern;
-                $list.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>"$filename", -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
+                $list.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>$title, -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
                 $odd = ! $odd;
 
                 if ($filename!~/^\.{1,2}$/) {
@@ -740,15 +747,7 @@ sub getfancyfilename {
         $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-5) if length($s)>$main::MAXFILENAMESIZE;
         my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
 
-	my $title = $s;
-	if ($$self{backend}->isLink($fn)) {
-		my $lsrc = $$self{backend}->getLinkSrc($fn);
-		$lsrc=~s/^$main::DOCUMENT_ROOT//;
-		$main::REQUEST_URI=~/^($main::VIRTUAL_BASE)/;
-		$title .= ' -> '.$1.$lsrc;
-	}
-
-        $ret = $linkit ? $$self{cgi}->a({href=>$full,title=>$title},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
+        $ret = $linkit ? $$self{cgi}->a({href=>$full},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
         $ret .=  length($s)>$main::MAXFILENAMESIZE ? '[...]' : (' 'x($main::MAXFILENAMESIZE-length($s)));
 
         $full=~/([^\.]+)$/;
@@ -771,7 +770,7 @@ sub getfancyfilename {
                 }
         }
         my $img =  $$self{cgi}->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout});
-        $ret = ($linkit ? $$self{cgi}->a(  {href=>$full,title=>$title}, $img):$img).' '.$ret;
+		$ret = ($linkit ? $$self{cgi}->a(  {href=>$full}, $img):$img).' '.$ret;
         return $ret;
 }
 sub mode2str {
