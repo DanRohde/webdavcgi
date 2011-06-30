@@ -104,7 +104,7 @@ sub start_html {
         $content.=qq@<script src="${base}webdav-ui.js" type="text/javascript"></script>@;
         $content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${main::INSTALL_BASE}lib/webdav-ui-custom.js";
         $content.=$main::HTMLHEAD if defined $main::HTMLHEAD;
-        $content.=qq@</head><body onload="check()" onunload="pleaseWait()">@;
+        $content.=qq@</head><body onload="check()">@;
         return $content;
 }
 
@@ -851,13 +851,19 @@ sub renderToggleFieldSet {
                 .qq@</fieldset>@;
 }
 sub renderFieldSet { my $self=shift; return $self->renderToggleFieldSet($_[0],$_[1],1); }
-sub renderDeleteFilesButton { my $self=shift; return $$self{cgi}->submit(-title=>$self->tl('deletefilestext'),-name=>'delete',-disabled=>'disabled',-value=>$self->tl('deletefilesbutton'),-onclick=>'return window.confirm("'.$self->tl('deletefilesconfirm').'");'); }
+sub renderDeleteFilesButton { 
+	my $self=shift; 
+	return $$self{cgi}->submit(-title=>$self->tl('deletefilestext'),-name=>'delete',-disabled=>'disabled',-value=>$self->tl('deletefilesbutton'),-onclick=>'return window.confirm("'.$self->tl('deletefilesconfirm').'") && pleaseWait();'); 
+}
 sub renderCopyButton { 
 	my ($self) = @_;
 	return $$self{cgi}->button({-onclick=>'clpaction("copy")', -disabled=>'disabled', -name=>'copy', -class=>'copybutton', -value=> $self->tl('copy'), -title=>$self->tl('copytooltip')}); 
 }
 sub renderCutButton { my $self=shift; return $$self{cgi}->button({-onclick=>'clpaction("cut")', -disabled=>'disabled', -name=>'cut', -class=>'cutbutton', -value=>$self->tl('cut'), -title=>$self->tl('cuttooltip')}); }
-sub renderPasteButton { my $self = shift; return $$self{cgi}->button({-onclick=>'clpaction("paste")', -disabled=>'disabled', -name=>'paste', -class=>'pastebutton',-value=>$self->tl('paste')}); }
+sub renderPasteButton { 
+	my $self = shift;
+	return $$self{cgi}->button({-onclick=>'clpaction("paste"); pleaseWait()', -disabled=>'disabled', -name=>'paste', -class=>'pastebutton',-value=>$self->tl('paste')}); 
+}
 sub renderToolbar {
 	my ($self) = @_;
         my $clpboard = "";
@@ -867,7 +873,7 @@ sub renderToolbar {
                         .$$self{cgi}->div({-class=>'functions'},
                                 (!$main::ALLOW_ZIP_DOWNLOAD ? '' : $$self{cgi}->span({-title=>$self->tl('zipdownloadtext')}, $$self{cgi}->submit(-name=>'zip', -disabled=>'disabled', -value=>$self->tl('zipdownloadbutton'))))
                                 .'&nbsp;&nbsp;'
-                                .$$self{cgi}->input({-name=>'colname1', -size=>10, -onkeypress=>'return catchEnter(event, "createfolder1")'}).$$self{cgi}->submit(-id=>'createfolder1', -name=>'mkcol',-value=>$self->tl('createfolderbutton'))
+                                .$$self{cgi}->input({-name=>'colname1', -size=>10, -onkeypress=>'return catchEnter(event, "createfolder1")'}).$$self{cgi}->submit(-id=>'createfolder1', -name=>'mkcol',-value=>$self->tl('createfolderbutton'),-onclick=>'return pleaseWait()')
                                 .'&nbsp;&nbsp;'
                                 .$self->renderDeleteFilesButton()
                         )
@@ -880,18 +886,23 @@ sub renderFileUploadView {
                 .$$self{cgi}->span({-id=>'moreuploads'},"")
                 .' '.$$self{cgi}->a({-onclick=>'javascript:return addUploadField(1);',-href=>'#'},$self->tl('fileuploadmore'))
                 .$$self{cgi}->div({-class=>'uploadfuncs'},
-                        $$self{cgi}->submit(-name=>'filesubmit',-value=>$self->tl('fileuploadbutton'),-onclick=>'return window.confirm("'.$self->tl('fileuploadconfirm').'");')
+                        $$self{cgi}->submit(-name=>'filesubmit',-value=>$self->tl('fileuploadbutton'),-onclick=>'return window.confirm("'.$self->tl('fileuploadconfirm').'") && pleaseWait();')
                 );
 }
 sub renderCreateNewFolderView {
 	my $self=shift;
-        return $$self{cgi}->div({-class=>'createfolder'},'&bull; '.$self->tl('createfoldertext').$$self{cgi}->input({-id=>$_[0]?$_[0]:'colname'.(++$WEB_ID), -name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'}).$$self{cgi}->submit(-id=>'createfolder', -name=>'mkcol',-value=>$self->tl('createfolderbutton')))
+        return $$self{cgi}->div({-class=>'createfolder'},
+			'&bull; '
+			.$self->tl('createfoldertext')
+			.$$self{cgi}->input({-id=>$_[0]?$_[0]:'colname'.(++$WEB_ID), -name=>'colname', -size=>30, -onkeypress=>'return catchEnter(event,"createfolder");'})
+			.$$self{cgi}->submit(-id=>'createfolder', -name=>'mkcol',-value=>$self->tl('createfolderbutton'),-onclick=>'return pleaseWait()')
+		);
 }
 sub renderMoveView {
 	my $self =shift;
         return $$self{cgi}->div({-class=>'movefiles', -id=>'movefiles'},
                 '&bull; '.$self->tl('movefilestext')
-                .$$self{cgi}->input({-id=>$_[0]?$_[0]:'newname'.(++$WEB_ID), -name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$$self{cgi}->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>$self->tl('movefilesbutton'),-onclick=>'return window.confirm("'.$self->tl('movefilesconfirm').'");')
+                .$$self{cgi}->input({-id=>$_[0]?$_[0]:'newname'.(++$WEB_ID), -name=>'newname',-disabled=>'disabled',-size=>30,-onkeypress=>'return catchEnter(event,"rename");'}).$$self{cgi}->submit(-id=>'rename',-disabled=>'disabled', -name=>'rename',-value=>$self->tl('movefilesbutton'),-onclick=>'return window.confirm("'.$self->tl('movefilesconfirm').'") && pleaseWait();')
         );
 }
 sub renderCreateSymLinkView {
@@ -899,7 +910,7 @@ sub renderCreateSymLinkView {
         return $$self{cgi}->div({-class=>'createsymlink', -title=>$self->tl('createsymlinkdescr')},
                 '&bull; '.$self->tl('createsymlinktext')
                 .$$self{cgi}->input({-id=>'linkdstname', -disabled=>'disabled', -name=>'lndst', -size=>30, -onkeypress=>'return catchEnter(event,"createsymlink");'})
-                .$$self{cgi}->submit(-id=>'createsymlink', -disabled=>'disabled', -name=>'createsymlink',-value=>$self->tl('createsymlinkbutton'))
+                .$$self{cgi}->submit(-id=>'createsymlink', -disabled=>'disabled', -name=>'createsymlink',-value=>$self->tl('createsymlinkbutton'),-onclick=>'return pleaseWait()')
         );
 
 }
@@ -993,12 +1004,17 @@ sub renderViewFilterView {
 
 sub renderDeleteView {
 	my $self = shift;
-        return $$self{cgi}->div({-class=>'delete', -id=>'delete'},'&bull; '.$$self{cgi}->submit(-disabled=>'disabled', -name=>'delete', -value=>$self->tl('deletefilesbutton'), -onclick=>'return window.confirm("'.$self->tl('deletefilesconfirm').'");')
-                .' '.$self->tl('deletefilestext'));
+        return $$self{cgi}->div({-class=>'delete', -id=>'delete'},
+		'&bull; '
+		.$$self{cgi}->submit(-disabled=>'disabled', -name=>'delete', -value=>$self->tl('deletefilesbutton'), -onclick=>'return window.confirm("'.$self->tl('deletefilesconfirm').'") && pleaseWait();')
+                .' '.$self->tl('deletefilestext')
+	);
 }
 sub renderCreateNewFileView {
 	my $self = shift;
-        return $$self{cgi}->div($self->tl('newfilename').$$self{cgi}->input({-id=>'cnfname',-size=>30,-type=>'text',-name=>'cnfname',-onkeypress=>'return catchEnter(event,"createnewfile")'}).$$self{cgi}->submit({-id=>'createnewfile',-name=>'createnewfile',-value=>$self->tl('createnewfilebutton')}));
+        return $$self{cgi}->div($self->tl('newfilename')
+	.$$self{cgi}->input({-id=>'cnfname',-size=>30,-type=>'text',-name=>'cnfname',-onkeypress=>'return catchEnter(event,"createnewfile")'})
+	.$$self{cgi}->submit({-id=>'createnewfile',-name=>'createnewfile',-value=>$self->tl('createnewfilebutton'),-onclick=>'return pleaseWait()'}));
 }
 sub renderEditTextResizer {
         my ($self,$text, $pid) = @_;
@@ -1021,9 +1037,9 @@ sub renderEditTextView {
                         $$self{cgi}->textarea({-id=>'textdata',-class=>'textdata '.$ff,-name=>'textdata', -autofocus=>'autofocus',-default=>$$self{backend}->getFileContent($file), -rows=>$rows, -cols=>$cols})
                         )
                 .$$self{cgi}->div({-class=>'textdatabuttons'},
-                                $$self{cgi}->button(-value=>$self->tl('cancel'), -onclick=>'if (window.confirm("'.$self->tl('canceledit').'")) window.location.href="'.$main::REQUEST_URI.'";')
-                                . $$self{cgi}->submit(-style=>'float:right',-name=>'savetextdata',-onclick=>"return window.confirm('$cmsg');", -value=>$self->tl('savebutton'))
-                                . $$self{cgi}->submit(-style=>'float:right',-name=>'savetextdatacont',-onclick=>"return window.confirm('$cmsg');", -value=>$self->tl('savecontbutton'))
+                                $$self{cgi}->button(-value=>$self->tl('cancel'), -onclick=>'if (window.confirm("'.$self->tl('canceledit').'") && pleaseWait()) window.location.href="'.$main::REQUEST_URI.'";')
+                                . $$self{cgi}->submit(-style=>'float:right',-name=>'savetextdata',-onclick=>"return window.confirm('$cmsg') && pleaseWait();", -value=>$self->tl('savebutton'))
+                                . $$self{cgi}->submit(-style=>'float:right',-name=>'savetextdatacont',-onclick=>"return window.confirm('$cmsg') && pleaseWait();", -value=>$self->tl('savecontbutton'))
                 )
               );
 }
@@ -1058,7 +1074,7 @@ sub renderChangePermissionsView {
                                                 $$self{cgi}->popup_menu(-name=>'fp_type',-values=>['a','s','r'], -labels=>{ 'a'=>$self->tl('add'), 's'=>$self->tl('set'), 'r'=>$self->tl('remove')})
                                                 .($main::ALLOW_CHANGEPERMRECURSIVE ? ' '.$$self{cgi}->checkbox_group(-name=>'fp_recursive', -value=>['recursive'],
                                                                 -labels=>{'recursive'=>$self->tl('recursive')}) : '')
-                                                . ' '. $$self{cgi}->submit(-disabled=>'disabled', -name=>'changeperm',-value=>$self->tl('changepermissions'), -onclick=>'return window.confirm("'.$self->tl('changepermconfirm').'");')
+                                                . ' '. $$self{cgi}->submit(-disabled=>'disabled', -name=>'changeperm',-value=>$self->tl('changepermissions'), -onclick=>'return window.confirm("'.$self->tl('changepermconfirm').'") && pleaseWait();')
                         ))
                 . $$self{cgi}->Tr($$self{cgi}->td({-colspan=>2},$self->tl('changepermlegend')))
                 . $$self{cgi}->end_table();
@@ -1066,7 +1082,7 @@ sub renderChangePermissionsView {
 sub renderZipDownloadButton { my $self=shift; return $$self{cgi}->submit(-disabled=>'disabled',-name=>'zip',-value=>$self->tl('zipdownloadbutton'),-title=>$self->tl('zipdownloadtext')) }
 sub renderZipUploadView {
 	my $self=shift;
-        return $self->tl('zipuploadtext').$$self{cgi}->filefield(-name=>'zipfile_upload', -id=>'zipfile_upload',-multiple=>'multiple').$$self{cgi}->submit(-name=>'uncompress', -value=>$self->tl('zipuploadbutton'),-onclick=>'return window.confirm("'.$self->tl('zipuploadconfirm').'");');
+        return $self->tl('zipuploadtext').$$self{cgi}->filefield(-name=>'zipfile_upload', -id=>'zipfile_upload',-multiple=>'multiple').$$self{cgi}->submit(-name=>'uncompress', -value=>$self->tl('zipuploadbutton'),-onclick=>'return window.confirm("'.$self->tl('zipuploadconfirm').'") && pleaseWait();');
 }
 sub renderZipView {
 	my $self=shift;
@@ -1173,9 +1189,9 @@ sub renderAFSGroupManager {
 
                 $uc.= $$self{cgi}->scrolling_list(-name=>'afsusr', -values=>\@users, -size=>5, -multiple=>'multiple', -defaults=>\@usrs) if $#users>-1;
 
-                $nusr = $$self{cgi}->input({-name=>'afsaddusers', size=>20, -onkeypress=>'return catchEnter(event,"afsaddusr");'}).$$self{cgi}->submit({-id=>'afsaddusr', -name=>'afsaddusr', -value=>$self->tl('afsadduser'),-onclick=>'return window.confirm("'.$self->tl('afsconfirmadduser').'");'}) if $main::ALLOW_AFSGROUPCHANGES;
+                $nusr = $$self{cgi}->input({-name=>'afsaddusers', size=>20, -onkeypress=>'return catchEnter(event,"afsaddusr");'}).$$self{cgi}->submit({-id=>'afsaddusr', -name=>'afsaddusr', -value=>$self->tl('afsadduser'),-onclick=>'return window.confirm("'.$self->tl('afsconfirmadduser').'") && pleaseWait();'}) if $main::ALLOW_AFSGROUPCHANGES;
 
-                $dusr = $$self{cgi}->submit({-name=>'afsremoveusr', -value=>$self->tl('afsremoveuser'), -onclick=>'return window.confirm("'.$self->tl('afsconfirmremoveuser').'");'}) if $main::ALLOW_AFSGROUPCHANGES && $#users > -1;
+                $dusr = $$self{cgi}->submit({-name=>'afsremoveusr', -value=>$self->tl('afsremoveuser'), -onclick=>'return window.confirm("'.$self->tl('afsconfirmremoveuser').'") && pleaseWait();'}) if $main::ALLOW_AFSGROUPCHANGES && $#users > -1;
 
         }
 
@@ -1183,13 +1199,13 @@ sub renderAFSGroupManager {
         $cb .= $$self{cgi}->submit({-id=>'afschgrp',-name=>'afschgrp',-value=>$self->tl('afschangegroup')}) if $#groups>-1;
 
         my $dgrp ="";
-        $dgrp .= $$self{cgi}->submit({-name=>'afsdeletegrp', -value=>$self->tl('afsdeletegroup'),-onclick=>'return window.confirm("'.$self->tl('afsconfirmdeletegrp').'");'}) if $main::ALLOW_AFSGROUPCHANGES && $#groups>-1;
+        $dgrp .= $$self{cgi}->submit({-name=>'afsdeletegrp', -value=>$self->tl('afsdeletegroup'),-onclick=>'return window.confirm("'.$self->tl('afsconfirmdeletegrp').'") && pleaseWait();'}) if $main::ALLOW_AFSGROUPCHANGES && $#groups>-1;
 
         my $ngrp ="";
-        $ngrp .= $$self{cgi}->input({-name=>'afsnewgrp', -size=>20, -onfocus=>'if (this.value == "") { this.value="'.$ru.':"; this.select();}', -onblur=>'if (this.value == "'.$ru.':") this.value="";', -onkeypress=>'return catchEnter(event,"afscreatenewgrp");'}).$$self{cgi}->submit({-id=>'afscreatenewgrp', -name=>'afscreatenewgrp', -value=>$self->tl('afscreatenewgroup'), -onclick=>'return window.confirm("'.$self->tl('afsconfirmcreategrp').'");'}) if $main::ALLOW_AFSGROUPCHANGES;
+        $ngrp .= $$self{cgi}->input({-name=>'afsnewgrp', -size=>20, -onfocus=>'if (this.value == "") { this.value="'.$ru.':"; this.select();}', -onblur=>'if (this.value == "'.$ru.':") this.value="";', -onkeypress=>'return catchEnter(event,"afscreatenewgrp");'}).$$self{cgi}->submit({-id=>'afscreatenewgrp', -name=>'afscreatenewgrp', -value=>$self->tl('afscreatenewgroup'), -onclick=>'return window.confirm("'.$self->tl('afsconfirmcreategrp').'") && pleaseWait();'}) if $main::ALLOW_AFSGROUPCHANGES;
 
         my $rgrp = "";
-        $rgrp .= $$self{cgi}->input({-name=>'afsnewgrpname',-size=>20, -value=>$$self{cgi}->param('afsnewgrpname')||'',-onfocus=>'if (this.value == "") { this.value="'.$ru.':"; this.select();}', -onblur=>'if (this.value == "'.$ru.':") this.value="";', -onkeypress=>'return catchEnter(event,"afsrenamegrp");'}).$$self{cgi}->submit({-id=>'afsrenamegrp', -name=>'afsrenamegrp', -value=>$self->tl('afsrenamegroup'), -onclick=>'return window.confirm("'.$self->tl('afsconfirmrenamegrp').'");'}) if $main::ALLOW_AFSGROUPCHANGES && $#groups > -1;
+        $rgrp .= $$self{cgi}->input({-name=>'afsnewgrpname',-size=>20, -value=>$$self{cgi}->param('afsnewgrpname')||'',-onfocus=>'if (this.value == "") { this.value="'.$ru.':"; this.select();}', -onblur=>'if (this.value == "'.$ru.':") this.value="";', -onkeypress=>'return catchEnter(event,"afsrenamegrp");'}).$$self{cgi}->submit({-id=>'afsrenamegrp', -name=>'afsrenamegrp', -value=>$self->tl('afsrenamegroup'), -onclick=>'return window.confirm("'.$self->tl('afsconfirmrenamegrp').'") && pleaseWait();'}) if $main::ALLOW_AFSGROUPCHANGES && $#groups > -1;
 
         return $$self{cgi}->a({-id=>'afsgroupmanagerpos'},"").$self->renderMessage('afs')
                 ##.$$self{cgi}->start_form({-name=>'afsgroupmanagerform', -method=>'post'})
