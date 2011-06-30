@@ -310,23 +310,23 @@ sub buildBookmarkList {
                 $attributes{$b}{disabled}='disabled' if $b eq $main::REQUEST_URI;
                 $isBookmarked = 1 if $b eq $main::REQUEST_URI;
         }
-        sub getBookmarkTime {
+        my $getBookmarkTime = sub {
                 my $i = 0;
                 $i++ while ($$self{cgi}->cookie('bookmark'.$i) && $$self{cgi}->cookie('bookmark'.$i) ne $_[0]);
                 return $$self{cgi}->cookie('bookmark'.$i.'time') || 0;
-        }
-        sub cmpBookmarks{
+        };
+        my $cmpBookmarks = sub {
                 my $s = $$self{cgi}->cookie('bookmarksort') || 'time-desc';
                 my $f = $s=~/desc$/ ? -1 : 1;
 
                 if ($s =~ /^time/) {
-                        my $at = getBookmarkTime($a);
-                        my $bt = getBookmarkTime($b);
+                        my $at = &$getBookmarkTime($a);
+                        my $bt = &$getBookmarkTime($b);
                         return $f * ($at == $bt ? $a cmp $b : $at < $bt ? -1 : 1);
                 }
                 return $f * ( $a cmp $b );
         };
-        @bookmarks = sort cmpBookmarks @bookmarks;
+        @bookmarks = sort { &$cmpBookmarks } @bookmarks;
 
         $attributes{""}{disabled}='disabled';
         if ($isBookmarked) {
@@ -1112,7 +1112,7 @@ sub renderAFSACLManager {
 
         }
         close($afs);
-        sub _renderACLData {
+        my $_renderACLData = sub {
                 my ($entries, $mustpositive) = @_;
                 my $s = $mustpositive ? 'p' : 'n';
                 my $content="";
@@ -1142,13 +1142,14 @@ sub renderAFSACLManager {
                         $content.=$$self{cgi}->Tr($row);
                 }
                 return $content;
-        }
+        };
         my $content = $$self{cgi}->a({-id=>'afsaclmanagerpos'},"").$self->renderMessage('acl')
                         .$$self{cgi}->div($self->tl('afsaclscurrentfolder',$main::PATH_TRANSLATED, $main::REQUEST_URI))
                         .$$self{cgi}->start_table({-class=>'afsacltable'});
-        $content .= _renderACLData(\@entries, 1);
-        $content .= _renderACLData(\@entries, 0);
-        $content .= $$self{cgi}->Tr($$self{cgi}->td({-class=>'afssavebutton',-colspan=>8}, $$self{cgi}->submit({-name=>'saveafsacl', -value=>$self->tl('afssaveacl')}))) if $main::ALLOW_AFSACLCHANGES;
+        $content .= &$_renderACLData(\@entries, 1);
+        $content .= &$_renderACLData(\@entries, 0);
+
+        $content .= $$self{cgi}->Tr($$self{cgi}->td({-class=>'afssavebutton',-colspan=>8}, $$self{cgi}->submit({-name=>'saveafsacl', -value=>$self->tl('afssaveacl'), -onclick=>'return pleaseWait()'}))) if $main::ALLOW_AFSACLCHANGES;
         $content .= $$self{cgi}->end_table();
         $content .= $$self{cgi}->div({-class=>'afsaclhelp'}, $self->tl('afsaclhelp'));
         return $content;
@@ -1194,7 +1195,7 @@ sub renderAFSGroupManager {
         }
 
         my $cb = "";
-        $cb .= $$self{cgi}->submit({-id=>'afschgrp',-name=>'afschgrp',-value=>$self->tl('afschangegroup')}) if $#groups>-1;
+        $cb .= $$self{cgi}->submit({-id=>'afschgrp',-name=>'afschgrp',-value=>$self->tl('afschangegroup'),-onclick=>'return pleaseWait();'}) if $#groups>-1;
 
         my $dgrp ="";
         $dgrp .= $$self{cgi}->submit({-name=>'afsdeletegrp', -value=>$self->tl('afsdeletegroup'),-onclick=>'return window.confirm("'.$self->tl('afsconfirmdeletegrp').'") && pleaseWait();'}) if $main::ALLOW_AFSGROUPCHANGES && $#groups>-1;
