@@ -450,15 +450,13 @@ sub getFolderList {
 
                 my $row = "";
 
-                my $focus = $filter ? '': qq@addClassNameById("tr_$fid","tr_highlight");@;
-                my $blur =  $filter ? '': qq@removeClassNameById("tr_$fid","tr_highlight");@;
                 my $onclick= $filter ? '' : qq@return handleRowClick("$fid", event);@;
                 my $ignev= qq@return false;@;
 
                 my $unsel = $full =~ /^$unselregex$/;
 
                 if ($main::ALLOW_FILE_MANAGEMENT) {
-                        my %checkboxattr = (-id=>$fid, -onfocus=>$focus, -onblur=>$blur, -name=>'file', -value=>$filename, -label=>'');
+                        my %checkboxattr = (-id=>$fid, -name=>'file', -value=>$filename, -label=>'');
                         if ($filename eq '..' || $unsel) {
                                 $checkboxattr{-disabled}='disabled';
                                 $checkboxattr{-style}='visibility: hidden;display:none';
@@ -489,7 +487,7 @@ sub getFolderList {
                         'mime'=> $usedcols{mime} ? { value=>$$self{cgi}->escapeHTML($mimetype), title=>$title} : '',
                 );
                 eval $rowpattern;
-                $list.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>$title, -onmouseover=>$focus,-onmouseout=>$blur, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
+                $list.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>$title, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
                 $odd = ! $odd;
 
                 if ($filename!~/^\.{1,2}$/) {
@@ -770,7 +768,7 @@ sub getfancyfilename {
                 }
         }
         my $img =  $$self{cgi}->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout});
-		$ret = ($linkit ? $$self{cgi}->a(  {href=>$full}, $img):$img).' '.$ret;
+	$ret = ($linkit ? $$self{cgi}->a(  {href=>$full}, $img):$img).' '.$ret;
         return $ret;
 }
 sub mode2str {
