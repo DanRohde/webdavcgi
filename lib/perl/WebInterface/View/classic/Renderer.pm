@@ -104,7 +104,7 @@ sub start_html {
         $content.=qq@<script src="${base}webdav-ui.js" type="text/javascript"></script>@;
         $content.=qq@<link href="${base}webdav-ui-custom.js" rel="stylesheet" type="text/css"/>@ if -e "${main::INSTALL_BASE}lib/webdav-ui-custom.js";
         $content.=$main::HTMLHEAD if defined $main::HTMLHEAD;
-        $content.=qq@</head><body onload="check()">@;
+        $content.=qq@</head><body onload="check()" onunload="pleaseWait()">@;
         return $content;
 }
 
@@ -136,7 +136,7 @@ sub render {
         $self->setLocale();
         $head .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
         $head .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
-        $content.=$$self{cgi}->start_multipart_form(-method=>'post', -action=>$ru, -onsubmit=>'return pleaseWait()') if $main::ALLOW_FILE_MANAGEMENT;
+        $content.=$$self{cgi}->start_multipart_form(-method=>'post', -action=>$ru) if $main::ALLOW_FILE_MANAGEMENT;
         if ($main::ALLOW_SEARCH && $$self{backend}->isReadable($fn)) {
                 my $search = $$self{cgi}->param('search');
                 $head .= $$self{cgi}->div({-class=>'search'}, $self->tl('search'). ' '. $$self{cgi}->input({-title=>$self->tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
