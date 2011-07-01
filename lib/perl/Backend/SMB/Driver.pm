@@ -379,7 +379,7 @@ sub _existsCacheEntry {
 sub _getPathInfo {
 	my ($file) = @_;
 	my ($server, $share, $path) = ( '', '', $file);
-	if ($file=~/^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)$SHARESEP([^\/]+)(.*)$/) {
+	if ($file=~/^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/]+)(.*)$/) {
 		($server, $share, $path) = ($1, $2, $3);
 
 	}

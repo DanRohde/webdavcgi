@@ -813,6 +813,11 @@ $ALLOW_SYMLINK = 0;
     ## admin has no matching filter so he can see all shares (overwrites sharefilter):
     myadminexample => [ qr/__NEVER_MATCH/, ],
   }, 
+
+  sharesep => '~', #optional - servername-share separator symbol (default: '~')
+  ## don't use a separator symbol like '$', '-', '_', '#', '%', '?', '&', '/', '\', or letters/numbers
+  ## good alternative separators are '!', ':', '=', '\'', '"', '`', '+', '*', or '@'
+
   domains => { #required
     'MY.EXAMPLE.DOMAIN.ORG' => {	#required (multiple domain entries allowed for forrests)
       ## a domain based filter (overwrites sharefilter and userfilter above):
