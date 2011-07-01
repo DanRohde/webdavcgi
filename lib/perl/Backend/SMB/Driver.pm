@@ -33,7 +33,7 @@ our %CACHE;
 
 use vars qw( $SHARESEP $DOCUMENT_ROOT );
 
-$SHARESEP =  ':';
+$SHARESEP =  $main::SMB{sharesep} || '~';
 $DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
 
 sub new {
@@ -80,9 +80,9 @@ sub readDir {
 		my $dom = $main::SMB{domains}{_getUserDomain()};
 		foreach my $fserver (keys %{$$dom{fileserver}}) {
 			if (exists $$dom{fileserver}{$fserver}{usershares} && exists $$dom{fileserver}{$fserver}{usershares}{_getUsername()}) {
-				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver.$SHARESEP",@{$$dom{fileserver}{$fserver}{usershares}{_getUsername()}}));
+				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{usershares}{_getUsername()}}));
 			} elsif (exists $$dom{fileserver}{$fserver}{shares}) {
-				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver.$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}));
+				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}));
 			} elsif (my $dir = $$self{smb}->opendir("smb://$fserver/")) {
 				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter(\%main::SMB)));
 				while (my $f = $$self{smb}->readdir_struct($dir)) {
@@ -342,7 +342,7 @@ sub _isRoot {
 	return $_[0]  eq $DOCUMENT_ROOT;
 }
 sub _isShare {
-	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\:\/]+\:[^\/]+\/?$/;
+	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E\/]+\Q$SHARESEP\E[^\/]+\/?$/;
 }
 sub S_ISLNK { return ($_[0] & 0120000) == 0120000; }
 sub S_ISDIR { return ($_[0] & 0040000) == 0040000; }
