@@ -196,7 +196,7 @@ sub renderSideBar {
         $content .= $self->renderSideBarMenuItem('navall', $self->tl('navalltooltip'),'window.location.href="?showall=1";', $$self{cgi}->button(-value=>$self->tl('navall'))) unless $showall;
         map { $content .= $self->renderSideBarMenuItem("changeviewto$_", $self->tl("${_}view"), qq@javascript:window.location.href="?view=$_";@, $$self{cgi}->button(-value=>$self->tl("${_}view"))) unless $main::VIEW eq $_; } @main::SUPPORTED_VIEWS;
         $content .= $self->renderSideBarMenuItem('filterview',$self->tl('filter.title'), 'toggleActionView("filterview","filter.size.op");', $$self{cgi}->button(-value=>$self->tl('filter.title'), -name=>'filter'));
-        $content .= $self->renderActionView('filterview', 'filter.title', $self->renderViewFilterView());
+        $av.= $self->renderActionView('filterview', 'filter.title', $self->renderViewFilterView());
 
         my $showsidebar =  (! defined $$self{cgi}->cookie('sidebar') || $$self{cgi}->cookie('sidebar') eq 'true');
         my $sidebartogglebutton = $showsidebar ? '&lt;' : '&gt;';
