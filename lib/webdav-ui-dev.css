@@ -97,9 +97,36 @@ input,select { text-shadow: 1px 1px white;  }
 .sidebartable.collapsed { width: 5px; }
 .sidebarcontent { overflow: hidden; border: 1px solid #aaaaaa; vertical-align: top;}
 .sidebarcontent.collapsed { display: none; }
-.sidebaractionview { z-index: 10; position: fixed; height: auto; min-height: 100px; max-height: 80%; left: 220px; top: 120px; width: auto; min-width: 300px; max-width: 800px; visibility: hidden; background-color: #dddddd; padding: 2px; border: 1px solid #aaaaaa; overflow: auto;}
+.sidebaractionview { 
+	z-index: 10; 
+	position: fixed; 
+	left: 220px; 
+	top: 120px; 
+	height: auto; 
+	min-height: 100px; 
+	max-height: 80%; 
+	width: auto; 
+	min-width: 300px; 
+	max-width: 800px; 
+	visibility: hidden; 
+	background-color: #dddddd; 
+	padding: 2px; 
+	border: 1px solid #aaaaaa; 
+	overflow: auto;
+	box-shadow: 5px 5px 5px gray;
+	-moz-box-shadow: 5px 5px 5px gray;
+	-webkit-box-shadow: 5px 5px 5px gray;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='gray')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=gray);
+}
 .sidebaractionview.collapsed { min-height: 0px; overflow: hidden; }
-.sidebaractionview.move { cursor: move; opacity: 0.6; filter: Alpha(opacity=60); }
+.sidebaractionview.move { 
+	cursor: move; 
+	opacity: 0.6; 
+	filter: 
+		Alpha(opacity=60) 
+		progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=gray); 
+}
 .sidebaractionview.resize { cursor: se-resize; opacity: 0.6; filter: Alpha(opacity=60); }
 .sidebarfolderview { padding-top: 110px; padding-bottom: 50px; padding-left: 220px; }
 .sidebarfolderview.full { padding-left: 30px; }
@@ -155,6 +182,11 @@ input,select { text-shadow: 1px 1px white;  }
 	opacity: 0.9; 
 	filter: Alpha(opacity=90); 
 	z-index: 11;
+	box-shadow: 5px 5px 5px #d3d3d3;
+	-moz-box-shadow: 5px 5px 5px #d3d3d3;
+	-webkit-box-shadow: 5px 5px 5px #d3d3d3;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#d3d3d3')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#d3d3d3);
 }
 .tableconfig fieldset {
 	min-height: 200px;
