@@ -989,13 +989,17 @@ sub renderViewFilterView {
 ###             );
 
 
-        $content.=$$self{cgi}->div({-style=>'clear:both'},
-                $$self{cgi}->div({-style=>'float: right'},
+        $content.=$$self{cgi}->table({-style=>'width:100%;'},
+                $$self{cgi}->Tr(
+			$$self{cgi}->td({-style=>'width:50%' },
+				$$self{cgi}->button(-name=>'filter.reset',-value=>$self->tl('filter.reset'), -onclick=>'return resetFilters();')
+			)
+			.$$self{cgi}->td({-style=>'text-align:right;'},
                         ###$$self{cgi}->checkbox(-name=>'filter.pathonly', -value=>$main::REQUEST_URI, -label=>$self->tl('filter.pathonly'), -checked=>'checked').
                         $$self{cgi}->button(-name=>'filter.apply',-value=>$self->tl('filter.apply'), -onclick=>'return applyFilters();')
-                )
-                .$$self{cgi}->div({-style=>'float:left'},$$self{cgi}->button(-name=>'filter.reset',-value=>$self->tl('filter.reset'), -onclick=>'return resetFilters();'))
-                );
+			)
+		)
+	);
 
         return $content;
 }
