@@ -28,17 +28,17 @@ sub render {
 	my ($self,$fn,$ru) = @_;
         my $content = "";
         my $head = "";
+	my $search = $$self{cgi}->param('search');
         $self->setLocale();
         $head .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
         $head .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
-        $content.=$$self{cgi}->start_multipart_form(-method=>'post', -action=>$ru) if $main::ALLOW_FILE_MANAGEMENT;
+        $content.=$$self{cgi}->start_multipart_form(-method=>'post', -action=>$ru) if $main::ALLOW_FILE_MANAGEMENT && !$search;
         if ($main::ALLOW_SEARCH && $$self{backend}->isReadable($fn)) {
-                my $search = $$self{cgi}->param('search');
                 $head .= $$self{cgi}->div({-class=>'search'}, $self->tl('search'). ' '. $$self{cgi}->input({-title=>$self->tl('searchtooltip'),-onkeypress=>'javascript:handleSearch(this,event);', -onkeyup=>'javascript:if (this.size<this.value.length || (this.value.length<this.size && this.value.length>10)) this.size=this.value.length;', -name=>'search',-size=>$search?(length($search)>10?length($search):10):10, -value=>defined $search?$search:''}));
         }
         $head.=$self->renderMessage();
-        if ($$self{cgi}->param('search')) {
-                $content.=$self->getSearchResult($$self{cgi}->param('search'),$fn,$ru);
+        if ($search) {
+                $content.=$self->getSearchResult($search,$fn,$ru);
         } else {
                 my $showall = $$self{cgi}->param('showpage') ? 0 : $$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0;
                 ##$head .= $$self{cgi}->div({-id=>'notwriteable',-onclick=>'fadeOut("notwriteable");', -class=>'notwriteable msg'}, $self->tl('foldernotwriteable')) if !$$self{backend}->isWriteable($fn);
