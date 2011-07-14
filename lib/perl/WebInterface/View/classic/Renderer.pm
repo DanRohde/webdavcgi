@@ -400,8 +400,8 @@ sub getFolderList {
                                 @;
         }
 
-        $tablehead = $$self{cgi}->thead($$self{cgi}->Tr({-class=>'th', -title=>$self->tl('clickchangessort')}, $tablehead));
-        $list .= $tablehead;
+        $tablehead = $$self{cgi}->Tr({-class=>'th', -title=>$self->tl('clickchangessort')}, $tablehead);
+        $list .= $$self{cgi}->thead($tablehead);
 
 
         my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$self)} : ();
