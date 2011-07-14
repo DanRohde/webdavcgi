@@ -379,13 +379,14 @@ sub getFolderList {
 
         my $rowpattern = '';
         foreach my $column (@tablecolumns) {
+		my $columntitle = $self->tl($column);
+
                 $tablehead .= $$self{cgi}->td({
                                                 -class=>"th_$column".($main::ORDER=~/^\Q$column\E/?' th_highlight':''),
-                                                -style=> $column eq 'name' ? "min-width: ${main::MAXFILENAMESIZE}ex;" : '',
-                                                -title=> $column ne 'fileactions' ? $self->tl('clickchangessort') : $self->tl($column),
+                                                -title=> $column ne 'fileactions' ? $self->tl('clickchangessort') : $columntitle,
                                                 -onclick=> $column ne 'fileactions' ? "window.location.href='$ru?order=${column}${dir};$query';" : '',
-                                        }, $column ne 'fileactions' ?  $$self{cgi}->a({-href=>"$ru?order=${column}${dir};$query"}, $self->tl($column).($main::ORDER=~/^\Q$column\E/?$ochar:''))
-                                                                : $self->tl($column)
+                                        }, $column ne 'fileactions' ?  $$self{cgi}->a({-href=>"$ru?order=${column}${dir};$query"}, $columntitle.($main::ORDER=~/^\Q$column\E/?$ochar:''))
+                                                                : $columntitle
                 );
                 $usedcols{$column}=1;
                 $rowpattern .= q@$row.=$$self{cgi}->td({
@@ -399,7 +400,7 @@ sub getFolderList {
                                 @;
         }
 
-        $tablehead = $$self{cgi}->Tr({-class=>'th', -title=>$self->tl('clickchangessort')}, $tablehead);
+        $tablehead = $$self{cgi}->thead($$self{cgi}->Tr({-class=>'th', -title=>$self->tl('clickchangessort')}, $tablehead));
         $list .= $tablehead;
 
 
@@ -423,6 +424,7 @@ sub getFolderList {
 
         my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
 
+	my $tbody="";
         my @rowclass = ( 'tr_odd', 'tr_even' );
         my $odd = 0;
         foreach my $filename (@files) {
@@ -489,7 +491,8 @@ sub getFolderList {
                         'mime'=> $usedcols{mime} ? { value=>$$self{cgi}->escapeHTML($mimetype), title=>$title} : '',
                 );
                 eval $rowpattern;
-                $list.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>$title, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
+		warn($@) if $@;
+                $tbody.=$$self{cgi}->Tr({-class=>$rowclass[0],-id=>"tr_$fid", -title=>$title, -ondblclick=>($filename=~/^\.{1,2}$/ || $isReadable)?qq@window.location.href="$nru";@ : ''}, $row);
                 $odd = ! $odd;
 
                 if ($filename!~/^\.{1,2}$/) {
@@ -499,10 +502,9 @@ sub getFolderList {
                         $filesizes+=$size if $isUnReadable || $$self{backend}->isFile($full);
                 }
 
-                ##$list .= $tablehead if $count % 50 == 0;
-
         }
-        $list .= $tablehead if $count > 20; ## && $count % 50 != 0 && $count % 50 > 20;
+	$list .= $$self{cgi}->tbody($tbody);
+        $list .= $tablehead if $count > 20; 
 	$content .= $$self{cgi}->div({-class=>'notwriteable'}, $self->tl('foldernotwriteable')) if !$$self{backend}->isWriteable($fn);
 	$content .= $$self{cgi}->div({-class=>'notreadable'}, $self->tl('foldernotreadable')) if !$$self{backend}->isReadable($fn);
         $content .= $self->renderTableConfig() if !$$self{cgi}->param('search');

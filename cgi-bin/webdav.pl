@@ -687,7 +687,7 @@ if (defined $CONFIGFILE) {
 	unless (my $ret = do($CONFIGFILE)) {
 		warn "couldn't parse $CONFIGFILE: $@" if $@;
 		warn "couldn't do $CONFIGFILE: $!" unless defined $ret;
-		warn "couldn't run $CONFIGFILE" unless $ret;
+		##warn "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
 	}
 }
 
