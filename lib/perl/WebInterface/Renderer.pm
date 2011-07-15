@@ -80,7 +80,7 @@ sub printMediaRSS {
         foreach my $file (sort { $renderer->cmp_files } @{$$self{backend}->readDir($fn, main::getFileLimit($fn), $renderer)}) {
                 my $mime = main::getMIMEType($file);
                 $mime='image/gif' if $renderer->hasThumbSupport($mime) && $mime !~ /^image/i;
-                $content.=qq@<item><title>$file</title><link>$ru$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if $renderer->hasThumbSupport($mime) && $$self{backend}->isReadable("$fn$file");
+                $content.=qq@<item><title>$file</title><link>$ru$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if $renderer->hasThumbSupport($mime) && $$self{backend}->isReadable("$fn$file") && $$self{backend}->isFile("$fn$file") && !$$self{backend}->isEmpty("$fn$file");
         }
         $content.=qq@</channel></rss>@;
         main::printHeaderAndContent("200 OK", 'appplication/rss+xml', $content);
@@ -131,6 +131,10 @@ sub printThumbnail {
 }
 sub printImage {
         my ($self, $fn) = @_;
+	if (!$$self{backend}->isFile($fn) || $$self{backend}->isEmpty($fn)) {
+		main::printHeaderAndContent('404 Not Found','text/plain','404 Not Found');
+		return;
+	}
         $fn = $$self{backend}->getLocalFilename($fn);
         my $image = Graphics::Magick->new;
         my $x = $image->Read($fn); warn "$x" if "$x";
