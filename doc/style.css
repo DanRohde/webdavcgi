@@ -11,6 +11,8 @@ body {
         box-shadow: 5px 5px 5px #ccc;
 	-moz-box-shadow: 5px 5px 5px #ccc;
 	-webkit-box-shadow: 5px 5px 5px #ccc;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 	margin-bottom: 5px;
 }
 .screenshottitle {
@@ -22,6 +24,8 @@ body {
         box-shadow: 5px 5px 5px #ccc;
 	-moz-box-shadow: 5px 5px 5px #ccc;
 	-webkit-box-shadow: 5px 5px 5px #ccc;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 	border: 1px solid #999999;
 
 }
@@ -35,6 +39,8 @@ body {
         box-shadow: 5px 5px 5px #aaa;
 	-moz-box-shadow: 5px 5px 5px #aaa;
 	-webkit-box-shadow: 5px 5px 5px #aaa;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#aaa')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#aaa);
 	border: 1px solid #999999;
 }
 #toc {
@@ -46,6 +52,8 @@ body {
         box-shadow: 5px 5px 5px #ccc;
 	-moz-box-shadow: 5px 5px 5px #ccc;
 	-webkit-box-shadow: 5px 5px 5px #ccc;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 }
 #toc ul {
 	list-style-type: none;
@@ -57,6 +65,8 @@ h1,h2,h3,#contact {
         box-shadow: 5px 5px 5px #ccc;
 	-moz-box-shadow: 5px 5px 5px #ccc;
 	-webkit-box-shadow: 5px 5px 5px #ccc;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 	padding-left: 5px;
 	border: 1px solid #999999;
 }
@@ -65,6 +75,8 @@ h1,h2,h3,#contact {
         box-shadow: 5px 5px 5px #ccc;
 	-moz-box-shadow: 5px 5px 5px #ccc;
 	-webkit-box-shadow: 5px 5px 5px #ccc;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 	margin-top: 7px;
 }
 .screenshottable {
@@ -76,6 +88,8 @@ h1,h2,h3,#contact {
         box-shadow: 5px 5px 5px #ccc;
 	-moz-box-shadow: 5px 5px 5px #ccc;
 	-webkit-box-shadow: 5px 5px 5px #ccc;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 	border: 1px solid #999999;
 }
 pre,code {
