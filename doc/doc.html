@@ -940,6 +940,21 @@ $BACKEND = 'DBB';
 Maybe it helps to increase the <code>Timeout</code> value in your Apache configuration (300 is a good minimum value). 
 <br/>
 If a larger <code>Timeout</code> value does not fix the problem perhaps the Apache mod_reqtimeout is loaded. You should disable this module (Debian/Ubuntu: <code>a2dismod reqtimeout; /etc/init.d/apache2 restart</code>) or configure it with larger values.
+<h3>Apache error log: <code>Request exceeded the limit of X internal redirects due to probable configuration error. Use 'LimitInternalRecursion' to increase the limit if necessary. Use 'LogLevel debug' to get a backtrace. </code></h3>
+
+This is a typical rewrite misconfiguration. 
+A common mistake is to take the <code>.htaccess</code> rewrite rule example for the Apache configuration. 
+A rule like <code>RewriteRule .* ...</code> in the Apache configuration runs into a 'endless' recursion only stopped by the Apache limit (<code>LimitInternalRecursion</code>). 
+Please use a rule like <code>RewriteRule ^/  ...</code> to fix this problem.
+In a <code>.htaccess</code> makes the pattern <code>^/</code> no sense because the this pattern will never match. 
+Rewite rule patterns in a <code>.htaccess</code> have to be relative to the current path therefore <code>.*</code> works fine. 
+<br/>
+If this does not help put the following to your Apache configuration:
+<pre>
+RewriteLogLevel 3
+RewriteLog /var/log/apache2/rewrite.log
+</pre>
+and analyze the <code>rewrite.log</code> after a single access to your WebDAV area and don't forget to set the <code>RewriteLogLevel</code> back to <code>0</code> after your debug session.
 
 <h3>Not Found / 500 Internal Server Error / 'Premature end of script headers'</h3>
 Please check the following:
