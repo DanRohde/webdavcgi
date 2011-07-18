@@ -120,7 +120,8 @@ ln -s `pwd`/cgi-bin/webdav.pl /usr/lib/cgi-bin
     <li>you can do that with rewrite rules</li>
     <li> or with a handler action</li>
     </ul>
-    Examples for Apache 2.x: (you need the Apache rewrite module: <code>a2enmod rewrite</code>)
+    Examples for Apache 2.x: (you need the Apache rewrite module: <code>a2enmod rewrite</code>) 
+    - and don't forget to take a look at the backend specific configurations <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, or <a href="#dbb">DBB</a>
     <pre>
 ### EXAMPLE 1: a .htaccess file to handle a complete folder with WebDAV CGI:
 ### (Prerequisites: /cgi-bin/webdavwrapper is a script alias and
@@ -276,6 +277,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 </pre>
 </li>
+<li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, or <a href="#dbb">DBB</a></li>
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
 <li> Don't forget to check the config file syntax: <code>perl -c webdav.conf</code></li>
 <li> And last but not least change the <code>$CONFIGFILE</code> value in <code>webdav.pl</code>:
