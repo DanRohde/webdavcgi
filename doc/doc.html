@@ -303,7 +303,10 @@ Apache and webdav.pl setup:
 Graphics::Magick does not compile:
 <ul>
 <li> You can use Image::Magick instead but it makes trouble in conjunction with Speedy: 
-        <br/><code>sed -i -e 's@Graphics::Magick@Image::Magick@g' webdav.pl</code>
+<pre>sed -i -e 's@Graphics::Magick@Image::Magick@g' \
+                checkenv \
+		lib/perl/WebInterface/View/classic/Renderer.pm \
+		lib/perl/WebInterface/Renderer.pm</pre>
 </li>
 </ul>
 
