@@ -61,12 +61,39 @@ sub getQuickNavPath {
         }
         my @fna = split(/\//,substr($fn,length($main::DOCUMENT_ROOT)));
         my $fnc = $main::DOCUMENT_ROOT;
-        foreach my $pe (split(/\//, $navpath)) {
+	my @pea = split(/\//, $navpath); ## path element array
+	my $navpathlength = length($navpath);
+	my $ignorepe = 0;
+	my $lastignorepe = 0;
+	my $ignoredpes = '';
+        for (my $i=0; $i<=$#pea; $i++) {
+		my $pe = $pea[$i];
                 $path .= uri_escape($pe) . '/';
                 $path = '/' if $path eq '//';
                 my $dn =  "$pe/";
                 $dn = $fnc eq $main::DOCUMENT_ROOT ? "$pe/" : $$self{backend}->getDisplayName($fnc);
-                $content .= $$self{cgi}->a({-href=>"$base$path".(defined $query?"?$query":""), -title=>$path}," $dn ");
+		$lastignorepe = $ignorepe; 
+		$ignorepe = 0;
+		if (defined $main::MAXNAVPATHSIZE && $main::MAXNAVPATHSIZE>0 && $navpathlength>$main::MAXNAVPATHSIZE) {
+			if ($i==0) {
+				if (length($dn)>$main::MAXFILENAMESIZE) {
+					$dn=substr($dn,0,$main::MAXFILENAMESIZE-6).'[...]/';
+					$navpathlength-=$main::MAXFILENAMESIZE-8;
+				}
+			} elsif ($i==$#pea) {
+				$dn=substr($dn,0,$main::MAXNAVPATHSIZE-7).'[...]/';
+				$navpathlength-=length($dn)-8;
+			} else {
+				$navpathlength-= length($dn);
+				$ignorepe=1;
+			}
+		}
+		$ignoredpes.="$pe/" if $ignorepe;
+		if (!$ignorepe && $lastignorepe) {
+			$content.=$$self{cgi}->a({-href=>'..',-title=>$ignoredpes}, " [...]/ ");
+			$ignoredpes='';
+		}
+		$content.=$$self{cgi}->a({-href=>"$base$path".(defined $query?"?$query":""),-title=>"$pe/"}, " $dn ") unless $ignorepe;
                 $fnc.=shift(@fna).'/';
         }
         $content .= $$self{cgi}->a({-href=>'/', -title=>'/'}, '/') if $content eq '';
