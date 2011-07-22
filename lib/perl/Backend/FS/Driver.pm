@@ -84,7 +84,14 @@ sub mkcol {
 	return CORE::mkdir($_[1]);
 }
 sub unlinkFile {
-	my $ret = CORE::unlink($_[1]);
+	my ($self, $f) = @_;
+	$f=~s/\/$//;
+	my $ret = CORE::unlink($f);
+	delete $CACHE{$self}{$f} if $ret;
+	return $ret;
+}
+sub unlinkDir {
+	my $ret = CORE::rmdir($_[1]);
 	delete $CACHE{$_[0]}{$_[1]} if $ret;
 	return $ret;
 }
@@ -117,26 +124,23 @@ sub deltree {
         my ($self,$f,$errRef) = @_;
         $errRef=[] unless defined $errRef;
         my $count = 0;
-        my $nf = $f; $nf=~s/\/$//;
         if (!main::isAllowed($f,1)) {
                 push(@$errRef, { $f => "Cannot delete $f" });
-        } elsif (-l $nf) {
-                if (unlink($nf)) {
-			delete $CACHE{$self}{$f};
+        } elsif ($self->isLink($f)) {
+                if ($self->unlinkFile($f)) {
                         $count++;
                 } else {
                         push(@$errRef, { $f => "Cannot delete '$f': $!" });
                 }
-        } elsif (-d $f) {
+        } elsif ($self->isDir($f)) {
                 if (opendir(my $dirh,$f)) {
                         foreach my $sf (grep { !/^\.{1,2}$/ } readdir($dirh)) {
                                 my $full = $f.$sf;
-                                $full.='/' if -d $full && $full!~/\/$/;
-                                $count+=deltree($self,$full,$errRef);
+                                $full.='/' if $self->isDir($full) && $full!~/\/$/;
+                                $count+=$self->deltree($full,$errRef);
                         }
                         closedir($dirh);
-                        if (rmdir $f) {
-				delete $CACHE{$self}{$f};
+                        if ($self->unlinkDir($f)) {
                                 $count++;
                                 $f.='/' if $f!~/\/$/;
                         } else {
@@ -145,8 +149,8 @@ sub deltree {
                 } else {
                         push(@$errRef, { $f => "Cannot open '$f': $!" });
                 }
-        } elsif (-e $f) {
-                if (unlink($f)) {
+        } elsif ($self->exists($f)) {
+                if ($self->unlinkFile($f)) {
                         $count++;
                 } else {
                         push(@$errRef, { $f  => "Cannot delete '$f' : $!" }) ;
@@ -171,10 +175,10 @@ sub changeFilePermissions {
         return if exists $$visited{$nfn};
         $$visited{$nfn}=1;
 
-        if ($recurse && -d $fn) {
+        if ($recurse && $self->isDir($fn)) {
                 if (opendir(my $dir, $fn)) {
                         foreach my $f ( grep { !/^\.{1,2}$/ } readdir($dir)) {
-                                $f.='/' if -d "$fn$f" && $f!~/\/$/;
+                                $f.='/' if $self->isDir("$fn$f") && $f!~/\/$/;
                                 changeFilePermissions($self, $fn.$f, $mode, $type, $recurse, $visited);
                         }
                         closedir($dir);
@@ -242,7 +246,7 @@ sub compressFiles {
 	require Archive::Zip;
 	my $zip =  Archive::Zip->new();
 	foreach my $file (@files) {
-		if (-d $basepath.$file) {
+		if ($self->isDir($basepath.$file)) {
 			$zip->addTree($basepath.$file, $file);
 		} else {
 			$zip->addFile($basepath.$file, $file);
@@ -267,7 +271,7 @@ sub resolve {
 sub getFileContent {
         my ($self,$fn) = @_;
         my $content="";
-        if (-e $fn && !-d $fn && open(F,"<$fn")) {
+        if ($self->exists($fn) && !$self->isDir($fn) && open(F,"<$fn")) {
                 $content = join("",<F>);
                 close(F);
         }
