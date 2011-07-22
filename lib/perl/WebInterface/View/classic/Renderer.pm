@@ -75,7 +75,7 @@ sub getQuickNavPath {
 		$lastignorepe = $ignorepe; 
 		$ignorepe = 0;
 		if (defined $main::MAXNAVPATHSIZE && $main::MAXNAVPATHSIZE>0 && $navpathlength>$main::MAXNAVPATHSIZE) {
-			if ($i==0) {
+			if ($i==0 || ($i==1 && $pea[$i] eq '/')) {
 				if (length($dn)>$main::MAXFILENAMESIZE) {
 					$dn=substr($dn,0,$main::MAXFILENAMESIZE-6).'[...]/';
 					$navpathlength-=$main::MAXFILENAMESIZE-8;
