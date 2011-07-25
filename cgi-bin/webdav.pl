@@ -1159,6 +1159,9 @@ sub _PROPFIND {
 	} elsif (defined $CURRENT_USER_PRINCIPAL && length($CURRENT_USER_PRINCIPAL)>1 && $ru =~ /\Q$CURRENT_USER_PRINCIPAL\E\/?$/) {
 		$fn=~s/\Q$CURRENT_USER_PRINCIPAL\E\/?$//;
 		$depth=0;
+	} elsif ($ru =~ m@^/\.well-known/(caldav|carddav)$@) { # RFC5785
+	 	$fn =~ s@/\.well-known/(caldav|carddav)$@@;
+		$depth=0;
 	}
 
 	if (!is_hidden($fn) && $backend->exists($fn)) {
@@ -1615,7 +1618,7 @@ sub _REPORT {
 		$status='400 Bad Request';
 		$type='text/plain';
 		$content='400 Bad Request';
-	} elsif (!$backend->exists($fn) && $ru ne $CURRENT_USER_PRINCIPAL) {
+	} elsif (!$backend->exists($fn) && $ru !~ /^(\Q$CURRENT_USER_PRINCIPAL\E|\Q$PRINCIPAL_COLLECTION_SET\E)/) {
 		$status = '404 Not Found';
 		$type = 'text/plain';
 		$content='404 Not Found';
@@ -1709,7 +1712,7 @@ sub _REPORT {
 			$type = 'text/plain';
 			$content = '400 Bad Request';
 		}
-		if ($rn) {
+		if (defined $rn) {
 			foreach my $href (@hrefs) {
 				my(%resp_200, %resp_404);
 				$resp_200{status}='HTTP/1.1 200 OK';
@@ -1731,7 +1734,7 @@ sub _REPORT {
 			}
 			### push @resps, { } if ($#hrefs==-1);  ## empty multistatus response not supported
 		}
-		$content= $#resps> -1 ? createXML({multistatus => $#resps>-1 ? { response => \@resps } : '' }) : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"></D:multistatus>';
+		$content= $#resps> -1 ? createXML({multistatus => $#resps>-1 ? { response => \@resps } : '' }) : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"></D:multistatus>' if $content eq "";
 	}
 	debug("_REPORT: REQUEST: $xml");
 	debug("_REPORT: RESPONSE: $content");

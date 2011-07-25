@@ -223,18 +223,19 @@ sub getProperty {
                         }
                 }
                 $$resp_200{prop}{'calendar-free-busy-set'}{href}=$self->getCalendarHomeSet($uri) if $prop eq 'calendar-free-busy-set';
-        }
-        if ($main::ENABLE_CARDDAV) {
 		## caldav schedule:
-                $$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $isDir;
-                $$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $main::ENABLE_CALDAV_SCHEDULE && $isDir;
+		if ($main::ENABLE_CALDAV_SCHEDULE) {
+			$$resp_200{prop}{resourcetype}{'schedule-inbox'}=undef if $prop eq 'resourcetype' && $isDir;
+			$$resp_200{prop}{resourcetype}{'schedule-outbox'}=undef if $prop eq 'resourcetype' && $main::ENABLE_CALDAV_SCHEDULE && $isDir;
+		}
                 $$resp_200{prop}{'schedule-inbox-URL'}{href} = $self->getCalendarHomeSet($uri,'inbox') if $prop eq 'schedule-inbox-URL';
                 $$resp_200{prop}{'schedule-outbox-URL'}{href} = $self->getCalendarHomeSet($uri,'outbox') if $prop eq 'schedule-outbox-URL';
                 $$resp_200{prop}{'schedule-calendar-transp'}{transparent} = undef if $prop eq 'schedule-calendar-transp';
                 $$resp_200{prop}{'schedule-default-calendar-URL'}=$self->getCalendarHomeSet($uri) if $prop eq 'schedule-default-calendar-URL';
                 $$resp_200{prop}{'schedule-tag'}=main::getETag($fn) if $prop eq 'schedule-tag';
 		##
-	
+        }
+        if ($main::ENABLE_CARDDAV) {
                 if ($prop eq 'address-data') {
                         if ($fn =~ /\.vcf$/i) {
                                 $$resp_200{prop}{'address-data'}=$$self{cgi}->escapeHTML($$self{backend}->getFileContent($fn));
