@@ -132,7 +132,7 @@ sub handleFileActions {
 				my $fullname = $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
 				if ($fullname=~/^\Q$main::DOCUMENT_ROOT\E/) {
 					if ($main::ENABLE_TRASH) {
-						$$self{backend}->moveToTrash($main::PATH_TRANSLATED.$file);
+						$count += main::moveToTrash($main::PATH_TRANSLATED.$file);
 					} else {
 						$count += $$self{backend}->deltree($main::PATH_TRANSLATED.$file, \my @err);
 					}

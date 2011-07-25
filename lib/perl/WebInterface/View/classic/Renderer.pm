@@ -1010,7 +1010,7 @@ sub renderViewFilterView {
                                   '>'=>$self->tl('filter.size.greaterthan'),
                                   '>='=>$self->tl('filter.size.greaterorequal'), ### 'â¥', 'â¤'
                                   })
-                .$$self{cgi}->input({-size=>10, -name=>'filter.size.val', -value=>$sizevaldefault, -onkeypress=>'return catchEnter(event,"filter.apply")'})
+                .$$self{cgi}->input({-type=>"number", -size=>10, -name=>'filter.size.val', -value=>$sizevaldefault, -onkeypress=>'return catchEnter(event,"filter.apply")'})
                 . $$self{cgi}->popup_menu(-name=>'filter.size.unit', -values=>['B','KB','MB','GB','TB','PB'], defaults=>$sizeunitdefault));
 ###     $content.=$$self{cgi}->div({},
 ###             $self->tl('filter.time.title')

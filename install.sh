@@ -70,16 +70,7 @@ ln -s $wd/cgi-bin/webdav.pl $cgibin/webdav.pl
 ln -s $wd/cgi-bin/webdavwrapper $cgibin/webdavwrapper
 echo "done."
 
-if perl $cgibin/webdav.pl 1>/dev/null 2>&1; then
-	echo "Okay, all perl modules seems to be available."
-else
-	echo -- perl -c $cgibin/webdav.pl  failed
-	perl -c $cgibin/webdav.pl
-	echo
-	echo Please install all required Perl modules.
-	echo
-	exit 1
-fi
+$wd/checkenv
 
 echo "Please don't forget to configure WebDAV CGI and your web server."
 echo "That's it."

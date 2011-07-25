@@ -570,7 +570,7 @@ $ENABLE_TRASH = 0;
 ## neccessary if you enable trash 
 ## it should be writable by your users (chmod a+rwxt <trash folder>)
 ## EXAMPLE: $TRASH_FOLDER = '/tmp/trash';
-$TRASH_FOLDER = '/usr/local/www/var/trash';
+$TRASH_FOLDER = '/tmp/trash';
 
 ## -- ENABLE_GROUPDAV
 ## enables GroupDAV (http://groupdav.org/draft-hess-groupdav-01.txt)
@@ -1349,7 +1349,7 @@ sub _DELETE {
 		$status='423 Locked';
 	} else {
 		if ($ENABLE_TRASH) {
-			$status='404 Forbidden' unless $backend->moveToTrash($PATH_TRANSLATED);
+			$status='404 Forbidden' unless moveToTrash($PATH_TRANSLATED) > 0;
 		} else {
 			$backend->deltree($PATH_TRANSLATED, \my @err);
 			logger("DELETE($PATH_TRANSLATED)");
@@ -2445,8 +2445,8 @@ sub moveToTrash  {
 
         if ($fn =~ /^\Q$TRASH_FOLDER\E/) { ## delete within trash
                 my @err;
-                $backend->deltree($fn, \@err);
-                $ret = 1 if $#err == -1;
+                $ret+= $backend->deltree($fn, \@err);
+                $ret = 0 unless $#err == -1;
                 debug("moveToTrash($fn)->/dev/null = $ret");
         } elsif ($backend->exists($TRASH_FOLDER) || $backend->mkcol($TRASH_FOLDER)) {
                 if ($backend->exists($trash)) {
