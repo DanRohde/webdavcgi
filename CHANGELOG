@@ -6,6 +6,8 @@
      - fixed last AFS performance bugs 
      - fixed security bug (accessing files outside $DOCUMENT_ROOT)
      - fixed MIME types related performace bug 
+     - fixed CalDAV bug related to Sundbird reported by Andrius Preimantas
+     - fixed move to trash bug reported by Andrius Preimantas
      - Web interface:
            - improved display of byte sizes (flexible unit change) (GET)
 	   - added symbolic link support (POST)
