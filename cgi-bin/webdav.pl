@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
-	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS
+	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -1008,17 +1008,17 @@ sub _GET {
 	my $fn = $PATH_TRANSLATED;
 	debug("_GET: $fn");
 	if (is_hidden($fn)) {
-		printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+		printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 	} elsif (!$FANCYINDEXING && $backend->isDir($fn)) {
 		if (defined $REDIRECT_TO) {
 			print $cgi->redirect($REDIRECT_TO);
 		} else {
-			printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+			printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 		}
 	} elsif ($FANCYINDEXING && getWebInterface()->handleGetRequest()) {
 		debug("_GET: WebInterface called");
 	} elsif ($backend->exists($fn) && !$backend->isReadable($fn)) {
-		printHeaderAndContent('403 Forbidden','text/plain', '403 Forbidden');
+		printHeaderAndContent(getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
 	} elsif ($backend->exists($fn)) {
 		debug("_GET: DOWNLOAD");
 		binmode(STDOUT);
@@ -1047,7 +1047,7 @@ sub _GET {
 		}
 	} else {
 		debug("GET: $fn NOT FOUND!");
-		printHeaderAndContent('404 Not Found','text/plain','404 - FILE NOT FOUND');
+		printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
 	}
 	
 }
@@ -1075,7 +1075,7 @@ sub _POST {
 		## NOT IMPLEMENTED YET
 	} else {
 		debug("_POST: forbidden POST to $PATH_TRANSLATED");
-		printHeaderAndContent('403 Forbidden','text/plain','403 Forbidden (unknown request, params:'.join(', ',$cgi->param()).')');
+		printHeaderAndContent(getErrorDocument('403 Forbidden','text/plain','403 Forbidden (unknown request, params:'.join(', ',$cgi->param()).')'));
 	}
 }
 sub _OPTIONS {
@@ -2625,6 +2625,22 @@ sub getBaseURIFrag {
 }
 sub getParentURI {
 	return $_[0]=~/^(.*?)\/[^\/]+\/?$/ ? ( $1 || '/' ) : '/';
+}
+sub getLocalFileContentAndType {
+        my ($fn,$default,$defaulttype) = @_;
+        my $content="";
+        if (-e $fn && ! -d $fn && open(F,"<$fn")) {
+                $content = join("",<F>);
+                close(F);
+		$defaulttype=getMIMEType($fn);
+        } else {
+		$content = $default;
+	}
+        return ($defaulttype, $content);
+}
+sub getErrorDocument {
+	my ($status,$defaulttype,$default) =@_;
+	return exists $ERROR_DOCS{$status} ? ($status, getLocalFileContentAndType($ERROR_DOCS{$status}, $default, $defaulttype)) : ($status, $defaulttype, $default);
 }
 
 sub debug {

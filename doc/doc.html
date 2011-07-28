@@ -90,7 +90,7 @@ perl -MCPAN -e "install File::Spec::Link"
 <li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code></li>
 <li>change directory to the source base (e.g: <code>cd webdavcgi*</code>) and call <code>bash install.sh</code> 
    <br/>OR install CGI script and wrapper by hand<a href="#" title="click here to show install steps" style="text-decoration: none;"  onclick="document.getElementById('maninstall').style.display='block'; return false;">&darr;</a>
-	<div id="maninstall" style="display:none">
+	<div id="maninstall">
 	<ol>
 	<li>compile your wrapper, change the permissions, and put it into your cgi-bin, e.g:
 <pre>
@@ -495,6 +495,24 @@ Here are some examples to do that in the WebDAV CGI configuration file:
 <li><code>$ICONS{'mymime/type'}='/uripath/to/my/icons/test.gif';</code></li>
 <li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=>'/uripath/to/my/icons/test1.gif', 'mymime/type2'=>'/uripath/to/my/icons/test2.gif',   ) );</code></li>
 </ul>
+
+<h3>How to customize error messages/documents?</h3>
+<p>
+Two HTTP status codes are supported for customized error documents: '<code>404 Not Found</code>' and '<code>403 Forbidden</code>'
+</p>
+<p>
+You have to  use '.html' or '.txt' extensions for your error documents to determine a correct MIME type.
+</p>
+<ol>
+<li> put your error documents to the <code>$INSTALLBASE/htdocs</code> folder or wherever you want (should be readable by your users)</li>
+<li> add following options to your WebDAV CGI configuration file (after <code>$INSTALL_BASE=...</code>): 
+<pre>
+$ERROR_DOCS{'404 Not Found'} = "$INSTALL_BASE/htdocs/404.html";
+$ERROR_DOCS{'403 Forbidden'} = "$INSTALL_BASE/htdocs/403.html";
+</pre>
+</li>
+</ol>
+
 
 <h3>How to integrate a WYSIWYG editor?</h3>
 

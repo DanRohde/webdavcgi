@@ -66,6 +66,7 @@ sub getQuickNavPath {
 	my $ignorepe = 0;
 	my $lastignorepe = 0;
 	my $ignoredpes = '';
+	my $lastignoredpath = '';
         for (my $i=0; $i<=$#pea; $i++) {
 		my $pe = $pea[$i];
                 $path .= uri_escape($pe) . '/';
@@ -86,11 +87,12 @@ sub getQuickNavPath {
 			} else {
 				$navpathlength-= length($dn);
 				$ignorepe=1;
+				$lastignoredpath="$base$path";
 			}
 		}
 		$ignoredpes.="$pe/" if $ignorepe;
 		if (!$ignorepe && $lastignorepe) {
-			$content.=$$self{cgi}->a({-href=>'..',-title=>$ignoredpes}, " [...]/ ");
+			$content.=$$self{cgi}->a({-href=>$lastignoredpath,-title=>$ignoredpes}, " [...]/ ");
 			$ignoredpes='';
 		}
 		$content.=$$self{cgi}->a({-href=>"$base$path".(defined $query?"?$query":""),-title=>"$pe/"}, " $dn ") unless $ignorepe;

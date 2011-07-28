@@ -97,3 +97,13 @@ pre,code {
 	background-color: #efefff;
 	overflow: auto;
 }
+#maninstall { display: none; }
+@media print {
+	body, #content {
+		background: white; color: black; margin:0; border: 0; padding; 5px; max-width: none;
+	}
+	h1,h2,h3,h4 { border: none; padding: 5px;}
+	#toc { display: none; }
+	pre,code { font-size: 0.8px; overflow: visible; }
+	#maninstall { display: block; }
+}
