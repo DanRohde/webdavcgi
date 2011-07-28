@@ -17,7 +17,7 @@
 	   - added extension support (GET)
 	   - added view support (GET)
 	   - fixed long navigation path bug (GET)
-	   - added customized error doc support (GET/POST)
+	   - added custom error doc support (GET/POST)
      - improved performance with the NYT profiler
      - fixed symlink move bug
      - fixed minor webdav.conf returns wrong result code bug (thanx Andrius Preimantas andrius.preimantas@gmail.com) 

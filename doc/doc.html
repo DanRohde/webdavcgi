@@ -504,8 +504,8 @@ Two HTTP status codes are supported for customized error documents: '<code>404 N
 You have to  use '.html' or '.txt' extensions for your error documents to determine a correct MIME type.
 </p>
 <ol>
-<li> put your error documents to the <code>$INSTALLBASE/htdocs</code> folder or wherever you want (should be readable by your users)</li>
-<li> add following options to your WebDAV CGI configuration file (after <code>$INSTALL_BASE=...</code>): 
+<li> put your error documents to the <code>$INSTALL_BASE/htdocs</code> folder or wherever you want (should be readable by your users)</li>
+<li> add following options to your WebDAV CGI configuration file:
 <pre>
 $ERROR_DOCS{'404 Not Found'} = "$INSTALL_BASE/htdocs/404.html";
 $ERROR_DOCS{'403 Forbidden'} = "$INSTALL_BASE/htdocs/403.html";
