@@ -63,8 +63,8 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
     <li>CGI (included in most Linux dists; older dists need that: libcgi-perl)</li>
     <li>DBI (libdbi-perl) and a database driver, e.g. DBD::SQLite (libdbd-sqlite3-perl) - (since v0.3.0)</li>
     <li>Date::Parse (libtimedate-perl) - (since v0.2.1)</li>
-    <li><strike>OSSP::uuid (libossp-uuid-perl or from <a href="http://www.ossp.org/pkg/lib/uuid/">http://www.ossp.org/pkg/lib/uuid/</a>) - (since v0.3.0)</strike> (since v0.7.1 replaced by UUID::Tiny)</li>
-    <li>UUID::Tiny (libuuid-tiny-perl) - (since 0.7.1)</li>
+    <li><strike>OSSP::uuid (libossp-uuid-perl or from <a href="http://www.ossp.org/pkg/lib/uuid/">http://www.ossp.org/pkg/lib/uuid/</a>) - (since v0.3.0)</strike> (since v0.8.0 replaced by UUID::Tiny)</li>
+    <li>UUID::Tiny (libuuid-tiny-perl) - (since 0.8.0)</li>
     <li>XML::Simple (libxml-simple-perl)</li>
     <li>Quota (libquota-perl) - (since v0.3.4)</li>
     <li>Archive::Zip (libarchive-zip-perl) - (since v0.5.0)</li>
@@ -73,8 +73,8 @@ You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav compl
     <li>File::Spec::Link (CPAN only) - (since v0.5.2)</li>
     <li>IO::Compress::Gzip (included in most Linux dists) - (since 0.7.0)</li>
     <li>IO::Compress::Deflate (included in most Linux dists) - (since 0.7.0)</li>
-    <li>Module::Load (included in most Linux dists, older need libmodule-load-perl) - (since 0.7.1)</li>
-    <li><span style="optional">optional (for SMB backend):</span>Filesys::SmbClient (libfilesys-smbclient-perl) - (since 0.7.1)</li>
+    <li>Module::Load (included in most Linux dists, older need libmodule-load-perl) - (since 0.8.0)</li>
+    <li><span style="optional">optional (for SMB backend):</span>Filesys::SmbClient (libfilesys-smbclient-perl) - (since 0.8.0)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -168,7 +168,7 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 </ol>
 <a id="upgrade"></a>
 <h2>Upgrade</h2>
-<h3>Upgrading from 0.7.0 to &ge;0.7.1</h3>
+<h3>Upgrading from 0.7.0 to &ge;0.8.0</h3>
 <ol>
 <li> a new Perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
 <li> <code>OSSP::uuid</code> Perl module was replaced by <code>UUID::Tiny</code> (Ubuntu/Debian package: libuuid-tiny-perl)</li>
@@ -459,7 +459,7 @@ AFS note: If you use AFS you have to use AFS groups and AFS ACLs to share folder
 
 <a id="webinterface"></a>
 <h2>Web interface</h2>
-<h3>How to add a new translation?</h3>
+<h3>How to add a new translation</h3>
 <div>
 Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
 
@@ -468,7 +468,7 @@ Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt
 And don't forget to sent <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">me</a> your translation. Thanx :-)
 </div>
 
-<h3>How to change CSS styles?</h3>
+<h3>How to change CSS styles</h3>
 There are many ways to do it:
 
 <ul>
@@ -488,7 +488,7 @@ EOF
 <li> Set the <code>$HTMLHEAD</code> variable in your WebDAV CGI config (e.g. <code>$HTMLHEAD='&lt;link .../&gt;';</code> or <code>$HTMLHEAD='&lt;style&gt;...&lt;/style&gt;';</code>)</li>
 <li>...</li>
 </ul>
-<h3>How to add or change icons?</h3>
+<h3>How to add or change icons</h3>
 
 Here are some examples to do that in the WebDAV CGI configuration file:
 <ul>
@@ -496,7 +496,7 @@ Here are some examples to do that in the WebDAV CGI configuration file:
 <li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=>'/uripath/to/my/icons/test1.gif', 'mymime/type2'=>'/uripath/to/my/icons/test2.gif',   ) );</code></li>
 </ul>
 
-<h3>How to customize error messages/documents?</h3>
+<h3>How to customize error messages/documents</h3>
 <p>
 Two HTTP status codes are supported for customized error documents: '<code>404 Not Found</code>' and '<code>403 Forbidden</code>'
 </p>
@@ -514,7 +514,7 @@ $ERROR_DOCS{'403 Forbidden'} = "$INSTALL_BASE/htdocs/403.html";
 </ol>
 
 
-<h3>How to integrate a WYSIWYG editor?</h3>
+<h3>How to integrate a WYSIWYG editor</h3>
 
 Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
 <ol>
