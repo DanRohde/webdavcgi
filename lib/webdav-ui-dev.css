@@ -314,20 +314,20 @@ div.textdata { margin: 2px 2px 15px 2px;}
 	margin-right: auto;
 }
 .autorefreshpauseresume, .autorefreshstop {
-	border: 1px outset white;
-	font-weight: bold;
-	width: 20px;
-	height: 20px;
-	text-align: center;
+	width: 24px;
+	height: 24px;
 	cursor: pointer;
+	opacity: 1; 
+	filter: Alpha(opacity=100); 
 }
 .autorefreshpauseresume.pause {
-	background-color: yellow;
-	color: black;
+	border: 1px outset darkgreen;
+	background: green url('_webdavcgi_/actions/Pause-Pressed-icon.png') no-repeat left;
 }
 .autorefreshpauseresume.resume {
-	background-color: green;
+	border: 1px outset darkblue;
+	background: blue url('_webdavcgi_/actions/Play-Normal-icon.png') no-repeat left;
 }
 .autorefreshstop {
-	background-color: red;
+	background: red url('_webdavcgi_/actions/Stop-Normal-Red-icon.png') no-repeat left;
 }

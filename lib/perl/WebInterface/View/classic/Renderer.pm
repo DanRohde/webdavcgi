@@ -1344,10 +1344,10 @@ sub renderAutoRefreshWindow {
 			$cgi->Tr(
 				$cgi->td(
 					$cgi->div({-id=>'autorefreshpauseresume',-class=>'autorefreshpauseresume pause',
-							-onclick=>'toggleAutoRefresh()',-title=>$self->tl('autorefresh.title.pauseresume')},'II')
+							-onclick=>'toggleAutoRefresh()',-title=>$self->tl('autorefresh.title.pauseresume')},' ')
 				)
 				.$cgi->td($cgi->div({-id=>'autorefreshstop',-class=>'autorefreshstop',
-							-onclick=>'stopAutoRefresh()',-title=>$self->tl('autorefresh.title.stop')},'X'))
+							-onclick=>'stopAutoRefresh()',-title=>$self->tl('autorefresh.title.stop')},' '))
 			))
 	);
 	return $content;
