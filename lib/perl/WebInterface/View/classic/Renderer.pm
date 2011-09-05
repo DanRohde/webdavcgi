@@ -191,7 +191,7 @@ sub render {
 		$content.=$self->renderAutoRefreshWindow();
                 $head.= $$self{cgi}->div( { -class=>'viewtools' },
                                 ($ru=~/^$main::VIRTUAL_BASE\/?$/ ? '' :$$self{cgi}->a({-class=>'up', -href=>main::getParentURI($ru).(main::getParentURI($ru) ne '/'?'/':''), -title=>$self->tl('uptitle')}, $self->tl('up')))
-                                .' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh'))
+                                ##.' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh'))
 				.' '.$self->renderAutoRefreshSelection()
 				);
                 if ($main::SHOW_QUOTA) {
@@ -1357,11 +1357,15 @@ sub renderAutoRefreshSelection {
 	my $content = "";
 	return $content unless defined %main::AUTOREFRESH;
 	my $cgi = $$self{cgi};
-	$main::AUTOREFRESH{0}=$self->tl('autorefresh.select');
 	my @autorefreshvalues = sort {$a <=> $b} keys(%main::AUTOREFRESH);
+	unshift @autorefreshvalues, 'now';
+	$main::AUTOREFRESH{now}=$self->tl('autorefresh.now');
+	unshift @autorefreshvalues, 0;
+	$main::AUTOREFRESH{0}=$self->tl('autorefresh.select');
+
 	push @autorefreshvalues, '-1';
 	$main::AUTOREFRESH{-1}=$self->tl('autorefresh.clear');
-	$content .= $cgi->popup_menu(-name=>'autorefreshtime', -values=>\@autorefreshvalues, -labels=>\%main::AUTOREFRESH, -onChange=>'startAutoRefresh(this.value)');
+	$content .= $cgi->popup_menu(-name=>'autorefreshtime', -title=>$self->tl('autorefresh.select.title'), -values=>\@autorefreshvalues, -labels=>\%main::AUTOREFRESH, -onChange=>'startAutoRefresh(this.value)');
 	return $content;
 }
 

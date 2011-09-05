@@ -57,7 +57,7 @@ sub render {
 		$content.=$self->renderAutoRefreshWindow();
                 $head.= $$self{cgi}->div( { -class=>'viewtools' },
                                 ($ru=~/^$main::VIRTUAL_BASE\/?$/ ? '' :$$self{cgi}->a({-class=>'up', -href=>main::getParentURI($ru).(main::getParentURI($ru) ne '/'?'/':''), -title=>$self->tl('uptitle')}, $self->tl('up')))
-                                .' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh'))
+                                ##.' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh'))
 				.' '.$self->renderAutoRefreshSelection()
 			);
 
