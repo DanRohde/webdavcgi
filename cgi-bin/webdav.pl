@@ -67,8 +67,8 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
-	    @UNSELECTABLE_FOLDERS $TITLEPREFIX @AUTOREFRESHVALUES %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
-	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
+	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -391,11 +391,6 @@ $HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as 
 $SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2011 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
 
 
-## -- AUTOREFRESHVALUES 
-## values (seconds; 0 = off) for the autorefresh feature of the Web interface
-## EXAMPLE: @AUTOREFRESHVALUES = (0, 10, 30, 60, 300, 600);
-@AUTOREFRESHVALUES = ( 0, 10, 30, 60, 300, 600);
-
 ## -- LANG
 ## defines the default language for the Web interface
 ## DEFAULT: $LANG='default';
@@ -637,6 +632,11 @@ $FILECOUNTLIMIT = 5000;
 ##   %FILEFILTERPERDIR = ( '/afs/.cms.hu-berlin.de/user/' => "^$_ru\$");
 my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 %FILEFILTERPERDIR = ( '/afs/.cms.hu-berlin.de/user/' => "^$_ru\$", '/usr/local/www/htdocs/rohdedan/links/'=>'^loop[1-4]$');
+
+
+## -- AUTOREFRESH
+## values for auto-refresh feature:
+%AUTOREFRESH = ( 60 => '1m', 300 => '5m', 600 =>'10m', 900=>'15m', 1800=>'30m' );
 
 ## -- ENABLE_FLOCK
 ## enables file locking support (flock) for PUT/POST uploads to respect existing locks and to set locks for files to change

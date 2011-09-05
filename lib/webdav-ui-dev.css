@@ -279,3 +279,54 @@ div.textdata { margin: 2px 2px 15px 2px;}
 .textdataresizer { cursor: se-resize; width: 1em; border-bottom: 3px double #aaaaaa; border-right: 3px double #aaaaaa; margin: 0px; padding:0px; position:absolute; bottom: 0px; right: 0px; }
 .textdatabuttons { padding-right: 1em; }
 .textdatabuttons input { margin-left: 1em; }
+
+#autorefreshtimer {
+	position: fixed;
+	right: 10px;
+	bottom: 10px;
+	width: auto;
+	height: auto;
+	background: black;
+	color: white;
+	opacity: 0.75; 
+	filter: Alpha(opacity=75); 
+	z-index: 10000;
+	padding: 5px;
+	border: 1px solid black;
+	box-shadow: 5px 5px 5px gray;
+	-moz-box-shadow: 5px 5px 5px gray;
+	-webkit-box-shadow: 5px 5px 5px gray;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='gray')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=gray);
+
+
+}
+.autorefreshtitle {
+	text-align: center;
+}
+.autorefreshcurrtime {
+	text-align: center;
+	font-size: 1.2em;
+}
+.autorefreshbuttons {
+	margin-left: auto;
+	margin-right: auto;
+}
+.autorefreshpauseresume, .autorefreshstop {
+	border: 1px outset white;
+	font-weight: bold;
+	width: 20px;
+	height: 20px;
+	text-align: center;
+	cursor: pointer;
+}
+.autorefreshpauseresume.pause {
+	background-color: yellow;
+	color: black;
+}
+.autorefreshpauseresume.resume {
+	background-color: green;
+}
+.autorefreshstop {
+	background-color: red;
+}
