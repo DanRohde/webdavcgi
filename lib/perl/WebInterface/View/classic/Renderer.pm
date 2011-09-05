@@ -116,7 +116,7 @@ sub start_html {
         $content.=qq@<meta name="author" content="Daniel Rohde"/>@;
 
         my $js='function tl(k) { var tl = new Array();';
-	map { $js.= qq@tl['$_']='@.$self->tl($_).qq@';@; }  ('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm','pastecopyconfirm','pastecutconfirm','msgtimeouttooltip') ;
+	map { $js.= qq@tl['$_']='@.$self->tl($_).qq@';@; }  ('bookmarks','addbookmark','rmbookmark','addbookmarktitle','rmbookmarktitle','rmallbookmarks','rmallbookmarkstitle','sortbookmarkbypath','sortbookmarkbytime','rmuploadfield','rmuploadfieldtitle','deletefileconfirm', 'movefileconfirm', 'cancel', 'confirm','pastecopyconfirm','pastecutconfirm','msgtimeouttooltip','autorefresh.format') ;
 
         $js.=' return tl[k] ? tl[k] : k; }';
         $js.=qq@var REQUEST_URI = '$main::REQUEST_URI';@;
