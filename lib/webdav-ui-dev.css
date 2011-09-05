@@ -322,12 +322,13 @@ div.textdata { margin: 2px 2px 15px 2px;}
 }
 .autorefreshpauseresume.pause {
 	border: 1px outset darkgreen;
-	background: green url('_webdavcgi_/actions/Pause-Pressed-icon.png') no-repeat left;
+	background: black url('_webdavcgi_/actions/Pause-Pressed-icon.png') no-repeat left;
 }
 .autorefreshpauseresume.resume {
 	border: 1px outset darkblue;
-	background: blue url('_webdavcgi_/actions/Play-Normal-icon.png') no-repeat left;
+	background: black url('_webdavcgi_/actions/Play-Normal-icon.png') no-repeat left;
 }
 .autorefreshstop {
-	background: red url('_webdavcgi_/actions/Stop-Normal-Red-icon.png') no-repeat left;
+	border: 1px outset darkred;
+	background: black url('_webdavcgi_/actions/Stop-Normal-Red-icon.png') no-repeat left;
 }
