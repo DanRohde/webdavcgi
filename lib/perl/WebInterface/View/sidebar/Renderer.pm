@@ -59,7 +59,7 @@ sub render {
 			@autorefreshvalues = sort {$a <=> $b} keys(%main::AUTOREFRESH);
 			$content.=$cgi->div({-id=>'autorefreshtimer',-class=>'autorefreshtimer hidden'},
 				$cgi->div({-class=>'autorefreshtitle'},$self->tl('autorefresh'))
-				.$cgi->div({-id=>'autorefreshcurrtime',-class=>'autofreshcurrtime'},"0m 0s")
+				.$cgi->div({-id=>'autorefreshcurrtime',-class=>'autorefreshcurrtime'},"0m 0s")
 				.$cgi->table({-class=>'autorefreshbuttons'}, 
 					$cgi->Tr(
 						$cgi->td($cgi->div({-id=>'autorefreshpauseresume',-class=>'autorefreshpauseresume pause',-onclick=>'toggleAutoRefresh()',-title=>$self->tl('autorefresh.title.pauseresume')},'II'))

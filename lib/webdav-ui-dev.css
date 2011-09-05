@@ -280,7 +280,7 @@ div.textdata { margin: 2px 2px 15px 2px;}
 .textdatabuttons { padding-right: 1em; }
 .textdatabuttons input { margin-left: 1em; }
 
-#autorefreshtimer {
+.autorefreshtimer {
 	position: fixed;
 	right: 10px;
 	bottom: 10px;
@@ -298,8 +298,8 @@ div.textdata { margin: 2px 2px 15px 2px;}
 	-webkit-box-shadow: 5px 5px 5px gray;
 	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='gray')";
 	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=gray);
-
-
+	text-align: center;
+	vertical-align: center;
 }
 .autorefreshtitle {
 	text-align: center;
@@ -307,6 +307,7 @@ div.textdata { margin: 2px 2px 15px 2px;}
 .autorefreshcurrtime {
 	text-align: center;
 	font-size: 1.2em;
+	font-weight: bold;
 }
 .autorefreshbuttons {
 	margin-left: auto;
