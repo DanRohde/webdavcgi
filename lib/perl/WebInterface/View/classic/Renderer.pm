@@ -188,9 +188,12 @@ sub render {
                         .' '
                         .$self->getQuickNavPath($fn,$ru)
                 );
+		$content.=$self->renderAutoRefreshWindow();
                 $head.= $$self{cgi}->div( { -class=>'viewtools' },
                                 ($ru=~/^$main::VIRTUAL_BASE\/?$/ ? '' :$$self{cgi}->a({-class=>'up', -href=>main::getParentURI($ru).(main::getParentURI($ru) ne '/'?'/':''), -title=>$self->tl('uptitle')}, $self->tl('up')))
-                                .' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh')));
+                                .' '.$$self{cgi}->a({-class=>'refresh',-href=>$ru.'?t='.time(), -title=>$self->tl('refreshtitle')},$self->tl('refresh'))
+				.' '.$self->renderAutoRefreshSelection()
+				);
                 if ($main::SHOW_QUOTA) {
                         my($ql, $qu) = main::getQuota($fn);
                         if (defined $ql && defined $qu) {
@@ -1327,6 +1330,39 @@ sub escapeQuotes {
         my ($self,$q) = @_;
 	$q=~s/(["'])/\\$1/g;
 	return $q;
+}
+sub renderAutoRefreshWindow {
+	my ($self) = @_;
+	my $content = "";
+	return $content unless defined %main::AUTOREFRESH;
+	my $cgi = $$self{cgi};
+	
+	$content.=$cgi->div({-id=>'autorefreshtimer',-class=>'autorefreshtimer hidden'},
+		$cgi->div({-class=>'autorefreshtitle'},$self->tl('autorefresh'))
+		.$cgi->div({-id=>'autorefreshcurrtime',-class=>'autorefreshcurrtime'},"0m 0s")
+		.$cgi->table({-class=>'autorefreshbuttons'},
+			$cgi->Tr(
+				$cgi->td(
+					$cgi->div({-id=>'autorefreshpauseresume',-class=>'autorefreshpauseresume pause',
+							-onclick=>'toggleAutoRefresh()',-title=>$self->tl('autorefresh.title.pauseresume')},'II')
+				)
+				.$cgi->td($cgi->div({-id=>'autorefreshstop',-class=>'autorefreshstop',
+							-onclick=>'stopAutoRefresh()',-title=>$self->tl('autorefresh.title.stop')},'X'))
+			))
+	);
+	return $content;
+}
+sub renderAutoRefreshSelection {
+	my ($self) = @_;
+	my $content = "";
+	return $content unless defined %main::AUTOREFRESH;
+	my $cgi = $$self{cgi};
+	$main::AUTOREFRESH{0}=$self->tl('autorefresh.select');
+	my @autorefreshvalues = sort {$a <=> $b} keys(%main::AUTOREFRESH);
+	push @autorefreshvalues, '-1';
+	$main::AUTOREFRESH{-1}=$self->tl('autorefresh.clear');
+	$content .= $cgi->popup_menu(-name=>'autorefreshtime', -values=>\@autorefreshvalues, -labels=>\%main::AUTOREFRESH, -onChange=>'startAutoRefresh(this.value)');
+	return $content;
 }
 
 1;

@@ -636,7 +636,7 @@ my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 
 ## -- AUTOREFRESH
 ## values for auto-refresh feature:
-%AUTOREFRESH = ( 60 => '1m', 300 => '5m', 600 =>'10m', 900=>'15m', 1800=>'30m' );
+%AUTOREFRESH = ( 30 => '30s', 60 => '1m', 300 => '5m', 600 =>'10m', 900=>'15m', 1800=>'30m' );
 
 ## -- ENABLE_FLOCK
 ## enables file locking support (flock) for PUT/POST uploads to respect existing locks and to set locks for files to change
