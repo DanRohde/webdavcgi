@@ -1344,7 +1344,7 @@ sub renderAutoRefreshWindow {
 			$cgi->Tr(
 				$cgi->td(
 					$cgi->div({-id=>'autorefreshpauseresume',-class=>'autorefreshpauseresume pause',
-							-onclick=>'toggleAutoRefresh()',-title=>$self->tl('autorefresh.title.pauseresume')},' ')
+							-onclick=>'toggleAutoRefresh()',-title=>$self->tl('autorefresh.title.toggle')},' ')
 				)
 				.$cgi->td($cgi->div({-id=>'autorefreshstop',-class=>'autorefreshstop',
 							-onclick=>'stopAutoRefresh()',-title=>$self->tl('autorefresh.title.stop')},' '))
@@ -1357,15 +1357,25 @@ sub renderAutoRefreshSelection {
 	my $content = "";
 	return $content unless defined %main::AUTOREFRESH;
 	my $cgi = $$self{cgi};
+	my %attr;
 	my @autorefreshvalues = sort {$a <=> $b} keys(%main::AUTOREFRESH);
 	unshift @autorefreshvalues, 'now';
 	$main::AUTOREFRESH{now}=$self->tl('autorefresh.now');
+	$attr{now}{class}='autorefresh_now';
 	unshift @autorefreshvalues, 0;
 	$main::AUTOREFRESH{0}=$self->tl('autorefresh.select');
 
-	push @autorefreshvalues, '-1';
-	$main::AUTOREFRESH{-1}=$self->tl('autorefresh.clear');
-	$content .= $cgi->popup_menu(-name=>'autorefreshtime', -title=>$self->tl('autorefresh.select.title'), -values=>\@autorefreshvalues, -labels=>\%main::AUTOREFRESH, -onChange=>'startAutoRefresh(this.value)');
+	push @autorefreshvalues, 'toggle';
+	$main::AUTOREFRESH{toggle}=$self->tl('autorefresh.toggle');
+	$attr{toggle}= {id=>'autorefresh_toggle', class=>'autorefresh_toggle' };
+	$attr{toggle}{disabled}='disabled' unless defined $cgi->cookie('autorefresh');
+
+	push @autorefreshvalues, 'clear';
+	$main::AUTOREFRESH{clear}=$self->tl('autorefresh.clear');
+	$attr{clear} = {id=>'autorefresh_clear', class=>'autorefresh_clear' };
+	$attr{clear}{disabled}='disabled' unless defined $cgi->cookie('autorefresh');
+
+	$content .= $cgi->popup_menu(-name=>'autorefreshtime', -title=>$self->tl('autorefresh.select.title'), -values=>\@autorefreshvalues, -labels=>\%main::AUTOREFRESH, -onChange=>'startAutoRefresh(this.value)', -attributes=>\%attr);
 	return $content;
 }
 

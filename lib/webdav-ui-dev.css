@@ -332,3 +332,6 @@ div.textdata { margin: 2px 2px 15px 2px;}
 	border: 1px outset darkred;
 	background: black url('_webdavcgi_/actions/Stop-Normal-Red-icon.png') no-repeat left;
 }
+.autorefresh_clear, .autorefresh_now, .autorefresh_toggle {
+	font-weight: bold;
+}
