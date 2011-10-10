@@ -49,7 +49,7 @@ sub handleGetRequest {
 
 	if ($handledByExt =~ /1/) {
 		## done.
-        } elsif ($fn =~ /\/webdav-ui(-custom)?\.(js|css)\/?$/ || $fn =~ /\Q$main::VHTDOCS\E(.*)$/)  {
+        } elsif ($fn =~ /\/webdav-ui(-[^\.\/]+)?\.(js|css)\/?$/ || $fn =~ /\Q$main::VHTDOCS\E(.*)$/)  {
                 $self->getRenderer()->printStylesAndVHTOCSFiles($fn);
         } elsif ($main::ENABLE_DAVMOUNT && $action eq 'davmount' && $$self{backend}->exists($fn)) {
                 $self->getRenderer()->printDAVMount($fn);
