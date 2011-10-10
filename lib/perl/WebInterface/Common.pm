@@ -311,13 +311,14 @@ sub getfancyfilename {
         my $ret = $s;
 
         $full = '/' if $full eq '//'; # fixes root folder navigation bug
+	my $displayname = $$self{backend}->getDisplayName($fn);
+        my $fntext = $s =~ /^\.{1,2}$/ ? $s : $displayname;
+        $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-5) if length($displayname)>$main::MAXFILENAMESIZE;
 
-        my $fntext = $s =~ /^\.{1,2}$/ ? $s : $$self{backend}->getDisplayName($fn);
-        $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-5) if length($s)>$main::MAXFILENAMESIZE;
         my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
 
         $ret = $linkit ? $$self{cgi}->a({href=>$full},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
-        $ret .=  length($s)>$main::MAXFILENAMESIZE ? '[...]' : (' 'x($main::MAXFILENAMESIZE-length($s)));
+        $ret .=  length($displayname) > $main::MAXFILENAMESIZE ? '[...]' : (' 'x($main::MAXFILENAMESIZE-length($displayname)));
 
         $full=~/([^\.]+)$/;
         my $suffix = $1 || $m;

@@ -1,6 +1,7 @@
 0.8.1: BETA
      - Web interface:
            - added auto refresh feature
+	   - fixed MAXFILENAMESIZE bug related to short SMB aliases
 
 0.8.0: 2011/25/08
      - replaced OSSP::uuid with UUID::Tiny
