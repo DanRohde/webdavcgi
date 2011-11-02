@@ -1,6 +1,6 @@
 #!/usr/bin/perl
+##!/usr/bin/perl -d:NYTProf
 ###!/usr/bin/speedy  -- -r20 -M5
-###!/usr/bin/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>

@@ -26,6 +26,7 @@ use WebDAV::Common;
 our @ISA = ( 'WebDAV::Common' );
 
 use POSIX qw(strftime);
+use Date::Parse;
 
 sub new {
         my $this = shift;
