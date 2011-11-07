@@ -1,8 +1,9 @@
-0.8.1: BETA
+0.8.1: 2011/7/11
      - Web interface:
            - added auto refresh feature
 	   - fixed MAXFILENAMESIZE bug related to short SMB aliases
      - fixed Window Vista/7 client access bug (missing str2time in WebDAV::Properties; thanx Simon Jalandt <simon@jalandt.net>)
+     - added missing doc
 
 0.8.0: 2011/25/08
      - replaced OSSP::uuid with UUID::Tiny

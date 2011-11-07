@@ -167,7 +167,11 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 </ol>
 <a id="upgrade"></a>
 <h2>Upgrade</h2>
-<h3>Upgrading from 0.7.0 to &ge;0.8.0</h3>
+<h3>Upgrading from 0.8.0 to 0.8.1</h3>
+<ol>
+<li> <code>%AUTOREFRESH</code> was added for the new auto-refresh feature</li>
+</ol>
+<h3>Upgrading from 0.7.x to &ge;0.8.0</h3>
 <ol>
 <li> a new Perl module is needed: <code>Module::Load</code> (Ubuntu/Debian package: libmodule-load-perl)</li>
 <li> <code>OSSP::uuid</code> Perl module was replaced by <code>UUID::Tiny</code> (Ubuntu/Debian package: libuuid-tiny-perl)</li>
@@ -1095,9 +1099,27 @@ WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface w
 <li>Check webdav.conf syntax: <code>perl -c webdav.conf</code></li>
 <li>Check your Apache rewrite rule: the path to your webdav.conf must be correct:  <code>E=WEBDAVCONF:/path/to/my/webdav.conf</code></li>
 </ol>
+<h3>Web interface: wrong date/time/number formatting for a language</h3>
+WebDAV CGI uses language specific formattings for date/time/numbers. Check your locales 
+<pre>
+#> locale -a
+de_DE.utf8
+en_US.utf8
+fr_FR.utf8
+</pre>
+and install missing locales for the language with a wrong date/time/number formatting, e.g. Ubuntu:
+<pre>
+# add new locale entry to the list:
+echo fr_FR.UTF-8 UTF-8 >> /var/lib/locales/supported.d/local
+# or add all supported locales (! slows down package installation/updates):
+### cp /usr/share/i18n/SUPPORTED /var/lib/locales/supported.d/local
+
+# and don't forget to compile locale definition files:
+locale-gen
+</pre>
+
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
 </div>
 </body>
 </html>
-
