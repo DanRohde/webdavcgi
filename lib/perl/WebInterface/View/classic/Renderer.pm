@@ -939,7 +939,7 @@ sub escapeQuotes {
 sub renderAutoRefreshWindow {
 	my ($self) = @_;
 	my $content = "";
-	return $content unless defined %main::AUTOREFRESH;
+	return $content unless %main::AUTOREFRESH;
 	my $cgi = $$self{cgi};
 	
 	$content.=$cgi->div({-id=>'autorefreshtimer',-class=>'autorefreshtimer hidden'},
@@ -960,7 +960,7 @@ sub renderAutoRefreshWindow {
 sub renderAutoRefreshSelection {
 	my ($self) = @_;
 	my $content = "";
-	return $content unless defined %main::AUTOREFRESH;
+	return $content unless %main::AUTOREFRESH;
 	my $cgi = $$self{cgi};
 	my %attr;
 	my @autorefreshvalues = sort {$a <=> $b} keys(%main::AUTOREFRESH);

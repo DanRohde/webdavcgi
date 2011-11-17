@@ -1,3 +1,8 @@
+0.8.2: BETA
+     - fixed doc
+     - fixed depracted message handling
+     - improved error handling in SMB backend
+
 0.8.1: 2011/7/11
      - Web interface:
            - added auto refresh feature

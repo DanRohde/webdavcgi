@@ -90,6 +90,8 @@ sub readDir {
 					push @files, "$fserver$SHARESEP$$f[1]" if $$f[0] == $$self{smb}->SMBC_FILE_SHARE && (!defined $sfilter || $$f[1]!~/$sfilter/);
 				}
 				$$self{smb}->closedir($dir);
+			} else {
+				warn("Cannot open dir smb://$fserver/: $!");
 			}
 		}
 
@@ -103,7 +105,7 @@ sub readDir {
 			}
 			$$self{smb}->closedir($dir);
 		} else {
-			warn("Cannot open dir $url");
+			warn("Cannot open dir $url: $!");
 		}
 	}
 	$self->_setCacheEntry('readDir:list',$base,\@files);
