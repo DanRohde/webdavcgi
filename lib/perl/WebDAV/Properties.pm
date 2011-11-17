@@ -295,14 +295,14 @@ sub getACLModule {
 
 sub getAddressbookHomeSet {
         my ($self, $uri) = @_;
-        return $uri unless defined %main::ADDRESSBOOK_HOME_SET;
+        return $uri unless %main::ADDRESSBOOK_HOME_SET;
         my $rmuser = $main::REMOTE_USER;
         $rmuser = $< unless exists $main::ADDRESSBOOK_HOME_SET{$rmuser};
         return ( exists $main::ADDRESSBOOK_HOME_SET{$rmuser} ? $main::ADDRESSBOOK_HOME_SET{$rmuser} : $main::ADDRESSBOOK_HOME_SET{default} );
 }
 sub getCalendarHomeSet {
         my ($self,$uri,$subpath) = @_;
-        return $uri unless defined %main::CALENDAR_HOME_SET;
+        return $uri unless %main::CALENDAR_HOME_SET;
         my $rmuser = $main::REMOTE_USER;
         $rmuser = $< unless exists $main::CALENDAR_HOME_SET{$rmuser};
         return  ( exists $main::CALENDAR_HOME_SET{$rmuser} ? $main::CALENDAR_HOME_SET{$rmuser} : $main::CALENDAR_HOME_SET{default} ).(defined $subpath?$subpath:'');

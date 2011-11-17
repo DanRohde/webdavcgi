@@ -761,6 +761,7 @@ if (!defined $PATH_TRANSLATED || $PATH_TRANSLATED eq "") {
 $PATH_TRANSLATED.='/' if $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/; 
 $REQUEST_URI=~s/\?.*$//; ## remove query strings
 $REQUEST_URI.='/' if $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/;
+$REQUEST_URI=~s/\&/%26/gs; ## bug fix (Mac Finder and &)
 
 $TRASH_FOLDER.='/' if $TRASH_FOLDER !~ /\/$/;
 

@@ -1,7 +1,8 @@
 0.8.2: BETA
      - fixed doc
-     - fixed depracted message handling
+     - fixed depracted hash handling
      - improved error handling in SMB backend
+     - fixed Mac finder related bug with '&' in a pathname (thanx Florian Freund <mail@floek.net>)
 
 0.8.1: 2011/7/11
      - Web interface:
