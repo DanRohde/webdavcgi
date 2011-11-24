@@ -81,7 +81,9 @@ sub getParent {
 }
 
 sub mkcol {
-	return CORE::mkdir($_[1]);
+	my $ret = CORE::mkdir($_[1]);
+	$CACHE{$_[0]}{$_[1]} = {isDir=>1,isFile=>0,exists=>1}  if $ret;
+	return $ret;
 }
 sub unlinkFile {
 	my ($self, $f) = @_;
@@ -221,6 +223,8 @@ sub saveStream {
 			}
 			flock($f, LOCK_UN) if $main::ENABLE_FLOCK;
 			close($f);
+
+			$CACHE{$self}{$destination}={exists=>1,isFile=>1,isDir=>0};
 		}
 	} else {
 		$ret = 0;
