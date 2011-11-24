@@ -83,11 +83,11 @@ sub getQuota {
 	return (0,0);
 }
 
-our %CACHE;
 sub _checkAFSAccess {
-	return exists $CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
-			? $CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
-			: ( $CACHE{$_[0]}{_checkAFSAccess}{$_[1]} = (CORE::lstat($_[1]) ? 1 : 0) );
+	my $CACHE = $$_[0]{cache};
+	return exists $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
+			? $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
+			: ( $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} = (CORE::lstat($_[1]) ? 1 : 0) );
 }
 
 1;

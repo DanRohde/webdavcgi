@@ -29,18 +29,7 @@ our %BACKENDS;
 sub new {
 	my $class = shift;
 	my $self = { };
-
-	if (eval {require CGI::SpeedyCGI} && CGI::SpeedyCGI->i_am_speedy) {
-		my $sp = CGI::SpeedyCGI->new;
-		$sp->register_cleanup(&cleanUpBackends);
-	}
-
 	return bless $self, $class;
-}
-sub cleanUpBackends {
-	foreach my $backend (keys %BACKENDS) {
-		delete $BACKENDS{$backend};
-	}
 }
 
 sub getBackend {

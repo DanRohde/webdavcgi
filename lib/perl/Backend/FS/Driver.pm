@@ -32,7 +32,7 @@ use vars qw( %CACHE );
 
 sub new {
 	my $class = shift;
-	my $self = {};
+	my $self = { cache=>\%CACHE };
 	return bless $self, $class;
 }
 
@@ -44,7 +44,7 @@ sub dirname {
 }
 
 sub exists {
-	return exists $CACHE{$_[0]}{$_[1]}{exists} ? $CACHE{$_[0]}{$_[1]}{exists} : ($CACHE{$_[0]}{$_[1]}{exists} = -e $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{exists} && defined $CACHE{$_[0]}{$_[1]}{exists} ? $CACHE{$_[0]}{$_[1]}{exists} : ($CACHE{$_[0]}{$_[1]}{exists} = -e $_[1]);
 }
 sub isDir {
 	return exists $CACHE{$_[0]}{$_[1]}{isDir} ? $CACHE{$_[0]}{$_[1]}{isDir} : ($CACHE{$_[0]}{$_[1]}{isDir} = -d $_[1]);
@@ -68,10 +68,10 @@ sub isEmpty {
 	return -z $_[1];
 }
 sub isReadable {
-	return exists $CACHE{$_[0]}{$_[1]}{isReadable} ? $CACHE{$_[0]}{$_[1]}{isReadable} : ($CACHE{$_[0]}{$_[1]}{isReadable} = -r $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{isReadable} && defined $CACHE{$_[0]}{$_[1]}{isReadable} ? $CACHE{$_[0]}{$_[1]}{isReadable} : ($CACHE{$_[0]}{$_[1]}{isReadable} = -r $_[1]);
 }
 sub isWriteable {
-	return exists $CACHE{$_[0]}{$_[1]}{isWriteable} ? $CACHE{$_[0]}{$_[1]}{isWriteable} : ($CACHE{$_[0]}{$_[1]}{isWriteable} =  -w $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{isWriteable} && defined $CACHE{$_[0]}{$_[1]}{isWriteable} ? $CACHE{$_[0]}{$_[1]}{isWriteable} : ($CACHE{$_[0]}{$_[1]}{isWriteable} =  -w $_[1]);
 }
 sub isExecutable {
 	return -x $_[1];
@@ -81,21 +81,19 @@ sub getParent {
 }
 
 sub mkcol {
-	my $ret = CORE::mkdir($_[1]);
-	$CACHE{$_[0]}{$_[1]} = {isDir=>1,isFile=>0,exists=>1}  if $ret;
-	return $ret;
+	delete $CACHE{$_[0]}{$_[1]};
+	return CORE::mkdir($_[1]);
 }
 sub unlinkFile {
 	my ($self, $f) = @_;
+	delete $CACHE{$self}{$f};
 	$f=~s/\/$//;
-	my $ret = CORE::unlink($f);
-	delete $CACHE{$self}{$f} if $ret;
-	return $ret;
+	delete $CACHE{$self}{$f};
+	return CORE::unlink($f);
 }
 sub unlinkDir {
-	my $ret = CORE::rmdir($_[1]);
-	delete $CACHE{$_[0]}{$_[1]} if $ret;
-	return $ret;
+	delete $CACHE{$_[0]}{$_[1]};
+	return CORE::rmdir($_[1]);
 }
 sub readDir {
         my ($self, $dirname, $limit, $filter) = @_;
@@ -192,6 +190,8 @@ sub saveData {
 	my ($self, $file, $data, $append) = @_;
 	my $ret = 1;
 
+	delete $CACHE{$self}{$file};
+
 	my $mode = $append ? '>>' : '>';
 
 	if (($ret = open(my $f, "${mode}${file}"))) {
@@ -208,8 +208,9 @@ sub saveData {
 
 sub saveStream {
 	my ($self, $destination, $filename) = @_;
-
 	my $ret = 1;
+
+	delete $CACHE{$self}{$destination};
 
 	if (($ret=open(my $f,">$destination"))) {
 		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
@@ -224,7 +225,6 @@ sub saveStream {
 			flock($f, LOCK_UN) if $main::ENABLE_FLOCK;
 			close($f);
 
-			$CACHE{$self}{$destination}={exists=>1,isFile=>1,isDir=>0};
 		}
 	} else {
 		$ret = 0;
@@ -260,9 +260,11 @@ sub compressFiles {
 }
 
 sub changeMod {
+	delete $CACHE{$_[1]}{$_[2]};
 	chmod($_[1], $_[2]);
 }
 sub createSymLink {
+	delete $CACHE{$_[1]}{$_[2]};
 	return CORE::symlink($_[1],$_[2]);
 }
 sub getLinkSrc {
@@ -312,6 +314,8 @@ sub getDisplayName {
 			: ( $CACHE{$_[0]}{$_[1]}{getDisplayName} =  $_[0]->basename($_[1]) . ($_[0]->isDir($_[1]) && $_[1] ne '/'? '/':''));
 }
 sub rename {
+	delete $CACHE{$_[0]}{$_[1]};
+	delete $CACHE{$_[0]}{$_[2]};
 	return CORE::rename($_[1],$_[2]);
 }
 sub getQuota {
@@ -322,6 +326,7 @@ sub getQuota {
 }
 sub copy {
 	my ($self, $src, $dst) = @_;
+	delete $CACHE{$self}{$dst};
 
 	if (open(my $srcfh,"<$src") && open(my $dstfh, ">$dst")) {
 		while (read($srcfh, my $buffer, $main::BUFSIZE || 1048576)) {
