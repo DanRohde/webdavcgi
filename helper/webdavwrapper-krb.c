@@ -51,6 +51,35 @@ int main(int argc, char *argv[])
 	}
 
 	if ((pw != NULL)  && ( pw->pw_uid != 0)) {
+		char *krbticket = getenv("KRB5CCNAME");
+		/* copy ticket file: */
+		if (krbticket != NULL) {
+
+			strtok(krbticket, ":");
+			char *srcfilename = strtok(NULL, ":");
+
+			char dstfilename[1000];
+			snprintf(dstfilename,1000,"/tmp/krb5cc_webdavcgi_%s", pw->pw_name);
+
+			FILE *src, *dst;
+			if ((src = fopen(srcfilename, "rb")) !=NULL && (dst = fopen(dstfilename, "wb")) != NULL ) {
+				char c;
+				while (!feof(src)) {
+					c = fgetc(src);
+					if (!ferror(src) && !feof(src)) fputc(c, dst);
+				}
+				fclose(src);
+				fclose(dst);
+
+				/* user needs access rights: */
+				chown(dstfilename, pw->pw_uid, pw->pw_gid);
+
+				/* put copy into the environment: */
+				char krbenv[1000];
+				snprintf(krbenv,1000,"KRB5CCNAME=FILE:%s",dstfilename);
+				putenv(krbenv);
+			}
+		}
 		if (initgroups(pw->pw_name,pw->pw_gid)==0 && setgid(pw->pw_gid)==0 && setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
 		else printf("Status: 500 Internal Sever Error");
 	} else {
