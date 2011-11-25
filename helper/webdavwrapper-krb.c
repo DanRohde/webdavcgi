@@ -4,6 +4,8 @@
 *             and Daniel Stoye <stoyedan@cms.hu-berlin.de>
 **********************************************************/
 /*** CHANGES:
+  2011-24-11:
+      - added copy routine for KRB ticket cache file
   2011-31-03:
       - fixed minor direct call bug reported by Tony H. Wijnhard <Tony.Wijnhard@mymojo.nl>
   2010-22-11:
@@ -28,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 
 #include <sys/types.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
@@ -60,16 +63,13 @@ int main(int argc, char *argv[])
 
 			char dstfilename[1000];
 			snprintf(dstfilename,1000,"/tmp/krb5cc_webdavcgi_%s", pw->pw_name);
-
-			FILE *src, *dst;
-			if ((src = fopen(srcfilename, "rb")) !=NULL && (dst = fopen(dstfilename, "wb")) != NULL ) {
-				char c;
-				while (!feof(src)) {
-					c = fgetc(src);
-					if (!ferror(src) && !feof(src)) fputc(c, dst);
-				}
-				fclose(src);
-				fclose(dst);
+			int src,dst;
+			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 ) {
+				char buf[2000];
+				ssize_t count;
+				while ( (count = read(src, &buf, 2000)) >0) write(dst, buf, count);
+				close(src);
+				close(dst);
 
 				/* user needs access rights: */
 				chown(dstfilename, pw->pw_uid, pw->pw_gid);
