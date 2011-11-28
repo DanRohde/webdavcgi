@@ -33,7 +33,11 @@ use vars qw( %CACHE );
 sub new {
 	my $class = shift;
 	my $self = { cache=>\%CACHE };
+	CGI::SpeedyCGI->register_cleanup(\&_cleanupCache) if eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
 	return bless $self, $class;
+}
+sub _cleanupCache {
+	%CACHE = ();
 }
 
 sub basename {

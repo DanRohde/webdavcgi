@@ -948,7 +948,7 @@ $BACKEND = 'DBB';
   <li> Filter and limit large folders (<code>$FILECOUNTLIMIT</code>, <code>$FILECOUNTPERDIRLIMIT</code>, <code>$FILEFILTERPERDIR</code>)</li>
   <li> Limit folder depth for copy/move operations (<code>$LIMIT_FOLDER_DEPTH</code>)</li>
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
-  <li> Since WebDAV CGI v0.5.3 you can use Speedy to improve the performance. Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
+  <li> Since WebDAV CGI v0.5.3 you can use Speedy to improve the performance (AFS backend does not work with Speedy). Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
 </ul>
 <!--[
