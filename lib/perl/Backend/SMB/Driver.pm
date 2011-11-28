@@ -47,12 +47,15 @@ sub new {
 
 sub initialize() {
 	my $self = shift;
+	## speedy:
+	CGI::SpeedyCGI->register_cleanup(\&_cleanupCache) if eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
 	## backup credential cache
 	if ($ENV{KRB5CCNAME}) {
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/) {
 			my $oldfilename = $1;
 			my $newfilename = "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
 			if ($oldfilename ne $newfilename && open(my $in, "<$oldfilename") && open(my $out, ">$newfilename")) {
+				print STDERR "Backend::SMB::initialize: copy $oldfilename to $newfilename\n";
 				binmode $in;
 				binmode $out;
 				while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
@@ -67,6 +70,9 @@ sub initialize() {
 	}
 	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}" if -e "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
 	$$self{smb} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
+}
+sub _cleanupCache {
+	%CACHE = ();
 }
 sub readDir {
 	my ($self, $base, $limit, $filter) = @_;
@@ -202,7 +208,7 @@ sub printFile {
 }
 sub saveStream {
 	my ($self, $path, $fh) = @_;
-
+	$self->_removeCacheEntry($path);
 	if (my $rd = $$self{smb}->open(">".$self->_getSmbURL($path))) {
 		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
 			$$self{smb}->write($rd, $buffer);
@@ -214,6 +220,7 @@ sub saveStream {
 }
 sub saveData {
 	#my ($self, $path, $data, $append) = @_;
+	$_[0]->_removeCacheEntry($_[1]);
 	if (my $rd = $_[0]{smb}->open('>'.($_[3]? '>':'').$_[0]->_getSmbURL($_[1]))) {
 		$_[0]{smb}->write($rd, $_[2]);
 		$_[0]{smb}->close($rd);
@@ -268,11 +275,13 @@ sub exists {
 
 sub mkcol {
 	my ($self, $file) = @_;
+	$self->_removeCacheEntry($file);	
 	return $$self{smb}->mkdir($self->_getSmbURL($file),$main::UMASK);
 }
 sub unlinkFile {
 	my ($self, $file) = @_;
 	my $ret = $self->isDir($file) ? $$self{smb}->rmdir_recurse($self->_getSmbURL($file)) : $$self{smb}->unlink($self->_getSmbURL($file));
+	warn("Could not delete $file: $!") if (!$ret);
 	$self->_removeCacheEntry($file) if $ret;
 	return $ret;
 }
@@ -370,13 +379,14 @@ sub _setCacheEntry {
 }
 sub _removeCacheEntry {
 	my ($self, $file) = @_;
+	delete $CACHE{$self}{$file};
 	$file=~s/\/$//;
 	delete $CACHE{$self}{$file};
 }
 sub _existsCacheEntry {
 	my ($self, $id, $file) = @_;
 	$file=~s/\/$//;
-	return exists $CACHE{$self}{$file} && exists $CACHE{$self}{$file}{$id};
+	return exists $CACHE{$self}{$file} && exists $CACHE{$self}{$file}{$id} && defined $CACHE{$self}{$file}{$id};
 }
 sub _getPathInfo {
 	my ($file) = @_;

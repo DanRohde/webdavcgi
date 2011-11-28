@@ -1,15 +1,7 @@
 /*********************************************************
 * (C) ZE CMS, Humboldt-Universitaet zu Berlin 
-* Written 2010/2011 
-*             by Daniel Rohde <d.rohde@cms.hu-berlin.de>
-*            and Daniel Stoye <stoyedan@cms.hu-berlin.de>
+* Written 2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 **********************************************************/
-/*** CHANGES:
-  2011-31-03:
-      - fixed minor direct call bug reported by Tony H. Wijnhard <Tony.Wijnhard@mymojo.nl>
-  2010-22-11:
-      - fixed effective groups bug reported by Hanz Makmur <makmur@cs.rugers.edu>
-*/
 /*
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,18 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <pwd.h>
-#include <grp.h>
+#include <time.h>
 
 // lifetime of a ticket in seconds:
 #define TICKET_LIFETIME   28800
-
 
 int main(int argc, char *argv[])
 {
@@ -46,22 +37,36 @@ int main(int argc, char *argv[])
 	if (remote_user == NULL) remote_user = getenv("REMOTE_USER");
 	if (remote_user == NULL) remote_user = getenv("REDIRECT_REMOTE_USER");
 
-	char *user = NULL;
-	if (remote_user != NULL) {
-		char buf[2000] ;
-		sprintf(buf, "%s", remote_user); // strtok changes strings!
-		user = strtok(buf, "@");
-		pw = getpwnam(user);
-	}
+	char dstfilename[1000];
+	snprintf(dstfilename,1000,"/tmp/krb5cc_webdavcgi_%s", remote_user);
 
-	if ((pw != NULL)  && ( pw->pw_uid != 0)) {
-		if (initgroups(pw->pw_name,pw->pw_gid)==0 && setgid(pw->pw_gid)==0 && setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
-		else printf("Status: 500 Internal Sever Error");
-	} else {
-		printf("Status: 404 Not Found\r\n");
-		printf("Content-Type: text/plain\r\n\r\n");
-		printf("404 Not Found - your wrapper\n");
-		printf("remote_user: %s\n",remote_user);
+	/* get ticke file name from environment:*/
+	char *krbticket = getenv("KRB5CCNAME");
 
+	/* put copy into the environment: */
+	char krbenv[1000];
+	snprintf(krbenv,1000,"KRB5CCNAME=FILE:%s",dstfilename);
+	putenv(krbenv);
+
+	/* copy ticket file: */
+	if (krbticket != NULL) {
+		/* remove 'FILE:': */
+		strtok(krbticket, ":");
+		char *srcfilename = strtok(NULL, ":");
+
+		struct stat dststat;
+		time_t seconds = (long)time(NULL);
+
+		if ( (stat(dstfilename, &dststat)==-1)  || (seconds - (time_t)&dststat.st_mtime > TICKET_LIFETIME) ) {
+			int src,dst;
+			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 ) {
+				char buf[2000];
+				ssize_t count;
+				while ( (count = read(src, &buf, 2000)) >0) write(dst, buf, count);
+				close(src);
+				close(dst);
+			}
+		}
 	}
+	execv("webdav.pl",argv);
 }
