@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
 		char *srcfilename = strtok(NULL, ":");
 
 		struct stat dststat;
-		time_t seconds = (long)time(NULL);
+		time_t seconds = time(NULL);
 
-		if ( (stat(dstfilename, &dststat)==-1)  || (seconds - (time_t)&dststat.st_mtime > TICKET_LIFETIME) ) {
+		if ( (stat(dstfilename, &dststat)==-1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
 			int src,dst;
 			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 ) {
 				char buf[2000];
