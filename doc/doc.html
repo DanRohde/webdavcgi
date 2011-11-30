@@ -33,6 +33,7 @@ Content of this topic:
 	<li><a href="#smb">SMB/CIFS Support</a></li>
 	<li><a href="#dbb">DBB database backend</a></li>
 	<li><a href="#performance">Performance</a></li>
+	<li><a href="#speedy">Speedy Support</a></li>
 	<!--[<li><a href="#security">Security</a></li>]-->
 	<li><a href="#troubleshooting">Troubleshooting</a></li>
 </ul>
@@ -308,7 +309,7 @@ Apache and webdav.pl setup:
 
 Graphics::Magick does not compile:
 <ul>
-<li> You can use Image::Magick instead but it makes trouble in conjunction with Speedy: 
+<li> You can use Image::Magick instead but it makes trouble in conjunction with <a href="#speedy">Speedy</a>: 
 <pre>sed -i -e 's@Graphics::Magick@Image::Magick@g' \
                 checkenv \
 		lib/perl/WebInterface/View/classic/Renderer.pm \
@@ -948,9 +949,55 @@ $BACKEND = 'DBB';
   <li> Filter and limit large folders (<code>$FILECOUNTLIMIT</code>, <code>$FILECOUNTPERDIRLIMIT</code>, <code>$FILEFILTERPERDIR</code>)</li>
   <li> Limit folder depth for copy/move operations (<code>$LIMIT_FOLDER_DEPTH</code>)</li>
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
-  <li> Since WebDAV CGI v0.5.3 you can use Speedy to improve the performance (AFS backend does not work with Speedy). Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
+  <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance (AFS backend does not work with <a href="#speedy">Speedy</a>). Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
 </ul>
+<a id="speedy"></a>
+<h2>Speedy Support</h2>
+<a target="_blank" href="http://daemoninc.com/SpeedyCGI/">Speedy or PersistentPerl</a> allows you to increase the request/response speed of WebDAV CGI. WebDAV CGI is up to 7 times faster with Speedy than without.
+
+<span style="font-weight: bold">The AFS backend does not work with Speedy.</span>
+<div>
+
+Setup:
+<ol>
+<li>Install <a target="_blank" href="http://daemoninc.com/SpeedyCGI/">Speedy</a> (Debian/Ubuntu: <code>apt-get install speedy-cgi-perl</code>)</li>
+<li>Change the shebang of webdav.pl:
+<pre>
+OLD: #!/usr/bin/perl
+NEW: #!/usr/bin/speedy -- -r20 -M5
+</pre>
+The <code>-r20</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M5</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="#smb">SMB backend</a>) you should remove the <code>-M5</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request.
+</li>
+<li> Only for the <a href="#smb">SMB backend</a>:
+    <ol>
+    <li>Check and change the ticket lifetime in <code>helper/webdavwrapper-smb.c</code>: <code>#define TICKET_LIFETIME 28800</code> 
+    	<br/>The ticket (renewal) lifetime depends on your domain controller setup (Kerberos policy of your domain group policy). You can check it (Debian/Ubuntu: <code>apt-get install krb5-user</code>):
+<pre>
+kinit mydomainaccount@MY.EXAMPLE.DOMAIN.ORG
+klist
+</pre>
+    	</li>
+    <li>Compile the <code>helper/webdavwrapper-smb.c</code>: <pre>gcc helper/webdavwrapper-smb.c -o cgi-bin/webdavwrapper-smb</pre></li>
+    <li>Change the Apache rewrite rule:  
+    <pre>
+OLD: RewriteRule ^/ /cgi-bin/webdav.pl ...
+NEW: RewriteRule ^/ /cgi-bin/webdavwrapper-smb ...
+
+    </pre>
+    </li>
+    </ol>
+</li>
+<li> That's all and don't forget to check the notes below.</li>
+</ol>
+Notes:
+<ul>
+<li>If you change your <code>webdav.conf</code> you have to touch webdav.pl (<code>touch&nbsp;cgi-bin/webdav.pl</code>) or kill all speedy processes (<code>pkill&nbsp;-f&nbsp;speedy_backend</code>) because Speedy checks only the modification time of webdav.pl.</li>
+<li>If you do not use a setuid/setgid wrapper you have to use a single database for all users.</li>
+<li>You can increase the performance if you enable persistent database connections in your <code>webdav.conf</code>: <code>$DBI_PERSISTENT = 1;</code></li>
+</ul>
+
+</div>
 <!--[
 <a id="security"></a>
 <h2>Security</h2>
