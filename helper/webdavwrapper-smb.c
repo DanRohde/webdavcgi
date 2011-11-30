@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -25,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <time.h>
 
-// lifetime of a ticket in seconds:
-#define TICKET_LIFETIME   28800
+// lifetime of a ticket in seconds (depends on your KDC setup):
+#define TICKET_LIFETIME 28800
 
 int main(int argc, char *argv[])
 {
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
 	char dstfilename[1000];
 	snprintf(dstfilename,1000,"/tmp/krb5cc_webdavcgi_%s", remote_user);
 
-	/* get ticke file name from environment:*/
+	/* get ticket file name from environment:*/
 	char *krbticket = getenv("KRB5CCNAME");
 
 	/* put copy into the environment: */
@@ -57,6 +58,7 @@ int main(int argc, char *argv[])
 		struct stat dststat;
 		time_t seconds = time(NULL);
 
+		/* dstfilename does not exists or the ticket lifetime is exceeded: */
 		if ( (stat(dstfilename, &dststat)==-1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
 			int src,dst;
 			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 ) {
@@ -65,8 +67,10 @@ int main(int argc, char *argv[])
 				while ( (count = read(src, &buf, 2000)) >0) write(dst, buf, count);
 				close(src);
 				close(dst);
+			} else {
+				fprintf(stderr, "%s: ERROR: Cannot copy %s to %s: %s\n", argv[0], srcfilename, dstfilename, strerror(errno));
 			}
 		}
 	}
-	execv("webdav.pl",argv);
+	if (execv("webdav.pl",argv) == -1) fprintf(stderr, "%s: ERROR: Cannot execute webdav.pl: %s\n", argv[0], strerror(errno));
 }
