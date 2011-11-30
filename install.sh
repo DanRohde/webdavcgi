@@ -37,15 +37,13 @@ usekrb=0
 read -p "Do you use Kerberos authentication? (N/y): " krb
 if test "$krb" = "y" -o "$krb" = "Y" ; then
 	usekrb=1
-	read -p "Please enter your Kerberos domain (without @ and with uppercase letters (e.g. EXAMPLE.ORG): " domain
 fi
 
 echo -n "Compiling wrapper ..."
 if test "$usekrb" = 0 ; then
 	gcc -o $wd/cgi-bin/webdavwrapper helper/webdavwrapper.c
 else
-	sed -e 's/@EXAMPLE.ORG/@'$domain'/g' < $wd/helper/webdavwrapper-krb.c > $wd/helper/webdavwrapper-krb-custom.c
-	gcc -o $wd/cgi-bin/webdavwrapper $wd/helper/webdavwrapper-krb-custom.c
+	gcc -o $wd/cgi-bin/webdavwrapper $wd/helper/webdavwrapper-krb.c
 fi
 echo "done."
 

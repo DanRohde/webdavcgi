@@ -33,10 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <pwd.h>
 #include <grp.h>
 
-// lifetime of a ticket in seconds:
-#define TICKET_LIFETIME   28800
-
-
 int main(int argc, char *argv[])
 {
 	struct passwd *pw = NULL;
@@ -62,6 +58,5 @@ int main(int argc, char *argv[])
 		printf("Content-Type: text/plain\r\n\r\n");
 		printf("404 Not Found - your wrapper\n");
 		printf("remote_user: %s\n",remote_user);
-
 	}
 }
