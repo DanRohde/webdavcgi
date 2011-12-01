@@ -402,10 +402,9 @@ sub _getSmbURL {
 	my ($self, $file) = @_;
 	my $url = $file;
 	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/]*)(\/.*)?$/) {
-		my ($server, $share, $path) = ($1, $2, $3);
+		my ($server, $share, $initdir, $path) = ($1, $2, $main::SMB{domains}{_getUserDomain()}{fileserver}{$1}{initdir}{$2}, $3);
 		$url ="smb://$server/$share";
-		$url .= $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{initdir}{$share} 
-			if $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{initdir}{$share};
+		$url .= $initdir if defined $initdir;
 		$url .= $path;
 	}
 	return $url;
