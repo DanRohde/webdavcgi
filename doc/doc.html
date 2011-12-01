@@ -870,15 +870,18 @@ $ALLOW_SYMLINK = 0;
           ## disables all filter and (slow) automatic share detection:
           shares => [ 'MyFirstShare', 'MySecondShare' ],	#optional
 
-	  ## define a initial directory for a share (don't forget the initial '/'):
-	  initdir => { 'MyFirstShare' => '/starthere' },	#optional
+	  ## defines a initial directory for a share (don't forget the initial '/'):
+	  initdir => { 			#optional
+	  	'MyFirstShare' => '/starthere', 
+		'MySecondShare'=> '/start/here' 
+	  },
 
           sharealiases => {		#optional
             ## shows 'H: (Home)' instead of 
-            ## 'mywindowsfileserver1.my.example.domain.org:MyFirstShare' in the Web interface
+            ## 'mywindowsfileserver1.my.example.domain.org~MyFirstShare' in the Web interface
             'MyFirstShare' => 'H: (Home)',
             ## shows 'S: (Scratch)' instead of 
-            ## 'mywindowsfileserver1.my.example.domain.org:MySecondShare' in the Web interface
+            ## 'mywindowsfileserver1.my.example.domain.org~MySecondShare' in the Web interface
             'MySecondShare' => 'S: (Scratch)',
           },
         },
