@@ -401,8 +401,12 @@ sub _getPathInfo {
 sub _getSmbURL {
 	my ($self, $file) = @_;
 	my $url = $file;
-	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E(.*)$/) {
-		$url="smb://$1/$2";
+	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/]*)(\/.*)?$/) {
+		my ($server, $share, $path) = ($1, $2, $3);
+		$url ="smb://$server/$share";
+		$url .= $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{initdir}{$share} 
+			if $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{initdir}{$share};
+		$url .= $path;
 	}
 	return $url;
 }

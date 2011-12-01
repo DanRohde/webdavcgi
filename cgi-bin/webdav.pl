@@ -652,7 +652,7 @@ $LIMIT_FOLDER_DEPTH = 20;
 $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 
 ## -- SMB
-## SMB backend configuration (see docs/smb.html):
+## SMB backend configuration (see doc/doc.html):
 %SMB = ();
 
 ## -- DEBUG

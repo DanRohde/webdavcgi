@@ -5,6 +5,7 @@
      - fixed Mac finder related bug with '&' in a pathname (thanx Florian Freund <mail@floek.net>)
      - fixed Speedy bugs (FS, GFS, SMB, DBB are Speedy/PersitentPerl safe now)
      - added a wrapper for the SMB backend and Speedy support 
+     - added initial directory support for the SMB backend requested by Aleksander Gudalo
 
 0.8.1: 2011/7/11
      - Web interface:
