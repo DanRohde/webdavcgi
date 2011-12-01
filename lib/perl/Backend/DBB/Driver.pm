@@ -39,36 +39,42 @@ use constant {
 
 use constant TYPES => qw ( TYPE_DIR TYPE_FILE TYPE_LINK );
 
+use vars qw( $DB );
+
 sub new {
 	my $class = shift;
 	my $self = {};
 	bless $self, $class;
-	$self->initialize();
+	CGI::SpeedyCGI->register_cleanup(sub { $DB->disconnect() if $DB; $DB=undef; }) if eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
 	return $self;
 }
 
 sub initialize {
 	my ($self) = @_;
-	$self->{_dbh} = DBI->connect(
+
+	if (!defined $DB) {
+		$DB = DBI->connect(
 				$main::DBB{dsn} || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db', 
 				$main::DBB{user} || "", 
 				$main::DBB{password} || "", 
 				{ RaiseError=>0, AutoCommit=>0 }
-	);
-	if (defined $self->{_dbh}) {
-		my $sth = $self->{_dbh}->prepare('SELECT name FROM objects');
-		if (!defined $sth) {
-			$sth = $self->{_dbh}->prepare('CREATE TABLE objects (name varchar(255) NOT NULL, parent varchar(255) NOT NULL, type int NOT NULL, owner VARCHAR(255) NOT NULL, created timestamp NOT NULL, modified NOT NULL, size int NOT NULL, permissions int NOT NULL, data blob)'); 
-			$sth->execute();
-			$self->{_dbh}->commit();
+		);
+		if (defined $DB) {
+			my $sth = $DB->prepare('SELECT name FROM objects');
+			if (!defined $sth) {
+				$sth = $DB->prepare('CREATE TABLE objects (name varchar(255) NOT NULL, parent varchar(255) NOT NULL, type int NOT NULL, owner VARCHAR(255) NOT NULL, created timestamp NOT NULL, modified NOT NULL, size int NOT NULL, permissions int NOT NULL, data blob)'); 
+				$sth->execute();
+				$DB->commit();
+			}
 		}
 	}
 }
 
 sub readDir {
 	my($self, $fn, $limit, $filter) = @_;
+	$self->initialize();
 	my @list;
-	my $sth = $self->{_dbh}->prepare("SELECT name FROM objects WHERE parent = ?");
+	my $sth = $DB->prepare("SELECT name FROM objects WHERE parent = ?");
 	if ($sth && $sth->execute($self->resolve($fn))) {
 		my $data = $sth->fetchall_arrayref();
 		foreach my $e (@${data}) {
@@ -81,27 +87,29 @@ sub readDir {
 }
 sub unlinkFile {
 	my ($self, $fn) = @_;
+	$self->initialize();
 	$fn = $self->resolve($fn);
-	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
+	my $sth = $DB->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
 	if ($sth && $sth->execute($self->basename($fn),$self->getParent($fn))) {
-		$$self{_dbh}->commit();
+		$DB->commit();
 		return 1;
 	} 
 	return 0;
 }
 sub deltree {
 	my ($self, $fn) = @_;
+	$self->initialize();
 	$fn = $self->resolve($fn);
-	my $sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE parent = ? OR parent like ?");
+	my $sth = $DB->prepare("DELETE FROM objects WHERE parent = ? OR parent like ?");
 	if ($sth && $sth->execute($fn,$fn.'/%')) {
-		$sth = $$self{_dbh}->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
+		$sth = $DB->prepare("DELETE FROM objects WHERE name = ? AND parent = ?");
 		$sth->execute($self->basename($fn), $self->getParent($fn)) if $sth;
 		if ($sth && !$sth->err) {
-			$$self{_dbh}->commit();
+			$DB->commit();
 			return 1;
 		}
 	}
-	$$self{_dbh}->rollback();
+	$DB->rollback();
 	return 0;
 }
 sub isLink {
@@ -119,10 +127,10 @@ sub rename {
 	$on=$self->resolve($on);
 	$nn=$self->resolve($nn);
 	return 0 if $self->isDir($on) && scalar($self->readDir($on))>0;
-	my $sth = $$self{_dbh}->prepare('UPDATE objects SET name = ?, parent = ? WHERE name = ? AND parent = ?');
+	my $sth = $DB->prepare('UPDATE objects SET name = ?, parent = ? WHERE name = ? AND parent = ?');
 	$self->unlinkFile($nn);
 	if ($sth && $sth->execute($self->basename($nn),$self->getParent($nn),$self->basename($on),$self->getParent($on))) {
-		$$self{_dbh}->commit();
+		$DB->commit();
 		return 1;
 	}
 	return 0; 
@@ -179,11 +187,12 @@ sub _getDBValue {
 }
 sub _addDBEntry {
 	my ($self, $name, $type) = @_;
+	$self->initialize();
 	my $parent = $self->getParent($name);
 	my $created = time();
 	$name = $self->basename($name);
 
-	my $sth = $self->{_dbh}->prepare('INSERT INTO objects (name, parent, type, owner, size, created, modified, permissions,data) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+	my $sth = $DB->prepare('INSERT INTO objects (name, parent, type, owner, size, created, modified, permissions,data) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 	$sth->bind_param(1,$name);
 	$sth->bind_param(2,$parent);
 	$sth->bind_param(3,$type);
@@ -199,20 +208,21 @@ sub _addDBEntry {
 		$ret &= $self->_changeDBEntry($parent);
 	}
 	if ($ret) { 
-		$self->{_dbh}->commit();
+		$DB->commit();
 		return $ret;
 	}
-	$self->{_dbh}->rollback();
+	$DB->rollback();
 	return $ret;
 }
 sub _changeDBEntry {
 	my ($self, $name) = @_;
+	$self->initialize();
 	$name = $self->resolve($name);
 	my $sel = 'UPDATE objects SET modified = ?';
 	$sel.=', data = ?' if defined $_[2];
 	$sel.=', size = ?' if defined $_[2];
 	$sel.=' WHERE name = ? AND parent = ?';
-	my $sth = $$self{_dbh}->prepare($sel);
+	my $sth = $DB->prepare($sel);
 	my $i = 0;
 	$sth->bind_param(++$i,time());
 	$sth->bind_param(++$i,$_[2],SQL_BLOB) if defined $_[2];
@@ -220,17 +230,18 @@ sub _changeDBEntry {
 	$sth->bind_param(++$i,$self->basename($name));
 	$sth->bind_param(++$i,$self->getParent($name));
 	if ($sth->execute()) {
-		$$self{_dbh}->commit();
+		$DB->commit();
 		return 1;
 	}
 	return 0;
 }
 sub _getDBEntry {
 	my ($self, $fn, $withdata) = @_;
+	$self->initialize();
 	my $sel = 'SELECT name, parent, type, created, modified, size, permissions, owner';
 	$sel.=',data' if $withdata;
 	$sel.=' FROM objects WHERE name = ? AND parent = ?';
-	my $sth = $self->{_dbh}->prepare($sel);
+	my $sth = $DB->prepare($sel);
 	$sth->execute($self->basename($self->resolve($fn)), $self->getParent($self->resolve($fn)));
 	return !$sth->err ? $sth->fetchall_hashref('name') : undef;
 }
@@ -255,6 +266,7 @@ sub saveData {
 	#my ($self, $path, $data, $append) = @_;
 	my $fn = $_[0]->resolve($_[1]);
 	my $data;
+	$_[0]->initialize();
 	if ($_[0]->exists($_[1])) {
 		if ($_[3]) {
 			my $v = _getDBEntry($fn,1);
