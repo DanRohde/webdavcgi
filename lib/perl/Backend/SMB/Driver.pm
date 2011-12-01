@@ -73,6 +73,7 @@ sub initialize() {
 }
 sub _cleanupCache {
 	%CACHE = ();
+	return 1;
 }
 sub readDir {
 	my ($self, $base, $limit, $filter) = @_;
@@ -189,6 +190,7 @@ sub copy {
 		}
 		$$self{smb}->close($srcfh);
 		$$self{smb}->close($dstfh);
+		_cleanupCache();
 		return 1;
 	} 
 	return 0;
@@ -208,24 +210,22 @@ sub printFile {
 }
 sub saveStream {
 	my ($self, $path, $fh) = @_;
-	$self->_removeCacheEntry($path);
 	if (my $rd = $$self{smb}->open(">".$self->_getSmbURL($path))) {
 		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
 			$$self{smb}->write($rd, $buffer);
 		}
 		$$self{smb}->close($rd);
+		_cleanupCache();
 		return 1;
 	}
 	return 0;
 }
 sub saveData {
 	#my ($self, $path, $data, $append) = @_;
-	$_[0]->_removeCacheEntry($_[1]);
 	if (my $rd = $_[0]{smb}->open('>'.($_[3]? '>':'').$_[0]->_getSmbURL($_[1]))) {
 		$_[0]{smb}->write($rd, $_[2]);
 		$_[0]{smb}->close($rd);
-		$_[0]->_removeCacheEntry($_[0]->getParent($_[1]));
-		$_[0]->_removeCacheEntry($_[1]);
+		_cleanupCache();
 		return 1;
 	}
 	return 0;
@@ -275,14 +275,13 @@ sub exists {
 
 sub mkcol {
 	my ($self, $file) = @_;
-	$self->_removeCacheEntry($file);	
-	return $$self{smb}->mkdir($self->_getSmbURL($file),$main::UMASK);
+	return $$self{smb}->mkdir($self->_getSmbURL($file),$main::UMASK) && _cleanupCache();
 }
 sub unlinkFile {
 	my ($self, $file) = @_;
 	my $ret = $self->isDir($file) ? $$self{smb}->rmdir_recurse($self->_getSmbURL($file)) : $$self{smb}->unlink($self->_getSmbURL($file));
 	warn("Could not delete $file: $!") if (!$ret);
-	$self->_removeCacheEntry($file) if $ret;
+	_cleanupCache() if $ret;
 	return $ret;
 }
 sub deltree {
@@ -291,7 +290,7 @@ sub deltree {
 }
 sub rename {
 	my ($self, $on, $nn) = @_;
-	return $$self{smb}->rename($self->_getSmbURL($on), $self->_getSmbURL($nn));
+	return $$self{smb}->rename($self->_getSmbURL($on), $self->_getSmbURL($nn)) && _cleanupCache();
 }
 sub resolve {
         my ($self, $fn) = @_;
@@ -376,12 +375,6 @@ sub _setCacheEntry {
 	my ($self, $id, $file, $value) = @_;
 	$file=~s/\/$//;
 	return $CACHE{$self}{$file}{$id} = $value;
-}
-sub _removeCacheEntry {
-	my ($self, $file) = @_;
-	delete $CACHE{$self}{$file};
-	$file=~s/\/$//;
-	delete $CACHE{$self}{$file};
 }
 sub _existsCacheEntry {
 	my ($self, $id, $file) = @_;
