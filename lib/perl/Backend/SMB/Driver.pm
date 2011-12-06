@@ -87,9 +87,20 @@ sub readDir {
 		my $dom = $main::SMB{domains}{_getUserDomain()};
 		foreach my $fserver (keys %{$$dom{fileserver}}) {
 			if (exists $$dom{fileserver}{$fserver}{usershares} && exists $$dom{fileserver}{$fserver}{usershares}{_getUsername()}) {
-				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{usershares}{_getUsername()}}));
+				push @files, split(/, /, $fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{usershares}{_getUsername()}}));
 			} elsif (exists $$dom{fileserver}{$fserver}{shares}) {
-				push @files, split(/, /,$fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}));
+				my $scounter=-1;
+				foreach my $share ( @{ $$dom{fileserver}{$fserver}{shares} } ) {
+					$scounter++;
+					my $shareidx = undef;
+					my $path = $fserver . $SHARESEP . $share;
+					if ($path =~ s/:?(\/.*)$//) {
+						$shareidx = $scounter;
+						$path .= $SHARESEP . $shareidx;
+					}
+					push @files, $path;
+				}
+				#push @files, split(/, /, $fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}) );
 			} elsif (my $dir = $$self{smb}->opendir("smb://$fserver/")) {
 				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter(\%main::SMB)));
 				while (my $f = $$self{smb}->readdir_struct($dir)) {
@@ -307,11 +318,21 @@ sub getDisplayName {
 	my ($self, $file) = @_;
 	my $name;
 	if (_isShare($file)) {
-		my ($server, $share) = _getPathInfo($file);
-		if (exists $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{$share}) {
-			$name = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{$share};
-		} elsif (exists $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{_USERNAME_} && $share eq _getUsername()) {
-			$name = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{sharealiases}{_USERNAME_};
+		my ($server, $share, $path, $shareidx) = _getPathInfo($file);
+		my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server};
+		my $sharewithinit = defined $shareidx ? $$fs{shares}[$shareidx] : undef; 
+		my $initdir = undef;
+		if  (defined $sharewithinit && $sharewithinit=~/:?(\/.*)/) {
+			$initdir=$1;
+		}
+		if (defined $initdir && exists $$fs{sharealiases}{"$share:$initdir"}) {
+			$name = $$fs{sharealiases}{"$share:$initdir"};
+		} elsif (defined $initdir && exists $$fs{sharealiases}{"$share$initdir"}) {
+			$name = $$fs{sharealiases}{"$share$initdir"};
+		} elsif (exists $$fs{sharealiases}{$share}) {
+			$name = $$fs{sharealiases}{$share};
+		} elsif (exists $$fs{sharealiases}{_USERNAME_} && $share eq _getUsername()) {
+			$name = $$fs{sharealiases}{_USERNAME_};
 		} else {
 			$name = $self->basename($file);
 			my $comment = $self->_existsCacheEntry('readDir',$file) && exists ${$self->_getCacheEntry('readDir',$file)}{comment} ? ${$self->_getCacheEntry('readDir',$file)}{comment} : '';
@@ -383,19 +404,25 @@ sub _existsCacheEntry {
 }
 sub _getPathInfo {
 	my ($file) = @_;
-	my ($server, $share, $path) = ( '', '', $file);
-	if ($file=~/^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/]+)(.*)$/) {
-		($server, $share, $path) = ($1, $2, $3);
-
+	my ($server, $share, $path, $shareidx) = ( '', '', $file, undef);
+	if ($file=~/^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/\Q$SHARESEP\E]+)(\Q$SHARESEP\E(\d+))?(.*)$/) {
+		($server, $share, $path, $shareidx) = ($1, $2, $5, $4);
 	}
-	return ($server, $share, $path);
+	return ($server, $share, $path, $shareidx);
 }
 
 sub _getSmbURL {
 	my ($self, $file) = @_;
 	my $url = $file;
-	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/]*)(\/.*)?$/) {
-		my ($server, $share, $initdir, $path) = ($1, $2, $main::SMB{domains}{_getUserDomain()}{fileserver}{$1}{initdir}{$2}, $3);
+	my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver};
+	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/\Q$SHARESEP\E]*)(\Q$SHARESEP\E(\d+))?(\/.*)?$/) {
+		my ($server, $share, $initdir, $path, $shareidx) = ($1, $2, $$fs{$1}{initdir}{$2}, $5, $4);
+
+		if (defined $shareidx && $$fs{$server}{shares}[$shareidx] =~ /:?(\/.*)/) {
+			$initdir = $1;
+		}
+
+		
 		$url ="smb://$server/$share";
 		$url .= $initdir if defined $initdir;
 		$url .= $path;
