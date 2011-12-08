@@ -320,9 +320,8 @@ sub getDisplayName {
 	if (_isShare($file)) {
 		my ($server, $share, $path, $shareidx) = _getPathInfo($file);
 		my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server};
-		my $sharewithinit = defined $shareidx ? $$fs{shares}[$shareidx] : undef; 
 		my $initdir = undef;
-		if  (defined $sharewithinit && $sharewithinit=~/:?(\/.*)/) {
+		if  (defined $shareidx && $$fs{shares}[$shareidx]=~/:?(\/.*)/) {
 			$initdir=$1;
 		}
 		if (defined $initdir && exists $$fs{sharealiases}{"$share:$initdir"}) {
@@ -502,11 +501,14 @@ sub createSymLink { return 0; }
 sub getLinkSrc { $!='not supported'; return undef; }
 sub hasStickyBit { return 0; }
 sub getQuota { 
-	my ($server,$share,$path) = _getPathInfo($_[1]);
+	my ($server,$share,$path,$shareidx) = _getPathInfo($_[1]);
 	$server=~s/'/\\'/g if $server;
 	$share=~s/'/\\'/g if $share;
 	$path=~s/'/\\'/g if $path;
 	$path='/' unless $path;
+	if (defined $shareidx && $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{shares}[$shareidx] =~ /:?(\/.*)/) {
+		$path = "$1/$path";
+	}
 	if ($server && open(my $c, "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du 2>/dev/null|")) {
 		my @l= <$c>;
 		close($c);
