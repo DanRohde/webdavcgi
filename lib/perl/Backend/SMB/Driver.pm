@@ -506,9 +506,12 @@ sub getQuota {
 	$share=~s/'/\\'/g if $share;
 	$path=~s/'/\\'/g if $path;
 	$path='/' unless $path;
-	if (defined $shareidx && $main::SMB{domains}{_getUserDomain()}{fileserver}{$server}{shares}[$shareidx] =~ /:?(\/.*)/) {
-		$path = "$1/$path";
+	my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server};
+	my $initdir = $$fs{initdir}{$share};
+	if (defined $shareidx && $$fs{shares}[$shareidx] =~ /:?(\/.*)/) {
+		$initdir = $1;
 	}
+	$path = "$initdir/$path" if defined $initdir;
 	if ($server && open(my $c, "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du 2>/dev/null|")) {
 		my @l= <$c>;
 		close($c);
