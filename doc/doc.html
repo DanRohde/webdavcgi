@@ -51,7 +51,7 @@ Content of this topic:
 <li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu recommended, Windows/MacOS-X not tested and not supported) </li>
 </ul>
 
-You do not need mod_dav for Apache Web server. WebDAV CGI replaces mod_dav completely. 
+You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav completely. 
 
 <a id="installation"></a>
 <h2>Installation</h2>
@@ -169,6 +169,10 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 </ol>
 <a id="upgrade"></a>
 <h2>Upgrade</h2>
+<h3>Upgrading from 0.8.1 to 0.8.2</h3>
+<ol>
+<li> see <a href="#speedy">Speedy support</a> section to improve the WebDAV CGI performance</li>
+</ol>
 <h3>Upgrading from 0.8.0 to 0.8.1</h3>
 <ol>
 <li> <code>%AUTOREFRESH</code> was added for the new auto-refresh feature</li>
@@ -1174,7 +1178,7 @@ locale-gen
 </pre>
 
 <div id="contact">
-&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011, 2012 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
 </div>
 </body>
 </html>
