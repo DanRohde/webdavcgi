@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 ##!/usr/bin/perl -d:NYTProf
-###!/usr/bin/speedy  -- -r20 -M5
+##!/usr/bin/speedy  -- -r20 -M5
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.8.0
+# VERSION 0.8.2-BETA
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:
@@ -984,12 +984,6 @@ map { $unsupported_props{$_} = 1; } @UNSUPPORTED_PROPS;
 # method handling:
 if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/) { 
 
-	### performance is bad:
-#	eval "_${method}();" ;
-#	if ($@) {
-#		print STDERR "$0: Missing method handler for '$method'\n$@";
-#		printHeaderAndContent('501 Not Implemented');
-#	}
 	### performance is much better than eval:
 	gotomethod($method);
 	if (!$DBI_PERSISTENT && $DBI_INIT) {
