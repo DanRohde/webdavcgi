@@ -1,6 +1,6 @@
+#!/usr/bin/speedy  -- -r20 -M5
 #!/usr/bin/perl
 ##!/usr/bin/perl -d:NYTProf
-##!/usr/bin/speedy  -- -r20 -M5
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -379,7 +379,7 @@ $PERM_OTHERS = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> $CLOCK</div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
