@@ -125,7 +125,8 @@ sub readDir {
 	my $ret;
 	if (! ($ret = $self->_readVirtualDir($dirname, $limit, $filter))) {
 		$ret = $$self{BACKEND}->readDir($dirname, $limit, $filter);
-		push @{$ret} , $main::RCS{virtualrcsdir} if $self->basename($dirname) eq $main::RCS{rcsdirname};
+		push @{$ret} , $main::RCS{virtualrcsdir} 
+			unless $self->basename($dirname) ne $main::RCS{rcsdirname} || grep(/\Q$main::RCS{virtualrcsdir}\E/,@{$ret});
 	}
 	return $ret;
 }
