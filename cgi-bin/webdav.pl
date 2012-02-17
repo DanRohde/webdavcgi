@@ -69,6 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
+	    %RCS
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -654,6 +655,10 @@ $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 ## -- SMB
 ## SMB backend configuration (see doc/doc.html):
 %SMB = ();
+
+## -- RCS
+## RCS backend configuration (see doc/doc.html):
+%RCS = ();
 
 ## -- DEBUG
 ## enables/disables debug output

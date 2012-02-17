@@ -32,6 +32,7 @@ Content of this topic:
 	<li><a href="#gfs">GFS Support</a></li>
 	<li><a href="#smb">SMB/CIFS Support</a></li>
 	<li><a href="#dbb">DBB database backend</a></li>
+	<li><a href="#rcs">RCS backend</a></li>
 	<li><a href="#performance">Performance</a></li>
 	<li><a href="#speedy">Speedy Support</a></li>
 	<!--[<li><a href="#security">Security</a></li>]-->
@@ -935,6 +936,52 @@ $BACKEND = 'DBB';
 	password => '',
 );
 
+</pre>
+<a id="rcs"></a>
+<h2>RCS backend</h2>
+<p>
+The RCS backend is a showcase for a revision controlled backend. It needs another backend like FS, or SMB to work because it's a simple backend wrapper.
+</p>
+
+<p>
+How it works:
+<ul>
+<li> only files are under revision control</li>
+<li> the backend creates a revision file with RCS for any uploaded file </li>
+<li> a revision file is stored in the <code>rcsdirname</code> (e.g. <code>.rcs/test.txt,v</code>) relative to the folder of a file</li>
+<li> revisions, logs, and diffs are located under <code>rcsdirname/virtualrcsdir/filename/</code> (e.g. <code>.rcs/RCS/test.txt/</code>)</li>
+</ul>
+</p>
+Requirements:
+<ul>
+<li> <code>Rcs</code> Perl module (Debian/Ubuntu package: librcs-perl)</li> 
+<li> rcs binaries (Debian/Ubuntu package: rcs)</li>
+<li> another backend like FS, GFS, AFS, DBB, or SMB and don't forget to configure the other backend</li>
+<li> a little bit temporary space for all RCS operations (ci, co, rcsdiff, rlog, zip download) </li>
+</ul>
+
+<code>webdav.conf</code> example:
+<pre>
+...
+$BACKEND = 'RCS';
+
+%RCS = (
+        # backend used for versioning:
+        backend=>'FS',                  # required 
+
+        # relative path in a directory for revision files 
+	# (slashes are not allowed):
+        rcsdirname=>'.rcs',             # required
+
+        # RCS binary path:
+        bindir=>'/usr/bin',             # required
+
+        # a relative virtual path in 'rcsdirname' to access 
+	# all revisions, logs and diffs of a file 
+	# (slashes are not allowed):
+        virtualrcsdir=>'RCS',           # required
+);
+...
 </pre>
 
 <a id="performance"></a>

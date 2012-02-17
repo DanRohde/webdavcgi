@@ -22,8 +22,8 @@ package Backend::SMB::Driver;
 use strict;
 #use warnings;
 
-use Backend::FS::Driver;
-our @ISA = qw( Backend::FS::Driver );
+use Backend::Helper;
+our @ISA = qw( Backend::Helper);
 
 use Filesys::SmbClient;
 
@@ -460,37 +460,6 @@ sub uncompressArchive {
 	my ($self, $zipfile, $destination) = @_;
 	my $tempdir = tempdir(CLEANUP => 1);
 	return $self->SUPER::uncompressArchive($self->getLocalFilename($zipfile), "$tempdir/") && $self->_copytoshare("$tempdir/",$destination);
-}
-sub _copytolocal {
-	my ($self, $destdir, @files) = @_;
-	foreach my $file (@files) {
-		my $ndestdir=$destdir.$self->basename($file);
-		if ($self->isDir($file)) {
-			$file.='/' if $file!~/\/$/;
-			if ($self->SUPER::mkcol($ndestdir)) {
-				foreach my $nfile (@{$self->readDir($file)}) {
-					next if $nfile =~ /^\.{1,2}$/;
-					$self->_copytolocal("$ndestdir/", "$file$nfile");
-				}
-			}
-		} else {
-			if (open(my $fh, ">$ndestdir")) {
-				$self->printFile($file, $fh);
-				close($fh);
-			}
-		}
-		my @stat = $self->stat($file);
-		utime($stat[8],$stat[9],$ndestdir);
-	}
-}
-sub compressFiles {
-	my ($self, $desthandle, $basepath, @files) = @_;
-
-	my $tempdir = tempdir(CLEANUP => 1); 
-	foreach my $file (@files) {
-		$self->_copytolocal("$tempdir/", "$basepath$file");
-	}
-	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
 }
 sub hasSetUidBit { return 0; }
 sub hasSetGidBit { return 0; }

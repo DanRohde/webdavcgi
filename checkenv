@@ -25,6 +25,7 @@ FSBACKENDMODULES='File::Spec::Link'
 AFSBACKENDMODULES=$FSBACKENDMODULES
 GFSBACKENDMODULES=$FSBACKENDMODULES
 SMBBACKENDMODULES='Filesys::SmbClient'
+RCSBACKENDMODULES='Rcs'
 WEBINTERFACEMODULES='Graphics::Magick URI::Escape'
 
 
@@ -80,6 +81,9 @@ mcheck $GFSBACKENDMODULES
 
 echo "++++ Checking required modules for SMB backend:"
 mcheck $SMBBACKENDMODULES
+
+echo "++++ Checking required modules for RCS backend:"
+mcheck $RCSBACKENDMODULES
 
 echo "++++ Checking optional binaries:"
 bcheck $OPTIONALBINARIES
