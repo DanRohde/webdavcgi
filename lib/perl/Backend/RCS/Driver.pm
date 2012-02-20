@@ -266,9 +266,7 @@ sub saveStream {
 
 		if (($ret = open($lfh,"<$localfilename")) && ($ret = $$self{BACKEND}->saveStream($destination, $lfh))) {
 			close($lfh);
-			if (!$self->exists($self->dirname($remotercsfilename))) {
-				$$self{BACKEND}->mkcol($self->dirname($remotercsfilename));
-			}
+			$$self{BACKEND}->mkcol($self->dirname($remotercsfilename)) if !$self->exists($self->dirname($remotercsfilename));
 			if (open($lfh, "<$arcfile")) {
 				$$self{BACKEND}->saveStream($remotercsfilename, $lfh);
 				close($lfh);
@@ -432,11 +430,11 @@ sub _isVirtual {
 	
 sub _isVirtualFile {
 	my ($self, $fn) = @_;
-	return ($self->_isRevisionsDir($self->dirname($fn)) && $self->basename($fn) =~ /^(log|diff).txt$/) || ($self->_isRevisionDir($self->dirname($fn)));
+	return ($self->_isRevisionsDir($self->dirname($fn)) && $self->basename($fn) =~ /^(log|diff).txt$/) || $self->_isRevisionDir($self->dirname($fn));
 }
 sub _isVirtualDir {
 	my ($self,$fn) = @_;
-	return !$$self{BACKEND}->exists($fn)  && ( $self->_isRcsDir($fn) || $self->_isVirtualRcsDir($fn) || $self->_isRevisionsDir($fn) || $self->_isRevisionDir($fn));
+	return !$$self{BACKEND}->exists($fn)  && ( $self->_isVirtualRcsDir($fn) || $self->_isRevisionsDir($fn) || $self->_isRevisionDir($fn));
 }
 sub _isRcsDir {
 	my ($self, $fn) = @_;

@@ -314,6 +314,7 @@ Apache and webdav.pl setup:
 
 Graphics::Magick does not compile:
 <ul>
+<li>RedHat/Fedora/CentOS: see <a href="https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2">https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2</a></li>
 <li> You can use Image::Magick instead but it makes trouble in conjunction with <a href="#speedy">Speedy</a>: 
 <pre>sed -i -e 's@Graphics::Magick@Image::Magick@g' \
                 checkenv \
@@ -943,7 +944,7 @@ $BACKEND = 'DBB';
 The RCS backend is a showcase for a revision controlled backend. It needs another backend like FS, or SMB to work because it's a simple backend wrapper.
 </p>
 
-<p>
+<div>
 How it works:
 <ul>
 <li> only files are under revision control</li>
@@ -951,7 +952,7 @@ How it works:
 <li> a revision file is stored in the <code>rcsdirname</code> folder (e.g. <code>.rcs/test.txt,v</code>) relative to the folder of a file</li>
 <li> revisions, logs, and diffs are located under <code>rcsdirname/virtualrcsdir/filename/</code> (e.g. <code>.rcs/RCS/test.txt/</code>)</li>
 </ul>
-</p>
+</div>
 Requirements:
 <ul>
 <li> <code>Rcs</code> Perl module (Debian/Ubuntu package: librcs-perl)</li> 
@@ -1009,6 +1010,7 @@ $BACKEND = 'RCS';
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
   <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance (AFS backend does not work with <a href="#speedy">Speedy</a>). Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
+  <li>Slow response working with WebDAV resources on Windows Vista or Windows 7: <a href="http://support.microsoft.com/kb/2445570">KB2445570</a></li>
 </ul>
 <a id="speedy"></a>
 <h2>Speedy Support</h2>
@@ -1224,6 +1226,19 @@ echo fr_FR.UTF-8 UTF-8 >> /var/lib/locales/supported.d/local
 # and don't forget to compile locale definition files:
 locale-gen
 </pre>
+<h3>Slow response working with WebDAV resources on Windows Vista or Windows 7</h3>
+<div>
+see <a href="http://support.microsoft.com/kb/2445570">http://support.microsoft.com/kb/2445570</a>
+</div>
+<div>
+OR: see <a href="http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol">http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol</a>
+</div>
+
+<h3>RedHat/Fedora/CentOS: Graphics::Magick does not compile</h3>
+<div>
+see <a href="https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2">https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2</a>
+</div>
+
 
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011, 2012 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
