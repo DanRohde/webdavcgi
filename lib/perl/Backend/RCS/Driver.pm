@@ -332,11 +332,12 @@ sub printFile {
 					$firstrev = $rev;
 					next;
 				}
-				my $diff = join("",$rcs->rcsdiff("-kkv","-q","-u","-r$rev", "-r$firstrev"));
-				$diff=~s/^(\+\+\+|\-\-\-) \Q$file\E/$1 $dn/mg;
+				eval { 
+					my $diff = join("",$rcs->rcsdiff("-kkv","-q","-u","-r$rev", "-r$firstrev"));
+					$diff=~s/^(\+\+\+|\-\-\-) \Q$file\E/$1 $dn/mg;
 
-				print $fh $diff;
-
+					print $fh $diff;
+				};
 				$firstrev = $rev;
 			}
 		} else {
