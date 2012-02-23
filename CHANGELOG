@@ -1,4 +1,4 @@
-0.8.2: BETA
+0.8.2: 2012/23/2
      - fixed doc
      - fixed deprecated hash handling
      - improved error handling in SMB backend
