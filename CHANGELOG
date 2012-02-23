@@ -3,7 +3,7 @@
      - fixed deprecated hash handling
      - improved error handling in SMB backend
      - fixed Mac finder related bug with '&' in a pathname (thanx Florian Freund <mail@floek.net>)
-     - fixed Speedy bugs (FS, GFS, SMB, DBB are Speedy/PersitentPerl safe now)
+     - fixed Speedy bugs (FS, GFS, SMB, DBB, RCS are Speedy/PersitentPerl safe now)
      - added a wrapper for the SMB backend and Speedy support 
      - added initial directory support for the SMB backend requested by Aleksander Gudalo
      - added Italian translation (thanx Simone Iozia <simone.iozia@gmail.com>)

@@ -321,7 +321,7 @@ sub printFile {
 		$rcs->file($self->basename($file));
 		if ($fn=~/log.txt$/) {
 			my $filebn = $self->basename($file);
-			my $rlog = join("",$rcs->rlog());
+			my $rlog = join("",$rcs->rlog('-zLT'));
 			$rlog=~s/\Q$rcsfile\E/$dn,v/mg;
 			$rlog=~s/\Q$filebn\E/$dn/mg;
 			print $fh $rlog;
@@ -333,9 +333,8 @@ sub printFile {
 					next;
 				}
 				eval { 
-					my $diff = join("",$rcs->rcsdiff("-kkv","-q","-u","-r$rev", "-r$firstrev"));
+					my $diff = join('',$rcs->rcsdiff('-kkv','-q','-u',"-r$rev", "-r$firstrev",'-zLT'));
 					$diff=~s/^(\+\+\+|\-\-\-) \Q$file\E/$1 $dn/mg;
-
 					print $fh $diff;
 				};
 				$firstrev = $rev;
@@ -373,6 +372,11 @@ sub rename {
 }
 sub getQuota {
 	my $self = shift @_;
+	if ($self->_isVirtual($_[0])) {
+		my $realpath = $_[0];
+		$realpath=~s/\/$main::RCS{rcsdirname}(\/$main::RCS{virtualrcsdir}.*)?$//;
+		return $$self{BACKEND}->getQuota($realpath);
+	}
 	return $$self{BACKEND}->getQuota(@_);
 }
 sub copy {

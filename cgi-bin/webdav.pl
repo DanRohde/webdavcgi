@@ -479,7 +479,7 @@ $BUFSIZE = 1048576;
 
 ## -- AFSQUOTA
 ## if you use a AFS filesystem and if you want quota property support set this variable
-## EXAMPLE: $GFSQUOTA='/usr/sbin/gfs2_quota -f';
+## EXAMPLE: $AFSQUOTA='/usr/bin/fs listquota';
 #$AFSQUOTA='/usr/bin/fs listquota';
 
 ## -- AFS_FSCMD

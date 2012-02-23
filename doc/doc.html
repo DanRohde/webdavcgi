@@ -795,6 +795,7 @@ Requirements:
 <li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
 <li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
 <li> You <b>must not use a setuid/setgid wrapper</b> because mod_auth_kerberos creates a ticket cache file and the WebDAV CGI script needs read rights for the Kerberos ticket cache.</li>
+<li> You need a wrapper if you use Speedy (see <a href="#speedy">Speed Support</a> section) because the SMB backend needs a fresh Kerberos ticket.</li>
 <li> unough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
 
@@ -950,9 +951,15 @@ How it works:
 <li> only files are under revision control</li>
 <li> the backend creates a revision file with RCS for any uploaded file </li>
 <li> a revision file is stored in the <code>rcsdirname</code> folder (e.g. <code>.rcs/test.txt,v</code>) relative to the folder of a file</li>
+<li> the RCS backend creates a virtual folder structure (<code>rcsdirname/virtualrcsdir</code>) with revision files, rcs log entries, and revision comparision (diff)</li>
 <li> revisions, logs, and diffs are located under <code>rcsdirname/virtualrcsdir/filename/</code> (e.g. <code>.rcs/RCS/test.txt/</code>)</li>
 </ul>
 </div>
+Known issues:
+<ul>
+<li> if you copy or move files over existing files the overwritten files and revisions are lost</li>
+<li> if you delete a folder all containing revisions and files are deleted and lost</li>
+</ul>
 Requirements:
 <ul>
 <li> <code>Rcs</code> Perl module (Debian/Ubuntu package: librcs-perl)</li> 
