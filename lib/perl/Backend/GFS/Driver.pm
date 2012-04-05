@@ -26,12 +26,10 @@ use Backend::FS::Driver;
 
 our @ISA = qw( Backend::FS::Driver );
 
-our $VERSION = 0.1;
-
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::GFSQUOTA && open(my $cmd,"$main::GFSQUOTA \"$fn\"|")) {
+	if (defined $main::GFSQUOTA && open(my $cmd,sprintf("%s \"%s\"|", $main::GFSQUOTA, $self->resolveVirt($fn)))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/,$lines[0]);

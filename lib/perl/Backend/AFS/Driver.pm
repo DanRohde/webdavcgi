@@ -68,13 +68,13 @@ sub isEmpty {
 	return $_[0]->_checkAFSAccess($_[1]) && -z $_[1];
 }
 sub stat {
-	return $_[0]->_checkAFSAccess($_[1]) ? CORE::stat($_[1]) : CORE::lstat($_[1]);
+	return $_[0]->_checkAFSAccess($_[1]) ? $_[0]->SUPER::stat($_[1]) : $_[0]->SUPER::lstat($_[1]);
 }
 
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::AFSQUOTA && open(my $cmd, "$main::AFSQUOTA \"$fn\"|")) {
+	if (defined $main::AFSQUOTA && open(my $cmd, sprintf("%s \"%s\"|", $main::AFSQUOTA, $self->resolveVirt($fn)))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/, $lines[1]);
@@ -87,7 +87,7 @@ sub _checkAFSAccess {
 	my $CACHE = $$_[0]{cache};
 	return exists $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
 			? $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
-			: ( $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} = (CORE::lstat($_[1]) ? 1 : 0) );
+			: ( $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} = ($_[0]->SUPER::lstat($_[1]) ? 1 : 0) );
 }
 
 1;

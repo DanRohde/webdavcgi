@@ -48,37 +48,38 @@ sub dirname {
 }
 
 sub exists {
-	return exists $CACHE{$_[0]}{$_[1]}{exists} && defined $CACHE{$_[0]}{$_[1]}{exists} ? $CACHE{$_[0]}{$_[1]}{exists} : ($CACHE{$_[0]}{$_[1]}{exists} = -e $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{exists} && defined $CACHE{$_[0]}{$_[1]}{exists} ? $CACHE{$_[0]}{$_[1]}{exists} : ($CACHE{$_[0]}{$_[1]}{exists} = -e $_[0]->resolveVirt($_[1]));
 }
 sub isDir {
-	return exists $CACHE{$_[0]}{$_[1]}{isDir} ? $CACHE{$_[0]}{$_[1]}{isDir} : ($CACHE{$_[0]}{$_[1]}{isDir} = -d $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{isDir} ? $CACHE{$_[0]}{$_[1]}{isDir} : ($CACHE{$_[0]}{$_[1]}{isDir} = -d $_[0]->resolveVirt($_[1]));
 }
 sub isFile {
-	return exists $CACHE{$_[0]}{$_[1]}{isFile} ? $CACHE{$_[0]}{$_[1]}{isFile} : ($CACHE{$_[0]}{$_[1]}{isFile} = -f $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{isFile} ? $CACHE{$_[0]}{$_[1]}{isFile} : ($CACHE{$_[0]}{$_[1]}{isFile} = -f $_[0]->resolveVirt($_[1]));
 }
 sub isLink {
 	my ($self, $fn) = @_;
 	$fn=~s/\/$//;
 	return $CACHE{$self}{$fn}{isLink} if exists $CACHE{$self}{$fn}{isLink};
-	return ($CACHE{$self}{$fn}{isLink} = -l $fn);
+	return $CACHE{$self}{$fn}{isLink}=1 if $self->isVirtualLink($fn); 
+	return ($CACHE{$self}{$fn}{isLink} = -l $self->resolveVirt($fn,1));
 }
 sub isBlockDevice {
-	return -b $_[1];
+	return -b $_[0]->resolveVirt($_[1]);
 }
 sub isCharDevice {
-	return -c $_[1];
+	return -c $_[0]->resolveVirt($_[1]);
 }
 sub isEmpty {
-	return -z $_[1];
+	return -z $_[0]->resolveVirt($_[1]);
 }
 sub isReadable {
-	return exists $CACHE{$_[0]}{$_[1]}{isReadable} && defined $CACHE{$_[0]}{$_[1]}{isReadable} ? $CACHE{$_[0]}{$_[1]}{isReadable} : ($CACHE{$_[0]}{$_[1]}{isReadable} = -r $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{isReadable} && defined $CACHE{$_[0]}{$_[1]}{isReadable} ? $CACHE{$_[0]}{$_[1]}{isReadable} : ($CACHE{$_[0]}{$_[1]}{isReadable} = -r $_[0]->resolveVirt($_[1]));
 }
 sub isWriteable {
-	return exists $CACHE{$_[0]}{$_[1]}{isWriteable} && defined $CACHE{$_[0]}{$_[1]}{isWriteable} ? $CACHE{$_[0]}{$_[1]}{isWriteable} : ($CACHE{$_[0]}{$_[1]}{isWriteable} =  -w $_[1]);
+	return exists $CACHE{$_[0]}{$_[1]}{isWriteable} && defined $CACHE{$_[0]}{$_[1]}{isWriteable} ? $CACHE{$_[0]}{$_[1]}{isWriteable} : ($CACHE{$_[0]}{$_[1]}{isWriteable} =  -w $_[0]->resolveVirt($_[1]));
 }
 sub isExecutable {
-	return -x $_[1];
+	return -x $_[0]->resolveVirt($_[1]);
 }
 sub getParent {
 	return $_[0]->dirname($_[1]);
@@ -86,29 +87,38 @@ sub getParent {
 
 sub mkcol {
 	delete $CACHE{$_[0]}{$_[1]};
-	return CORE::mkdir($_[1]);
+	return CORE::mkdir($_[0]->resolveVirt($_[1]));
 }
 sub unlinkFile {
 	my ($self, $f) = @_;
+	return 0 if $self->isVirtualLink($f);
 	delete $CACHE{$self}{$f};
 	$f=~s/\/$//;
 	delete $CACHE{$self}{$f};
-	return CORE::unlink($f);
+	return CORE::unlink($self->resolveVirt($f));
 }
 sub unlinkDir {
 	delete $CACHE{$_[0]}{$_[1]};
-	return CORE::rmdir($_[1]);
+	return 0 if $_[0]->isVirtualLink($_[1]);
+	return CORE::rmdir($_[0]->resolveVirt($_[1]));
 }
 sub readDir {
         my ($self, $dirname, $limit, $filter) = @_;
         my @files;
-        if (opendir(my $dir,$dirname)) {
+        if (opendir(my $dir,$self->resolveVirt($dirname))) {
                 while (my $file = readdir($dir)) {
 			last if defined $limit && $#files >= $limit;
 			next if $self->filter($filter, $dirname, $file);
                         push @files, $file;
                 }
                 closedir($dir);
+		if (exists $main::FSVLINK{$dirname} && (!defined $limit || $#files < $limit)) {
+			foreach my $file (keys %{$main::FSVLINK{$dirname}}) {
+				last if defined $limit && $#files >= $limit;
+				next if $self->filter($filter, $dirname, $file);
+				push @files, $file;
+			}
+		}
 	}
         return \@files;
 }
@@ -118,10 +128,10 @@ sub filter {
 	return defined $filter && ((ref($filter) eq 'CODE' && $filter->($dirname,$file))||(ref($filter) ne 'CODE' && $filter->filter($dirname,$file)));
 }
 sub stat {
-	return CORE::stat($_[1]);
+	return CORE::stat($_[0]->resolveVirt($_[1]));
 }
 sub lstat {
-	return CORE::lstat($_[1]);
+	return CORE::lstat($_[0]->resolveVirt($_[1]));
 }
 
 sub deltree {
@@ -137,7 +147,7 @@ sub deltree {
                         push(@$errRef, { $f => "Cannot delete '$f': $!" });
                 }
         } elsif ($self->isDir($f)) {
-                if (opendir(my $dirh,$f)) {
+                if (opendir(my $dirh,$self->resolveVirt($f))) {
                         foreach my $sf (grep { !/^\.{1,2}$/ } readdir($dirh)) {
                                 my $full = $f.$sf;
                                 $full.='/' if $self->isDir($full) && $full!~/\/$/;
@@ -169,18 +179,18 @@ sub changeFilePermissions {
         if ($type eq 's') {
                 chmod($mode, $fn);
         } else {
-                my @stat = CORE::stat($fn);
+                my @stat = $self->stat($fn);
                 my $newmode;
                 $newmode = $stat[2] | $mode if $type eq 'a';
                 $newmode = $stat[2] ^ ($stat[2] & $mode ) if $type eq 'r';
                 chmod($newmode, $fn);
         }
-        my $nfn = $self->resolve($fn);
+        my $nfn = $self->resolve($self->resolveVirt($fn));
         return if exists $$visited{$nfn};
         $$visited{$nfn}=1;
 
         if ($recurse && $self->isDir($fn)) {
-                if (opendir(my $dir, $fn)) {
+                if (opendir(my $dir, $self->resolveVirt($fn))) {
                         foreach my $f ( grep { !/^\.{1,2}$/ } readdir($dir)) {
                                 $f.='/' if $self->isDir("$fn$f") && $f!~/\/$/;
                                 changeFilePermissions($self, $fn.$f, $mode, $type, $recurse, $visited);
@@ -198,7 +208,7 @@ sub saveData {
 
 	my $mode = $append ? '>>' : '>';
 
-	if (($ret = open(my $f, "${mode}${file}"))) {
+	if (($ret = open(my $f, ${mode}.$self->resolveVirt(${file})))) {
 		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
 			$ret = 0;
 		} else {
@@ -211,19 +221,19 @@ sub saveData {
 }
 
 sub saveStream {
-	my ($self, $destination, $filename) = @_;
+	my ($self, $destination, $filehandle) = @_;
 	my $ret = 1;
 
 	delete $CACHE{$self}{$destination};
 
-	if (($ret=open(my $f,">$destination"))) {
+	if (($ret=open(my $f,">".$self->resolveVirt($destination)))) {
 		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
 			close($f);
 			$ret = 0;
 		} else {
 			binmode($f);
-			binmode($filename);
-			while (read($filename,my $buffer,$main::BUFSIZE || 1048576)>0) {
+			binmode($filehandle);
+			while (read($filehandle,my $buffer,$main::BUFSIZE || 1048576)>0) {
 				print $f $buffer;
 			}
 			flock($f, LOCK_UN) if $main::ENABLE_FLOCK;
@@ -244,7 +254,7 @@ sub uncompressArchive {
 	my $zip = Archive::Zip->new();
 	my $status = $zip->read($zipfile);
 	$ret = $status eq $zip->AZ_OK;
-	$zip->extractTree(undef, $destination) if $ret;
+	$zip->extractTree(undef, $self->resolveVirt($destination)) if $ret;
 	return $ret;
 }
 
@@ -255,9 +265,9 @@ sub compressFiles {
 	my $zip =  Archive::Zip->new();
 	foreach my $file (@files) {
 		if ($self->isDir($basepath.$file)) {
-			$zip->addTree($basepath.$file, $file);
+			$zip->addTree($self->resolveVirt($basepath.$file), $file);
 		} else {
-			$zip->addFile($basepath.$file, $file);
+			$zip->addFile($self->resolveVirt($basepath.$file), $file);
 		}
 	}
 	$zip->writeToFileHandle($desthandle,0);
@@ -265,14 +275,18 @@ sub compressFiles {
 
 sub changeMod {
 	delete $CACHE{$_[1]}{$_[2]};
-	chmod($_[1], $_[2]);
+	chmod($_[1], $_[0]->resolveVirt($_[2]));
 }
 sub createSymLink {
 	delete $CACHE{$_[1]}{$_[2]};
-	return CORE::symlink($_[1],$_[2]);
+	return CORE::symlink($_[0]->resolveVirt($_[1]),$_[2]);
 }
 sub getLinkSrc {
+	return $_[0]->resolveVirt($_[1]) if $_[0]->isVirtualLink($_[1]);
 	return CORE::readlink($_[1]);
+}
+sub resolveVirt  {
+	return $CACHE{$_[0]}{$_[1]}{resolveVirt} || ($CACHE{$_[0]}{$_[1]}{resolveVirt} = $_[0]->getVirtualLinkTarget($_[1]));
 }
 sub resolve {
 	return $CACHE{$_[0]}{$_[1]}{resolve} || ($CACHE{$_[0]}{$_[1]}{resolve} = File::Spec::Link->full_resolve($_[1]));
@@ -281,29 +295,29 @@ sub resolve {
 sub getFileContent {
         my ($self,$fn) = @_;
         my $content="";
-        if ($self->exists($fn) && !$self->isDir($fn) && open(F,"<$fn")) {
+        if ($self->exists($fn) && !$self->isDir($fn) && open(F,"<".$self->resolveVirt($fn))) {
                 $content = join("",<F>);
                 close(F);
         }
         return $content;
 }
 sub hasSetUidBit {
-	return -u $_[1]; 
+	return -u $_[0]->resolveVirt($_[1]); 
 }
 sub hasSetGidBit {
-	return -g $_[1];
+	return -g $_[0]->resolveVirt($_[1]);
 }
 sub hasStickyBit {
-	return -k $_[1];
+	return -k $_[0]->resolveVirt($_[1]);
 }
 sub getLocalFilename {
-	return $_[1];
+	return $_[0]->resolveVirt($_[1]);
 }
 
 sub printFile {
 	my ($self, $file, $to) =@_;
 	$to = \*STDOUT unless defined $to;
-	if (open(my $fh, $file)) {
+	if (open(my $fh, $self->resolveVirt($file))) {
 		binmode $fh;
 		binmode $to;
 		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
@@ -320,19 +334,20 @@ sub getDisplayName {
 sub rename {
 	delete $CACHE{$_[0]}{$_[1]};
 	delete $CACHE{$_[0]}{$_[2]};
-	return CORE::rename($_[1],$_[2]);
+	return 0 if $_[0]->isVirtualLink($_[1]) || $_[0]->isVirtualLink($_[2]);
+	return CORE::rename($_[0]->resolveVirt($_[1]),$_[0]->resolveVirt($_[2]));
 }
 sub getQuota {
 	my ($self, $fn) = @_;
 	require Quota;
-	my @quota =  Quota::query(Quota::getqcarg($fn));
+	my @quota =  Quota::query(Quota::getqcarg($self->resolveVirt($fn)));
 	return @quota ? ( $quota[2] * 1024, $quota[0] * 1024 ) : (0, 0);
 }
 sub copy {
 	my ($self, $src, $dst) = @_;
 	delete $CACHE{$self}{$dst};
 
-	if (open(my $srcfh,"<$src") && open(my $dstfh, ">$dst")) {
+	if (open(my $srcfh,"<".$self->resolveVirt($src,1)) && open(my $dstfh, ">".$self->resolveVirt($dst,1))) {
 		while (read($srcfh, my $buffer, $main::BUFSIZE || 1048576)) {
 			syswrite($dstfh, $buffer);
 		}
@@ -341,6 +356,29 @@ sub copy {
 		return 1;
 	}
 	return 0;
+}
+sub isVirtualLink {
+	my ($self, $fn) = @_;
+	return exists $main::FSVLINK{$self->dirname($fn).'/'} && exists $main::FSVLINK{$self->dirname($fn).'/'}{$self->basename($fn)};
+}
+sub getVirtualLinkTarget {
+	my ($self, $src) = @_;
+	my $target = $src;
+	if (!exists $CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys}) {
+		my @fslinkkeys = sort { $b cmp $a } keys %main::FSVLINK;
+		$CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys} = \@fslinkkeys;
+	}
+
+	foreach my $linkdir ( @{$CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys}}) {
+		if (!exists $CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir}) {
+			my @linkdirkeys =  keys %{$main::FSVLINK{$linkdir}} ;
+			$CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir} = \@linkdirkeys;
+		}
+		foreach my $link ( @{$CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir}} ) { 
+			$target=~s /^\Q$linkdir$link\E(\/?|\/.+)?$/$main::FSVLINK{$linkdir}{$link}$1/ && last;
+		}
+	}
+	return $target;
 }
 	
 1;

@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.8.2
+# VERSION 0.8.2-BETA
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:
@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-	    %RCS
+	    %RCS %FSVLINK
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -659,6 +659,18 @@ $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 ## -- RCS
 ## RCS backend configuration (see doc/doc.html):
 %RCS = ();
+
+## -- FSVLINK
+## FSVLINK provides virtual file system links 
+## FORMAT:
+##         <directory> => { <linkname> => <linkdest>,  <linkname2> = > <linkdest2>, ...},
+##         <directory2> => ...
+## NOTES:
+##         <directory> entries require a trailing slash
+##         <linkname> entries must not contain slashes
+##         <linnkdest> entries have to be absolute folder names
+## EXAMPLE: %FSVLINK = ( '/home/testuser/' => { 'testlink' => '/home/testuser/testlinkdest' } );
+%FSVLINK = ();
 
 ## -- DEBUG
 ## enables/disables debug output
