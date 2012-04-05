@@ -808,7 +808,7 @@ sub renderAFSACLManager {
         my @entries;
         my $pt = $main::PATH_TRANSLATED;
         $pt=~s/(["\$\\])/\\$1/g;
-        open(my $afs, "$main::AFS_FSCMD listacl \"$pt\" |") or die("cannot execute $main::AFS_FSCMD list \"$main::PATH_TRANSLATED\"");
+        open(my $afs, sprintf("%s listacl \"%s\"|", $main::AFS_FSCMD, $$self{backend}->resolveVirt($pt))) or die("cannot execute $main::AFS_FSCMD list \"$main::PATH_TRANSLATED\"");
         my $line;
         $line = <$afs>; # skip first line
         my $ispositive = 1;

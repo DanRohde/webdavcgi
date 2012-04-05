@@ -304,10 +304,12 @@ sub doAFSSaveACL() {
                 my $cmd;
                 my $fn = $main::PATH_TRANSLATED;
                 $fn=~s/(["\$\\])/\\$1/g;
-                $cmd= qq@$main::AFS_FSCMD setacl -dir \"$fn\" -acl $pacls -clear 2>&1@;
+                ###$cmd= qq@$main::AFS_FSCMD setacl -dir \"$fn\" -acl $pacls -clear 2>&1@;
+                $cmd= sprintf('%s setacl -dir "%s" -acl %s -clear 2>&1', $main::AFS_FSCMD, $fn, $pacls);
                 $output = qx@$cmd@;
                 if ($nacls ne "") {
-                        $cmd = qq@$main::AFS_FSCMD setacl -dir \"$fn\" -acl $nacls -negative 2>&1@;
+                        ##$cmd = qq@$main::AFS_FSCMD setacl -dir \"$fn\" -acl $nacls -negative 2>&1@;
+                        $cmd = sprintf('%s setacl -dir "%s" -acl %s -negative 2>&1', $main::AFS_FSCMD, $fn, $nacls);
                         $output .= qx@$cmd@;
                 }
         } else { $output = $self->tl('empty normal rights'); }

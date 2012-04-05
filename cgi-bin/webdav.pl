@@ -3,7 +3,7 @@
 ##!/usr/bin/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -222,7 +222,7 @@ $CSS = '';
 ## It's a list of regular expressions and a expression must match a full path.
 ## EXAMPLE: @UNSELECTABLE_FOLDERS = ('/afs/[^/]+(/[^/]+)?/?'); 
 ##    # disallow selection of a AFS cell and all subfolders but subsubfolders are selectable for file/folder actions
-@UNSELECTABLE_FOLDERS = ('/afs/[^/]+(/[^/]+)?/?');
+@UNSELECTABLE_FOLDERS = ();
 
 ## -- ALLOW_INFINITE_PROPFIND
 ## enables/disables infinite PROPFIND requests
@@ -389,7 +389,7 @@ $HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as 
 ## -- SIGNATURE
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
-$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2011 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
+$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2012 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
 
 
 ## -- LANG

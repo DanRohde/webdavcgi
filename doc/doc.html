@@ -171,6 +171,11 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 </ol>
 <a id="upgrade"></a>
 <h2>Upgrade</h2>
+<h3>Upgrading from 0.8.2 to 0.8.3</h3>
+<ol>
+<li>changed <code>@UNSELECTABLE_FOLDERS</code> default to <code>()</code> (only relevant for AFS backend users)</li>
+</ol>
+
 <h3>Upgrading from 0.8.1 to 0.8.2</h3>
 <ol>
 <li> see <a href="#speedy">Speedy support</a> section to improve the WebDAV CGI performance</li>
