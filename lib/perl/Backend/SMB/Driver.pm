@@ -460,7 +460,9 @@ sub uncompressArchive {
 	my ($self, $zipfile, $destination) = @_;
 	my $tempdir = tempdir(CLEANUP => 1);
 	my $localzip = $self->getLocalFilename($zipfile);
-	return $self->SUPER::uncompressArchive($localzip, "$tempdir/") && $self->_copytoshare("$tempdir/",$destination) && unlink $localzip;
+	my $ret = $self->SUPER::uncompressArchive($localzip, "$tempdir/") && $self->_copytoshare("$tempdir/",$destination) ;
+	unlink $localzip;
+	return $ret;
 }
 sub hasSetUidBit { return 0; }
 sub hasSetGidBit { return 0; }
