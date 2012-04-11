@@ -1,6 +1,7 @@
 0.8.3: BETA
      - fixed typos
      - added virtual link support to the FS/AFS/GFS backends
+     - fixed tempory space consumption bug after ZIP file upload in the SMB backend (thx Aleksander Gudalo) 
 
 0.8.2: 2012/23/2
      - fixed doc
