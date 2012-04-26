@@ -228,6 +228,13 @@ sub saveStream {
 		close($lfh);
 		
 		$rcs->ci();
+		my @revisions = $rcs->revisions();
+		if (defined $main::RCS{maxrevisions} && $#revisions >= $main::RCS{maxrevisions}) {
+			my @removedrevisions = splice(@revisions, $main::RCS{maxrevisions});
+			my $range = $removedrevisions[0];
+			$range.=":$removedrevisions[$#removedrevisions]" if $#removedrevisions > 0;
+			$rcs->rcs("-o$range");
+		}
 		$rcs->co();
 
 

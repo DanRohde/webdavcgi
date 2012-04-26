@@ -361,7 +361,10 @@ sub _copytodb {
 sub uncompressArchive {
 	my ($self, $zipfile, $destination) = @_;
         my $tempdir = tempdir(CLEANUP => 1);
-	return $self->SUPER::uncompressArchive($self->getLocalFilename($zipfile), "$tempdir/") && $self->_copytodb("$tempdir/",$destination);
+	my $localzip = $self->getLocalFilename($zipfile);
+	my $ret = $self->SUPER::uncompressArchive($localzip, "$tempdir/") && $self->_copytodb("$tempdir/",$destination);
+	unlink $localzip;
+	return $ret;
 }
 
 1;

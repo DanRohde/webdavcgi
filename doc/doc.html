@@ -754,7 +754,7 @@ The GFS backend replaces only the quota command.
 Requirements:
 <ol>
 <li> a mounted GFS filesystem </li>
-<li> <code>gfs_quota</code> executable for a user</li>
+<li> <code>gfs_quota</code> command executable by a user</li>
 </ol>
 <code>webdav.conf</code> example:
 <pre>
@@ -985,6 +985,9 @@ $BACKEND = 'RCS';
 	# all revisions, logs and diffs of a file 
 	# (slashes are not allowed):
         virtualrcsdir=>'RCS',           # required
+
+	# maximum number of revisions for a file:
+	maxrevision=>20,		# optional
 );
 ...
 </pre>
