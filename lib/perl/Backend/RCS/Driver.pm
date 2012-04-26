@@ -186,6 +186,10 @@ sub saveStream {
 
 	return 1 if ($self->_isVirtualDir($destination));
 
+	if (!$self->_isAllowed($destination)) {
+		return $$self{BACKEND}->saveStream($destination, $fh);
+	}
+
 	my $ret = 0;
 
 	my $filename = $self->basename($destination);
@@ -484,6 +488,26 @@ sub _getRcs {
 	my $rcs = Rcs->new;
 	$rcs->bindir($main::RCS{bindir});
 	return $rcs;
+}
+sub _isAllowed {
+	my ($self, $filename) = @_;
+	my $ret = 1;
+	if ($filename=~/\.([^\.]+)$/) {
+		my $suffix = $1;
+		if (defined $main::RCS{allowedsuffixes}) {
+			my $regex = '^('.join('|', @{ $main::RCS{allowedsuffixes}}).')$';
+			$ret = $suffix =~ /$regex/i;
+		}
+		if ($ret && defined $main::RCS{ignoresuffixes}) {
+			my $regex = '^('.join('|', @{ $main::RCS{ignoresuffixes}}).')$';
+			$ret = $suffix !~ /$regex/i;
+		}
+	}
+	if ($ret && defined $main::RCS{ignorefilenames}) {
+			my $regex = '^('.join('|', @{ $main::RCS{ignorefilenames}}).')$';
+			$ret = $$self{BACKEND}->basename($filename) !~ /$regex/i;
+	}
+	return $ret;
 }
 1;
 

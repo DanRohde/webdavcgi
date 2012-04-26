@@ -971,23 +971,33 @@ Requirements:
 $BACKEND = 'RCS';
 
 %RCS = (
-        # backend used for versioning:
+        ## backend used for versioning:
         backend=>'FS',                  # required 
 
-        # relative path in a directory for revision files 
-	# (slashes are not allowed):
+        ## relative path in a directory for revision files 
+	## (slashes are not allowed):
         rcsdirname=>'.rcs',             # required
 
-        # RCS binary path:
+        ## RCS binary path:
         bindir=>'/usr/bin',             # required
 
-        # a relative virtual path in 'rcsdirname' to access 
-	# all revisions, logs and diffs of a file 
-	# (slashes are not allowed):
+        ## a relative virtual path in 'rcsdirname' to access 
+	## all revisions, logs and diffs of a file 
+	## (slashes are not allowed):
         virtualrcsdir=>'RCS',           # required
 
-	# maximum number of revisions for a file:
-	maxrevision=>20,		# optional
+	## limits the number of revisions for a file:
+	# maxrevision=>20,		# optional
+
+        ## ignore suffixes (check is case insensitive):
+        # ignoresuffixes => [ 'jpg', 'gif', 'png', ],    # optional
+
+        ## allowed suffixes (check is case insensitive):
+        # allowedsuffixes => [ 'txt', 'html' ],  # optional
+
+        ## ignore filenames (check is case insensitive):
+        # ignorefilenames=> [ '.*~'],      # optional
+
 );
 ...
 </pre>
