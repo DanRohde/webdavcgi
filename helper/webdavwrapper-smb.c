@@ -44,10 +44,8 @@ int main(int argc, char *argv[])
 	/* get ticket file name from environment:*/
 	char *krbticket = getenv("KRB5CCNAME");
 
-	/* put copy into the environment: */
-	char krbenv[1000];
-	snprintf(krbenv,1000,"KRB5CCNAME=FILE:%s",dstfilename);
-	putenv(krbenv);
+	/* prevent copying KRB5CCNAME file in the SMB backend */
+	putenv("KRB5CCNAME=");
 
 	/* copy ticket file: */
 	if (krbticket != NULL) {

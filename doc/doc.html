@@ -984,19 +984,21 @@ $BACKEND = 'RCS';
         ## a relative virtual path in 'rcsdirname' to access 
 	## all revisions, logs and diffs of a file 
 	## (slashes are not allowed):
-        virtualrcsdir=>'RCS',           # required
+        virtualrcsdir=>'REVISIONS',     # required
 
 	## limits the number of revisions for a file:
-	# maxrevision=>20,		# optional
+	## note: maxrevisions includes the current revision that means:
+	## you have to set maxrevisions to 4 if you need access to 3 old revisions
+	# maxrevision=>31,              # optional
 
         ## ignore suffixes (check is case insensitive):
-        # ignoresuffixes => [ 'jpg', 'gif', 'png', ],    # optional
+        # ignoresuffixes => [ 'jpg', 'gif', 'png', ],  # optional
 
         ## allowed suffixes (check is case insensitive):
-        # allowedsuffixes => [ 'txt', 'html' ],  # optional
+        # allowedsuffixes => [ 'txt', 'html' ],        # optional
 
         ## ignore filenames (check is case insensitive):
-        # ignorefilenames=> [ '.*~'],      # optional
+        # ignorefilenames=> [ '.*~'],   # optional
 
 );
 ...
