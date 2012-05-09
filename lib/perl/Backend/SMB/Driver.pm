@@ -48,9 +48,11 @@ sub new {
 sub initialize() {
 	my $self = shift;
 	## speedy:
-	CGI::SpeedyCGI->register_cleanup(\&_cleanupCache) if eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
+	my $isSpeedy = eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
+
+	CGI::SpeedyCGI->register_cleanup(\&_cleanupCache) if $isSpeedy;
 	## backup credential cache
-	if ($ENV{KRB5CCNAME}) {
+	if (!$isSpeedy && $ENV{KRB5CCNAME}) {
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/) {
 			my $oldfilename = $1;
 			my $newfilename = "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
