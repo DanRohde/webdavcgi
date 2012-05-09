@@ -1003,6 +1003,8 @@ if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DEL
 
 	### performance is much better than eval:
 	gotomethod($method);
+	$backend->finalize() if $backend;
+	getDBDriver()->finalize();
 	if (!$DBI_PERSISTENT && $DBI_INIT) {
 		$DBI_INIT->disconnect();
 		$DBI_INIT=undef;
@@ -2622,7 +2624,7 @@ sub getWebInterface {
 }
 sub getDBDriver {
 	require DB::Driver;
-	return $CACHE{dbdriver} || ($CACHE{dbdriver} = new DB::Driver);
+	return $CACHE{$REMOTE_USER}{dbdriver} || ($CACHE{$REMOTE_USER}{dbdriver} = new DB::Driver);
 }
 sub getPropertyModule {
 	require WebDAV::Properties;

@@ -45,8 +45,11 @@ sub new {
 	my $class = shift;
 	my $self = {};
 	bless $self, $class;
-	CGI::SpeedyCGI->register_cleanup(sub { $DB->disconnect() if $DB; $DB=undef; }) if eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
 	return $self;
+}
+sub finalize {
+	$DB->disconnect() if $DB; 
+	$DB=undef; 
 }
 
 sub initialize {

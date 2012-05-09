@@ -32,11 +32,12 @@ use vars qw( %CACHE );
 sub new {
 	my $class = my $self = shift;
 	my $self = { BACKEND=> $main::backendmanager->getBackend($main::RCS{backend} || 'FS') };
-	CGI::SpeedyCGI->register_cleanup(\&_cleanupCache) if eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
 	return bless $self, $class;
 }
-sub _cleanupCache {
+sub finalize {
+	my ($self) = @_;
 	%CACHE = ();
+	$$self{BACKEND}->finalize();
 }
 
 sub basename {

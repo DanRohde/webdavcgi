@@ -29,9 +29,7 @@ use Filesys::SmbClient;
 
 use File::Temp qw/ tempfile tempdir /;
 
-our %CACHE;
-
-use vars qw( $SHARESEP $DOCUMENT_ROOT );
+use vars qw( $SHARESEP $DOCUMENT_ROOT %CACHE %SMBCLIENT);
 
 $SHARESEP =  $main::SMB{sharesep} || '~';
 $DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
@@ -44,15 +42,10 @@ sub new {
 	$self->initialize();
 	return $self;
 }
-
 sub initialize() {
 	my $self = shift;
-	## speedy:
-	my $isSpeedy = eval{ require CGI::SpeedyCGI } && CGI::SpeedyCGI->i_am_speedy;
-
-	CGI::SpeedyCGI->register_cleanup(\&_cleanupCache) if $isSpeedy;
 	## backup credential cache
-	if (!$isSpeedy && $ENV{KRB5CCNAME}) {
+	if ($ENV{KRB5CCNAME}) {
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/) {
 			my $oldfilename = $1;
 			my $newfilename = "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
@@ -70,10 +63,16 @@ sub initialize() {
 			}
 		}
 	}
-	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}" if -e "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
-	$$self{smb} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
 }
-sub _cleanupCache {
+sub getSmbClient {
+	my ($self) = @_;
+	my $rmuser = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
+
+	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}" if -e "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
+	return $SMBCLIENT{$rmuser} if exists $SMBCLIENT{$rmuser};
+	return $SMBCLIENT{$rmuser} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
+}
+sub finalize {
 	%CACHE = ();
 	return 1;
 }
@@ -103,27 +102,27 @@ sub readDir {
 					push @files, $path;
 				}
 				#push @files, split(/, /, $fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}) );
-			} elsif (my $dir = $$self{smb}->opendir("smb://$fserver/")) {
+			} elsif (my $dir = $self->getSmbClient()->opendir("smb://$fserver/")) {
 				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter(\%main::SMB)));
-				while (my $f = $$self{smb}->readdir_struct($dir)) {
+				while (my $f = $self->getSmbClient()->readdir_struct($dir)) {
 					$self->_setCacheEntry('readDir',"$DOCUMENT_ROOT$fserver$SHARESEP$$f[1]", { type=>$$f[0], comment=>$$f[2] });
-					push @files, "$fserver$SHARESEP$$f[1]" if $$f[0] == $$self{smb}->SMBC_FILE_SHARE && (!defined $sfilter || $$f[1]!~/$sfilter/);
+					push @files, "$fserver$SHARESEP$$f[1]" if $$f[0] == $self->getSmbClient()->SMBC_FILE_SHARE && (!defined $sfilter || $$f[1]!~/$sfilter/);
 				}
-				$$self{smb}->closedir($dir);
+				$self->getSmbClient()->closedir($dir);
 			} else {
 				warn("Cannot open dir smb://$fserver/: $!");
 			}
 		}
 
 	} elsif ((my $url = $self->_getSmbURL($base)) ne $base) {
-		if (my $dir = $$self{smb}->opendir($url)) {
-			while (my $f = $$self{smb}->readdir_struct($dir)) {
+		if (my $dir = $self->getSmbClient()->opendir($url)) {
+			while (my $f = $self->getSmbClient()->readdir_struct($dir)) {
 				last if defined $limit && $#files>=$limit;
 				next if $self->filter($filter, $base, $$f[1]); 
 				$self->_setCacheEntry('readDir',"$base$$f[1]", { type=>$$f[0], comment=>$$f[2] });
 				push @files, $$f[1]; 
 			}
-			$$self{smb}->closedir($dir);
+			$self->getSmbClient()->closedir($dir);
 		} else {
 			warn("Cannot open dir $url: $!");
 		}
@@ -141,19 +140,19 @@ sub _getShareFilter {
 
 sub isFile {
 	my ($self, $file) = @_;
-	return !_isRoot($file) && !_isShare($file) && $self->_getType($file) == $$self{smb}->SMBC_FILE;
+	return !_isRoot($file) && !_isShare($file) && $self->_getType($file) == $self->getSmbClient()->SMBC_FILE;
 }
 sub isDir {
 	my ($self, $file) = @_;
 	return $self->_existsCacheEntry('isDir', $file) 
 			?  $self->_getCacheEntry('isDir', $file) 
-			: $self->_setCacheEntry('isDir', $file, _isRoot($file) || _isShare($file) || $self->_getType($file) == $$self{smb}->SMBC_DIR);
+			: $self->_setCacheEntry('isDir', $file, _isRoot($file) || _isShare($file) || $self->_getType($file) == $self->getSmbClient()->SMBC_DIR);
 }
 sub isLink {
 	my ($self, $file) = @_;
 	return $self->_existsCacheEntry('isLink', $file) 
 			?  $self->_getCacheEntry('isLink', $file) 
-			: $self->_setCacheEntry('isLink', $file, $self->_getType($file) == $$self{smb}->SMBC_LINK);
+			: $self->_setCacheEntry('isLink', $file, $self->_getType($file) == $self->getSmbClient()->SMBC_LINK);
 	return 0;
 }
 
@@ -175,7 +174,7 @@ sub stat {
 		@stat = (0,0,0755,0,0,0,0,0,$time,$time,$time,0,0);
 	} else {
 		if ($file=~/^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E.*$/) {
-			@stat = $$self{smb}->stat($self->_getSmbURL($file));
+			@stat = $self->getSmbClient()->stat($self->_getSmbURL($file));
 			if ($#stat>0) {
 				my ( @a ) = splice(@stat,8,2);
 				push @stat, @a;
@@ -197,13 +196,13 @@ sub lstat {
 
 sub copy {
 	my ($self, $src, $dst) = @_;
-	if ( (my $srcfh=$$self{smb}->open('<'.$self->_getSmbURL($src))) && (my $dstfh=$$self{smb}->open('>'.$self->_getSmbURL($dst), 07777 ^ $main::UMASK))) {
-		while (my $buffer = $$self{smb}->read($srcfh, $main::BUFSIZE || 1048576)) {
-			$$self{smb}->write($dstfh, $buffer);
+	if ( (my $srcfh=$self->getSmbClient()->open('<'.$self->_getSmbURL($src))) && (my $dstfh=$self->getSmbClient()->open('>'.$self->_getSmbURL($dst), 07777 ^ $main::UMASK))) {
+		while (my $buffer = $self->getSmbClient()->read($srcfh, $main::BUFSIZE || 1048576)) {
+			$self->getSmbClient()->write($dstfh, $buffer);
 		}
-		$$self{smb}->close($srcfh);
-		$$self{smb}->close($dstfh);
-		_cleanupCache();
+		$self->getSmbClient()->close($srcfh);
+		$self->getSmbClient()->close($dstfh);
+		$self->finalize();
 		return 1;
 	} 
 	return 0;
@@ -212,33 +211,33 @@ sub printFile {
 	my ($self, $file, $fh) = @_;
 
 	$fh = \*STDOUT unless defined $fh;
-	if (my $rd = $$self{smb}->open($self->_getSmbURL($file))) {
-		while (my $buffer = $$self{smb}->read($rd, $main::BUFSIZE || 1048576)) {
+	if (my $rd = $self->getSmbClient()->open($self->_getSmbURL($file))) {
+		while (my $buffer = $self->getSmbClient()->read($rd, $main::BUFSIZE || 1048576)) {
 			print $fh $buffer;
 		}
-		$$self{smb}->close($rd);
+		$self->getSmbClient()->close($rd);
 		return 1;
 	}
 	return 0;
 }
 sub saveStream {
 	my ($self, $path, $fh) = @_;
-	if (my $rd = $$self{smb}->open(">".$self->_getSmbURL($path))) {
+	if (my $rd = $self->getSmbClient()->open(">".$self->_getSmbURL($path))) {
 		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
-			$$self{smb}->write($rd, $buffer);
+			$self->getSmbClient()->write($rd, $buffer);
 		}
-		$$self{smb}->close($rd);
-		_cleanupCache();
+		$self->getSmbClient()->close($rd);
+		$self->finalize();
 		return 1;
 	}
 	return 0;
 }
 sub saveData {
 	#my ($self, $path, $data, $append) = @_;
-	if (my $rd = $_[0]{smb}->open('>'.($_[3]? '>':'').$_[0]->_getSmbURL($_[1]))) {
-		$_[0]{smb}->write($rd, $_[2]);
-		$_[0]{smb}->close($rd);
-		_cleanupCache();
+	if (my $rd = $_[0]->getSmbClient()->open('>'.($_[3]? '>':'').$_[0]->_getSmbURL($_[1]))) {
+		$_[0]->getSmbClient()->write($rd, $_[2]);
+		$_[0]->getSmbClient()->close($rd);
+		$_[0]->finalize();
 		return 1;
 	}
 	return 0;
@@ -256,12 +255,12 @@ sub getLocalFilename {
 }
 sub getFileContent {
 	my $content;
-	if (my $fh = $_[0]{smb}->open("<".$_[0]->_getSmbURL($_[1]))) {
+	if (my $fh = $_[0]->getSmbClient()->open("<".$_[0]->_getSmbURL($_[1]))) {
 		$content = "";
-		while (my $buffer = $_[0]{smb}->read($fh, $main::BUFSIZE || 1048576))  {
+		while (my $buffer = $_[0]->getSmbClient()->read($fh, $main::BUFSIZE || 1048576))  {
 			$content.=$buffer;
 		}
-		$_[0]{smb}->close($fh);
+		$_[0]->getSmbClient()->close($fh);
 	}
 	return $content;
 }
@@ -288,13 +287,13 @@ sub exists {
 
 sub mkcol {
 	my ($self, $file) = @_;
-	return $$self{smb}->mkdir($self->_getSmbURL($file),$main::UMASK) && _cleanupCache();
+	return $self->getSmbClient()->mkdir($self->_getSmbURL($file),$main::UMASK) && $self->finalize();
 }
 sub unlinkFile {
 	my ($self, $file) = @_;
-	my $ret = $self->isDir($file) ? $$self{smb}->rmdir_recurse($self->_getSmbURL($file)) : $$self{smb}->unlink($self->_getSmbURL($file));
+	my $ret = $self->isDir($file) ? $self->getSmbClient()->rmdir_recurse($self->_getSmbURL($file)) : $self->getSmbClient()->unlink($self->_getSmbURL($file));
 	warn("Could not delete $file: $!") if (!$ret);
-	_cleanupCache() if $ret;
+	$self->finalize() if $ret;
 	return $ret;
 }
 sub deltree {
@@ -303,7 +302,7 @@ sub deltree {
 }
 sub rename {
 	my ($self, $on, $nn) = @_;
-	return $$self{smb}->rename($self->_getSmbURL($on), $self->_getSmbURL($nn)) && _cleanupCache();
+	return $self->getSmbClient()->rename($self->_getSmbURL($on), $self->_getSmbURL($nn)) && $self->finalize();
 }
 sub resolve {
         my ($self, $fn) = @_;
@@ -384,7 +383,7 @@ sub _getType {
 	if (!$self->_existsCacheEntry('readDir',$file)) {
 		my @stat = $self->stat($file);
 		return 0 if scalar(@stat)==0;
-		$self->_setCacheEntry('readDir', $file, { type=>S_ISLNK($stat[2]) ? $$self{smb}->SMBC_LINK : S_ISDIR($stat[2]) ? $$self{smb}->SMBC_DIR : $$self{smb}->SMBC_FILE , comment=>'' } );
+		$self->_setCacheEntry('readDir', $file, { type=>S_ISLNK($stat[2]) ? $self->getSmbClient()->SMBC_LINK : S_ISDIR($stat[2]) ? $self->getSmbClient()->SMBC_DIR : $self->getSmbClient()->SMBC_FILE , comment=>'' } );
 	}
 	return ${$self->_getCacheEntry('readDir',$file)}{type} || 0;
 }

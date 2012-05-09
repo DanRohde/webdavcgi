@@ -31,7 +31,9 @@ sub new {
 	bless $self, $class;
 	return $self;
 }
-
+sub finalize {
+	%CACHE = ();
+}
 
 sub db_isRootFolder {
         my ($self, $fn, $token) = @_;
