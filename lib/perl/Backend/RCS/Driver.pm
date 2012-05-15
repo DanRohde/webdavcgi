@@ -262,7 +262,7 @@ sub saveStream {
 sub uncompressArchive {
 	my $self = shift @_;
 	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->uncompressArchive(@_);
+	return $self->SUPER::uncompressArchive(@_);
 }
 sub changeMod {
 	my $self = shift @_;

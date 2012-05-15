@@ -22,8 +22,8 @@ package Backend::DBB::Driver;
 use strict;
 #use warnings;
 
-use Backend::FS::Driver;
-our @ISA = qw( Backend::FS::Driver );
+use Backend::Helper;
+our @ISA = qw( Backend::Helper );
 
 our $VERSION = 0.1;
 
@@ -310,64 +310,4 @@ sub getFileContent {
 	my $v = $self->_getDBEntry($fn,1);
 	return $$v{$self->basename($fn)}{data};
 }
-sub _copytolocal {
-	my ($self, $dir, $file) = @_;
-
-	my $nn = "$dir".$self->basename($file);
-	if ($self->isFile($file) && open(my $f, ">$nn")) {
-		my $e = $self->_getDBEntry($file,1);
-		print $f $$e{$self->basename($file)}{data};
-		close($f);
-	} elsif ($self->isDir($file)) {
-		mkdir($nn);
-		$file.='/' unless $file =~ /\/$/;
-		foreach my $f (@{$self->readDir($file)}) {
-			$self->_copytolocal("$nn/", "$file$f"); 
-		}
-	}
-	my @stat = $self->stat($file);
-	utime($stat[8], $stat[9], $nn);
-}
-sub compressFiles {
-	my ($self, $desthandle, $basepath, @files) = @_;
-        my $tempdir = tempdir(CLEANUP => 1);
-	foreach my $file (@files) {
-		$self->_copytolocal("$tempdir/", "$basepath$file");
-	}
-	$self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
-}
-sub _copytodb {
-	my ($self, $src, $dst) = @_;
-	my $ret = 0;
-	if (opendir(my $d, $src)) {
-		$ret = 1;
-		while (my $f = readdir($d)) {
-			next if $f=~/^\.{1,2}$/;
-			my $nn = "$src$f";
-			my $nd = "$dst$f";
-			if (-d $nn) {
-				$self->mkcol($nd);
-				$ret &= $self->_copytodb("$nn/", "$nd/");
-			} else {
-				if (open(my $fh,"<$nn")) {
-					$self->saveStream($nd, $fh);
-					close($fh);
-				} else {
-					$ret = 0;
-				}
-			}
-		}
-		closedir($d);
-	}
-	return $ret;
-}
-sub uncompressArchive {
-	my ($self, $zipfile, $destination) = @_;
-        my $tempdir = tempdir(CLEANUP => 1);
-	my $localzip = $self->getLocalFilename($zipfile);
-	my $ret = $self->SUPER::uncompressArchive($localzip, "$tempdir/") && $self->_copytodb("$tempdir/",$destination);
-	unlink $localzip;
-	return $ret;
-}
-
 1;

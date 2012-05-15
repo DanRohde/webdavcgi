@@ -54,11 +54,63 @@ sub _copytolocal {
 sub compressFiles {
         my ($self, $desthandle, $basepath, @files) = @_;
 
-        my $tempdir = tempdir(CLEANUP => 1);
+        my $tempdir = tempdir('/tmp/webdavcgi-compressFiles-XXXXX', CLEANUP => 1);
         foreach my $file (@files) {
                 $self->_copytolocal("$tempdir/", "$basepath$file");
         }
         $self->SUPER::compressFiles($desthandle, "$tempdir/", @{$self->SUPER::readDir("$tempdir/")});
+}
+sub _copytodestination {
+        my ($self, $src, $dst) =@_;
+        my $ret = 0;
+        if (opendir(my $dir, $src)) {
+                $ret = 1;
+                while (my $file = readdir($dir)) {
+                        next if $file=~/^\.{1,2}$/;
+                        my $nsrc = "$src$file";
+                        my $ndst = "$dst$file";
+                        if (-d $nsrc) {
+                                $self->mkcol($ndst);
+                                $ret &= $self->_copytodestination("$nsrc/", "$ndst/");
+                        } else {
+                                if (open(my $fh, "<$nsrc")) {
+                                        $ret &= $self->saveStream($ndst, $fh);
+                                        close($fh);
+                                } else {
+                                        $ret = 0;
+                                }
+                        }
+                }
+                closedir($dir);
+        }
+        return $ret;
+}
+sub __deltree {
+	my ($file) = @_;
+	if (-l $file) {
+		CORE::unlink($file);
+	} elsif (-d $file) {
+		if (opendir(my $dir, $file)) {
+			foreach my $f (grep { !/^\.{1,2}$/ } readdir($dir)) {
+				my $nf = $file.$f;
+				$nf.='/' if -d $nf;
+				__deltree($nf);
+			}
+			closedir($dir);
+			CORE::rmdir($file);
+		}
+	} elsif (-e $file) {
+		CORE::unlink($file);
+	}
+}
+sub uncompressArchive {
+        my ($self, $zipfile, $destination) = @_;
+        my $tempdir = tempdir('/tmp/webdav-uncompressArchive-XXXXX', CLEANUP => 1);
+        my $localzip = $self->getLocalFilename($zipfile);
+        my $ret = $self->SUPER::uncompressArchive($localzip, "$tempdir/") && $self->_copytodestination("$tempdir/",$destination);
+        CORE::unlink($localzip);
+        __deltree("$tempdir/"); # fixes Speedy bug
+        return $ret;
 }
 
 1;
