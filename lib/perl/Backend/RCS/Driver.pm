@@ -179,6 +179,7 @@ sub saveData {
 		$ret = $self->saveStream($destination, $tmpfh);
 		close($tmpfh);
 	}
+	unlink $localfilename;
 	return $ret;
 }
 
@@ -292,6 +293,7 @@ sub getFileContent {
 		if (open(my $lfh, "<$lf")) {
 			my @content = <$lfh>;
 			close($lfh);
+			unlink $lf;
 			return join("",@content);
 		}
 		return "";
@@ -422,6 +424,7 @@ sub _readVirtualDir {
 		$fn=~s/,v$//;
 		$rcs->file($fn);
 		push @{$ret}, $rcs->revisions(), 'diff.txt', 'log.txt';
+		unlink $localfilename;
 		
 	} elsif ($self->_isVirtualRcsDir($dirname)) {
 		my $fl = $$self{BACKEND}->readDir($parent, $limit, $filter);
