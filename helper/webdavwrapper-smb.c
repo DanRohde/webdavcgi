@@ -1,7 +1,7 @@
-/*********************************************************
+/**************************************************************
 * (C) ZE CMS, Humboldt-Universitaet zu Berlin 
-* Written 2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
-**********************************************************/
+* Written 2011,2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+***************************************************************/
 /*
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -62,9 +62,11 @@ int main(int argc, char *argv[])
 		time_t seconds = time(NULL);
 
 		/* dstfilename does not exists or the ticket lifetime is exceeded: */
-		if ( (stat(dstfilename, &dststat)==-1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
+		int exists = stat(dstfilename, &dststat);
+		if ( (exists == -1)  || (seconds - dststat.st_ctime > TICKET_LIFETIME) ) {
+			if (exists == 0) remove(dstfilename); 
 			int src,dst;
-			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 && flock(dst, LOCK_EX | LOCK_NB) != -1 ) {
+			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = open(dstfilename,O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR)) != -1 && flock(dst, LOCK_EX | LOCK_NB) != -1 ) {
 				char buf[2000];
 				ssize_t count;
 				while ( (count = read(src, &buf, 2000)) >0) write(dst, buf, count);

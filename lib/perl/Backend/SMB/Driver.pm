@@ -72,7 +72,7 @@ sub getSmbClient {
 	my ($self) = @_;
 	my $rmuser = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
 
-	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}" if -e "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
+	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$rmuser" if -e "/tmp/krb5cc_webdavcgi_$rmuser";
 	return $SMBCLIENT{$rmuser} if exists $SMBCLIENT{$rmuser};
 	return $SMBCLIENT{$rmuser} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
 }
