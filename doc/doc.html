@@ -299,7 +299,6 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
 <li> Don't forget to check the config file syntax: <code>perl -c webdav.conf</code></li>
 <li> <a href="#apache">configure your Apache web server</a></li>
-</li>
 </ol>
 <a name="hints"></a>
 <h2>Hints</h2>
@@ -1065,6 +1064,7 @@ NEW: RewriteRule ^/ /cgi-bin/webdavwrapper-smb ...
 
     </pre>
     </li>
+    <li>Known issue: every request creates a new service ticket therefore the file size of ticket cache file grows for every request; Solution: reduce the TICKET_LIFETIME in the webdavwrapper-smb.c to reduce the temporary file space consumption</li>
     </ol>
 </li>
 <li> That's all and don't forget to check the notes below.</li>
