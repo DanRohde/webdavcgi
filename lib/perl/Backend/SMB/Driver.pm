@@ -29,6 +29,8 @@ use Filesys::SmbClient;
 
 use File::Temp qw/ tempfile tempdir /;
 
+use Fcntl qw(:flock);
+
 use vars qw( $SHARESEP $DOCUMENT_ROOT %CACHE %SMBCLIENT);
 
 $SHARESEP =  $main::SMB{sharesep} || '~';
@@ -45,18 +47,20 @@ sub new {
 sub initialize() {
 	my $self = shift;
 	## backup credential cache
-	if ($ENV{KRB5CCNAME}) {
+	if ($ENV{KRB5CCNAME} && !exists $ENV{WEBDAVISWRAPPED} ) {
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/) {
 			my $oldfilename = $1;
 			my $newfilename = "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
-			if ($oldfilename ne $newfilename && open(my $in, "<$oldfilename") && open(my $out, ">$newfilename")) {
-				print STDERR "Backend::SMB::initialize: copy $oldfilename to $newfilename\n";
+			my ($in, $out);
+			if ($oldfilename ne $newfilename && open($in, "<$oldfilename") && open($out, ">$newfilename") && flock($out, LOCK_EX | LOCK_NB) ) {
+				#print STDERR "Backend::SMB::initialize: copy $oldfilename to $newfilename\n";
 				binmode $in;
 				binmode $out;
 				while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
 					print $out $buffer;
 				}
 				close($in);
+				flock($out, LOCK_UN);
 				close($out);
 			} else {
 				warn("Cannot read ticket file (don't use a setuid/setgid wrapper):" . (-r $oldfilename)) if ($oldfilename ne $newfilename);
@@ -124,7 +128,7 @@ sub readDir {
 			}
 			$self->getSmbClient()->closedir($dir);
 		} else {
-			warn("Cannot open dir $url: $!");
+			warn("Cannot open dir $url: $!\nKRB5CCNAME=$ENV{KRB5CCNAME}");
 		}
 	}
 	$self->_setCacheEntry('readDir:list',$base,\@files);

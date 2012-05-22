@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <sys/file.h>
 
 // lifetime of a ticket in seconds (depends on your KDC setup):
 #define TICKET_LIFETIME 28800
@@ -49,6 +50,8 @@ int main(int argc, char *argv[])
 	snprintf(krbenv,1000,"KRB5CCNAME=FILE:%s",dstfilename);
 	putenv(krbenv);
 
+	putenv("WEBDAVISWRAPPED=TRUE");
+
 	/* copy ticket file: */
 	if (krbticket != NULL) {
 		/* remove 'FILE:': */
@@ -61,11 +64,12 @@ int main(int argc, char *argv[])
 		/* dstfilename does not exists or the ticket lifetime is exceeded: */
 		if ( (stat(dstfilename, &dststat)==-1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
 			int src,dst;
-			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 ) {
+			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = creat(dstfilename, 0600 )) != -1 && flock(dst, LOCK_EX | LOCK_NB) != -1 ) {
 				char buf[2000];
 				ssize_t count;
 				while ( (count = read(src, &buf, 2000)) >0) write(dst, buf, count);
 				close(src);
+				flock(dst, LOCK_UN);
 				close(dst);
 			} else {
 				fprintf(stderr, "%s: ERROR: Cannot copy %s to %s: %s\n", argv[0], srcfilename, dstfilename, strerror(errno));
