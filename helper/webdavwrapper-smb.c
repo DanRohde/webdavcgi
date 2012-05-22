@@ -30,6 +30,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // lifetime of a ticket in seconds (depends on your KDC setup):
 #define TICKET_LIFETIME 28800
 
+
+#define STRBUFSIZE 2000
+
 int main(int argc, char *argv[])
 {
 	struct passwd *pw = NULL;
@@ -39,15 +42,18 @@ int main(int argc, char *argv[])
 	if (remote_user == NULL) remote_user = getenv("REMOTE_USER");
 	if (remote_user == NULL) remote_user = getenv("REDIRECT_REMOTE_USER");
 
-	char dstfilename[1000];
-	snprintf(dstfilename,1000,"/tmp/krb5cc_webdavcgi_%s", remote_user);
+	char dstfilename[STRBUFSIZE];
+	snprintf(dstfilename,STRBUFSIZE,"/tmp/krb5cc_webdavcgi_%s", remote_user);
+
+	char dstmtimefilename[STRBUFSIZE];
+	snprintf(dstmtimefilename,STRBUFSIZE,"/tmp/krb5cc_webdavcgi_age_%s", remote_user);
 
 	/* get ticket file name from environment:*/
 	char *krbticket = getenv("KRB5CCNAME");
 
 	/* put copy into the environment: */
-	char krbenv[1000];
-	snprintf(krbenv,1000,"KRB5CCNAME=FILE:%s",dstfilename);
+	char krbenv[STRBUFSIZE];
+	snprintf(krbenv,STRBUFSIZE,"KRB5CCNAME=FILE:%s",dstfilename);
 	putenv(krbenv);
 
 	putenv("WEBDAVISWRAPPED=TRUE");
@@ -62,15 +68,22 @@ int main(int argc, char *argv[])
 		time_t seconds = time(NULL);
 
 		/* dstfilename does not exists or the ticket lifetime is exceeded: */
-		int exists = stat(dstfilename, &dststat);
-		if ( (exists == -1)  || (seconds - dststat.st_ctime > TICKET_LIFETIME) ) {
-			if (exists == 0) remove(dstfilename); 
-			int src,dst;
+		int exists = stat(dstmtimefilename, &dststat);
+		if ( (exists == -1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
+			if (exists == 0) {
+				unlink(dstfilename); 
+				unlink(dstmtimefilename);
+			}
+			int src,dst,dstmtime;
 			if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = open(dstfilename,O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR)) != -1 && flock(dst, LOCK_EX | LOCK_NB) != -1 ) {
-				char buf[2000];
+				char buf[STRBUFSIZE];
 				ssize_t count;
-				while ( (count = read(src, &buf, 2000)) >0) write(dst, buf, count);
+				while ( (count = read(src, &buf, STRBUFSIZE)) >0) write(dst, buf, count);
 				close(src);
+				if ( (dstmtime=open(dstmtimefilename,O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR))!=-1) {
+					write(dstmtime, "age checking", 12);
+					close(dstmtime);
+				}
 				flock(dst, LOCK_UN);
 				close(dst);
 			} else {
