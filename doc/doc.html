@@ -173,7 +173,8 @@ RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/confi
 <h2>Upgrade</h2>
 <h3>Upgrading from 0.8.2 to 0.8.3</h3>
 <ol>
-<li>changed <code>@UNSELECTABLE_FOLDERS</code> default to <code>()</code> (only relevant for AFS backend users)</li>
+<li>changed <code>@UNSELECTABLE_FOLDERS</code> default to <code>()</code> (relevant for AFS backend users)</li>
+<li>changed <code>helper/webdavwrapper-smb.c</code> to fix a Kerberos ticket bug (relevant for SMB backend users)</li>
 </ol>
 
 <h3>Upgrading from 0.8.1 to 0.8.2</h3>
@@ -703,6 +704,7 @@ Apache example:
 <pre>
 KrbMethodNegotiate off
 KrbMethodK5Passwd on
+# required:
 KrbSaveCredentials on
 Krb5Keytab /etc/webafs.keytab
 
