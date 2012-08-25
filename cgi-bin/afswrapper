@@ -9,8 +9,8 @@ TICKET_LIFETIME=82800
 
 ##########################################################
 
-remote_user=$REMOTE_USER
-test -z "$remote_user" && remote_user=$REDIRECT_REMOTE_USER
+remote_user="$REMOTE_USER"
+test -z "$remote_user" && remote_user="$REDIRECT_REMOTE_USER"
 
 ticketfn="/tmp/krb5cc_webdavcgi_$remote_user"
 
@@ -18,15 +18,19 @@ KRB5CCNAME="FILE:$ticketfn"
 export KRB5CCNAME
 
 if test -n "$AUTHHEADER" ; then
-	if test -f $ticketfn ; then
-		mtime=$(stat -c %Y $ticketfn)
+	if test -f "$ticketfn" ; then
+		mtime=$(stat -c %Y "$ticketfn")
 		time=$(date +%s)
 		timediff=$(($time - $mtime))
-		test $timediff -ge $TICKET_LIFETIME && rm $ticketfn
+		test $timediff -ge $TICKET_LIFETIME && rm -f "$ticketfn"
 	fi
-	if test ! -f $ticketfn ; then
-		password=$(echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2)
-		echo $password | kinit $remote_user 1>/dev/null 2>&1
+	if test ! -f "$ticketfn" ; then
+		(
+			flock -x -w 10 9 || exit 1
+			password=$(echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2)
+			echo "$password" | kinit "$remote_user" 1>/dev/null 2>&1
+		) 9> "${ticketfn}.flock"
+
 	fi
 fi
 
