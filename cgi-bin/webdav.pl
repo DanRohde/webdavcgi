@@ -1040,7 +1040,7 @@ sub _GET {
 		my $mime = getMIMEType($fn);
 		my @stat = $backend->stat($fn);
 		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, "<".$backend->getLocalFilename($fn))) {
-				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'must-revalidate, private, no-cache');
+				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'no-cache');
 				my $c;
 				if ($enc =~ /gzip/i) {
 					require IO::Compress::Gzip;
@@ -2186,7 +2186,7 @@ sub printLocalFileHeader {
 sub printFileHeader {
 	my ($fn,$addheader) = @_;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $backend->stat($fn);
-	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET, -Cache_Control=>'must-revalidate, private, no-cache');
+	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET, -Cache_Control=>'no-cache');
 	%ha = (%ha, %{$addheader}) if $addheader;
 	my $header = $cgi->header(\%ha);
 
