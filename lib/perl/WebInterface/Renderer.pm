@@ -109,7 +109,7 @@ sub printThumbnail {
 
                 }
                 if (open(my $cf, "<$cachefile")) {
-                        print $$self{cgi}->header(-status=>'200 OK',-type=>main::getMIMEType($cachefile), -ETag=>main::getETag($cachefile), -Content-length=>(stat($cachefile))[7]);
+                        print $$self{cgi}->header(-status=>'200 OK',-type=>main::getMIMEType($cachefile), -ETag=>main::getETag($cachefile), -Content_length=>(stat($cachefile))[7]);
                         binmode $cf;
                         binmode STDOUT;
                         print while(<$cf>);
