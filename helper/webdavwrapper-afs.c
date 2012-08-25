@@ -31,7 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/file.h>
 
 // lifetime of a ticket in seconds (depends on your KDC setup):
-#define TICKET_LIFETIME 28800
+// 1 day - 1h = 82800 seconds
+#define TICKET_LIFETIME 82800
 
 #define STRBUFSIZE 2000
 
@@ -56,9 +57,6 @@ int main(int argc, char *argv[])
         char dstfilename[STRBUFSIZE];
         snprintf(dstfilename,STRBUFSIZE,"/tmp/krb5cc_webdavcgi_%s", remote_user);
 
-        char dstmtimefilename[STRBUFSIZE];
-        snprintf(dstmtimefilename,STRBUFSIZE,"/tmp/krb5cc_webdavcgi_age_%s", remote_user);
-
         /* get ticket file name from environment:*/
         char *krbticket = getenv("KRB5CCNAME");
 
@@ -77,22 +75,15 @@ int main(int argc, char *argv[])
                 time_t seconds = time(NULL);
 
                 /* dstfilename does not exists or the ticket lifetime is exceeded: */
-                int exists = stat(dstmtimefilename, &dststat);
+                int exists = stat(dstfilename, &dststat);
                 if ( (exists == -1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
-                        if (exists == 0) {
-                                unlink(dstfilename);
-                                unlink(dstmtimefilename);
-                        }
+                        if (exists == 0) unlink(dstfilename);
                         int src,dst,dstmtime;
                         if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = open(dstfilename,O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR)) != -1 && flock(dst, LOCK_EX | LOCK_NB) != -1 ) {
                                 char buf[STRBUFSIZE];
                                 ssize_t count;
                                 while ( (count = read(src, &buf, STRBUFSIZE)) >0) write(dst, buf, count);
                                 close(src);
-                                if ( (dstmtime=open(dstmtimefilename,O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR))!=-1) {
-                                        write(dstmtime, "age checking", 12);
-                                        close(dstmtime);
-                                }
                                 flock(dst, LOCK_UN);
                                 fchown(dst,pw->pw_uid,pw->pw_gid);
                                 close(dst);
@@ -100,7 +91,7 @@ int main(int argc, char *argv[])
                                 fprintf(stderr, "%s: ERROR: Cannot copy %s to %s: %s\n", argv[0], srcfilename, dstfilename, strerror(errno));
                         }
                 }
-        }
+        } 
 
 	if ((pw != NULL)  && ( pw->pw_uid != 0)) {
 		if (initgroups(pw->pw_name,pw->pw_gid)==0 && setgid(pw->pw_gid)==0 && setuid(pw->pw_uid)==0) execv("afswrapper",argv);
@@ -108,7 +99,8 @@ int main(int argc, char *argv[])
 	} else {
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-Type: text/plain\r\n\r\n");
-		printf("404 Not Found - your wrapper\n");
-		printf("remote_user: %s\n",remote_user);
+		printf("404 Not Found - your wrapper %s\n",argv[0]);
+		printf("REMOTE_USER: %s\n",remote_user);
+		printf("KRB5CCNAME: %s\n",krbticket);
 	}
 }

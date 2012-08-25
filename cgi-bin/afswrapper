@@ -3,24 +3,33 @@
 # (C) ZE CMS, Humboldt-Universiteat zu Berlin
 # Written 2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 ##########################################################
+# Kerberos ticket lifetime:
+# 1 day - 1 hour = 82800 seconds
+TICKET_LIFETIME=82800
+
+##########################################################
 
 remote_user=$REMOTE_USER
 test -z "$remote_user" && remote_user=$REDIRECT_REMOTE_USER
 
 ticketfn="/tmp/krb5cc_webdavcgi_$remote_user"
 
-if test ! -f $ticketfn ; then
-	auth=$(echo $AUTHHEADER | cut -d' ' -f2 | base64 -d)
-	password=$(echo $auth | cut -d: -f2)
+KRB5CCNAME="FILE:$ticketfn"
+export KRB5CCNAME
 
-	KRB5CCNAME=$ticketfn
-	export KRB5CCNAME
-
-	test -f $KRB5CCNAME || echo $password | kinit $remote_user 1>/dev/null 2>&1
-else
-	KRB5CCNAME=$ticketfn
-	export KRB5CCNAME
+if test -n "$AUTHHEADER" ; then
+	if test -f $ticketfn ; then
+		mtime=$(stat -c %Y $ticketfn)
+		time=$(date +%s)
+		timediff=$(($time - $mtime))
+		test $timediff -ge $TICKET_LIFETIME && rm $ticketfn
+	fi
+	if test ! -f $ticketfn ; then
+		password=$(echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2)
+		echo $password | kinit $remote_user 1>/dev/null 2>&1
+	fi
 fi
+
 aklog
 exec ./webdav.pl
 

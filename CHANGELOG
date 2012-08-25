@@ -1,8 +1,7 @@
 0.8.4: BETA
      - fixed typos in doc
      - fixed security bug in helper/webdavwrapper-krb.c
-     - added helper/webdavwrapper-afs.c and cgi-bin/afswrapper
-
+     - added Speedy support for the AFS backend
 
 0.8.3: 2012/6/6
      - fixed typos
