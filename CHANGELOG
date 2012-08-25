@@ -1,7 +1,13 @@
+0.8.4: BETA
+     - fixed typos in doc
+     - fixed security bug in helper/webdavwrapper-krb.c
+     - added helper/webdavwrapper-afs.c and cgi-bin/afswrapper
+
+
 0.8.3: 2012/6/6
      - fixed typos
      - added virtual link support to the FS/AFS/GFS backends
-     - fixed tempory space consumption bug after ZIP file upload in the SMB/DBB backend (thx Aleksander Gudalo) 
+     - fixed temporary space consumption bug after ZIP file upload in the SMB/DBB backend (thx Aleksander Gudalo) 
      - added revision limit for a file to RCS backend (maxrevisions option)
      - fixed Kerberos ticket copying bug (changed helper/webdavwrapper-smb.c)
 

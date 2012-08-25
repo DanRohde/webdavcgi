@@ -11,7 +11,6 @@
 <body>
 <div id="content">
 <div style="text-align: right; font-size:0.8em;">
-<a href="http://sourceforge.net/project/project_donations.php?group_id=385775">Donate</a>
 <a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></div>
 <h1>WebDAV CGI - Documentation</h1>
 <div id="toc">
@@ -704,7 +703,6 @@ Apache example:
 <pre>
 KrbMethodNegotiate off
 KrbMethodK5Passwd on
-# required:
 KrbSaveCredentials on
 Krb5Keytab /etc/webafs.keytab
 
@@ -805,6 +803,7 @@ KrbMethodK5Passwd on
 KrbAuthoritative on
 KrbServiceName HTTP
 Krb5Keytab /etc/keytab.HTTP
+# required:
 KrbSaveCredentials on
 KrbAuthRealms MY.EXAMPLE.DOMAIN.ORG MYSECOND.EXAMPLE.DOMAIN.ORG
 
@@ -1260,6 +1259,13 @@ OR: see <a href="http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol">
 see <a href="https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2">https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2</a>
 </div>
 
+<h3>Apache error log: Permission denied: exec of '.../webdavwrapper' failed</h3>
+<div>
+<ul>
+<li> Check all file and folder permissions (Apache runs with a user)</li>
+<li> SELinux users should define a policy to allow the execution of webdavwrapper.</li>
+</ul>
+</div>
 
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011, 2012 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>

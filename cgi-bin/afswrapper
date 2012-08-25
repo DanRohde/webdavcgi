@@ -1,0 +1,26 @@
+#!/usr/bin/pagsh
+##########################################################
+# (C) ZE CMS, Humboldt-Universiteat zu Berlin
+# Written 2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+
+remote_user=$REMOTE_USER
+test -z "$remote_user" && remote_user=$REDIRECT_REMOTE_USER
+
+ticketfn="/tmp/krb5cc_webdavcgi_$remote_user"
+
+if test ! -f $ticketfn ; then
+	auth=$(echo $AUTHHEADER | cut -d' ' -f2 | base64 -d)
+	password=$(echo $auth | cut -d: -f2)
+
+	KRB5CCNAME=$ticketfn
+	export KRB5CCNAME
+
+	test -f $KRB5CCNAME || echo $password | kinit $remote_user 1>/dev/null 2>&1
+else
+	KRB5CCNAME=$ticketfn
+	export KRB5CCNAME
+fi
+aklog
+exec ./webdav.pl
+

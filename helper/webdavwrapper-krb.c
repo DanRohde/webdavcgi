@@ -33,6 +33,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <pwd.h>
 #include <grp.h>
 
+#define STRBUFSIZE 2000
+
 int main(int argc, char *argv[])
 {
 	struct passwd *pw = NULL;
@@ -44,8 +46,8 @@ int main(int argc, char *argv[])
 
 	char *user = NULL;
 	if (remote_user != NULL) {
-		char buf[2000] ;
-		sprintf(buf, "%s", remote_user); // strtok changes strings!
+		char buf[STRBUFSIZE] ;
+		snprintf(buf, STRBUFSIZE, "%s", remote_user); // strtok changes strings!
 		user = strtok(buf, "@");
 		pw = getpwnam(user);
 	}
