@@ -40,8 +40,7 @@ Content of this topic:
 <a href="index.html"><br/>Back to the WebDAV CGI home</a>
 
 </div>
-<a id="requirements"></a>
-<h2>Requirements</h2>
+<h2 id="requirements">Requirements</h2>
 
 <ul>
 <li> all required Perl modules: see <a href="#installation">Installation</a> </li>
@@ -53,8 +52,7 @@ Content of this topic:
 
 You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav completely. 
 
-<a id="installation"></a>
-<h2>Installation</h2>
+<h2 id="installation">Installation</h2>
 <p>Note: All steps are done with root rights.</p>
 <p>Upgrade Note: Please take a look at the <a href="#upgrade">Upgrade</a> section for further information.</p>
 <ol>
@@ -123,53 +121,63 @@ ln -s `pwd`/cgi-bin/webdav.pl /usr/lib/cgi-bin
     <li> or with a handler action</li>
     </ul>
     Examples for Apache 2.x: (you need the Apache rewrite module: <code>a2enmod rewrite</code>) 
-    - and don't forget to take a look at the backend specific configurations <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, or <a href="#dbb">DBB</a>
+    - and don't forget to take a look at the backend specific configurations <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, or <a href="#rcs">RCS</a>
     <pre>
-### EXAMPLE 1: a .htaccess file to handle a complete folder with WebDAV CGI:
-### (Prerequisites: /cgi-bin/webdavwrapper is a script alias and
-###      'AllowOverride AuthConfig FileInfo' is set for the current folder)
-RewriteEngine On
-RewriteRule .* /cgi-bin/webdavwrapper [E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl]
-
-AuthType Basic
-AuthName "A protected WebDAV folder"
-AuthUserFile /path-to-my-auth-file
-require valid-user
-    </pre>
-<br/>
-    <pre>
-### EXAMPLE 2: a complete (virtual) server root handled by WebDAV CGI:
-### (you don't need actions, handler, or error documents)
-&lt;Location /cgi-bin/webdavwrapper&gt;
+### EXAMPLE 1: a complete (virtual) server root handled by WebDAV CGI:
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
+# ScriptAlias /logout /etc/webdavcgi/cgi-bin/logout
+&lt;Location /webdavcgi&gt;
         AuthType Basic
         AuthName "WebDAV/CalDAV/CardDAV space"
         AuthUserFile /path-to-my-auth-file
         Require valid-user
 &lt;/Location&gt;
 RewriteEngine On
-RewriteRule ^/icons(.*) /usr/share/apache2/icons$1 [L]
-RewriteRule ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
+# RewriteRule /logout - [L]
+RewriteRule ^/ /webdavcgi [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
     </pre>
 <br/>
     <pre>
-### EXAMPLE 3: a virtual path /webdav
-&lt;Location /cgi-bin/webdavwrapper&gt;
+### EXAMPLE 2: a virtual path /webdav
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
+# ScriptAlias /webdav/logout /etc/webdavcgi/cgi-bin/logout
+&lt;Location /webdavcgi&gt;
         AuthType Basic
         AuthName "WebDAV space"
         AuthUserFile /path-to-my-auth-file
         Require valid-user
 &lt;/Location&gt;
 # if you want to map this to a real path, do that:
-# (end setup $VIRTUAL_BASE and $DOCUMENT_ROOT in your WebDAV CGI config)
+# (end setup $VIRTUAL_BASE='webdav' and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
-RewriteRule  ^/webdav /cgi-bin/webdavwrapper  [PT,E=WEBDAVCONF:/path/to/my/config/file,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
+# RewriteRule ^/webdav/logout - [L]
+RewriteRule ^/webdav /webdavcgi  [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
     </pre>
+<br/>
+    <pre>
+### EXAMPLE 3: a .htaccess file to handle a complete folder with WebDAV CGI:
+### (Prerequisites: /webdavcgi is a script alias (ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper) and
+###      'AllowOverride AuthConfig FileInfo' is set for the current folder)
+RewriteEngine On
+RewriteRule .* /webdavcgi [E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
 
+AuthType Basic
+AuthName "A protected WebDAV folder"
+AuthUserFile /path-to-my-auth-file
+require valid-user
+    </pre>
 </li>
 
 </ol>
-<a id="upgrade"></a>
-<h2>Upgrade</h2>
+<h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 0.8.3 to 0.8.4</h3>
+<ol>
+<li> Speedy support for AFS was added and a Kerberos and mod_waklog free installation is now possible:
+   <ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog is no longer required if you use webdavwrapper-afs.c)</li>
+       <li>a PAG script was added: cgi-bin/afswrapper</li> 
+       <li>visit <a href="#afs">AFS</a> section for details</li>
+   </ul>
+</ol>
 <h3>Upgrading from 0.8.2 to 0.8.3</h3>
 <ol>
 <li>changed <code>@UNSELECTABLE_FOLDERS</code> default to <code>()</code> (relevant for AFS backend users)</li>
@@ -254,13 +262,13 @@ webdav.pl syntax OK
   File::Spec::Link already checked
 ++++ Checking required modules for SMB backend:
   Filesys::SmbClient installed
+++++ Checking required modules for RCS backend:
+  Rcs installed
 ++++ Checking optional binaries:
   smbclient /usr/bin/smbclient
 #### Summary:
 All modules found.
-All binaries found.
-
-</pre></li>
+All binaries found. </pre></li>
 	</ol>
 </li>
 <li>WebDAV CGI has a new Web interface and some configuration defaults were changed and new options were added. See CHANGELOG in your installation path and take a look into webdav.pl for further information.</li>
@@ -268,17 +276,16 @@ All binaries found.
 
 
 
-<a id="setup"></a>
-<h2>WebDAV CGI Setup</h2>
+<h2 id="setup">WebDAV CGI Setup</h2>
 The WebDAV CGI can be easier upgraded if you use a configuration file instead of changing the setup section of <code>webdav.pl</code>.
 <ol>
-<li> Create a <code>webdav.conf</code> wherever you want (e.g. /etc/webdav.conf or /etc/apache2/webdav.conf) with a minimal setup and don't forget to fix file permissions: <code>chmod a+r webdav.conf</code>:
+<li> Create a <code>webdav.conf</code> wherever you want (/etc/webdav.conf) with a minimal setup and don't forget to fix file permissions: <br/><code>chmod a+r webdav.conf</code>:
 <pre>
 ## the install base is needed to find webdav-ui.* and locale files 
 ## (don't forget the trailing slash):
 $INSTALL_BASE = '/etc/webdavcgi/';
 
-## the backend module (supported: FS, AFS, GFS, SMB, DBB):
+## the backend module (supported: FS, AFS, GFS, SMB, DBB, RCS):
 $BACKEND = 'FS';
 
 ## this is an example if a user starts with home dir (http://mywebdavserver/ -&gt; user home):
@@ -300,8 +307,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 <li> Don't forget to check the config file syntax: <code>perl -c webdav.conf</code></li>
 <li> <a href="#apache">configure your Apache web server</a></li>
 </ol>
-<a name="hints"></a>
-<h2>Hints</h2>
+<h2 id="hints">Hints</h2>
 Apache and webdav.pl setup:
    <ul>
    <li> You can use Apache's <code>'SetEnv VAR VAL'</code> or <code>'RewriteRule ... [E=VAR:VAL]'</code> in conjunction with <code>'$ENV{VAR}'</code> in your config to setup WebDAV CGI. This allows you a path based, virtual host based or user based configuration.</li>
@@ -319,8 +325,7 @@ Graphics::Magick does not compile:
 </li>
 </ul>
 
-<a id="database"></a>
-<h2>Database Setup</h2>
+<h2 id="database">Database Setup</h2>
 <h3>Common Instructions</h3>
 <ol>
 <li> Install the necessary Perl DBI driver (Debian/Ubuntu package: libdbd-...-perl) </li>
@@ -408,8 +413,7 @@ $CREATE_DB=0;
 </li>
 </ul>
 
-<a id="wrapper"></a>
-<h2>UID/GID Wrapper</h2>
+<h2 id="wrapper">UID/GID Wrapper</h2>
 If you use the example wrapper (<code>webdavwrapper.c</code> or <code>webdavwrapper-krb.c</code>) you should consider this:
 <ul>
 <li> Your operating system have to know all your WebDAV users. The following command should display a complete passwd entry (replace UID with a account name):
@@ -432,8 +436,7 @@ chmod ug+s,a+x webdavwrapper
 </ul>
 Attention: for AFS and/or Kerberos support you need the <code>webdavwrapper-krb.c</code> instead of <code>webdavwrapper.c</code> (see <a href="#afs">AFS Support</a> section)
 
-<a id="foldersharing"></a>
-<h2>Folder Sharing / Group Access</h2>
+<h2 id="foldersharing">Folder Sharing / Group Access</h2>
 There are two ways to share a folder between users of a group (not for AFS users - see AFS note below):
 <ol>
 <li> Add all users to UNIX/Posix group (/etc/groups, a LDAP group, ...) - recommended:
@@ -464,8 +467,7 @@ AFS note: If you use AFS you have to use AFS groups and AFS ACLs to share folder
 <li> Don't forget to set lookup rights for the AFS group to all upper folders.</li>
 </ol>
 
-<a id="webinterface"></a>
-<h2>Web interface</h2>
+<h2 id="webinterface">Web interface</h2>
 <h3>How to add a new translation</h3>
 <div>
 Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
@@ -577,11 +579,7 @@ Following variables are substituted:
 <tr><td>$VHTDOCS</td><td>virtual htdocs path <code>$VHTDOCS</code> to the <code>$INSTALL_BASE/htdocs</code></td></tr>
 </table>
 
-
-
-
-<a id="logout"></a>
-<h2>Web interface and logout button</h2>
+<h2 id="logout">Web interface and logout button</h2>
 The WebDAV CGI Web interface has no logout button by default. A logout depends on the used authentication type. For a simple HTTP basic authentication you can use the sample logout script (see <code>cgi-bin/logout-dist</code> in your WebDAV CGI source base).
 
 It's quiet easy to integrate a logout button:
@@ -602,8 +600,7 @@ ln -s `pwd`/cgi-bin/logout /usr/lib/cgi-bin
 </ol>
 
 
-<a id="caldavcarddav"></a>
-<h2>CalDAV &amp; CardDAV support</h2>
+<h2 id="caldavcarddav">CalDAV &amp; CardDAV support</h2>
 <h3>CalDAV</h3>
 <div>WebDAV CGI supports CalDAV (calendar and todo sharing). Older clients need only the URL to your CalDAV enabled folder. Newer clients like iPod Touch 4, MacOS X 10.6.x, ... need some configuration efforts:
 <ol>
@@ -686,17 +683,54 @@ mkdir("${DOCUMENT_ROOT}.addressbook")
 </pre>
 </div>
 
-<a id="afs"></a>
-<h2>AFS Support</h2>
+<h2 id="afs">AFS Support</h2>
 WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It's a complete replacement for <a href="http://filedrawers.org/">filedrawers</a>.
+
+<h3>... without mod_auth_kerberos </h3>
+Requirements:
+
+<ol>
+<li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured with a default realm (/etc/krb5.conf: default_realm = MY.DOMAIN.NAME) (<code>kinit &lt;uid_without_domain&gt; ;  aklog</code> should work)</li>
+<li>webdavwrapper-afs.c: <pre>gcc -o cgi-bin/webdavwrapper-afs helper/webdavwrapper-afs.c 
+chown root:root  cgi-bin/webdavwrapper-afs
+chmod ug+s,a+rx cgi-bin/webdavwrapper-afs
+chmod a+rx cgi-bin/afswrapper</pre></li>
+<li>All users should be visible for the system and have the same password for AFS and your authentication facility like LDAP, RADIUS,... to authenticate your users with kinit and to allow setuid/setgid: <code>getent passwd &lt;uid&gt;</code> should work</li>
+<li>The <code>AUTHHEADER</code> environment variable with the HTTP Authorization header value has to be passed to the wrapper: see RewriteRule of the Apache config example</li>
+</ol>
+
+Apache example:
+<pre>
+&lt;Location /webdavcgi>
+	AuthName "WebAFS"
+	AuthType Basic
+	Require valid-user
+&lt;/Location>
+
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-afs
+# ScriptAlias /logout /etc/webdavcgi/cgi-bin/logout
+RewriteEngine on
+# RewriteRule ^/logout - [L]
+RewriteRule ^/ /webdavcgi \
+               [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
+	             E=PERLLIB:/etc/webdavcgi/lib/perl,\
+		     E=AUTHHEADER:%{HTTP:Authorization}]
+
+
+</pre>
+<code>webdav.conf</code> example: <a href="#afsconf">see next section</a>
+<h3>... with mod_auth_kerberos</h3>
+
 <br/>
 Requirements:
 <ol>
 <li><a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu package: libapache2-mod-auth-kerb)</li>
 <li>a keytab file for your server (service name: HTTP/&lt;YOUR SERVER NAME&gt;@&lt;YOUR DOMAIN&gt;, e.g. HTTP/webafs.cms.hu-berlin.de@CMS.HU-BERLIN.DE)</li>
-<li><a href="http://www.modwaklog.org/">mod_waklog</a> installed</li>
 <li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured (<code>kinit ...; aklog</code> should work)</li>
-<li><a href="http://webdavcgi.sf.net/files/webdavwrapper-krb.c">webdavwrapper-krb.c</a>: <code> gcc -o webdavwrapper webdavwrapper-krb.c &amp;&amp; cp webdavwrapper /usr/lib/cgi-bin &amp;&amp; chown root:root  /usr/lib/cgi-bin/webdavwrapper; chmod ug+s,a+rx /usr/lib/cgi-bin/webdavwrapper</code></li>
+<li>webdavwrapper-afs.c: <pre>gcc -o cgi-bin/webdavwrapper-afs helper/webdavwrapper-afs.c 
+chown root:root  cgi-bin/webdavwrapper-afs
+chmod ug+s,a+rx cgi-bin/webdavwrapper-afs
+chmod a+rx cgi-bin/afswrapper</pre></li>
 </ol>
 
 Apache example:
@@ -706,18 +740,18 @@ KrbMethodK5Passwd on
 KrbSaveCredentials on
 Krb5Keytab /etc/webafs.keytab
 
-AuthName "WebAFS"
-AuthType Kerberos
-require valid-user
+&lt;Location /webdavcgi&gt;
+	AuthName "WebAFS"
+	AuthType Kerberos
+	require valid-user
+&lt;/Location&gt;
 
-WaklogEnabled On
-WaklogUseUserTokens On
-
-RewriteRule ^/icons/ - [L]
-RewriteRule  ^/ /cgi-bin/webdavwrapper [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
+ScriptAlias /webdavcgi /etc/webdavcgi/webdavwrapper-afs
+RewriteEngine on
+RewriteRule  ^/ /webdavcgi [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
 </pre>
 
-<code>webdav.conf</code> example:
+<code id="afsconf">webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi';
 
@@ -747,8 +781,7 @@ $MIMEFILE='/etc/mime.types';
 
 </pre>
 
-<a id="gfs"></a>
-<h2>GFS Support</h2>
+<h2 id="gfs">GFS Support</h2>
 The GFS backend replaces only the quota command.
 Requirements:
 <ol>
@@ -772,8 +805,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $GFSQUOTA='/usr/sbin/gfs_quota -f';
 </pre>
 
-<a id="smb"></a>
-<h2>SMB/CIFS Support</h2>
+<h2 id="smb">SMB/CIFS Support</h2>
 Requirements:
 <ol>
 <li> a Active Directory integrated Windows or Samba file server</li>
@@ -812,8 +844,9 @@ AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
 
 require valid-user
 
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
 RewriteEngine on
-RewriteRule  ^/ /cgi-bin/webdav.pl [PT,E=WEBDAVCONF:/usr/lib/cgi-bin/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
+RewriteRule  ^/ /webdavcgi [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
 </pre>
 
 <code>webdav.conf</code> example:
@@ -898,8 +931,7 @@ $ALLOW_SYMLINK = 0;
 
 
 </pre>
-<a id="dbb"></a>
-<h2>DBD database backend</h2>
+<h2 id="dbb">DBD database backend</h2>
 <p>The DBD backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
 Features:
 <ul>
@@ -936,8 +968,7 @@ $BACKEND = 'DBB';
 );
 
 </pre>
-<a id="rcs"></a>
-<h2>RCS backend</h2>
+<h2 id="rcs">RCS backend</h2>
 <p>
 The RCS backend is a showcase for a revision controlled backend. It needs another backend like FS, or SMB to work because it's a simple backend wrapper.
 </p>
@@ -1004,8 +1035,7 @@ $BACKEND = 'RCS';
 ...
 </pre>
 
-<a id="performance"></a>
-<h2>Performance</h2>
+<h2 id="performance">Performance</h2>
 <ul>
   <li> Use a fast (local) database.</li>
   <li> Don't use mod_auth_external without auth caching. </li>
@@ -1027,15 +1057,13 @@ $BACKEND = 'RCS';
   <li> Filter and limit large folders (<code>$FILECOUNTLIMIT</code>, <code>$FILECOUNTPERDIRLIMIT</code>, <code>$FILEFILTERPERDIR</code>)</li>
   <li> Limit folder depth for copy/move operations (<code>$LIMIT_FOLDER_DEPTH</code>)</li>
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
-  <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance (AFS backend does not work with <a href="#speedy">Speedy</a>). Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
+  <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance. Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
   <li>Slow response working with WebDAV resources on Windows Vista or Windows 7: <a href="http://support.microsoft.com/kb/2445570">KB2445570</a></li>
 </ul>
-<a id="speedy"></a>
-<h2>Speedy Support</h2>
+<h2 id="speedy">Speedy Support</h2>
 <a target="_blank" href="http://daemoninc.com/SpeedyCGI/">Speedy or PersistentPerl</a> allows you to increase the request/response speed of WebDAV CGI. WebDAV CGI is up to 7 times faster with Speedy than without.
 
-<span style="font-weight: bold">The AFS backend does not work with Speedy.</span>
 <div>
 
 Setup:
@@ -1044,9 +1072,9 @@ Setup:
 <li>Change the shebang of webdav.pl:
 <pre>
 OLD: #!/usr/bin/perl
-NEW: #!/usr/bin/speedy -- -r20 -M5
+NEW: #!/usr/bin/speedy -- -r50 -M10 -t3600
 </pre>
-The <code>-r20</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M5</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="#smb">SMB backend</a>) you should remove the <code>-M5</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request.
+The <code>-r50</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M10</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="#smb">SMB backend</a>) you should remove the <code>-M10</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request.
 </li>
 <li> Only for the <a href="#smb">SMB backend</a>:
     <ol>
@@ -1058,10 +1086,10 @@ klist
 </pre>
     	</li>
     <li>Compile the <code>helper/webdavwrapper-smb.c</code>: <pre>gcc helper/webdavwrapper-smb.c -o cgi-bin/webdavwrapper-smb</pre></li>
-    <li>Change the Apache rewrite rule:  
+    <li>Change the Apache script aliases:
     <pre>
-OLD: RewriteRule ^/ /cgi-bin/webdav.pl ...
-NEW: RewriteRule ^/ /cgi-bin/webdavwrapper-smb ...
+OLD: ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
+NEW: ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-smb 
 
     </pre>
     </li>
@@ -1079,8 +1107,7 @@ Notes:
 
 </div>
 <!--[
-<a id="security"></a>
-<h2>Security</h2>
+<h2 id="security">Security</h2>
 
  <code>... work in progress ...</code>
 <ul>
@@ -1090,8 +1117,7 @@ Notes:
 
 </ul>
 ]-->
-<a id="troubleshooting"></a>
-<h2>Troubleshooting</h2>
+<h2 id="troubleshooting">Troubleshooting</h2>
 <h3>Timeout</h3>
 Maybe it helps to increase the <code>Timeout</code> value in your Apache configuration (300 is a good minimum value). 
 <br/>
@@ -1165,12 +1191,13 @@ webdav.pl syntax OK
   File::Spec::Link already checked
 ++++ Checking required modules for SMB backend:
   Filesys::SmbClient installed
+++++ Checking required modules for RCS backend:
+  Rcs installed
 ++++ Checking optional binaries:
   smbclient /usr/bin/smbclient
 #### Summary:
 All modules found.
 All binaries found.
-
 </pre>
 </li>
 <li> Check your database setup (<code>$DBI_SRC</code>, <code>$DBI_USER</code>, <code>$DBI_PASS</code>).</li>
@@ -1225,7 +1252,7 @@ WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface w
 <ol>
 <li>Check your <code>$INSTALL_BASE</code> variable in your <code>webdav.conf</code></li>
 <li>Check webdav.conf syntax: <code>perl -c webdav.conf</code></li>
-<li>Check your Apache rewrite rule: the path to your webdav.conf must be correct:  <code>E=WEBDAVCONF:/path/to/my/webdav.conf</code></li>
+<li>Check your Apache rewrite rule: the path to your webdav.conf must be correct:  <code>E=WEBDAVCONF:/etc/webdav.conf</code></li>
 </ol>
 <h3>Web interface: wrong date/time/number formatting for a language</h3>
 WebDAV CGI uses language specific formattings for date/time/numbers. Check your locales 
