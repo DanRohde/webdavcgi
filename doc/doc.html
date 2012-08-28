@@ -159,6 +159,8 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 &lt;/Location&gt;	
 </pre>
 </li>
+<li>AFS backend:
+<ul>
 <li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
    <ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog isn't required if you use webdavwrapper-afs.c)</li>
        <li>a PAG script was added: cgi-bin/afswrapper</li> 
@@ -166,6 +168,12 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
    </ul>
 </li>
 <li>mod_waklog is no longer required for AFS</li>
+</ul>
+<li>SMB backend:
+	<ul><li> a wrapper for mod_auth_kerberos free installation was added</li>
+	<li>username/password/workgroup authentication support was added</li>
+	</ul></li>
+
 </ol>
 <h3>Upgrading from 0.8.2 to 0.8.3</h3>
 <ol>
@@ -680,9 +688,11 @@ Requirements:
 
 <ol>
 <li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured with a default realm: <code>/etc/krb5.conf</code>: <code>default_realm = MY.DOMAIN.NAME</code> (<code>kinit &lt;uid_without_domain&gt; ;  aklog</code> should work)</li>
+<li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
 <li>All users should be visible for the system and have the same password for AFS and your authentication facility like LDAP, RADIUS,... to authenticate your users with kinit and to allow setuid/setgid: <code>getent passwd &lt;uid&gt;</code> should work</li>
-<li>The <code>AUTHHEADER</code> environment variable with the HTTP Authorization header value has to be passed to the wrapper: see RewriteRule of the Apache config example</li>
-<li>cgi-bin/webdavwrapper-afs (call <code>bash install.sh</code> from your installation directory)</li>
+<li>The <code>AUTHHEADER</code> environment variable with the HTTP Authorization header value has to be passed to the wrapper: see RewriteRule of the Apache config example.</li>
+<li>The <code>TICKET_LIFETIME</code> environment variable value should be a little bit smaller than your Kerberos ticket lifetime.</li>
+<li><code>cgi-bin/webdavwrapper-afs</code> (call <code>bash install.sh</code> from your installation directory to compile helper/webdavwrapper-afs.c)</li>
 </ol>
 
 Apache example:
@@ -700,23 +710,19 @@ RewriteEngine on
 RewriteRule ^/ /webdavcgi \
                [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
 	             E=PERLLIB:/etc/webdavcgi/lib/perl,\
-		     E=AUTHHEADER:%{HTTP:Authorization}]
-
-
+		     E=AUTHHEADER:%{HTTP:Authorization}, \
+                     E=TICKET_LIFETIME:82800]
 </pre>
 <code>webdav.conf</code> example: <a href="#afsconf">see next section</a>
-<h3>... with mod_auth_kerberos</h3>
 
-<br/>
+<h3>... with mod_auth_kerberos</h3>
 Requirements:
 <ol>
 <li><a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu package: libapache2-mod-auth-kerb)</li>
 <li>a keytab file for your server (service name: HTTP/&lt;YOUR SERVER NAME&gt;@&lt;YOUR DOMAIN&gt;, e.g. HTTP/webafs.cms.hu-berlin.de@CMS.HU-BERLIN.DE)</li>
 <li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured (<code>kinit ...; aklog</code> should work)</li>
-<li>webdavwrapper-afs.c: <pre>gcc -o cgi-bin/webdavwrapper-afs helper/webdavwrapper-afs.c 
-chown root:root  cgi-bin/webdavwrapper-afs
-chmod ug+s,a+rx cgi-bin/webdavwrapper-afs
-chmod a+rx cgi-bin/afswrapper</pre></li>
+<li>The <code>TICKET_LIFETIME</code> environment variable value should be a little bit smaller than your Kerberos ticket lifetime.</li>
+<li><code>cgi-bin/webdavwrapper-afs</code> (call <code>bash install.sh</code> from your installation directory to compile helper/webdavwrapper-afs.c)</li>
 </ol>
 
 Apache example:
@@ -734,12 +740,14 @@ Krb5Keytab /etc/webafs.keytab
 
 ScriptAlias /webdavcgi /etc/webdavcgi/webdavwrapper-afs
 RewriteEngine on
-RewriteRule  ^/ /webdavcgi [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
+RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
+                                 E=PERLLIB:/etc/webdavcgi/lib/perl, \
+                                 E=TICKET_LIFETIME:82800]
 </pre>
 
 <code id="afsconf">webdav.conf</code> example:
 <pre>
-$INSTALL_BASE = '/etc/webdavcgi';
+$INSTALL_BASE = '/etc/webdavcgi/';
 
 $BACKEND = 'AFS';
 
@@ -792,6 +800,8 @@ $GFSQUOTA='/usr/sbin/gfs_quota -f';
 </pre>
 
 <h2 id="smb">SMB/CIFS Support</h2>
+The SMB backend supports Kerberos and username/password/workgroup authenticated file share access.
+<h3>... with mod_auth_kerberos</h3>
 Requirements:
 <ol>
 <li> a Active Directory integrated Windows or Samba file server</li>
@@ -815,6 +825,8 @@ Requirements:
 
 Apache example:
 <pre>
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
+
 KrbVerifyKDC off
 KrbMethodNegotiate on
 KrbMethodK5Passwd on
@@ -827,15 +839,54 @@ KrbAuthRealms MY.EXAMPLE.DOMAIN.ORG MYSECOND.EXAMPLE.DOMAIN.ORG
 
 AuthType Kerberos
 AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
-
 Require valid-user
 
-ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
 RewriteEngine on
-RewriteRule  ^/ /webdavcgi [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
+RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
+</pre>
+<code>webdav.conf</code> example: <a href="#smbconf">see next section</a>
+
+<h3>... without mod_auth_kerberos but with Kerberos authentication</h3>
+Requirements:
+<ol>
+<li> a Active Directory integrated Windows or Samba file server</li>
+<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
+<li> unough temporary file space for thumbnails and ZIP upload/download</li>
+<li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
+<li> a <a href="#kerberosconfig">Kerberos configuration</a> file with a default_realm</li>
+<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible): the <code>TICKET_LIFETIME</code> (in seconds) should be a little bit smaller than your Kerberos ticket lifetime</li>
+<li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
+</ol>
+Kerberos configuration example:
+<pre id="kerberosconfig">
+[libdefaults]
+        dns_lookup_realm = true
+        dns_lookup_kds = true
+        default_realm = MY.EXAMPLE.DOMAIN.ORG
+        clockskew = 900
+        forwardable = true
+        proxiable = true
+        allow_weak_crypto = yes
+[domain_realms]
+	my.example.domain.org = MY.EXAMPLE.DOMAIN.ORG
+	.my.example.domain.org = MY.EXAMPLE.DOMAIN.ORG
+</pre>
+Apache example:
+<pre>
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/smbwrapper
+
+AuthType Basic
+AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
+Require valid-user
+
+RewriteEngine on
+RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
+                                E=PERLLIB:/etc/webdavcgi/lib/perl, \
+                                E=AUTHHEADER:%{HTTP:Authorization}, \
+                                E=TICKET_LIFETIME:21600]
 </pre>
 
-<code>webdav.conf</code> example:
+<code id="smbconf">webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi/';
 
@@ -913,10 +964,34 @@ $ALLOW_SYMLINK = 0;
     },
   },
 );
-
-
-
 </pre>
+
+<h3>... with username/password/workgroup authentication</h3>
+Requirements:
+<ol>
+<li> a Windows or Samba file server </li>
+<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
+<li> unough temporary file space for thumbnails and ZIP upload/download</li>
+<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible)</li>
+<li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
+</ol>
+Apache example:
+<pre>
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/smbwrapper
+
+AuthType Basic
+AuthName "Workgroup Account"
+Require valid-user
+
+RewriteEngine on
+RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
+                                E=PERLLIB:/etc/webdavcgi/lib/perl, \
+                                E=AUTHHEADER:%{HTTP:Authorization}, \
+                                E=SMBWORKGROUP:Workgroup]
+</pre>
+
+<code>webdav.conf</code> example: <a href="#smbconf">see previous section</a>
+
 <h2 id="dbb">DBD database backend</h2>
 <p>The DBD backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
 Features:
@@ -1064,22 +1139,26 @@ The <code>-r50</code> limits the requests per Speedy process. This is necessary 
 </li>
 <li> Only for the <a href="#smb">SMB backend</a>:
     <ol>
-    <li>Check and change the ticket lifetime in <code>helper/webdavwrapper-smb.c</code>: <code>#define TICKET_LIFETIME 28800</code> 
+    <li>Check and change the ticket lifetime:
+    	<ul>
+		<li> with mod_auth_kerberos: in <code>helper/webdavwrapper-smb.c</code>: <code>#define TICKET_LIFETIME 28800</code> </li>
+		<li> without mod_auth_kerberos: in <code>cgi-bin/smbwrapper</code>: <code>TICKET_LIFETIME=28800</code></li>
+	</ul>
     	<br/>The ticket (renewal) lifetime depends on your domain controller setup (Kerberos policy of your domain group policy). You can check it (Debian/Ubuntu: <code>apt-get install krb5-user</code>):
 <pre>
 kinit mydomainaccount@MY.EXAMPLE.DOMAIN.ORG
 klist
 </pre>
     	</li>
-    <li>Compile the <code>helper/webdavwrapper-smb.c</code>: <pre>gcc helper/webdavwrapper-smb.c -o cgi-bin/webdavwrapper-smb</pre></li>
     <li>Change the Apache script aliases:
     <pre>
 OLD: ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
-NEW: ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-smb 
+NEW (with mod_auth_kerberos): ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-smb 
+NEW (without mod_auth_kerberos): ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/smbwrapper
 
     </pre>
     </li>
-    <li>Known issue: every request creates a new service ticket therefore the file size of ticket cache file grows for every request; Solution: reduce the TICKET_LIFETIME in the webdavwrapper-smb.c to reduce the temporary file space consumption</li>
+    <li>Known issue: every request creates a new service ticket therefore the file size of ticket cache file grows for every request; Solution: reduce the TICKET_LIFETIME to reduce the temporary file space consumption</li>
     </ol>
 </li>
 <li> That's all and don't forget to check the notes below.</li>

@@ -16,11 +16,10 @@ fi
 read -p "Do you want to use Speedy for a better performance? (Y/n)" answer
 test "$answer" = "y" -o "$answer" = "Y" -o -z "$answer" && sed -i -e '1i#!/usr/bin/speedy -- -r50 -M10 -t3600' $wd/cgi-bin/webdav.pl
 
-echo -n "Compiling wrapper ..."
-gcc -o $wd/cgi-bin/webdavwrapper $wd/helper/webdavwrapper.c
-gcc -o $wd/cgi-bin/webdavwrapper-krb $wd/helper/webdavwrapper-krb.c
-gcc -o $wd/cgi-bin/webdavwrapper-afs $wd/helper/webdavwrapper-afs.c
-gcc -o $wd/cgi-bin/webdavwrapper-smb $wd/helper/webdavwrapper-smb.c
+echo -n "Compiling all wrapper ... "
+for w in $wd/helper/*.c ; do
+	gcc -o $wd/cgi-bin/$(basename $w .c) $w
+done
 echo "done."
 
 
@@ -30,7 +29,7 @@ strip $wd/cgi-bin/webdavwrapper*
 
 chown root:root $wd/cgi-bin/webdavwrapper*
 chmod a+rx,ug+s $wd/cgi-bin/webdavwrapper* 
-chmod a+rx $wd $wd/cgi-bin $wd/cgi-bin/webdav.pl $wd/cgi-bin/afswrapper 
+chmod a+rx $wd $wd/cgi-bin $wd/cgi-bin/webdav.pl $wd/cgi-bin/afswrapper $wd/cgi-bin/smbwrapper
 chmod -R a+r  $wd
 
 

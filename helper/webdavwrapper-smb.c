@@ -28,8 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/file.h>
 
 // lifetime of a ticket in seconds (depends on your KDC setup):
-#define TICKET_LIFETIME 28800
-
+#define DEFAULT_TICKET_LIFETIME 28800
 
 #define STRBUFSIZE 2000
 
@@ -53,10 +52,10 @@ int main(int argc, char *argv[])
 
 	/* put copy into the environment: */
 	char krbenv[STRBUFSIZE];
-	snprintf(krbenv,STRBUFSIZE,"KRB5CCNAME=FILE:%s",dstfilename);
-	putenv(krbenv);
+	snprintf(krbenv,STRBUFSIZE,"FILE:%s",dstfilename);
+	setenv("KRB5CCNAME",krbenv,1);
 
-	putenv("WEBDAVISWRAPPED=TRUE");
+	setenv("WEBDAVISWRAPPED","TRUE",1);
 
 	/* copy ticket file: */
 	if (krbticket != NULL) {
@@ -67,9 +66,12 @@ int main(int argc, char *argv[])
 		struct stat dststat;
 		time_t seconds = time(NULL);
 
+		char *tlt = getenv("TICKET_LIFETIME");
+		long ticket_lifetime = tlt != NULL ? atol(tlt) : DEFAULT_TICKET_LIFETIME;
+
 		/* dstfilename does not exists or the ticket lifetime is exceeded: */
 		int exists = stat(dstmtimefilename, &dststat);
-		if ( (exists == -1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
+		if ( (exists == -1)  || (seconds - dststat.st_mtime > ticket_lifetime) ) {
 			if (exists == 0) {
 				unlink(dstfilename); 
 				unlink(dstmtimefilename);

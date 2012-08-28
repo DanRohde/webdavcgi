@@ -4,6 +4,8 @@
      - added Speedy support for the AFS backend
      - fixed missing content-length in thumbnail responses bug
      - fixed missing cache control 
+     - added wrappers for a mod_auth_kerberos free authentication for SMB and AFS backend
+     - added username/password/workgroup authentication support for SMB backend
 
 0.8.3: 2012/6/6
      - fixed typos

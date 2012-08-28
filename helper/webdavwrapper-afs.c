@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // lifetime of a ticket in seconds (depends on your KDC setup):
 // 1 day - 1h = 82800 seconds
-#define TICKET_LIFETIME 82800
+#define DEFAULT_TICKET_LIFETIME 82800
 
 #define STRBUFSIZE 2000
 
@@ -53,17 +53,16 @@ int main(int argc, char *argv[])
 		pw = getpwnam(user);
 	}
 
-
         char dstfilename[STRBUFSIZE];
-        snprintf(dstfilename,STRBUFSIZE,"/tmp/krb5cc_webdavcgi_%s", remote_user);
+        snprintf(dstfilename,STRBUFSIZE,"/tmp/krb5cc_webdavcgi_afs_%s", remote_user);
 
         /* get ticket file name from environment:*/
         char *krbticket = getenv("KRB5CCNAME");
 
         /* put copy into the environment: */
         char krbenv[STRBUFSIZE];
-        snprintf(krbenv,STRBUFSIZE,"KRB5CCNAME=FILE:%s",dstfilename);
-        putenv(krbenv);
+        snprintf(krbenv,STRBUFSIZE,"FILE:%s",dstfilename);
+        setenv("KRB5CCNAME",krbenv,1);
 
         /* copy ticket file: */
         if (krbticket != NULL && pw != NULL) {
@@ -74,9 +73,12 @@ int main(int argc, char *argv[])
                 struct stat dststat;
                 time_t seconds = time(NULL);
 
+		char *tlt = getenv("TICKET_LIFETIME");
+		long ticket_lifetime = tlt != NULL ? atol(tlt) : DEFAULT_TICKET_LIFETIME;
+
                 /* dstfilename does not exists or the ticket lifetime is exceeded: */
                 int exists = stat(dstfilename, &dststat);
-                if ( (exists == -1)  || (seconds - dststat.st_mtime > TICKET_LIFETIME) ) {
+                if ( (exists == -1)  || (seconds - dststat.st_mtime > ticket_lifetime) ) {
                         if (exists == 0) unlink(dstfilename);
                         int src,dst,dstmtime;
                         if ((src = open(srcfilename, O_RDONLY)) !=-1 && (dst = open(dstfilename,O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR)) != -1 && flock(dst, LOCK_EX | LOCK_NB) != -1 ) {

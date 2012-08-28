@@ -74,6 +74,7 @@ sub getSmbClient {
 
 	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$rmuser" if -e "/tmp/krb5cc_webdavcgi_$rmuser";
 	return $SMBCLIENT{$rmuser} if exists $SMBCLIENT{$rmuser};
+	return $SMBCLIENT{$rmuser} = new Filesys::SmbClient(username=> $ENV{SMBUSER}, password=> $ENV{SMBPASSWORD}, workgroup=> $ENV{SMBWORKGROUP}) if exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD} && exists $ENV{SMBWORKGROUP};
 	return $SMBCLIENT{$rmuser} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
 }
 sub finalize {
@@ -456,7 +457,9 @@ sub getQuota {
 		$initdir = $1;
 	}
 	$path = "$initdir/$path" if defined $initdir;
-	if ($server && open(my $c, "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du 2>/dev/null|")) {
+	my $smbclient =  "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du";
+	$smbclient = "/usr/bin/smbclient '//$server/$share' '$ENV{SMBPASSWORD}' -U '$ENV{SMBUSER}' -W '$ENV{SMBWORKGROUP}' -D '$path' -c du" if exists $ENV{SMBWORKGROUP} && exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD};
+	if ($server && open(my $c, "$smbclient 2>/dev/null |" )) {
 		my @l= <$c>;
 		close($c);
 		if (@l && $l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/) {

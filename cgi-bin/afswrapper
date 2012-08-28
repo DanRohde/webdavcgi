@@ -6,14 +6,16 @@
 # Kerberos ticket lifetime:
 # 1 day - 1 hour = 82800 seconds
 
-TICKET_LIFETIME=82800
+test -z "$TICKET_LIFETIME" && TICKET_LIFETIME=82800
 
 ##########################################################
+
+umask 0077
 
 remote_user="$REMOTE_USER"
 test -z "$remote_user" && remote_user="$REDIRECT_REMOTE_USER"
 
-ticketfn="/tmp/krb5cc_webdavcgi_$remote_user"
+ticketfn="/tmp/krb5cc_webdavcgi_afs_$remote_user"
 
 KRB5CCNAME="FILE:$ticketfn"
 export KRB5CCNAME

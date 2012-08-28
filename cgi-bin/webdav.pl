@@ -82,7 +82,7 @@ $ENV{PATH}="/bin:/usr/bin:/sbin/:/usr/local/bin:/usr/sbin";
 ## folder path to the webdav.conf, .css, .js, and. msg files for the Web interface
 ## (don't forget the trailing slash)
 ## DEFAULT: $INSTALL_BASE='' # use webdav.pl script path
-$INSTALL_BASE=$ENV{INSTALL_BASE} || '';
+$INSTALL_BASE=$ENV{INSTALL_BASE} || '/etc/webdavcgi/';
 
 ## -- CONFIGFILE
 ## you can overwrite all variables from this setup section with a config file
