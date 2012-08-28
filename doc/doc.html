@@ -88,32 +88,7 @@ apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
 </li>
 <li>change directory to your preferred installation path, e.g. <code>cd /etc</code></li>
 <li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code></li>
-<li>change directory to the source base (e.g: <code>cd webdavcgi*</code>) and call <code>bash install.sh</code> 
-   <br/>OR install CGI script and wrapper by hand<a href="#" title="click here to show install steps" style="text-decoration: none;"  onclick="document.getElementById('maninstall').style.display='block'; return false;">&darr;</a>
-	<div id="maninstall">
-	<ol>
-	<li>compile your wrapper, change the permissions, and put it into your cgi-bin, e.g:
-<pre>
-gcc -o cgi-bin/webdavwrapper helper/webdavwrapper.c
-strip cgi-bin/webdavwrapper
-
-chown root:root cgi-bin/webdavwrapper
-chmod ug+s,a+rx cgi-bin/webdavwrapper
-
-ln -s `pwd`/cgi-bin/webdavwrapper /usr/lib/cgi-bin
-
-</pre>
-</li>
-<li> fix permissions and put the WebDAV CGI <code>webdav.pl</code> into your cgi-bin, e.g:
-<pre>
-chmod a+rx cgi-bin/webdav.pl
-
-ln -s `pwd`/cgi-bin/webdav.pl /usr/lib/cgi-bin
-</pre>
-</li>
-</ol>
-</div>
-</li>
+<li>change directory to the source base (e.g: <code>cd webdavcgi*</code>) and call <code>bash install.sh</code> to compile all wrappers and to fix file permissions </li>
 <li> <a href="#setup">configure webdav.pl</a></li>
 <li> <a id="apache"></a>configure your web server:
     <ul>
@@ -148,7 +123,7 @@ ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
         Require valid-user
 &lt;/Location&gt;
 # if you want to map this to a real path, do that:
-# (end setup $VIRTUAL_BASE='webdav' and $DOCUMENT_ROOT in your WebDAV CGI config)
+# (end setup $VIRTUAL_BASE='/webdav' and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
 # RewriteRule ^/webdav/logout - [L]
 RewriteRule ^/webdav /webdavcgi  [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
@@ -164,7 +139,7 @@ RewriteRule .* /webdavcgi [E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcg
 AuthType Basic
 AuthName "A protected WebDAV folder"
 AuthUserFile /path-to-my-auth-file
-require valid-user
+Require valid-user
     </pre>
 </li>
 
@@ -172,11 +147,25 @@ require valid-user
 <h2 id="upgrade">Upgrade</h2>
 <h3>Upgrading from 0.8.3 to 0.8.4</h3>
 <ol>
-<li> Speedy support for AFS was added and a Kerberos and mod_waklog free installation is now possible:
-   <ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog is no longer required if you use webdavwrapper-afs.c)</li>
+<li> The new install.sh script does not copy or link webdav.pl and webdavwrapper to your cgi-bin directory. You can add/change ScriptAliases to use webdav.pl
+or a webdavwrapper from your installation src, e.g. 
+<pre>ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
+RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
+&lt;Location /webdavcgi&gt;
+	AuthType Basic
+	AuthUserFile /etc/apache2/webabusers
+	AuthName "WebDAV/CalDAV/CardDAV space"
+	Require valid-user
+&lt;/Location&gt;	
+</pre>
+</li>
+<li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
+   <ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog isn't required if you use webdavwrapper-afs.c)</li>
        <li>a PAG script was added: cgi-bin/afswrapper</li> 
        <li>visit <a href="#afs">AFS</a> section for details</li>
    </ul>
+</li>
+<li>mod_waklog is no longer required for AFS</li>
 </ol>
 <h3>Upgrading from 0.8.2 to 0.8.3</h3>
 <ol>
@@ -217,7 +206,7 @@ require valid-user
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>
 <li>two new Perl modules are used by WebDAV CGI: <code>IO::Compress::Gzip</code> and <code>IO::Compress::Deflate</code> (both are integraded in most Linux dists)</li>
-<li>WebDAV CGI is not longer a single file distribution therefore:
+<li>WebDAV CGI is no longer a single file distribution therefore:
 	<ol>
 	<li>unpack the new <a href="index.html#download">installation package</a> in your preferred installlation path, e.g. <code>cd /etc; unzip webdavcgi-0.7.?.zip</code></li>
 	<li>link the path for easier upgrades, e.g. <code>ln -s /etc/webdavcgi-0.7.? /etc/webdavcgi</code></li>
@@ -302,7 +291,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 </pre>
 </li>
-<li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, or <a href="#dbb">DBB</a></li>
+<li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a></li>
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
 <li> Don't forget to check the config file syntax: <code>perl -c webdav.conf</code></li>
 <li> <a href="#apache">configure your Apache web server</a></li>
@@ -414,7 +403,7 @@ $CREATE_DB=0;
 </ul>
 
 <h2 id="wrapper">UID/GID Wrapper</h2>
-If you use the example wrapper (<code>webdavwrapper.c</code> or <code>webdavwrapper-krb.c</code>) you should consider this:
+If you use the example wrapper (<code>webdavwrapper.c</code>, <code>webdavwrapper-krb.c</code>, <code>webdavwrapper-afs.c</code>) you should consider this:
 <ul>
 <li> Your operating system have to know all your WebDAV users. The following command should display a complete passwd entry (replace UID with a account name):
 <pre>
@@ -427,14 +416,14 @@ getent passwd
 </pre>
 Configure NSSWITCH (/etc/nsswitch.conf) to make your user accounts usable.
 </li>
-<li> The owner and group must be root: <code>chown root:root webdavwrapper</code></li>
+<li> The owner and group must be root: <code>chown root:root cgi-bin/webdavwrapper*</code></li>
 <li> The <code>webdavwrapper</code> binary needs set-user-ID and the set-group-ID bit to change the user ID and the group ID at runtime. Of course it needs also execute flags.
 <pre>
-chmod ug+s,a+x webdavwrapper
+chmod ug+s,a+x cgi-bin/webdavwrapper*
 </pre>
 </li>
 </ul>
-Attention: for AFS and/or Kerberos support you need the <code>webdavwrapper-krb.c</code> instead of <code>webdavwrapper.c</code> (see <a href="#afs">AFS Support</a> section)
+Attention: for AFS and/or Kerberos support you need <code>webdavwrapper-afs.c</code> or <code>webdavwrapper-krb.c</code> instead of <code>webdavwrapper.c</code> (see <a href="#afs">AFS Support</a> section)
 
 <h2 id="foldersharing">Folder Sharing / Group Access</h2>
 There are two ways to share a folder between users of a group (not for AFS users - see AFS note below):
@@ -690,22 +679,19 @@ WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It'
 Requirements:
 
 <ol>
-<li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured with a default realm (/etc/krb5.conf: default_realm = MY.DOMAIN.NAME) (<code>kinit &lt;uid_without_domain&gt; ;  aklog</code> should work)</li>
-<li>webdavwrapper-afs.c: <pre>gcc -o cgi-bin/webdavwrapper-afs helper/webdavwrapper-afs.c 
-chown root:root  cgi-bin/webdavwrapper-afs
-chmod ug+s,a+rx cgi-bin/webdavwrapper-afs
-chmod a+rx cgi-bin/afswrapper</pre></li>
+<li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured with a default realm: <code>/etc/krb5.conf</code>: <code>default_realm = MY.DOMAIN.NAME</code> (<code>kinit &lt;uid_without_domain&gt; ;  aklog</code> should work)</li>
 <li>All users should be visible for the system and have the same password for AFS and your authentication facility like LDAP, RADIUS,... to authenticate your users with kinit and to allow setuid/setgid: <code>getent passwd &lt;uid&gt;</code> should work</li>
 <li>The <code>AUTHHEADER</code> environment variable with the HTTP Authorization header value has to be passed to the wrapper: see RewriteRule of the Apache config example</li>
+<li>cgi-bin/webdavwrapper-afs (call <code>bash install.sh</code> from your installation directory)</li>
 </ol>
 
 Apache example:
 <pre>
-&lt;Location /webdavcgi>
+&lt;Location /webdavcgi&gt;
 	AuthName "WebAFS"
 	AuthType Basic
 	Require valid-user
-&lt;/Location>
+&lt;/Location&gt;
 
 ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-afs
 # ScriptAlias /logout /etc/webdavcgi/cgi-bin/logout
@@ -743,7 +729,7 @@ Krb5Keytab /etc/webafs.keytab
 &lt;Location /webdavcgi&gt;
 	AuthName "WebAFS"
 	AuthType Kerberos
-	require valid-user
+	Require valid-user
 &lt;/Location&gt;
 
 ScriptAlias /webdavcgi /etc/webdavcgi/webdavwrapper-afs
@@ -842,7 +828,7 @@ KrbAuthRealms MY.EXAMPLE.DOMAIN.ORG MYSECOND.EXAMPLE.DOMAIN.ORG
 AuthType Kerberos
 AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
 
-require valid-user
+Require valid-user
 
 ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
 RewriteEngine on

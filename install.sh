@@ -1,12 +1,8 @@
 #!/bin/bash
-##########################################################
+###############################################################
 # (C) ZE CMS, Humboldt-Universiteat zu Berlin
-# Written 2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
-##########################################################
-
-CGIPATHS="/usr/lib/cgi-bin /usr/local/cgi-bin /usr/local/www/cgi-bin /etc/apache2/cgi-bin /etc/apache/cgi-bin /srv/cgi-bin"
-
-
+# Written 2011,2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+###############################################################
 
 wd=$(dirname $0)
 test "$wd" = "." && wd=$(pwd)
@@ -17,55 +13,24 @@ if test "$UID" != 0 ; then
 	exit 1
 fi
 
-cgibin=""
-for cb in $CGIPATHS ; do
-	if test -e $cb  ; then
-		cgibin=$cb
-		break
-	fi
-done
-
-read -p "Please enter your cgi-bin path ($cgibin): " cb
-test "$cb" != "" && cgibin=$cb
-
-if test ! -e "$cgibin" ; then
-	echo "Sorry, cannot find your cgi-bin '$cgibin'"
-	exit 1
-fi
-
-usekrb=0
-read -p "Do you use Kerberos authentication? (N/y): " krb
-if test "$krb" = "y" -o "$krb" = "Y" ; then
-	usekrb=1
-fi
-
 echo -n "Compiling wrapper ..."
-if test "$usekrb" = 0 ; then
-	gcc -o $wd/cgi-bin/webdavwrapper helper/webdavwrapper.c
-else
-	gcc -o $wd/cgi-bin/webdavwrapper $wd/helper/webdavwrapper-krb.c
-fi
+gcc -o $wd/cgi-bin/webdavwrapper $wd/helper/webdavwrapper.c
+gcc -o $wd/cgi-bin/webdavwrapper-krb $wd/helper/webdavwrapper-krb.c
+gcc -o $wd/cgi-bin/webdavwrapper-afs $wd/helper/webdavwrapper-afs.c
+gcc -o $wd/cgi-bin/webdavwrapper-smb $wd/helper/webdavwrapper-smb.c
 echo "done."
 
 
 echo -n "Fixing owner/group and rights ..."
 
-strip $wd/cgi-bin/webdavwrapper
+strip $wd/cgi-bin/webdavwrapper*
 
-chown root:root $wd/cgi-bin/webdavwrapper 
-chmod a+rx,ug+s $wd/cgi-bin/webdavwrapper 
-chmod a+rx $wd/cgi-bin/webdav.pl
-
-echo "done."
-
+chown root:root $wd/cgi-bin/webdavwrapper*
+chmod a+rx,ug+s $wd/cgi-bin/webdavwrapper* 
+chmod a+rx $wd $wd/cgi-bin $wd/cgi-bin/webdav.pl $wd/cgi-bin/afswrapper 
+chmod -R a+r  $wd
 
 
-echo -n "Linking webdav.pl and webdavwrapper to your cgi-bin ($cgibin) ..."
-test -e $cgibin/webdav.pl && mv $cgibin/webdav.pl $cgibin/webdav.pl.$(date +%Y%m%d-%H%M%S)
-test -e $cgibin/webdavwrapper && mv $cgibin/webdavwrapper $cgibin/webdavwrapper.$(date +%Y%m%d-%H%M%S)
-
-ln -s $wd/cgi-bin/webdav.pl $cgibin/webdav.pl
-ln -s $wd/cgi-bin/webdavwrapper $cgibin/webdavwrapper
 echo "done."
 
 $wd/checkenv
