@@ -160,20 +160,20 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 </pre>
 </li>
 <li>AFS backend:
-<ul>
-<li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
-   <ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog isn't required if you use webdavwrapper-afs.c)</li>
-       <li>a PAG script was added: cgi-bin/afswrapper</li> 
-       <li>visit <a href="#afs">AFS</a> section for details</li>
-   </ul>
+	<ul>
+		<li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
+			<ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog isn't required if you use webdavwrapper-afs.c)</li>
+			<li>a PAG script was added: cgi-bin/afswrapper</li> 
+			<li>visit <a href="#afs">AFS</a> section for details</li>
+		   </ul>
+		</li>
+	<li>mod_waklog is no longer required for AFS</li>
+	</ul>
 </li>
-<li>mod_waklog is no longer required for AFS</li>
-</ul>
 <li>SMB backend:
 	<ul><li> a wrapper for mod_auth_kerberos free installation was added</li>
 	<li>username/password/workgroup authentication support was added</li>
 	</ul></li>
-
 </ol>
 <h3>Upgrading from 0.8.2 to 0.8.3</h3>
 <ol>
@@ -221,10 +221,10 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 	<li>copy the webdav.pl script to your CGI directory and allow execution, e.g. 
 <pre>cp /etc/webdavcgi/cgi-bin/webdav.pl /usr/lib/cgi-bin 
 chmod a+x /usr/lib/cgi-bin/webdav.pl </pre></li>
-	<li>add the <code>$INSTALL_BASE</code> variable to your existing <code>webdav.conf</code>, e.g. 
-		<pre>echo "\$INSTALL_BASE='/etc/webdavcgi/';" >> /path/to/my/config/file/webdav.conf</pre></li>
+	<li>add the <code>$INSTALL_BASE</code> variable to your existing <code>/etc/webdav.conf</code>, e.g. 
+		<pre>echo "\$INSTALL_BASE='/etc/webdavcgi/';" >> /etc/webdav.conf</pre></li>
 	<li>check your config file and modules, e.g.
-<pre>#&gt; perl -c /path/to/my/config/file/webdav.conf
+<pre>#&gt; perl -c /etc/webdav.conf
 webdav.conf syntax OK
 
 #&gt; perl -I/etc/webdavcgi/lib/perl -c /usr/lib/cgi-bin/webdav.pl
@@ -276,7 +276,7 @@ All binaries found. </pre></li>
 <h2 id="setup">WebDAV CGI Setup</h2>
 The WebDAV CGI can be easier upgraded if you use a configuration file instead of changing the setup section of <code>webdav.pl</code>.
 <ol>
-<li> Create a <code>webdav.conf</code> wherever you want (/etc/webdav.conf) with a minimal setup and don't forget to fix file permissions: <br/><code>chmod a+r webdav.conf</code>:
+<li> Create a <code>/etc/webdav.conf</code> with a minimal setup and don't forget to fix file permissions: <br/><code>chmod a+r /etc/webdav.conf</code>:
 <pre>
 ## the install base is needed to find webdav-ui.* and locale files 
 ## (don't forget the trailing slash):
@@ -301,7 +301,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 </li>
 <li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a></li>
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
-<li> Don't forget to check the config file syntax: <code>perl -c webdav.conf</code></li>
+<li> Don't forget to check the config file syntax: <code>perl -c /etc/webdav.conf</code></li>
 <li> <a href="#apache">configure your Apache web server</a></li>
 </ol>
 <h2 id="hints">Hints</h2>
@@ -713,7 +713,7 @@ RewriteRule ^/ /webdavcgi \
 		     E=AUTHHEADER:%{HTTP:Authorization}, \
                      E=TICKET_LIFETIME:82800]
 </pre>
-<code>webdav.conf</code> example: <a href="#afsconf">see next section</a>
+<code>/etc/webdav.conf</code> example: <a href="#afsconf">see next section</a>
 
 <h3>... with mod_auth_kerberos</h3>
 Requirements:
@@ -745,7 +745,7 @@ RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
                                  E=TICKET_LIFETIME:82800]
 </pre>
 
-<code id="afsconf">webdav.conf</code> example:
+<code id="afsconf">/etc/webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi/';
 
@@ -782,7 +782,7 @@ Requirements:
 <li> a mounted GFS filesystem </li>
 <li> <code>gfs_quota</code> command executable by a user</li>
 </ol>
-<code>webdav.conf</code> example:
+<code>/etc/webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi/';
 
@@ -844,20 +844,21 @@ Require valid-user
 RewriteEngine on
 RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
 </pre>
-<code>webdav.conf</code> example: <a href="#smbconf">see next section</a>
+<code>/etc/webdav.conf</code> example: <a href="#smbconf">see next section</a>
 
 <h3>... without mod_auth_kerberos but with Kerberos authentication</h3>
 Requirements:
 <ol>
 <li> a Active Directory integrated Windows or Samba file server</li>
-<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
-<li> unough temporary file space for thumbnails and ZIP upload/download</li>
-<li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
-<li> a <a href="#kerberosconfig">Kerberos configuration</a> file with a default_realm</li>
-<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible): the <code>TICKET_LIFETIME</code> (in seconds) should be a little bit smaller than your Kerberos ticket lifetime</li>
 <li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
+<li> a <a href="#kerberosconfig">Kerberos configuration</a> file (/etc/krb5.conf) with a default_realm</li>
+<li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
+<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
+<li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
+<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible): the <code>TICKET_LIFETIME</code> (in seconds) should be a little bit smaller than your Kerberos ticket lifetime</li>
+<li> unough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
-Kerberos configuration example:
+Kerberos configuration example: <code>/etc/krb5.conf</code>:
 <pre id="kerberosconfig">
 [libdefaults]
         dns_lookup_realm = true
@@ -886,7 +887,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
                                 E=TICKET_LIFETIME:21600]
 </pre>
 
-<code id="smbconf">webdav.conf</code> example:
+<code id="smbconf">/etc/webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi/';
 
@@ -970,10 +971,10 @@ $ALLOW_SYMLINK = 0;
 Requirements:
 <ol>
 <li> a Windows or Samba file server </li>
-<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
-<li> unough temporary file space for thumbnails and ZIP upload/download</li>
-<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible)</li>
 <li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
+<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
+<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible)</li>
+<li> unough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
 Apache example:
 <pre>
@@ -990,7 +991,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
                                 E=SMBWORKGROUP:Workgroup]
 </pre>
 
-<code>webdav.conf</code> example: <a href="#smbconf">see previous section</a>
+<code>/etc/webdav.conf</code> example: <a href="#smbconf">see previous section</a>
 
 <h2 id="dbb">DBD database backend</h2>
 <p>The DBD backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
@@ -1003,7 +1004,7 @@ Requirements:
 <ul>
 <li> a database driver (DBD perl module; by default SQLite; Ubuntu/Debian package: libdbd-sqlite3-perl) </li>
 </ul>
-<code>webdav.conf</code> example:
+<code>/etc/webdav.conf</code> example:
 <pre>
 $INSTALL_BASE='/etc/webdavcgi/';
 $VIRTUAL_BASE = '/';
@@ -1057,7 +1058,7 @@ Requirements:
 <li> a little bit temporary space for all RCS operations (ci, co, rcsdiff, rlog, zip download) </li>
 </ul>
 
-<code>webdav.conf</code> example:
+<code>/etc/webdav.conf</code> example:
 <pre>
 ...
 $BACKEND = 'RCS';
@@ -1165,9 +1166,9 @@ NEW (without mod_auth_kerberos): ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/s
 </ol>
 Notes:
 <ul>
-<li>If you change your <code>webdav.conf</code> you have to touch webdav.pl (<code>touch&nbsp;cgi-bin/webdav.pl</code>) or kill all speedy processes (<code>pkill&nbsp;-f&nbsp;speedy_backend</code>) because Speedy checks only the modification time of webdav.pl.</li>
+<li>If you change your <code>/etc/webdav.conf</code> you have to touch webdav.pl (<code>touch&nbsp;cgi-bin/webdav.pl</code>) or kill all speedy processes (<code>pkill&nbsp;-f&nbsp;speedy_backend</code>) because Speedy checks only the modification time of webdav.pl.</li>
 <li>If you do not use a setuid/setgid wrapper you have to use a single database for all users.</li>
-<li>You can increase the performance if you enable persistent database connections in your <code>webdav.conf</code>: <code>$DBI_PERSISTENT = 1;</code></li>
+<li>You can increase the performance if you enable persistent database connections in your <code>/etc/webdav.conf</code>: <code>$DBI_PERSISTENT = 1;</code></li>
 </ul>
 
 </div>
@@ -1216,9 +1217,9 @@ chown root:root webdavwrapper
 
 </li>
 <li> shebang of <code>webdav.pl</code>: path to the Perl interpreter have to be correct</li>
-<li> <code>webdav.conf</code> syntax (maybe a broken config):
+<li> <code>/etc/webdav.conf</code> syntax (maybe a broken config):
 <pre>
-#&gt; perl -c webdav.conf
+#&gt; perl -c /etc/webdav.conf
 webdav.conf syntax OK
 </pre>
 </li>
@@ -1315,8 +1316,8 @@ EOF
 WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface without encryption (http instead of https) all cookie based actions do not work.
 <h3>Web interface: missing stylesheets, locales, and/or icons</h3>
 <ol>
-<li>Check your <code>$INSTALL_BASE</code> variable in your <code>webdav.conf</code></li>
-<li>Check webdav.conf syntax: <code>perl -c webdav.conf</code></li>
+<li>Check your <code>$INSTALL_BASE</code> variable in your <code>/etc/webdav.conf</code></li>
+<li>Check /etc/webdav.conf syntax: <code>perl -c /etc/webdav.conf</code></li>
 <li>Check your Apache rewrite rule: the path to your webdav.conf must be correct:  <code>E=WEBDAVCONF:/etc/webdav.conf</code></li>
 </ol>
 <h3>Web interface: wrong date/time/number formatting for a language</h3>
