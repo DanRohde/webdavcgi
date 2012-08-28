@@ -1060,7 +1060,7 @@ Setup:
 OLD: #!/usr/bin/perl
 NEW: #!/usr/bin/speedy -- -r50 -M10 -t3600
 </pre>
-The <code>-r50</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M10</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="#smb">SMB backend</a>) you should remove the <code>-M10</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request.
+The <code>-r50</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M10</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="#smb">SMB backend</a>) you should remove the <code>-M10</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request. The <code>-t3600</code> sets the timeout for a idle Speedy process to one hour. 
 </li>
 <li> Only for the <a href="#smb">SMB backend</a>:
     <ol>
