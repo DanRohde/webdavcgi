@@ -13,8 +13,10 @@ if test "$UID" != 0 ; then
 	exit 1
 fi
 
-read -p "Do you want to use Speedy for a better performance? (Y/n)" answer
-test "$answer" = "y" -o "$answer" = "Y" -o -z "$answer" && sed -i -e '1i#!/usr/bin/speedy -- -r50 -M10 -t3600' $wd/cgi-bin/webdav.pl
+if test -x /usr/bin/speedy ; then
+	read -p "Do you want to use Speedy for a better performance? (Y/n)" answer
+	test "$answer" = "y" -o "$answer" = "Y" -o -z "$answer" && sed -i -e '1i#!/usr/bin/speedy -- -r50 -M10 -t3600' $wd/cgi-bin/webdav.pl
+fi	
 
 echo -n "Compiling all wrapper ... "
 for w in $wd/helper/*.c ; do

@@ -84,7 +84,30 @@ apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
                 libfile-copy-link-perl
 
+## only for SMB backend users:
+apt-get install libfilesys-smbclient-perl
+
+## only for RCS backend users:
+apt-get install librcs-perl
    </pre>
+</li>
+<li>install additional binaries/packages for a better WebDAV CGI experience:
+<ul>
+<li> Speedy - increases the performance of WebDAV CGI (Debian/Ubuntu package: speedy-cgi-perl) </li>
+<li> Ghostscript - allowes the web interface of WebDAV CGI to generate thumbnails for PDF/PS files (Debian/Ubuntu package: ghostscript) </li>
+<li> smbclient (only for SMB backend users) - allowes the web interface to show quota information (Debian/Ubuntu package: smbclient) </li>
+<li> kinit (only for SMB and AFS backend users) - allowes you to omit mod_auth_kerberos (Debian/Ubuntu package: krb5-user) </li>
+</ul>
+<pre>
+## Debian/Ubuntu quick install:
+apt-get install speedy-cgi-perl ghostscript
+
+## only for SMB backend users:
+apt-get install smbclient
+
+## only for SMB and AFS backend users:
+apt-get install krb5-user
+</pre>
 </li>
 <li>change directory to your preferred installation path, e.g. <code>cd /etc</code></li>
 <li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code></li>
@@ -123,7 +146,7 @@ ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
         Require valid-user
 &lt;/Location&gt;
 # if you want to map this to a real path, do that:
-# (end setup $VIRTUAL_BASE='/webdav' and $DOCUMENT_ROOT in your WebDAV CGI config)
+# (end setup $VIRTUAL_BASE='/webdav/?' and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
 # RewriteRule ^/webdav/logout - [L]
 RewriteRule ^/webdav /webdavcgi  [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
@@ -131,8 +154,9 @@ RewriteRule ^/webdav /webdavcgi  [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/et
 <br/>
     <pre>
 ### EXAMPLE 3: a .htaccess file to handle a complete folder with WebDAV CGI:
-### (Prerequisites: /webdavcgi is a script alias (ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper) and
-###      'AllowOverride AuthConfig FileInfo' is set for the current folder)
+### Prerequisites: /webdavcgi is a script alias 
+##       (ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper) and
+###      'AllowOverride AuthConfig FileInfo' is set for the current folder
 RewriteEngine On
 RewriteRule .* /webdavcgi [E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
 
@@ -159,6 +183,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 &lt;/Location&gt;	
 </pre>
 </li>
+<li>changed <code>$INSTALL_BASE</code> default from "" to "/etc/webavcgi/"</li>
 <li>AFS backend:
 	<ul>
 		<li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
@@ -1140,11 +1165,13 @@ The <code>-r50</code> limits the requests per Speedy process. This is necessary 
 </li>
 <li> Only for the <a href="#smb">SMB backend</a>:
     <ol>
-    <li>Check and change the ticket lifetime:
-    	<ul>
-		<li> with mod_auth_kerberos: in <code>helper/webdavwrapper-smb.c</code>: <code>#define TICKET_LIFETIME 28800</code> </li>
-		<li> without mod_auth_kerberos: in <code>cgi-bin/smbwrapper</code>: <code>TICKET_LIFETIME=28800</code></li>
-	</ul>
+    <li>Add <code>E=TICKET_LIFETIME:28800</code> to your RewriteRule:
+<pre>
+RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
+                                E=PERLLIB:/etc/webdavcgi/lib/perl, \
+                                E=TICKET_LIFETIME:21600]
+</pre>
+</li>
     	<br/>The ticket (renewal) lifetime depends on your domain controller setup (Kerberos policy of your domain group policy). You can check it (Debian/Ubuntu: <code>apt-get install krb5-user</code>):
 <pre>
 kinit mydomainaccount@MY.EXAMPLE.DOMAIN.ORG
@@ -1204,7 +1231,7 @@ RewriteLog /var/log/apache2/rewrite.log
 </pre>
 and analyze the <code>rewrite.log</code> after a single access to your WebDAV area and don't forget to set the <code>RewriteLogLevel</code> back to <code>0</code> after your debug session.
 
-<h3>Not Found / 500 Internal Server Error / 'Premature end of script headers'</h3>
+<h3>404 File Not Found / 500 Internal Server Error / 'Premature end of script headers'</h3>
 Please check the following:
 <ol>
 <li> Apache error log - Apache writes sometimes helpful things into logs</li>
@@ -1223,6 +1250,7 @@ chown root:root webdavwrapper
 webdav.conf syntax OK
 </pre>
 </li>
+<li> check your /etc/webdav.conf: wrong <code>$VIRTUAL_BASE</code> or <code>$DOCUMENT_ROOT</code> values are cause for a 404 File Not Found</li>
 <li> <code>webdav.pl</code> syntax (maybe a broken config or a missing Perl module): 
 <pre>
 #&gt; perl -I/etc/webdavcgi/lib/perl -c webdav.pl
@@ -1316,7 +1344,7 @@ EOF
 WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface without encryption (http instead of https) all cookie based actions do not work.
 <h3>Web interface: missing stylesheets, locales, and/or icons</h3>
 <ol>
-<li>Check your <code>$INSTALL_BASE</code> variable in your <code>/etc/webdav.conf</code></li>
+<li>Check your <code>$INSTALL_BASE</code> variable in your <code>/etc/webdav.conf</code> (maybe you forget the trailing slash?)</li>
 <li>Check /etc/webdav.conf syntax: <code>perl -c /etc/webdav.conf</code></li>
 <li>Check your Apache rewrite rule: the path to your webdav.conf must be correct:  <code>E=WEBDAVCONF:/etc/webdav.conf</code></li>
 </ol>
