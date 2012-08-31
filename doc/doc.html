@@ -115,8 +115,8 @@ apt-get install krb5-user
 <li> <a href="#setup">configure webdav.pl</a></li>
 <li> <a id="apache"></a>configure your web server:
     <ul>
-    <li>you can do that with rewrite rules</li>
-    <li> or with a handler action</li>
+    <li>you can do that with rewrite rules (recommended)</li>
+    <li> or with a handler action (unsupported)</li>
     </ul>
     Examples for Apache 2.x: (you need the Apache rewrite module: <code>a2enmod rewrite</code>) 
     - and don't forget to take a look at the backend specific configurations <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, or <a href="#rcs">RCS</a>
@@ -183,7 +183,6 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 &lt;/Location&gt;	
 </pre>
 </li>
-<li>changed <code>$INSTALL_BASE</code> default from "" to "/etc/webavcgi/"</li>
 <li>AFS backend:
 	<ul>
 		<li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
@@ -1383,13 +1382,13 @@ see <a href="https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2">https://bugz
 <h3>Apache error log: Permission denied: exec of '.../webdavwrapper' failed</h3>
 <div>
 <ul>
-<li> Check all file and folder permissions (Apache runs with a user)</li>
+<li> Check all file and folder permissions (Apache runs with user permissions)</li>
 <li> SELinux users should define a policy to allow the execution of webdavwrapper.</li>
 </ul>
 </div>
 
 <div id="contact">
-&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011, 2012 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2012 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
 </div>
 </body>
 </html>
