@@ -6,37 +6,32 @@
 # Kerberos ticket lifetime:
 # 6h = 21600s
 
-test -z "$TICKET_LIFETIME" && TICKET_LIFETIME=21600
+TICKET_LIFETIME=${TICKET_LIFETIME:-21600}
 
 ##########################################################
 
 umask 0077
 
-remote_user="$REMOTE_USER"
-test -z "$remote_user" && remote_user="$REDIRECT_REMOTE_USER"
+remote_user=${REMOTE_USER:-$REDIRECT_REMOTE_USER}
 
 ticketfn="/tmp/krb5cc_webdavcgi_$remote_user"
 
-KRB5CCNAME="FILE:$ticketfn"
-export KRB5CCNAME
+export KRB5CCNAME="FILE:$ticketfn"
 
-WEBDAVISWRAPPED=1
-export WEBDAVISWRAPPED
+export WEBDAVISWRAPPED=1
 
 if test -n "$AUTHHEADER" ; then
 	# password auth:
 	if test -n "$SMBWORKGROUP" ; then
-		SMBUSER=$remote_user;
-		SMBPASSWORD=$(cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2)
-		export SMBUSER
-		export SMBPASSWORD
+		export SMBUSER=$remote_user;
+		export SMBPASSWORD=$(cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2)
 	# Kerberos auth:
 	else
 		(
 			if test -f "$ticketfn" ; then
 				mtime=$(stat -c %Y "$ticketfn.age")
 				time=$(date +%s)
-				test $(expr $time - $mtime) -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
+				test $(expr "$time" - "$mtime") -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
 			fi
 			if test ! -f "$ticketfn" ; then
 				flock -x -w 10 9 || exit 1
