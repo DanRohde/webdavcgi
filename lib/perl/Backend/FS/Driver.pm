@@ -22,6 +22,9 @@ package Backend::FS::Driver;
 use strict;
 #use warnings;
 
+# fixed ACL bug  reported by Thomas Klose <thomas.klose@gmx.com>:
+use filetest 'access';
+
 use File::Spec::Link;
 use Fcntl qw(:flock);
 
