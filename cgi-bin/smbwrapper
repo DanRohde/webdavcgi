@@ -24,53 +24,26 @@ WEBDAVISWRAPPED=1
 export WEBDAVISWRAPPED
 
 if test -n "$AUTHHEADER" ; then
-	if test -n "$SMBGC" -a -n "$SMBLDAPUSER" -a -n "$SMBLDAPPASS" ; then
-		uidpw=`echo $AUTHHEADER | cut -d' ' -f2 | base64 -d`
-		user=`echo $uidpw | cut -d: -f1`
-		password=`echo $uidpw | cut -d: -f2`
-		for gc in $SMBGC ; do
-			principal=$(ldapsearch -LLL -H "ldaps://$gc:3269" -b "$SMBBASEDN"  -D $SMBLDAPUSER -w $SMBLDAPPASS '(|(samAccountName='$user')(userPrincibalName='$user'))' userPrincipalName | grep ^userPrincipalName | cut -d: -f2)
-			if ( kinit $principal <<<$password ) ; then
-				REMOTE_USER="$principal"
-				REDIRECT_REMOTE_USER=$REMOTE_USER
-				export REMOTE_USER REDIRECT_REMOTE_USER
-				break
-			fi	
-		done
-		if test -z "$REMOTE_USER" ; then
-			echo "Status: 401"
-			echo "Content-Type: text/plain"
-			echo
-			echo "401 - Unauthorized"
-			exit
-		fi	
-	fi
 	# password auth:
 	if test -n "$SMBWORKGROUP" ; then
 		SMBUSER=$remote_user;
-		SMBPASSWORD=`echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2`
+		SMBPASSWORD=$(cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2)
 		export SMBUSER
 		export SMBPASSWORD
 	# Kerberos auth:
 	else
-		if test -f "$ticketfn" ; then
-			mtime=`stat -c %Y "$ticketfn.age"`
-			time=`date +%s`
-			test `expr $time - $mtime` -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
-		fi
-		if test ! -f "$ticketfn" ; then
-			(
+		(
+			if test -f "$ticketfn" ; then
+				mtime=$(stat -c %Y "$ticketfn.age")
+				time=$(date +%s)
+				test $(expr $time - $mtime) -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
+			fi
+			if test ! -f "$ticketfn" ; then
 				flock -x -w 10 9 || exit 1
-				echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2 | kinit "$remote_user" 1>/dev/null 2>&1 && touch "$ticketfn.age"
-			) 9> "${ticketfn}.flock"
-		fi
+				cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2 | kinit "$remote_user" 1>/dev/null 2>&1 && touch "$ticketfn.age"
+			fi
+		) 9> "${ticketfn}.flock"
 	fi	
-elif test -n "$SMBGC" -a -n "$SMBLDAPUSER" -a -n "$SMBLDAPPASS" ; then
-	echo "Status: 401"
-	echo "Content-Type: text/plain"
-	echo
-	echo "401 - Unauthorized"
-	exit
 fi
 
 exec ./webdav.pl
