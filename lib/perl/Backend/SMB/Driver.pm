@@ -175,7 +175,7 @@ sub stat {
 
 	my @stat;
 	my $time = time();
-	if (_isRoot($file)) {
+	if (_isRoot($file) || _isShare($file)) {
 		@stat = (0,0,0755,0,0,0,0,0,$time,$time,$time,0,0);
 	} else {
 		if ($file=~/^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E.*$/) {
@@ -378,7 +378,8 @@ sub _isRoot {
 	return $_[0]  eq $DOCUMENT_ROOT;
 }
 sub _isShare {
-	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E\/]+\Q$SHARESEP\E[^\/]+\/?$/;
+	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E[^\/]+\/?$/;
+
 }
 sub S_ISLNK { return ($_[0] & 0120000) == 0120000; }
 sub S_ISDIR { return ($_[0] & 0040000) == 0040000; }

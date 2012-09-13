@@ -24,18 +24,18 @@ if test -n "$AUTHHEADER" ; then
 	# password auth:
 	if test -n "$SMBWORKGROUP" ; then
 		export SMBUSER=$remote_user;
-		export SMBPASSWORD=$(cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2)
+		export SMBPASSWORD=$(cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2-)
 	# Kerberos auth:
 	else
 		(
 			if test -f "$ticketfn" ; then
 				mtime=$(stat -c %Y "$ticketfn.age")
 				time=$(date +%s)
-				test $(expr "$time" - "$mtime") -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
+				test $(( "$time" - "$mtime" )) -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
 			fi
 			if test ! -f "$ticketfn" ; then
 				flock -x -w 10 9 || exit 1
-				cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2 | kinit "$remote_user" 1>/dev/null 2>&1 && touch "$ticketfn.age"
+				cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2- | kinit "$remote_user" 1>/dev/null 2>&1 && touch "$ticketfn.age"
 			fi
 		) 9> "${ticketfn}.flock"
 	fi	
