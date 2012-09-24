@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[])
 {
 	struct passwd *pw = NULL;
+	struct group  *gr = NULL;
 	int errcode = 0;
 
 	char *remote_user = getenv("WEBDAV_USER");
@@ -44,9 +45,14 @@ int main(int argc, char *argv[])
 
 	if (remote_user != NULL) pw = getpwnam(remote_user);
 	
+	char *webdavgroup = getenv("WEBDAV_GROUP");
+	if (webdavgroup == NULL) webdavgroup = getenv("REDIRECT_WEBDAV_GROUP");
+
+	if (webdavgroup != NULL) gr = getgrnam(webdavgroup);
+
 	if ((pw != NULL)  && ( pw->pw_uid != 0)) {
 		if (initgroups(pw->pw_name,pw->pw_gid)==0)
-			if (setgid(pw->pw_gid)==0)
+			if (setgid(gr!=NULL && gr->gr_gid!=0 ? gr->gr_gid : pw->pw_gid)==0)
 				if (setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
 				else printf("Status: 500 Internal Server Error: setuid failed for %s",pw->pw_name);
 			else printf("Status: 500 Internal Server Error: setgid failed for %s",pw->pw_name);

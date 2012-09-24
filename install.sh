@@ -29,8 +29,9 @@ echo -n "Fixing owner/group and rights ..."
 
 strip $wd/cgi-bin/webdavwrapper*
 
-chown root:root $wd/cgi-bin/webdavwrapper*
-chmod a+rx,ug+s $wd/cgi-bin/webdavwrapper* 
+WRAPPER="$wd/cgi-bin/webdavwrapper $wd/cgi-bin/webdavwrapper-afs $wd/cgi-bin/webdavwrapper-krb"
+chown root:root $WRAPPER
+chmod a+rx,ug+s $WRAPPER
 chmod a+rx $wd $wd/cgi-bin $wd/cgi-bin/webdav.pl $wd/cgi-bin/afswrapper $wd/cgi-bin/smbwrapper
 chmod -R a+r  $wd
 
