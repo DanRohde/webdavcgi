@@ -5,40 +5,139 @@
 ##########################################################
 # Kerberos ticket lifetime:
 # 6h = 21600s
+##########################################################
+# DO NOT CHANGE THIS FILE. 
+# You can create a smbwrapper.conf in your
+# WebDAV CGI cgi-bin directory to setup this script.
+# smbwrapper.conf-dist is a setup template.
+##########################################################
 
-TICKET_LIFETIME=${TICKET_LIFETIME:-21600}
+## read config file:
+test -f $0.conf && . $0.conf
+
+## set defaults if neccessary:
+TICKET_LIFETIME=${TICKET_LIFETIME:=21600}
+
+SMBLDAPTIMEOUT=${SMBLDAPTIMEOUT:=1}
+SMBAUTHCACHE=${SMBAUTHCACHE:=/tmp/webdavcgiauth.cache}
+
+DEBUG=${DEBUG:=}
 
 ##########################################################
 
+# fix read/write permissions:
 umask 0077
 
-remote_user=${REMOTE_USER:-$REDIRECT_REMOTE_USER}
-
-ticketfn="/tmp/krb5cc_webdavcgi_$remote_user"
-
-export KRB5CCNAME="FILE:$ticketfn"
+# encode Authorization header content:
+UIDPW=$(cut -d' ' -f2 <<<$AUTHHEADER | base64 -d )
 
 export WEBDAVISWRAPPED=1
 
+debug() {
+	test -n "$DEBUG" && echo DEBUG: $@ 1>&2
+}
+searchPrincipals() {
+	user=${user:=$1}
+	if test -f "$SMBAUTHCACHE" ; then
+		hashsum=$(sha1sum <<<$UIDPW)
+		hashsum=${hashsum%% *}
+		cacheentry=$(grep -w "^$hashsum" "$SMBAUTHCACHE" | sed -e 's, ,@@@,g');
+	fi
+	if test -n "$cacheentry"  ; then
+		principals=$(cut -d: -f2 <<<$cacheentry)
+		debug "use principal cache for $user: principal=$principals"
+	else
+		for gc in $SMBGC ; do
+			debug search user $user in $gc
+			principals=$(ldapsearch -LLL -H "ldaps://$gc:3269" -b "$SMBLDAPBASEDN"  -D $SMBLDAPUSER -w $SMBLDAPPASS -l $SMBLDAPTIMEOUT '(|(samAccountName='$user')(userPrincibalName='$user'))' userPrincipalName | grep ^userPrincipalName | cut -d" " -f2- | sed -e 's, ,@@@,g')
+			debug "found principals=$principals"
+			test -n "$principals" && break
+		done
+	fi	
+	echo $principals
+}
+addToAuthCache() { 
+	principal=${principal:=$1}
+	hashsum=$(sha1sum <<<$UIDPW)
+	hashsum=${hashsum%% *}
+	(
+		flock -x -w 10 9 || exit 1
+		test -f $SMBAUTHCACHE && grep -wq "^$hashsum" $SMBAUTHCACHE || echo "$hashsum:$principal"  >> $SMBAUTHCACHE
+	) 9> ${SMBAUTHCACHE}.flock
+}
+getTicket() {
+	principal=${principal:=$1}
+	ticketfn="/tmp/krb5cc_webdavcgi_$principal"
+	ticketfn=${ticketfn/ /_}
+	export KRB5CCNAME="FILE:$ticketfn"
+	debug "getTicket($principal): ticketfn=$ticketfn"
+	ret=0
+	if test -f "$ticketfn" ; then
+		mtime=$(stat -c %Y "$ticketfn.age")
+		time=$(date +%s)
+		if test $(( $time - $mtime )) -ge $TICKET_LIFETIME; then
+			rm -f "$ticketfn" "$ticketfn.age"
+			debug "old ticket cache $ticketfn delete"
+		fi	
+	fi
+	if test ! -f "$ticketfn" ; then
+		ret=1
+		( 
+			flock -x -w 10 8 || exit 1 
+			debug "try to create to ticket cache $KRB5CCNAME"
+			rm -f  "$ticketfn.age" 1>&2
+			kinit "$principal" <<<${UIDPW#*:} 1>/dev/null 2>&1 && touch "$ticketfn.age" 
+		) 8>${ticketfn}.flock
+		test -f "$ticketfn.age" && ret=0
+	fi
+	debug "getTicket: ret=$ret"
+	return $ret
+}
+printAuthHeader() {
+	cat <<EOF
+Status: 401
+WWW-Authenticate: Basic realm="$SMBREALM"
+Content-Type: text/plain;charset=utf8
+
+401 - Unauthorized
+EOF
+	exit 1
+
+}
+
 if test -n "$AUTHHEADER" ; then
+
+	remote_user=${REMOTE_USER:=$REDIRECT_REMOTE_USER}
+
+	# Kerberos auth without Apache auth:
+	if test -n "$SMBGC" -a -n "$SMBLDAPUSER" -a -n "$SMBLDAPPASS" ; then
+
+		principals=$(searchPrincipals ${UIDPW%%:*})
+		if test -n "$principals" ; then
+			for principal in $principals ; do
+				principal=${principal/@@@/ }
+				principal=${principal^^*}
+				if getTicket "$principal" ; then
+					debug "principal $principal authenticated"
+					export REMOTE_USER="${UIDPW%%:*}@${principal#*@}"
+					export REDIRECT_REMOTE_USER=$REMOTE_USER
+					addToAuthCache $principal
+					break
+				fi	
+			done	
+		fi	
+		test -z "$REMOTE_USER" && printAuthHeader 
 	# password auth:
-	if test -n "$SMBWORKGROUP" ; then
+	elif test -n "$SMBWORKGROUP" ; then
 		export SMBUSER=$remote_user;
-		export SMBPASSWORD=$(cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2-)
+		export SMBPASSWORD=${UIDPW#*:}
 	# Kerberos auth:
 	else
-		(
-			if test -f "$ticketfn" ; then
-				mtime=$(stat -c %Y "$ticketfn.age")
-				time=$(date +%s)
-				test $(( "$time" - "$mtime" )) -ge $TICKET_LIFETIME && rm -f "$ticketfn" "$ticketfn.age"
-			fi
-			if test ! -f "$ticketfn" ; then
-				flock -x -w 10 9 || exit 1
-				cut -d' ' -f2 <<< "$AUTHHEADER" | base64 -d | cut -d: -f2- | kinit "$remote_user" 1>/dev/null 2>&1 && touch "$ticketfn.age"
-			fi
-		) 9> "${ticketfn}.flock"
+		getTicket $remote_user || printAuthHeader
 	fi	
+elif test -n "$SMBGC" -a -n "$SMBLDAPUSER" -a -n "$SMBLDAPPASS" ; then
+	printAuthHeader
 fi
 
+debug "execute ./webadav.pl (REMOTE_USER=$REMOTE_USER KRB5CCNAME=$KRB5CCNAME)"
 exec ./webdav.pl

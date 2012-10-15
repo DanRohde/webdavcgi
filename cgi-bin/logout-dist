@@ -34,13 +34,13 @@ LICTXT
 # -----
 ### REALM: the basic authentication realm 
 ### (must be equal to your AuthName value for Apache)
-REALM="Change Me"
+REALM="${REALM:=Change Me}"
 
 ### HOMEURL: the home URL
-HOMEURL="/changemyhomeurl"
+HOMEURL="${HOMEURL:=/changemyhomeurl}"
 
 ### TIMEOUT: the refresh timeout for the logut page
-TIMEOUT=0
+TIMEOUT=${TIMEOUT:=0}
 
 # SETUP END
 

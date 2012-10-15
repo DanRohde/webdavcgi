@@ -1,0 +1,46 @@
+#!/bin/bash
+##########################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin
+# Written 2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+# Example configuration file for the smbwrapper script
+##########################################################
+
+##########################################################
+##### COMMON SETUP
+##########################################################
+
+## Kerberos Ticket Lifetime for ticket caching:
+# TICKET_LIFETIME=21600
+
+## Enable Debugging:
+# DEBUG=1
+
+##########################################################
+##### Kerberos authentication without 
+##### an Apache authentication module
+##########################################################
+
+## HTTP Basic Authentication Realm:
+SMBREALM="SMB/CIFS Auth"
+
+## Global Catalog IPs/Names:
+# SMBGC=""
+
+## Search timeout:
+SMBLDAPTIMEOUT=1
+
+## Global Catalog Base DN:
+SMBLDAPBASEDN="dc=de"
+
+## Global Catalog user:
+# SMBLDAPUSER=""
+
+## Global Catalog password:
+# SMBLDAPPASS=""
+
+## Principal (ADS: userPrincipal) Cache for authenticated users:
+SMBAUTHCACHE=${SMBAUTHCACHE:=/tmp/webdavcgiauth.cache}
+
+##########################################################
+
