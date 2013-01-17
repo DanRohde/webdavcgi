@@ -1426,7 +1426,7 @@ sub _MKCOL {
 	} elsif (!isAllowed($PATH_TRANSLATED)) {
 		debug("_MKCOL: not allowed!");
 		$status = '423 Locked';
-	} elsif ($backend->isDir($backend->getParent($PATH_TRANSLATED)) && isInsufficientStorage(1)) {
+	} elsif ($backend->isDir($backend->getParent($PATH_TRANSLATED)) && isInsufficientStorage()) {
 		$status='507 Insufficient Storage';
 	} elsif ($backend->isDir($backend->getParent($PATH_TRANSLATED))) {
 		debug("_MKCOL: create $PATH_TRANSLATED");
@@ -1477,7 +1477,7 @@ sub _LOCK {
 			$type='text/plain';
 		}
 	} elsif (!$backend->exists($fn)) {
-		if (isInsufficientStorage(1)) {
+		if (isInsufficientStorage()) {
 			$status='507 Insufficient Storage';
 			$type='text/plain';
 		} elsif ($backend->saveData($fn,'')) {
@@ -1888,7 +1888,7 @@ sub _REBIND {
 			$status = '403 Forbidden';
 		} elsif ($backend->exists($dst) && !$backend->isLink($ndst)) {
 			$status = '403 Forbidden';
-		} elsif (isInsufficientStorage(1)) {
+		} elsif (isInsufficientStorage()) {
 			$status = '507 Insufficient Storage';
 		} else {
 			$status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
@@ -2423,10 +2423,10 @@ sub handlePropertyRequest {
 sub getQuota {
 	my ($fn) = @_;
 	$fn = $PATH_TRANSLATED unless defined $fn;
-	return ($CACHE{getQuota}{$fn}{block_hard}, $CACHE{getQuota}{$fn}{block_curr}) if defined $CACHE{getQuota}{$fn}{block_hard};
+#	return ($CACHE{getQuota}{$fn}{block_hard}, $CACHE{getQuota}{$fn}{block_curr}) if defined $CACHE{getQuota}{$fn}{block_hard};
 	my ($block_hard, $block_curr) = $backend->getQuota($fn);
-	$CACHE{getQuota}{$fn}{block_hard}=$block_hard;
-	$CACHE{getQuota}{$fn}{block_curr}=$block_curr;
+#	$CACHE{getQuota}{$fn}{block_hard}=$block_hard;
+#	$CACHE{getQuota}{$fn}{block_curr}=$block_curr;
 	return ($block_hard,$block_curr);
 }
 sub getuuid {
@@ -2670,15 +2670,15 @@ sub debug {
 	print STDERR "$0: @_\n" if $DEBUG;
 }
 sub isInsufficientStorage {
-	my ($mkcol) = @_;
 	my $ret=0;
-	if (defined $cgi->http('Content-Length')) {
-		my $filesize=$cgi->http('Content-Length');
-		my ($block_hard,$block_curr) = getQuota();
-		$ret = $block_hard >0 && $filesize+$block_curr > $block_hard;
-	} elsif (defined $mkcol) {
-		my ($block_hard,$block_curr) = getQuota();
-		$ret = $block_hard >0 && $block_curr >= $block_hard;
+	my ($block_hard,$block_curr) = getQuota();
+	if ($block_hard > 0) {
+		if ($block_curr >= $block_hard) {
+			$ret = 1;
+		} elsif (defined $cgi->http('Content-Length')) {
+			my $filesize=$cgi->http('Content-Length');
+			$ret = $filesize+$block_curr > $block_hard;
+		}
 	}
 	return $ret;
 }
