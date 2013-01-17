@@ -7,6 +7,8 @@
      - fixed ACL bug (thanx Thomas Klose <thomas.klose@gmx.com>)
      - added wrappers for a mod_auth_kerberos free authentication for SMB and AFS backend
      - added username/password/workgroup authentication support for SMB backend
+     - improved logout-dist script (thanx Christan Affolter <christian.affolter@purblehaze.ch>
+     - fixed quota related insufficient storage bug reported by Jean-François Brison
 
 0.8.3: 2012/6/6
      - fixed typos
