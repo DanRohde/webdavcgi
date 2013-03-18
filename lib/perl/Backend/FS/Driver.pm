@@ -210,6 +210,9 @@ sub saveData {
 
 	delete $CACHE{$self}{$file};
 
+	my ($block_hard, $block_curr) = $self->getQuota($self->dirname($file));
+	return 0 if length($data) + $block_curr > $block_hard;
+
 	my $mode = $append ? '>>' : '>';
 
 	if (($ret = open(my $f, ${mode}.$self->resolveVirt(${file})))) {
@@ -230,6 +233,8 @@ sub saveStream {
 
 	delete $CACHE{$self}{$destination};
 
+	my ($block_hard, $block_curr) = $self->getQuota($self->dirname($destination));
+
 	if (($ret=open(my $f,">".$self->resolveVirt($destination)))) {
 		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
 			close($f);
@@ -237,8 +242,11 @@ sub saveStream {
 		} else {
 			binmode($f);
 			binmode($filehandle);
+			my ($consumed) = 0;
 			while (read($filehandle,my $buffer,$main::BUFSIZE || 1048576)>0) {
+				last if $block_hard>0 && $consumed+$block_curr >= $block_hard;
 				print $f $buffer;
+				$consumed+=length($buffer);
 			}
 			flock($f, LOCK_UN) if $main::ENABLE_FLOCK;
 			close($f);
@@ -344,7 +352,7 @@ sub rename {
 sub getQuota {
 	my ($self, $fn) = @_;
 	require Quota;
-	my @quota =  Quota::query(Quota::getqcarg($self->resolveVirt($fn)));
+	my @quota =  Quota::query(Quota::getqcarg($self->resolveVirt($self->isDir($fn)?$fn:$self->getParent($fn))));
 	return @quota ? ( $quota[2] * 1024, $quota[0] * 1024 ) : (0, 0);
 }
 sub copy {

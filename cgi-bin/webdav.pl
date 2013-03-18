@@ -1266,7 +1266,7 @@ sub _PUT {
 			inheritLock();
 			logger("PUT($PATH_TRANSLATED)");
 		} else {
-			$status='403 Forbidden';
+			$status=isInsufficientStorage() ? '507 Insufficient Storage':'403 Forbidden';
 			$content="";
 			$type='text/plain';
 		}
@@ -2424,7 +2424,7 @@ sub getQuota {
 	my ($fn) = @_;
 	$fn = $PATH_TRANSLATED unless defined $fn;
 #	return ($CACHE{getQuota}{$fn}{block_hard}, $CACHE{getQuota}{$fn}{block_curr}) if defined $CACHE{getQuota}{$fn}{block_hard};
-	my ($block_hard, $block_curr) = $backend->getQuota($fn);
+	my ($block_hard, $block_curr) = $backend->getQuota($backend->isDir($fn)?$fn:$backend->getParent($fn));
 #	$CACHE{getQuota}{$fn}{block_hard}=$block_hard;
 #	$CACHE{getQuota}{$fn}{block_curr}=$block_curr;
 	return ($block_hard,$block_curr);
