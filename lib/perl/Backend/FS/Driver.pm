@@ -250,7 +250,7 @@ sub saveStream {
 			}
 			flock($f, LOCK_UN) if $main::ENABLE_FLOCK;
 			close($f);
-
+			$ret = 0 if $block_hard > 0 && $consumed+$block_curr >= $block_hard;
 		}
 	} else {
 		$ret = 0;
