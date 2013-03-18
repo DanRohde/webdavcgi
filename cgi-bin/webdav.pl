@@ -3,7 +3,7 @@
 ##!/usr/bin/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2012 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.8.4 BETA
+# VERSION 0.8.4 
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:

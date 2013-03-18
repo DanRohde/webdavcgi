@@ -1,4 +1,4 @@
-0.8.4: BETA
+0.8.4: 2013/18/3
      - fixed typos in doc
      - fixed security bug in helper/webdavwrapper-krb.c
      - added Speedy support for the AFS backend
