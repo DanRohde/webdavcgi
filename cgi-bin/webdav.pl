@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.8.4 
+# VERSION 0.8.5 BETA
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:
@@ -289,11 +289,11 @@ $ENABLE_BOOKMARKS = 1;
 
 ## -- VIEW
 ## defines the default view (sidebar or classic)
-$VIEW = 'sidebar';
+$VIEW = 'simple';
 
 ## -- SUPPORTED_VIEWS
 ## define supported views
-@SUPPORTED_VIEWS = ( 'sidebar', 'classic' );
+@SUPPORTED_VIEWS = ( 'simple', 'sidebar', 'classic' );
 
 ## -- ALLOW_POST_UPLOADS
 ## enables a upload form in a fancy index of a folder (browser access)

@@ -211,7 +211,7 @@ sub saveData {
 	delete $CACHE{$self}{$file};
 
 	my ($block_hard, $block_curr) = $self->getQuota($self->dirname($file));
-	return 0 if length($data) + $block_curr > $block_hard;
+	return 0 if $block_hard > 0 && length($data) + $block_curr > $block_hard;
 
 	my $mode = $append ? '>>' : '>';
 
@@ -278,7 +278,7 @@ sub compressFiles {
 	foreach my $file (@files) {
 		if ($self->isDir($basepath.$file)) {
 			$zip->addTree($self->resolveVirt($basepath.$file), $file);
-		} else {
+		} elsif ($self->exists($basepath.$file)) {
 			$zip->addFile($self->resolveVirt($basepath.$file), $file);
 		}
 	}
