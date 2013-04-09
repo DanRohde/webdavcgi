@@ -1,5 +1,6 @@
 0.8.5: BETA
      - fixed text save bug 
+     - fixed AFS related uppercase username bug
      - repo update
 0.8.4: 2013/18/3
      - fixed typos in doc

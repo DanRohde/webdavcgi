@@ -29,12 +29,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <grp.h>
 #include <time.h>
 #include <sys/file.h>
+#include <ctype.h>
 
 // lifetime of a ticket in seconds (depends on your KDC setup):
 // 1 day - 1h = 82800 seconds
 #define DEFAULT_TICKET_LIFETIME 82800
 
 #define STRBUFSIZE 2000
+
+char* strlwr( char* s ) 
+{
+	char* p = s;
+	while (*p = tolower( *p )) p++;
+	return s;
+}
 
 int main(int argc, char *argv[])
 {
@@ -47,6 +55,8 @@ int main(int argc, char *argv[])
 
 	char *user = NULL;
 	if (remote_user != NULL) {
+		remote_user = strlwr(remote_user);
+		setenv("REMOTE_USER",remote_user,1);
 		char buf[STRBUFSIZE] ;
 		snprintf(buf, STRBUFSIZE, "%s", remote_user); // strtok changes strings!
 		user = strtok(buf, "@");
