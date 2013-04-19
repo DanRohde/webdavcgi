@@ -442,6 +442,9 @@ li.sep {
 #content.hover {
 	border: 5px solid green;
 }
+#bookmarks {
+	width: 100px;
+}
 #bookmarks,#bookmarksmenu {
 	display: inline;
 	position: absolute;
@@ -623,4 +626,8 @@ td.center {
 }
 .tablesorter-down {
 	background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+input[readonly=readonly] {
+	opacity: 0.5;
 }

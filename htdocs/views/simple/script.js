@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	$('#selectall').click(function() {
+	$('#selectall').click(function(event) {
 		$("#fileList tr").filter(function() { return !$(this).is(":hidden"); }).trigger("click");
 		$(this).prop('checked',false);
 	});
@@ -413,7 +413,7 @@ function initTableSorter() {
 		var th = $("#fileListTable thead th:not(.sorter-false),#fileListTable thead td:not(.sorter-false)");
 		
 		th.on("click.tablesorter", function(event) {
-			preventDefault(event);
+	
 			$("#fileListTable thead .tablesorter-up,#fileListTable thead .tablesorter-down")
 				.removeClass('tablesorter-down').removeClass('tablesorter-up');
 			
@@ -475,7 +475,7 @@ function sortFileList(stype,sattr,sortorder,cidx) {
 	});
 }
 function handleFileEdit(row) {
-	$.get(concatUri($('#fileList').attr('data-uri'), row.attr('data-file')), function(response) {
+	$.get(concatUri($('#fileList').attr('data-uri'), encodeURIComponent(row.attr('data-file'))), function(response) {
 		if (response.message || response.error) {
 			handleJSONResponse(response);
 		} else {

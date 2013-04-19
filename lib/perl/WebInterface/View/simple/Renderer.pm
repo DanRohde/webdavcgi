@@ -189,18 +189,20 @@ sub renderFileList {
 	foreach my $file (@files) {
 		$ru .= ($ru=~/\//?'':'/');
 		my $full = "$fn$file";
+		my $fulle = $ru.$$self{cgi}->escape($file);
 		$file.='/' if $file !~ /^\.\.?$/ && $$self{backend}->isDir($full);
 
 		my $e = $entrytemplate;
 		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($full);
 		my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
 		my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-		my %stdvars = ( 'name' => $$self{cgi}->escapeHTML($file), 
+		my %stdvars = ( 
+				'name' => $$self{cgi}->escapeHTML($file), 
 				'size' => $sizetxt, 'sizetitle'=>$sizetitle,
 				'lastmodified' =>  strftime($self->tl('lastmodifiedformat'), localtime($mtime)),
 				'lastmodifiedtime' => $mtime,
 			 	'created'=> strftime($self->tl('lastmodifiedformat'), localtime($ctime)),
-				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? "$ru$file?action=thumb" : $self->getIcon($mimetype),
+				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mimetype),
 				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
 				'mimetype'=>$mimetype,
 				'realsize'=>$size ? $size : 0,
@@ -210,9 +212,9 @@ sub renderFileList {
 				'isviewable'=>$$self{backend}->isReadable($full) && $self->canCreateThumbnail($full) ? 'yes' : 'no',
 				'type'=>$file =~ /^\.\.?$/ || $$self{backend}->isDir($full)?'dir':($$self{backend}->isLink($full)?'link':'file'),
 				'fileid'=>$fileid++,
-				'fileuri'=>$$self{cgi}->escapeHTML($ru.$file),
+				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $full =~ /^$unselregex$/ ? 'yes' : 'no',
-				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{backend}->getLinkSrc($full) : "",
+				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
 				);
 		$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 		$fl.=$self->renderTemplate($fn,$ru,$e);
