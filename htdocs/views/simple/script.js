@@ -49,7 +49,7 @@ function initSelectAll() {
 	$("#flt").on("fileListChanged", function() {
 		$('#selectall').off("click").click(function(event) {
 			preventDefault(event);
-			$("#fileList tr").filter(function() { return !$(this).is(":hidden"); }).trigger("click");
+			$("#fileList tr:not(:hidden)").trigger("click");
 			$(this).prop('checked',false);
 		});	
 	});
