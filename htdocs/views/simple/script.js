@@ -1,8 +1,4 @@
 $(document).ready(function() {
-	$('#selectall').click(function(event) {
-		$("#fileList tr").filter(function() { return !$(this).is(":hidden"); }).trigger("click");
-		$(this).prop('checked',false);
-	});
 	
 
 	initBookmarks();
@@ -37,6 +33,8 @@ $(document).ready(function() {
 	
 	initAFS(); 
 
+	initSelectAll();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -45,7 +43,17 @@ $(document).ready(function() {
 		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText)
 	});
 	
+		
 	updateFileList(window.location.pathname);
+function initSelectAll() {
+	$("#flt").on("fileListChanged", function() {
+		$('#selectall').off("click").click(function(event) {
+			preventDefault(event);
+			$("#fileList tr").filter(function() { return !$(this).is(":hidden"); }).trigger("click");
+			$(this).prop('checked',false);
+		});	
+	});
+}
 function initClock() {
 	var clock = $("#clock");
 	if (clock.length==0) return;
