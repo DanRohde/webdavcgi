@@ -1,0 +1,51 @@
+<div id="permissions" title="$tl(mode)">
+<form method="post" action="#">
+<input type="hidden" name="changeperm" value="yes">
+$tl(changefilepermissions)
+<table>
+<tr>
+	<td>$tl(user)</td>
+	<td>
+		<input type="checkbox" name="fp_user" value="r" $disabled(ur)>r</input>
+		<input type="checkbox" name="fp_user" value="w" $disabled(uw)>w</input>
+		<input type="checkbox" name="fp_user" value="x" $disabled(ux)>x</input>
+		<input type="checkbox" name="fp_user" value="s" $disabled(us)>s</input>
+</tr>
+<tr>
+	<td>$tl(group)</td>
+	<td>
+		<input type="checkbox" name="fp_group" value="r" $disabled(gr)>r</input>
+		<input type="checkbox" name="fp_group" value="w" $disabled(gw)>w</input>
+		<input type="checkbox" name="fp_group" value="x" $disabled(gx)>x</input>
+		<input type="checkbox" name="fp_group" value="s" $disabled(gs)>s</input>
+	</td>
+</tr>
+<tr>
+	<td>$tl(others)</td>
+	<td>
+		<input type="checkbox" name="fp_others" value="r" $disabled(or)>r</input>
+		<input type="checkbox" name="fp_others" value="w" $disabled(ow)>w</input>
+		<input type="checkbox" name="fp_others" value="x" $disabled(ox)>x</input>
+		<input type="checkbox" name="fp_others" value="t" $disabled(ot)>t</input>
+	</td>
+</tr>
+<tr>
+	<td colspan="2">
+		<select name="fp_type">
+			<option value="a">$tl(add)</option>
+			<option value="s">$tl(set)</option>
+			<option value="r">$tl(remove)</option>
+		</select>
+		<input type="checkbox" value="recursive" name="fp_recursive" <!--IF(!$config(ALLOW_CHANGEPERMRECURSIVE))-->disabled="disabled"<!--ENDIF-->>$tl(recursive)</input>	
+		<input type="submit" value="$tl(changepermissions)" name="changeperm"/>
+	</td>
+</tr>
+<tr>
+	<td colspan="2">$tl(changepermlegend)</td>
+</tr>
+<table>
+</form>
+<div class="template">
+<div id="changepermconfirm">$tl(changepermconfirm)</div>
+</div>
+</div>

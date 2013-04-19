@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>$config(TITLEPREFIX) $uri</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="alternate" href="$uri?action=mediarss" type="application/rss+xml" title="" id="gallery"/>
+<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery-ui.custom.min.css"/>
+<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox.min.css"/>
+<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox-thumbs.min.css"/>
+<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery.powertip.min.css"/>
+<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/style.min.css"/>
+<!--IF("$config(CSS)" ne "")--><style>$config(CSS)</style> <!--ENDIF-->
+<!--IF("$config(CSSURI)" ne "")--><link rel="stylesheet" type="text/css" href="$config(CSSURI)"/><!--ENDIF-->
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery-ui.custom.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fileupload.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox.pack.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox-thumbs.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.cookie.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/multidraggable.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.noty.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.noty.layout.topCenter.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.noty.themes.default.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.powertip.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/script.min.js"></script>
+$config(HTMLHEAD)</head>
+<body>
+<div id="main">
+	<div class="langswitch">$config(LANGSWITCH)</div> 
+	<div id="top">
+		
+		$config(HEADER)
+		
+		<!--IF($config(ENABLE_NAMEFILTER))-->
+		<form class="searchbox" method="post" action="#"><input class="searchbox" type="search" name="query" size="10" title="$tl(namefiltertooltip)"/></form>
+		<!--ENDIF-->
+	</div>
+	<div id="nav">
+		<ul id="apps">
+			<li><a href="$uri" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
+			<!--IF($config(ALLOW_CHANGEPERM))-->
+				<li><a href="#" data-action="permissions" data-sel="multi" data-template="permissions">$tl(mode)</a></li>
+			<!--ENDIF-->
+			<!--IF($config(ENABLE_AFSACLMANAGER))-->
+				<li><a href="#" data-sel="noneorone" data-seltype="dir" data-action="afsaclmanager" data-template="afsaclmanager">$tl(afs)</a></li>
+			<!--ENDIF-->
+			<!--IF($config(ENABLE_AFSGROUPMANAGER))-->
+				<li><a href="#" data-action="afsgroupmanager" data-template="afsgroupmanager">$tl(afsgroup)</a></li>
+			<!--ENDIF-->
+				<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
+		</ul>
+		<ul id="prefs">
+			<li><a href="#" data-action="about" class="dialog">$tl(about)</a></li>
+		</ul>
+	</div>
+<div id="content">
+	<div id="controls">
+		<div id="new">
+			<a href="#" data-action="new">$tl(new)</a> 
+			<!--IF($config(ALLOW_POST_UPLOADS))-->
+				<form id="file-upload-form" enctype="multipart/form-data" method="post" action="$uri" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/><a href="#" id="fileuploadbutton" title="$tl(fileuploadbutton)">&uarr;</a></form>
+			<!--ENDIF-->
+			<!--IF($config(ENABLE_CLIPBOARD))-->			
+				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
+			<!--ENDIF-->			
+			<div id="progress" data-title="$tl(upload)"><div class="bar"></div><div class="info"></div></div>
+			<ul class="hidden">
+			<li><a href="#" data-action="create-folder">$tl(createfolderbutton)</a></li>
+			<li><a href="#" data-action="create-file">$tl(createnewfilebutton)</a></li>
+			<!--IF($config(ALLOW_SYMLINK))-->
+				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
+			<!--ENDIF-->
+			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
+				<li class="sep"><a href="#" data-action="uncompress" id="zipfileuploadbutton">$tl(zipfileupload)</a><form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file"/> </form></li>
+			<!--ENDIF-->
+			</ul>
+		
+		</div>
+		<div id="path">$[quicknavpath] <a href="#" data-action="changedir">$tl(changedir)</a> 
+			<!--IF($config(ENABLE_BOOKMARKS))-->
+				<div id="bookmarks">
+					<a href="#" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
+					<div id="bookmarksmenu">
+					<a href="#" data-action="bookmarkmenu" title="$tl(bookmarks)">&nbsp;</a>
+					<ul class="hidden">
+						<li id="bookmarktemplate" class="hidden">$bookmarktext<img class="right neverdisabled" alt="$tl(rmbookmarktitle)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="${baseuri}_webdavcgi_/views/simple/images/delete.png"/></li>
+						<!-- <li class="sep link" data-action="rmbookmark" title="$tl(rmbookmarktitle)">$tl(rmbookmark)</li> -->
+						<li class="sep link" data-action="bookmarksortpath">$tl(sortbookmarkbypath)<span class="path right">&uarr;</span><span class="path-desc right">&darr;</span></li>
+						<li class="link" data-action="bookmarksorttime">$tl(sortbookmarkbytime)<span class="time right">&uarr;</span><span class="time-desc right">&darr;</span></li>
+						<li class="sep link" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
+					</ul>
+					</div>
+				</div>
+			<!--ENDIF-->
+		</div>
+		<div id="pathinput" class="hidden"><form action="#" method="post"><input type="text" size="50" name="uri" value="$uri"/></form></div>
+			<div id="filelistactions">
+			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
+			<!--IF($config(ENABLE_CLIPBOARD))-->			
+				<a class="listaction copy" href="#" title="$tl(copytooltip)" data-action="copy" data-sel="multi">&nbsp;</a>
+				<a class="listaction cut" href="#" title="$tl(cuttooltip)" data-action="cut" data-sel="multi">&nbsp;</a>
+				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
+			<!--ENDIF-->
+			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
+				<a class="listaction download" href="#" title="$tl(zipdownloadtext)" data-action="download" data-sel="multi">$tl(zipdownloadbutton)</a>
+			<!--ENDIF-->			
+			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi">$tl(deletefilesbutton)</a>
+		</div>
+	</div>
+	<div id="notification"></div>
+	<div class="ajax-loader"></div>
+	<div id="flt" data-template="filelisttable" data-uri="$uri"></div>
+	$config(FOOTER)
+</div>
+</div>
+<!-- TEMPLATES -->
+<div class="template">
+	<div id="confirmdialog" data-title="$tl(confirm)"></div>
+	<div id="fileactions">
+	     <span class="fileactions">
+		 <a class="action edit" href="#" data-action="edit">$tl(editbutton)</a>
+		 <a class="action rename" href="#" data-action="rename">$tl(movefilesbutton)</a>
+		 <!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
+		 <a class="action download" href="#" data-action="download">$tl(zipdownloadbutton)</a>
+		 <!--ENDIF-->
+		 <a class="action delete" href="#" data-action="delete">$tl(deletefilesbutton)</a>
+	     </span>
+	</div>
+	<form id="fileform" method="post" action="#">
+		<input id="fileaction" type="hidden" name="__set__" value=""/>
+		<input id="filename" type="hidden" name="file" value=""/>
+	</form>
+	<div id="renamefield">
+		<div class="renamefield"> <input type="text" size="50" name="newfilename" value="$filename"/> </div>
+	</div>
+	<div id="deletefileconfirm">$tl(deletefileconfirm)</div>
+	<div id="deletefilesconfirm">$tl(deletefilesconfirm)</div>
+	<div id="movefileconfirm">$tl(movefileconfirm)</div>
+	<div id="fileuploadconfirm">$tl(fileuploadconfirm)</div>
+	<div id="edittextdata"><form id="edittextdataform" method="post" action="#"><textarea name="textdata" rows="15" cols="70"></textarea><div><a href="#" data-action="cancel-edit">$tl(cancel)</a><a href="#" data-action="savetextdata">$tl(savebutton)</a></div></form></div>
+	<div id="confirmsavetextdata">$tl(confirmsavetextdata)</div>
+	<div id="canceledit">$tl(canceledit)</div>
+	<div id="fancybox"></div>
+	<div id="paste">$tl(paste)</div>
+	<div id="pastecopyconfirm">$tl(pastecopyconfirm)</div>
+	<div id="pastecutconfirm">$tl(pastecutconfirm)</div>
+	<div id="close">$tl(close)</div>
+	<div id="cancel">$tl(cancel)</div>
+	<div id="confirm">$tl(confirm)</div>
+	<div id="zipuploadconfirm">$tl(zipuploadconfirm)</div>
+	<div id="about"><span class="nowrap">&copy; 2013 ZE Computer and Media Services, Humboldt-University at Berlin</span><br/>
+			<span class="nowrap">Written 2010-2013 by Daniel Rohde &lt;<a href="mailto:d.rohde@cms.hu-berlin.de">d.rohde@cms.hu-berlin.de</a>&gt;</span></div>
+</div>
+</body>
+</html>

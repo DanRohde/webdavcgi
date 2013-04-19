@@ -75,6 +75,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>Module::Load (included in most Linux dists, older need libmodule-load-perl) - (since v0.8.0)</li>
     <li><span style="optional">optional (for SMB backend):</span> Filesys::SmbClient (libfilesys-smbclient-perl) - (since v0.8.0)</li>
     <li><span style="optional">optional (for RCS backend):</span> Rcs (librcs-perl) - (since v0.8.0)</li>
+    <li>JSON (libjson-perl) - (since v0.8.5)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -82,7 +83,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
 apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
-                libfile-copy-link-perl
+                libfile-copy-link-perl libjson-perl
 
 ## only for SMB backend users:
 apt-get install libfilesys-smbclient-perl
@@ -169,6 +170,11 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 0.8.4 to 0.8.5</h3>
+<ol>
+<li> the default view was changed from 'sidebar' to 'simple' </li>
+<li> a new Perl module is needed: <code>JSON</code> (Ubuntu/Debian package: libjson-perl)</li>
+</ol>
 <h3>Upgrading from 0.8.3 to 0.8.4</h3>
 <ol>
 <li> The new install.sh script does not copy or link webdav.pl and webdavwrapper to your cgi-bin directory. You can add/change ScriptAliases to use webdav.pl

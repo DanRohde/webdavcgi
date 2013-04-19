@@ -386,7 +386,8 @@ sub doAFSGroupActions {
                 $grp = $$self{cgi}->param('afsselgrp') || '';
                 if ($self->isValidAFSGroupName($grp)) {
                         my @users;
-                        foreach ($$self{cgi}->param('afsusr')) { push @users,$_ if $self->isValidAFSUserName($_)||$self->isValidAFSGroupName($_); }
+                        my @afsusr = $$self{cgi}->param('afsusr') || $$self{cgi}->param('afsusr[]');
+                        foreach (@afsusr) { push @users,$_ if $self->isValidAFSUserName($_)||$self->isValidAFSGroupName($_); }
                         if ($#users >-1) {
                                 my $userstxt = '"'.join('" "', @users).'"';
                                 $output = qx@$main::AFS_PTSCMD removeuser -user $userstxt -group \"$grp\" 2>&1@;

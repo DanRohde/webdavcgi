@@ -1,0 +1,37 @@
+<div title="$tl(afs)">
+$afsaclscurrentfolder
+<form id="afsaclmanager" action="$uri" method="post">
+<input type="hidden" name="saveafsacl" value="yes"/>
+<table>
+<tr> <th>$tl(afsnormalrights)</th> <th>lookup</th> <th>read</th> <th>write</th> <th>insert</th> <th>delete</th> <th>lock</th> <th>admin</th> </tr>
+$afsnormalacllist(afsnormalaclentry)
+<!--IF($config(ALLOW_AFSACLCHANGES))-->
+<tr>
+        <td><input type="text" name="up_add" size="15"/></td>
+        <td class="center"><input type="checkbox" value="l" name="up"/></td>
+        <td class="center"><input type="checkbox" value="r" name="up"/></td>
+        <td class="center"><input type="checkbox" value="w" name="up"/></td>
+        <td class="center"><input type="checkbox" value="i" name="up"/></td>
+        <td class="center"><input type="checkbox" value="d" name="up"/></td>
+        <td class="center"><input type="checkbox" value="k" name="up"/></td>
+        <td class="center"><input type="checkbox" value="a" name="up"/></td>
+</tr>
+<!--ENDIF-->
+<tr> <th>$tl(afsnegativerights)</th> <th>lookup</th> <th>read</th> <th>write</th> <th>insert</th> <th>delete</th> <th>lock</th> <th>admin</th> </tr>
+$afsnegativeacllist(afsnegativeaclentry)
+<!--IF($config(ALLOW_AFSACLCHANGES))-->
+<tr>
+        <td><input type="text" name="un_add" size="15"/></td>
+        <td class="center"><input type="checkbox" value="l" name="un"/></td>
+        <td class="center"><input type="checkbox" value="r" name="un"/></td>
+        <td class="center"><input type="checkbox" value="w" name="un"/></td>
+        <td class="center"><input type="checkbox" value="i" name="un"/></td>
+        <td class="center"><input type="checkbox" value="d" name="un"/></td>
+        <td class="center"><input type="checkbox" value="k" name="un"/></td>
+        <td class="center"><input type="checkbox" value="a" name="un"/></td>
+</tr>
+<tr> <td colspan="8"><input type="submit" value="$tl(afssaveacl)" name="saveafsacl" class="right"/></td></tr>
+<!--ENDIF-->
+</table>
+</form>
+</div>

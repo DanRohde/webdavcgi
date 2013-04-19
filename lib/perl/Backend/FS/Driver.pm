@@ -291,11 +291,11 @@ sub changeMod {
 }
 sub createSymLink {
 	delete $CACHE{$_[1]}{$_[2]};
-	return CORE::symlink($_[0]->resolveVirt($_[1]),$_[2]);
+	return CORE::symlink($_[0]->resolveVirt($_[1]),$_[0]->resolveVirt($_[2]));
 }
 sub getLinkSrc {
 	return $_[0]->resolveVirt($_[1]) if $_[0]->isVirtualLink($_[1]);
-	return CORE::readlink($_[1]);
+	return CORE::readlink($_[0]->resolveVirt($_[1]));
 }
 sub resolveVirt  {
 	return $CACHE{$_[0]}{$_[1]}{resolveVirt} || ($CACHE{$_[0]}{$_[1]}{resolveVirt} = $_[0]->getVirtualLinkTarget($_[1]));

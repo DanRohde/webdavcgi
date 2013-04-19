@@ -84,7 +84,7 @@ sub getQuota {
 }
 
 sub _checkAFSAccess {
-	my $CACHE = $$_[0]{cache};
+	my $CACHE = $_[0] && $_{cache}? $$_[0]{cache} : {};
 	return exists $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
 			? $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} 
 			: ( $$CACHE{$_[0]}{_checkAFSAccess}{$_[1]} = ($_[0]->SUPER::lstat($_[1]) ? 1 : 0) );

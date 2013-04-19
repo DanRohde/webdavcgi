@@ -1,0 +1,48 @@
+<div id="viewfilter" title="$tl(filter.title)">
+<form method="post" action="#">
+<div>
+$tl(filter.name.title) $tl(filter.name.showonly) 
+<select name="filter.name.op">
+<option $selected(filter.name.op:=~) value="=~">$tl(filter.name.regexmatch)</option>
+<option $selected(filter.name.op:^)  value="^">$tl(filter.name.startswith)</option>
+<option $selected(filter.name.op:$)  value="$">$tl(filter.name.endswith)</option>
+<option $selected(filter.name.op:eq) value="eq">$tl(filter.name.equal)</option>
+<option $selected(filter.name.op:ne) value="ne">$tl(filter.name.notequal)</option>
+<option $selected(filter.name.op:lt) value="lt">$tl(filter.name.lessthan)</option>
+<option $selected(filter.name.op:gt) value="gt">$tl(filter.name.greaterthan)</option>
+<option $selected(filter.name.op:ge) value="ge">$tl(filter.name.greaterorequal)</option>
+<option $selected(filter.name.op:le) value="le">$tl(filter.name.lessorequal)</option>
+</select>
+<input type="text" size="20" name="filter.name.val" value="$filter.name.val"/>
+</div>
+<div>
+$tl(filter.types.title) $tl(filter.types.showonly)
+<input $checked(filter.types:f) type="checkbox" name="filter.types" value="f">$tl(filter.types.files) </input>
+<input $checked(filter.types:d) type="checkbox" name="filter.types" value="d">$tl(filter.types.folder)</input>
+<input $checked(filter.types:l) type="checkbox" name="filter.types" value="l">$tl(filter.types.links)</input>
+</div>
+<div>
+$tl(filter.size.title) $tl(filter.size.showonly)
+<select name="filter.size.op">
+<option $selected(filter.size.op:<) value="<">&lt;</option>
+<option $selected(filter.size.op:<=) value="<=">&le;</option>
+<option $selected(filter.size.op:==) value="==">=</option>
+<option $selected(filter.size.op:>=) value=">=">&ge;</option>
+<option $selected(filter.size.op:>) value=">">&gt;</option>
+</select>
+<input type="text" size="10" value="$filter.size.val" name="filter.size.val"/>
+<select name="filter.size.unit">
+<option $selected(filter.size.unit:B)>B</option>
+<option $selected(filter.size.unit:KB)>KB</option>
+<option $selected(filter.size.unit:MB)>MB</option>
+<option $selected(filter.size.unit:GB)>GB</option>
+<option $selected(filter.size.unit:TB)>TB</option>
+<option $selected(filter.size.unit:PB)>PB</option>
+</select>
+</div>
+<div>
+<div class="left" data-action="filter.reset">$tl(filter.reset)</div>
+<div class="right" data-action="filter.apply">$tl(filter.apply)</div>
+</div>
+</form>
+</div>

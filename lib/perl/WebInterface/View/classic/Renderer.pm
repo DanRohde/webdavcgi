@@ -686,14 +686,14 @@ sub renderViewFilterView {
                                   '<='=>$self->tl('filter.size.lessorequal'),
                                    '=='=> $self->tl('filter.size.equal'),
                                   '>'=>$self->tl('filter.size.greaterthan'),
-                                  '>='=>$self->tl('filter.size.greaterorequal'), ### 'â¥', 'â¤'
+                                  '>='=>$self->tl('filter.size.greaterorequal'), ### 'ï¿½', 'ï¿½'
                                   })
                 .$$self{cgi}->input({-type=>"text", -size=>10, -name=>'filter.size.val', -value=>$sizevaldefault, -onkeypress=>'return catchEnter(event,"filter.apply")'})
                 . $$self{cgi}->popup_menu(-name=>'filter.size.unit', -values=>['B','KB','MB','GB','TB','PB'], defaults=>$sizeunitdefault));
 ###     $content.=$$self{cgi}->div({},
 ###             $self->tl('filter.time.title')
 ###             .$self->tl('filter.time.showonly')
-###             .$$self{cgi}->popup_menu( -name=>'filter.time.op', -defaults=>$timeopdefault, -value=>['<','<=','==','>=','>'], labels=>{'=='=>'=', '>='=>'â¥', '<='=>'â¤'})
+###             .$$self{cgi}->popup_menu( -name=>'filter.time.op', -defaults=>$timeopdefault, -value=>['<','<=','==','>=','>'], labels=>{'=='=>'=', '>='=>'ï¿½', '<='=>'ï¿½'})
 ###             .$$self{cgi}->input({-size=>20, -name=>'filter.time.val', -value=>$timevaldefault})
 ###             );
 
@@ -875,7 +875,7 @@ sub renderAFSGroupManager {
         my $grp =  $$self{cgi}->param('afsgrp') || "";
         my @usrs = $$self{cgi}->param('afsusrs') || ( );
 
-        my @groups = split(/\r?\n\s*?/, qx@$main::AFS_PTSCMD listowned $ru@);
+        my @groups = split(/\r?\n\s*?/, qx@$main::AFS_PTSCMD listowned '$ru'@);
         shift @groups; # remove comment
         s/^\s+//g foreach (@groups);
         s/[\s\r\n]+$//g foreach (@groups);
@@ -891,7 +891,7 @@ sub renderAFSGroupManager {
         my $nusr = "";
         my $dusr = "";
         if ($grp ne "") {
-                my @users = split(/\r?\n/, qx@$main::AFS_PTSCMD members $grp@);
+                my @users = split(/\r?\n/, qx@$main::AFS_PTSCMD members '$grp'@);
                 shift @users; # remove comment
                 s/^\s+//g foreach (@users);
                 @users = sort @users;

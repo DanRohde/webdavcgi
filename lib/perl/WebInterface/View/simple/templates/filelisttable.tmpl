@@ -1,0 +1,34 @@
+
+	<form id="filelistform" method="post" action="#">
+	<input id="filelistaction" type="hidden" name="__set__" value=""/>
+	
+	
+	<table id="fileListTable">
+		<thead>
+		<!--IF($config(SHOW_QUOTA))-->
+		<tr><td class="sorter-false" colspan="3">
+		<div id="quota" style="$quotastyle" class="$quotalevel">
+			$tl(quotalimit) <span title="$quotalimittitle">$quotalimit</span>, 
+			$tl(quotaused) <span title="$quotausedtitle">$quotaused</span>, 
+			$tl(quotaavailable) <span title="$quotaavailabletitle">$quotaavailable</span>
+		</div>
+		</td></tr>
+		<!--ENDIF-->
+		
+		<!--IF($isviewfiltered())--><tr><td colspan="3" class="sorter-false"><div class="viewfilterinfo"> $filterInfo() </div></td></tr><!--ENDIF-->
+		<tr>
+			<th id="headerName" data-name="name" data-sort="data-file" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
+				<input type="checkbox" id="selectall" title="$tl(togglealltooltip)"/> $tl(name)
+			</th>
+			<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize">$tl(size)</th>
+			<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number">$tl(lastmodified)</th>
+		</tr>
+		
+		</thead>
+		<tbody id="fileList" data-uri="$uri" data-baseuri="$baseuri" data-thumbnail_pdfps="$config(ENABLE_THUMBNAIL_PDFPS)">
+		$filelist(filelistentry)
+		</tbody>
+	</table>
+	</form>
+
+

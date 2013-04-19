@@ -1,0 +1,41 @@
+<div title="$afsgroupeditorhead">
+<form id="afsgroupmanager" action="$uri" method="post">
+<div id="afsgroupeditor" title="$afsgroupeditorhead">
+	<div class="afshead">$afsgroupeditorhead</div>
+	<div class="afsgroups">
+		<ul id="afsgrouplist">
+		$afsgrouplist(afsgrouplistentry)
+		</ul>
+	</div>
+	<!--IF($config(ALLOW_AFSGROUPCHANGES))-->
+	<div></div>
+	<div class="afsnewgroup">
+		<input type="text" size="20" name="afsnewgrp" data-user="$user" title="$tl(afscreatenewgroup)"/>
+	</div>
+	<!--ENDIF-->
+</div>
+<!--IF("$cgiparam(afsgrp)" ne "")-->
+<div id="afsmembereditor" title="$afsmembereditorhead">
+	<div class="afshead">$afsmembereditorhead</div>
+	<div class="afsmembers">
+		<ul id="afsmemberlist" data-afsgrp="$cgiparam(afsgrp)">
+		$afsmemberlist(afsmemberlistentry)
+		</ul>
+	</div>
+	<!--IF#2($config(ALLOW_AFSGROUPCHANGES))-->
+	<div class="afsremoveselectedmembers"><a href="#" data-action="afsremoveselectedmembers" title="$tl(afsremoveuser)">&nbsp;</a></div>
+	<div class="afsnewmembers">
+		<input type="text" size=20" name="afsaddusers" data-afsgrp="$cgiparam(afsgrp)" title="$tl(afsadduser)"/>
+	</div>
+	<!--ENDIF#2-->
+</div>
+<!--ENDIF-->
+</form>
+<div class="template">
+<div id="afsconfirmadduser">$tl(afsconfirmadduser)</div>
+<div id="afsconfirmcreategrp">$tl(afsconfirmcreategrp)</div>
+<div id="afsconfirmdeletegrp">$tl(afsconfirmdeletegrp)</div>
+<div id="afsconfirmremoveuser">$tl(afsconfirmremoveuser)</div>
+<div id="afsconfirmrenamegrp">$tl(afsconfirmrenamegrp)</div>
+</div>
+</div>
