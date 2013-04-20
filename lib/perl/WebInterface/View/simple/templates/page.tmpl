@@ -28,16 +28,13 @@ $config(HTMLHEAD)</head>
 <div id="main">
 	<div class="langswitch">$config(LANGSWITCH)</div> 
 	<div id="top">
-		
+		$INCLUDE(header)
 		$config(HEADER)
-		
-		<!--IF($config(ENABLE_NAMEFILTER))-->
-		<form class="searchbox" method="post" action="#"><input class="searchbox" type="search" name="query" size="10" title="$tl(namefiltertooltip)"/></form>
-		<!--ENDIF-->
 	</div>
 	<div id="nav">
 		<ul id="apps">
 			<li><a href="$uri" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
+			$INCLUDE(apps)
 			<!--IF($config(ALLOW_CHANGEPERM))-->
 				<li><a href="#" data-action="permissions" data-sel="multi" data-template="permissions">$tl(mode)</a></li>
 			<!--ENDIF-->
@@ -47,9 +44,20 @@ $config(HTMLHEAD)</head>
 			<!--IF($config(ENABLE_AFSGROUPMANAGER))-->
 				<li><a href="#" data-action="afsgroupmanager" data-template="afsgroupmanager">$tl(afsgroup)</a></li>
 			<!--ENDIF-->
-				<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
+				
 		</ul>
+		$INCLUDE(nav)
 		<ul id="prefs">
+			$INCLUDE(pref)
+			<li><div class="accordion">
+					<h3>$tl(viewoptions)</h3> 
+					<div>
+						<ul>$viewList(viewentry)
+							<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
+						</ul>
+					</div>
+				</div>
+			</li>
 			<li><a href="#" data-action="about" class="dialog">$tl(about)</a></li>
 		</ul>
 	</div>
@@ -106,6 +114,10 @@ $config(HTMLHEAD)</head>
 			<!--ENDIF-->			
 			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi">$tl(deletefilesbutton)</a>
 		</div>
+		<!--IF($config(ENABLE_NAMEFILTER))-->
+		<form class="searchbox" method="post" action="#"><input class="searchbox" type="search" name="query" size="10" title="$tl(namefiltertooltip)"/></form>
+		<!--ENDIF-->
+		
 	</div>
 	<div id="notification"></div>
 	<div class="ajax-loader"></div>

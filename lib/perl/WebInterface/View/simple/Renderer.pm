@@ -112,10 +112,12 @@ sub renderTemplate {
 	# replace functions:
 	$content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg;
 
+	my $vbase = $ru=~/^($main::VIRTUAL_BASE)/ ? $1 : $ru;
+
 	my %quota =  %{$self->getQuotaData($fn)};
 	# replace standard variables:
 	my %stdvars = ( uri => $ru, 
-			baseuri=>$$self{cgi}->escapeHTML($ru=~/^($main::VIRTUAL_BASE)/ ? $1 : $ru),
+			baseuri=>$$self{cgi}->escapeHTML($vbase),
 			quicknavpath=>$self->renderQuickNavPath($fn,$ru),
 			maxuploadsize=>$main::POST_MAX_SIZE,
 			maxuploadsizehr=>($self->renderByteValue($main::POST_MAX_SIZE,2,2))[0],
@@ -130,7 +132,14 @@ sub renderTemplate {
 			USER=>$main::REMOTE_USER,
 			CLOCK=>$$self{cgi}->span({id=>'clock', 'data-format'=>$self->tl('vartimeformat')},""),
 			NOW=>strftime($self->tl('varnowformat'), localtime()),
+			REQUEST_URI=>$main::REQUEST_URI,
+			PATH_TRANSLATED=>$main::PATH_TRANSLATED,
+			LANG=>$main::LANG,
+			VBASE=>$$self{cgi}->escapeHTML($vbase),
+			VHTDOCS=>$vbase.$main::VHTDOCS,
 	);
+	$content=~s/\${?ENV{([^}]+?)}}?/$ENV{$1}/egs;
+	$content=~s/\${?TL{([^}]+)}}?/$self->tl($1)/egs;
 	$content=~s/\$\[(\w+)\]/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	$content=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	$content=~s/<!--IF\((.*?)\)-->(.*?)<!--ENDIF-->/eval($1)? $2 : ''/egs;
@@ -151,8 +160,23 @@ sub execTemplateFunction {
 	$content = $self->renderAFSMemberList($fn,$ru,$param) if $func eq 'afsmemberlist';
 	$content = $self->isViewFiltered() if $func eq 'isviewfiltered';
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
+	$content = $self->renderViewList($fn,$ru,$param) if $func eq 'viewList';
 	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
 	return $content;
+}
+sub renderViewList {
+	my ($self, $fn,$ru,$tmplfile) = @_;
+	my $tmpl = $self->readTemplate($tmplfile);
+	my $content = "";
+	foreach my $view (@main::SUPPORTED_VIEWS) {
+		next if ($view eq $main::VIEW);
+		my $t = $tmpl;
+		$t=~s/\$viewlink/"$ru?view=$view"/egs;
+		$t=~s/\$viewname/$self->tl("${view}view")/egs;
+		$t=~s/\$view/$view/gs;
+		$content.=$t;
+	}
+	return $self->renderTemplate($fn,$ru,$content);
 }
 sub isViewFiltered {
 	my($self) = @_;
@@ -275,14 +299,19 @@ sub isEditable {
 }
 sub readTemplate {
 	my ($self,$filename) = @_;
+	
+	my $text = "";
 	$filename=~s/\//\./g;
-	$filename = "${filename}.custom" if (-f "../lib/perl/WebInterface/View/simple/templates/$filename.custom.tmpl");
-	open(IN, "../lib/perl/WebInterface/View/simple/templates/$filename.tmpl") || die("Cannot read template $filename");
-	my @tmpl = <IN>;
-	close(IN);
-	my $text = join("",@tmpl);
-	$text =~ s/\$INCLUDE\((.*?)\)/$self->readTemplate($1)/egs;
-	return $text;
+	$filename .= '.custom' if -r "../lib/perl/WebInterface/View/simple/templates/${filename}.custom.tmpl";
+	return $CACHE{template}{$filename} if exists $CACHE{template}{$filename};
+	#print STDERR "readTemplate($filename)\n";
+	if (open(IN, "../lib/perl/WebInterface/View/simple/templates/$filename.tmpl")) {
+		my @tmpl = <IN>;
+		close(IN);
+		$text = join("",@tmpl);
+		$text =~ s/\$INCLUDE\((.*?)\)/$self->readTemplate($1)/egs;	
+	}
+	return $CACHE{template}{$filename}=$text;
 }
 sub renderQuickNavPath {
         my ($self, $fn,$ru, $query) = @_;

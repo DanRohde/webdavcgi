@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	
-
+	initUIEffects();
+	
 	initBookmarks();
 
 	initFileListActions();
@@ -43,8 +44,12 @@ $(document).ready(function() {
 		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText)
 	});
 	
+	
 		
 	updateFileList(window.location.pathname);
+function initUIEffects() {
+	$(".accordion").accordion({ collapsible: true, active: false });
+}
 function initSelectAll() {
 	$("#flt").on("fileListChanged", function() {
 		$('#selectall').off("click").click(function(event) {
@@ -411,7 +416,7 @@ function initTableSorter() {
 			var sattr = col.attr('data-sort');
 			var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
 			var cidx = col.prop("cellIndex");
-			console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
+			//console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
 			flt.data("tablesorter-lastclickedcolumn", cidx);
 			flt.data("tablesorter-sortorder", sortorder);
 			col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
