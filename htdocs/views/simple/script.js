@@ -103,10 +103,13 @@ function initTooltips() {
 function initBookmarks() {
 	var bookmarks = $("#bookmarks");
 	$("[data-action='addbookmark']", bookmarks).button();
-	$("#flt").on("bookmarksChanged", buildBookmarkList).on("bookmarksChanged",toggleBookmarkButtons);
-	buildBookmarkList();
-	toggleBookmarkButtons();
-
+	$("#flt").on("bookmarksChanged", buildBookmarkList)
+	.on("bookmarksChanged",toggleBookmarkButtons)
+	.on("fileListChanged", function() {
+		buildBookmarkList();
+		toggleBookmarkButtons();	
+	});
+	
 	// register bookmark actions:
 	$("[data-action='addbookmark'],[data-action='rmbookmark'],[data-action='rmallbookmarks'],[data-action='bookmarksortpath'],[data-action='bookmarksorttime'],[data-action='gotobookmark']",bookmarks).click(handleBookmarkActions);
 	// enable bookmark menu button:
@@ -116,6 +119,8 @@ function initBookmarks() {
 			$("#bookmarksmenu ul").toggleClass("hidden");
 		}
 	).button();
+	
+	
 
 }
 function toggleButton(button, disabled) {
@@ -180,7 +185,7 @@ function buildBookmarkList() {
 			.attr('data-action','gotobookmark')
 			.attr('data-bookmark',val["path"])
 			.attr("title",simpleEscape(epath)+" ("+(new Date(parseInt(val["time"])))+")")
-			.toggleClass("disabled", epath == currentPath)
+			.toggleClass("disabled", val["path"] == currentPath)
 			.find("[data-action='rmsinglebookmark']").click(handleBookmarkActions);
 	});
 }
@@ -764,8 +769,23 @@ function simpleEscape(text) {
 	return $('<div/>').text(text).html();
 }
 function changeUri(uri, leaveUnblocked) {
+	// try browser history manipulations:
+	try {
+		if (!leaveUnblocked && window.history && window.history.pushState) {
+			window.history.pushState({path: uri},"",uri);
+			updateFileList(uri);
+			$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
+				updateFileList(location.pathname);
+			});
+			return true;
+		}
+	} catch (e) {
+		console.log(e);
+	}
+	// fallback for errors and unblocked links:
 	if (!leaveUnblocked) $("<div></div>").prependTo($("body")).attr("id","overlay");
 	window.location.href=uri;
+	
 }
 function updateFileList(newtarget) {
 	if (!newtarget) newtarget = $('#fileList').attr('data-uri');
