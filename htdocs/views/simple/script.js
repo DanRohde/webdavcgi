@@ -570,7 +570,7 @@ function handleFileRename(row) {
 	tdfilename.wrapInner('<div class="hidden"/>').prepend(renamefield);
 	var inputfield = tdfilename.find('.renamefield input[type=text]');
 	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename)).focus().select();
-
+	$("#fileList").enableSelection();
 	inputfield.keypress(function(event) {
 		var row = $(this).closest('tr');
 		var file = $(this).closest('tr').attr('data-file');
@@ -593,6 +593,7 @@ function handleFileRename(row) {
 		} else if (event.keyCode == 27 || (event.keyCode==13 && file == newname)) {
 			row.find('.renamefield').remove();
 			row.find('td.filename div.hidden div.filename').unwrap();
+			$("#fileList").disableSelection();
 		}
 	});
 }
