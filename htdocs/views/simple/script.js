@@ -944,7 +944,7 @@ function handleInplaceInput(target, defval) {
 		inplace=$('<div class="inplace"><form method="post" action="#"><input class="inplace input"/></form></div>');
 		var input = inplace.find('input');
 		if (defval) input.val(defval);
-		inplace.keypress(function(event) {
+		inplace.keydown(function(event) {
 			if (event.keyCode == 13) {
 				preventDefault(event);
 				target.data('is-active', false);
