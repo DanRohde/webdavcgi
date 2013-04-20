@@ -398,6 +398,9 @@ function initFileList() {
 	// fix selections after tablesorter:
 	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
 		
+	// fix annyoing text selection for shift+click:
+	$('#fileList').disableSelection();
+	
 	$("#flt").trigger("fileListChanged");
 
 }
@@ -532,7 +535,7 @@ function handleFileEdit(row) {
 	});
 }
 function concatUri(base,file) {
-	return (addMissingSlash(base) + file).replace(/\/\//g,"/").replace(/\/[^\/]+\.\.\//g,"/");
+	return (addMissingSlash(base) + file).replace(/\/\//g,"/").replace(/\/[^\/]+\/\.\.\//g,"/");
 }
 function addMissingSlash(base) {
 	return (base+'/').replace(/\/\//g,"/");
@@ -782,17 +785,20 @@ function removeFileListRow(row) {
 }
 function handleFileListDrop(event, ui) {
 	var dragfilerow = ui.draggable.closest('tr');
-	var dsturi = concatUri($("#fileList").attr('data-uri'), $(this).attr('data-file')+'/');
+	var dsturi = concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))+"/");
 	var srcuri = concatUri($("#fileList").attr("data-uri"),'/');
-	console.log("dsturi="+dsturi+" srcuri="+srcuri);
+	//console.log("dsturi="+dsturi+" srcuri="+srcuri);
 	if (dsturi == concatUri(srcuri,dragfilerow.attr('data-file'))) return false;
 	var action = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ? "copy" : "cut" ;
 	var files = dragfilerow.hasClass('selected') 
 				?  $.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
 				: new Array(dragfilerow.attr('data-file'));
 	var msg = $("#paste"+action+"confirm").html();
-	msg = msg.replace(/%files%/g, files.join(', ')).replace(/%srcuri%/g, srcuri).replace(/%dsturi%/g, dsturi).replace(/\\n/g,"<br/>");
-	confirmDialog(decodeURI(msg), {
+	msg = msg.replace(/%files%/g, uri2html(files.join(', ')))
+			.replace(/%srcuri%/g, uri2html(srcuri))
+			.replace(/%dsturi%/g, uri2html(dsturi))
+			.replace(/\\n/g,"<br/>");
+	confirmDialog(msg, {
 		confirm: function() {
 			$.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
 				if (response.message && action=='cut') { 
@@ -804,6 +810,9 @@ function handleFileListDrop(event, ui) {
 		}
 	});
 
+}
+function stripSlash(uri) {
+	return uri.replace(/\/$/,"");
 }
 function handleFileListActionEvent(event) {
 	var action = $(this).attr('data-action');
@@ -847,8 +856,11 @@ function handleFileListActionEvent(event) {
 		var action= cookie("clpaction");
 		var srcuri= cookie("clpuri");
 		var dsturi = concatUri($("#fileList").attr("data-uri"),"/");
-		var msg = $("#paste"+action+"confirm").html().replace(/%srcuri%/g, srcuri).replace(/%dsturi%/g, dsturi).replace(/\\n/g,"<br/>").replace(/%files%/g, files.split("@/@").join(", "));
-		confirmDialog(decodeURI(msg), {
+		var msg = $("#paste"+action+"confirm").html()
+			.replace(/%srcuri%/g, uri2html(srcuri))
+			.replace(/%dsturi%/g, uri2html(dsturi)).replace(/\\n/g,"<br/>")
+			.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
+		confirmDialog(msg, {
 			confirm: function() {
 				$.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
 					if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
@@ -858,6 +870,9 @@ function handleFileListActionEvent(event) {
 			}
 		});
 	}
+}
+function uri2html(uri) {
+	return simpleEscape(decodeURIComponent(uri));
 }
 function cookie(name,val,expires) {
 	var date = new Date();
@@ -1179,7 +1194,7 @@ function initViewFilterDialog() {
 			});
 			$("[data-action='filter.reset']", vfd).button().click(function(event){
 				preventDefault(event);
-				console.log("remove cookies?");
+				//console.log("remove cookies?");
 				rmcookies("filter.name", "filter.size", "filter.types");
 				vfd.dialog("close");
 				updateFileList();
