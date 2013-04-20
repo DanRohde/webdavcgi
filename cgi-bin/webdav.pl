@@ -2558,7 +2558,7 @@ sub rcopy {
         return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/;
 
         # src exists and can copy?
-        return 0 if ! $backend->exists($src) || (!$move && !$backend->isReadable());
+        return 0 if ! $backend->exists($src) || (!$move && !$backend->isReadable($src));
         
         # src moveable because writeable?
         return 0 if $move && !$backend->isWriteable($src); 
