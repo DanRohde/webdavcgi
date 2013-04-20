@@ -421,12 +421,18 @@ sub renderAFSACLList {
 	my ($self, $fn, $ru, $positive, $tmplfile) = @_;
 	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile)));
 }
-
+sub uridecode {
+	my ($txt) = @_;
+	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/egs;
+	return $txt;
+}
 sub renderAFSACLManager {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
 	my $stdvars = {
-		afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), $$self{backend}->basename($ru), $ru),
+		afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
+										$$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
+										$$self{cgi}->escapeHTML(uridecode($ru))),
 	};
 	$content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
 	return $content;
