@@ -109,6 +109,8 @@ sub getQuotaData {
 sub renderTemplate {
 	my ($self,$fn,$ru,$content) = @_;
 
+	# replace eval:
+	$content=~s/\$eval(.)(.*?)\1/eval($2)/egs;
 	# replace functions:
 	$content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg;
 
