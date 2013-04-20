@@ -36,6 +36,8 @@ $(document).ready(function() {
 
 	initSelectAll();
 	
+	initChangeUriAction();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -49,6 +51,17 @@ $(document).ready(function() {
 	updateFileList(window.location.pathname);
 function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
+}
+function initChangeUriAction() {
+	$("a[data-action=refresh],a[data-action=changeuri]").click(handleChangeUriAction);
+	$("#flt").on("fileListChanged", function() {
+		$("#fileList tr[data-isviewable='no'] a[data-action=changeuri]").click(handleChangeUriAction);
+	});
+}
+function handleChangeUriAction(event) {
+	preventDefault(event);
+	changeUri($(this).attr("href"));
+	return false;
 }
 function initSelectAll() {
 	$("#flt").on("fileListChanged", function() {
@@ -380,7 +393,7 @@ function initFileList() {
 	$("#fileList tr")
 		.click(handleRowClickEvent)
 		.dblclick(function(event) { 
-			changeUri($(this));
+			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))));
 		}
 	);
 	// fix selections after tablesorter:
@@ -748,29 +761,9 @@ function simpleEscape(text) {
 	//return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
 	return $('<div/>').text(text).html();
 }
-function changeUri(row) {
-	
+function changeUri(uri) {
 	$("<div></div>").prependTo($("body")).attr("id","overlay");
-	window.location.href=concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash(row.attr('data-file')))+"/");
-}
-function changeUri_ajax(row) {
-
-	$("#fileList").prop("disabled",true);
-	$("#fileList").addClass("disabled");
-
-	if (row.attr('data-type') == 'dir') {
-		$("#fileList").html("");
-
-		var newtarget = $("#fileList").attr('data-uri')+'/'+row.attr('data-file')+'/';
-		newtarget = newtarget.replace(/\/\//,'/').replace(/\/[^\/]+\/\.\.\//,"/");
-
-		if (newtarget.length < window.location.pathname.length) 
-			window.location.href = newtarget;
-		else
-			updateFileList(newtarget);
-	} else {
-		window.location.href=$("#fileList").attr('data-uri')+'/'+row.attr('data-file');
-	}
+	window.location.href=uri;
 }
 function updateFileList(newtarget) {
 	if (!newtarget) newtarget = $('#fileList').attr('data-uri');
