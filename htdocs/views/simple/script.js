@@ -395,7 +395,8 @@ function initFileList() {
 			changeUri($(this));
 		})
 		;
-	
+	// fix selections after tablesorter:
+	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
 		
 	$("#flt").trigger("fileListChanged");
 
@@ -420,7 +421,7 @@ function initTableSorter() {
 			flt.data("tablesorter-lastclickedcolumn", cidx);
 			flt.data("tablesorter-sortorder", sortorder);
 			col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
-			sortFileList(stype, sattr, sortorder, cidx);
+			sortFileList(stype, sattr, sortorder, cidx, "data-file");
 		}
 		
 		var th = $("#fileListTable thead th:not(.sorter-false),#fileListTable thead td:not(.sorter-false)");
@@ -445,7 +446,7 @@ function initTableSorter() {
 			$(this).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
 			cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
 			
-			sortFileList(stype,sattr,sortorder,cidx);
+			sortFileList(stype,sattr,sortorder,cidx,"data-file");
 			
 			th.off("click.tablesorter");
 			initFileList();
@@ -453,13 +454,14 @@ function initTableSorter() {
 	}).addClass('tablesorter-head');
 	
 }
-function sortFileList(stype,sattr,sortorder,cidx) {
+function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 	$("#fileListTable tbody").each(function(i,val){
 		var rows = new Array();
 		for (var r=0; r< this.rows.length; r++) {
 			rows.push(this.rows.item(r).cloneNode(true));
 		}
 		rows.sort(function(a,b){
+			var ret = 0;
 			var jqa = $(a);
 			var jqb = $(b);
 			var vala = jqa.attr(sattr) ? (stype=='number' ? parseInt(jqa.attr(sattr)) : jqa.attr(sattr)) : a.cells.item(cidx).innerHTML.toLowerCase();
@@ -472,14 +474,22 @@ function sortFileList(stype,sattr,sortorder,cidx) {
 			
 		
 			if (stype == "number") {
-				return sortorder * (vala - valb);
+				ret = vala - valb;
 			} else {
 				if (vala.localeCompare) {
-					return sortorder * vala.localeCompare(valb);
+					ret = vala.localeCompare(valb);
 				} else {
-					return sortorder * (vala < valb ? -1 : (vala==valb ? 0 : 1));
+					ret = (vala < valb ? -1 : (vala==valb ? 0 : 1));
 				}
 			}
+			if (ret == 0 && sattr!=ssattr) {
+				if (vala.localeCompare) 
+					ret = jqa.attr(ssattr).localeCompare(jqb.attr(ssattr));
+				else
+					ret = jqa.attr(ssattr) < jqb.attr(ssattr) 
+							? -1 : jqa.attr(ssattr) > jqb.attr(ssattr)	? 1 : 0; 
+			}
+			return sortorder * ret;
 		});
 		for (var r=0; r<rows.length; r++) {
 			val.replaceChild(rows[r], val.children[r]);

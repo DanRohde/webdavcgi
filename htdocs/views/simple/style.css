@@ -83,6 +83,7 @@ a {
 	padding: 0 0.5em;
 	position: fixed;
 	top: 3.5em;
+	left: 12.5em;
 	width: 100%;
 	z-index: 50;
 }
@@ -232,7 +233,8 @@ table,th,td {
 	float: left;
 	margin-left: 0.2em;
 	transition: width 1s;
-	-webkit-transition: width 1;
+	-webkit-transition: width 1s;
+	-ms-transition: width 1s;
 }
 .icon.thumbnail:hover {
 	width: 120px;
@@ -637,4 +639,7 @@ input[readonly=readonly] {
 }
 .ui-accordion .ui-accordion-content {
 	padding: 0;
+}
+img {
+	border: 0;
 }
