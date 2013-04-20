@@ -423,7 +423,7 @@ sub renderAFSACLList {
 }
 sub uridecode {
 	my ($txt) = @_;
-	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/egs;
+	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/eigs;
 	return $txt;
 }
 sub renderAFSACLManager {
