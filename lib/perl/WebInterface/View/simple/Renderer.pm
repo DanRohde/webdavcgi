@@ -297,7 +297,8 @@ sub canCreateThumbnail {
 sub isEditable {
 	my ($self,$fn) = @_;
 	my $ef = $CACHE{$self}{editablefilesregex} ? $CACHE{$self}{editablefilesregex} : $CACHE{$self}{editablefilesregex}='('.join('|',@main::EDITABLEFILES).')';
-        return $main::ALLOW_EDIT && $$self{backend}->basename($fn) =~/$ef/i && $$self{backend}->isFile($fn) && $$self{backend}->isWriteable($fn);
+        return $main::ALLOW_EDIT && $$self{backend}->basename($fn) =~/$ef/i
+         && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn) && $$self{backend}->isWriteable($fn);
 }
 sub readTemplate {
 	my ($self,$filename) = @_;

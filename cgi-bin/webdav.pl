@@ -2557,8 +2557,11 @@ sub rcopy {
         # src in dst?
         return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/;
 
-        # src exists and readable?
-        return 0 if ! $backend->exists($src) || !$backend->isReadable($src);
+        # src exists and can copy?
+        return 0 if ! $backend->exists($src) || (!$move && !$backend->isReadable());
+        
+        # src moveable because writeable?
+        return 0 if $move && !$backend->isWriteable($src); 
 
         # dst writeable?
         return 0 if $backend->exists($dst) && !$backend->isWriteable($dst);
@@ -2595,7 +2598,7 @@ sub rcopy {
                 if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {
                         $backend->mkcol($dst) unless $backend->exists($dst);
 
-			return 0 unless $backend->isReadable($src);
+						return 0 unless $backend->isReadable($src);
                         my $rret = 1;
                         foreach my $filename (@{$backend->readDir($src)}) {
                                 $rret = $rret && rcopy($src.$filename, $dst.$filename, $move, $depth+1);

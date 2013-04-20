@@ -341,32 +341,53 @@ function confirmDialog(text, data) {
 function getVisibleAndSelectedFiles() {
 	return $("#fileList tr[data-isreadable='yes'][data-unselectable='no']").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
 }
+function handleFileActions(event) {
+	preventDefault(event);
+	var row = $(this).closest("tr");
+	var action = $(this).attr('data-action');
+	if (action == 'download') {
+		submitFileForm('zip',row.attr('data-file'));
+	} else if (action == 'rename') {
+		handleFileRename(row);
+	} else if (action == 'delete') {
+		handleFileDelete(row);
+	} else if (action == 'edit') {
+		handleFileEdit(row);
+	}
+}
 function initFileList() {
 	var flt = $("#fileListTable");
 	var fl = $("#fileList");
-
-	initTableSorter();
 	
+	initTableSorter();
+
 	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").remove();
 	
-	// init file actions:
-	if ($("#fileList tr[data-unselectable='no'] .fileactions").length==0) {
-			$("#fileList tr[data-unselectable='no'] div.filename").after($('#fileactions').html());
-	}
-	$("#fileList tr[data-unselectable='no'] .fileactions a").click(function(event) {
-		preventDefault(event);
-		var row = $(this).closest("tr");
-		var action = $(this).attr('data-action');
-		if (action == 'download') {
-			submitFileForm('zip',row.attr('data-file'));
-		} else if (action == 'rename') {
-			handleFileRename(row);
-		} else if (action == 'delete') {
-			handleFileDelete(row);
-		} else if (action == 'edit') {
-			handleFileEdit(row);
+	// init single file actions:
+	$("#fileList tr[data-unselectable='no']").hover(
+			function() {
+				if ($(".fileactions",$(this)).length==0) {
+					$("div.filename",$(this)).after($("#fileactions").html());
+					$(".fileactions a[data-action]", $(this)).click(handleFileActions);
+				}
+			},
+			function() {
+				$(".fileactions",$(this)).off("click").remove();	
+			}
+	);
+	
+	// mouse events on a file row:
+	$("#fileList tr")
+		.click(handleRowClickEvent)
+		.dblclick(function(event) { 
+			changeUri($(this));
 		}
-	});
+	);
+	// fix selections after tablesorter:
+	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
+
+	// fix annyoing text selection for shift+click:
+	$('#fileList').disableSelection();
 	
 	// init fancybox:
 	$("#fileList tr[data-isviewable='yes'][data-iseditable='no']:not([data-file$='.pdf']):not([data-size='0']) a.nametext").attr("rel","imggallery").fancybox({
@@ -382,24 +403,6 @@ function initFileList() {
 	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", drop: handleFileListDrop, hoverClass: 'draghover' });
 	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
 	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true});
-
-	
-	// mouse events:
-	$("#fileList tr")
-		.hover(function() {
-			$(this).toggleClass("hover");
-			$(".fileactions",$(this)).toggleClass("visible");
-		})
-		.click(handleRowClickEvent)
-		.dblclick(function(event) { 
-			changeUri($(this));
-		})
-		;
-	// fix selections after tablesorter:
-	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
-		
-	// fix annyoing text selection for shift+click:
-	$('#fileList').disableSelection();
 	
 	$("#flt").trigger("fileListChanged");
 
@@ -407,54 +410,48 @@ function initFileList() {
 
 function initTableSorter() {
 	
-		var flt = $("#fileListTable");
-		
-		$("#fileListTable thead .tablesorter-up,#fileListTable thead .tablesorter-down")
-		.removeClass('tablesorter-down').removeClass('tablesorter-up');
-
-		if (cookie('order')) {
-			var so = cookie('order').split("_");
-			var sname = so[0];
-			var sortorder = so[1] && so[1] == 'desc' ? -1 : 1;
-			var col = $("#fileListTable thead th[data-name='"+sname+"']");
-			var sattr = col.attr('data-sort');
-			var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
-			var cidx = col.prop("cellIndex");
-			//console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
-			flt.data("tablesorter-lastclickedcolumn", cidx);
-			flt.data("tablesorter-sortorder", sortorder);
-			col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
-			sortFileList(stype, sattr, sortorder, cidx, "data-file");
-		}
-		
-		var th = $("#fileListTable thead th:not(.sorter-false),#fileListTable thead td:not(.sorter-false)");
-		
-		th.on("click.tablesorter", function(event) {
+	var flt = $("#fileListTable");
 	
-			$("#fileListTable thead .tablesorter-up,#fileListTable thead .tablesorter-down")
-				.removeClass('tablesorter-down').removeClass('tablesorter-up');
-			
-			
-			
-			var lcc = flt.data("tablesorter-lastclickedcolumn");
-			var sortorder = flt.data("tablesorter-sortorder");
-			var stype = $(this).attr("data-sorttype") ? $(this).attr("data-sorttype") : "string";
-			var sattr = $(this).attr("data-sort");
-			var cidx = this.cellIndex;
-			if (!sortorder) sortorder = -1;
-			if (lcc == cidx) sortorder = -sortorder;
-			flt.data("tablesorter-lastclickedcolumn", cidx);
-			flt.data("tablesorter-sortorder", sortorder);
-			//console.log("stype="+stype+"; sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx+"; lcc="+lcc);
-			$(this).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
-			cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
-			
-			sortFileList(stype,sattr,sortorder,cidx,"data-file");
-			
-			th.off("click.tablesorter");
-			initFileList();
-			
-	}).addClass('tablesorter-head');
+	if (cookie('order')) {
+		var so = cookie('order').split("_");
+		var sname = so[0];
+		var sortorder = so[1] && so[1] == 'desc' ? -1 : 1;
+		var col = $("#fileListTable thead th[data-name='"+sname+"']");
+		var sattr = col.attr('data-sort');
+		var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
+		var cidx = col.prop("cellIndex");
+		//console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
+		flt.data("tablesorter-lastclickedcolumn", cidx);
+		flt.data("tablesorter-sortorder", sortorder);
+		col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
+		sortFileList(stype, sattr, sortorder, cidx, "data-file");
+	}
+	
+	var th = $("th:not(.sorter-false),td:not(.sorter-false)",$("#fileListTable thead"));
+	
+	th.addClass('tablesorter-head').on("click.tablesorter", function(event) {
+
+		$("#fileListTable .tablesorter-head").removeClass('tablesorter-down').removeClass('tablesorter-up');
+		
+		var lcc = flt.data("tablesorter-lastclickedcolumn");
+		var sortorder = flt.data("tablesorter-sortorder");
+		var stype = $(this).attr("data-sorttype") ? $(this).attr("data-sorttype") : "string";
+		var sattr = $(this).attr("data-sort");
+		var cidx = this.cellIndex;
+		if (!sortorder) sortorder = -1;
+		if (lcc == cidx) sortorder = -sortorder;
+		flt.data("tablesorter-lastclickedcolumn", cidx);
+		flt.data("tablesorter-sortorder", sortorder);
+		//console.log("stype="+stype+"; sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx+"; lcc="+lcc);
+		$(this).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
+		cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
+		
+		sortFileList(stype,sattr,sortorder,cidx,"data-file");
+		
+		th.off("click.tablesorter");
+		initFileList();
+		
+	});
 	
 }
 function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
@@ -571,7 +568,7 @@ function handleFileRename(row) {
 	var inputfield = tdfilename.find('.renamefield input[type=text]');
 	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename)).focus().select();
 	$("#fileList").enableSelection();
-	inputfield.keypress(function(event) {
+	inputfield.keydown(function(event) {
 		var row = $(this).closest('tr');
 		var file = $(this).closest('tr').attr('data-file');
 		var newname = $(this).val().trim();
@@ -743,8 +740,9 @@ function simpleEscape(text) {
 	return $('<div/>').text(text).html();
 }
 function changeUri(row) {
-	$("body").addClass("disabled");
-	window.location.href=($("#fileList").attr('data-uri')+'/'+row.attr('data-file')).replace(/\/\//,'/');
+	
+	$("<div></div>").prependTo($("body")).attr("id","overlay");
+	window.location.href=concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash(row.attr('data-file')))+"/");
 }
 function changeUri_ajax(row) {
 

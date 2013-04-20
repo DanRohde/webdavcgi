@@ -10,6 +10,18 @@ a {
 	text-decoration: none;
 	color: black;
 }
+#overlay {
+	z-index: 10000;
+	opacity: 0.5;
+	filter: Alpha(opacity=50); 
+	background-color: #aaaaaa; 
+	cursor: wait;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
 #top {
 	position: fixed;
 	height: 2.5em;
@@ -126,17 +138,12 @@ table,th,td {
 	width: 20em;
 }
 .fileactions {
-	display: none;
 	float: right;
 	margin: 0;
 	border: 0;
 	padding: 0 1em 0 0;
 }
-.fileactions.visible {
-	display: inline;
-
-}
-#fileList tr  td{
+#fileList tr td{
 	height: 2em;
 }
 
@@ -189,7 +196,7 @@ table,th,td {
 	position: fixed;
 	top: 3.5em;
 	right: 1em;
-	z-index: 60;
+	z-index: 80;
 }
 .listaction {
 	background-position: left;
@@ -511,14 +518,6 @@ li.sep {
 	text-align: left;
 	float: left;
 }
-body.disabled { 
-        opacity: 0.5; 
-	filter: Alpha(opacity=50); 
-	background-color: #aaaaaa; 
-	cursor: wait;
-}
-
-
 #afsaclmanager table {
 	padding: 5px;
 }
