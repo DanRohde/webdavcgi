@@ -53,7 +53,11 @@ function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
 }
 function initChangeUriAction() {
-	$("a[data-action=refresh],a[data-action=changeuri]").click(handleChangeUriAction);
+	$("a[data-action=changeuri]").click(handleChangeUriAction);
+	$("a[data-action=refresh]").click(function(event) {
+		preventDefault(event);
+		updateFileList();
+	});
 	$("#flt").on("fileListChanged", function() {
 		$("#fileList tr[data-type='dir'] a[data-action=changeuri]").click(handleChangeUriAction);
 	});
