@@ -1120,7 +1120,7 @@ function handleAFSACLManager(event){
 	var target = $("#fileList").attr('data-uri');
 	var seldir = $("#fileList tr.selected[data-type='dir']");
 	var template = $(this).attr('data-template');
-	if (seldir.length>0) target = concatUri(target,$(seldir[0]).attr('data-file'));
+	if (seldir.length>0) target = concatUri(target,encodeURIComponent(stripSlash($(seldir[0]).attr('data-file')))+"/");
 	$.get(target, { ajax : "getAFSACLManager", template : template }, function(response) {
 		var aclmanager = $(response);
 		$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
