@@ -202,7 +202,7 @@ function handleBookmarkActions(event) {
 		cookie('bookmark'+i+'time', (new Date()).getTime(), 1);
 		$("#flt").trigger("bookmarksChanged");
 	} else if (action == 'gotobookmark') {
-		window.location.href = $(this).attr('data-bookmark');	
+		changeUri($(this).attr('data-bookmark'));	
 	} else if (action == 'rmbookmark') {
 		removeBookmark(uri);
 	} else if (action == 'rmallbookmarks') {
@@ -239,7 +239,7 @@ function initChangeDir() {
 	$('#pathinput form').submit(function(event) { return false; });
 	$('#pathinput input[name=uri]').keyup(function(event){
 		if (event.keyCode==27) $('#pathinput').hide();
-		else if (event.keyCode==13) window.location.href = $(this).val();
+		else if (event.keyCode==13) changeUri($(this).val());
 	});
 	$('#path a[data-action=changedir]').button().click(function(event) {
 		$('#pathinput').show();
@@ -286,7 +286,7 @@ function initZipFileUpload() {
 function initFileUpload() {
 	$('#fileuploadbutton').button().click(function(event) { preventDefault(event); $("#file-upload-form input[type=file]").trigger('click'); });
 	var jqXHR = $('#file-upload-form').fileupload({ 
-		url: window.location.href, 
+		url: $("#fileList").attr("data-uri"), 
 		sequentialUploads: false,
 		limitConcurrentUploads: 3,
 		autoUpload: true,
@@ -923,7 +923,7 @@ function handleClipboard() {
 	// var title =$("#paste").html();
 	//if (action && srcuri && files) title += ": "+action+" "+srcuri+": "+files.split("@/@").join(", ");
 	$('a.listaction.paste').button("option","disabled",  (!files || files=="" || srcuri  == datauri)); //.attr("title", decodeURI(title));
-	if (srcuri == unescape(datauri) && action == "cut") 
+	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
 		}) ;
