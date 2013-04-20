@@ -505,7 +505,9 @@ function handleFileEdit(row) {
 			var dialog = $('#edittextdata');
 			var text = $("textarea[name=textdata]", dialog);
 			dialog.attr('title',row.attr('data-file'));
-			text.data("response",response).val(response);
+			text.attr("data-file",row.attr("data-file"));
+			text.val(response);
+			text.data("response", text.val());
 			dialog.find('a[data-action=savetextdata]').button().unbind('click').click(function(event) {
 				preventDefault(event);
 				confirmDialog($('#confirmsavetextdata').html().replace(/%s/,row.attr('data-file')), {
@@ -525,8 +527,14 @@ function handleFileEdit(row) {
 				preventDefault(event);
 				dialog.dialog('close');
 			});
-
-			dialog.dialog({ modal: true, width: 'auto', title: row.attr('data-file'), beforeClose: function(event,ui) { return text.val() == text.data("response") || window.confirm($('#canceledit').html()); }  });
+			
+			dialog.dialog({ 
+				modal: true, width: "auto", height: "auto",
+				title: row.attr('data-file'),
+				open: function() { text.trigger("editstart");},
+				close: function(event) { text.trigger("editdone");},
+				beforeClose: function(event,ui) { return text.val() == text.data("response") || window.confirm($('#canceledit').html());}
+			});
 
 		}
 	});
