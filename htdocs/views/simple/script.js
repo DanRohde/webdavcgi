@@ -512,6 +512,7 @@ function handleFileEdit(row) {
 				preventDefault(event);
 				confirmDialog($('#confirmsavetextdata').html().replace(/%s/,row.attr('data-file')), {
 					confirm: function() {
+						text.trigger("editsubmit");
 						$.post(addMissingSlash($('#fileList').attr('data-uri')), { savetextdata: 'yes', filename: row.attr('data-file'), textdata: text.val() }, function(response) {
 							if (!response.error && response.message) {
 								text.data("response", text.val());
