@@ -55,7 +55,7 @@ function initUIEffects() {
 function initChangeUriAction() {
 	$("a[data-action=refresh],a[data-action=changeuri]").click(handleChangeUriAction);
 	$("#flt").on("fileListChanged", function() {
-		$("#fileList tr[data-isviewable='no'] a[data-action=changeuri]").click(handleChangeUriAction);
+		$("#fileList tr[data-type='dir'] a[data-action=changeuri]").click(handleChangeUriAction);
 	});
 }
 function handleChangeUriAction(event) {
@@ -393,9 +393,11 @@ function initFileList() {
 	$("#fileList tr")
 		.click(handleRowClickEvent)
 		.dblclick(function(event) { 
-			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))));
+			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),
+					$(this).attr("data-type") == 'file');
 		}
 	);
+	
 	// fix selections after tablesorter:
 	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
 
@@ -761,8 +763,8 @@ function simpleEscape(text) {
 	//return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
 	return $('<div/>').text(text).html();
 }
-function changeUri(uri) {
-	$("<div></div>").prependTo($("body")).attr("id","overlay");
+function changeUri(uri, leaveUnblocked) {
+	if (!leaveUnblocked) $("<div></div>").prependTo($("body")).attr("id","overlay");
 	window.location.href=uri;
 }
 function updateFileList(newtarget) {
