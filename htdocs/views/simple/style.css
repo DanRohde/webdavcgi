@@ -414,7 +414,7 @@ input.file-upload {
 	background: white url(images/ajax-loader.gif) no-repeat 2em 5em;
 	opacity: 0.7;
 	position: fixed;
-	top: 3em;
+	top: 3.5em;
 	left: 12.4em;
 	display: none;
 	width: 100%;
