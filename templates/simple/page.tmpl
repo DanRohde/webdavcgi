@@ -72,7 +72,7 @@ $config(HTMLHEAD)</head>
 			</ul>
 		
 		</div>
-		<div id="path">$[quicknavpath] <a href="#" data-action="changedir">$tl(changedir)</a> 
+		<div id="path"><span id="quicknav">$[quicknavpath]</span><a href="#" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">
 					<a href="#" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>

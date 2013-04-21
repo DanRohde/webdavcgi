@@ -590,6 +590,13 @@ function handleJSONResponse(response) {
 	if (response.error)  notifyError(response.error);
 	if (response.warn) notifyWarn(response.warn);
 	if (response.message) notifyInfo(response.message);
+	if (response.quicknav) {
+		$("#quicknav").html(response.quicknav);
+		$("#quicknav a").click(function(event) {
+			preventDefault(event);
+			changeUri($(this).attr("href"));
+		});
+	}
 }
 function handleFileRename(row) {
 	var tdfilename = row.find('td.filename');

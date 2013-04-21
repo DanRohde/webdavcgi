@@ -266,6 +266,9 @@ table,th,td {
 	text-shadow: 0 1px 0 #f8f8f8;
 	font-size: 100%;
 }
+#path a[data-action=changedir] {
+	background: url(images/sprite.png) no-repeat center -856px;
+}
 #pathinput {
 	z-index: 70;
 	background-color: inherit;
