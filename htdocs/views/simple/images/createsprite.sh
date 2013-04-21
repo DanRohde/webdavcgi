@@ -5,5 +5,8 @@ FILES="about.png addbookmark.png bookmarks.png copy.png cut.png delete.png downl
 
 
 FILESWITHNULL="null: $(echo $FILES | sed -e 's@ @ null: @g')"
-montage $FILESWITHNULL -tile 1x -shadow -background none -geometry 16x16+0+0 sprite.png
+# with shadows:
+#montage $FILESWITHNULL -tile 1x -shadow -background none -geometry 16x16+0+0 sprite.png
+# without shadows:
+montage $FILESWITHNULL -tile 1x -background none -geometry 16x16+2+2 sprite.png
 
