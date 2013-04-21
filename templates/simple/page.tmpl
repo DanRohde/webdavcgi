@@ -4,24 +4,11 @@
 <title>$config(TITLEPREFIX) $uri</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="alternate" href="$uri?action=mediarss" type="application/rss+xml" title="" id="gallery"/>
-<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery-ui.custom.min.css"/>
-<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox.min.css"/>
-<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox-thumbs.min.css"/>
-<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/jquery.powertip.min.css"/>
+<link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/contrib.min.css"/>
 <link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/style.min.css"/>
 <!--IF("$config(CSS)" ne "")--><style>$config(CSS)</style> <!--ENDIF-->
 <!--IF("$config(CSSURI)" ne "")--><link rel="stylesheet" type="text/css" href="$config(CSSURI)"/><!--ENDIF-->
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery-ui.custom.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fileupload.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox.pack.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.fancybox-thumbs.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.cookie.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/multidraggable.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.noty.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.noty.layout.topCenter.min.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.noty.themes.default.js"></script>
-<script src="${baseuri}_webdavcgi_/views/simple/contrib/jquery.powertip.min.js"></script>
+<script src="${baseuri}_webdavcgi_/views/simple/contrib/contrib.min.js"></script>
 <script src="${baseuri}_webdavcgi_/views/simple/script.min.js"></script>
 $config(HTMLHEAD)</head>
 <body>
@@ -67,7 +54,7 @@ $config(HTMLHEAD)</head>
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<form id="file-upload-form" enctype="multipart/form-data" method="post" action="$uri" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/><a href="#" id="fileuploadbutton" title="$tl(fileuploadbutton)">&uarr;</a></form>
+				<form id="file-upload-form" enctype="multipart/form-data" method="post" action="$uri" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/><a href="#" id="fileuploadbutton" title="$tl(fileuploadbutton)">&nbsp;</a></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>

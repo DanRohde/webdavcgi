@@ -305,10 +305,10 @@ sub readTemplate {
 	
 	my $text = "";
 	$filename=~s/\//\./g;
-	$filename .= '.custom' if -r "../lib/perl/WebInterface/View/simple/templates/${filename}.custom.tmpl";
+	$filename .= '.custom' if -r "../templates/simple/${filename}.custom.tmpl";
 	return $CACHE{template}{$filename} if exists $CACHE{template}{$filename};
 	#print STDERR "readTemplate($filename)\n";
-	if (open(IN, "../lib/perl/WebInterface/View/simple/templates/$filename.tmpl")) {
+	if (open(IN, "../templates/simple/$filename.tmpl")) {
 		my @tmpl = <IN>;
 		close(IN);
 		$text = join("",@tmpl);

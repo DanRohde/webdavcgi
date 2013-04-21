@@ -199,14 +199,10 @@ table,th,td {
 	z-index: 80;
 }
 .listaction {
-	background-position: left;
-	background-repeat: no-repeat;
 	padding-left: 1em;
 	padding-right: 0em;
 }
 .action {
-	background-position: left;
-	background-repeat: no-repeat;
 	padding-left: 22px;
 	padding-right: 0em;
 }
@@ -214,25 +210,31 @@ table,th,td {
 	padding-right: 1em;
 }
 .action.edit {
-	background-image: url(images/edit.png);
+	background: url(images/sprite.png) no-repeat left -301px;
 }
 .action.rename {
-	background-image: url(images/rename.png);
+	background: url(images/sprite.png) no-repeat left -501px;
 }
-.action.delete, .listaction.delete {
-	background-image: url(images/delete.png);
+.action.delete {
+	background: url(images/sprite.png) no-repeat left -220px;
 }
-.action.download, .listaction.download {
-	background-image: url(images/download.png);
+.listaction.delete {
+	background: url(images/sprite.png) no-repeat 4px -214px;
+}
+.action.download {
+	background: url(images/sprite.png) no-repeat left -260px;
+}
+.listaction.download {
+	background: url(images/sprite.png) no-repeat 4px -254px;
 }
 .listaction.copy {
-	background-image: url(images/copy.png);
+	background: url(images/sprite.png) no-repeat center -134px;
 }
 .listaction.cut {
-	background-image: url(images/cut.png);
+	background: url(images/sprite.png) no-repeat center -174px;
 }
 .listaction.paste {
-	background-image: url(images/paste.png);
+	background: url(images/sprite.png) no-repeat center -374px;
 }
 .icon {
 	width: 20px;
@@ -301,10 +303,6 @@ table,th,td {
 	margin: 0;
 	background-color: inherit;
 }
-#new a {
-	background-position: left;
-	background-repeat: no-repeat;
-}
 #new ul li, #bookmarks ul li  {
 	padding: 0.4em;
 	height: 2em;
@@ -313,16 +311,16 @@ table,th,td {
 	padding: 0.2em 0.5em 0.2em 22px ;
 }
 #new a[data-action=create-folder] {
-	background-image: url(../../icons/folder.gif);
+	background: url(../../icons/folder.gif) no-repeat left center;
 }
 #new a[data-action=create-file] {
-	background-image: url(../../icons/text.gif);
+	background: url(../../icons/text.gif) no-repeat left center;
 }
 #new a[data-action=create-symlink] {
-	background-image: url(../../icons/unknown.gif);
+	background: url(../../icons/unknown.gif) no-repeat left center;
 }
 #new a[data-action=uncompress] {
-	background-image: url(images/zip.png);
+	background: url(images/sprite.png) no-repeat left -698px;
 }
 .renamefield {
 	background-color: inherit;
@@ -409,20 +407,15 @@ input.file-upload {
 #edittextdata a[data-action=savetextdata] { display: block; width: 40%; float: right;}
 #edittextdata a[data-action=cancel-edit] { display: block; width: 40%;  float: left; }
 .ajax-loader {
-	z-index: 100000;
-	background-image: url(images/ajax-loader.gif);
-	background-position: 2em 1em;
-	background-repeat: no-repeat;
-	background-color: white;
-	position: absolute;
-	top: 0em;
-	left: 0em;
+	z-index: 10000;
+	background: white url(images/ajax-loader.gif) no-repeat 2em 5em;
+	opacity: 0.7;
+	position: fixed;
+	top: 3em;
+	left: 12.4em;
 	display: none;
-	width: 5000px;
-	height: 5000px;
-}
-a.listaction.copy, a.listaction.cut, a.listaction.paste, #new a.listaction.paste {
-	background-position: center;
+	width: 100%;
+	height: 100%;
 }
 #confirmdialog { 
 	text-align: center;
@@ -462,15 +455,11 @@ li.sep {
 	display: inline;
 	position: absolute;
 }
-#bookmarks [data-action]{
-	background-position: center;
-	background-repeat: no-repeat;
-}
 #bookmarks [data-action=addbookmark] {
-	background-image: url(images/addbookmark.png);
+	background: url(images/sprite.png) no-repeat center -54px;
 }
 #bookmarks [data-action=bookmarkmenu] {
-	background-image: url(images/bookmarks.png);
+	background: white url(images/sprite.png) no-repeat center -94px;
 }
 #bookmarksmenu ul {
 	padding: 0;
@@ -483,16 +472,18 @@ li.sep {
 	padding: 2px 2px 2px 22px;
 	margin:0;
 }
-#bookmarksmenu [data-action=rmbookmark], #bookmarksmenu [data-action=rmallbookmarks] {
-	background-image: url(images/delete.png);
-	background-position: left;
-	padding-left: 22px;
+#bookmarksmenu [data-action=rmbookmark] {
+	background: white url(images/sprite.png) no-repeat 2px -212px;
+	padding-left: 24px;
+}
+#bookmarksmenu [data-action=rmallbookmarks] {
+	background: white url(images/sprite.png) no-repeat 2px -216px;
+	padding-left: 24px;
 
 }
 #bookmarksmenu [data-action=gotobookmark] {
-	background-image: url(images/addbookmark.png);
-	background-position: left;
-	padding-left: 22px;
+	background: white url(images/sprite.png) no-repeat 2px -56px;
+	padding-left: 24px;
 
 }
 #quota {
@@ -574,31 +565,29 @@ td.center {
  
 #afsmembereditor a[data-action=afsmemberdelete], #afsgroupeditor a[data-action=afsgroupdelete], 
 #afsmembereditor a[data-action=afsremoveselectedmembers] {
-	background-image: url(images/remove.png);
+	background: url(images/sprite.png) no-repeat 0 -460px;
 	padding: 0 0 0 22px;
-	background-position: 0 0;
-	background-repeat: no-repeat;
 	float: right;
 	margin: 0 0 0 1em;
 	width:22px;
 }
 #nav a[data-action=refresh] {
-	background-image: url(images/refresh.png);
+	background: url(images/sprite.png) no-repeat 2px -410px;
 }
 #nav a[data-action=afsgroupmanager] {
-	background-image: url(images/group.png);
+	background: url(images/sprite.png) no-repeat 2px -326px;
 }
 #nav a[data-action=viewfilter] {
-	background-image: url(images/view-filter.png);
+	background: url(images/sprite.png) no-repeat 2px -648px;
 }
 #nav a[data-action=permissions] {
-	background-image: url(images/user-properties.png);
+	background: url(images/sprite.png) no-repeat 2px -610px;
 }
 #nav a[data-action=afsaclmanager] {
-	background-image: url(images/user-edit.png);
+	background: url(images/sprite.png) no-repeat 2px -564px;
 }
 #nav a[data-action=about] {
-	background-image: url(images/about.png);
+	background: url(images/sprite.png) no-repeat 2px -12px;
 }
 .viewfilterinfo {
 	background-color: yellow;
@@ -643,8 +632,6 @@ img {
 	border: 0;
 }
 a#fileuploadbutton {
-	background-image: url(images/upload.png);
-	background-position: center center;
-	background-repeat: no-repeat;
+	background: url(images/sprite.png) no-repeat center -534px;
 	color: white;
 }
