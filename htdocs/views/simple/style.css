@@ -461,6 +461,10 @@ li.sep {
 #bookmarks [data-action=bookmarkmenu] {
 	background: white url(images/sprite.png) no-repeat center -94px;
 }
+#bookmarks [data-action=rmsinglebookmark] {
+	background: url(images/sprite.png) no-repeat left -218px;
+	width: 22px;
+}
 #bookmarksmenu ul {
 	padding: 0;
 	margin: 0;

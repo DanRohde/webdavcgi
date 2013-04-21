@@ -15,14 +15,15 @@ concat() {
 	test -f "$src.gz" && zcat "$src" >> "$dst"
 }
 
-test -f contrib.js && rm contrib.js
 for js in $JS ; do
 	concat $js contrib.js
 done
 bash minify.sh contrib.js
+rm contrib.js
 
 test -f contrib.css && rm contrib.css
 for css in $CSS ; do
 	concat $css contrib.css
 done
 bash minify.sh contrib.css
+rm contrib.css
