@@ -34,7 +34,7 @@ $(document).ready(function() {
 	
 	initAFS(); 
 
-	initSelectAll();
+	initSelect();
 	
 	initChangeUriAction();
 	
@@ -67,13 +67,28 @@ function handleChangeUriAction(event) {
 	changeUri($(this).attr("href"));
 	return false;
 }
-function initSelectAll() {
+function initSelect() {
 	$("#flt").on("fileListChanged", function() {
-		$('#selectall').off("click").click(function(event) {
+		$("#fileListTable #headerName .toggleselection").click(function(event) {
 			preventDefault(event);
-			$("#fileList tr:not(:hidden)").trigger("click");
-			$(this).prop('checked',false);
+			$("#fileList tr:not(:hidden)[data-unselectable='no']").each(function(i,row) {
+				$(this).toggleClass("selected");
+				$("input[type=checkbox]", $(this)).prop("checked", $(this).hasClass("selected"));
+			});
+			$("#flt").trigger("fileListSelChanged");
 		});	
+		$("#fileListTable #headerName .selectnone").click(function(event) {
+			preventDefault(event);
+			$("#fileList tr.selected:not(:hidden)").removeClass("selected");
+			$("#fileList tr:not(:hidden) input[type=checkbox]:checked").prop("checked", false);
+			$("#flt").trigger("fileListSelChanged");
+		});
+		$("#fileListTable #headerName .selectall").click(function(event) {
+			preventDefault(event);
+			$("#fileList tr:not(.selected):not(:hidden)[data-unselectable='no']").addClass("selected");
+			$("#fileList tr:not(:hidden)[data-unselectable='no'] input[type=checkbox]:not(:checked)").prop("checked", true);
+			$("#flt").trigger("fileListSelChanged");
+		});
 	});
 }
 function initClock() {

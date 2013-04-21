@@ -101,7 +101,6 @@ a {
 }
 
 #fileListTable {
-	postion: relative;
 	top: 37px;
 	width: 100%;
 	padding-top: 3em;
@@ -128,8 +127,15 @@ table td {
 table,th,td {
 	vertical-align: middle;
 }
-#headerName {
-	
+#headerName img {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	width: 20px;
+	height: 20px;
+}
+#headerName img.toggleselection {
+	background: url(images/sprite.png) no-repeat -2px -895px;
 }
 #headerSize {
 	width: 3em;

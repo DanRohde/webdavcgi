@@ -18,7 +18,8 @@
 		<!--IF($isviewfiltered())--><tr><td colspan="3" class="sorter-false"><div class="viewfilterinfo"> $filterInfo() </div></td></tr><!--ENDIF-->
 		<tr>
 			<th id="headerName" data-name="name" data-sort="data-file" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
-				<input type="checkbox" id="selectall" title="$tl(togglealltooltip)"/> $tl(name)
+				<img src="${baseuri}_webdavcgi_/views/simple/images/empty.png" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>
+				$tl(name)
 			</th>
 			<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize">$tl(size)</th>
 			<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number">$tl(lastmodified)</th>
