@@ -311,13 +311,13 @@ table,th,td {
 	padding: 0.2em 0.5em 0.2em 22px ;
 }
 #new a[data-action=create-folder] {
-	background: url(../../icons/folder.gif) no-repeat left center;
+	background: url(images/sprite.png) no-repeat left -738px;
 }
 #new a[data-action=create-file] {
-	background: url(../../icons/text.gif) no-repeat left center;
+	background: url(images/sprite.png) no-repeat left -778px;
 }
 #new a[data-action=create-symlink] {
-	background: url(../../icons/unknown.gif) no-repeat left center;
+	background: url(images/sprite.png) no-repeat left -818px;
 }
 #new a[data-action=uncompress] {
 	background: url(images/sprite.png) no-repeat left -698px;
