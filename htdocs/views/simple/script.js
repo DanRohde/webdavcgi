@@ -1100,7 +1100,15 @@ function initGroupManager(groupmanager, template, target){
 				
 			}
 		});
-	$("input[name='afsaddusers']").keypress(function(event){
+	$("img[data-action='afscreatenewgrp']", groupmanager).click(function(event){
+		preventDefault(event);
+		var afsgrp = $("input[name='afsnewgrp']", groupmanager).val();
+		$.post(target,{afscreatenewgrp: "1", afsnewgrp: afsgrp}, function(response){
+			handleJSONResponse(response);
+			$.get(target, { ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
+		});		
+	});
+	$("input[name='afsaddusers']", groupmanager).keypress(function(event){
 		if (event.keyCode == 13) {
 			var user = $(this).val();
 			var afsgrp = $(this).attr('data-afsgrp');
@@ -1114,6 +1122,14 @@ function initGroupManager(groupmanager, template, target){
 //			});
 			
 		}
+	});
+	$("img[data-action='afsaddusr']", groupmanager).click(function(event){
+		var user =$("input[name='afsaddusers']", groupmanager).val();
+		var afsgrp = $("input[name='afsaddusers']", groupmanager).attr("data-afsgrp");
+		$.post(target,{afsaddusr: 1, afsaddusers: user, afsselgrp: afsgrp}, function(response){
+			handleJSONResponse(response);
+			$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
+		});
 	});
 	$("a[data-action='afsmemberdelete']").click(function(event){
 		var afsgrp = $("#afsmemberlist").attr("data-afsgrp");

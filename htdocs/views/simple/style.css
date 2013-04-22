@@ -582,6 +582,12 @@ td.center {
 	margin: 0 0 0 1em;
 	width:22px;
 }
+#afsmembereditor img[data-action=afsaddusr], #afsgroupeditor img[data-action=afscreatenewgrp] {
+	width: 16px;
+	height: 16px;
+	background: url(images/sprite.png) no-repeat -2px -1062px;
+	cursor: pointer;
+} 
 #nav a[data-action=refresh] {
 	background: url(images/sprite.png) no-repeat 2px -410px;
 }
