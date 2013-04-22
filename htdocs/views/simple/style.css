@@ -56,8 +56,6 @@ a {
 	padding: 0.6em 0.5em 0.4em 1.5em;
 	text-decoration: none;
 	text-shadow: 0 1px 0 #f8f8f8;
-	background-position: 4px center;
-	background-repeat: no-repeat;
 }
 #nav ul {
 	padding: 0;
@@ -647,4 +645,16 @@ img {
 a#fileuploadbutton {
 	background: url(images/sprite.png) no-repeat center -534px;
 	color: white;
+}
+.logout-button {
+	padding-left: 22px;
+	background: url(images/sprite.png) no-repeat 2px -932px;
+}
+.help-button {
+	padding-left: 22px;
+	background: url(images/sprite.png) no-repeat 2px -972px;
+}
+.home-button {
+	padding-left: 22px;
+	background: url(images/sprite.png) no-repeat 2px -1012px;
 }
