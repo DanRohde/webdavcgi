@@ -565,6 +565,7 @@ function handleFileEdit(row) {
 			});
 			dialog.find('a[data-action=cancel-edit]').button().unbind('click').click(function(event) {
 				preventDefault(event);
+				text.trigger("editsubmit");
 				dialog.dialog('close');
 			});
 			
