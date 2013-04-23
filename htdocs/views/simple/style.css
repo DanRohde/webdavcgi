@@ -306,6 +306,7 @@ table,th,td {
 	padding-top: 3px;
 	z-index: 50;
 	white-space: nowrap;
+	padding-right: 1em;
 }
 #new ul, #bookmarks ul  {
 	border: 1px solid #dddddd;
@@ -518,15 +519,15 @@ li.sep {
 	border: 1px solid #dddddd;
 	background-color: white;
 	padding: 0; margin: 0 1em 0 1em;
-	font-size: 100%;
 	height: 1.6em;
 }
 #quota .quotaused {
-	background-color: #999999;
+	background-color: #aaaaaa;
 	white-space: nowrap;
 	margin: 0;
 	border: 1px solid #dddddd;
 	height: 1.5em;
+	text-align: right;
 }
 #quota.warn, #quota .warn {
 	background-color: yellow;

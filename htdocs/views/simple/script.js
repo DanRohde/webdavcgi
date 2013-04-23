@@ -326,6 +326,9 @@ function initZipFileUpload() {
 
 }
 function initFileUpload() {
+	$("#flt").on("fileListChanged",function() {
+		$("#file-upload-form").fileupload("option","url",$("#fileList").attr("data-uri"));
+	});
 	$('#fileuploadbutton').button().click(function(event) { preventDefault(event); $("#file-upload-form input[type=file]").trigger('click'); });
 	var jqXHR = $('#file-upload-form').fileupload({ 
 		url: $("#fileList").attr("data-uri"), 
