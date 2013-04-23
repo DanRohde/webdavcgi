@@ -198,9 +198,11 @@ table,th,td {
 
 .searchbox {
 	position: fixed;
-	top: 3.5em;
+	top: 3.8em;
 	right: 1em;
 	z-index: 80;
+	color: #999999;
+	text-weight: bold;
 }
 .listaction {
 	padding-left: 1em;
@@ -261,10 +263,10 @@ table,th,td {
 #path,#pathinput {
 	z-index: 60;
 	background-color: inherit;
-	position: absolute;
+	/*position: absolute;
 	left: 13em;
 	top: 0;
-	width: 100%;
+	width: 100%;*/
 	padding: 0.2em 0.5em 0 1.5em;
 	text-decoration: none;
 	text-shadow: 0 1px 0 #f8f8f8;
@@ -283,7 +285,7 @@ table,th,td {
 #filelistactions {
 	display: none;
 	position: absolute;
-	left: 9em;
+	left: 0em; 
 	top: 0em;
 	padding-left: 1em;
 	padding-top: 0.2em;
@@ -294,13 +296,15 @@ table,th,td {
 	height: 2.5em;
 }
 #new {
-	position: absolute;
+/*	position: absolute;
 	left: 0em;
 	top: 0em;
+	background-color: inherit;
 	padding-left: 1em;
+*/
+	float:left;
 	padding-top: 3px;
 	z-index: 50;
-	background-color: inherit;
 	white-space: nowrap;
 }
 #new ul, #bookmarks ul  {
@@ -313,6 +317,7 @@ table,th,td {
 #new ul li, #bookmarks ul li  {
 	padding: 0.4em;
 	height: 2em;
+	background-color: white;
 }
 #new ul li a, #bookmarks ul li a  {
 	padding: 0.2em 0.5em 0.2em 22px ;
@@ -381,10 +386,12 @@ input.file-upload {
 	width: 100%;
 	z-index: 1;
 }
+/*
 #fileuploadbutton {
 	margin: 0;
 	padding: 0;
 }
+*/
 #progress {
 	display: none;
 /*
@@ -505,13 +512,30 @@ li.sep {
 	margin: 2px;
 	float: left;
 }
-#quota.warn {
+#quota .quotabar {
+	float: left;
+	width: 10em;
+	border: 1px solid #dddddd;
+	background-color: white;
+	padding: 0; margin: 0 1em 0 1em;
+	font-size: 100%;
+	height: 1.6em;
+}
+#quota .quotaused {
+	background-color: #999999;
+	white-space: nowrap;
+	margin: 0;
+	border: 1px solid #dddddd;
+	height: 1.5em;
+}
+#quota.warn, #quota .warn {
 	background-color: yellow;
 }
-#quota.critical {
+#quota.critical, #quota .critical {
 	background-color: red;
 	color: yellow;
 }
+
 .right {
 	text-align: right;
 	float: right;
@@ -649,8 +673,8 @@ img {
 	border: 0;
 }
 a#fileuploadbutton {
-	background: url(images/sprite.png) no-repeat center -534px;
-	color: white;
+	background: url(images/sprite.png) no-repeat left -534px;
+	padding-left: 8px;
 }
 .logout-button {
 	padding-left: 22px;

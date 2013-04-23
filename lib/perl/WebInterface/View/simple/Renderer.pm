@@ -102,6 +102,10 @@ sub getQuotaData {
 	}
 
 	my $ret = { quotalimit=> $quota[0], quotaused => $quota[1], quotaavailable => $quota[0] - $quota[1], quotalevel=>$level, quotastyle=>$quotastyle };
+	
+	$$ret{quotausedperc} = $$ret{quotalimit}!=0 ? int(100 * $$ret{quotaused} / $$ret{quotalimit}) : 0;
+	$$ret{quotaavailableperc} = $$ret{quotalimit}!=0 ? int(100 * $$ret{quotaavailable} / $$ret{quotalimit}) : 0;
+	
 	$CACHE{$self}{$fn}{quotaData}=$ret;
 
 	return $ret;
@@ -131,6 +135,8 @@ sub renderTemplate {
 			quotaavailabletitle => ($self->renderByteValue($quota{quotaavailable},2,2))[1],
 			quotastyle=> $quota{quotastyle},
 			quotalevel=> $quota{quotalevel},
+			quotausedperc => $quota{quotausedperc},
+			quotaavailableperc => $quota{quotaavailableperc},
 			USER=>$main::REMOTE_USER,
 			CLOCK=>$$self{cgi}->span({id=>'clock', 'data-format'=>$self->tl('vartimeformat')},""),
 			NOW=>strftime($self->tl('varnowformat'), localtime()),

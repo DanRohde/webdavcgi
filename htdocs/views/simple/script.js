@@ -260,24 +260,42 @@ function handleSelectionStatistics() {
 }
 
 function initChangeDir() {
-	$('#pathinput form').submit(function(event) { return false; });
-	$('#pathinput input[name=uri]').keyup(function(event){
-		if (event.keyCode==27) $('#pathinput').hide();
-		else if (event.keyCode==13) changeUri($(this).val());
+	$("#pathinput form").submit(function(event) { return false; });
+	$("#pathinput input[name='uri']").keyup(function(event){
+		if (event.keyCode==27) {
+			$('#pathinput').hide();
+			$('#quicknav').show();
+		} else if (event.keyCode==13) {
+			$('#pathinput').hide();
+			$('#quicknav').show();
+			changeUri($(this).val());
+		}
 	});
-	$('#path a[data-action=changedir]').button().click(function(event) {
-		$('#pathinput').show();
-		$('#pathinput input[name=uri]').val(decodeURI($('#fileList').attr('data-uri'))).focus().select();
+	$("#path a[data-action='changedir']").button().click(function(event) {
+		preventDefault(event);
+		$('#pathinput').toggle();
+		$('#quicknav').toggle();
+		$('#pathinput input[name=uri]').focus().select();
 	});
+	$("#path [data-action='chdir']").button().click(function(event){
+		preventDefault(event);
+		$('#pathinput').hide();
+		$('#quicknav').show();
+		changeUri($("#pathinput input[name='uri']").val());
+	});
+	$("#flt").on("fileListChanged", function() {
+		$('#pathinput input[name=uri]').val(decodeURI($('#fileList').attr('data-uri')));	
+	});
+	
 
 }
 function initSearchBox() {
-	$('form.searchbox').submit(function(event) { return false;});
-	$('form.searchbox input.searchbox').keyup(applySearch);
+	$('form#searchbox').submit(function(event) { return false;});
+	$('form#searchbox input').keyup(applySearch);
 	$('#flt').on('fileListChanged', applySearch);
 }
 function applySearch() {
-	var filter = $("form.searchbox input.searchbox").val();
+	var filter = $("form#searchbox input").val();
 	$('#fileList tr').each(function() {
 		try {
 			var r = new RegExp(filter,"i");
@@ -867,11 +885,17 @@ function stripSlash(uri) {
 function handleFileListActionEvent(event) {
 	var action = $(this).attr('data-action');
 	preventDefault(event);
+	function uncheckSelectedRows() {
+		$("#fileList tr.selected:visible input[type=checkbox]").prop('checked',false);
+		$("#fileList tr.selected:visible").removeClass("selected");
+		$("#flt").trigger("fileListSelChanged")	
+	}
 	if ($(this).hasClass("disabled")) return;
 	if (action == "download") {
 		$('#filelistform').attr('action',$('#fileList').attr('data-uri'));
 		$('#filelistform input[id=filelistaction]').attr('name','zip').attr('value','yes');
 		$('#filelistform').submit();
+		uncheckSelectedRows();
 	} else if (action == "delete") {
 		$("#fileList tr.selected:visible").fadeTo("slow",0.5);
 		$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',false);
@@ -880,6 +904,7 @@ function handleFileListActionEvent(event) {
 				$('#filelistform input[id=filelistaction]').attr('name','delete').attr('value','yes');
 				$.post($('#fileList').attr('data-uri'), $('#filelistform').serialize(), function(response) {
 					removeFileListRow($("#fileList tr.selected:visible"));
+					uncheckSelectedRows();
 					$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',true);
 					if (response.error) updateFileList();
 					handleJSONResponse(response);
@@ -901,6 +926,7 @@ function handleFileListActionEvent(event) {
 		// $("#fileList tr.selected input[type=checkbox]").prop("checked",false);
 		// $("#fileList tr.selected").removeClass("selected");
 		handleClipboard();
+		uncheckSelectedRows();
 	} else if (action == "paste") {
 		var files = cookie("clpfiles");
 		var action= cookie("clpaction");
@@ -1069,8 +1095,14 @@ function initGroupManager(groupmanager, template, target){
 	};
 	$("#afsgrouplist li[data-group='"+$("#afsmemberlist").attr("data-afsgrp")+"']").addClass("selected");
 //	if ($("#afsgrouplist li.selected").length>0) $("#afsgroups").scrollTop(178);
-	
-	$("#afsgrouplist li", groupmanager).click(groupSelectionHandler);
+	$("#afsgrouplist a[data-action='afsgroupdelete']", groupmanager).hide();
+	$("#afsgrouplist li", groupmanager)
+		.click(groupSelectionHandler)
+		.hover(function(){
+			$("a[data-action='afsgroupdelete']",$(this)).show();
+		},function(){
+			$("a[data-action='afsgroupdelete']", $(this)).hide();
+		});
 	
 	$("[data-action='afsgroupdelete']", groupmanager).click(function(event){
 		preventDefault(event);
@@ -1160,10 +1192,14 @@ function initGroupManager(groupmanager, template, target){
 			}
 		});
 	});
-	$("#afsmemberlist li").click(function(event){
+	$("#afsmemberlist li a[data-action='afsmemberdelete']", groupmanager).hide();
+	$("#afsmemberlist li", groupmanager).click(function(event){
 		$(this).toggleClass("selected");
-		
 		$("a[data-action='afsremoveselectedmembers']").toggleClass("disabled", $("#afsmemberlist li.selected").length==0)
+	}).hover(function() {
+		$("a[data-action='afsmemberdelete']",$(this)).show();
+	},function(){
+		$("a[data-action='afsmemberdelete']",$(this)).hide();
 	});
 	$("#afsgroupmanager", groupmanager).submit(function(event){return false;});
 

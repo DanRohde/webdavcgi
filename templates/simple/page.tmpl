@@ -59,7 +59,7 @@ $config(HTMLHEAD)</head>
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<form id="file-upload-form" enctype="multipart/form-data" method="post" action="$uri" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/><a href="#" id="fileuploadbutton" title="$tl(fileuploadbutton)">&nbsp;</a></form>
+				<form id="file-upload-form" enctype="multipart/form-data" method="post" action="$uri" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/><a href="#" id="fileuploadbutton">$tl(fileuploadbutton)</a></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
@@ -77,7 +77,10 @@ $config(HTMLHEAD)</head>
 			</ul>
 		
 		</div>
-		<div id="path"><span id="quicknav">$[quicknavpath]</span><a href="#" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
+		<div id="path">
+			<span id="quicknav">$[quicknavpath]</span>
+			<span id="pathinput" class="hidden"><form action="#" method="post"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></form></span>
+			<a href="#" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">
 					<a href="#" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
@@ -93,13 +96,12 @@ $config(HTMLHEAD)</head>
 				</div>
 			<!--ENDIF-->
 		</div>
-		<div id="pathinput" class="hidden"><form action="#" method="post"><input type="text" size="50" name="uri" value="$uri"/></form></div>
-			<div id="filelistactions">
+		
+		<div id="filelistactions">
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction copy" href="#" title="$tl(copytooltip)" data-action="copy" data-sel="multi">&nbsp;</a>
 				<a class="listaction cut" href="#" title="$tl(cuttooltip)" data-action="cut" data-sel="multi">&nbsp;</a>
-				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
 				<a class="listaction download" href="#" title="$tl(zipdownloadtext)" data-action="download" data-sel="multi">$tl(zipdownloadbutton)</a>
@@ -107,7 +109,11 @@ $config(HTMLHEAD)</head>
 			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi">$tl(deletefilesbutton)</a>
 		</div>
 		<!--IF($config(ENABLE_NAMEFILTER))-->
-		<form class="searchbox" method="post" action="#"><input class="searchbox" type="search" name="query" size="10" title="$tl(namefiltertooltip)"/></form>
+		<div class="searchbox">
+			<form id="searchbox" method="post" action="#">
+			$tl(namefilter) <input type="search" name="query" size="10" title="$tl(namefiltertooltip)"/>
+			</form>
+		</div>
 		<!--ENDIF-->
 		
 	</div>
