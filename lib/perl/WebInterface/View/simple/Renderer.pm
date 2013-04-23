@@ -103,8 +103,8 @@ sub getQuotaData {
 
 	my $ret = { quotalimit=> $quota[0], quotaused => $quota[1], quotaavailable => $quota[0] - $quota[1], quotalevel=>$level, quotastyle=>$quotastyle };
 	
-	$$ret{quotausedperc} = $$ret{quotalimit}!=0 ? sprintf('%.2f',100 * $$ret{quotaused} / $$ret{quotalimit}) : 0;
-	$$ret{quotaavailableperc} = $$ret{quotalimit}!=0 ? sprintf('%.2f',100 * $$ret{quotaavailable} / $$ret{quotalimit}) : 0;
+	$$ret{quotausedperc} = $$ret{quotalimit}!=0 ? int(100 * $$ret{quotaused} / $$ret{quotalimit}) : 0;
+	$$ret{quotaavailableperc} = $$ret{quotalimit}!=0 ? int(100 * $$ret{quotaavailable} / $$ret{quotalimit}) : 0;
 	
 	$CACHE{$self}{$fn}{quotaData}=$ret;
 
