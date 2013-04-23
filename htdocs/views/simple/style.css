@@ -525,7 +525,7 @@ li.sep {
 	background-color: #aaaaaa;
 	white-space: nowrap;
 	margin: 0;
-	border: 1px solid #dddddd;
+	border: 1px outset #dddddd;
 	height: 1.5em;
 	text-align: right;
 }
