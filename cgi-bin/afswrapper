@@ -20,6 +20,17 @@ ticketfn="/tmp/krb5cc_webdavcgi_afs_$remote_user"
 KRB5CCNAME="FILE:$ticketfn"
 export KRB5CCNAME
 
+error() {
+	cat - <<EOF
+Content-Type: text/html
+
+<!DOCTYPE html><html><head><title>Error $1</title></head><body><h1>Error $1</h1></head></html>
+
+EOF
+
+exit 1
+}
+
 if test -n "$AUTHHEADER" ; then
 	if test -f "$ticketfn" ; then
 		mtime=`stat -c %Y "$ticketfn"`
@@ -29,11 +40,11 @@ if test -n "$AUTHHEADER" ; then
 	if test ! -f "$ticketfn" ; then
 		(
 			flock -x -w 10 9 || exit 1
-			echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2 | kinit "$remote_user" 1>/dev/null 2>&1
+			echo $AUTHHEADER | cut -d' ' -f2 | base64 -d | cut -d: -f2 | kinit "$remote_user" 1>/dev/null 2>&1 || error "500 (kinit)"
 		) 9> "${ticketfn}.flock"
 	fi
 fi
 
-aklog
+aklog || error "500 (aklog)"
 exec ./webdav.pl
 
