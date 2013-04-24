@@ -381,11 +381,9 @@ form {
 
 input.file-upload {
 	opacity: 0;
-	display: none;
 	position: absolute;
-	top: 0;
-	width: 100%;
-	z-index: 1;
+	top: -1000px;
+	z-index: 0;
 }
 /*
 #fileuploadbutton {

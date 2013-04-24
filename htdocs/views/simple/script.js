@@ -307,7 +307,7 @@ function applySearch() {
 
 	$("#flt").trigger("fileListViewChanged");
 }
-function initUpload(form,confirmmsg,dialogtitle) {
+function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 	$("#flt").on("fileListChanged",function() {
 		form.fileupload("option","url",$("#fileList").attr("data-uri"));
 	});
@@ -317,6 +317,7 @@ function initUpload(form,confirmmsg,dialogtitle) {
 		sequentialUploads: false,
 		limitConcurrentUploads: 3,
 		autoUpload: true,
+		dropZone: dropZone,
 		done:  function(e,data) {
 			if (data.result && data.result.message) $('#progress .info').append('<div>'+data.result.message+'</div>');
 			else if (data.files && data.files[0]) $('#progress .info').append('<div>'+data.files[0].name+'</div>');
@@ -361,12 +362,12 @@ function initZipFileUpload() {
 	var zipfile = $("#zipfile-upload-form input[type=file]");
 	$("a[data-action='uncompress']").click(function (event) { preventDefault(event); zipfile.trigger("click"); $('#new ul').addClass('hidden'); });
 
-	initUpload($("#zipfile-upload-form"), $("#zipuploadconfirm").html(),$("#progress").attr('data-title'));
+	initUpload($("#zipfile-upload-form"), $("#zipuploadconfirm").html(),$("#progress").attr('data-title'), false);
 
 }
 function initFileUpload() {
 	$('#fileuploadbutton').button().click(function(event) { preventDefault(event); $("#file-upload-form input[type=file]").trigger('click'); });
-	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'));
+	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'), $(document));
 	$(document).bind('dragenter', function (e) {
 		$("#fileList").addClass('draghover');
 	}).bind('dragleave', function(e) {
