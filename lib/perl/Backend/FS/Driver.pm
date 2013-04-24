@@ -264,7 +264,7 @@ sub uncompressArchive {
 	my $ret = 1;
 	require Archive::Zip;
 	my $zip = Archive::Zip->new();
-	my $status = $zip->read($zipfile);
+	my $status = $zip->read($self->resolveVirt($zipfile));
 	$ret = $status eq $zip->AZ_OK;
 	$zip->extractTree(undef, $self->resolveVirt($destination)) if $ret;
 	return $ret;

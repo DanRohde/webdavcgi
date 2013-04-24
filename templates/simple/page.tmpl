@@ -59,7 +59,7 @@ $config(HTMLHEAD)</head>
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<form id="file-upload-form" enctype="multipart/form-data" method="post" action="$uri" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/><a href="#" id="fileuploadbutton">$tl(fileuploadbutton)</a></form>
+				<a href="#" id="fileuploadbutton">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
@@ -72,14 +72,14 @@ $config(HTMLHEAD)</head>
 				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-				<li class="sep"><a href="#" data-action="uncompress" id="zipfileuploadbutton">$tl(zipfileupload)</a><form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file"/> </form></li>
+				<li class="sep"><a href="#" data-action="uncompress" id="zipfileuploadbutton">$tl(zipfileupload)</a><form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
 			<!--ENDIF-->
 			</ul>
 		
 		</div>
 		<div id="path">
 			<span id="quicknav">$[quicknavpath]</span>
-			<span id="pathinput" class="hidden"><form action="#" method="post"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></form></span>
+			<form action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></span></form>
 			<a href="#" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">
@@ -87,7 +87,7 @@ $config(HTMLHEAD)</head>
 					<div id="bookmarksmenu">
 					<a href="#" data-action="bookmarkmenu" title="$tl(bookmarks)">&nbsp;</a>
 					<ul class="hidden">
-						<li id="bookmarktemplate" class="hidden">$bookmarktext<img class="right neverdisabled" alt="$tl(rmbookmarktitle)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
+						<li id="bookmarktemplate" class="hidden">$bookmarktext<img class="right neverdisabled" alt="$tl(rmbookmarktitle)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
 						<li class="sep link" data-action="bookmarksortpath">$tl(sortbookmarkbypath)<span class="path right">&uarr;</span><span class="path-desc right">&darr;</span></li>
 						<li class="link" data-action="bookmarksorttime">$tl(sortbookmarkbytime)<span class="time right">&uarr;</span><span class="time-desc right">&darr;</span></li>
 						<li class="sep link" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>

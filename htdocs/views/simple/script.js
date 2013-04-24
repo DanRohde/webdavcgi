@@ -307,30 +307,12 @@ function applySearch() {
 
 	$("#flt").trigger("fileListViewChanged");
 }
-function initZipFileUpload() {
-	var zipfile = $("#zipfile-upload-form input[type=file]");
-	$("a[data-action='uncompress']").click(function (event) { preventDefault(event); zipfile.trigger("click"); $('#new ul').addClass('hidden'); });
-
-	$("#zipfile-upload-form").fileupload({
-		url: $("#fileList").attr('data-uri'),
-		sequentialUploads: true,
-		dropZone: $("a[data-action='uncompress']"),
-		submit: function() {
-			return window.confirm($("#zipuploadconfirm").html());
-		},
-		done: function(e,data) {
-			if (data.result) handleJSONResponse(data.result);
-			updateFileList();
-		}
-	});
-
-}
-function initFileUpload() {
+function initUpload(form,confirmmsg,dialogtitle) {
 	$("#flt").on("fileListChanged",function() {
-		$("#file-upload-form").fileupload("option","url",$("#fileList").attr("data-uri"));
+		form.fileupload("option","url",$("#fileList").attr("data-uri"));
 	});
-	$('#fileuploadbutton').button().click(function(event) { preventDefault(event); $("#file-upload-form input[type=file]").trigger('click'); });
-	var jqXHR = $('#file-upload-form').fileupload({ 
+	
+	var jqXHR = form.fileupload({ 
 		url: $("#fileList").attr("data-uri"), 
 		sequentialUploads: false,
 		limitConcurrentUploads: 3,
@@ -355,7 +337,7 @@ function initFileUpload() {
 			var buttons = new Array();
 			buttons.push({ text:$("#close").html(), disabled: true});
 			if (jqXHR.abort) buttons.push({text:$("#cancel").html(), click: function() { if (jqXHR.abort) jqXHR.abort(); }});
-			$('#progress').dialog({ modal:true, title: $("#progress").attr('data-title'), height: 370 , width: 500, buttons: buttons, beforeClose: function() { return false;} });
+			$('#progress').dialog({ modal:true, title: dialogtitle, height: 370 , width: 500, buttons: buttons, beforeClose: function() { return false;} });
 			$('#progress').show().each(function() {
 				$(this).find('.bar').css('width','0%').html('0%');
 				$(this).find('.info').html('');
@@ -370,10 +352,21 @@ function initFileUpload() {
 			$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
 		},
 		submit: function(e,data) {
-			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm',window.confirm($('#fileuploadconfirm').html()));
+			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm',window.confirm(confirmmsg));
 			return $(this).data('ask.confirm');
 		},
-	});
+	});	
+}
+function initZipFileUpload() {
+	var zipfile = $("#zipfile-upload-form input[type=file]");
+	$("a[data-action='uncompress']").click(function (event) { preventDefault(event); zipfile.trigger("click"); $('#new ul').addClass('hidden'); });
+
+	initUpload($("#zipfile-upload-form"), $("#zipuploadconfirm").html(),$("#progress").attr('data-title'));
+
+}
+function initFileUpload() {
+	$('#fileuploadbutton').button().click(function(event) { preventDefault(event); $("#file-upload-form input[type=file]").trigger('click'); });
+	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'));
 	$(document).bind('dragenter', function (e) {
 		$("#fileList").addClass('draghover');
 	}).bind('dragleave', function(e) {
