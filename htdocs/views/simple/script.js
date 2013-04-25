@@ -243,6 +243,7 @@ function handleBookmarkActions(event) {
 		$("#flt").trigger("bookmarksChanged");
 	} else if (action == 'gotobookmark') {
 		changeUri($(this).attr('data-bookmark'));	
+		$("#bookmarksmenu ul").toggleClass("hidden");
 	} else if (action == 'rmbookmark') {
 		removeBookmark(uri);
 	} else if (action == 'rmallbookmarks') {
