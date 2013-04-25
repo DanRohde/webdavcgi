@@ -173,12 +173,11 @@ table,th,td {
 #fileList tr:hover, #fileList tr.draghover {
 	background-color: #f0f0f0;
 }
-#fileList tr[data-isreadable=no] {
-	color: #888888;
-	background-color: #ffeeee;
+#fileList tr[data-isreadable=no], #fileList tr[data-isreadable=no] a {
+	color: #999999;
 }
 #fileList tr[data-isreadable=no]:hover {
-	color: #888888;
+	color: #999999;
 	background-color: #ffaaaa;
 }
 #fileList tr[data-iseditable=no] .action.edit,
@@ -201,7 +200,7 @@ table,th,td {
 	top: 3.8em;
 	right: 1em;
 	z-index: 80;
-	color: #999999;
+	color: #888888;
 	text-weight: bold;
 }
 .listaction {
@@ -686,4 +685,8 @@ a#fileuploadbutton {
 .home-button {
 	padding-left: 22px;
 	background: url(images/sprite.png) no-repeat 2px -1012px;
+}
+.small {
+	font-size: 0.2em;
+	color: #888888;
 }

@@ -5,7 +5,7 @@ $afsaclscurrentfolder
 <table>
 <tr> <th>$tl(afsnormalrights)</th> <th>lookup</th> <th>read</th> <th>write</th> <th>insert</th> <th>delete</th> <th>lock</th> <th>admin</th> </tr>
 $afsnormalacllist(afsnormalaclentry)
-<!--IF($config(ALLOW_AFSACLCHANGES))-->
+<!--IF($config(ALLOW_AFSACLCHANGES) && $checkAFSCallerAccess(a))-->
 <tr>
         <td><input type="text" name="up_add" size="15"/></td>
         <td class="center"><input type="checkbox" value="l" name="up"/></td>
@@ -19,7 +19,7 @@ $afsnormalacllist(afsnormalaclentry)
 <!--ENDIF-->
 <tr> <th>$tl(afsnegativerights)</th> <th>lookup</th> <th>read</th> <th>write</th> <th>insert</th> <th>delete</th> <th>lock</th> <th>admin</th> </tr>
 $afsnegativeacllist(afsnegativeaclentry)
-<!--IF($config(ALLOW_AFSACLCHANGES))-->
+<!--IF($config(ALLOW_AFSACLCHANGES) && $checkAFSCallerAccess(a))-->
 <tr>
         <td><input type="text" name="un_add" size="15"/></td>
         <td class="center"><input type="checkbox" value="l" name="un"/></td>

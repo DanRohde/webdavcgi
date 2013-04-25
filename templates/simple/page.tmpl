@@ -59,7 +59,7 @@ $config(HTMLHEAD)</head>
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" id="fileuploadbutton">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/></form>
+				<a href="#" id="fileuploadbutton" title="&le;$maxuploadsizehr">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
@@ -72,7 +72,7 @@ $config(HTMLHEAD)</head>
 				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-				<li class="sep"><a href="#" data-action="uncompress" id="zipfileuploadbutton">$tl(zipfileupload)</a><form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
+				<li class="sep"><a href="#" title="&le;$maxuploadsizehr" data-action="uncompress" id="zipfileuploadbutton">$tl(zipfileupload)</a><form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
 			<!--ENDIF-->
 			</ul>
 		

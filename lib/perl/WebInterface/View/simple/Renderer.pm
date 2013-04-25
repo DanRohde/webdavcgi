@@ -170,6 +170,7 @@ sub execTemplateFunction {
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
 	$content = $self->renderViewList($fn,$ru,$param) if $func eq 'viewList';
 	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
+	$content = $self->checkAFSCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	return $content;
 }
 sub renderViewList {
@@ -389,7 +390,7 @@ sub readAFSAcls {
 	return $CACHE{$self}{$fn}{afsacls} if exists $CACHE{$self}{$fn}{afsacls};
 
 	$fn=~s/(["\$\\])/\\$1/g;
-	open(my $afs, sprintf("%s listacl \"%s\"|", $main::AFS_FSCMD, $$self{backend}->resolveVirt($fn) )) or die("cannot execute $main::AFS_FSCMD list \"$fn\"");
+	open(my $afs, sprintf("%s listacl '%s'|", $main::AFS_FSCMD, $$self{backend}->resolveVirt($fn) )) or die("cannot execute $main::AFS_FSCMD list \"$fn\"");
 	my @lines = <$afs>;
 	close($afs);
 
@@ -413,7 +414,7 @@ sub readAFSAcls {
 	return \@entries;
 }
 sub renderAFSAclEntries {
-	my ($self, $entries, $positive, $tmpl) = @_;
+	my ($self, $entries, $positive, $tmpl, $disabled) = @_;
 	my $content = "";
 	my $prohiregex = '^('.join('|',map { $_ ? $_ : '__undef__'} @main::PROHIBIT_AFS_ACL_CHANGES_FOR).')$';
 	foreach my $entry (sort { $$a{user} cmp $$b{user} || $$b{right} cmp $$a{right} } @{$entries}) {
@@ -422,29 +423,52 @@ sub renderAFSAclEntries {
 		$t=~s/\$entry/$$entry{user}/sg;
 		$t=~s/\$checked\((\w)\)/$$entry{right}=~m@$1@?'checked="checked"':""/egs;
 		$t=~s/\$readonly/$$entry{user}=~m@$prohiregex@ ? 'readonly="readonly"' : ""/egs;
-		$t=~s/\$disabled/$main::ALLOW_AFSACLCHANGES ? '' : 'disabled="disabled"'/egs;
+		$t=~s/\$disabled/$main::ALLOW_AFSACLCHANGES && !$disabled ? '' : 'disabled="disabled"'/egs;
 		$content.=$t;
 	}
 	return $content;
 }
 sub renderAFSACLList {
 	my ($self, $fn, $ru, $positive, $tmplfile) = @_;
-	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile)));
+	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile), !$self->checkAFSCallerAccess($fn,"a")));
 }
 sub uridecode {
 	my ($txt) = @_;
 	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/eigs;
 	return $txt;
 }
+sub getAFSCallerAccess {
+	my ($self, $fn) = @_;
+	return $CACHE{$self}{$fn}{afscalleraccess} if exists $CACHE{$self}{$fn}{afscalleraccess};
+	my $access ="";
+	if (open(my $afs, sprintf("%s getcalleraccess '%s'|", $main::AFS_FSCMD, $$self{backend}->resolveVirt($fn)))) {
+		my @l = <$afs>;
+		close($afs);
+		chomp @l;
+		my @sl=split(/\s+/,$l[$#l]);
+		$access = $sl[$#sl] if $sl[$#sl]=~/^[rlidwka]{1,7}$/;
+	}
+	return $CACHE{$self}{$fn}{afscalleraccess}=$access;
+}
+sub checkAFSCallerAccess {
+	my ($self, $fn, $right) = @_;
+	return $self->getAFSCallerAccess($fn) =~ /\Q$right\E/;
+}
 sub renderAFSACLManager {
 	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-	my $stdvars = {
-		afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
-										$$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
-										$$self{cgi}->escapeHTML(uridecode($ru))),
-	};
-	$content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
+	my $content = "";
+	print STDERR "callerAccess:".$self->getAFSCallerAccess($fn);
+	if ($self->getAFSCallerAccess($fn) eq "") {
+		$content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
+	} else {
+		$content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
+		my $stdvars = {
+			afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
+											$$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
+											$$self{cgi}->escapeHTML(uridecode($ru))),
+		};
+		$content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
+	}
 	return $content;
 }
 sub readAFSGroupList {
