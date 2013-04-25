@@ -79,7 +79,7 @@ $config(HTMLHEAD)</head>
 		</div>
 		<div id="path">
 			<span id="quicknav">$[quicknavpath]</span>
-			<form action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></span></form>
+			<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></span></form>
 			<a href="#" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">

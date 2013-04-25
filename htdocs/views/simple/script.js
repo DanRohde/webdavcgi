@@ -261,8 +261,8 @@ function handleSelectionStatistics() {
 }
 
 function initChangeDir() {
-	$("#pathinput form").submit(function(event) { return false; });
-	$("#pathinput input[name='uri']").keydown(function(event){
+	$("#pathinputform").submit(function(event) { return false; });
+	$("#pathinputform input[name='uri']").keydown(function(event){
 		if (event.keyCode==27) {
 			$('#pathinput').hide();
 			$('#quicknav').show();
