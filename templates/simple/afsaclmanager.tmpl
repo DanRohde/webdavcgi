@@ -3,9 +3,14 @@ $afsaclscurrentfolder
 <form id="afsaclmanager" action="$uri" method="post">
 <input type="hidden" name="saveafsacl" value="yes"/>
 <table>
+<thead>
 <tr> <th>$tl(afsnormalrights)</th> <th>lookup</th> <th>read</th> <th>write</th> <th>insert</th> <th>delete</th> <th>lock</th> <th>admin</th> </tr>
+</thead>
+<tbody>
 $afsnormalacllist(afsnormalaclentry)
+</tbody>
 <!--IF($config(ALLOW_AFSACLCHANGES) && $checkAFSCallerAccess(a))-->
+<tbody>
 <tr>
         <td><input type="text" name="up_add" size="15"/></td>
         <td class="center"><input type="checkbox" value="l" name="up"/></td>
@@ -16,10 +21,16 @@ $afsnormalacllist(afsnormalaclentry)
         <td class="center"><input type="checkbox" value="k" name="up"/></td>
         <td class="center"><input type="checkbox" value="a" name="up"/></td>
 </tr>
+</tbody>
 <!--ENDIF-->
+<thead>
 <tr> <th>$tl(afsnegativerights)</th> <th>lookup</th> <th>read</th> <th>write</th> <th>insert</th> <th>delete</th> <th>lock</th> <th>admin</th> </tr>
+</thead>
+<tbody>
 $afsnegativeacllist(afsnegativeaclentry)
+</tbody>
 <!--IF($config(ALLOW_AFSACLCHANGES) && $checkAFSCallerAccess(a))-->
+<tbody>
 <tr>
         <td><input type="text" name="un_add" size="15"/></td>
         <td class="center"><input type="checkbox" value="l" name="un"/></td>
@@ -30,7 +41,15 @@ $afsnegativeacllist(afsnegativeaclentry)
         <td class="center"><input type="checkbox" value="k" name="un"/></td>
         <td class="center"><input type="checkbox" value="a" name="un"/></td>
 </tr>
+</tbody>
+<tfoot>
 <tr> <td colspan="8"><input type="submit" value="$tl(afssaveacl)" name="saveafsacl" class="right"/></td></tr>
+</tfoot>
+<!--ENDIF-->
+<!--IF("$checkAFSCallerAccess(a)" != "1")-->
+<tfoot>
+<tr><td colspan="8">$tl(afsnorights)</td></tr>
+</tfoot>
 <!--ENDIF-->
 </table>
 </form>
