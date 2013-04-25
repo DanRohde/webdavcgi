@@ -79,10 +79,7 @@ a {
 	position: absolute;
 	left: 12.5em;
 	top: 3.5em;
-	_top: 0;
-	_left: 0;
 	width: 85%;
-	_padding: 3.5em 0em 0em 12.5em;
 }
 #controls {
 	background-color: #f7f7f7;
@@ -90,10 +87,10 @@ a {
 	box-shadow: 0 -3px 7px #000000;
 	height: 2.8em;
 	margin: 0;
-	padding: 0 0.5em;
 	position: fixed;
 	top: 3.5em;
-	left: 12.5em;
+	left: 0;
+	padding-left: 13em;
 	width: 100%;
 	z-index: 50;
 }
@@ -155,12 +152,15 @@ table,th,td {
 	position:absolute;
 	left: 0;
 	opacity: 0;
+	filter: Alpha(opacity=0); 
 }
 #fileList tr td.filename input[type=checkbox]:hover {
 	opacity: 0.8;
+	filter: Alpha(opacity=80); 
 }
 #fileList tr td.filename input[type=checkbox]:checked {
 	opacity: 1;
+	filter: Alpha(opacity=100); 
 }
 #fileList td.filename .nametext {
 	padding-left: 10px; 
@@ -171,7 +171,7 @@ table,th,td {
 	padding-right: 18px;
 }
 #fileList tr:hover, #fileList tr.draghover {
-	background-color: #f0f0f0;
+	background-color: #dddddd;
 }
 #fileList tr[data-isreadable=no], #fileList tr[data-isreadable=no] a {
 	color: #999999;
@@ -196,12 +196,11 @@ table,th,td {
 }
 
 .searchbox {
-	position: fixed;
-	top: 3.8em;
-	right: 1em;
-	z-index: 80;
+	position: absolute;
+	top: 3px;
+	right: 2em;
 	color: #888888;
-	text-weight: bold;
+	font-weight: bold;
 }
 .listaction {
 	padding-left: 1em;
@@ -380,6 +379,7 @@ form {
 
 input.file-upload {
 	opacity: 0;
+	filter: Alpha(opacity=0); 
 	position: absolute;
 	top: -1000px;
 	z-index: 0;
@@ -422,6 +422,7 @@ input.file-upload {
 	z-index: 10000;
 	background: white url(images/ajax-loader.gif) no-repeat 2em 5em;
 	opacity: 0.7;
+	filter: Alpha(opacity=70); 
 	position: fixed;
 	top: 3.5em;
 	left: 12.4em;
@@ -440,12 +441,14 @@ input.file-upload {
 }
 a.disabled, .button.disabled {
 	opacity: 0.5;
+	filter: Alpha(opacity=50); 
 }
 a.disabled, .link.disabled {
 	color: #999999;
 }
 .link.neverdisabled, a.neverdisabled {
 	opacity: 1;
+	filter: Alpha(opacity=1); 
 	color: black;
 }
 .nowrap {
@@ -663,6 +666,7 @@ td.center {
 
 input[readonly=readonly] {
 	opacity: 0.5;
+	filter: Alpha(opacity=50); 
 }
 .ui-accordion .ui-accordion-content {
 	padding: 0;

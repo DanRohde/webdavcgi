@@ -37,6 +37,8 @@ $(document).ready(function() {
 	initSelect();
 	
 	initChangeUriAction();
+
+	initWindowResize();
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
@@ -46,13 +48,22 @@ $(document).ready(function() {
 		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText);
 		$("div.overlay").remove();
 	});
-	
-	
 		
 	updateFileList(window.location.pathname);
+
 function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
 }
+function initWindowResize() {
+	$("#flt").on("fileListChanged", handleWindowResize);
+	$(window).resize(handleWindowResize);
+	handleWindowResize();
+}
+function handleWindowResize() {
+	$("#content").width($(window).width()-$("#nav").width());
+	$("#controls").width($("#content").width());
+}
+
 function initChangeUriAction() {
 	$("a[data-action=changeuri]").click(handleChangeUriAction);
 	$("a[data-action=refresh]").click(function(event) {
