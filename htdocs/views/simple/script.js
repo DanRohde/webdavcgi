@@ -76,7 +76,11 @@ function initChangeUriAction() {
 }
 function handleChangeUriAction(event) {
 	preventDefault(event);
-	changeUri($(this).attr("href"));
+	if ($("#flt").hasClass("preventclick")) {
+		$("#flt").removeClass("preventclick");
+	} else {
+		changeUri($(this).attr("href"));
+	}
 	return false;
 }
 function initSelect() {
@@ -469,7 +473,10 @@ function initFileList() {
 	// init drag & drop:
 	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", drop: handleFileListDrop, hoverClass: 'draghover' });
 	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
-	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true});
+	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
+		.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, startNative:function(){
+			$("#flt").addClass("preventclick");
+		}});
 	
 	$("#flt").trigger("fileListChanged");
 
