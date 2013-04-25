@@ -180,7 +180,7 @@ sub renderViewList {
 	foreach my $view (@main::SUPPORTED_VIEWS) {
 		next if ($view eq $main::VIEW);
 		my $t = $tmpl;
-		$t=~s/\$viewlink/"$ru?view=$view"/egs;
+		$t=~s/\$viewlink/"?view=$view"/egs;
 		$t=~s/\$viewname/$self->tl("${view}view")/egs;
 		$t=~s/\$view/$view/gs;
 		$content.=$t;
