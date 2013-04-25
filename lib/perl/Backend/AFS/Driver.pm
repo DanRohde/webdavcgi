@@ -28,6 +28,12 @@ our @ISA = qw( Backend::FS::Driver );
 
 our $VERSION = 0.1;
 
+sub isFile {
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isFile($_[1]) : 1;
+}
+sub isLink {
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isLink($_[1]) : 0;
+}
 sub isReadable { 
 	return $_[0]->_checkCallerAccess($_[1],"l","r");
 }
@@ -35,31 +41,31 @@ sub isWriteable {
 	return $_[0]->_checkCallerAccess($_[1],"w");
 }
 sub isExecutable {
-	return 1;
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isExecutable($_[1]) : 1;
 }
 sub hasSetUidBit { 
-	return 0;
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::hasSetUidBit($_[1]) : 0;
 }
 sub hasSetGidBit { 
-	return 0;
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::hasSetGidBit($_[1]) : 0;
 }
 sub hasStickyBit { 
-	return 0;
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::hasStickyBit($_[1]) : 0;
 }
 sub isBlockDevice { 
-	return 0;
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isBlockDevice($_[1]) : 0;
 }
 sub isCharDevice { 
-	return 0;
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isCharDevice($_[1]) : 0;
 }
-sub exists { 
-	return $_[0]->_checkAFSAccess($_[1]);
+sub exists {
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::exists($_[1]) : 1;
 }
 sub isEmpty {
-	return $_[0]->_checkAFSAccess($_[1]) && -z $_[1];
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isEmpty($_[1]) : 1;
 }
 sub stat {
-	return $_[0]->_checkAFSAccess($_[1]) ? $_[0]->SUPER::stat($_[1]) : (0,0,0,0,0,0,0,0,0,0,0,0,0);
+	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::stat($_[1]) : (0,0,0,0,0,0,0,0,0,0,0,0,0);
 }
 
 sub getQuota {

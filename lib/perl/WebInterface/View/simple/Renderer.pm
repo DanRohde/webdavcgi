@@ -103,8 +103,8 @@ sub getQuotaData {
 
 	my $ret = { quotalimit=> $quota[0], quotaused => $quota[1], quotaavailable => $quota[0] - $quota[1], quotalevel=>$level, quotastyle=>$quotastyle };
 	
-	$$ret{quotausedperc} = $$ret{quotalimit}!=0 ? int(100 * $$ret{quotaused} / $$ret{quotalimit}) : 0;
-	$$ret{quotaavailableperc} = $$ret{quotalimit}!=0 ? int(100 * $$ret{quotaavailable} / $$ret{quotalimit}) : 0;
+	$$ret{quotausedperc} = $$ret{quotalimit}!=0 ? round(100 * $$ret{quotaused} / $$ret{quotalimit}) : 0;
+	$$ret{quotaavailableperc} = $$ret{quotalimit}!=0 ? round(100 * $$ret{quotaavailable} / $$ret{quotalimit}) : 0;
 	
 	$CACHE{$self}{$fn}{quotaData}=$ret;
 
@@ -233,9 +233,9 @@ sub renderFileList {
 				'name' => $$self{cgi}->escapeHTML($file), 
 				'size' => $$self{backend}->isReadable($full) ? $sizetxt : '-', 
 				'sizetitle'=>$sizetitle,
-				'lastmodified' =>  strftime($self->tl('lastmodifiedformat'), localtime($mtime)),
+				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
 				'lastmodifiedtime' => $mtime,
-			 	'created'=> strftime($self->tl('lastmodifiedformat'), localtime($ctime)),
+			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
 				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mimetype),
 				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
 				'mimetype'=>$mimetype,
@@ -452,7 +452,7 @@ sub getAFSCallerAccess {
 }
 sub checkAFSCallerAccess {
 	my ($self, $fn, $right) = @_;
-	return $self->getAFSCallerAccess($fn) =~ /\Q$right\E/;
+	return $self->getAFSCallerAccess($fn) =~ /[\Q$right\E]+/;
 }
 sub renderAFSACLManager {
 	my ($self, $fn, $ru, $tmplfile) = @_;
@@ -566,6 +566,13 @@ sub renderViewFilterDialog {
 	
 	$content=~s/\$([\w\.]+)/exists $params{$1} ? $$self{cgi}->escapeHTML($params{$1}) : "\$$1"/egs; 
 	return $self->renderTemplate($fn,$ru,$content);
+}
+sub round {
+	my ($float, $precision) = @_;
+	$precision = 1 unless defined $precision;
+	my $ret = sprintf("%.${precision}f", $float);
+	$ret=~s/\,(\d{0,$precision})$/\.$1/; # fix locale specific notation
+	return $ret;
 }
 1;
 
