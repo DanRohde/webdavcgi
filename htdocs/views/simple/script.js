@@ -76,12 +76,11 @@ function initChangeUriAction() {
 }
 function handleChangeUriAction(event) {
 	preventDefault(event);
-	if ($("#flt").hasClass("preventclick")) {
-		$("#flt").removeClass("preventclick");
+	if ($(this).closest("div.filename").is(".ui-draggable-dragging")) {
+		return;
 	} else {
 		changeUri($(this).attr("href"));
 	}
-	return false;
 }
 function initSelect() {
 	$("#flt").on("fileListChanged", function() {
@@ -474,13 +473,9 @@ function initFileList() {
 	// init drag & drop:
 	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", drop: handleFileListDrop, hoverClass: 'draghover' });
 	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
-	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
-		.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, startNative:function(){
-			$("#flt").addClass("preventclick");
-		}});
+	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true});
 	
 	$("#flt").trigger("fileListChanged");
-
 }
 
 function initTableSorter() {
