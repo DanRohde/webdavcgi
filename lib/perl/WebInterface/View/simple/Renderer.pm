@@ -389,8 +389,9 @@ sub readAFSAcls {
 	my ($self, $fn, $ru) = @_;
 	return $CACHE{$self}{$fn}{afsacls} if exists $CACHE{$self}{$fn}{afsacls};
 
+	$fn=$$self{backend}->resolveVirt($fn);
 	$fn=~s/(["\$\\])/\\$1/g;
-	open(my $afs, sprintf("%s listacl '%s'|", $main::AFS_FSCMD, $$self{backend}->resolveVirt($fn) )) or die("cannot execute $main::AFS_FSCMD list \"$fn\"");
+	open(my $afs, sprintf("%s listacl \"%s\"|", $main::AFS_FSCMD, $fn)) or die("cannot execute $main::AFS_FSCMD list \"$fn\"");
 	my @lines = <$afs>;
 	close($afs);
 
@@ -441,7 +442,9 @@ sub getAFSCallerAccess {
 	my ($self, $fn) = @_;
 	return $CACHE{$self}{$fn}{afscalleraccess} if exists $CACHE{$self}{$fn}{afscalleraccess};
 	my $access ="";
-	if (open(my $afs, sprintf("%s getcalleraccess '%s'|", $main::AFS_FSCMD, $$self{backend}->resolveVirt($fn)))) {
+	$fn = $$self{backend}->resolveVirt($fn);
+	$fn=~s/(["\$\\])/\\$1/g;
+	if (open(my $afs, sprintf("%s getcalleraccess \"%s\"|", $main::AFS_FSCMD, $fn))) {
 		my @l = <$afs>;
 		close($afs);
 		chomp @l;
@@ -499,10 +502,10 @@ sub readAFSMembers {
 	my ($self, $grp) = @_;
 	return [] unless $grp;
 	my @users = split(/\r?\n/, qx@$main::AFS_PTSCMD members '$grp'@);
-    shift @users; # remove comment
-    s/^\s+//g foreach (@users);
-    @users = sort @users;
-    chomp @users;
+	shift @users; # remove comment
+	s/^\s+//g foreach (@users);
+	@users = sort @users;
+	chomp @users;
 	return \@users;
 }
 sub renderAFSMemberList {

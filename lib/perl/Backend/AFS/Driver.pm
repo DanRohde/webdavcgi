@@ -71,7 +71,7 @@ sub stat {
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::AFSQUOTA && open(my $cmd, sprintf("%s '%s'|", $main::AFSQUOTA, $self->resolveVirt($fn)))) {
+	if (defined $main::AFSQUOTA && open(my $cmd, sprintf("%s \"%s\"|", $main::AFSQUOTA, $self->resolveVirt($fn)))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/, $lines[1]);
@@ -88,7 +88,8 @@ sub _getCallerAccess {
 	return $self->_getCallerAccess($self->dirname($fn)) unless $self->isDir($fn);
 	my $access = "";
 
-	if (open(my $cmd, sprintf("%s getcalleraccess '%s' 2>/dev/null|", $main::AFS_FSCMD, $fn))) {
+	$fn=~s/(["\$\\])/\\$1/g;
+	if (open(my $cmd, sprintf("%s getcalleraccess \"%s\" 2>/dev/null|", $main::AFS_FSCMD, $fn))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		chomp @lines;
