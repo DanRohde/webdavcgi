@@ -10,11 +10,11 @@ a {
 	text-decoration: none;
 	color: black;
 }
-#overlay {
+#overlay, .overlay {
 	z-index: 10000;
 	opacity: 0.5;
 	filter: Alpha(opacity=50); 
-	background-color: #aaaaaa; 
+	background: white url(images/ajax-loader-circle.gif) no-repeat center center; 
 	cursor: wait;
 	position: fixed;
 	top: 0;

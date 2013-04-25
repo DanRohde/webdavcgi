@@ -43,7 +43,8 @@ $(document).ready(function() {
 		console.log(jqxhr); 
 		console.log(settings);
 		console.log(exception);
-		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText)
+		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText);
+		$("div.overlay").remove();
 	});
 	
 	
@@ -825,7 +826,7 @@ function changeUri(uri, leaveUnblocked) {
 		console.log(e);
 	}
 	// fallback for errors and unblocked links:
-	if (!leaveUnblocked) $("<div></div>").prependTo($("body")).attr("id","overlay");
+	if (!leaveUnblocked) blockPage();
 	window.location.href=uri;
 	
 }
@@ -865,16 +866,21 @@ function handleFileListDrop(event, ui) {
 			.replace(/\\n/g,"<br/>");
 	confirmDialog(msg, {
 		confirm: function() {
+			var block = blockPage(); 
 			$.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
 				if (response.message && action=='cut') { 
 					removeFileListRow($("#fileList tr[data-file='"+files.join("'],#fileList tr[data-file='")+"']"));
 				}
+				block.remove();
 				if (response.error) updateFileList();
 				handleJSONResponse(response);
 			})
 		}
 	});
 
+}
+function blockPage() {
+	return $("<div></div>").prependTo("body").addClass("overlay");
 }
 function stripSlash(uri) {
 	return uri.replace(/\/$/,"");
@@ -935,8 +941,10 @@ function handleFileListActionEvent(event) {
 			.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
 		confirmDialog(msg, {
 			confirm: function() {
+				var block = blockPage();
 				$.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
 					if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
+					block.remove();
 					updateFileList();
 					handleJSONResponse(response);
 				});

@@ -230,7 +230,8 @@ sub renderFileList {
 		my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 		my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
-				'size' => $sizetxt, 'sizetitle'=>$sizetitle,
+				'size' => $$self{backend}->isReadable($full) ? $sizetxt : '-', 
+				'sizetitle'=>$sizetitle,
 				'lastmodified' =>  strftime($self->tl('lastmodifiedformat'), localtime($mtime)),
 				'lastmodifiedtime' => $mtime,
 			 	'created'=> strftime($self->tl('lastmodifiedformat'), localtime($ctime)),
