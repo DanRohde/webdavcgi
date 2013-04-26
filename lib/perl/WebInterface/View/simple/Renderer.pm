@@ -444,7 +444,7 @@ sub getAFSCallerAccess {
 	my $access ="";
 	$fn = $$self{backend}->resolveVirt($fn);
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (open(my $afs, sprintf("%s getcalleraccess \"%s\"|", $main::AFS_FSCMD, $fn))) {
+	if (open(my $afs, sprintf("%s getcalleraccess \"%s\" 2>/dev/null |", $main::AFS_FSCMD, $fn))) {
 		my @l = <$afs>;
 		close($afs);
 		chomp @l;
@@ -460,7 +460,6 @@ sub checkAFSCallerAccess {
 sub renderAFSACLManager {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	my $content = "";
-	print STDERR "callerAccess:".$self->getAFSCallerAccess($fn);
 	if ($self->getAFSCallerAccess($fn) eq "") {
 		$content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
 	} else {

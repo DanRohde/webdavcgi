@@ -101,9 +101,8 @@ sub _getCallerAccess {
 sub _checkCallerAccess {
 	my ($self, $fn, $dright,$fright) = @_;	
 	$fright = $dright unless defined $fright;
-	my $right = $self->isDir($fn) ? $dright : $fright; 
-	return $$self{cache}{$fn}{_checkCallerAccess} if exists $$self{cache}{$fn}{_checkCallerAccess};   
-	return $$self{cache}{$fn}{_checkCallerAccess} = $self->_getCallerAccess($fn) =~ /\Q$right\E/;
+	my $right = $dright eq $fright || $self->SUPER::isDir($fn) ? $dright : $fright;  
+	return $self->_getCallerAccess($fn) =~ /\Q$right\E/;
 }
 sub _checkAFSAccess {
 	my $CACHE = $_[0] && $$_[0]{cache}? $$_[0]{cache} : {};
