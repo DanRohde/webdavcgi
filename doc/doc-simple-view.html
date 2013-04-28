@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta name="keywords" content="WebDAV CGI wrapper UID" />
+  <meta name="author" content="Daniel Rohde" />
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <title>WebDAV CGI - The Simple View Documentation</title>
+</head>
+
+<body>
+<div id="content">
+<div style="text-align: right; font-size:0.8em;">
+<a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></div>
+<h1>WebDAV CGI - The Simple View Documentation</h1>
+<div id="toc">
+Content of this topic:
+<ul>
+	<li><a href="#about">About: The Simple View</a></li>
+	<li><a href="#hooks">Template Hooks: Add Your Own Sidebar Entries</a></li>
+	<li><a href="#overlay">Template Overlay: Modify Templates</a></li>
+	<li><a href="#templates">Templates: The Features</a></li>
+	<li><a href="#css">Styles: Modify CSS Styles</a></li>	
+	<li><a href="#editor">WYSIWYG: Integrate a HTML editor</a></li>
+	<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+<a href="doc.html"><br/>Back to the WebDAV Documentation page.</a>
+</div>
+<h2 id="about">About: The Simple View</h2>
+This is the new default view for the WebDAV CGI web interface. The Simple view uses jQuery and a lot of jQuery plugins for a more convenience user interface. It supports some new interesting features:
+<ul>
+<li>Drag&Drop support: drag and drop files from a window manager to the web interface or files and folders inside the file list.</li>
+<li>AJAX based file actions and folder navigation.</li>
+<li>Simplifies customization of menus and templates.</li>
+<li>Fast client site file list sorting.</li>
+</ul>
+
+<p>Some features of the old web interface (Sidebar or Classic view) are not implemented (yet): WebDAV Properties view, List Options (to change visible columns), File/Folder search.
+</p>
+<p>The interface to integrate a HTML editor was also modified (see <a href="#editor">WYSIWYG: Integrate a HTML editor</a>)</p>
+
+<h2 id="hooks">Template Hooks: Add Your Own Sidebar Entries</h2>
+You can add your own menu entries in the sidebar menu if you create some custom template files. 
+Look for include statements in the page template (<code>templates/simple/page.tmpl</code>), e.g.: <code>$INCLUDE(apps)</code>
+<ol>
+<li> Create a custom template <code>templates/simple/apps.custom.tmpl</code> to add a new menu entry </li>
+<li> and add a list item to the custom template (see <code>page.tmpl</code> for examples):
+<pre>
+&lt;li&gt;&lt;a class="home-button" data-action="changeuri" href="/afs/.cms.hu-berlin.de/user/$eval@substr($main::REMOTE_USER,0,1)@/$USER/">Home&lt;/a&gt;&lt;/li&gt;
+
+</pre>
+</li>
+</ol> 
+Overview of existing page template hooks (template file name pattern: <code>templates/simple/[hook name].custom.tmpl</code>):
+<ul>
+<li><code>htmlhead</code> - included in the HTML head tag (for your own script or CSS tags)</li>
+<li><code>header</code>  - included in the page header</li>
+<li><code>apps</code> - included after the Files/Folders menu item</li>
+<li><code>nav</code> - included between application and preferences menu</li>
+<li><code>pref</code> - included before vies option menu items</li>
+<li><code>help</code> - included before about menu item</li>
+</ul>
+
+<h2 id="overlay">Template Overlay: Modify Templates</h2>
+You should not modify an existing view template to simplify version upgrades of WebDAV CGI. It is possible to overlay an existing template file by adding a custom template file.
+<ol>
+<li> Copy the template file, e.g. <code>cp templates/simple/page.tmpl templates/simple/page.custom.tmpl</code></li>
+<li> Modify the new template file, e.g. <code>vim templates/simple/page.custom.tmpl</code> </li>
+</ol>
+<h2 id="css">Styles: Modify CSS Styles</h2>
+The preferred way to change CSS styles:
+<ol>
+<li>Create the custom template <code>header</code>: <code>templates/simple/header.custom.tmpl</code> </li>
+<li>Add a style tag to the custom template:<pre>&lt;style&gt;&lt;/style&gt;</pre></li>
+<li>Add your style changes ...</li>
+</ol>
+<h2 id="templates">Templates: The Features</h2>
+Take a look at the Simple view templates for examples (<code>templates/simple/*.tmpl</code>).
+<ul>
+<li>Include other templates: <code>$INCLUDE([template name])</code> (replace <code>[template name]</code> with the template name without .custom or .tmpl suffixes)</li>
+<li>Functions:
+<ul>
+<li><code>$config([param])</code> - include the value of the WebDAV CGI configuration parameter</li>
+<li><code>$eval[sep][Perl code][sep]</code> - execute </li>
+<li><code>$cgiparam([param])</code></li>
+<li><code>$env([variable])</code></li>
+<li>... take a look at the template files for all others.</li>
+</ul></li>
+<li>Variables:<ul>
+<li>... take a look at the template files for variables or into the <code>renderTemplate</code> subroutine of the Renderer module (<code>lib/perl/WebInterface/View/simple/Renderer.pm</code>)</li>
+</ul></li>
+<li>IF-Statement: <code>&lt;!--IF([Perl expression])--&gt; [HTML] &lt;!--ENDIF--&gt;</code></li>
+<li>IF-Statements inside IF-Statements:<code>&lt;!--IF#[level]([Perl expression])--&gt; [HTML]&lt;--ENDIF#[level]--&gt;</code>  (replace <code>[level]</code> with a unique number)</li>
+</ul>
+<h2 id="editor">WYSIWYG: Integrate a HTML editor</h2>
+Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
+<ol>
+<li> <a href="http://ckeditor.com/">Download</a> and install CKEditor&trade; (e.g. into the <code>/srv</code> folder - or use another server)</li>
+<li> Configure the web server to access all CKEditor&trade; files, e.g. <code>RewriteRule /ckeditor /srv/ckeditor [PT,L]</code></li>
+<li> Configure WebDAV CGI:
+<pre>
+my $_view = $cgi->param('view') || $cgi->cookie('view') || $VIEW;
+my $_lang = $cgi->param('lang') || $cgi->cookie('lang') || $LANG;
+if ($_view eq 'simple') {
+        $HTMLHEAD = q@
+          &lt;script type="text/javascript" src="/ckeditor/ckeditor.js"&gt;&lt;/script&gt;
+          &lt;script type="text/javascript"&gt;
+                $(document).ready(function() {
+                        $("textarea[name=textdata]").on("editstart", function() {
+                                if ($(this).attr("data-file").match(/\.html?$/))
+                                        CKEDITOR.replace('textdata',
+                                                { fullPage : true, language: '$_lang', removePlugins: 'save',
+                                                  baseFloatZIndex: 10000
+                                        });
+                        }).on("editsubmit", function() {
+                                for (var name in CKEDITOR.instances) CKEDITOR.instances[name].updateElement();
+                        }).on("editdone", function() {
+                                for (var name in CKEDITOR.instances) CKEDITOR.instances[name].destroy();
+                        });
+                });
+         &lt;/script&gt;
+        @;
+}
+</pre>
+</li>
+</ol>
+Consider this if you integrate a WYSIWYG editor:
+<ul>
+    <li>Allow only HTML files to edit with a WYSIWYG editor.</li>
+    <li>Read the WYSIWIG editor API documentation because some editors like CKEditor&trade; do not update the textdata input element automatically. WebDAV CGI triggers two events: editsubmit and editdone to trigger textdata updates or to destroy the editor.</li>
+    <li>Disable editor's 'save' button.</li>
+    <li>Use the id 'textdata' for the editor replacement.</li>
+    <li>Enable full page editing to allow changing complete HTML pages.</li>
+    <li>Setup z-index style for your editor to a large value.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ol>
+<li>Take a look at your Apache error log.</li>
+<li>Open the Web console and/or the error console of your Web browser. </li>
+<li>Use the <a target="_blank" href="http://validator.w3.org/">W3C<sup>&reg;</sup> Markup Validation Service</a> to check the HTML output.</li>
+<li>Use the <a target="_blank" href="http://jigsaw.w3.org/css-validator/">W3C<sup>&reg;</sup> CSS Validation Servcie</a> to check your CSS styles.</li>
+<li><a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI - Simple View Trouble">Ask the author</a></li>
+</ol>
+</div>
+<div id="contact">
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2013 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a> </div>
+</div>
+</body>
+</html>
