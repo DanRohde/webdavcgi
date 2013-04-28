@@ -170,7 +170,7 @@ sub execTemplateFunction {
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
 	$content = $self->renderViewList($fn,$ru,$param) if $func eq 'viewList';
 	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
-	$content = $self->checkAFSCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
+	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	return $content;
 }
 sub renderViewList {
@@ -431,36 +431,17 @@ sub renderAFSAclEntries {
 }
 sub renderAFSACLList {
 	my ($self, $fn, $ru, $positive, $tmplfile) = @_;
-	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile), !$self->checkAFSCallerAccess($fn,"a")));
+	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile), !$$self{backend}->_checkCallerAccess($fn,"a")));
 }
 sub uridecode {
 	my ($txt) = @_;
 	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/eigs;
 	return $txt;
 }
-sub getAFSCallerAccess {
-	my ($self, $fn) = @_;
-	return $CACHE{$self}{$fn}{afscalleraccess} if exists $CACHE{$self}{$fn}{afscalleraccess};
-	my $access ="";
-	$fn = $$self{backend}->resolveVirt($fn);
-	$fn=~s/(["\$\\])/\\$1/g;
-	if (open(my $afs, sprintf("%s getcalleraccess \"%s\" 2>/dev/null |", $main::AFS_FSCMD, $fn))) {
-		my @l = <$afs>;
-		close($afs);
-		chomp @l;
-		my @sl=split(/\s+/,$l[$#l]);
-		$access = $sl[$#sl] if $sl[$#sl]=~/^[rlidwka]{1,7}$/;
-	}
-	return $CACHE{$self}{$fn}{afscalleraccess}=$access;
-}
-sub checkAFSCallerAccess {
-	my ($self, $fn, $right) = @_;
-	return $self->getAFSCallerAccess($fn) =~ /[\Q$right\E]+/;
-}
 sub renderAFSACLManager {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	my $content = "";
-	if ($self->getAFSCallerAccess($fn) eq "") {
+	if ($$self{backend}->_getCallerAccess($fn) eq "") {
 		$content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
 	} else {
 		$content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
