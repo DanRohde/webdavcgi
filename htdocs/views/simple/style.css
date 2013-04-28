@@ -201,6 +201,7 @@ table,th,td {
 	right: 2em;
 	color: #888888;
 	font-weight: bold;
+	z-index: 80;
 }
 .listaction {
 	padding-left: 1em;
@@ -288,10 +289,10 @@ table,th,td {
 	padding-left: 13em;
 	padding-top: 0.2em;
 	z-index: 70;
-	background-color: inherit;
+	background-color: #ffeedd;
 	width: 100%;
 	white-space: nowrap;
-	height: 2.5em;
+	height: 2.8em;
 }
 #new {
 /*	position: absolute;
