@@ -321,7 +321,8 @@ function initSearchBox() {
 					} catch (e) {
 						return files;
 					}
-				});
+				})
+				.focus();
 		});
 }
 function applySearch() {
@@ -1246,7 +1247,7 @@ function handleAFSGroupManager(event) {
 	$.get(target, { ajax : "getAFSGroupManager", template: template }, function(response) {
 		var groupmanager = $(response);
 		initGroupManager(groupmanager, template, target);
-		groupmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { groupmanager.remove();}}).show();
+		groupmanager.dialog({modal: false, width: "auto", height: "auto", close: function() { groupmanager.remove();}}).show();
 	});	
 }
 function handleAFSACLManager(event){
