@@ -243,7 +243,7 @@ sub renderFileList {
 				'sizetitle'=>$sizetitle,
 				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
 				'lastmodifiedtime' => $mtime,
-				'lastmodifiedhr' => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>1 ),
+				'lastmodifiedhr' => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ),
 			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
 				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mimetype),
 				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
