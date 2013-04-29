@@ -26,6 +26,8 @@ use warnings;
 use POSIX qw(strftime ceil);
 use JSON;
 use URI::Escape;
+use DateTime;
+use DateTime::Format::Human::Duration;
 
 use WebInterface::Common;
 our @ISA = ( 'WebInterface::Common' );
@@ -223,6 +225,8 @@ sub renderFileList {
 	unshift @files, '..' if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
 	unshift @files, '.' if $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $ru=~/^$main::VIRTUAL_BASE$/);
 	my $fileid = 0;
+	my $hdr = DateTime::Format::Human::Duration->new();
+	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;
 	foreach my $file (@files) {
 		$ru .= ($ru=~/\//?'':'/');
 		my $full = "$fn$file";
@@ -239,6 +243,7 @@ sub renderFileList {
 				'sizetitle'=>$sizetitle,
 				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
 				'lastmodifiedtime' => $mtime,
+				'lastmodifiedhr' => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>1 ),
 			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
 				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mimetype),
 				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',

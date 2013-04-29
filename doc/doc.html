@@ -77,6 +77,8 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li><span style="optional">optional (for SMB backend):</span> Filesys::SmbClient (libfilesys-smbclient-perl) - (since v0.8.0)</li>
     <li><span style="optional">optional (for RCS backend):</span> Rcs (librcs-perl) - (since v0.8.0)</li>
     <li>JSON (libjson-perl) - (since v0.8.5)</li>
+    <li>DateTime - (since v0.8.5)</li>
+    <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -84,7 +86,9 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
 apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
-                libfile-copy-link-perl libjson-perl
+                libfile-copy-link-perl libjson-perl libdatetime-perl
+
+perl -MCPAN -e "install DateTime::Format::Human::Duration"
 
 ## only for SMB backend users:
 apt-get install libfilesys-smbclient-perl
@@ -174,7 +178,13 @@ Require valid-user
 <h3>Upgrading from 0.8.4 to 0.8.5</h3>
 <ol>
 <li> the default view was changed from 'sidebar' to 'simple' </li>
-<li> a new Perl module is needed: <code>JSON</code> (Ubuntu/Debian package: libjson-perl)</li>
+<li> new Perl modules are needed:
+  <ul>
+  	<li><code>JSON</code> (Ubuntu/Debian package: libjson-perl)</li>
+	<li><code>DateTime</code> (Ubuntu/Debian package: libdatetime-perl</li>
+	<li><code>DateTime::Format::Human::Duration</code> (CPAN) </li>
+  </ul>
+ </li>
 </ol>
 <h3>Upgrading from 0.8.3 to 0.8.4</h3>
 <ol>
