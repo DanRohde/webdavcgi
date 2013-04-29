@@ -342,8 +342,10 @@ function initSearchBox() {
 	$("form#filterbox input").keyup(function() {
 		$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$(this).val().trim() == "");
 	});
-	$("form#filterbox [data-action=clearfilter]").click(function() {
-		$("form#filterbox input").val("").trigger("change");
+	$("form#filterbox [data-action=clearfilter]").click(function(event) {
+		preventDefault(event);
+		$("form#filterbox input").val("");
+		applyFilter();
 		$(this).addClass("invisible");
 	});
 	
@@ -523,7 +525,7 @@ function initFileList() {
 	});
 
 	// init drag & drop:
-	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", drop: handleFileListDrop, hoverClass: 'draghover' });
+	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
 	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
 	
