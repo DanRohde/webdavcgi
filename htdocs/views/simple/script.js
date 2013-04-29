@@ -424,10 +424,16 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
 		},
 		submit: function(e,data) {
-			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm',window.confirm(confirmmsg));
+			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
 			return $(this).data('ask.confirm');
 		},
 	});	
+}
+function checkUploadedFilesExist(data) {
+	for (var i=0; i<data.files.length; i++) {
+		if ($("#fileList tr[data-file='"+simpleEscape(data.files[i].name)+"']").length>0) return true;
+	}
+	return false;
 }
 function initZipFileUpload() {
 	var zipfile = $("#zipfile-upload-form input[type=file]");
