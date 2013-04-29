@@ -51,6 +51,10 @@ sub render {
 			$content = $self->renderPermissionsDialog($fn,$ru, $$self{cgi}->param('template'));
 		} elsif ($ajax eq 'getViewFilterDialog') {
 			$content = $self->renderViewFilterDialog($fn, $ru, $$self{cgi}->param('template'));
+		} elsif ($ajax eq 'getSearchDialog') {
+			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
+		} elsif ($ajax eq 'search') {
+			$content = $self->search($fn, $ru, $$self{cgi}->param('template'));
 		}
 	} elsif ($$self{cgi}->param('msg') || $$self{cgi}->param('errmsg') 
 			|| $$self{cgi}->param('aclmsg') || $$self{cgi}->param('aclerrmsg')
@@ -556,6 +560,21 @@ sub round {
 	my $ret = sprintf("%.${precision}f", $float);
 	$ret=~s/\,(\d{0,$precision})$/\.$1/; # fix locale specific notation
 	return $ret;
+}
+sub search {
+	my ($self, $fn, $ru, $tmplfile) = @_;
+	my $content = "";
+	my %jsondata;
+	
+	$content ="<div>blubber</div>";
+	
+	
+	$jsondata{content} = $content;
+	
+	my $json = new JSON();
+	return $json->encode(\%jsondata);
+	
+	return $json;
 }
 1;
 

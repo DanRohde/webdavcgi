@@ -1,0 +1,47 @@
+<div id="searchdialog" title="$tl(searchbutton)">
+<form method="post" action="#">
+<div>
+$tl(filter.name.title) $tl(filter.name.showonly) 
+<select name="search.name.op">
+<option value="=~">$tl(filter.name.regexmatch)</option>
+<option value="^">$tl(filter.name.startswith)</option>
+<option value="$">$tl(filter.name.endswith)</option>
+<option value="eq">$tl(filter.name.equal)</option>
+<option value="ne">$tl(filter.name.notequal)</option>
+<option value="lt">$tl(filter.name.lessthan)</option>
+<option value="gt">$tl(filter.name.greaterthan)</option>
+<option value="ge">$tl(filter.name.greaterorequal)</option>
+<option value="le">$tl(filter.name.lessorequal)</option>
+</select>
+<input type="text" size="20" name="search.name.val" value=""/>
+</div>
+<div>
+$tl(filter.types.title) $tl(filter.types.showonly)
+<input type="checkbox" name="search.types" value="f">$tl(filter.types.files) </input>
+<input type="checkbox" name="search.types" value="d">$tl(filter.types.folder)</input>
+<input type="checkbox" name="search.types" value="l">$tl(filter.types.links)</input>
+</div>
+<div>
+$tl(filter.size.title) $tl(filter.size.showonly)
+<select name="search.size.op">
+<option value="<">&lt;</option>
+<option value="<=">&le;</option>
+<option value="==">=</option>
+<option value=">=">&ge;</option>
+<option value=">">&gt;</option>
+</select>
+<input type="text" size="10"  name="search.size.val"/>
+<select name="search.size.unit">
+<option>B</option>
+<option>KB</option>
+<option>MB</option>
+<option>GB</option>
+<option>TB</option>
+<option>PB</option>
+</select>
+</div>
+<div>
+<div class="right" data-action="search.apply">$tl(searchbutton)</div>
+</div>
+</form>
+</div>

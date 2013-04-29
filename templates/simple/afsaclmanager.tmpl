@@ -46,7 +46,7 @@ $afsnegativeacllist(afsnegativeaclentry)
 <tr> <td colspan="8"><input type="submit" value="$tl(afssaveacl)" name="saveafsacl" class="right"/></td></tr>
 </tfoot>
 <!--ENDIF-->
-<!--IF("$checkAFSCallerAccess(a)" != "1")-->
+<!--IF("$checkAFSCallerAccess(a)" ne "1")-->
 <tfoot>
 <tr><td colspan="8">$tl(afsnorights)</td></tr>
 </tfoot>

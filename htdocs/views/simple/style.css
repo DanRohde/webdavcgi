@@ -149,8 +149,9 @@ table,th,td {
 }
 
 #fileList tr td.filename input[type=checkbox] {
-	position:absolute;
-	left: 0;
+	/* position:absolute;
+	left: 0; */
+	float: left;
 	opacity: 0;
 	filter: Alpha(opacity=0); 
 }
@@ -162,6 +163,10 @@ table,th,td {
 	opacity: 1;
 	filter: Alpha(opacity=100); 
 }
+#fileList tr td.filename input[type=checkbox]:disabled {
+	opacity: 0;
+	filter: Alpha(opacity=0); 
+}
 #fileList td.filename .nametext {
 	padding-left: 10px; 
 	float: left;
@@ -171,7 +176,7 @@ table,th,td {
 	padding-right: 18px;
 }
 #fileList tr:hover, #fileList tr.draghover {
-	background-color: #dddddd;
+	background-color: #ededed;
 }
 #fileList tr[data-isreadable=no], #fileList tr[data-isreadable=no] a {
 	color: #999999;
@@ -189,19 +194,29 @@ table,th,td {
 	visiblity: hidden;
 }
 #fileList tr.selected {
-	background-color: #ffeedd;
+	background-color: #dadada;
+}
+#fileList tr.selected:hover {
+	background-color: #aaaaaa;
 }
 #fileList tr.cutted, #fileList tr.cutted a {
 	color: #aaaaaa;
 }
 
-.searchbox {
+.filterbox {
 	position: absolute;
 	top: 3px;
 	right: 2em;
 	color: #888888;
 	font-weight: bold;
 	z-index: 80;
+}
+.filterbox img[data-action=clearfilter] {
+		background: url(images/sprite.png) no-repeat left -215px;
+		width: 22px;
+}
+.invisible {
+	visibility: hidden;
 }
 .listaction {
 	padding-left: 1em;
@@ -289,7 +304,7 @@ table,th,td {
 	padding-left: 13em;
 	padding-top: 0.2em;
 	z-index: 70;
-	background-color: #ffeedd;
+	background-color: #ededed;
 	width: 100%;
 	white-space: nowrap;
 	height: 2.8em;
@@ -590,14 +605,14 @@ td.center {
 	cursor: pointer;
 }
 #afsgrouplist li.selected, #afsmemberlist li.selected {
-	background-color: #ddaaaa;
+	background-color: #dadada;
 }
 
 #afsgrouplist li:hover, #afsmemberlist li:hover {
 	background-color: #aaaaaa;
 }
 #afsgrouplist li.selected:hover, #afsmemberlist li.selected:hover {
-	background-color: #ffdddd;
+	background-color: #ededed;
 }
  
 #afsmembereditor a[data-action=afsmemberdelete], #afsgroupeditor a[data-action=afsgroupdelete], 

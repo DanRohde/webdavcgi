@@ -40,6 +40,8 @@ $(document).ready(function() {
 
 	initWindowResize();
 	
+	initSearch();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -51,6 +53,32 @@ $(document).ready(function() {
 		
 	updateFileList(window.location.pathname);
 
+function initSearch() {
+	$("a[data-action='search']").click(function(event) {
+		preventDefault(event)
+		$.get($("#fileList").attr("data-uri"),{ajax: "getSearchDialog", template: $(this).attr("data-dialogtemplate")}, function(response){
+			var dialog = $(response);
+			var resulttemplate = $(this).attr("data-resulttemplate");
+			$("div[data-action='search.apply']", dialog).button().click(function(event){
+				preventDefault(event);
+				
+				// XXX check all form elements (only one must have values)
+				
+				
+				dialog.dialog("close");
+				var block = blockPage();
+				
+				$.get($("#fileList").attr("data-uri"), $.param({ajax: "search", template:resulttemplate }) + "&" + $("form", dialog).serialize(), function(response){
+					handleJSONResponse(response);
+					if (response.content) $("#flt").html(response.content);
+					block.remove();
+				});
+			});
+			handleJSONResponse(response);
+			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ dialog.dialog("destroy");}}).show();
+		});
+	});
+}
 function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
 }
@@ -307,13 +335,23 @@ function initChangeDir() {
 
 }
 function initSearchBox() {
-	$("form#searchbox").submit(function(event) { return false;});
-	$("form#searchbox input").keyup(applySearch).change(applySearch).autocomplete({minLength: 1, select: applySearch, close: applySearch});
+	$("form#filterbox").submit(function(event) { return false;});
+	$("form#filterbox input").keyup(applyFilter).change(applyFilter).autocomplete({minLength: 1, select: applyFilter, close: applyFilter});
+	// clear button:
+	$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$("form#filterbox input").val().trim() == "");
+	$("form#filterbox input").keyup(function() {
+		$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$(this).val().trim() == "");
+	});
+	$("form#filterbox [data-action=clearfilter]").click(function() {
+		$("form#filterbox input").val("").trigger("change");
+		$(this).addClass("invisible");
+	});
+	
 	$("#flt")
-		.on("fileListChanged", applySearch)
+		.on("fileListChanged", applyFilter)
 		.on("fileListChanged", function() {
 			var files = $.map($("#fileList tr"),function(val,i) { return $(val).attr("data-file");});
-			$("form#searchbox input")
+			$("form#filterbox input")
 				.autocomplete("option", "source", function(request, response) {
 					try {
 						var matcher = new RegExp(request.term);
@@ -321,12 +359,11 @@ function initSearchBox() {
 					} catch (e) {
 						return files;
 					}
-				})
-				.focus();
+				});
 		});
 }
-function applySearch() {
-	var filter = $("form#searchbox input").val();
+function applyFilter() {
+	var filter = $("form#filterbox input").val();
 	$('#fileList tr').each(function() {
 		try {
 			var r = new RegExp(filter,"i");
@@ -445,7 +482,7 @@ function initFileList() {
 	
 	initTableSorter();
 
-	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").remove();
+	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").attr("disabled","disabled");
 	
 	// init single file actions:
 	$("#fileList tr[data-unselectable='no']").hover(
@@ -488,7 +525,7 @@ function initFileList() {
 	// init drag & drop:
 	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", drop: handleFileListDrop, hoverClass: 'draghover' });
 	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
-	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true});
+	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
 	
 	$("#flt").trigger("fileListChanged");
 }

@@ -10,7 +10,8 @@
 <!--IF("$config(CSSURI)" ne "")--><link rel="stylesheet" type="text/css" href="$config(CSSURI)"/><!--ENDIF-->
 <script src="${baseuri}_webdavcgi_/views/simple/contrib/contrib.min.js"></script>
 <script src="${baseuri}_webdavcgi_/views/simple/script.min.js"></script>
-$config(HTMLHEAD)</head>
+$config(HTMLHEAD)
+$INCLUDE(htmlhead)</head>
 <body>
 <div id="main">
 	<div class="langswitch">$config(LANGSWITCH)</div> 
@@ -22,6 +23,9 @@ $config(HTMLHEAD)</head>
 		<ul id="apps">
 			<li><a href="$uri" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
 			$INCLUDE(apps)
+			<!--IF($config(ALLOW_SEARCH))-->
+			<li><a href="#" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult">$tl(searchbutton)</a></li>
+			<!--ENDIF-->
 			<!--IF($config(ALLOW_CHANGEPERM))-->
 				<li><a href="#" data-action="permissions" data-sel="multi" data-template="permissions">$tl(mode)</a></li>
 			<!--ENDIF-->
@@ -109,9 +113,11 @@ $config(HTMLHEAD)</head>
 			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi">$tl(deletefilesbutton)</a>
 		</div>
 		<!--IF($config(ENABLE_NAMEFILTER))-->
-		<div class="searchbox">
-			<form id="searchbox" method="post" action="#">
+		<div class="filterbox">
+			<form id="filterbox" method="post" action="#">
 			$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)"/>
+			<img data-action="clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE
+AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)"/>
 			</form>
 		</div>
 		<!--ENDIF-->
