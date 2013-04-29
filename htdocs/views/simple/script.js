@@ -465,6 +465,9 @@ function confirmDialog(text, data) {
 			{ text: $("#cancel").html(), click: function() { $("#confirmdialog").dialog("close");  if (data && data.cancel) data.cancel();  } }, 
 			{ text: "OK", click: function() { $("#confirmdialog").dialog("close"); if (data.confirm) data.confirm() } }
 		],
+		close: function() {
+			if (data && data.cancel) data.cancel();
+		}
 	}).show();
 }
 function getVisibleAndSelectedFiles() {
