@@ -14,7 +14,7 @@ $(document).ready(function() {
 
 	initChangeDir();
 
-	initSearchBox();
+	initFilterBox();
 
 	initFileUpload();
 
@@ -51,28 +51,48 @@ $(document).ready(function() {
 		$("div.overlay").remove();
 	});
 		
-	updateFileList(window.location.pathname);
+	updateFileList($("#flt").attr("data-uri"));
 
 function initSearch() {
 	$("a[data-action='search']").click(function(event) {
 		preventDefault(event)
+		var resulttemplate = $(this).attr("data-resulttemplate");
 		$.get($("#fileList").attr("data-uri"),{ajax: "getSearchDialog", template: $(this).attr("data-dialogtemplate")}, function(response){
 			var dialog = $(response);
-			var resulttemplate = $(this).attr("data-resulttemplate");
+			
 			$("div[data-action='search.apply']", dialog).button().click(function(event){
 				preventDefault(event);
-				
+				var f = $("form",dialog);
 				// XXX check all form elements (only one must have values)
 				
 				
-				dialog.dialog("close");
-				var block = blockPage();
+				var data = { ajax: "search", template: resulttemplate };
 				
-				$.get($("#fileList").attr("data-uri"), $.param({ajax: "search", template:resulttemplate }) + "&" + $("form", dialog).serialize(), function(response){
-					handleJSONResponse(response);
-					if (response.content) $("#flt").html(response.content);
-					block.remove();
-				});
+				if ($("input[name='search.size.val']",f).val() != "") {
+					$.extend(data, {
+						"search.size" : $("select[name='search.size.op'] option:selected",f).val() 
+										+ $("input[name='search.size.val']",f).val() 
+										+ $("select[name='search.size.unit'] option:selected",f).val()
+					});
+				}
+				if ($("input[name='search.name.val']",f).val() != "") {
+					$.extend(data, {
+						"search.name" : $("select[name='search.name.op'] option:selected",f).val() 
+										+ " "
+										+ $("input[name='search.name.val']",f).val()
+					});
+				}	
+				if ($("input[name='search.types']:checked", f).length > 0) {
+					var filtertypes = "";
+					$("input[name='search.types']:checked", f).each(function(i,val) {
+						filtertypes += $(val).val();
+					});
+					$.extend(data, { "search.types" : filtertypes});
+				}
+				dialog.dialog("close");
+				
+				updateFileList($("#fileList").attr("data-uri"), data);
+			
 			});
 			handleJSONResponse(response);
 			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ dialog.dialog("destroy");}}).show();
@@ -89,6 +109,7 @@ function initWindowResize() {
 }
 function handleWindowResize() {
 	$("#content").width($(window).width()-$("#nav").width());
+	$("#content").css("max-width", $("#content").width());
 	$("#controls").width($("#content").width());
 }
 
@@ -334,7 +355,7 @@ function initChangeDir() {
 	
 
 }
-function initSearchBox() {
+function initFilterBox() {
 	$("form#filterbox").submit(function(event) { return false;});
 	$("form#filterbox input").keyup(applyFilter).change(applyFilter).autocomplete({minLength: 1, select: applyFilter, close: applyFilter});
 	// clear button:
@@ -908,16 +929,19 @@ function changeUri(uri, leaveUnblocked) {
 	window.location.href=uri;
 	
 }
-function updateFileList(newtarget) {
+function updateFileList(newtarget, data) {
 	if (!newtarget) newtarget = $('#fileList').attr('data-uri');
+	if (!newtarget) newtarget = window.location.href;
+	if (!data) {
+		data={ajax: "getFileListTable", template: $('#flt').attr('data-template')};
+	}
 	$(".ajax-loader").show();
-	$('#flt').hide();
-	$.get(newtarget+"?ajax=getFileListTable;template="+encodeURI($('#flt').attr('data-template')), function (response) {
+	$("#flt").hide();
+	$.get(newtarget, data, function(response) {
 		$("#flt")
 			.show()
 			.html(response.content)
-			.attr("data-uri",newtarget)
-			.removeClass("disabled");
+			.attr("data-uri",newtarget);
 		$(".ajax-loader").hide();
 		initFileList();
 		handleJSONResponse(response);

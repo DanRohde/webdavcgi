@@ -32,7 +32,9 @@ use DateTime::Format::Human::Duration;
 use WebInterface::Common;
 our @ISA = ( 'WebInterface::Common' );
 
-use vars qw(%STATS %CACHE);
+use vars qw(%CACHE @ERRORS %BYTEUNITS);
+%BYTEUNITS = (B=>1, KB=>1024, MB => 1048576, GB => 1073741824, TB => 1099511627776, PB =>1125899906842624 );
+
 sub render {
 	my($self,$fn,$ru) = @_;
 	my $content ='';
@@ -56,7 +58,8 @@ sub render {
 		} elsif ($ajax eq 'getSearchDialog') {
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
 		} elsif ($ajax eq 'search') {
-			$content = $self->search($fn, $ru, $$self{cgi}->param('template'));
+			$content = $self->handleSearchRequest($fn, $ru, $$self{cgi}->param('template'));
+			$contenttype='application/json';
 		}
 	} elsif ($$self{cgi}->param('msg') || $$self{cgi}->param('errmsg') 
 			|| $$self{cgi}->param('aclmsg') || $$self{cgi}->param('aclerrmsg')
@@ -177,6 +180,7 @@ sub execTemplateFunction {
 	$content = $self->renderViewList($fn,$ru,$param) if $func eq 'viewList';
 	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
 	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
+	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
 	return $content;
 }
 sub renderViewList {
@@ -195,6 +199,7 @@ sub renderViewList {
 }
 sub isViewFiltered {
 	my($self) = @_;
+	return 1 if $$self{cgi}->param('search.name') || $$self{cgi}->param('search.types') || $$self{cgi}->param('search.size');
 	return $$self{cgi}->cookie('filter.name') || $$self{cgi}->cookie('filter.types') || $$self{cgi}->cookie('filter.size') ? 1 : 0;
 }
 sub renderFileListTable {
@@ -210,40 +215,29 @@ sub renderFileListTable {
 	return $json->encode(\%jsondata);
 
 }
-sub renderFileList {
-	my ($self, $fn, $ru, $template) = @_;
-	my $entrytemplate=$self->readTemplate($template);
-	my $fl="";	
-
-	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
-
-	my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files($a,$b) } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$self)} : ();
-
-	$STATS{$self}{$fn}{foldersize} = 0;
-	$STATS{$self}{$fn}{dircount}=0;
-	$STATS{$self}{$fn}{filecount}=0;
-	unshift @files, '..' if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
-	unshift @files, '.' if $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $ru=~/^$main::VIRTUAL_BASE$/);
-	my $fileid = 0;
-	my $hdr = DateTime::Format::Human::Duration->new();
+sub renderFileListEntry {
+	my ($self, $fn, $ru, $file, $entrytemplate) = @_;
+	$ru .= ($ru=~/\//?'':'/');
+	
+	my $hdr = $CACHE{renderFileListEntry}{hdr} ? $CACHE{renderFileListEntry}{hdr} : $CACHE{renderFileListEntry}{hdr} = DateTime::Format::Human::Duration->new();
 	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;
-	foreach my $file (@files) {
-		$ru .= ($ru=~/\//?'':'/');
-		my $full = "$fn$file";
-		my $fulle = $ru.$$self{cgi}->escape($file);
-		$file.='/' if $file !~ /^\.\.?$/ && $$self{backend}->isDir($full);
-
-		my $e = $entrytemplate;
-		my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($full);
-		my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
-		my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-		my %stdvars = ( 
+	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
+	
+	my $full = "$fn$file";
+	my $fulle = $ru.$$self{cgi}->escape($file);
+	$fulle=~s/\%2f/\//gi; ## fix for search
+	$file.='/' if $file !~ /^\.\.?$/ && $$self{backend}->isDir($full);
+	my $e = $entrytemplate;
+	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($full);
+	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
+	my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
+	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
 				'size' => $$self{backend}->isReadable($full) ? $sizetxt : '-', 
 				'sizetitle'=>$sizetitle,
 				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
 				'lastmodifiedtime' => $mtime,
-				'lastmodifiedhr' => $$self{backend}->isReadable($full) ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
+				'lastmodifiedhr' => $$self{backend}->isReadable($full) && $mtime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
 			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
 				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mimetype),
 				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
@@ -254,26 +248,34 @@ sub renderFileList {
 				'iseditable'=>$self->isEditable($full) ? 'yes' : 'no',
 				'isviewable'=>$$self{backend}->isReadable($full) && $self->canCreateThumbnail($full) ? 'yes' : 'no',
 				'type'=>$file =~ /^\.\.?$/ || $$self{backend}->isDir($full)?'dir':($$self{backend}->isLink($full)?'link':'file'),
-				'fileid'=>$fileid++,
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $full =~ /^$unselregex$/ ? 'yes' : 'no',
 				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
 				);
-		$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-		$fl.=$self->renderTemplate($fn,$ru,$e);
-		$STATS{$self}{$fn}{foldersize}+=$size;
-		$STATS{$self}{$fn}{dircount}++ if $stdvars{type} eq 'dir';
-		$STATS{$self}{$fn}{filecount}++ if $stdvars{type} ne 'dir';
-	}
+	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
+	return $self->renderTemplate($fn,$ru,$e);
+}
+sub renderFileList {
+	my ($self, $fn, $ru, $template) = @_;
+	my $entrytemplate=$self->readTemplate($template);
+	my $fl="";	
 
+	my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files($a,$b) } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$self)} : ();
+
+	unshift @files, '..' if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
+	unshift @files, '.' if $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $ru=~/^$main::VIRTUAL_BASE$/);
+
+	foreach my $file (@files) {
+		$fl.=$self->renderFileListEntry($fn,$ru,$file,$entrytemplate);	
+	}
 	return $fl;	
 }
 sub renderFilterInfo {
 		my($self) = @_;
 		my @filter;
-		my $filtername = $$self{cgi}->cookie('filter.name');
-		my $filtertypes = $$self{cgi}->cookie('filter.types');
-		my $filtersize = $$self{cgi}->cookie('filter.size');
+		my $filtername = $$self{cgi}->param('search.name') || $$self{cgi}->cookie('filter.name'); 
+		my $filtertypes =  $$self{cgi}->param('search.types') || $$self{cgi}->cookie('filter.types');
+		my $filtersize = $$self{cgi}->param('search.size') || $$self{cgi}->cookie('filter.size');
 		
 		if ($filtername) {
 			my %filterops = (
@@ -301,7 +303,7 @@ sub renderFilterInfo {
 			
 		}
 	
-		return $#filter > -1 ? $self->tl("filter").join(", ",@filter) : "";
+		return $#filter > -1 ? join(", ",@filter) : "";
 	
 }
 sub canCreateThumbnail {
@@ -566,20 +568,82 @@ sub round {
 	$ret=~s/\,(\d{0,$precision})$/\.$1/; # fix locale specific notation
 	return $ret;
 }
-sub search {
+
+sub searchFile {
+	my($self, $basefn, $relfn, $filter) = @_;
+	my @result;
+	
+	if (!$$self{backend}->isReadable($basefn)) {
+		return \@result;	
+	}
+	
+	foreach my $file (@{$$self{backend}->readDir($basefn.$relfn,main::getFileLimit($basefn.$relfn))}) {
+		my $newrelfn = $relfn eq "" ? $file : "$relfn$file";
+		my $full = "$basefn$newrelfn";
+		push @result, @{$self->searchFile($basefn,"$newrelfn/", $filter)} if !$$self{backend}->isLink($full) && $$self{backend}->isDir($full);
+		push @result, $newrelfn unless $filter->filter("$basefn$relfn",$file);
+	} 
+	return \@result;
+}
+sub renderSearchResultList {
 	my ($self, $fn, $ru, $tmplfile) = @_;
+	my $entrytmpl = $self->readTemplate($tmplfile);
 	my $content = "";
+	my @searchResult = @{$self->searchFile($fn,"",$self)};
+	push @ERRORS, $self->tl('searchnothingfound').$self->renderFilterInfo() if $#searchResult <0;
+	foreach my $result (@searchResult) {
+		$content .= $self->renderFileListEntry($fn, $ru, $result, $entrytmpl);
+		$content=~s/unselectable=\"no\"/unselectable=\"yes\"/g;
+	}
+	return $content;
+}
+sub handleSearchRequest {
+	my ($self, $fn, $ru, $tmplfile) = @_;
+	local @ERRORS;
+	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
+	
 	my %jsondata;
-	
-	$content ="<div>blubber</div>";
-	
-	
 	$jsondata{content} = $content;
-	
+	$jsondata{error} = \@ERRORS if $#ERRORS>-1; 
 	my $json = new JSON();
 	return $json->encode(\%jsondata);
 	
 	return $json;
+}
+sub filter {
+        my ($self,$path, $file) = @_;
+        return 1 if $$self{utils}->filter($path,$file);
+        my $ret = 0;
+        my $filter = $$self{cgi}->param('search.types') || $$self{cgi}->cookie('filter.types');
+        if ( defined $filter ) {
+                $ret|=1 if $filter!~/d/ && $main::backend->isDir("$path$file");
+                $ret|=1 if $filter!~/f/ && $main::backend->isFile("$path$file");
+                $ret|=1 if $filter!~/l/ && $main::backend->isLink("$path$file");
+        }
+        return 1 if $ret;
+        $filter = $$self{cgi}->param('search.size') ||  $$self{cgi}->cookie('filter.size');
+        if ( defined $filter && $main::backend->isFile("$path$file") &&  $filter=~/^([\<\>\=]{1,2})(\d+)(\w*)$/ ) {
+                my ($op, $val,$unit) = ($1,$2,$3);
+                $val = $val * $BYTEUNITS{$unit} if exists $BYTEUNITS{$unit};
+                my $size = ($main::backend->stat("$path$file"))[7];
+                $ret=!eval("$size $op $val");
+        }
+        return 1 if $ret;
+        $filter = $$self{cgi}->param('search.name') || $$self{cgi}->cookie('filter.name');
+        if (defined $filter && defined $file && $filter =~ /^(\=\~|\^|\$|eq|ne|lt|gt|le|ge) (.*)$/) {
+                my ($nameop,$nameval) = ($1,$2);
+                $nameval=~s/\//\/\//g;
+                if ($nameop eq '^') {
+                        $ret=!eval(qq@'$file' =~ /\^\Q$nameval\E/i@);
+                } elsif ($nameop eq '$') {
+                        $ret=!eval(qq@'$file' =~ /\Q$nameval\E\$/i@);
+                } elsif ($nameop eq '=~') {
+                        $ret=!eval("'$file' $nameop /$nameval/i");
+                } else {
+                        $ret=!eval("lc('$file') $nameop lc(q/$nameval/)");
+                }
+        }
+        return $ret;
 }
 1;
 

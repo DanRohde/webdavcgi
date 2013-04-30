@@ -17,7 +17,7 @@
 		</td></tr>
 		<!--ENDIF-->
 		
-		<!--IF($isviewfiltered())--><tr><td colspan="3" class="sorter-false"><div class="viewfilterinfo"> $filterInfo() </div></td></tr><!--ENDIF-->
+		<!--IF($isviewfiltered())--><tr><td colspan="3" class="sorter-false"><div class="viewfilterinfo">$tl(filter) $filterInfo() </div></td></tr><!--ENDIF-->
 		<tr>
 			<th id="headerName" data-name="name" data-sort="data-file" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
 				<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE
