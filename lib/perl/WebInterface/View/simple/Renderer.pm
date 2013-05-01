@@ -146,6 +146,8 @@ sub renderTemplate {
 			quotalevel=> $quota{quotalevel},
 			quotausedperc => $quota{quotausedperc},
 			quotaavailableperc => $quota{quotaavailableperc},
+			view => $main::VIEW,
+			viewname => $self->tl("${main::VIEW}view"),
 			USER=>$main::REMOTE_USER,
 			CLOCK=>$$self{cgi}->span({id=>'clock', 'data-format'=>$self->tl('vartimeformat')},""),
 			NOW=>strftime($self->tl('varnowformat'), localtime()),
@@ -185,7 +187,7 @@ sub execTemplateFunction {
 }
 sub renderViewList {
 	my ($self, $fn,$ru,$tmplfile) = @_;
-	my $tmpl = $self->readTemplate($tmplfile);
+	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
 	my $content = "";
 	foreach my $view (@main::SUPPORTED_VIEWS) {
 		next if ($view eq $main::VIEW);
@@ -286,7 +288,7 @@ sub renderFilterInfo {
 				'le' => $self->tl('filter.name.lessorequal'),
 			);
 			my ($fo,$fn) = split(/\s/,$filtername);
-			push @filter, $self->tl('filter.name.showonly').' '.$filterops{$fo}.' "'.$fn.'"';
+			push @filter, $self->tl('filter.name.showonly').' '.$filterops{$fo}.' "'.$$self{cgi}->escapeHTML($fn).'"';
 		}
 		if ($filtertypes) {
 			
@@ -573,9 +575,7 @@ sub searchFile {
 	my($self, $basefn, $relfn, $filter) = @_;
 	my @result;
 	
-	if (!$$self{backend}->isReadable($basefn)) {
-		return \@result;	
-	}
+	return \@result if !$$self{backend}->isReadable($basefn);
 	
 	foreach my $file (@{$$self{backend}->readDir($basefn.$relfn,main::getFileLimit($basefn.$relfn))}) {
 		my $newrelfn = $relfn eq "" ? $file : "$relfn$file";
@@ -593,7 +593,7 @@ sub renderSearchResultList {
 	push @ERRORS, $self->tl('searchnothingfound').$self->renderFilterInfo() if $#searchResult <0;
 	foreach my $result (@searchResult) {
 		$content .= $self->renderFileListEntry($fn, $ru, $result, $entrytmpl);
-		$content=~s/unselectable=\"no\"/unselectable=\"yes\"/g;
+		#$content=~s/unselectable=\"no\"/unselectable=\"yes\"/g;
 	}
 	return $content;
 }

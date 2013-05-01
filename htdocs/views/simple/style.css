@@ -632,6 +632,9 @@ td.center {
 #nav a[data-action=refresh] {
 	background: url(images/sprite.png) no-repeat 2px -410px;
 }
+#nav a[data-action=search] {
+	background: url(images/sprite.png) no-repeat 2px -1092px;
+}
 #nav a[data-action=afsgroupmanager] {
 	background: url(images/sprite.png) no-repeat 2px -326px;
 }
@@ -643,6 +646,9 @@ td.center {
 }
 #nav a[data-action=afsaclmanager] {
 	background: url(images/sprite.png) no-repeat 2px -564px;
+}
+#nav a[data-action=settings] {
+	background: url(images/sprite.png) no-repeat 2px -1132px;
 }
 #nav a[data-action=about] {
 	background: url(images/sprite.png) no-repeat 2px -12px;
@@ -709,6 +715,11 @@ a#fileuploadbutton {
 .small {
 	font-size: 0.2em;
 	color: #888888;
+}
+.confirmdialogsetting {
+	padding: 1em 0 0 0;
+	text-align: left;
+	clear: both;
 }
 .ui-widget-overlay {
 	

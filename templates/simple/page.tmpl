@@ -54,6 +54,7 @@ $INCLUDE(htmlhead)</head>
 			<!--IF($#main::SUPPORTED_VIEWS<1)-->
 				<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
 			<!--ENDIF-->
+			<li><a href="#" data-action="settings" class="dialog">$tl(settings)</a></li>
 			$INCLUDE(help)
 			<li><a href="#" data-action="about" class="dialog">$tl(about)</a></li>
 		</ul>
@@ -173,10 +174,13 @@ AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5C
 		<a href="http://webdavcgi.sf.net">WebDAV CGI</a><br/>
 		<a href="http://gplv3.fsf.org/">GPLv3</a> <br/> &nbsp;<br/>
 		jQuery, jQuery-UI <br/>
-		Plugins: File Upload, Multidraggable, Fancybox, Noty, Cookie <br/>
-		<a href="https://jquery.org/license">MIT License</a><br/>
-			
+		Plugins: File Upload, Multidraggable,  Noty, Cookie <br/>
+		<a href="https://jquery.org/license">MIT License</a><br/>&nbsp;<br/>
+		Fancybox<br/>
+		<a href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0</a>
 	</div>
+	<div id="confirmdialogsetting">$tl(confirmdialog.setting)</div>
+	$INCLUDE(settings)
 </div>
 </body>
 </html>

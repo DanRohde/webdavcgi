@@ -42,6 +42,8 @@ $(document).ready(function() {
 	
 	initSearch();
 	
+	initSettingsDialog();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -53,6 +55,23 @@ $(document).ready(function() {
 		
 	updateFileList($("#flt").attr("data-uri"));
 
+function initSettingsDialog() {
+	var settings = $("#settings");
+	settings.data("initHandler", { init: function() {
+		$.each(["confirm.upload","confirm.dnd","confirm.paste"], function(i,setting) {
+			$("input[name='settings."+setting+"']")
+				.prop("checked", cookie("settings."+setting) != "no")
+				.click(function(event) {
+					cookie("settings."+setting, $(this).is(":checked") ? "yes" : "no");
+				});	
+		});
+		$("select[name='settings.view']").change(function() {
+			cookie("view", $("option:selected",$(this)).val());
+			window.location.href= window.location.pathname; // reload bug fixed (if query view=...) 
+		});
+	}});
+	
+}
 function initSearch() {
 	$("a[data-action='search']").click(function(event) {
 		preventDefault(event)
@@ -445,7 +464,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
 		},
 		submit: function(e,data) {
-			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
+			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
 			return $(this).data('ask.confirm');
 		},
 	});	
@@ -477,6 +496,9 @@ function initFileUpload() {
 }
 
 function confirmDialog(text, data) {
+	if (data.setting) {
+		text+='<div class="confirmdialogsetting"><input type="checkbox" name="'+data.setting+'"/> '+$("#confirmdialogsetting").html()+'</div>';
+	}
 	$("#confirmdialog").html(text).dialog({  
 		modal: true,
 		width: 500,
@@ -486,6 +508,13 @@ function confirmDialog(text, data) {
 			{ text: $("#cancel").html(), click: function() { $("#confirmdialog").dialog("close");  if (data && data.cancel) data.cancel();  } }, 
 			{ text: "OK", click: function() { $("#confirmdialog").dialog("close"); if (data.confirm) data.confirm() } }
 		],
+		open: function() {
+			if (data.setting) {
+				$("input[name='"+data.setting+"']",$(this)).click(function(event) {
+					cookie(data.setting, $(this).is(":checked") ? "yes" : "no");
+				}).prop("checked", cookie(data.setting)!="no");
+			}
+		},
 		close: function() {
 			if (data && data.cancel) data.cancel();
 		}
@@ -514,6 +543,8 @@ function initFileList() {
 	
 	initTableSorter();
 
+	$("#fileList.selectable-false tr").attr("data-unselectable", "yes");
+	
 	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").attr("disabled","disabled");
 	
 	// init single file actions:
@@ -555,9 +586,9 @@ function initFileList() {
 	});
 
 	// init drag & drop:
-	$("#fileList tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
+	$("#fileList:not(.dnd-false) tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
-	$("#fileList tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
+	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
 	
 	$("#flt").trigger("fileListChanged");
 }
@@ -822,8 +853,10 @@ function initDialogActions() {
 }
 function handleDialogActionEvent(event) {
 	preventDefault(event);
-	var action = $(this).attr('data-action');
-	$("#"+action).dialog({modal:true, title: $(this).html(), width: 'auto', buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
+	var action = $("#"+$(this).attr('data-action'));
+	action.dialog({modal:true, title: $(this).html(), width: 'auto', 
+					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); }, 
+					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
 	$('a.listaction[data-action]').button().click(handleFileListActionEvent);
@@ -961,25 +994,29 @@ function handleFileListDrop(event, ui) {
 	var files = dragfilerow.hasClass('selected') 
 				?  $.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
 				: new Array(dragfilerow.attr('data-file'));
-	var msg = $("#paste"+action+"confirm").html();
-	msg = msg.replace(/%files%/g, uri2html(files.join(', ')))
-			.replace(/%srcuri%/g, uri2html(srcuri))
-			.replace(/%dsturi%/g, uri2html(dsturi))
-			.replace(/\\n/g,"<br/>");
-	confirmDialog(msg, {
-		confirm: function() {
-			var block = blockPage(); 
-			$.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
-				if (response.message && action=='cut') { 
-					removeFileListRow($("#fileList tr[data-file='"+files.join("'],#fileList tr[data-file='")+"']"));
-				}
-				block.remove();
-				if (response.error) updateFileList();
-				handleJSONResponse(response);
-			})
-		}
-	});
 
+	function doFileListDrop() {
+		var block = blockPage(); 
+		$.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
+			if (response.message && action=='cut') { 
+				removeFileListRow($("#fileList tr[data-file='"+files.join("'],#fileList tr[data-file='")+"']"));
+			}
+			block.remove();
+			if (response.error) updateFileList();
+			handleJSONResponse(response);
+		});
+	}			
+	
+	if (cookie("settings.confirm.dnd")!="no") {
+		var msg = $("#paste"+action+"confirm").html();
+		msg = msg.replace(/%files%/g, uri2html(files.join(', ')))
+				.replace(/%srcuri%/g, uri2html(srcuri))
+				.replace(/%dsturi%/g, uri2html(dsturi))
+				.replace(/\\n/g,"<br/>");
+		confirmDialog(msg, { confirm: doFileListDrop, setting: "settings.confirm.dnd" });
+	} else {
+		doFileListDrop();
+	}
 }
 function blockPage() {
 	return $("<div></div>").prependTo("body").addClass("overlay");
@@ -1037,21 +1074,23 @@ function handleFileListActionEvent(event) {
 		var action= cookie("clpaction");
 		var srcuri= cookie("clpuri");
 		var dsturi = concatUri($("#fileList").attr("data-uri"),"/");
-		var msg = $("#paste"+action+"confirm").html()
-			.replace(/%srcuri%/g, uri2html(srcuri))
-			.replace(/%dsturi%/g, uri2html(dsturi)).replace(/\\n/g,"<br/>")
-			.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
-		confirmDialog(msg, {
-			confirm: function() {
-				var block = blockPage();
-				$.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
-					if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
-					block.remove();
-					updateFileList();
-					handleJSONResponse(response);
-				});
-			}
-		});
+		
+		function doPasteAction() {
+			var block = blockPage();
+			$.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
+				if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
+				block.remove();
+				updateFileList();
+				handleJSONResponse(response);
+			});
+		}
+		if (cookie("settings.confirm.paste") != "no") {
+			var msg = $("#paste"+action+"confirm").html()
+					.replace(/%srcuri%/g, uri2html(srcuri))
+					.replace(/%dsturi%/g, uri2html(dsturi)).replace(/\\n/g,"<br/>")
+					.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
+			confirmDialog(msg, { confirm: doPasteAction, setting: "settings.confirm.paste" });
+		} else doPasteAction();
 	}
 }
 function uri2html(uri) {
