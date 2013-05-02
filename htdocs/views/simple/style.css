@@ -122,6 +122,9 @@ table td {
 table,th,td {
 	vertical-align: middle;
 }
+#headerName {
+	width: 70%;
+}
 #headerName img {
 	border: 0;
 	margin: 0;
@@ -327,7 +330,7 @@ table,th,td {
 	box-shadow: 3px 0 7px #dddddd;
 	padding: 0;
 	margin: 0;
-	background-color: inherit;
+	background-color: white;
 }
 #new ul li, #bookmarks ul li  {
 	padding: 0.4em;

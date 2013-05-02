@@ -41,7 +41,7 @@
 								top: pos.top + initTopOffset[key]});								
 							});
 							opts.stopNative ? opts.stopNative() : {};
-						},
+						}
 					});
 		        }
 	      });

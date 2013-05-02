@@ -381,9 +381,9 @@ function initFilterBox() {
 	$("form#filterbox").submit(function(event) { return false;});
 	$("form#filterbox input").keyup(applyFilter).change(applyFilter).autocomplete({minLength: 1, select: applyFilter, close: applyFilter});
 	// clear button:
-	$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$("form#filterbox input").val().trim() == "");
+	$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$("form#filterbox input").val() == "");
 	$("form#filterbox input").keyup(function() {
-		$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$(this).val().trim() == "");
+		$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$(this).val() == "");
 	});
 	$("form#filterbox [data-action=clearfilter]").click(function(event) {
 		preventDefault(event);
@@ -469,7 +469,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		submit: function(e,data) {
 			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
 			return $(this).data('ask.confirm');
-		},
+		}
 	});	
 }
 function checkUploadedFilesExist(data) {
@@ -799,7 +799,7 @@ function handleFileRename(row) {
 	inputfield.keydown(function(event) {
 		var row = $(this).closest('tr');
 		var file = $(this).closest('tr').attr('data-file');
-		var newname = $(this).val().trim();
+		var newname = $(this).val();
 		if (event.keyCode == 13 && file != newname) {
 			preventDefault(event);
 			confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,file).replace(/%s/,newname), {
@@ -973,10 +973,12 @@ function changeUri(uri, leaveUnblocked) {
 	// try browser history manipulations:
 	try {
 		if (!leaveUnblocked && window.history && window.history.pushState) {
-			window.history.pushState({path: uri},"",uri);
+			// window.history.pushState({path: uri},"",uri);
+			window.history.pushState(null,null,uri);
 			updateFileList(uri);
 			$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
-				updateFileList(location.pathname);
+				var loc = history.location || document.location;
+				updateFileList(loc.pathname);
 			});
 			return true;
 		}
@@ -1285,7 +1287,7 @@ function initGroupManager(groupmanager, template, target){
 					handleJSONResponse(response);
 					$.get(target,{ajax: "getAFSGroupManager", template: template},groupManagerResponseHandler);
 				});
-			},
+			}
 		});
 	});
 	$("input[name='afsnewgrp']", groupmanager)
@@ -1345,7 +1347,7 @@ function initGroupManager(groupmanager, template, target){
 					handleJSONResponse(response);
 					$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
 				});		
-			},
+			}
 		});
 	});
 	$("a[data-action='afsremoveselectedmembers']")
@@ -1429,7 +1431,7 @@ function initPermissionsDialog() {
 							permissions.dialog("close");
 							updateFileList();
 						});
-					},
+					}
 				});
 				return false;
 			});
