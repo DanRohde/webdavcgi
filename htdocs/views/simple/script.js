@@ -496,8 +496,10 @@ function initFileUpload() {
 }
 
 function confirmDialog(text, data) {
+	var oldsetting;
 	if (data.setting) {
 		text+='<div class="confirmdialogsetting"><input type="checkbox" name="'+data.setting+'"/> '+$("#confirmdialogsetting").html()+'</div>';
+		oldsetting = cookie(data.setting);
 	}
 	$("#confirmdialog").html(text).dialog({  
 		modal: true,
@@ -505,8 +507,21 @@ function confirmDialog(text, data) {
 		height: "auto",
 		title: $("#confirmdialog").attr('data-title'),
 		buttons: [ 
-			{ text: $("#cancel").html(), click: function() { $("#confirmdialog").dialog("close");  if (data && data.cancel) data.cancel();  } }, 
-			{ text: "OK", click: function() { $("#confirmdialog").dialog("close"); if (data.confirm) data.confirm() } }
+			{ 
+				text: $("#cancel").html(), 
+				click: function() { 
+					if (data.setting && oldsetting) cookie(data.setting, oldsetting);
+					$("#confirmdialog").dialog("close");  
+					if (data.cancel) data.cancel();  
+				} 
+			}, 
+			{ 	
+				text: "OK", 
+				click: function() { 
+					$("#confirmdialog").dialog("close"); 
+					if (data.confirm) data.confirm() 
+				} 
+			},
 		],
 		open: function() {
 			if (data.setting) {
@@ -516,7 +531,7 @@ function confirmDialog(text, data) {
 			}
 		},
 		close: function() {
-			if (data && data.cancel) data.cancel();
+			if (data.cancel) data.cancel();
 		}
 	}).show();
 }
