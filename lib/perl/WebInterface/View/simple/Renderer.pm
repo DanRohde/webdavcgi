@@ -183,6 +183,19 @@ sub execTemplateFunction {
 	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
 	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
+	$content = $self->renderLanguageList($fn,$ru,$param) if $func eq 'langList';
+	return $content;
+}
+sub renderLanguageList {
+	my($self, $fn, $ru, $tmplfile) = @_;
+	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
+	my $content ="";
+	foreach my $lang (sort { $main::SUPPORTED_LANGUAGES{$a} cmp $main::SUPPORTED_LANGUAGES{$b} } keys %main::SUPPORTED_LANGUAGES) {
+		my $l = $tmpl;
+		$l=~s/\$langname/$main::SUPPORTED_LANGUAGES{$lang}/sg;
+		$l=~s/\$lang/$lang/sg;
+		$content.=$l;
+	}
 	return $content;
 }
 sub renderViewList {

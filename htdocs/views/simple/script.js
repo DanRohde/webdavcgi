@@ -65,9 +65,12 @@ function initSettingsDialog() {
 					cookie("settings."+setting, $(this).is(":checked") ? "yes" : "no");
 				});	
 		});
-		$("select[name='settings.view']").change(function() {
-			cookie("view", $("option:selected",$(this)).val());
-			window.location.href= window.location.pathname; // reload bug fixed (if query view=...) 
+		$.each(["view","lang"], function(i,setting) {
+			$("select[name='settings."+setting+"'] option[value='"+cookie(setting)+"']").prop("selected",true);	
+			$("select[name='settings."+setting+"']").change(function() {
+				cookie(setting, $("option:selected",$(this)).val());
+				window.location.href= window.location.pathname; // reload bug fixed (if query view=...) 
+			});	
 		});
 	}});
 	
