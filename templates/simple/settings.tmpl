@@ -15,6 +15,15 @@
 </td>
 </tr>
 <!--ENDIF-->
+<!--IF(scalar(keys %main::SUPPORTED_LANGUAGES) > 0)-->
+<tr><td>$tl(settings.language)</td>
+<td>
+	<select name="settings.lang">
+		$langList('<option value="$lang">$langname</option>')
+	</select>
+</td>
+</tr>
+<!--ENDIF-->
 </table>
 </form>
 </div>
