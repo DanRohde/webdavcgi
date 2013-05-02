@@ -475,16 +475,24 @@ function checkUploadedFilesExist(data) {
 	}
 	return false;
 }
-function initZipFileUpload() {
-	var zipfile = $("#zipfile-upload-form input[type=file]");
-	$("a[data-action='uncompress']").click(function (event) { preventDefault(event); zipfile.trigger("click"); $('#new ul').addClass('hidden'); });
-
+function initZipFileUpload() { 
 	initUpload($("#zipfile-upload-form"), $("#zipuploadconfirm").html(),$("#progress").attr('data-title'), false);
-
+	$("a[data-action='uncompress']").click(
+			function (event) { 
+				preventDefault(event);
+				$("#zipfile-upload-form input[type=file]").trigger("click"); 
+				$('#new ul').addClass('hidden'); 
+			}
+	);
 }
 function initFileUpload() {
-	$('#fileuploadbutton').button().click(function(event) { preventDefault(event); $("#file-upload-form input[type=file]").trigger('click'); });
 	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'), $(document));
+	
+	$('#fileuploadbutton').button().click(function(event) { 
+		preventDefault(event); 
+		$("#file-upload-form input[type=file]").trigger('click'); 
+	});
+	
 	$(document).bind('dragenter', function (e) {
 		$("#fileList").addClass('draghover');
 	}).bind('dragleave', function(e) {
