@@ -427,10 +427,10 @@ sub _getSmbURL {
 		if (defined $shareidx && $$fs{$server}{shares}[$shareidx] =~ /:?(\/.*)/) {
 			$initdir = $1;
 		}
-
 		
 		$url ="smb://$server/$share";
 		$url .= $initdir if defined $initdir;
+		$path=~s/[\*\?<>\|:\"\\]/_/g if defined $path; # fix strange characters in filenames or pathnames
 		$url .= $path;
 	}
 	return $url;
