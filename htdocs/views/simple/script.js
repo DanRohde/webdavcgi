@@ -127,9 +127,9 @@ function initWindowResize() {
 	handleWindowResize();
 }
 function handleWindowResize() {
-	$("#content").width($(window).width()-$("#nav").width());
-	$("#content").css("max-width", $("#content").width());
-	$("#controls").width($("#content").width());
+	var width = $(window).width()-$("#nav").width()
+	$("#content").width(width);
+	$("#controls").width(width);
 }
 
 function initChangeUriAction() {
