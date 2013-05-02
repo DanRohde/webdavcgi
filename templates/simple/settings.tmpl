@@ -6,7 +6,15 @@
 <tr><td>$tl(settings.confirm.paste)</td><td><input type="checkbox" name="settings.confirm.paste"/></td></tr>
 
 <!--IF($#main::SUPPORTED_VIEWS>0)-->
-<tr><td>$tl(settings.view)</td><td><select name="settings.view"><option value="$view">$viewname</option>$viewList('<option value="$view">$viewname</option>')</select></td></tr>
+<tr><td>$tl(settings.view)</td>
+<td>
+	<select name="settings.view">
+		<option value="$view">$viewname</option>
+		$viewList('<option value="$view">$viewname</option>')
+	</select>
+</td>
+</tr>
 <!--ENDIF-->
+</table>
 </form>
 </div>
