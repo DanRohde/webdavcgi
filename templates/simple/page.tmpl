@@ -64,7 +64,7 @@ $INCLUDE(htmlhead)</head>
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" id="fileuploadbutton" title="&le;$maxuploadsizehr">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple" title="$tl(upload) (max. $maxuploadsizehr)"/></form>
+				<a href="#" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>

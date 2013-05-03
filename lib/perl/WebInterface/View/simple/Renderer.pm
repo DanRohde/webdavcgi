@@ -149,7 +149,7 @@ sub renderTemplate {
 			view => $main::VIEW,
 			viewname => $self->tl("${main::VIEW}view"),
 			USER=>$main::REMOTE_USER,
-			CLOCK=>$$self{cgi}->span({id=>'clock', 'data-format'=>$self->tl('vartimeformat')},""),
+			CLOCK=>$$self{cgi}->span({id=>'clock', 'data-format'=>$self->tl('vartimeformat')},strftime($self->tl('vartimeformat'),localtime())),
 			NOW=>strftime($self->tl('varnowformat'), localtime()),
 			REQUEST_URI=>$main::REQUEST_URI,
 			PATH_TRANSLATED=>$main::PATH_TRANSLATED,

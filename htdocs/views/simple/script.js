@@ -425,13 +425,24 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 	$("#flt").on("fileListChanged",function() {
 		form.fileupload("option","url",$("#fileList").attr("data-uri"));
 	});
-	
-	var jqXHR = form.fileupload({ 
+	var uploadState = {
+		aborted: false,
+		transports:  new Array(),
+		files: new Array()
+	};
+	form.fileupload({ 
 		url: $("#fileList").attr("data-uri"), 
 		sequentialUploads: false,
 		limitConcurrentUploads: 3,
-		autoUpload: true,
 		dropZone: dropZone,
+		singleFileUploads: true,
+		autoUpload: false,
+		add: function(e,data) {
+			if (!uploadState.aborted) {
+				uploadState.files.push(data.files[0].name);
+				uploadState.transports.push(data.submit());
+			}
+		},
 		done:  function(e,data) {
 			if (data.result && data.result.message) $('#progress .info').append('<div>'+data.result.message+'</div>');
 			else if (data.files && data.files[0]) $('#progress .info').append('<div>'+data.files[0].name+'</div>');
@@ -448,10 +459,24 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			$("#progress").dialog("option","close",function() { updateFileList(); });
 			$("#progress").dialog("option","buttons",[ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]);
 		},
+		change: function(e,data) {
+			uploadState.transports = new Array();
+			uploadState.aborted = false;
+			uploadState.files = new Array();
+			return true;
+		},
 		start: function(e,data) {
+			
 			var buttons = new Array();
 			buttons.push({ text:$("#close").html(), disabled: true});
-			if (jqXHR.abort) buttons.push({text:$("#cancel").html(), click: function() { if (jqXHR.abort) jqXHR.abort(); }});
+			//if (jqXHR.abort) buttons.push({text:$("#cancel").html(), click: function() { if (jqXHR.abort) jqXHR.abort(); }});
+			buttons.push({text:$("#cancel").html(), click: function() {
+				if (uploadState.aborted) return;
+				uploadState.aborted=true;
+				$.each(uploadState.transports, function(i,jqXHR) {
+					if (jqXHR && jqXHR.abort) jqXHR.abort(uploadState.files[i]+" aborted.");
+				});
+			}});
 			$('#progress').dialog({ modal:true, title: dialogtitle, height: 370 , width: 500, buttons: buttons, beforeClose: function() { return false;} });
 			$('#progress').show().each(function() {
 				$(this).find('.bar').css('width','0%').html('0%');
@@ -602,19 +627,24 @@ function initFileList() {
 	$('#fileList').disableSelection();
 	
 	// init fancybox:
-	$("#fileList tr[data-isviewable='yes'][data-iseditable='no']:not([data-file$='.pdf']):not([data-size='0']) a.nametext").attr("rel","imggallery").fancybox({
-		beforeLoad: function() { this.title = $(this.element).html(); }, 
-		helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
-	});
-	$("#fileList tr[data-isviewable='yes'][data-iseditable='yes']:not([data-size='0']) a.nametext,#fileList tr[data-isviewable='yes'][data-file$='.pdf'] a.nametext").attr("rel","txtgallery").fancybox({
-		type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(this.element).html(); }, 
-		helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
-	});
+	$("#fileList tr[data-isviewable='yes'][data-iseditable='no']:not([data-file$='.pdf'])[data-size!='0'] td.filename a")
+		.attr("rel","imggallery")
+		.fancybox({
+			beforeLoad: function() { this.title = $(this.element).html(); }, 
+			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
+		});
+	$("#fileList tr[data-isviewable='yes'][data-iseditable='yes'][data-size!='0'] td.filename a,#fileList tr[data-isviewable='yes'][data-file$='.pdf'] td.filename a")
+		.attr("rel","txtgallery")
+		.fancybox({
+			type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(this.element).html(); }, 
+			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
+		});
 
 	// init drag & drop:
-	$("#fileList:not(.dnd-false) tr[data-iswriteable='yes'][data-type='dir']").droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
-	// $("#fileList tr[data-isreadable=yes]:not([data-file='..']) div.filename").draggable({zIndex: 200, scope: "fileList", revert: true});
-	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename").multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
+	$("#fileList:not(.dnd-false) tr[data-iswriteable='yes'][data-type='dir']")
+			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
+	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
+			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
 	
 	$("#flt").trigger("fileListChanged");
 }
@@ -972,18 +1002,22 @@ function simpleEscape(text) {
 function changeUri(uri, leaveUnblocked) {
 	// try browser history manipulations:
 	try {
-		if (!leaveUnblocked && window.history && window.history.pushState) {
-			// window.history.pushState({path: uri},"",uri);
-			window.history.pushState(null,null,uri);
-			updateFileList(uri);
-			$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
-				var loc = history.location || document.location;
-				updateFileList(loc.pathname);
-			});
-			return true;
+		if (!leaveUnblocked) {
+			if (window.history.pushState) {
+				window.history.pushState({path: uri},"",uri);
+				updateFileList(uri);
+				$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
+					var loc = history.location || document.location;
+					updateFileList(loc.pathname);
+				});
+				return true;
+			} else {
+				updateFileList(uri);
+				return true;
+			}
 		}
 	} catch (e) {
-		console.log(e);
+		console.log(e);		
 	}
 	// fallback for errors and unblocked links:
 	if (!leaveUnblocked) blockPage();
@@ -1016,8 +1050,7 @@ function handleFileListDrop(event, ui) {
 	var dragfilerow = ui.draggable.closest('tr');
 	var dsturi = concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))+"/");
 	var srcuri = concatUri($("#fileList").attr("data-uri"),'/');
-	//console.log("dsturi="+dsturi+" srcuri="+srcuri);
-	if (dsturi == concatUri(srcuri,dragfilerow.attr('data-file'))) return false;
+	if (dsturi == concatUri(srcuri,encodeURIComponent(stripSlash(dragfilerow.attr('data-file'))))+"/") return false;
 	var action = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ? "copy" : "cut" ;
 	var files = dragfilerow.hasClass('selected') 
 				?  $.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
@@ -1058,7 +1091,7 @@ function handleFileListActionEvent(event) {
 	function uncheckSelectedRows() {
 		$("#fileList tr.selected:visible input[type=checkbox]").prop('checked',false);
 		$("#fileList tr.selected:visible").removeClass("selected");
-		$("#flt").trigger("fileListSelChanged")	
+		$("#flt").trigger("fileListSelChanged");
 	}
 	if ($(this).hasClass("disabled")) return;
 	if (action == "download") {
@@ -1093,8 +1126,6 @@ function handleFileListActionEvent(event) {
 		cookie('clpaction',action);
 		cookie('clpuri',concatUri($("#fileList").attr('data-uri'),"/"));
 		if (action=="cut") $("#fileList tr.selected").addClass("cutted").fadeTo("slow",0.5);
-		// $("#fileList tr.selected input[type=checkbox]").prop("checked",false);
-		// $("#fileList tr.selected").removeClass("selected");
 		handleClipboard();
 		uncheckSelectedRows();
 	} else if (action == "paste") {
@@ -1167,9 +1198,7 @@ function handleClipboard() {
 	var datauri = concatUri($("#fileList").attr("data-uri"),"/");
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
-	// var title =$("#paste").html();
-	//if (action && srcuri && files) title += ": "+action+" "+srcuri+": "+files.split("@/@").join(", ");
-	$('a.listaction.paste').button("option","disabled",  (!files || files=="" || srcuri  == datauri)); //.attr("title", decodeURI(title));
+	$('a.listaction.paste').button("option","disabled",  (!files || files=="" || srcuri  == datauri)); 
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
@@ -1268,7 +1297,6 @@ function initGroupManager(groupmanager, template, target){
 		$.get(target, { ajax:"getAFSGroupManager", template: template, afsgrp: $(this).closest("li").attr('data-group')}, groupManagerResponseHandler);
 	};
 	$("#afsgrouplist li[data-group='"+$("#afsmemberlist").attr("data-afsgrp")+"']").addClass("selected");
-//	if ($("#afsgrouplist li.selected").length>0) $("#afsgroups").scrollTop(178);
 	$("#afsgrouplist a[data-action='afsgroupdelete']", groupmanager).hide();
 	$("#afsgrouplist li", groupmanager)
 		.click(groupSelectionHandler)
@@ -1295,15 +1323,10 @@ function initGroupManager(groupmanager, template, target){
 		.keypress(function(event){
 			if (event.keyCode == 13) {
 				var afsgrp = $(this).val();
-//				confirmDialog($("#afsconfirmcreategrp").html(),{
-//					confirm: function(){
-						$.post(target,{afscreatenewgrp: "1", afsnewgrp: afsgrp}, function(response){
-							handleJSONResponse(response);
-							$.get(target, { ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-						});		
-//					},
-//				});
-				
+				$.post(target,{afscreatenewgrp: "1", afsnewgrp: afsgrp}, function(response){
+					handleJSONResponse(response);
+					$.get(target, { ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
+				});		
 			}
 		});
 	$("img[data-action='afscreatenewgrp']", groupmanager).click(function(event){
@@ -1318,15 +1341,10 @@ function initGroupManager(groupmanager, template, target){
 		if (event.keyCode == 13) {
 			var user = $(this).val();
 			var afsgrp = $(this).attr('data-afsgrp');
-//			confirmDialog($("#afsconfirmadduser").html(), {
-//				confirm: function() {
-					$.post(target,{afsaddusr: 1, afsaddusers: user, afsselgrp: afsgrp}, function(response){
-						handleJSONResponse(response);
-						$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-					});		
-//				},
-//			});
-			
+			$.post(target,{afsaddusr: 1, afsaddusers: user, afsselgrp: afsgrp}, function(response){
+				handleJSONResponse(response);
+				$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
+			});					
 		}
 	});
 	$("img[data-action='afsaddusr']", groupmanager).click(function(event){
@@ -1449,7 +1467,6 @@ function initViewFilterDialog() {
 			$("input[name='filter.size.val']", vfd).spinner({min: 0, page: 10, numberFormat: "n", step: 1});
 			$("[data-action='filter.apply']", vfd).button().click(function(event){
 				preventDefault(event);
-				
 				if ($("input[name='filter.name.val']", vfd).val() != "") 
 					cookie("filter.name", $("select[name='filter.name.op'] option:selected", vfd).val()+" "+$("input[name='filter.name.val']",vfd).val());
 				else rmcookies("filter.name");
@@ -1471,7 +1488,6 @@ function initViewFilterDialog() {
 			});
 			$("[data-action='filter.reset']", vfd).button().click(function(event){
 				preventDefault(event);
-				//console.log("remove cookies?");
 				rmcookies("filter.name", "filter.size", "filter.types");
 				vfd.dialog("close");
 				updateFileList();
