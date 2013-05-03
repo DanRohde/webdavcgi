@@ -427,8 +427,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 	});
 	var uploadState = {
 		aborted: false,
-		transports:  new Array(),
-		files: new Array()
+		transports: new Array()
 	};
 	form.fileupload({ 
 		url: $("#fileList").attr("data-uri"), 
@@ -439,9 +438,10 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		autoUpload: false,
 		add: function(e,data) {
 			if (!uploadState.aborted) {
-				uploadState.files.push(data.files[0].name);
 				uploadState.transports.push(data.submit());
+				return true;
 			}
+			return false;
 		},
 		done:  function(e,data) {
 			if (data.result && data.result.message) $('#progress .info').append('<div>'+data.result.message+'</div>');
@@ -474,8 +474,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				if (uploadState.aborted) return;
 				uploadState.aborted=true;
 				$.each(uploadState.transports, function(i,jqXHR) {
-					if (jqXHR && jqXHR.abort) jqXHR.abort(uploadState.files[i]+" aborted.");
+					if (jqXHR && jqXHR.abort) jqXHR.abort($("#uploadaborted").html());
 				});
+				uploadState.transports = [];
 			}});
 			$('#progress').dialog({ modal:true, title: dialogtitle, height: 370 , width: 500, buttons: buttons, beforeClose: function() { return false;} });
 			$('#progress').show().each(function() {
