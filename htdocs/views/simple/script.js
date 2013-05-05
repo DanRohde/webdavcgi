@@ -449,12 +449,14 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("done")
+				.css("width","100%")
 				.html(data.result && data.result.message ? data.result.message : data.files[0]["name"]);
 		},
 		fail: function(e,data) {
 			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("failed")
+				.css("width","100%")
 				.html(data.textStatus+": "+$.map(data.files, function(v,i) { return v.name;}).join(", "));
 			console.log(data);
 		},
