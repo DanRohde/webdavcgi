@@ -439,17 +439,23 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		add: function(e,data) {
 			if (!uploadState.aborted) {
 				uploadState.transports.push(data.submit());
+				var up =$("<div></div>").appendTo("#progress .info").attr("id",data.files[0]["name"]).addClass("fileprogress");
+				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): 0%");;
 				return true;
 			}
 			return false;
 		},
 		done:  function(e,data) {
-			if (data.result && data.result.message) $('#progress .info').append('<div>'+data.result.message+'</div>');
-			else if (data.files && data.files[0]) $('#progress .info').append('<div>'+data.files[0].name+'</div>');
-			$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
+			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
+				.removeClass("running")
+				.addClass("done")
+				.html(data.result && data.result.message ? data.result.message : data.files[0]["name"]);
 		},
 		fail: function(e,data) {
-			$('#progress .info').append('<div class="error">'+data.textStatus+': '+$.map(data.files, function(v,i) { return v.name;}).join(", ")+'</div>');
+			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
+				.removeClass("running")
+				.addClass("failed")
+				.html(data.textStatus+": "+$.map(data.files, function(v,i) { return v.name;}).join(", "));
 			console.log(data);
 		},
 		stop: function(e,data) {
@@ -469,7 +475,6 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			
 			var buttons = new Array();
 			buttons.push({ text:$("#close").html(), disabled: true});
-			//if (jqXHR.abort) buttons.push({text:$("#cancel").html(), click: function() { if (jqXHR.abort) jqXHR.abort(); }});
 			buttons.push({text:$("#cancel").html(), click: function() {
 				if (uploadState.aborted) return;
 				uploadState.aborted=true;
@@ -484,13 +489,15 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				$(this).find('.info').html('');
 			});
 		},
+		progress: function(e,data) {
+			var perc = (data.loaded/data.total * 100).toFixed(2)+"%";
+			console.log(data.files[0]["name"]+": "+perc);
+			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): "+perc);
+			
+		},
 		progressall: function(e,data) {
 			var perc =  data.loaded / data.total * 100;
 			$('#progress .bar').css('width', perc.toFixed(2) + '%').html(parseInt(perc)+'% ('+renderByteSize(data.loaded)+'/'+renderByteSize(data.total)+')');
-		},
-		send: function(e,data) {
-			$('#progress .info').append('<div>'+$.map(data.files,function(v,i) { return v.name+" ("+renderByteSize(v.size)+") ...";} ).join('</div><div>')+'</div>');
-			$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
 		},
 		submit: function(e,data) {
 			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));

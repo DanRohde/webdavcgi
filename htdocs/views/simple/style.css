@@ -411,29 +411,49 @@ input.file-upload {
 */
 #progress {
 	display: none;
-/*
-	position: absolute;
-	top: 0;
-*/
 	z-index: 100;
 	background-color: white;
 }
 #progress .bar {
-	background-color: #aaaaff;
+	background-color: #bbbbff;
 	color: black;
 	border: 1px solid blue;
 	height: 2em;
 	white-space: nowrap;
-	box-shadow: 2px 2px 2px #000022;
 	vertical-align: middle;
 }
 #progress .info {
 	min-height: 10em;
 	max-height: 15em;
 	overflow: auto;
-	background-color: #dddddd;
-	box-shadow: 2px 2px 2px #222222;
+	background-color: white;
 	margin-top: 0.5em;
+	font-size: 0.8em;
+}
+#progress .info .fileprogress {
+	width: 99%;
+	border:0;
+	margin:0;
+}
+#progress .info .fileprogressbar {
+	width: 0%;
+	border: 1px solid #aaaaaa;
+	height: 1.5em;
+	white-space: nowrap;
+	padding: 1px;
+}
+#progress .info .fileprogressbar.running {
+	background-color: #ffffbb;
+}
+#progress .info .fileprogressbar.done {
+	background-color: #bbffbb;
+	white-space: normal;
+	height: auto;
+}
+#progress .info .fileprogressbar.failed {
+	background-color: #ffbbbb;
+	white-space: normal;
+	height: auto;
 }
 #edittextdata a[data-action=savetextdata] { display: block; width: 40%; float: right;}
 #edittextdata a[data-action=cancel-edit] { display: block; width: 40%;  float: left; }
