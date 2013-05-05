@@ -415,9 +415,9 @@ input.file-upload {
 	background-color: white;
 }
 #progress .bar {
-	background-color: #bbbbff;
+	background-color: #ddddff;
 	color: black;
-	border: 1px solid blue;
+	border: 1px solid #aaaaff;
 	height: 2em;
 	white-space: nowrap;
 	vertical-align: middle;
@@ -428,30 +428,32 @@ input.file-upload {
 	overflow: auto;
 	background-color: white;
 	margin-top: 0.5em;
-	font-size: 0.8em;
+	font-size: 0.9em;
 }
 #progress .info .fileprogress {
-	width: 99%;
-	border:0;
-	margin:0;
+	width: 95%;
+	border: 1px solid #dddddd;
+	margin: 0.5em;
+	padding: 2px;
 }
 #progress .info .fileprogressbar {
 	width: 0%;
-	border: 1px solid #aaaaaa;
+	border: 0;
 	height: 1.5em;
 	white-space: nowrap;
 	padding: 1px;
+	margin-bottom: 2px;
 }
 #progress .info .fileprogressbar.running {
-	background-color: #ffffbb;
+	border-bottom: 2px solid #4444ff;
 }
 #progress .info .fileprogressbar.done {
-	background-color: #bbffbb;
+	border: 0;
 	white-space: normal;
 	height: auto;
 }
 #progress .info .fileprogressbar.failed {
-	background-color: #ffbbbb;
+	background-color: #ffbbbb; 
 	white-space: normal;
 	height: auto;
 }

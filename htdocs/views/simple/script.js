@@ -439,21 +439,22 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		add: function(e,data) {
 			if (!uploadState.aborted) {
 				uploadState.transports.push(data.submit());
-				var up =$("<div></div>").appendTo("#progress .info").attr("id",data.files[0]["name"]).addClass("fileprogress");
+				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+data.files[0]["name"]).addClass("fileprogress");
 				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): 0%");;
+				//$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
 				return true;
 			}
 			return false;
 		},
 		done:  function(e,data) {
-			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
+			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("done")
 				.css("width","100%")
 				.html(data.result && data.result.message ? data.result.message : data.files[0]["name"]);
 		},
 		fail: function(e,data) {
-			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
+			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("failed")
 				.css("width","100%")
@@ -492,9 +493,8 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			});
 		},
 		progress: function(e,data) {
-			var perc = (data.loaded/data.total * 100).toFixed(2)+"%";
-			console.log(data.files[0]["name"]+": "+perc);
-			$("div[id='"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): "+perc);
+			var perc = parseInt(data.loaded/data.total * 100)+"%";
+			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): "+perc);
 			
 		},
 		progressall: function(e,data) {
