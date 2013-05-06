@@ -7,6 +7,7 @@
      - fixed unreadable but writeable file move bug
      - fixed AFS performance bug
      - fixed ZIP file upload bug
+     - fixed missing modules in checkenv script bug
 
 0.8.4: 2013/18/3
      - fixed typos in doc

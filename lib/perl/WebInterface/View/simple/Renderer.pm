@@ -294,7 +294,7 @@ sub renderFilterInfo {
 		
 		if ($filtername) {
 			my %filterops = (
-				'=~' => $self->tl('filter.name.regexmatch'),'^' => $self->tl('filter.name.startwith'),
+				'=~' => $self->tl('filter.name.regexmatch'),'^' => $self->tl('filter.name.startswith'),
 				'$' => $self->tl('filter.name.endswith'),'eq' => $self->tl('filter.name.equal'),
 				'ne' => $self->tl('filter.name.notequal'),'lt' => $self->tl('filter.name.lessthan'),
 				'gt' => $self->tl('filter.name.greaterthan'),'ge' => $self->tl('filter.name.greaterorequal'),
@@ -339,10 +339,9 @@ sub readTemplate {
 	
 	my $text = "";
 	$filename=~s/\//\./g;
-	$filename .= '.custom' if -r "../templates/simple/${filename}.custom.tmpl";
+	$filename .= '.custom' if -r "$main::INSTALL_BASE/templates/simple/${filename}.custom.tmpl";
 	return $CACHE{template}{$filename} if exists $CACHE{template}{$filename};
-	#print STDERR "readTemplate($filename)\n";
-	if (open(IN, "../templates/simple/$filename.tmpl")) {
+	if (open(IN, "$main::INSTALL_BASE/templates/simple/$filename.tmpl")) {
 		my @tmpl = <IN>;
 		close(IN);
 		$text = join("",@tmpl);
