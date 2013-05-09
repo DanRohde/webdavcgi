@@ -107,7 +107,7 @@ $INCLUDE(htmlhead)</head>
 					<ul id="autorefreshmenulist" class="hidden">
 						<li><a href="#" data-action="setautorefresh" data-value="now">$tl(autorefresh.now)</a></li>
 						$each@%main::AUTOREFRESH@'<li><a href="#" data-action="setautorefresh" data-value="$k">$v</a></li>'@
-						<li><a href="#" class="autorefreshrunning" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
+						<li class="sep"><a href="#" class="autorefreshrunning" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
 						<li><a href="#" class="autorefreshrunning" data-action="autorefreshclear">$tl(autorefresh.clear)</a></li>
 					</ul>
 				</div>
@@ -195,8 +195,8 @@ $INCLUDE(htmlhead)</head>
 	$INCLUDE(settings)
 </div>
 <!--IF(%main::AUTOREFRESH)-->
-	<div id="autorefreshtimer">
-		$tl(autorefresh) <span data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
+	<div id="autorefreshtimer" title="$tl(autorefresh.select.title)">
+		<span data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
 		<a href="#" class="autorefreshrunning" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
 		<a href="#" class="autorefreshrunning" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
 	</div>
