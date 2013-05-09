@@ -44,6 +44,8 @@ $(document).ready(function() {
 	
 	initSettingsDialog();
 	
+	initAutoRefresh();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -54,11 +56,90 @@ $(document).ready(function() {
 	});
 		
 	updateFileList($("#flt").attr("data-uri"));
-
+	
+function initAutoRefresh() {
+	$("a[data-action='autorefreshmenu']").button().click(function(event) {
+		preventDefault(event);
+		$("#autorefresh ul").toggleClass("hidden");
+	});
+	$("a.autorefreshrunning").addClass("disabled");
+	$("#autorefresh").on("started", function() {
+		$("a.autorefreshrunning").removeClass("disabled");
+		$("#autorefreshtimer").show();
+		$("a[data-action='autorefreshtoggle']").addClass("running")
+	}).on("stopped", function() {
+		$("a.autorefreshrunning").addClass("disabled");
+		$("#autorefreshtimer").hide();
+		$("a[data-action='autorefreshtoggle']").removeClass("running");
+	});
+	
+	$("#flt").on("fileListChanged", function() {
+		if (cookie("autorefresh") != "" && parseInt(cookie("autorefresh"))>0) startAutoRefreshTimer(parseInt(cookie("autorefresh")));
+	});
+	$("a[data-action='setautorefresh']").click(function(event){
+		preventDefault(event);
+		$("#autorefresh ul").addClass("hidden");
+		if ($(this).attr("data-value") == "now") {
+			updateFileList();
+			return;
+		}
+		cookie("autorefresh", $(this).attr("data-value"));
+		startAutoRefreshTimer(parseInt($(this).attr("data-value")));
+	});
+	$("a[data-action='autorefreshclear']").click(function(event) {
+		preventDefault(event);
+		if ($(this).hasClass("disabled")) return;
+		window.clearInterval($("#autorefresh").data("timer"));
+		rmcookies("autorefresh");
+		$("#autorefresh").trigger("stopped");
+		$("#autorefresh ul").addClass("hidden");
+	});
+	$("a[data-action='autorefreshtoggle']").click(function(event) {
+		preventDefault(event);
+		if ($(this).hasClass("disabled")) return;
+		var af = $("#autorefresh");
+		if (af.data("timer")!=null) {
+			window.clearInterval(af.data("timer"));
+			af.data("timer",null);
+			$("a[data-action='autorefreshtoggle']").removeClass("running");
+		} else {
+			startAutoRefreshTimer(af.data("timeout"));
+			$("a[data-action='autorefreshtoggle']").addClass("running");
+		}
+		$("#autorefresh ul").addClass("hidden");
+	});
+}
+function renderAutoRefreshTimer(aftimeout) {
+	var t = $("[data-action='autorefreshtimer']");
+	var f = t.attr("data-template") || "%sm %ss";
+	var minutes = Math.floor(aftimeout / 60);
+	var seconds = aftimeout % 60;
+	if (seconds < 10) seconds='0'+seconds;
+	t.html(f.replace("%s", minutes).replace("%s", seconds));
+}
+function startAutoRefreshTimer(timeout) {
+	var af = $("#autorefresh");
+	if (af.data("timer")!=null) window.clearInterval(af.data("timer"));
+	af.data("timeout", timeout);
+	renderAutoRefreshTimer(timeout);
+	af.data("timer", window.setInterval(function() {
+		var aftimeout = af.data("timeout") -1;
+		renderAutoRefreshTimer(aftimeout);
+		af.data("timeout", aftimeout);
+		if (aftimeout < 0) {
+			window.clearInterval(af.data("timer"));
+			af.data("timer",null);
+			renderAutoRefreshTimer(0);
+			af.trigger("stopped");
+			updateFileList();
+		}
+	}, 1000));
+	af.trigger("started");
+}
 function initSettingsDialog() {
 	var settings = $("#settings");
 	settings.data("initHandler", { init: function() {
-		$.each(["confirm.upload","confirm.dnd","confirm.paste"], function(i,setting) {
+		$.each(["confirm.upload","confirm.dnd","confirm.paste","confirm.save"], function(i,setting) {
 			$("input[name='settings."+setting+"']")
 				.prop("checked", cookie("settings."+setting) != "no")
 				.click(function(event) {
@@ -352,10 +433,12 @@ function initChangeDir() {
 		if (event.keyCode==27) {
 			$('#pathinput').hide();
 			$('#quicknav').show();
+			$('.filterbox').show();
 		} else if (event.keyCode==13) {
 			preventDefault(event);
 			$('#pathinput').hide();
 			$('#quicknav').show();
+			$('.filterbox').show();
 			changeUri($(this).val());
 		}
 	});
@@ -364,6 +447,7 @@ function initChangeDir() {
 		$('#pathinput').toggle();
 		$('#quicknav').toggle();
 		$('#pathinput input[name=uri]').focus().select();
+		$('.filterbox').toggle();
 	});
 	$("#path [data-action='chdir']").button().click(function(event){
 		preventDefault(event);
@@ -761,19 +845,21 @@ function handleFileEdit(row) {
 			text.data("response", text.val());
 			dialog.find('a[data-action=savetextdata]').button().unbind('click').click(function(event) {
 				preventDefault(event);
-				confirmDialog($('#confirmsavetextdata').html().replace(/%s/,row.attr('data-file')), {
-					confirm: function() {
-						text.trigger("editsubmit");
-						$.post(addMissingSlash($('#fileList').attr('data-uri')), { savetextdata: 'yes', filename: row.attr('data-file'), textdata: text.val() }, function(response) {
-							if (!response.error && response.message) {
-								text.data("response", text.val());
-								updateFileList();
-							}
-							handleJSONResponse(response);
-						});
-					}
-				});
-
+				
+				function doSaveTextData() {
+					text.trigger("editsubmit");
+					$.post(addMissingSlash($('#fileList').attr('data-uri')), { savetextdata: 'yes', filename: row.attr('data-file'), textdata: text.val() }, function(response) {
+						if (!response.error && response.message) {
+							text.data("response", text.val());
+							updateFileList();
+						}
+						handleJSONResponse(response);
+					});	
+				}
+				if (cookie("settings.confirm.save") != "no") 
+					confirmDialog($('#confirmsavetextdata').html().replace(/%s/,row.attr('data-file')), { confirm: doSaveTextData, setting: "settings.confirm.save" });
+				else
+					doSaveTextData();
 			});
 			dialog.find('a[data-action=cancel-edit]').button().unbind('click').click(function(event) {
 				preventDefault(event);

@@ -119,11 +119,42 @@ sub getQuotaData {
 
 	return $ret;
 }
+sub flexSorter {
+	return $a <=> $b if ($a=~/^[\d\.]+$/ && $b=~/^[\d\.]+$/); 
+	return $a cmp $b;
+}
+sub renderEach {
+	my ($self, $variable, $tmplfile) = @_;
+	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
+	my $content = "";
+	if ($variable=~/^\%/) {
+		$variable=~s/^\%//;
+		my %hashvar = %{"$variable"};
+		foreach my $key (sort flexSorter keys %hashvar) {
+			my $t=$tmpl;
+			$t=~s/\$k/$key/g;
+			$t=~s/\$v/$hashvar{$key}/g;
+			$content.=$t;
+		}
+	} elsif ($variable=~/\@/) {
+		$variable=~s/\@//g;
+		my @arrvar = @{"$variable"};
+		foreach my $key (@arrvar) {
+			my $t= $tmpl;
+			$t=~s/\$[kv]/$key/g;
+			$content.=$t;
+		}
+	}
+	
+	return $content;
+}
 sub renderTemplate {
 	my ($self,$fn,$ru,$content) = @_;
 
 	# replace eval:
 	$content=~s/\$eval(.)(.*?)\1/eval($2)/egs;
+	# replace each:
+	$content=~s/\$each(.)(.*?)\1(.*?)\1/$self->renderEach($2,$3)/egs;
 	# replace functions:
 	$content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg;
 

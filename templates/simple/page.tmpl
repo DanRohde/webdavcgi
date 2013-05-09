@@ -92,7 +92,7 @@ $INCLUDE(htmlhead)</head>
 					<a href="#" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
 					<div id="bookmarksmenu">
 					<a href="#" data-action="bookmarkmenu" title="$tl(bookmarks)">&nbsp;</a>
-					<ul class="hidden">
+					<ul id="bookmarksmenulist" class="hidden">
 						<li id="bookmarktemplate" class="hidden">$bookmarktext<img class="right neverdisabled" alt="$tl(rmbookmarktitle)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
 						<li class="sep link" data-action="bookmarksortpath">$tl(sortbookmarkbypath)<span class="path right">&uarr;</span><span class="path-desc right">&darr;</span></li>
 						<li class="link" data-action="bookmarksorttime">$tl(sortbookmarkbytime)<span class="time right">&uarr;</span><span class="time-desc right">&darr;</span></li>
@@ -101,8 +101,18 @@ $INCLUDE(htmlhead)</head>
 					</div>
 				</div>
 			<!--ENDIF-->
+			<!--IF(%main::AUTOREFRESH)-->
+				<div id="autorefresh" title="$tl(autorefresh.select.title)">
+					<a href="#" data-action="autorefreshmenu">&nbsp;</a>
+					<ul id="autorefreshmenulist" class="hidden">
+						<li><a href="#" data-action="setautorefresh" data-value="now">$tl(autorefresh.now)</a></li>
+						$each@%main::AUTOREFRESH@'<li><a href="#" data-action="setautorefresh" data-value="$k">$v</a></li>'@
+						<li><a href="#" class="autorefreshrunning" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
+						<li><a href="#" class="autorefreshrunning" data-action="autorefreshclear">$tl(autorefresh.clear)</a></li>
+					</ul>
+				</div>
+			<!--ENDIF-->
 		</div>
-		
 		<div id="filelistactions">
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
@@ -181,7 +191,15 @@ $INCLUDE(htmlhead)</head>
 	</div>
 	<div id="confirmdialogsetting">$tl(confirmdialog.setting)</div>
 	<div id="uploadaborted">$tl(upload.aborted)</div>
+	
 	$INCLUDE(settings)
 </div>
+<!--IF(%main::AUTOREFRESH)-->
+	<div id="autorefreshtimer">
+		$tl(autorefresh) <span data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
+		<a href="#" class="autorefreshrunning" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
+		<a href="#" class="autorefreshrunning" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
+	</div>
+<!--ENDIF-->
 </body>
 </html>
