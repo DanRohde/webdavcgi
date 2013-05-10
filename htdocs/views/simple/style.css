@@ -301,15 +301,15 @@ table,th,td {
 #filelistactions {
 	display: none;
 	position: absolute;
-	left: 0em; 
+	left: 18em; 
 	top: 0em;
-	padding-left: 13em;
+	padding-left: 1em;
 	padding-top: 0.2em;
 	z-index: 70;
-	background-color: #ededed;
+	background-color: inherit;
 	width: 100%;
 	white-space: nowrap;
-	height: 2.8em;
+	height: 2.6em;
 }
 #new {
 /*	position: absolute;

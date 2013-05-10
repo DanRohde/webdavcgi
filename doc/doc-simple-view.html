@@ -37,7 +37,7 @@ This is the new default view for the WebDAV CGI web interface. The Simple view u
 
 <p>Some features of the old web interface (Sidebar or Classic view) are not implemented (yet): WebDAV Properties view, List Options (to change visible columns).
 </p>
-<p>The interface to integrate a HTML editor was also modified (see <a href="#editor">WYSIWYG: Integrate a HTML editor</a>)</p>
+<p>The HTML editor integration was also modified (see <a href="#editor">WYSIWYG: Integrate a HTML editor</a>)</p>
 
 <h2 id="hooks">Template Hooks: Add Your Own Sidebar Entries</h2>
 You can add your own menu entries in the sidebar menu if you create some custom template files. 
@@ -102,7 +102,7 @@ Take a look at the Simple view templates for examples (<code>templates/simple/*.
 <li><code>$eval[sep][Perl code][sep]</code> - replaced by the return value of the executed Perl code  </li>
 <li><code>$cgiparam([param])</code> - replaced by CGI query parameter values </li>
 <li><code>$env([variable])</code> - replaced by environment variable value</li>
-<li><code>each[sep][hash|array variable][sep][template (file)][sep]</code> - iterates over the given hash/array elements and renders the template for each element ($v, $k can be used in the template for hash keys and hash values)</li>
+<li><code>$each[sep][hash|array variable][sep][template (file)][sep]</code> - iterates over the given hash/array elements and renders the template for each element ($v, $k can be used in the template for hash keys and hash values)</li>
 <li>... take a look at the template files for all others.</li>
 </ul></li>
 <li>Variables:<ul>
@@ -128,13 +128,17 @@ if ($_view eq 'simple') {
                         $("textarea[name=textdata]").on("editstart", function() {
                                 if ($(this).attr("data-file").match(/\.html?$/))
                                         CKEDITOR.replace('textdata',
-                                                { fullPage : true, language: '@.$_lang.q@', removePlugins: 'save',
+                                                { fullPage : true, 
+						  language: '@.$_lang.q@', 
+						  removePlugins: 'save',
                                                   baseFloatZIndex: 10000
                                         });
                         }).on("editsubmit", function() {
-                                for (var name in CKEDITOR.instances) CKEDITOR.instances[name].updateElement();
+                                for (var name in CKEDITOR.instances) 
+					CKEDITOR.instances[name].updateElement();
                         }).on("editdone", function() {
-                                for (var name in CKEDITOR.instances) CKEDITOR.instances[name].destroy();
+                                for (var name in CKEDITOR.instances) 
+					CKEDITOR.instances[name].destroy();
                         });
                 });
          &lt;/script&gt;
