@@ -2564,7 +2564,7 @@ sub rcopy {
         return 0 if $src eq $dst;
 
 	# src == dst ? 
-	return 0 if $backend->getLinkSrc($src) eq $backend->getLinkSrc($dst);
+#	return 0 if $backend->getLinkSrc($src) eq $backend->getLinkSrc($dst); # litmus fails (why?)
 
         # src in dst?
         return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/;
