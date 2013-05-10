@@ -1018,14 +1018,17 @@ function updateFileListActions() {
 	var s = getFolderStatistics();
 	if (s["sumselcounter"] > 0 ) $('#filelistactions').show(); else $('#filelistactions').hide();
 	
+	toggleButton($("a[data-sel='none']"), s["sumselcounter"]!=0);
 	toggleButton($("a[data-sel='one']"), s["sumselcounter"]!=1);
 	toggleButton($("a[data-sel='multi']"), s["sumselcounter"]==0);
 	toggleButton($("a[data-sel='noneorone']"), s["sumselcounter"]>1);
 
+	toggleButton($("a[data-sel='none'][data-seltype='dir']"), s["fileselcounter"]!=0 );
 	toggleButton($("a[data-sel='one'][data-seltype='dir']"), s["fileselcounter"]>0 || s["dirselcounter"]!=1);
 	toggleButton($("a[data-sel='multi'][data-seltype='dir']"), s["fileselcounter"]>0 || s["dirselcounter"]==0);
 	toggleButton($("a[data-sel='noneorone'][data-seltype='dir']"), s["fileselcounter"]>0 || s["dirselcounter"]>1);
 
+	toggleButton($("a[data-sel='none'][data-seltype='file']"),  s["fileselcounter"]!=0)
 	toggleButton($("a[data-sel='one'][data-seltype='file']"), s["dirselcounter"]>0 || s["fileselcounter"]!=1);
 	toggleButton($("a[data-sel='multi'][data-seltype='file']"), s["dirselcounter"]>0 || s["fileselcounter"]==0);
 	toggleButton($("a[data-sel='noneorone'][data-seltype='file']"), s["dirselcounter"]>0 || s["fileselcounter"]>1);

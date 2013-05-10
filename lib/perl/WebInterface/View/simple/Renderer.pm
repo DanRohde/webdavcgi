@@ -297,6 +297,8 @@ sub renderFileListEntry {
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $full =~ /^$unselregex$/ ? 'yes' : 'no',
 				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
+				'mode' => sprintf('%04o', $mode & 07777),
+				'modestr' => $self->mode2str($full, $mode),
 				);
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);
