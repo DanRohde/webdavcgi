@@ -139,7 +139,7 @@ function startAutoRefreshTimer(timeout) {
 function initSettingsDialog() {
 	var settings = $("#settings");
 	settings.data("initHandler", { init: function() {
-		$.each(["confirm.upload","confirm.dnd","confirm.paste","confirm.save"], function(i,setting) {
+		$.each(["confirm.upload","confirm.dnd","confirm.paste","confirm.save","confirm.rename"], function(i,setting) {
 			$("input[name='settings."+setting+"']")
 				.prop("checked", cookie("settings."+setting) != "no")
 				.click(function(event) {
@@ -639,16 +639,19 @@ function confirmDialog(text, data) {
 		buttons: [ 
 			{ 
 				text: $("#cancel").html(), 
-				click: function() { 
-					if (data.setting && oldsetting) cookie(data.setting, oldsetting);
+				click: function() {
+					if (data.setting) {
+						if (!oldsetting || oldsetting == "") rmcookies(data.setting); 
+						else cookie(data.setting, oldsetting);
+					}
 					$("#confirmdialog").dialog("close");  
-					if (data.cancel) data.cancel();  
+					if (data.cancel) data.cancel();
 				} 
 			}, 
 			{ 	
 				text: "OK", 
 				click: function() { 
-					$("#confirmdialog").dialog("close"); 
+					$("#confirmdialog").dialog("close");
 					if (data.confirm) data.confirm() 
 				} 
 			},
@@ -928,19 +931,25 @@ function handleFileRename(row) {
 		var newname = $(this).val();
 		if (event.keyCode == 13 && file != newname) {
 			preventDefault(event);
-			confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,file).replace(/%s/,newname), {
-				confirm: function() {
-					$.post($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
-						if (response.error) {
-							row.find('.renamefield').remove();
-							row.find('td.filename div.hidden div.filename').unwrap();
-						} else if (response.message) {
-							updateFileList();
-						}
-						handleJSONResponse(response);
-					});
-				}
-			});
+			function doRename() {
+				$.post($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
+					if (response.error) {
+						row.find('.renamefield').remove();
+						row.find('td.filename div.hidden div.filename').unwrap();
+					} else if (response.message) {
+						updateFileList();
+					}
+					handleJSONResponse(response);
+				});
+			}
+			if (cookie("settings.confirm.rename")!="no") {
+				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,file).replace(/%s/,newname), {
+					confirm: doRename,
+					setting: "settings.confirm.rename"
+				});
+			} else {
+				doRename();
+			}
 		} else if (event.keyCode == 27 || (event.keyCode==13 && file == newname)) {
 			row.find('.renamefield').remove();
 			row.find('td.filename div.hidden div.filename').unwrap();
