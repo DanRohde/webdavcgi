@@ -64,12 +64,11 @@ $INCLUDE(htmlhead)</head>
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" data-sel="none" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
+				<a href="#" data-sel="none" class="hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction paste" data-sel="none" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
+				<a class="listaction paste hideit" data-sel="none" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
 			<!--ENDIF-->			
-			<div id="progress" data-title="$tl(upload)"><div class="bar"></div><div class="info"></div></div>
 			<ul class="hidden">
 			<li><a href="#" data-sel="none" data-action="create-folder">$tl(createfolderbutton)</a></li>
 			<li><a href="#" data-sel="none" data-action="create-file">$tl(createnewfilebutton)</a></li>
@@ -83,7 +82,7 @@ $INCLUDE(htmlhead)</head>
 			</ul>
 		
 		</div>
-		<div id="path">
+		<div id="path" data-sel="none" class="hideit">
 			<span id="quicknav">$[quicknavpath]</span>
 			<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></span></form>
 			<a href="#" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
@@ -113,7 +112,7 @@ $INCLUDE(htmlhead)</head>
 				</div>
 			<!--ENDIF-->
 		</div>
-		<div id="filelistactions">
+		<div id="filelistactions" data-sel="multi" class="hideit">
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction copy" href="#" title="$tl(copytooltip)" data-action="copy" data-sel="multi">&nbsp;</a>
@@ -200,6 +199,9 @@ $INCLUDE(htmlhead)</head>
 		<a href="#" class="autorefreshrunning" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
 		<a href="#" class="autorefreshrunning" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
 	</div>
+<!--ENDIF-->
+<!--IF($config(ALLOW_POST_UPLOADS))-->
+	<div id="progress" data-title="$tl(upload)"><div class="bar"></div><div class="info"></div></div>
 <!--ENDIF-->
 </body>
 </html>
