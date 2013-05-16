@@ -275,6 +275,8 @@ sub renderFileListEntry {
 	$file.='/' if $file !~ /^\.\.?$/ && $$self{backend}->isDir($full);
 	my $e = $entrytemplate;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($full);
+	$mtime = 0 unless defined $mtime;
+	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
 	my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 	my %stdvars = ( 

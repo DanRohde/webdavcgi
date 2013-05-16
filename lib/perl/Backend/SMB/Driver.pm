@@ -149,9 +149,22 @@ sub isFile {
 }
 sub isDir {
 	my ($self, $file) = @_;
+	return 0 unless $self->_isAllowed($file);
 	return $self->_existsCacheEntry('isDir', $file) 
 			?  $self->_getCacheEntry('isDir', $file) 
 			: $self->_setCacheEntry('isDir', $file, _isRoot($file) || _isShare($file) || $self->_getType($file) == $self->getSmbClient()->SMBC_DIR);
+}
+sub _isAllowed {
+	my ($self, $file) = @_;
+	return $self->_getCacheEntry('_isAllowed', $file) if $self->_existsCacheEntry('_isAllowed', $file);
+	my ($server, $share, $path, $shareidx) = _getPathInfo($file);
+	my ($userdomain) = _getUserDomain();
+	return $self->_setCacheEntry('_isAllowed', $file, 
+				!$main::SMB{secure}
+				|| _isRoot($file) 
+				|| (exists $main::SMB{domains}{$userdomain}{fileserver}{$server} && !exists $main::SMB{domains}{$userdomain}{fileserver}{$server}{shares})
+				|| $share ~~ @{$main::SMB{domains}{$userdomain}{fileserver}{$server}{shares}}
+			);
 }
 sub isLink {
 	my ($self, $file) = @_;
@@ -285,6 +298,7 @@ sub isExecutable {
 }
 sub exists {
 	my ($self, $file) = @_;
+	return 0 unless $self->_isAllowed($file);
 	return 1 if _isRoot($file) || _isShare($file) || $self->_existsCacheEntry('readDir', $file);
 	my @stat = $self->stat($file);
 	return $#stat > 0;

@@ -952,6 +952,9 @@ $ALLOW_SYMLINK = 0;
 %SMB = (
   defaultdomain => 'MY.EXAMPLE.DOMAIN.ORG',	#required
 
+  ## allow only configured server names and shares (default: 0)
+  secure => 1, # optional
+
   ## a global share filter (filter out admin shares with trailing $):
   sharefilter => [ qr/\$$/, ],  #optional
 
