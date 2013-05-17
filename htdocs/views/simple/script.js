@@ -157,8 +157,11 @@ function initSettingsDialog() {
 	
 }
 function initSearch() {
+	var mutex = false;
 	$("a[data-action='search']").click(function(event) {
 		preventDefault(event)
+		if (mutex) return;
+		mutex = true;
 		var resulttemplate = $(this).attr("data-resulttemplate");
 		$.get($("#fileList").attr("data-uri"),{ajax: "getSearchDialog", template: $(this).attr("data-dialogtemplate")}, function(response){
 			var dialog = $(response);
@@ -198,7 +201,7 @@ function initSearch() {
 			
 			});
 			handleJSONResponse(response);
-			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ dialog.dialog("destroy");}}).show();
+			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ mutex=false; dialog.dialog("destroy");}}).show();
 		});
 	});
 }
@@ -1567,8 +1570,11 @@ function initPermissionsDialog() {
 	});
 }
 function initViewFilterDialog() {
+	var mutex = false;
 	$("a[data-action='viewfilter']").click(function(event){
 		preventDefault(event);
+		if (mutex) return;
+		mutex = true;
 		var target =$("#fileList").attr("data-uri");
 		var template = $(this).attr("data-template");
 		$.get(target, {ajax: "getViewFilterDialog", template: template}, function(response){
@@ -1604,7 +1610,7 @@ function initViewFilterDialog() {
 			vfd.submit(function(){
 				return false;
 			});
-			vfd.dialog({modal:true,width:"auto",height:"auto", close: function(){vfd.remove();}}).show();
+			vfd.dialog({modal:true,width:"auto",height:"auto", close: function(){vfd.remove(); mutex=false;}}).show();
 		});
 	});
 }
