@@ -157,11 +157,11 @@ function initSettingsDialog() {
 	
 }
 function initSearch() {
-	var mutex = false;
 	$("a[data-action='search']").click(function(event) {
 		preventDefault(event)
-		if (mutex) return;
-		mutex = true;
+		if ($(this).hasClass("disabled")) return;
+		var self = this;
+		$(this).addClass("disabled");
 		var resulttemplate = $(this).attr("data-resulttemplate");
 		$.get($("#fileList").attr("data-uri"),{ajax: "getSearchDialog", template: $(this).attr("data-dialogtemplate")}, function(response){
 			var dialog = $(response);
@@ -201,7 +201,7 @@ function initSearch() {
 			
 			});
 			handleJSONResponse(response);
-			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ mutex=false; dialog.dialog("destroy");}}).show();
+			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ $(self).removeClass("disabled"); dialog.dialog("destroy");}}).show();
 		});
 	});
 }
@@ -1018,9 +1018,13 @@ function initDialogActions() {
 }
 function handleDialogActionEvent(event) {
 	preventDefault(event);
+	if ($(this).hasClass("disabled")) return false;
+	var self = this;
+	$(this).addClass("disabled");
 	var action = $("#"+$(this).attr('data-action'));
 	action.dialog({modal:true, title: $(this).html(), width: 'auto', 
-					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); }, 
+					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); },
+					close: function() { $(self).removeClass("disabled"); },
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
@@ -1512,16 +1516,20 @@ function handleAFSGroupManager(event) {
 	preventDefault(event);
 	var template = $(this).attr('data-template');
 	var target = $("#fileList").attr('data-uri');
-		
+	if ($(this).hasClass("disabled")) return false;
+	var self = this;
+	$(this).addClass("disabled");
 	$.get(target, { ajax : "getAFSGroupManager", template: template }, function(response) {
 		var groupmanager = $(response);
 		initGroupManager(groupmanager, template, target);
-		groupmanager.dialog({modal: false, width: "auto", height: "auto", close: function() { groupmanager.remove();}}).show();
+		groupmanager.dialog({modal: false, width: "auto", height: "auto", close: function() { $(self).removeClass("disabled"); groupmanager.remove();}}).show();
 	});	
 }
 function handleAFSACLManager(event){
 	preventDefault(event);
 	if ($(this).hasClass("disabled")) return false;
+	var self = this;
+	$(this).addClass("disabled");
 	var target = $("#fileList").attr('data-uri');
 	var seldir = $("#fileList tr.selected[data-type='dir']");
 	var template = $(this).attr('data-template');
@@ -1541,13 +1549,15 @@ function handleAFSACLManager(event){
 			});
 			return false;
 		});
-		aclmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { aclmanager.remove(); }}).show();
+		aclmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { $(self).removeClass("disabled"); aclmanager.remove(); }}).show();
 	});
 }
 function initPermissionsDialog() {
 	$("a[data-action='permissions']").click(function(event){
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
+		var self = this;
+		$(this).addClass("disabled");
 		var target = $("#fileList").attr("data-uri");
 		var template = $(this).attr("data-template");
 		$.get(target, {ajax: "getPermissionsDialog", template: template},function(response){
@@ -1565,16 +1575,16 @@ function initPermissionsDialog() {
 				});
 				return false;
 			});
-			permissions.dialog({modal:true, width: "auto", height: "auto", close: function() {permissions.remove();}}).show();
+			permissions.dialog({modal:true, width: "auto", height: "auto", close: function() {$(self).removeClass("disabled"); permissions.remove();}}).show();
 		});
 	});
 }
 function initViewFilterDialog() {
-	var mutex = false;
 	$("a[data-action='viewfilter']").click(function(event){
 		preventDefault(event);
-		if (mutex) return;
-		mutex = true;
+		if ($(this).hasClass("disabled")) return;
+		var self = this;
+		$(this).addClass("disabled");
 		var target =$("#fileList").attr("data-uri");
 		var template = $(this).attr("data-template");
 		$.get(target, {ajax: "getViewFilterDialog", template: template}, function(response){
@@ -1610,7 +1620,7 @@ function initViewFilterDialog() {
 			vfd.submit(function(){
 				return false;
 			});
-			vfd.dialog({modal:true,width:"auto",height:"auto", close: function(){vfd.remove(); mutex=false;}}).show();
+			vfd.dialog({modal:true,width:"auto",height:"auto", close: function(){$(self).removeClass("disabled"); vfd.remove();}}).show();
 		});
 	});
 }
