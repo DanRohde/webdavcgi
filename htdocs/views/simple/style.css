@@ -131,6 +131,8 @@ table,th,td {
 }
 #headerName img.toggleselection {
 	background: url(images/sprite.png) no-repeat -2px -895px;
+	opacity: 0.5;
+	filter: Alpha(opacity=50);
 }
 #headerSize {
 	width: 3em;

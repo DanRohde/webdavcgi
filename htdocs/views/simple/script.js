@@ -748,7 +748,7 @@ function initFileList() {
 	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
 
 	// fix annyoing text selection for shift+click:
-	$('#fileList').disableSelection();
+	$('#flt').disableSelection();
 	
 	// init fancybox:
 	$("#fileList tr[data-isviewable='yes'][data-iseditable='no']:not([data-file$='.pdf'])[data-size!='0'] td.filename a")
@@ -769,6 +769,13 @@ function initFileList() {
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
 			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
+	
+	// fix annyoing text selection after a double click on text in the file list:
+	if (document.selection && document.selection.empty) document.selection.empty();
+	else if (window.getSelection) {
+		var sel = window.getSelection();
+		if (sel && sel.removeAllRanges) sel.removeAllRanges();
+	}
 	
 	$("#flt").trigger("fileListChanged");
 }
@@ -951,7 +958,7 @@ function handleFileRename(row) {
 	tdfilename.wrapInner('<div class="hidden"/>').prepend(renamefield);
 	var inputfield = tdfilename.find('.renamefield input[type=text]');
 	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename)).focus().select();
-	$("#fileList").enableSelection();
+	$("#flt").enableSelection();
 	inputfield.keydown(function(event) {
 		var row = $(this).closest('tr');
 		var file = $(this).closest('tr').attr('data-file');
@@ -980,7 +987,7 @@ function handleFileRename(row) {
 		} else if (event.keyCode == 27 || (event.keyCode==13 && file == newname)) {
 			row.find('.renamefield').remove();
 			row.find('td.filename div.hidden div.filename').unwrap();
-			$("#fileList").disableSelection();
+			$("#flt").disableSelection();
 		}
 	});
 }
