@@ -46,6 +46,8 @@ $(document).ready(function() {
 	
 	initAutoRefresh();
 	
+	initCollapsible();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -56,7 +58,28 @@ $(document).ready(function() {
 	});
 		
 	updateFileList($("#flt").attr("data-uri"));
+
+function initCollapsible() {
+	$("[data-action=collapse]").click(function(event) {
+		preventDefault(event);
+		$("[data-action=collapse]").toggleClass("collapsed");
+		var collapsed = $(this).hasClass("collapsed");
+		var nav = $("#nav");
+		nav.toggle(!collapsed);
+		if (!nav.attr("origwidth")) nav.attr("origwidth", nav.width());
+		
+		//nav.animate({left: collapsed ? (-nav.attr("origwidth"))+"px" : "0px" },500);
+		nav.width(collapsed ? 0 : nav.attr("origwidth"));
+		$.each(["#content", "#controls", ".ajax-loader"], function(i,val) {
+			if (!$(val).attr("origleft")) $(val).attr("origleft",$(val).css("left"));
+			$(val).css("left", collapsed ? "0" : $(val).attr("origleft"));
+		});
+		handleWindowResize();
+		if (collapsed) cookie("sidebar","false"); else rmcookies("sidebar");
+	});
 	
+	if (cookie("sidebar") == "false") $("[data-action=collapse]").first().trigger("click");
+}
 function initAutoRefresh() {
 	$("a[data-action='autorefreshmenu']").button().click(function(event) {
 		preventDefault(event);
