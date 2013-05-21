@@ -70,7 +70,7 @@ function initCollapsible() {
 		
 		//nav.animate({left: collapsed ? (-nav.attr("origwidth"))+"px" : "0px" },500);
 		nav.width(collapsed ? 0 : nav.attr("origwidth"));
-		$.each(["#content", ".ajax-loader"], function(i,val) {
+		$.each(["#content", "#controls", ".ajax-loader"], function(i,val) {
 			if (!$(val).attr("origleft")) $(val).attr("origleft",$(val).css("left"));
 			$(val).css("left", collapsed ? "0" : $(val).attr("origleft"));
 		});
@@ -87,7 +87,7 @@ function initCollapsible() {
 		$.each(["#top",".langswitch"], function(i,val) {
 			$(val).toggle(!collapsed);
 		});
-		$.each(["#nav", "#content", ".ajax-loader"], function(i,val) {
+		$.each(["#nav", "#content", "#controls", ".ajax-loader"], function(i,val) {
 			if (!$(val).attr("origtop")) $(val).attr("origtop", $(val).css("top"));
 			$(val).css("top", collapsed ? "0" : $(val).attr("origtop"));
 		});

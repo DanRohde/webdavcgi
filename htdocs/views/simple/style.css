@@ -87,9 +87,9 @@ a {
 	box-shadow: 0 -3px 7px #000000;
 	height: 2.8em;
 	margin: 0;
-	position: absolute;
-	top: 0;
-	left: 0;
+	position: fixed;
+	top: 3.5em;
+	left: 12.5em;
 	padding-left: 1.8em;
 	width: 100%;
 	z-index: 50;
