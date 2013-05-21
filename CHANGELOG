@@ -1,3 +1,7 @@
+0.8.6: BETA
+     - fixed cookie related bug
+     - added head toggle
+
 0.8.5: 2013/21/5
      - fixed text save bug 
      - fixed AFS related uppercase username bug

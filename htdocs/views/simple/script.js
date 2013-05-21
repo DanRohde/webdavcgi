@@ -60,9 +60,9 @@ $(document).ready(function() {
 	updateFileList($("#flt").attr("data-uri"));
 
 function initCollapsible() {
-	$("[data-action=collapse]").click(function(event) {
+	$("[data-action='collapse-sidebar']").click(function(event) {
 		preventDefault(event);
-		$("[data-action=collapse]").toggleClass("collapsed");
+		$("[data-action='collapse-sidebar']").toggleClass("collapsed");
 		var collapsed = $(this).hasClass("collapsed");
 		var nav = $("#nav");
 		nav.toggle(!collapsed);
@@ -78,7 +78,23 @@ function initCollapsible() {
 		if (collapsed) cookie("sidebar","false"); else rmcookies("sidebar");
 	});
 	
-	if (cookie("sidebar") == "false") $("[data-action=collapse]").first().trigger("click");
+	if (cookie("sidebar") == "false") $("[data-action='collapse-sidebar']").first().trigger("click");
+	
+	$("[data-action='collapse-head']").click(function(event) {
+		preventDefault(event);
+		$("[data-action='collapse-head']").toggleClass("collapsed");
+		var collapsed = $(this).hasClass("collapsed");
+		$.each(["#top",".langswitch"], function(i,val) {
+			$(val).toggle(!collapsed);
+		});
+		$.each(["#nav", "#content", "#controls", ".ajax-loader"], function(i,val) {
+			if (!$(val).attr("origtop")) $(val).attr("origtop", $(val).css("top"));
+			$(val).css("top", collapsed ? "0" : $(val).attr("origtop"));
+		});
+		handleWindowResize();
+		if (collapsed) cookie("head","false"); else rmcookies("head");
+	});
+	if (cookie("head") == "false") $("[data-action='collapse-head']").first().trigger("click");
 }
 function initAutoRefresh() {
 	$("a[data-action='autorefreshmenu']").button().click(function(event) {
@@ -1267,7 +1283,6 @@ function handleFileListActionEvent(event) {
 	} else if (action == "cut"||action=="copy") {
 		$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
 		var selfiles = $.map($("#fileList tr.selected"), function(val,i) { return $(val).attr("data-file"); });	
-		var baseuri = $("#fileList").attr("data-baseuri");
 		cookie('clpfiles', selfiles.join('@/@'));
 		cookie('clpaction',action);
 		cookie('clpuri',concatUri($("#fileList").attr('data-uri'),"/"));
@@ -1304,11 +1319,11 @@ function uri2html(uri) {
 function cookie(name,val,expires) {
 	var date = new Date();
        	date.setTime(date.getTime() + 315360000000);
-	if (val) return $.cookie(name, val, { path:$("#fileList").attr("data-baseuri"), secure: true, expires: expires ? date : undefined});
+	if (val) return $.cookie(name, val, { path:$("#flt").attr("data-baseuri"), secure: true, expires: expires ? date : undefined});
 	return $.cookie(name);
 }
 function rmcookies() {
-	for (var i=0; i < arguments.length; i++) $.removeCookie(arguments[i], { path:$("#fileList").attr("data-baseuri"), secure: true});
+	for (var i=0; i < arguments.length; i++) $.removeCookie(arguments[i], { path:$("#flt").attr("data-baseuri"), secure: true});
 }
 function renderByteSizes(size) {
 	var text = "";
