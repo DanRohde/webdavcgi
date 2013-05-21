@@ -857,8 +857,8 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 	
 			if (jqa.attr('data-file') == "..") return -1;
 			if (jqb.attr('data-file') == "..") return 1;
-			if (jqa.attr('data-type') == 'dir'  && jqb.attr('data-type') == 'file') return -1;
-			if (jqa.attr('data-type') == 'file' && jqb.attr('data-type') == 'dir') return 1;
+			if (jqa.attr('data-type') == 'dir'  && jqb.attr('data-type') != 'dir') return -1;
+			if (jqa.attr('data-type') != 'dir' && jqb.attr('data-type') == 'dir') return 1;
 			
 		
 			if (stype == "number") {
