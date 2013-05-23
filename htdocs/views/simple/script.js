@@ -100,6 +100,9 @@ function initAutoRefresh() {
 	$("a[data-action='autorefreshmenu']").button().click(function(event) {
 		preventDefault(event);
 		$("#autorefresh ul").toggleClass("hidden");
+	}).dblclick(function(event) {
+		preventDefault(event);
+		updateFileList();
 	});
 	$("a.autorefreshrunning").addClass("disabled");
 	$("#autorefresh").on("started", function() {
