@@ -281,6 +281,7 @@ sub renderFileListEntry {
 	my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
+				'displayname' => $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full)),
 				'size' => $$self{backend}->isReadable($full) ? $sizetxt : '-', 
 				'sizetitle'=>$sizetitle,
 				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
