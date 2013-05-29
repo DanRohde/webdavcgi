@@ -3,6 +3,7 @@
      - added head toggle
      - fixed file link sorting bug
      - fixed SMB share alias bug
+     - fixed SMB secure flag related Zip download bug
 
 0.8.5: 2013/21/5
      - fixed text save bug 
