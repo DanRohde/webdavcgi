@@ -889,3 +889,12 @@ a[data-action=autorefreshmenu] {
 	opacity: 1;
 	filter: Alpha(opacity=100);
 }
+#controls.sidebar-collapsed, #content.sidebar-collapsed, .ajax-loader.sidebar-collapsed {
+	left: 0;	
+}
+#nav.head-collapsed, #controls.head-collapsed, #content.head-collapsed, .ajax-loader.head-collapsed  {
+	top: 0;
+}
+#nav.collapsed {
+	width: 0;
+}

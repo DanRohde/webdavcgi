@@ -14,12 +14,12 @@ $config(HTMLHEAD)
 $INCLUDE(htmlhead)</head>
 <body>
 <div id="main">
-	<div class="langswitch">$config(LANGSWITCH)</div> 
-	<div id="top">
+	<div class="langswitch collapse-head-collapsible">$config(LANGSWITCH)</div> 
+	<div id="top" class="collapse-head-collapsible">
 		$INCLUDE(header)
 		$config(HEADER)
 	</div>
-	<div id="nav">
+	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible">
 		<ul id="apps">
 			<li><a href="$uri" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
 			$INCLUDE(apps)
@@ -59,8 +59,8 @@ $INCLUDE(htmlhead)</head>
 			<li><a href="#" data-action="about" class="dialog">$tl(about)</a></li>
 		</ul>
 	</div>
-<div id="content">
-	<div id="controls">
+<div id="content" class="collapse-head-listener collapse-sidebar-listener">
+	<div id="controls" class="collapse-head-listener collapse-sidebar-listener">
 		<div id="new">
 			<a href="#" data-action="new">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
@@ -134,7 +134,7 @@ $INCLUDE(htmlhead)</head>
 		
 	</div>
 	<div id="notification"></div>
-	<div class="ajax-loader"></div>
+	<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
 	<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri"></div>
 	$config(FOOTER)
 </div>

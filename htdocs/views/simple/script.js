@@ -64,16 +64,8 @@ function initCollapsible() {
 		preventDefault(event);
 		$("[data-action='collapse-sidebar']").toggleClass("collapsed");
 		var collapsed = $(this).hasClass("collapsed");
-		var nav = $("#nav");
-		nav.toggle(!collapsed);
-		if (!nav.attr("origwidth")) nav.attr("origwidth", nav.width());
-		
-		//nav.animate({left: collapsed ? (-nav.attr("origwidth"))+"px" : "0px" },500);
-		nav.width(collapsed ? 0 : nav.attr("origwidth"));
-		$.each(["#content", "#controls", ".ajax-loader"], function(i,val) {
-			if (!$(val).attr("origleft")) $(val).attr("origleft",$(val).css("left"));
-			$(val).css("left", collapsed ? "0" : $(val).attr("origleft"));
-		});
+		$(".collapse-sidebar-collapsible").toggle(!collapsed).toggleClass("collapsed", collapsed);
+		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed);
 		handleWindowResize();
 		if (collapsed) cookie("sidebar","false"); else rmcookies("sidebar");
 	});
@@ -84,13 +76,8 @@ function initCollapsible() {
 		preventDefault(event);
 		$("[data-action='collapse-head']").toggleClass("collapsed");
 		var collapsed = $(this).hasClass("collapsed");
-		$.each(["#top",".langswitch"], function(i,val) {
-			$(val).toggle(!collapsed);
-		});
-		$.each(["#nav", "#content", "#controls", ".ajax-loader"], function(i,val) {
-			if (!$(val).attr("origtop")) $(val).attr("origtop", $(val).css("top"));
-			$(val).css("top", collapsed ? "0" : $(val).attr("origtop"));
-		});
+		$(".collapse-head-collapsible").toggle(!collapsed);
+		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
 		handleWindowResize();
 		if (collapsed) cookie("head","false"); else rmcookies("head");
 	});
