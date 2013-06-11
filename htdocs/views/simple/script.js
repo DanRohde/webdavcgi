@@ -1184,7 +1184,10 @@ function updateFileList(newtarget, data) {
 	}
 	$(".ajax-loader").show();
 	$("#flt").hide();
+	var timestamp = $.now();
+	$("#flt").data("timestamp", timestamp);
 	$.get(newtarget, data, function(response) {
+		if ($("#flt").data("timestamp") != timestamp) return; 
 		$("#flt")
 			.show()
 			.html(response.content)
