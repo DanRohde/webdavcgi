@@ -898,3 +898,7 @@ a[data-action=autorefreshmenu] {
 #nav.collapsed {
 	width: 0;
 }
+
+.ui-front {
+	z-index: 200;
+}
