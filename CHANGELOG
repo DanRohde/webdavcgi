@@ -4,6 +4,8 @@
      - fixed file link sorting bug
      - fixed SMB share alias bug
      - fixed SMB secure flag related Zip download bug
+     - fixed navigation while loading bug
+     - added column setup suppport to the simple view
 
 0.8.5: 2013/21/5
      - fixed text save bug 

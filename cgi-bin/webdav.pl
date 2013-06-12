@@ -327,7 +327,7 @@ push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 ## -- @VISIBLE_TABLE_COLUMNS
 ## defines the visible columns for the file list in the Web interface
 ## supported values (see @ALLOWED_TABLE_COLUMNS)
-@VISIBLE_TABLE_COLUMNS = ('name','lastmodified','size','mode' );
+@VISIBLE_TABLE_COLUMNS = ('name', 'size', 'lastmodified');
 push @VISIBLE_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
 ## -- SHOW_FILE_ACTIONS

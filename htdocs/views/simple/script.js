@@ -775,7 +775,14 @@ function initFileList() {
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
 			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
-	
+
+	$("#fileListTable th.dragaccept")
+		.draggable({ zIndex: 200, scope: "fileListTable",  axis: "x" , helper: function(event) {
+			var th = $(event.currentTarget);
+			return $(event.currentTarget).clone().width(th.width()).addClass("dragged");
+		}})
+		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListTableDrop, hoverClass: "draghover" });
+		
 	// fix annyoing text selection after a double click on text in the file list:
 	if (document.selection && document.selection.empty) document.selection.empty();
 	else if (window.getSelection) {
@@ -785,7 +792,28 @@ function initFileList() {
 	
 	$("#flt").trigger("fileListChanged");
 }
-
+function handleFileListTableDrop(event, ui) {
+	var didx = ui.draggable.prop("cellIndex");
+	var tidx = $(this).prop("cellIndex");
+	if (didx + 1 == tidx) return false;
+	var d = ui.draggable.attr("data-name");
+	var t = $(this).attr("data-name");
+	var a = new Array();
+	$.each($("#fileListTable thead th:not(.sorter-false)"), function(i,val) {
+		var n = $(val).attr("data-name");
+		if (n == t) a.push(d);
+		if (n != d) a.push(n);
+	});
+	cookie("visibletablecolumns", a.join(","));
+	
+	var cols = $("#fileListTable thead th:not(.sorter-false)");
+	cols.eq(didx).detach().insertBefore(cols.eq(tidx));
+	$.each($("#fileList tr"), function() {
+		var cols = $(this).children("th, td");
+		cols.eq(didx).detach().insertBefore(cols.eq(tidx));
+	});	
+	return true;
+}
 function initTableSorter() {
 	
 	var flt = $("#fileListTable");

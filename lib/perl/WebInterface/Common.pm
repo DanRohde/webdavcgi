@@ -537,6 +537,19 @@ sub renderFrontendFilter {
         return $content ne "" ? $$self{cgi}->div({-class=>'filter'},$self->tl('filter').$content) : $content;
 }
 
-
+sub getVisibleTableColumns {
+	my ($self) = @_;
+	my @vc;
+	if (my $vcs = $$self{cgi}->cookie('visibletablecolumns')) {
+		my @cvc = split(',', $vcs);
+		my ($allowed) = 1;
+		foreach my $c (@cvc) {
+			push @vc, $c if $c ~~ @main::ALLOWED_TABLE_COLUMNS;
+		}
+	} else {
+		@vc = @main::VISIBLE_TABLE_COLUMNS;
+	}
+    return @vc;
+}
 1;
 

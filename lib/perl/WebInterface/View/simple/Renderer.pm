@@ -250,7 +250,11 @@ sub isViewFiltered {
 }
 sub renderFileListTable {
 	my ($self, $fn, $ru, $template) = @_;
-	my %jsondata = ( content => $self->minifyHTML($self->renderTemplate($fn,$ru,$self->readTemplate($template)) ) );
+	my $filelisttabletemplate = $self->readTemplate($template);
+	my $columns = $self->renderVisibleTableColumns($filelisttabletemplate);
+	$filelisttabletemplate=~s/\$filelistheadcolumns/$columns/egs;
+	$filelisttabletemplate=~s/\$visiblecolumncount/scalar($self->getVisibleTableColumns())/egs;
+	my %jsondata = ( content => $self->minifyHTML($self->renderTemplate($fn,$ru,$filelisttabletemplate) ) );
 	if (!$$self{backend}->isReadable($fn)) {
 		$jsondata{error} = $self->tl('foldernotreadable');
 	} 
@@ -276,9 +280,10 @@ sub renderFileListEntry {
 	my $e = $entrytemplate;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($full);
 	$mtime = 0 unless defined $mtime;
+	$ctime = 0 unless defined $ctime;
 	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
-	my $mimetype = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
+	my $mime = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
 				'displayname' => $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full)),
@@ -288,9 +293,11 @@ sub renderFileListEntry {
 				'lastmodifiedtime' => $mtime,
 				'lastmodifiedhr' => $$self{backend}->isReadable($full) && $mtime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
 			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
-				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mimetype) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mimetype),
+			 	'createdhr'=>$$self{backend}->isReadable($full) && $ctime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$ctime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
+			 	'createdtime' => $ctime,
+				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mime),
 				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
-				'mimetype'=>$mimetype,
+				'mime'=>$$self{cgi}->escapeHTML($mime),
 				'realsize'=>$size ? $size : 0,
 				'isreadable'=>$file eq '..' || $$self{backend}->isReadable($full)?'yes':'no',
 				'iswriteable'=>$$self{backend}->isWriteable($full) || $$self{"backend"}->isLink($full)?'yes':'no',
@@ -306,6 +313,18 @@ sub renderFileListEntry {
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);
 }
+sub renderVisibleTableColumns {
+	# my ($self, $template) = @_;
+	my @columns = $_[0]->getVisibleTableColumns();
+	my $columns = "";
+	for my $column (@columns) {
+		if ($_[1]=~s/<!--TEMPLATE\($column\)\[(.*?)\]-->//sg) {
+			$columns.=$1;
+		}
+	}
+	$_[1]=~s/<!--TEMPLATE\([^\)]+\)\[.*?\]-->//sg;
+	return $columns;
+}
 sub renderFileList {
 	my ($self, $fn, $ru, $template) = @_;
 	my $entrytemplate=$self->readTemplate($template);
@@ -314,11 +333,15 @@ sub renderFileList {
 	my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files($a,$b) } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$self)} : ();
 
 	unshift @files, '..' if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
-	unshift @files, '.' if $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $ru=~/^$main::VIRTUAL_BASE$/);
-
+	unshift @files, '.'  if $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $ru=~/^$main::VIRTUAL_BASE$/);
+	
+	my $columns = $self->renderVisibleTableColumns($entrytemplate);
+	$entrytemplate=~s/\$filelistentrycolumns/$columns/esg;
+	
 	foreach my $file (@files) {
 		$fl.=$self->renderFileListEntry($fn,$ru,$file,$entrytemplate);	
 	}
+
 	return $fl;	
 }
 sub renderFilterInfo {

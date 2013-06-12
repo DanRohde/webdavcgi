@@ -113,6 +113,14 @@ table th {
 	color: #999999;
 	height: 2em;
 	padding: 0 0.5em;
+	background-color: white;
+}
+table th.dragged {
+	opacity: 0.5;
+	filter: Alpha(opacity=50);
+}
+table th.draghover {
+	border-left: 10px solid #aaaaaa;
 }
 table td {
 	background-position: 1em 0em;

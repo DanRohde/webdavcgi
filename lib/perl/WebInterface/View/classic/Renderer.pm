@@ -494,21 +494,7 @@ sub getFolderList {
         $content .= $pagenav;
         return ($content, $count);
 }
-sub getVisibleTableColumns {
-	my ($self) = @_;
-        my @vc;
 
-        if (my $vcs = $$self{cgi}->cookie('visibletablecolumns')) {
-                my @cvc = split(',', $vcs);
-                my ($allowed) = 1;
-                foreach my $c (@cvc) {
-                        push @vc, $c if grep(/^\Q$c\E$/, @main::ALLOWED_TABLE_COLUMNS);
-                }
-        } else {
-                @vc = @main::VISIBLE_TABLE_COLUMNS;
-        }
-        return @vc;
-}
 sub renderNameFilterForm {
 	my ($self) = @_;
 	return $main::ENABLE_NAMEFILTER && !$$self{cgi}->param('search') ?

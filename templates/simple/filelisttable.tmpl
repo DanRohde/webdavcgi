@@ -6,26 +6,40 @@
 	<table id="fileListTable">
 		<thead>
 		<!--IF($config(SHOW_QUOTA))-->
-		<tr><td class="sorter-false" colspan="3">
+		<tr><th class="sorter-false" colspan="$visiblecolumncount">
 		<div id="quota">
 			<div class="quotabar" title="$tl(quotaavailable) $quotaavailable (${quotaavailableperc}%) / $quotalimit"><div title="$tl(quotaused) $quotaused (${quotausedperc}%) / $quotalimit" class="$quotalevel quotaused" style="$quotastyle; width: ${quotausedperc}%;">${quotausedperc}%</div></div>
 			$tl(quotalimit) <span title="$quotalimittitle">$quotalimit</span>, 
 			$tl(quotaused) <span title="$quotausedtitle">$quotaused (${quotausedperc}%)</span>, 
 			$tl(quotaavailable) <span title="$quotaavailabletitle">$quotaavailable (${quotaavailableperc}%)</span>
-			
 		</div>
-		</td></tr>
+		</th></tr>
 		<!--ENDIF-->
 		
 		<!--IF($isviewfiltered())--><tr><td colspan="3" class="sorter-false"><div class="viewfilterinfo">$tl(filter) $filterInfo() </div></td></tr><!--ENDIF-->
 		<tr>
-			<th id="headerName" data-name="name" data-sort="data-displayname" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
-				<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE
-AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>
+		$filelistheadcolumns
+<!--TEMPLATE(name)[
+			<th id="headerName" class="dragaccept" data-name="name" data-sort="data-displayname" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
+				<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>
 				$tl(name)
 			</th>
-			<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize">$tl(size)</th>
-			<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number">$tl(lastmodified)</th>
+]-->
+<!--TEMPLATE(size)[
+			<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize" class="dragaccept">$tl(size)</th>
+]-->
+<!--TEMPLATE(lastmodified)[
+			<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number" class="dragaccept">$tl(lastmodified)</th>
+]-->
+<!--TEMPLATE(mime)[
+			<th id="headerMime" data-name="mime" data-sort="data-mime" class="dragaccept">$tl(mime)</th>
+]-->
+<!--TEMPLATE(created)[
+			<th id="headerCreated" data-name="created" data-sort="data-created" data-sorttype="number" class="dragaccept">$tl(created)</th>
+]-->
+<!--TEMPLATE(mode)[
+			<th data-name="mode" data-sort="data-mode" class="dragaccept">$tl(mode)</th>
+]-->
 		</tr>
 		
 		</thead>
