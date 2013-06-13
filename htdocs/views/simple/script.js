@@ -48,6 +48,8 @@ $(document).ready(function() {
 	
 	initCollapsible();
 	
+	initTableConfigDialog();
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -59,6 +61,70 @@ $(document).ready(function() {
 		
 	updateFileList($("#flt").attr("data-uri"));
 
+function initTableConfigDialog() {
+	$("#flt").on("fileListChanged", function() {
+		$(".tableconfigbutton").click(function(event) {
+			preventDefault(event);
+			if ($(this).hasClass("disabled")) return;
+			$(".tableconfigbutton").addClass("disabled");
+			
+			$.get($("#fileList").attr("data-uri"),{ ajax : 'getTableConfigDialog', template : $(this).attr("data-template")}, function(response) {
+				if (response.error) handleJSONResponse(response);
+				var dialog = $(response);
+				
+				// init dialog:
+				var visiblecolumns = $.map($("#fileListTable thead th.dragaccept"), function(val,i) { return $(val).attr("data-name");});
+				$.each(visiblecolumns, function(i,val) {
+					dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
+				});
+				
+				var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");
+				var column = so[0];
+				var order = so[1] || 'asc';
+				
+				dialog.find("input[name='sortingcolumn'][value='"+column+"']").prop("checked",true);
+				dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
+				
+				// register dialog actions:
+				dialog.find("input[name='save']").click(function(event) {
+					// preserve table column order:
+					var vc = visiblecolumns.slice(0); // clone visiblecolumns
+					var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
+					
+					// this is more inefficient than cookie("visibletablecolumns,vtc.join(",")); 
+					// but preserves table column order:
+					// remove unselected elements:
+					for (var i=vc.length-1; i>=0; i--) {
+						if ($.inArray(vc[i], vtc)==-1) vc.splice(i,1);
+					}
+					// add missing selected elements:
+					$.each(vtc, function(i,val) {
+						if ($.inArray(val, vc)==-1) vc.push(val); 
+					});
+					cookie("visibletablecolumns",vc.join(","));
+					
+					var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
+					var o = dialog.find("input[name='sortingorder']:checked").attr("value");
+					cookie("order", c + (o=="desc" ? "_desc" :""));
+					
+					// known bug: updateFileList not necessary  if sort was changed					
+					if (vtc.sort().join(",") != visiblecolumns.sort().join(",") || c != column || o != order) updateFileList();
+									
+					dialog.dialog("close");
+				});
+				dialog.find("input[name='cancel']").click(function(event) {
+					preventDefault(event);
+					dialog.dialog("close");
+					return false;
+				});
+				
+				dialog.find("#tableconfigform").submit(function(event) { return false; });
+				
+				dialog.dialog({ modal: true, width: "auto", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
+			});
+		});
+	});
+}
 function initCollapsible() {
 	$("[data-action='collapse-sidebar']").click(function(event) {
 		preventDefault(event);
@@ -823,14 +889,16 @@ function initTableSorter() {
 		var sname = so[0];
 		var sortorder = so[1] && so[1] == 'desc' ? -1 : 1;
 		var col = $("#fileListTable thead th[data-name='"+sname+"']");
-		var sattr = col.attr('data-sort');
-		var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
-		var cidx = col.prop("cellIndex");
-		//console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
-		flt.data("tablesorter-lastclickedcolumn", cidx);
-		flt.data("tablesorter-sortorder", sortorder);
-		col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
-		sortFileList(stype, sattr, sortorder, cidx, "data-file");
+		if (col.length>0) {
+			var sattr = col.attr('data-sort');
+			var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
+			var cidx = col.prop("cellIndex");
+			//console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
+			flt.data("tablesorter-lastclickedcolumn", cidx);
+			flt.data("tablesorter-sortorder", sortorder);
+			col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
+			sortFileList(stype, sattr, sortorder, cidx, "data-file");
+		}
 	}
 	
 	var th = $("th:not(.sorter-false),td:not(.sorter-false)",$("#fileListTable thead"));
@@ -1164,16 +1232,17 @@ function updateFolderStatistics() {
 
 	updateFileListCounters();
 
-	if (!hn.attr('data-title')) hn.attr('data-title',hn.attr('title'));
-	if (!hs.attr('data-title')) hs.attr('data-title',hs.attr('title'));
-	hn.attr('title', 
+	if (hn.length>0 && !hn.attr('data-title')) hn.attr('data-title',hn.attr('title'));
+	if (hs.length>0 && !hs.attr('data-title')) hs.attr('data-title',hs.attr('title'));
+	if (hn.length>0) 
+		hn.attr('title', 
 			hn.attr('data-title')
 				.replace(/\$filecount/, flt.attr('data-filecounter'))
 				.replace(/\$dircount/,flt.attr('data-dircounter'))
 				.replace(/\$sum/,parseInt(flt.attr('data-dircounter'))+parseInt(flt.attr('data-filecounter')))
 		);
 	var fs = parseInt(flt.attr('data-foldersize'));
-	hs.attr('title', hs.attr('data-title').replace(/\$foldersize/, renderByteSizes(fs)));
+	if (hs.length > 0) hs.attr('title', hs.attr('data-title').replace(/\$foldersize/, renderByteSizes(fs)));
 }
 function simpleEscape(text) {
 	//return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');

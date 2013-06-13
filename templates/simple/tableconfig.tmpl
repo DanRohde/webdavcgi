@@ -1,0 +1,27 @@
+<div class="tableconfig" title="$tl(tableconfig.button.title)">
+<form id="tableconfigform" method="post" action="#">
+<fieldset>
+<label>$tl(tableconfig.tablecolumns)</label>
+<ul>
+	$each#@main::ALLOWED_TABLE_COLUMNS#'<li><input type="checkbox" name="visiblecolumn" value="$v"/> $tl($v)</li>'#
+</ul>
+</fieldset>
+<fieldset>
+<label>$tl(tableconfig.sortingcolumns)</label>
+<ul>
+	$each#@main::ALLOWED_TABLE_COLUMNS#'<li><input type="radio" name="sortingcolumn" value="$v"/>$tl($v)</li>'#
+</ul>
+</fieldset>
+<fieldset>
+<label>$tl(tableconfig.sortingorder)</label>
+<ul>
+	<li><input type="radio" value="asc" name="sortingorder"/> $tl(tableconfig.ascending)</li>
+	<li><input type="radio" value="desc" name="sortingorder"/> $tl(tableconfig.descending)</li>
+</ul>
+</fieldset>
+<div class="tableconfigactions">
+	<input type="submit" value="$tl(cancel)" name="cancel"/>
+	<input type="submit" value="$tl(savebutton)" name="save"/>
+</div>
+</form>
+</div>

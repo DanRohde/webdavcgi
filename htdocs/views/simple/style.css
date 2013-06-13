@@ -68,7 +68,7 @@ a {
 	padding: 0;
 	margin: 0;
 	outline: 0 none;
-	vartical-align: baseline;
+	vertical-align: baseline;
 }
 #nav ul#prefs {
 	position: fixed;
@@ -116,11 +116,11 @@ table th {
 	background-color: white;
 }
 table th.dragged {
-	opacity: 0.5;
-	filter: Alpha(opacity=50);
+	opacity: 0.8;
+	filter: Alpha(opacity=80);
 }
 table th.draghover {
-	border-left: 10px solid #aaaaaa;
+	border-left: 2em solid #aaaaaa;
 }
 table td {
 	background-position: 1em 0em;
@@ -145,8 +145,15 @@ table,th,td {
 #headerSize {
 	width: 3em;
 }
-#headerDate {
+#headerDate, #headerCreated {
 	width: 20em;
+}
+#headerMode {
+	width: 12em;
+}
+#headerMime {
+	min-width: 20ex; 
+	max-width: 40ex;
 }
 .fileactions {
 	float: right;
@@ -184,6 +191,10 @@ table,th,td {
 #fileList td.size, th#headerSize {
 	text-align: right;
 	padding-right: 18px;
+}
+#fileList td.mode  {
+	text-align: center;
+	font-family: monospace;
 }
 #fileList tr:hover, #fileList tr.draghover {
 	background-color: #ededed;
@@ -710,6 +721,7 @@ td.center {
 	background-position: right center;
 	background-repeat: no-repeat;
 	cursor: pointer;
+	padding-right: 23px;
 
 }
 .tablesorter-up, .tablesorter-down {
@@ -907,6 +919,42 @@ a[data-action=autorefreshmenu] {
 	width: 0;
 }
 
+.tableconfig {
+	background-color: white;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	width: auto;
+	z-index: 110;
+}
+.tableconfig fieldset {
+	clear: none;
+	float: left;
+	margin: 1ex;
+}
+.tableconfig ul li {
+	padding:0;
+	margin: 0;
+}
+.tableconfigactions {
+	clear: both;
+	text-align: center;
+}
+.tableconfigbutton {
+	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfdBg0LDA3BD1R8AAABPElEQVQoz2XQMUvUcRgH8M//74FCoXWHmscd10Fq6OAQJXGLbiKCEEpLU0tTQxC9gt5Ak+Bb0MlBXURBIqhRkJbghuSs8+QG7Tzt/DXInX/tebbn++EZvtEMNj94555Tqz5O/YwkJw6ajDx8oEfm7hubO/kbua4f78uvfarn0qMN58YHqrniSuR6u6w9Lh1lvW08Gho9UWWwvJattbS0XPordue7gXlLto6vfnbLXjjXdObUHxwLQm9IhekgCE4s5A1J60MKy70hdxW1t6yU1S8tpQd5e7dAUDWZaYMJClZU1DUT5MiT+20wpsCwaa8cJMgvz+M2KCoq6OeZwwSpKHWLJlxo4NKZpvpTGzKdGmvm4mStkb5vZtU6h4z1+GbzkdRX8w47h/1bgJjPXvgNdi3+B8AXs2q2vYwq/wD3T3bX1iZyxAAAAABJRU5ErkJggg==) no-repeat center center;
+	position: absolute;
+	top: 4.2em;
+	right: 0;
+	width: 20px;
+	height: 20px;
+	border: 1px solid #999999;
+	opacity: 0;
+	filter: Alpha(opacity=0);
+}
+.tableconfigbutton:hover {
+	opacity: 1;
+	filter:Alpha(opacity=100);
+}
 .ui-front {
 	z-index: 200;
 }

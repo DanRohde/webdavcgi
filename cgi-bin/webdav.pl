@@ -321,7 +321,7 @@ $SHOW_QUOTA = 1;
 ## -- @ALLOWED_TABLE_COLUMNS
 ## defines the allowed columns for the file list in the Web interface
 ## supported values: name, lastmodified, created, size, mode, mime, fileaction
-@ALLOWED_TABLE_COLUMNS = ('name','lastmodified','created','size','mode','mime');
+@ALLOWED_TABLE_COLUMNS = ('name','size','lastmodified','created','mode','mime');
 push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
 ## -- @VISIBLE_TABLE_COLUMNS

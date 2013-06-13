@@ -2,7 +2,7 @@
 	<form id="filelistform" method="post" action="#">
 	<input id="filelistaction" type="hidden" name="__set__" value=""/>
 	
-	
+	<div class="tableconfigbutton" title="$tl(tableconfig.button.title)" data-template="tableconfig">&nbsp;</div>
 	<table id="fileListTable">
 		<thead>
 		<!--IF($config(SHOW_QUOTA))-->
@@ -38,7 +38,7 @@
 			<th id="headerCreated" data-name="created" data-sort="data-created" data-sorttype="number" class="dragaccept">$tl(created)</th>
 ]-->
 <!--TEMPLATE(mode)[
-			<th data-name="mode" data-sort="data-mode" class="dragaccept">$tl(mode)</th>
+			<th id="headerMode" data-name="mode" data-sort="data-mode" class="dragaccept">$tl(mode)</th>
 ]-->
 		</tr>
 		
