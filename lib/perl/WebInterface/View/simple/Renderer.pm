@@ -314,6 +314,8 @@ sub renderFileListEntry {
 				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
 				'mode' => sprintf('%04o', $mode & 07777),
 				'modestr' => $self->mode2str($full, $mode),
+				'uidNumber' => $uid,'uid'=>getpwuid($uid),
+				'gidNumber'=> $gid, 'gid'=>getgrgid($gid),
 				);
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);
