@@ -871,10 +871,12 @@ function handleFileListColumnDrop(event, ui) {
 	var d = ui.draggable.attr("data-name");
 	var t = $(this).attr("data-name");
 	var a = new Array();
-	$.each($("#fileListTable thead th:not(.sorter-false)"), function(i,val) {
+	$("#fileListTable thead th").each(function(i,val) {
 		var n = $(val).attr("data-name");
-		if (n == t) a.push(d);
-		if (n != d) a.push(n);
+		if (n) {
+			if (n == t) a.push(d);
+			if (n != d) a.push(n);
+		}
 	});
 	cookie("visibletablecolumns", a.join(","));
 	

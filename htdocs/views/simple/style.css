@@ -121,6 +121,7 @@ table th {
 table th.dragged {
 	opacity: 0.8;
 	filter: Alpha(opacity=80);
+	cursor: move;
 }
 table th.draghover {
 	border-left: 2em solid #aaaaaa;
@@ -969,6 +970,9 @@ a[data-action=autorefreshmenu] {
 .tableconfigbutton:hover {
 	opacity: 1;
 	filter:Alpha(opacity=100);
+}
+.dragaccept { 
+	cursor: pointer; 
 }
 .ui-front {
 	z-index: 200;
