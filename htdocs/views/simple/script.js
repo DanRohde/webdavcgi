@@ -77,7 +77,7 @@ function initTableConfigDialog() {
 				$.each(visiblecolumns, function(i,val) {
 					dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
 				});
-				
+				dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").click(function(e) { preventDefault(e);});
 				var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");
 				var column = so[0];
 				var order = so[1] || 'asc';
@@ -340,7 +340,7 @@ function handleChangeUriAction(event) {
 }
 function initSelect() {
 	$("#flt").on("fileListChanged", function() {
-		$("#fileListTable #headerName .toggleselection").off("click").click(function(event) {
+		$("#fileListTable .toggleselection").off("click").click(function(event) {
 			preventDefault(event);
 			$("#fileList tr:not(:hidden)[data-unselectable='no']").each(function(i,row) {
 				$(this).toggleClass("selected");
@@ -348,13 +348,13 @@ function initSelect() {
 			});
 			$("#flt").trigger("fileListSelChanged");
 		});	
-		$("#fileListTable #headerName .selectnone").off("click").click(function(event) {
+		$("#fileListTable .selectnone").off("click").click(function(event) {
 			preventDefault(event);
 			$("#fileList tr.selected:not(:hidden)").removeClass("selected");
 			$("#fileList tr:not(:hidden) input[type=checkbox]:checked").prop("checked", false);
 			$("#flt").trigger("fileListSelChanged");
 		});
-		$("#fileListTable #headerName .selectall").off("click").click(function(event) {
+		$("#fileListTable .selectall").off("click").click(function(event) {
 			preventDefault(event);
 			$("#fileList tr:not(.selected):not(:hidden)[data-unselectable='no']").addClass("selected");
 			$("#fileList tr:not(:hidden)[data-unselectable='no'] input[type=checkbox]:not(:checked)").prop("checked", true);
@@ -878,10 +878,10 @@ function handleFileListColumnDrop(event, ui) {
 	});
 	cookie("visibletablecolumns", a.join(","));
 	
-	var cols = $("#fileListTable thead th:not(.sorter-false)");
+	var cols = $("#fileListTable thead th");
 	cols.eq(didx).detach().insertBefore(cols.eq(tidx));
 	$.each($("#fileList tr"), function() {
-		var cols = $(this).children("th, td");
+		var cols = $(this).children("td");
 		cols.eq(didx).detach().insertBefore(cols.eq(tidx));
 	});	
 	return true;
@@ -904,18 +904,18 @@ function initTableSorter() {
 		}
 	}
 	
-	var th = $("th:not(.sorter-false),td:not(.sorter-false)",$("#fileListTable thead"));
+	var th = $("#fileListTable thead th:not(.sorter-false)");
 	
 	th.addClass('tablesorter-head').off("click.tablesorter").on("click.tablesorter", function(event) {
-		$("#fileListTable .tablesorter-head").removeClass('tablesorter-down').removeClass('tablesorter-up');		
 		var lcc = flt.data("tablesorter-lastclickedcolumn");
 		var sortorder = flt.data("tablesorter-sortorder");
 		var stype = $(this).attr("data-sorttype") ? $(this).attr("data-sorttype") : "string";
 		var sattr = $(this).attr("data-sort");
-		var cidx = this.cellIndex;
+		var cidx = $(this).prop("cellIndex");
 		if (!sortorder) sortorder = -1;
 		if (lcc == cidx) sortorder = -sortorder;
 		cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
+		console.log("click: cidx="+cidx+", sattr="+sattr);
 		setupFileListSort(cidx, sortorder);
 		sortFileList(stype,sattr,sortorder,cidx,"data-file");		
 		initFileList();
@@ -926,7 +926,7 @@ function setupFileListSort(cidx, sortorder) {
 	var flt = $("#fileListTable");
 	flt.data("tablesorter-lastclickedcolumn",cidx)
 	flt.data("tablesorter-sortorder", sortorder);
-	$("thead th:not(.sorter-false)", flt)
+	$("#fileListTable thead th")
 		.removeClass('tablesorter-down')
 		.removeClass('tablesorter-up')
 		.eq(cidx).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');

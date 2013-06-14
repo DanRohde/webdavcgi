@@ -1,28 +1,28 @@
-
+<div id="fileListTableContent">
 	<form id="filelistform" method="post" action="#">
 	<input id="filelistaction" type="hidden" name="__set__" value=""/>
-	
-	<div class="tableconfigbutton" title="$tl(tableconfig.button.title)" data-template="tableconfig">&nbsp;</div>
-	<table id="fileListTable">
-		<thead>
-		<!--IF($config(SHOW_QUOTA))-->
-		<tr><th class="sorter-false" colspan="$visiblecolumncount">
-		<div id="quota">
+	<!--IF($config(SHOW_QUOTA))-->
+	<div id="quota">
 			<div class="quotabar" title="$tl(quotaavailable) $quotaavailable (${quotaavailableperc}%) / $quotalimit"><div title="$tl(quotaused) $quotaused (${quotausedperc}%) / $quotalimit" class="$quotalevel quotaused" style="$quotastyle; width: ${quotausedperc}%;">${quotausedperc}%</div></div>
 			$tl(quotalimit) <span title="$quotalimittitle">$quotalimit</span>, 
 			$tl(quotaused) <span title="$quotausedtitle">$quotaused (${quotausedperc}%)</span>, 
 			$tl(quotaavailable) <span title="$quotaavailabletitle">$quotaavailable (${quotaavailableperc}%)</span>
 		</div>
-		</th></tr>
-		<!--ENDIF-->
-		
-		<!--IF($isviewfiltered())--><tr><td colspan="3" class="sorter-false"><div class="viewfilterinfo">$tl(filter) $filterInfo() </div></td></tr><!--ENDIF-->
+	<!--ENDIF-->
+	<!--IF($isviewfiltered())--><div class="viewfilterinfo">$tl(filter) $filterInfo() </div><!--ENDIF-->
+
+	<table id="fileListTable">
+		<thead>
 		<tr>
-		$filelistheadcolumns
+			<th id="headerSelector" class="sorter-false dragaccept">
+				<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>&nbsp;
+			</th>
+			$filelistheadcolumns
 <!--TEMPLATE(name)[
 			<th id="headerName" class="dragaccept" data-name="name" data-sort="data-displayname" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
-				<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>
+				<div class="tableconfigbutton" title="$tl(tableconfig.button.title)" data-template="tableconfig">&nbsp;</div>
 				$tl(name)
+					
 			</th>
 ]-->
 <!--TEMPLATE(size)[
@@ -38,7 +38,7 @@
 			<th id="headerCreated" data-name="created" data-sort="data-created" data-sorttype="number" class="dragaccept">$tl(created)</th>
 ]-->
 <!--TEMPLATE(mode)[
-			<th id="headerMode" data-name="mode" data-sort="data-mode" class="dragaccept">$tl(mode)</th>
+			<th id="headerMode" class="dragaccept sorter-false">$tl(mode)</th>
 ]-->
 		</tr>
 		
@@ -48,5 +48,4 @@
 		</tbody>
 	</table>
 	</form>
-
-
+</div>
