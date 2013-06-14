@@ -112,7 +112,7 @@ function initTableConfigDialog() {
 						var ch = $("#fileListTable th[data-name='"+c+"']");
 						var sortorder = o == 'desc' ? -1 : 1;
 						setupFileListSort(ch.prop("cellIndex"), sortorder);
-						sortFileList(ch.attr("data-sorttype") || "string", ch.attr("data-sort"), sortorder, ch.prop("cellIndex"), "data-file");	
+						if (ch.length>0) sortFileList(ch.attr("data-sorttype") || "string", ch.attr("data-sort"), sortorder, ch.prop("cellIndex"), "data-file");	
 					}
 									
 					dialog.dialog("close");
