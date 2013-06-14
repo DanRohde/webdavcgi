@@ -1,19 +1,19 @@
 <div class="tableconfig" title="$tl(tableconfig.button.title)">
 <form id="tableconfigform" method="post" action="#">
 <fieldset>
-<label>$tl(tableconfig.tablecolumns)</label>
+<legend>$tl(tableconfig.tablecolumns)</legend>
 <ul>
 	$each#@main::ALLOWED_TABLE_COLUMNS#'<li><input type="checkbox" name="visiblecolumn" value="$v"/> $tl($v)</li>'#
 </ul>
 </fieldset>
 <fieldset>
-<label>$tl(tableconfig.sortingcolumns)</label>
+<legend>$tl(tableconfig.sortingcolumns)</legend>
 <ul>
 	$each#@main::ALLOWED_TABLE_COLUMNS#'<li><input type="radio" name="sortingcolumn" value="$v"/>$tl($v)</li>'#
 </ul>
 </fieldset>
 <fieldset>
-<label>$tl(tableconfig.sortingorder)</label>
+<legend>$tl(tableconfig.sortingorder)</legend>
 <ul>
 	<li><input type="radio" value="asc" name="sortingorder"/> $tl(tableconfig.ascending)</li>
 	<li><input type="radio" value="desc" name="sortingorder"/> $tl(tableconfig.descending)</li>

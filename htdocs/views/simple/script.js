@@ -86,7 +86,7 @@ function initTableConfigDialog() {
 				dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
 				
 				// register dialog actions:
-				dialog.find("input[name='save']").click(function(event) {
+				dialog.find("input[name='save']").button().click(function(event) {
 					// preserve table column order:
 					var vc = visiblecolumns.slice(0); // clone visiblecolumns
 					var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
@@ -106,13 +106,21 @@ function initTableConfigDialog() {
 					var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
 					var o = dialog.find("input[name='sortingorder']:checked").attr("value");
 					cookie("order", c + (o=="desc" ? "_desc" :""));
-					
-					// known bug: updateFileList not necessary  if sort was changed					
-					if (vtc.sort().join(",") != visiblecolumns.sort().join(",") || c != column || o != order) updateFileList();
+									
+					if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) updateFileList();
+					else if (c != column || o != order) {
+						var ch = $("#fileListTable th[data-name='"+c+"']");
+						if (ch.length>0) {
+							var sortorder = o == 'desc' ? -1 : 1;
+							setupFileListSort(ch.prop("cellIndex"), sortorder);
+							sortFileList(ch.attr("data-sorttype") || "string", c, sortorder, ch.prop("cellIndex"), "data-file");		
+							initFileList();
+						}
+					}
 									
 					dialog.dialog("close");
 				});
-				dialog.find("input[name='cancel']").click(function(event) {
+				dialog.find("input[name='cancel']").button().click(function(event) {
 					preventDefault(event);
 					dialog.dialog("close");
 					return false;
@@ -847,7 +855,7 @@ function initFileList() {
 			var th = $(event.currentTarget);
 			return $(event.currentTarget).clone().width(th.width()).addClass("dragged");
 		}})
-		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListTableDrop, hoverClass: "draghover" });
+		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover" });
 		
 	// fix annyoing text selection after a double click on text in the file list:
 	if (document.selection && document.selection.empty) document.selection.empty();
@@ -858,7 +866,7 @@ function initFileList() {
 	
 	$("#flt").trigger("fileListChanged");
 }
-function handleFileListTableDrop(event, ui) {
+function handleFileListColumnDrop(event, ui) {
 	var didx = ui.draggable.prop("cellIndex");
 	var tidx = $(this).prop("cellIndex");
 	if (didx + 1 == tidx) return false;
@@ -893,20 +901,15 @@ function initTableSorter() {
 			var sattr = col.attr('data-sort');
 			var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
 			var cidx = col.prop("cellIndex");
-			//console.log("stype="+stype+", sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx);
-			flt.data("tablesorter-lastclickedcolumn", cidx);
-			flt.data("tablesorter-sortorder", sortorder);
-			col.addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
+			setupFileListSort(cidx, sortorder);
 			sortFileList(stype, sattr, sortorder, cidx, "data-file");
 		}
 	}
 	
 	var th = $("th:not(.sorter-false),td:not(.sorter-false)",$("#fileListTable thead"));
 	
-	th.addClass('tablesorter-head').on("click.tablesorter", function(event) {
-
-		$("#fileListTable .tablesorter-head").removeClass('tablesorter-down').removeClass('tablesorter-up');
-		
+	th.addClass('tablesorter-head').off("click.tablesorter").on("click.tablesorter", function(event) {
+		$("#fileListTable .tablesorter-head").removeClass('tablesorter-down').removeClass('tablesorter-up');		
 		var lcc = flt.data("tablesorter-lastclickedcolumn");
 		var sortorder = flt.data("tablesorter-sortorder");
 		var stype = $(this).attr("data-sorttype") ? $(this).attr("data-sorttype") : "string";
@@ -914,19 +917,21 @@ function initTableSorter() {
 		var cidx = this.cellIndex;
 		if (!sortorder) sortorder = -1;
 		if (lcc == cidx) sortorder = -sortorder;
-		flt.data("tablesorter-lastclickedcolumn", cidx);
-		flt.data("tablesorter-sortorder", sortorder);
-		//console.log("stype="+stype+"; sattr="+sattr+"; sortorder="+sortorder+"; cidx="+cidx+"; lcc="+lcc);
-		$(this).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
 		cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
-		
-		sortFileList(stype,sattr,sortorder,cidx,"data-file");
-		
-		th.off("click.tablesorter");
+		setupFileListSort(cidx, sortorder);
+		sortFileList(stype,sattr,sortorder,cidx,"data-file");		
 		initFileList();
 		
 	});
-	
+}
+function setupFileListSort(cidx, sortorder) {
+	var flt = $("#fileListTable");
+	flt.data("tablesorter-lastclickedcolumn",cidx)
+	flt.data("tablesorter-sortorder", sortorder);
+	$("thead th:not(.sorter-false)", flt)
+		.removeClass('tablesorter-down')
+		.removeClass('tablesorter-up')
+		.eq(cidx).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
 }
 function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 	$("#fileListTable tbody").each(function(i,val){
