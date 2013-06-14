@@ -153,6 +153,10 @@ table,th,td {
 	margin-bottom: 3px; 
 	border: 0;
 }
+.toggleselection:hover {
+	opacity: 1;
+	filter: Alpha(opacity=100);
+}
 #headerSize {
 	width: 3em;
 }
