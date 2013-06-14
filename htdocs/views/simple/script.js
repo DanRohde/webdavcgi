@@ -110,12 +110,10 @@ function initTableConfigDialog() {
 					if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) updateFileList();
 					else if (c != column || o != order) {
 						var ch = $("#fileListTable th[data-name='"+c+"']");
-						if (ch.length>0) {
-							var sortorder = o == 'desc' ? -1 : 1;
-							setupFileListSort(ch.prop("cellIndex"), sortorder);
-							sortFileList(ch.attr("data-sorttype") || "string", c, sortorder, ch.prop("cellIndex"), "data-file");		
-							initFileList();
-						}
+						var sortorder = o == 'desc' ? -1 : 1;
+						setupFileListSort(ch.prop("cellIndex"), sortorder);
+						sortFileList(ch.attr("data-sorttype") || "string", c, sortorder, ch.prop("cellIndex"), "data-file");		
+						initFileList();	
 					}
 									
 					dialog.dialog("close");
