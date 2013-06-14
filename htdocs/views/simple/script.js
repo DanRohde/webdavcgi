@@ -113,7 +113,7 @@ function initTableConfigDialog() {
 						var sortorder = o == 'desc' ? -1 : 1;
 						setupFileListSort(ch.prop("cellIndex"), sortorder);
 						sortFileList(ch.attr("data-sorttype") || "string", c, sortorder, ch.prop("cellIndex"), "data-file");		
-						initFileList();	
+						//initFileList();	
 					}
 									
 					dialog.dialog("close");
@@ -920,7 +920,7 @@ function initTableSorter() {
 		//console.log("click: cidx="+cidx+", sattr="+sattr);
 		setupFileListSort(cidx, sortorder);
 		sortFileList(stype,sattr,sortorder,cidx,"data-file");		
-		initFileList();
+		//initFileList();
 		
 	});
 }
@@ -935,10 +935,7 @@ function setupFileListSort(cidx, sortorder) {
 }
 function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 	$("#fileListTable tbody").each(function(i,val){
-		var rows = new Array();
-		for (var r=0; r< this.rows.length; r++) {
-			rows.push(this.rows.item(r).cloneNode(true));
-		}
+		var rows = $(val).children("tr").get();
 		rows.sort(function(a,b){
 			var ret = 0;
 			var jqa = $(a);
@@ -971,7 +968,7 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 			return sortorder * ret;
 		});
 		for (var r=0; r<rows.length; r++) {
-			val.replaceChild(rows[r], val.children[r]);
+			$(val).append(rows[r]);
 		}
 		
 	});
