@@ -152,6 +152,7 @@ table,th,td {
 	margin-left: 4px;
 	margin-bottom: 3px; 
 	border: 0;
+	cursor: pointer;
 }
 .toggleselection:hover {
 	opacity: 1;
@@ -168,8 +169,7 @@ table,th,td {
 	text-align: center;
 }
 #headerMime {
-	min-width: 20ex; 
-	max-width: 40ex;
+	width: 15ex;
 }
 .fileactions {
 	float: right;

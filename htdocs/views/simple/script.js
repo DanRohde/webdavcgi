@@ -915,7 +915,7 @@ function initTableSorter() {
 		if (!sortorder) sortorder = -1;
 		if (lcc == cidx) sortorder = -sortorder;
 		cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
-		console.log("click: cidx="+cidx+", sattr="+sattr);
+		//console.log("click: cidx="+cidx+", sattr="+sattr);
 		setupFileListSort(cidx, sortorder);
 		sortFileList(stype,sattr,sortorder,cidx,"data-file");		
 		initFileList();
