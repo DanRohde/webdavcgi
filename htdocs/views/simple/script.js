@@ -112,8 +112,7 @@ function initTableConfigDialog() {
 						var ch = $("#fileListTable th[data-name='"+c+"']");
 						var sortorder = o == 'desc' ? -1 : 1;
 						setupFileListSort(ch.prop("cellIndex"), sortorder);
-						sortFileList(ch.attr("data-sorttype") || "string", c, sortorder, ch.prop("cellIndex"), "data-file");		
-						//initFileList();	
+						sortFileList(ch.attr("data-sorttype") || "string", ch.attr("data-sort"), sortorder, ch.prop("cellIndex"), "data-file");	
 					}
 									
 					dialog.dialog("close");
@@ -899,7 +898,7 @@ function initTableSorter() {
 		var col = $("#fileListTable thead th[data-name='"+sname+"']");
 		if (col.length>0) {
 			var sattr = col.attr('data-sort');
-			var stype = col.attr('data-sorttype') ? col.attr('data-sorttype') : 'string';
+			var stype = col.attr('data-sorttype') || 'string';
 			var cidx = col.prop("cellIndex");
 			setupFileListSort(cidx, sortorder);
 			sortFileList(stype, sattr, sortorder, cidx, "data-file");
@@ -911,7 +910,7 @@ function initTableSorter() {
 	th.addClass('tablesorter-head').off("click.tablesorter").on("click.tablesorter", function(event) {
 		var lcc = flt.data("tablesorter-lastclickedcolumn");
 		var sortorder = flt.data("tablesorter-sortorder");
-		var stype = $(this).attr("data-sorttype") ? $(this).attr("data-sorttype") : "string";
+		var stype = $(this).attr("data-sorttype")|| "string";
 		var sattr = $(this).attr("data-sort");
 		var cidx = $(this).prop("cellIndex");
 		if (!sortorder) sortorder = -1;
@@ -919,9 +918,7 @@ function initTableSorter() {
 		cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
 		//console.log("click: cidx="+cidx+", sattr="+sattr);
 		setupFileListSort(cidx, sortorder);
-		sortFileList(stype,sattr,sortorder,cidx,"data-file");		
-		//initFileList();
-		
+		sortFileList(stype,sattr,sortorder,cidx,"data-file");
 	});
 }
 function setupFileListSort(cidx, sortorder) {
@@ -945,7 +942,7 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 	
 			if (jqa.attr('data-file') == "..") return -1;
 			if (jqb.attr('data-file') == "..") return 1;
-			if (jqa.attr('data-type') == 'dir'  && jqb.attr('data-type') != 'dir') return -1;
+			if (jqa.attr('data-type') == 'dir' && jqb.attr('data-type') != 'dir') return -1;
 			if (jqa.attr('data-type') != 'dir' && jqb.attr('data-type') == 'dir') return 1;
 			
 		
@@ -959,11 +956,12 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 				}
 			}
 			if (ret == 0 && sattr!=ssattr) {
-				if (vala.localeCompare) 
+				if (vala.localeCompare) {
 					ret = jqa.attr(ssattr).localeCompare(jqb.attr(ssattr));
-				else
+				} else {
 					ret = jqa.attr(ssattr) < jqb.attr(ssattr) 
-							? -1 : jqa.attr(ssattr) > jqb.attr(ssattr)	? 1 : 0; 
+							? -1 : jqa.attr(ssattr) > jqb.attr(ssattr)	? 1 : 0;
+				}
 			}
 			return sortorder * ret;
 		});
