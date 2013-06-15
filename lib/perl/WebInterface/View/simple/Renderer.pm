@@ -41,7 +41,10 @@ sub render {
 	my $contenttype= 'text/html';
 	
 	$self->setLocale();
-	
+	unless ('selector' ~~ @main::ALLOWED_TABLE_COLUMNS) {
+		unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
+		unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';	
+	}
 	if ($$self{cgi}->param('ajax')) {
 		my $ajax = $$self{cgi}->param('ajax');
 		if ($ajax eq 'getFileListTable') { 

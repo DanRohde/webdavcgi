@@ -68,67 +68,80 @@ function initTableConfigDialog() {
 			if ($(this).hasClass("disabled")) return;
 			$(".tableconfigbutton").addClass("disabled");
 			
-			$.get($("#fileList").attr("data-uri"),{ ajax : 'getTableConfigDialog', template : $(this).attr("data-template")}, function(response) {
-				if (response.error) handleJSONResponse(response);
-				var dialog = $(response);
-				
-				// init dialog:
-				var visiblecolumns = $.map($("#fileListTable thead th.dragaccept"), function(val,i) { return $(val).attr("data-name");});
-				$.each(visiblecolumns, function(i,val) {
-					dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
+			var dialog = $("#flt").data("TableConfigDialog");
+			if (dialog) {
+				setupTableConfigDialog($(dialog));
+			} else {
+			
+				$.get($("#fileList").attr("data-uri"),{ ajax : 'getTableConfigDialog', template : $(this).attr("data-template")}, function(response) {
+					if (response.error) handleJSONResponse(response);
+					$("#flt").data("TableConfigDialog", response);
+					setupTableConfigDialog($(response));
 				});
-				dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").click(function(e) { preventDefault(e);});
-				var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");
-				var column = so[0];
-				var order = so[1] || 'asc';
-				
-				dialog.find("input[name='sortingcolumn'][value='"+column+"']").prop("checked",true);
-				dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
-				
-				// register dialog actions:
-				dialog.find("input[name='save']").button().click(function(event) {
-					// preserve table column order:
-					var vc = visiblecolumns.slice(0); // clone visiblecolumns
-					var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
-					
-					// this is more inefficient than cookie("visibletablecolumns,vtc.join(",")); 
-					// but preserves table column order:
-					// remove unselected elements:
-					for (var i=vc.length-1; i>=0; i--) {
-						if ($.inArray(vc[i], vtc)==-1) vc.splice(i,1);
-					}
-					// add missing selected elements:
-					$.each(vtc, function(i,val) {
-						if ($.inArray(val, vc)==-1) vc.push(val); 
-					});
-					cookie("visibletablecolumns",vc.join(","));
-					
-					var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
-					var o = dialog.find("input[name='sortingorder']:checked").attr("value");
-					cookie("order", c + (o=="desc" ? "_desc" :""));
-									
-					if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) updateFileList();
-					else if (c != column || o != order) {
-						var ch = $("#fileListTable th[data-name='"+c+"']");
-						var sortorder = o == 'desc' ? -1 : 1;
-						setupFileListSort(ch.prop("cellIndex"), sortorder);
-						if (ch.length>0) sortFileList(ch.attr("data-sorttype") || "string", ch.attr("data-sort"), sortorder, ch.prop("cellIndex"), "data-file");	
-					}
-									
-					dialog.dialog("close");
-				});
-				dialog.find("input[name='cancel']").button().click(function(event) {
-					preventDefault(event);
-					dialog.dialog("close");
-					return false;
-				});
-				
-				dialog.find("#tableconfigform").submit(function(event) { return false; });
-				
-				dialog.dialog({ modal: true, width: "auto", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
-			});
+			}
 		});
 	});
+}
+function setupTableConfigDialog(dialog) {
+	// init dialog:
+	var visiblecolumns = $.map($("#fileListTable thead th.dragaccept"), function(val,i) { return $(val).attr("data-name");});
+	$.each(visiblecolumns, function(i,val) {
+		dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
+	});
+	dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").prop("checked",true).click(function(e) { preventDefault(e);});
+	$("#fileListTable thead th.sorter-false").each(function(i,val) {
+		dialog.find("input[name='sortingcolumn'][value='"+$(val).attr("data-name")+"']").prop("disabled",true).click(function(e){preventDefault(e)});
+	});
+	
+	var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");
+	var column = so[0];
+	var order = so[1] || 'asc';
+	
+	dialog.find("input[name='sortingcolumn'][value='"+column+"']").prop("checked",true);
+	dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
+	
+	// register dialog actions:
+	dialog.find("input[name='save']").button().click(function(event) {
+		// preserve table column order:
+		var vc = visiblecolumns.slice(0); // clone visiblecolumns
+		var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
+		
+		// this is more inefficient than cookie("visibletablecolumns,vtc.join(",")); 
+		// but preserves table column order:
+		// remove unselected elements:
+		for (var i=vc.length-1; i>=0; i--) {
+			if ($.inArray(vc[i], vtc)==-1) vc.splice(i,1);
+		}
+		// add missing selected elements:
+		$.each(vtc, function(i,val) {
+			if ($.inArray(val, vc)==-1) vc.push(val); 
+		});
+		cookie("visibletablecolumns",vc.join(","));
+		
+		var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
+		var o = dialog.find("input[name='sortingorder']:checked").attr("value");
+		cookie("order", c + (o=="desc" ? "_desc" :""));
+						
+		if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) updateFileList();
+		else if (c != column || o != order) {
+			var ch = $("#fileListTable th[data-name='"+c+"']");
+			var sortorder = o == 'desc' ? -1 : 1;
+			setupFileListSort(ch.prop("cellIndex"), sortorder);
+			if (ch.length>0) sortFileList(ch.attr("data-sorttype") || "string", ch.attr("data-sort"), sortorder, ch.prop("cellIndex"), "data-file");	
+		}
+						
+		dialog.dialog("close");
+	});
+	dialog.find("input[name='cancel']").button().click(function(event) {
+		preventDefault(event);
+		dialog.dialog("close");
+		return false;
+	});
+	
+	dialog.find("#tableconfigform").submit(function(event) { return false; });
+	
+	dialog.dialog({ modal: true, width: "auto", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
+	
 }
 function initCollapsible() {
 	$("[data-action='collapse-sidebar']").click(function(event) {
@@ -851,7 +864,8 @@ function initFileList() {
 		.draggable({ zIndex: 200, scope: "fileListTable",  axis: "x" , helper: function(event) {
 			var th = $(event.currentTarget);
 			return $(event.currentTarget).clone().width(th.width()).addClass("dragged");
-		}})
+		}});
+	$("#fileListTable th.dragaccept,#fileListTable th.dropaccept")
 		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover" });
 		
 	// fix annyoing text selection after a double click on text in the file list:
@@ -895,7 +909,7 @@ function initTableSorter() {
 		var so = cookie('order').split("_");
 		var sname = so[0];
 		var sortorder = so[1] && so[1] == 'desc' ? -1 : 1;
-		var col = $("#fileListTable thead th[data-name='"+sname+"']");
+		var col = $("#fileListTable thead th[data-name='"+sname+"']:not(.sorter-false)");
 		if (col.length>0) {
 			var sattr = col.attr('data-sort');
 			var stype = col.attr('data-sorttype') || 'string';
