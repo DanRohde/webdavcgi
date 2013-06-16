@@ -50,6 +50,8 @@ $(document).ready(function() {
 	
 	initTableConfigDialog();
 	
+	$.ajaxSetup({ traditional: true });
+	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);
 		console.log(jqxhr); 
@@ -806,7 +808,7 @@ function handleFileActions(event) {
 	var row = $(this).closest("tr");
 	var action = $(this).attr('data-action');
 	if (action == 'download') {
-		submitFileForm('zip',row.attr('data-file'));
+		postAction({"zip" : "yes", "file" : row.attr('data-file')});
 	} else if (action == 'rename') {
 		handleFileRename(row);
 	} else if (action == 'delete') {
@@ -1137,14 +1139,6 @@ function notifyInfo(info) {
 function notifyWarn(warn) {
 	notify('warning',warn);
 }
-function submitFileForm(fileaction, filename) {
-	$('#fileform').attr('action',$('#fileList').attr('data-uri'));
-	$('#fileform #fileaction').attr('name',fileaction).attr('value','yes');
-	$('#fileform #filename').attr('value',filename);
-	$('#fileform').submit(); 
-}
-
-
 function handleRowClickEvent(event) {
 	var flt = $('#fileListTable');
 	if ($(this).attr('data-file') != '..' && $(this).attr('data-unselectable')!='yes' ) {
@@ -1364,6 +1358,22 @@ function blockPage() {
 function stripSlash(uri) {
 	return uri.replace(/\/$/,"");
 }
+function postAction(data) {
+	var form = $("<form/>").appendTo("body");
+	form.hide().prop("action",$("#fileList").attr("data-uri")).prop("method","POST");
+	function renderHiddenInput(form, data, key) {
+		for (var k in data) {
+			var v = data[k];
+			if (typeof v === "object") renderHiddenInput(form, v, k);
+			else if (key) form.append($("<input/>").prop("name",key).prop("value",v).prop("type","hidden"));
+			else form.append($("<input/>").prop("name", k).prop("value",v).prop("type","hidden"));
+		}
+		return form;
+	}
+	renderHiddenInput(form,data);
+	form.submit();
+	form.remove();
+}
 function handleFileListActionEvent(event) {
 	var action = $(this).attr('data-action');
 	preventDefault(event);
@@ -1374,20 +1384,16 @@ function handleFileListActionEvent(event) {
 	}
 	if ($(this).hasClass("disabled")) return;
 	if (action == "download") {
-		$('#filelistform').attr('action',$('#fileList').attr('data-uri'));
-		$('#filelistform input[id=filelistaction]').attr('name','zip').attr('value','yes');
-		$('#filelistform').submit();
+		var data =  { "zip" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")}) }; 
+		postAction(data);
 		uncheckSelectedRows();
 	} else if (action == "delete") {
 		$("#fileList tr.selected:visible").fadeTo("slow",0.5);
-		$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',false);
 		confirmDialog($('#deletefilesconfirm').html(), {
 			confirm: function() {
-				$('#filelistform input[id=filelistaction]').attr('name','delete').attr('value','yes');
-				$.post($('#fileList').attr('data-uri'), $('#filelistform').serialize(), function(response) {
-					removeFileListRow($("#fileList tr.selected:visible"));
+				$.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function(v,i) { return $(v).attr("data-file") })}, function(response) {
+ 					removeFileListRow($("#fileList tr.selected:visible"));
 					uncheckSelectedRows();
-					$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',true);
 					if (response.error) updateFileList();
 					handleJSONResponse(response);
 				});
@@ -1728,7 +1734,7 @@ function initPermissionsDialog() {
 				var permissionsform = $(this);
 				confirmDialog($("#changepermconfirm").html(), {
 					confirm: function() {
-						$.post(target, permissionsform.serialize()+"&"+$("#filelistform").serialize(), function(resp){
+						$.post(target, permissionsform.serialize()+"&"+$.param({ file: $.map($("#fileList tr.selected:visible"),function(val,i) { return $(val).attr("data-file") })}), function(resp){
 							handleJSONResponse(resp);
 							permissions.dialog("close");
 							updateFileList();
