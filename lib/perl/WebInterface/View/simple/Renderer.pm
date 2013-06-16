@@ -146,9 +146,14 @@ sub renderEach {
 			$t=~s/\$v/$hashvar{$key}/g; $t=~s/\$\{v\}/$hashvar{$key}/g;
 			$content.=$t;
 		}
-	} elsif ($variable=~/\@/) {
-		$variable=~s/\@//g;
-		my @arrvar = @{"$variable"};
+	} elsif ($variable=~/\@/ || $variable=~/^\((.*?)\)$/s) {
+		my @arrvar;
+		if ($variable=~/^\((.*?)\)$/s) {
+			@arrvar = split(/,/,$1);
+		} else {
+			$variable=~s/\@//g;
+			@arrvar = @{"$variable"};	
+		}
 		foreach my $val (@arrvar) {
 			next if defined $filter && $val =~ $filter;
 			my $t= $tmpl;
@@ -157,7 +162,6 @@ sub renderEach {
 			$content.=$t;
 		}
 	}
-	
 	return $content;
 }
 sub renderTemplate {

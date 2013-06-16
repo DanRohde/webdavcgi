@@ -273,7 +273,7 @@ function startAutoRefreshTimer(timeout) {
 function initSettingsDialog() {
 	var settings = $("#settings");
 	settings.data("initHandler", { init: function() {
-		$.each(["confirm.upload","confirm.dnd","confirm.paste","confirm.save","confirm.rename"], function(i,setting) {
+		$.each(["confirm.upload","confirm.dnd","confirm.paste","confirm.save","confirm.rename","messages.warning"], function(i,setting) {
 			$("input[name='settings."+setting+"']")
 				.prop("checked", cookie("settings."+setting) != "no")
 				.click(function(event) {
@@ -1123,6 +1123,7 @@ function handleFileRename(row) {
 }
 function notify(type,msg) {
 	console.log("notify["+type+"]: "+msg);
+	if (cookie("settings.messages."+type)=="no") return;
 	noty({text: msg, type: type, layout: 'topCenter', timeout: 30000 });
 //	var notification = $("#notification");
 //	notification.removeClass().hide();
