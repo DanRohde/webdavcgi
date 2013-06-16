@@ -273,22 +273,22 @@ function startAutoRefreshTimer(timeout) {
 function initSettingsDialog() {
 	var settings = $("#settings");
 	settings.data("initHandler", { init: function() {
-		$.each(["confirm.upload","confirm.dnd","confirm.paste","confirm.save","confirm.rename","messages.warning"], function(i,setting) {
-			$("input[name='settings."+setting+"']")
-				.prop("checked", cookie("settings."+setting) != "no")
-				.click(function(event) {
-					cookie("settings."+setting, $(this).is(":checked") ? "yes" : "no");
-				});	
+		$("input[type=checkbox][name^='settings.']", settings).each(function(i,v) {
+			$(v).prop("checked", cookie($(v).prop("name")) != "no").click(function(event) {
+				if ($(this).is(":checked")) rmcookies($(this).prop("name"));
+				else cookie($(this).prop("name"), "no");
+			});
 		});
-		$.each(["view","lang"], function(i,setting) {
-			$("select[name='settings."+setting+"'] option[value='"+cookie(setting)+"']").prop("selected",true);	
-			$("select[name='settings."+setting+"']").change(function() {
-				cookie(setting, $("option:selected",$(this)).val());
-				window.location.href= window.location.pathname; // reload bug fixed (if query view=...) 
-			});	
-		});
+		$("select[name^='settings.']", settings)
+			.change(function(){
+				cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val());
+				window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
+			})
+			.each(function(i,v) {
+				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);
+			
+			});
 	}});
-	
 }
 function initSearch() {
 	$("a[data-action='search']").click(function(event) {
