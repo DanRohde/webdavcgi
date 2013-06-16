@@ -123,7 +123,7 @@ table th.dragged {
 	filter: Alpha(opacity=80);
 	cursor: move;
 }
-table th.draghover {
+table .draghover {
 	border-left: 2em solid #aaaaaa;
 }
 table td {

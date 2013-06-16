@@ -1,10 +1,10 @@
 <tr data-unselectable="$unselectable" data-file="$name" data-size="$realsize" data-mime="$mime" data-isreadable="$isreadable" data-iswriteable="$iswriteable" data-iseditable="$iseditable" data-type="$type" data-isviewable="$isviewable" data-lastmodified="$lastmodifiedtime" data-created="$createdtime" data-displayname="$displayname" data-mode="$modestr">
 
-<!--TEMPLATE(selector)[<td class="selector"><input type="checkbox" name="file" value="$name"/> </td>]-->
+<!--TEMPLATE(selector)[<td class="selector -hidden"><input type="checkbox" name="file" value="$name"/> </td>]-->
 $filelistentrycolumns
 <td class="option"></td>
 <!--TEMPLATE(name)[
-<td class="filename" title="$name$linkinfo <!--IF($config(ALLOW_CHANGEPERM))-->($mode $modestr)<!--ENDIF-->"> 
+<td class="filename -hidden" title="$name$linkinfo <!--IF($config(ALLOW_CHANGEPERM))-->($mode $modestr)<!--ENDIF-->"> 
      <div class="filename">
 	     <a href="$fileuri" data-action="changeuri">
 	     	<img src="$iconurl" class="$iconclass"/>
@@ -14,20 +14,20 @@ $filelistentrycolumns
 </td>
 ]-->
 <!--TEMPLATE(size)[
-	<td class="size" title="$sizetitle"> $size </td>
+	<td class="size -hidden" title="$sizetitle"> $size </td>
 ]-->
 
 <!--TEMPLATE(lastmodified)[
-	<td class="lastModified" title="$tl(lastmodified): $lastmodified"> $lastmodifiedhr</td>
+	<td class="lastModified -hidden" title="$tl(lastmodified): $lastmodified"> $lastmodifiedhr</td>
 ]--> 
 <!--TEMPLATE(mime)[
-	<td class="mime">$mime</td>
+	<td class="mime -hidden">$mime</td>
 ]-->
 <!--TEMPLATE(created)[
-	<td class="created" title="$tl(created): $created">$createdhr</td>
+	<td class="created -hidden" title="$tl(created): $created">$createdhr</td>
 ]-->
 <!--TEMPLATE(mode)[
-	<td class="mode" title="mode: $mode, uid: $uid ($uidNumber), gid: $gid ($gidNumber)">$modestr</td>
+	<td class="mode -hidden" title="mode: $mode, uid: $uid ($uidNumber), gid: $gid ($gidNumber)">$modestr</td>
 ]-->
 </td>
 </tr>

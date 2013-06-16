@@ -248,7 +248,7 @@ sub isViewFiltered {
 sub renderFileListTable {
 	my ($self, $fn, $ru, $template) = @_;
 	my $filelisttabletemplate = $self->readTemplate($template);
-	my $columns = $self->renderVisibleTableColumns($filelisttabletemplate);
+	my $columns = $self->renderVisibleTableColumns($filelisttabletemplate).$self->renderInvisibleAllowedTableColumns($filelisttabletemplate);
 	$filelisttabletemplate=~s/\$filelistheadcolumns/$columns/egs;
 	$filelisttabletemplate=~s/\$visiblecolumncount/scalar($self->getVisibleTableColumns())/egs;
 	my %jsondata = ( content => $self->minifyHTML($self->renderTemplate($fn,$ru,$filelisttabletemplate) ) );
@@ -318,7 +318,21 @@ sub renderVisibleTableColumns {
 	my $columns = "";
 	for my $column (@columns) {
 		if ($_[1]=~s/<!--TEMPLATE\($column\)\[(.*?)\]-->//sg) {
-			$columns.=$1;
+			my $c = $1;
+			$c=~s/-hidden//sg;
+			$columns.=$c;
+		}
+	}
+	return $columns;
+}
+sub renderInvisibleAllowedTableColumns {
+	# my ($self, $template) = @_;
+	my $columns = "";
+	for my $column (@main::ALLOWED_TABLE_COLUMNS) {
+		if ($_[1]=~s/<!--TEMPLATE\($column\)\[(.*?)\]-->//sg) {
+			my $c = $1;
+			$c =~ s/-hidden/hidden/sg;
+			$columns.=$c;
 		}
 	}
 	$_[1]=~s/<!--TEMPLATE\([^\)]+\)\[.*?\]-->//sg;
@@ -334,7 +348,7 @@ sub renderFileList {
 	unshift @files, '..' if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
 	unshift @files, '.'  if $main::SHOW_CURRENT_FOLDER || ($main::SHOW_CURRENT_FOLDER_ROOTONLY && $ru=~/^$main::VIRTUAL_BASE$/);
 	
-	my $columns = $self->renderVisibleTableColumns($entrytemplate);
+	my $columns = $self->renderVisibleTableColumns($entrytemplate).$self->renderInvisibleAllowedTableColumns($entrytemplate);
 	$entrytemplate=~s/\$filelistentrycolumns/$columns/esg;
 	
 	foreach my $file (@files) {

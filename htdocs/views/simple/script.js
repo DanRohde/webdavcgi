@@ -73,8 +73,11 @@ function initTableConfigDialog() {
 			var dialog = $("#flt").data("TableConfigDialog");
 			if (dialog) {
 				setupTableConfigDialog($(dialog));
+			} else if ($("#tableconfigdialogtemplate").length>0) {
+				var tct = $("#tableconfigdialogtemplate").html();
+				$("#flt").data("TableConfigDialog", tct);
+				setupTableConfigDialog($(tct));
 			} else {
-			
 				$.get($("#fileList").attr("data-uri"),{ ajax : 'getTableConfigDialog', template : $(this).attr("data-template")}, function(response) {
 					if (response.error) handleJSONResponse(response);
 					$("#flt").data("TableConfigDialog", response);
@@ -86,7 +89,7 @@ function initTableConfigDialog() {
 }
 function setupTableConfigDialog(dialog) {
 	// init dialog:
-	var visiblecolumns = $.map($("#fileListTable thead th.dragaccept"), function(val,i) { return $(val).attr("data-name");});
+	var visiblecolumns = $.map($("#fileListTable thead th[data-name]:not(.hidden)"), function(val,i) { return $(val).attr("data-name");});
 	$.each(visiblecolumns, function(i,val) {
 		dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
 	});
@@ -102,19 +105,6 @@ function setupTableConfigDialog(dialog) {
 	dialog.find("input[name='sortingcolumn'][value='"+column+"']").prop("checked",true);
 	dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
 	
-	function toggleRadioButton(val, on) {
-		var sc = dialog.find("input[name='sortingcolumn'][value='"+val+"']");
-		if (on) sc.removeAttr("readonly").off("click").removeClass("disabled");
-		else sc.attr("readonly","readonly").off("click").on("click", function(e) { preventDefault(e)}).addClass("disabled");
-	}
-	
-	dialog.find("input[name='visiblecolumn']").each(function(i,val) {
-		toggleRadioButton($(val).val(), $(val).prop("checked"));
-	}).change(function(e) {
-		toggleRadioButton($(this).val(), $(this).prop("checked"));
-	});
-	
-	
 	// register dialog actions:
 	dialog.find("input[name='save']").button().click(function(event) {
 		// preserve table column order:
@@ -124,12 +114,20 @@ function setupTableConfigDialog(dialog) {
 		// this is more inefficient than cookie("visibletablecolumns,vtc.join(",")); 
 		// but preserves table column order:
 		// remove unselected elements:
+		var removedEls = new Array();
 		for (var i=vc.length-1; i>=0; i--) {
-			if ($.inArray(vc[i], vtc)==-1) vc.splice(i,1);
+			if ($.inArray(vc[i], vtc)==-1) {
+				removedEls.push(vc[i]);
+				vc.splice(i,1);
+			}
 		}
 		// add missing selected elements:
+		var addedEls = new Array();
 		$.each(vtc, function(i,val) {
-			if ($.inArray(val, vc)==-1) vc.push(val); 
+			if ($.inArray(val, vc)==-1) {
+				addedEls.push(val);
+				vc.push(val);
+			}
 		});
 		cookie("visibletablecolumns",vc.join(","));
 		
@@ -137,8 +135,16 @@ function setupTableConfigDialog(dialog) {
 		var o = dialog.find("input[name='sortingorder']:checked").attr("value");
 		cookie("order", c + (o=="desc" ? "_desc" :""));
 						
-		if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) updateFileList();
-		else if (c != column || o != order) {
+		if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) {
+			$.each(addedEls, function(i,val) {
+				var cidx = $("#fileListTable th[data-name='"+val+"']").removeClass("hidden").prop("cellIndex");
+				$("#fileList tr").each(function(j,v) { $("td",$(v)).eq(cidx).show(); });
+			});
+			$.each(removedEls, function(i,val) {
+				var cidx = $("#fileListTable th[data-name='"+val+"']").addClass("hidden").prop("cellIndex");
+				$("#fileList tr").each(function(j,v) { $("td",$(v)).eq(cidx).hide(); });
+			});
+		} else if (c != column || o != order) {
 			var ch = $("#fileListTable th[data-name='"+c+"']");
 			var sortorder = o == 'desc' ? -1 : 1;
 			setupFileListSort(ch.prop("cellIndex"), sortorder);
@@ -881,8 +887,8 @@ function initFileList() {
 			return $(event.currentTarget).clone().width(th.width()).addClass("dragged");
 		}});
 	$("#fileListTable th.dragaccept,#fileListTable th.dropaccept")
-		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover" });
-		
+		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover"});
+	
 	// fix annyoing text selection after a double click on text in the file list:
 	if (document.selection && document.selection.empty) document.selection.empty();
 	else if (window.getSelection) {
@@ -896,24 +902,17 @@ function handleFileListColumnDrop(event, ui) {
 	var didx = ui.draggable.prop("cellIndex");
 	var tidx = $(this).prop("cellIndex");
 	if (didx + 1 == tidx) return false;
-	var d = ui.draggable.attr("data-name");
-	var t = $(this).attr("data-name");
-	var a = new Array();
-	$("#fileListTable thead th").each(function(i,val) {
-		var n = $(val).attr("data-name");
-		if (n) {
-			if (n == t) a.push(d);
-			if (n != d) a.push(n);
-		}
-	});
-	cookie("visibletablecolumns", a.join(","));
 	
 	var cols = $("#fileListTable thead th");
 	cols.eq(didx).detach().insertBefore(cols.eq(tidx));
+	
 	$.each($("#fileList tr"), function() {
 		var cols = $(this).children("td");
 		cols.eq(didx).detach().insertBefore(cols.eq(tidx));
-	});	
+	});
+	
+	cookie("visibletablecolumns", $.map($("#fileListTable thead th[data-name]:not(.hidden):not(:last)"), function(v) { return $(v).attr("data-name")} ).join(","));
+	
 	return true;
 }
 function initTableSorter() {
