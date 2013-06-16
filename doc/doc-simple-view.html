@@ -108,8 +108,8 @@ Take a look at the Simple view templates for examples (<code>templates/simple/*.
 <li>Variables:<ul>
 <li>... take a look at the template files for variables or into the <code>renderTemplate</code> subroutine of the Renderer module (<code>lib/perl/WebInterface/View/simple/Renderer.pm</code>)</li>
 </ul></li>
-<li>IF-Statement: <code>&lt;!--IF([Perl expression])--&gt; [HTML] &lt;!--ENDIF--&gt;</code></li>
-<li>IF-Statements inside IF-Statements:<code>&lt;!--IF#[level]([Perl expression])--&gt; [HTML]&lt;--ENDIF#[level]--&gt;</code>  (replace <code>[level]</code> by a unique number)</li>
+<li>IF statement: <code>&lt;!--IF([Perl expression])--&gt; [HTML] &lt;!--ELSE--&gt; [HTML] &lt;!--ENDIF--&gt;</code></li>
+<li>IF statements inside IF statements:<code>&lt;!--IF#[level]([Perl expression])--&gt; [HTML] &lt;--ELSE#[level]--&gt; [HTML] &lt;--ENDIF#[level]--&gt;</code>  (replace <code>[level]</code> by a unique number)</li>
 </ul>
 <h2 id="editor">WYSIWYG: Integrate a HTML editor</h2>
 Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
