@@ -93,9 +93,9 @@ function setupTableConfigDialog(dialog) {
 	$.each(visiblecolumns, function(i,val) {
 		dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
 	});
-	dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").prop("checked",true).click(function(e) { preventDefault(e);});
+	dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").prop("checked",true).click(function(e) { preventDefault(e);}).closest("li").addClass("disabled");
 	$("#fileListTable thead th.sorter-false").each(function(i,val) {
-		dialog.find("input[name='sortingcolumn'][value='"+$(val).attr("data-name")+"']").prop("disabled",true).click(function(e){preventDefault(e)});
+		dialog.find("input[name='sortingcolumn'][value='"+$(val).attr("data-name")+"']").prop("disabled",true).click(function(e){preventDefault(e)}).closest("li").addClass("disabled");
 	});
 	
 	var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");

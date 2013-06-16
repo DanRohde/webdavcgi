@@ -521,7 +521,7 @@ input.file-upload {
 .link:hover {
 	background-color: #dddddd;
 }
-a.disabled, .button.disabled {
+a.disabled, .button.disabled, li.disabled {
 	opacity: 0.5;
 	filter: Alpha(opacity=50); 
 }
