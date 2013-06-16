@@ -44,7 +44,11 @@ sub render {
 	unless ('selector' ~~ @main::ALLOWED_TABLE_COLUMNS) {
 		unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
 		unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';	
+		my $i=0;
+		$i++ until $main::ALLOWED_TABLE_COLUMNS[$i] eq 'fileactions';
+		splice(@main::ALLOWED_TABLE_COLUMNS, $i, 1);
 	}
+
 	if ($$self{cgi}->param('ajax')) {
 		my $ajax = $$self{cgi}->param('ajax');
 		if ($ajax eq 'getFileListTable') { 
@@ -61,9 +65,6 @@ sub render {
 		} elsif ($ajax eq 'getSearchDialog') {
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
 		} elsif ($ajax eq 'getTableConfigDialog') {
-			my $i=0;
-			$i++ until $main::ALLOWED_TABLE_COLUMNS[$i] eq 'fileactions';
-			splice(@main::ALLOWED_TABLE_COLUMNS, $i, 1);
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
 		} elsif ($ajax eq 'search') {
 			$content = $self->handleSearchRequest($fn, $ru, $$self{cgi}->param('template'));

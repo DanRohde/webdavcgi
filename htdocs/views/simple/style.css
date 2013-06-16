@@ -176,6 +176,9 @@ table,th,td {
 #headerOption {
 	width: 16px;
 }
+#headerUID, #headerGID {
+	width: 8ex;
+}
 .fileactions {
 	float: right;
 	margin: 0;
