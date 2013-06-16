@@ -8,7 +8,7 @@ $filelistentrycolumns
      <div class="filename">
 	     <a href="$fileuri" data-action="changeuri">
 	     	<img src="$iconurl" class="$iconclass"/>
-	     	<span class="nametext">$displayname</span>
+	     	<span class="nametext"><!--IF($cgi->param('ajax') eq 'search')-->$name<!--ELSE-->$displayname<!--ENDIF--></span>
 	     </a>
      </div>
 </td>

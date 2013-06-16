@@ -285,8 +285,7 @@ function initSettingsDialog() {
 				window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
 			})
 			.each(function(i,v) {
-				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);
-			
+				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);	
 			});
 	}});
 }

@@ -1,17 +1,41 @@
 <div id="searchresult">
+<div class="viewfilterinfo">$tl(searchbutton): $filterInfo() </div> 
 <form id="filelistform" method="post" action="#">
 <input id="filelistaction" type="hidden" name="__set__" value=""/>
 <table id="fileListTable">
 <thead>
-	<tr><th colspan="3" class="sorter-false">$tl(searchbutton): $filterInfo() </div></th></tr>
 	<tr>
-		<th id="headerName" data-name="name" data-sort="data-file" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
-			<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE
-AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>
-			$tl(name)
-		</th>
-		<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize">$tl(size)</th>
-		<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number">$tl(lastmodified)</th>
+			$filelistheadcolumns
+			<th id="headerOption" class="dropaccept sorter-false"><div class="tableconfigbutton" title="$tl(tableconfig.button.title)" data-template="tableconfig"></div></th>
+	
+<!--TEMPLATE(selector)[
+			<th id="headerSelector" class="sorter-false dragaccept -hidden" data-name="selector">
+				<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>&nbsp;
+			</th>
+]-->
+	
+	
+<!--TEMPLATE(name)[
+			<th id="headerName" class="dragaccept -hidden" data-name="name" data-sort="data-file" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
+				$tl(name)
+			</th>
+]-->
+<!--TEMPLATE(size)[
+			<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize" class="dragaccept -hidden">$tl(size)</th>
+]-->
+<!--TEMPLATE(lastmodified)[
+	 		<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number" class="dragaccept -hidden">$tl(lastmodified)</th>
+]-->
+<!--TEMPLATE(mime)[
+			<th id="headerMime" data-name="mime" data-sort="data-mime" class="dragaccept -hidden">$tl(mime)</th>
+]-->
+<!--TEMPLATE(created)[
+			<th id="headerCreated" data-name="created" data-sort="data-created" data-sorttype="number" class="dragaccept -hidden">$tl(created)</th>
+]-->
+<!--TEMPLATE(mode)[
+			<th id="headerMode" data-name="mode" class="dragaccept sorter-false -hidden">$tl(mode)</th>
+]-->	
+	
 	</tr>
 		
 </thead>

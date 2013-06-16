@@ -167,6 +167,8 @@ sub renderEach {
 sub renderTemplate {
 	my ($self,$fn,$ru,$content) = @_;
 
+	my $cgi = $$self{cgi}; ## allowes easer access from templates
+	
 	# replace eval:
 	$content=~s/\$eval(.)(.*?)\1/eval($2)/egs;
 	# replace each:
@@ -208,8 +210,8 @@ sub renderTemplate {
 	$content=~s/\${?TL{([^}]+)}}?/$self->tl($1)/egs;
 	$content=~s/\$\[(\w+)\]/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	$content=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-	$content=~s/<!--IF\((.*?)\)-->(.*?)<!--ENDIF-->/eval($1)? $2 : ''/egs;
-	$content=~s/<!--IF(\#\d+)\((.*?)\)-->(.*?)<!--ENDIF\1-->/eval($2)? $3 : ''/egs;
+	$content=~s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/egs;
+	$content=~s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/egs;
 	return $content;
 }
 sub execTemplateFunction {
@@ -679,6 +681,11 @@ sub renderSearchResultList {
 	my $content = "";
 	my @searchResult = @{$self->searchFile($fn,"",$self)};
 	push @ERRORS, $self->tl('searchnothingfound').$self->renderFilterInfo() if $#searchResult <0;
+	
+	
+	my $columns = $self->renderVisibleTableColumns($entrytmpl).$self->renderInvisibleAllowedTableColumns($entrytmpl);
+	$entrytmpl=~s/\$filelistentrycolumns/$columns/esg;
+	
 	foreach my $result (@searchResult) {
 		$content .= $self->renderFileListEntry($fn, $ru, $result, $entrytmpl);
 		#$content=~s/unselectable=\"no\"/unselectable=\"yes\"/g;
@@ -689,7 +696,9 @@ sub handleSearchRequest {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	local @ERRORS;
 	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-	
+	my $columns = $self->renderVisibleTableColumns($content).$self->renderInvisibleAllowedTableColumns($content);
+	$content=~s/\$filelistheadcolumns/$columns/egs;
+	$content=~s/\$visiblecolumncount/scalar($self->getVisibleTableColumns())/egs;
 	my %jsondata;
 	$jsondata{content} = $content;
 	$jsondata{error} = \@ERRORS if $#ERRORS>-1; 

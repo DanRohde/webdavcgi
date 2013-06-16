@@ -94,7 +94,7 @@ a {
 	width: 100%;
 	z-index: 50;
 }
-#fileListTableContent {
+#fileListTableContent, #searchresult {
 	padding-top: 3em;
 }
 #fileListTable {
