@@ -10,8 +10,8 @@
 <tr><td>$tl(settings.view)</td>
 <td>
 	<select name="settings.view">
-		<option value="$view">$viewname</option>
-		$viewList('<option value="$view">$viewname</option>')
+		<option value="$view" title="$view">$viewname</option>
+		$each#@main::SUPPORTED_VIEWS#'<option value="$v" title="$v">$tl(${v}view)</option>'#'$view'#
 	</select>
 </td>
 </tr>

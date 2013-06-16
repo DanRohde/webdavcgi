@@ -132,24 +132,28 @@ sub flexSorter {
 	return $a cmp $b;
 }
 sub renderEach {
-	my ($self, $variable, $tmplfile) = @_;
+	my ($self, $fn, $ru, $variable, $tmplfile, $filter) = @_;
 	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
+	$filter = $self->renderTemplate($fn,$ru,$filter) if defined $filter;
 	my $content = "";
 	if ($variable=~/^\%/) {
 		$variable=~s/^\%//;
 		my %hashvar = %{"$variable"};
 		foreach my $key (sort flexSorter keys %hashvar) {
+			next if defined $filter && $hashvar{$key} =~ $filter;
 			my $t=$tmpl;
-			$t=~s/\$k/$key/g;
-			$t=~s/\$v/$hashvar{$key}/g;
+			$t=~s/\$k/$key/g; $t=~s/\$\{k\}/$key/g;
+			$t=~s/\$v/$hashvar{$key}/g; $t=~s/\$\{v\}/$hashvar{$key}/g;
 			$content.=$t;
 		}
 	} elsif ($variable=~/\@/) {
 		$variable=~s/\@//g;
 		my @arrvar = @{"$variable"};
-		foreach my $key (@arrvar) {
+		foreach my $val (@arrvar) {
+			next if defined $filter && $val =~ $filter;
 			my $t= $tmpl;
-			$t=~s/\$[kv]/$key/g;
+			$t=~s/\$[kv]/$val/g;
+			$t=~s/\$\{[kv]\}/$val/g;
 			$content.=$t;
 		}
 	}
@@ -162,7 +166,7 @@ sub renderTemplate {
 	# replace eval:
 	$content=~s/\$eval(.)(.*?)\1/eval($2)/egs;
 	# replace each:
-	$content=~s/\$each(.)(.*?)\1(.*?)\1/$self->renderEach($2,$3)/egs;
+	$content=~s/\$each(.)(.*?)\1(.*?)\1((.)(.*?)\5\1)?/$self->renderEach($fn,$ru,$2,$3,$6)/egs;
 	# replace functions:
 	$content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg;
 
@@ -218,7 +222,6 @@ sub execTemplateFunction {
 	$content = $self->renderAFSMemberList($fn,$ru,$param) if $func eq 'afsmemberlist';
 	$content = $self->isViewFiltered() if $func eq 'isviewfiltered';
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
-	$content = $self->renderViewList($fn,$ru,$param) if $func eq 'viewList';
 	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
 	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
@@ -236,20 +239,6 @@ sub renderLanguageList {
 		$content.=$l;
 	}
 	return $content;
-}
-sub renderViewList {
-	my ($self, $fn,$ru,$tmplfile) = @_;
-	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
-	my $content = "";
-	foreach my $view (@main::SUPPORTED_VIEWS) {
-		next if ($view eq $main::VIEW);
-		my $t = $tmpl;
-		$t=~s/\$viewlink/"?view=$view"/egs;
-		$t=~s/\$viewname/$self->tl("${view}view")/egs;
-		$t=~s/\$view/$view/gs;
-		$content.=$t;
-	}
-	return $self->renderTemplate($fn,$ru,$content);
 }
 sub isViewFiltered {
 	my($self) = @_;
@@ -317,8 +306,8 @@ sub renderFileListEntry {
 				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
 				'mode' => sprintf('%04o', $mode & 07777),
 				'modestr' => $self->mode2str($full, $mode),
-				'uidNumber' => $uid,'uid'=>getpwuid($uid),
-				'gidNumber'=> $gid, 'gid'=>getgrgid($gid),
+				'uidNumber' => $uid,'uid'=>getpwuid($uid) || $uid,
+				'gidNumber'=> $gid, 'gid'=>getgrgid($gid) || $gid,
 				);
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);

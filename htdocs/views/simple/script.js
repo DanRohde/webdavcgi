@@ -100,6 +100,19 @@ function setupTableConfigDialog(dialog) {
 	dialog.find("input[name='sortingcolumn'][value='"+column+"']").prop("checked",true);
 	dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
 	
+	function toggleRadioButton(val, on) {
+		var sc = dialog.find("input[name='sortingcolumn'][value='"+val+"']");
+		if (on) sc.removeAttr("readonly").off("click").removeClass("disabled");
+		else sc.attr("readonly","readonly").off("click").on("click", function(e) { preventDefault(e)}).addClass("disabled");
+	}
+	
+	dialog.find("input[name='visiblecolumn']").each(function(i,val) {
+		toggleRadioButton($(val).val(), $(val).prop("checked"));
+	}).change(function(e) {
+		toggleRadioButton($(this).val(), $(this).prop("checked"));
+	});
+	
+	
 	// register dialog actions:
 	dialog.find("input[name='save']").button().click(function(event) {
 		// preserve table column order:

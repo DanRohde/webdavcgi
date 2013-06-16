@@ -44,7 +44,7 @@ $INCLUDE(htmlhead)</head>
 			<li><div class="accordion">
 					<h3>$tl(viewoptions)</h3> 
 					<div>
-						<ul>$viewList(viewentry)
+						<ul>$each#@main::SUPPORTED_VIEWS#'<li><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
 							<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
 						</ul>
 					</div>
