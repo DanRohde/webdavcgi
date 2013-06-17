@@ -45,8 +45,8 @@ sub render {
 		unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
 		unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';	
 		my $i=0;
-		$i++ until $main::ALLOWED_TABLE_COLUMNS[$i] eq 'fileactions';
-		splice(@main::ALLOWED_TABLE_COLUMNS, $i, 1);
+		$i++ until $i>$#main::ALLOWED_TABLE_COLUMNS || $main::ALLOWED_TABLE_COLUMNS[$i] eq 'fileactions';
+		splice(@main::ALLOWED_TABLE_COLUMNS, $i, 1) if $i <= $#main::ALLOWED_TABLE_COLUMNS;
 	}
 
 	if ($$self{cgi}->param('ajax')) {
