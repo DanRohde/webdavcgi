@@ -892,7 +892,15 @@ function initFileList() {
 	$("#fileListTable th:not(.resizable-false)").each(function(i,v) {
 		$("<div/>").prependTo(v).html("&nbsp;").addClass("columnResizeHandle");
 		var wcookie = cookie($(v).prop("id")+".width");
-		if (wcookie) $(v).width(parseFloat(wcookie));
+		if (wcookie) {
+			$(v).data("origWidth", $(v).width());
+			$(v).width(parseFloat(wcookie));
+		}
+	}).dblclick(function(event){
+		if ($(this).data("origWidth")) {
+			$(this).width($(this).data("origWidth"))
+			rmcookies($(this).prop("id")+".width");
+		}
 	});
 	$("#fileListTable .columnResizeHandle").draggable({
 		scope: "columnResize",

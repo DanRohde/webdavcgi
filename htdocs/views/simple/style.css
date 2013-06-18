@@ -161,7 +161,7 @@ table,th,td {
 	filter: Alpha(opacity=100);
 }
 #headerSize {
-	width: 3em;
+	width: 8em;
 }
 #headerDate, #headerCreated {
 	width: 20em;
