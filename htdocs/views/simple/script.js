@@ -896,10 +896,9 @@ function initFileList() {
 		var wcookie = cookie(col.prop("id")+".width");
 		if (wcookie) col.width(parseFloat(wcookie));
 	}).dblclick(function(event){
-		if ($(this).data("origWidth")) {
-			$(this).width($(this).data("origWidth"))
-			rmcookies($(this).prop("id")+".width");
-		}
+		var width = $(this).width() == $(this).data("origWidth") ? 1 : $(this).data("origWidth");
+		$(this).width(width);
+		cookie($(this).prop("id")+".width", width);
 	});
 	$("#fileListTable .columnResizeHandle").draggable({
 		scope: "columnResize",
