@@ -879,7 +879,7 @@ function initFileList() {
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
 			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
-
+	
 	$("#fileListTable th.dragaccept")
 		.draggable({ zIndex: 200, scope: "fileListTable",  axis: "x" , helper: function(event) {
 			var th = $(event.currentTarget);
@@ -887,6 +887,30 @@ function initFileList() {
 		}});
 	$("#fileListTable th.dragaccept,#fileListTable th.dropaccept")
 		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover"});
+	
+	
+	$("#fileListTable th:not(.resizable-false)").each(function(i,v) {
+		$("<div/>").prependTo(v).html("&nbsp;").addClass("columnResizeHandle");
+		var wcookie = cookie($(v).prop("id")+".width");
+		if (wcookie) $(v).width(parseFloat(wcookie));
+	});
+	$("#fileListTable .columnResizeHandle").draggable({
+		scope: "columnResize",
+		axis: "x",
+		start: function(event,ui) {
+			startPos = parseInt(ui.offset.left);
+			column = $(this).closest("th");
+			startWidth = column.width(); 
+			origStyle = $(this).attr("style");
+		},
+		stop: function(event,ui) {
+			$(this).attr("style", origStyle);
+			cookie(column.attr("id")+".width", column.width());
+		},
+		drag: function(event,ui) {
+			column.width( startWidth +  ui.offset.left - startPos );
+		}
+ 	});
 	
 	// fix annyoing text selection after a double click on text in the file list:
 	if (document.selection && document.selection.empty) document.selection.empty();
