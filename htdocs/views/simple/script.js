@@ -890,11 +890,12 @@ function initFileList() {
 	
 	
 	$("#fileListTable th:not(.resizable-false)").each(function(i,v) {
-		$("<div/>").prependTo(v).html("&nbsp;").addClass("columnResizeHandle");
-		var wcookie = cookie($(v).prop("id")+".width");
+		var col = $(v);
+		$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle");
+		var wcookie = cookie(col.prop("id")+".width");
 		if (wcookie) {
-			$(v).data("origWidth", $(v).width());
-			$(v).width(parseFloat(wcookie));
+			col.data("origWidth", col.width());
+			col.width(parseFloat(wcookie));
 		}
 	}).dblclick(function(event){
 		if ($(this).data("origWidth")) {
