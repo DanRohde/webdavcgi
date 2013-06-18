@@ -892,11 +892,9 @@ function initFileList() {
 	$("#fileListTable th:not(.resizable-false)").each(function(i,v) {
 		var col = $(v);
 		$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle");
+		col.data("origWidth", col.width());
 		var wcookie = cookie(col.prop("id")+".width");
-		if (wcookie) {
-			col.data("origWidth", col.width());
-			col.width(parseFloat(wcookie));
-		}
+		if (wcookie) col.width(parseFloat(wcookie));
 	}).dblclick(function(event){
 		if ($(this).data("origWidth")) {
 			$(this).width($(this).data("origWidth"))
