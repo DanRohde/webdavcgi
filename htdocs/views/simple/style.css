@@ -986,7 +986,7 @@ a[data-action=autorefreshmenu] {
 	border:0;
 	width: 1em;
 	float: right;
-	cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QYSCwEXgbmUggAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABFSURBVBjTlc8xDoAwDEPRl4j7XzkMVJQqZai3ON+yzFSpeaQf5WAtyfGohhepEIsdqNjw4HoZn2yRT7CVR7YG3TkZuNENUV4PD1YcRX8AAAAASUVORK5CYII=),e-resize;
+	cursor: e-resize;
 	padding: 0;
 	margin: 0;
 }
