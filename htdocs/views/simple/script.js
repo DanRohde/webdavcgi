@@ -1013,8 +1013,8 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 			var vala = jqa.attr(sattr) ? (stype=='number' ? parseInt(jqa.attr(sattr)) : jqa.attr(sattr)) : a.cells.item(cidx).innerHTML.toLowerCase();
 			var valb = jqb.attr(sattr) ? (stype=='number' ? parseInt(jqb.attr(sattr)) : jqb.attr(sattr)) : b.cells.item(cidx).innerHTML.toLowerCase();
 	
-			if (jqa.attr('data-file') == "..") return -1;
-			if (jqb.attr('data-file') == "..") return 1;
+			if (jqa.attr('data-file').match(/^\.\.?$/)) return -1;
+			if (jqb.attr('data-file').match(/^\.\.?$/)) return 1;
 			if (jqa.attr('data-type') == 'dir' && jqb.attr('data-type') != 'dir') return -1;
 			if (jqa.attr('data-type') != 'dir' && jqb.attr('data-type') == 'dir') return 1;
 			
