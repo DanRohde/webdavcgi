@@ -1783,9 +1783,11 @@ function initPermissionsDialog() {
 				var permissionsform = $(this);
 				confirmDialog($("#changepermconfirm").html(), {
 					confirm: function() {
+						permissions.dialog("close");
+						var block = blockPage();
 						$.post(target, permissionsform.serialize()+"&"+$.param({ file: $.map($("#fileList tr.selected:visible"),function(val,i) { return $(val).attr("data-file") })}), function(resp){
 							handleJSONResponse(resp);
-							permissions.dialog("close");
+							block.remove();
 							updateFileList();
 						});
 					}
