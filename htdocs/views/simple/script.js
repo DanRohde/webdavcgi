@@ -903,7 +903,7 @@ function initFileList() {
 				var self = $(this);
 				clicks++;
 				if (clicks == 1) {
-					setTimeout(function() {
+					window.setTimeout(function() {
 						if (clicks == 1) {
 							if (! self.hasClass("sorter-false")) handleTableColumnClick.call(self,event);
 						} else {
@@ -1102,10 +1102,13 @@ function handleFileDelete(row) {
 		confirm: function() {
 			var file = row.attr('data-file');
 			removeFileListRow(row);
-			$.post($('#fileList').attr('data-uri'), { 'delete': 'yes', file: file }, function(response) {
+			var block = blockPage();
+			var xhr = $.post($('#fileList').attr('data-uri'), { 'delete': 'yes', file: file }, function(response) {
+				block.remove();
 				if (response.error) updateFileList();
 				handleJSONResponse(response);
 			});
+			renderAbortDialog(xhr);
 		},
 		cancel: function() {
 			row.fadeTo('fast',1);
@@ -1376,7 +1379,7 @@ function handleFileListDrop(event, ui) {
 
 	function doFileListDrop() {
 		var block = blockPage(); 
-		$.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
+		var xhr = $.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
 			if (response.message && action=='cut') { 
 				removeFileListRow($("#fileList tr[data-file='"+files.join("'],#fileList tr[data-file='")+"']"));
 			}
@@ -1384,6 +1387,7 @@ function handleFileListDrop(event, ui) {
 			if (response.error) updateFileList();
 			handleJSONResponse(response);
 		});
+		renderAbortDialog(xhr);
 	}			
 	
 	if (cookie("settings.confirm.dnd")!="no") {
@@ -1436,12 +1440,15 @@ function handleFileListActionEvent(event) {
 		$("#fileList tr.selected:visible").fadeTo("slow",0.5);
 		confirmDialog($('#deletefilesconfirm').html(), {
 			confirm: function() {
-				$.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function(v,i) { return $(v).attr("data-file") })}, function(response) {
+				var block = blockPage();
+				var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function(v,i) { return $(v).attr("data-file") })}, function(response) {
+					block.remove();
  					removeFileListRow($("#fileList tr.selected:visible"));
 					uncheckSelectedRows();
 					if (response.error) updateFileList();
 					handleJSONResponse(response);
 				});
+				renderAbortDialog(xhr);
 			},
 			cancel: function() {
 				$("#fileList tr.selected:visible").fadeTo("fast",1);
@@ -1465,12 +1472,13 @@ function handleFileListActionEvent(event) {
 		
 		function doPasteAction() {
 			var block = blockPage();
-			$.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
+			var xhr = $.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
 				if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
 				block.remove();
 				updateFileList();
 				handleJSONResponse(response);
 			});
+			renderAbortDialog(xhr);
 		}
 		if (cookie("settings.confirm.paste") != "no") {
 			var msg = $("#paste"+action+"confirm").html()
@@ -1785,16 +1793,18 @@ function initPermissionsDialog() {
 					confirm: function() {
 						permissions.dialog("close");
 						var block = blockPage();
-						$.post(target, permissionsform.serialize()+"&"+$.param({ file: $.map($("#fileList tr.selected:visible"),function(val,i) { return $(val).attr("data-file") })}), function(resp){
+						var xhr = $.post(target, permissionsform.serialize()+"&"+$.param({ file: $.map($("#fileList tr.selected:visible"),function(val,i) { return $(val).attr("data-file") })}), function(resp){
 							handleJSONResponse(resp);
 							block.remove();
 							updateFileList();
 						});
+						renderAbortDialog(xhr);
 					}
 				});
 				return false;
 			});
 			permissions.dialog({modal:true, width: "auto", height: "auto", close: function() {$(self).removeClass("disabled"); permissions.remove();}}).show();
+			
 		});
 	});
 }
@@ -1841,6 +1851,26 @@ function initViewFilterDialog() {
 			vfd.dialog({modal:true,width:"auto",height:"auto", close: function(){$(self).removeClass("disabled"); vfd.remove();}}).show();
 		});
 	});
+}
+function renderAbortDialog(xhr, timeout) {
+	window.setTimeout(function() {
+		if (xhr.readyState > 2) return;
+		
+		var dialog = $("<div/>").html($("#cancel").html()).button();
+		dialog.css({ "z-index": 100000, "position":"fixed", 
+				top:'50%',left:'50%',margin:'-'+(dialog.height() / 2)+'px 0 0 -'+(dialog.width() / 2)+'px' })
+		dialog.click(function(event){
+			if (xhr.readyState !=4) xhr.abort();
+			dialog.hide().remove();
+		}).appendTo("body").show();
+		var interval = window.setInterval(function() {
+			if (xhr.readyState == 4) {
+				dialog.hide().remove();
+				window.clearInterval(interval);
+			}
+		}, 200);
+		
+	}, timeout || 5000);
 }
 // ready ends: 
 });
