@@ -872,6 +872,17 @@ function initFileList() {
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
 
+	$("#fileList tr[data-isviewable='no'][data-mime^='image/'][data-size!='0'] td.filename a")
+		.attr("rel","wtimggallery")
+		.fancybox({
+			beforeLoad: function() {  }
+		});
+	$("#fileList tr[data-isviewable='no'][data-mime^='text/'] td.filename a, #fileList tr[data-isviewable='no'][data-type!='dir'][data-file$='.pdf'] td.filename a")
+			.attr("rel","wttxtgallery")
+			.fancybox({
+				type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(".nametext",$(this.element)).html();}
+			});
+	
 	// init drag & drop:
 	$("#fileList:not(.dnd-false) tr[data-iswriteable='yes'][data-type='dir']")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
