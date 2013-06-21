@@ -129,11 +129,11 @@ function setupTableConfigDialog(dialog) {
 				vc.push(val);
 			}
 		});
-		cookie("visibletablecolumns",vc.join(","));
+		cookie("visibletablecolumns", vc.join(","), 1);
 		
 		var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
 		var o = dialog.find("input[name='sortingorder']:checked").attr("value");
-		cookie("order", c + (o=="desc" ? "_desc" :""));
+		cookie("order", c + (o=="desc" ? "_desc" :""), 1);
 						
 		if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) {
 			$.each(addedEls, function(i,val) {
@@ -172,7 +172,7 @@ function initCollapsible() {
 		$(".collapse-sidebar-collapsible").toggle(!collapsed).toggleClass("collapsed", collapsed);
 		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed);
 		handleWindowResize();
-		togglecookie("sidebar", "false", collapsed);
+		togglecookie("sidebar", "false", collapsed,1);
 	});
 	
 	if (cookie("sidebar") == "false") $("[data-action='collapse-sidebar']").first().trigger("click");
@@ -184,7 +184,7 @@ function initCollapsible() {
 		$(".collapse-head-collapsible").toggle(!collapsed);
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
 		handleWindowResize();
-		togglecookie("head","false",collapsed);
+		togglecookie("head","false",collapsed, 1);
 	});
 	if (cookie("head") == "false") $("[data-action='collapse-head']").first().trigger("click");
 }
@@ -275,12 +275,12 @@ function initSettingsDialog() {
 	settings.data("initHandler", { init: function() {
 		$("input[type=checkbox][name^='settings.']", settings).each(function(i,v) {
 			$(v).prop("checked", cookie($(v).prop("name")) != "no").click(function(event) {
-				togglecookie($(this).prop("name"),"no",!$(this).is(":checked"));
+				togglecookie($(this).prop("name"),"no",!$(this).is(":checked"), 1);
 			});
 		});
 		$("select[name^='settings.']", settings)
 			.change(function(){
-				cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val());
+				cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
 				window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
 			})
 			.each(function(i,v) {
@@ -777,7 +777,7 @@ function confirmDialog(text, data) {
 				text: $("#cancel").html(), 
 				click: function() {
 					if (data.setting) {
-						togglecookie(data.setting, oldsetting, oldsetting && oldsetting!="");
+						togglecookie(data.setting, oldsetting, oldsetting && oldsetting!="",1);
 					}
 					$("#confirmdialog").dialog("close");  
 					if (data.cancel) data.cancel();
@@ -794,7 +794,7 @@ function confirmDialog(text, data) {
 		open: function() {
 			if (data.setting) {
 				$("input[name='"+data.setting+"']",$(this)).click(function(event) {
-					cookie(data.setting, $(this).is(":checked") ? "yes" : "no");
+					togglecookie(data.setting, "no", !$(this).is(":checked"), 1);
 				}).prop("checked", cookie(data.setting)!="no");
 			}
 		},
@@ -920,7 +920,7 @@ function initFileList() {
 						} else {
 							var width = self.width() == self.data("origWidth") ? 1 : self.data("origWidth");
 							self.width(width);
-							togglecookie(self.prop("id")+".width", width, width != self.data("origWidth"));		
+							togglecookie(self.prop("id")+".width", width, width != self.data("origWidth"),1);		
 						}	
 						clicks = 0;
 					}, 300);
@@ -938,7 +938,7 @@ function initFileList() {
 		},
 		stop: function(event,ui) {
 			$(this).attr("style", origStyle);
-			cookie(column.attr("id")+".width", column.width());
+			cookie(column.attr("id")+".width", column.width(),1);
 		},
 		drag: function(event,ui) {
 			column.width( startWidth +  ui.offset.left - startPos );
@@ -967,7 +967,7 @@ function handleFileListColumnDrop(event, ui) {
 		cols.eq(didx).detach().insertBefore(cols.eq(tidx));
 	});
 	
-	cookie("visibletablecolumns", $.map($("#fileListTable thead th[data-name]:not(.hidden):not(:last)"), function(v) { return $(v).attr("data-name")} ).join(","));
+	cookie("visibletablecolumns", $.map($("#fileListTable thead th[data-name]:not(.hidden):not(:last)"), function(v) { return $(v).attr("data-name")} ).join(","), 1);
 	
 	return true;
 }
@@ -1000,7 +1000,7 @@ function handleTableColumnClick(event) {
 	var cidx = $(this).prop("cellIndex");
 	if (!sortorder) sortorder = -1;
 	if (lcc == cidx) sortorder = -sortorder;
-	cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''));
+	cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''),1);
 	setupFileListSort(cidx, sortorder);
 	sortFileList(stype,sattr,sortorder,cidx,"data-file");
 	
@@ -1512,8 +1512,8 @@ function cookie(name,val,expires) {
 function rmcookies() {
 	for (var i=0; i < arguments.length; i++) $.removeCookie(arguments[i], { path:$("#flt").attr("data-baseuri"), secure: true});
 }
-function togglecookie(name,val,toggle) {
-	if (toggle) cookie(name,val);
+function togglecookie(name,val,toggle,expires) {
+	if (toggle) cookie(name,val,expires);
 	else rmcookies(name);
 }
 function renderByteSizes(size) {
