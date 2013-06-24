@@ -465,6 +465,8 @@ sub getFolderList {
                         'mode'=> $usedcols{mode} ? { value=>sprintf("%-11s",$self->mode2str($full,$mode)), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)} : '',
                         'fileactions'=> $usedcols{fileactions} ? {value=>$filename=~/^\.{1,2}$/ || $unsel ? '' : $self->renderFileActions($fid, $filename, $full), title=>$title} : '',
                         'mime'=> $usedcols{mime} ? { value=>$$self{cgi}->escapeHTML($mimetype), title=>$title} : '',
+                        'uid' => $usedcols{uid} ? { value=>getpwuid($uid), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)} : '',
+                        'gid' => $usedcols{gid} ? { value=>getgrgid($gid), title=>sprintf("mode: %04o, uid: %s (%s), gid: %s (%s)",$mode & 07777,"".getpwuid($uid), $uid, "".getgrgid($gid), $gid)} : '',
                 );
                 eval $rowpattern;
 		warn($@) if $@;

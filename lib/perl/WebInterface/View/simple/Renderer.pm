@@ -39,7 +39,6 @@ sub render {
 	my($self,$fn,$ru) = @_;
 	my $content ='';
 	my $contenttype= 'text/html';
-	
 	$self->setLocale();
 	unless ('selector' ~~ @main::ALLOWED_TABLE_COLUMNS) {
 		unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
