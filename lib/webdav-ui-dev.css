@@ -190,7 +190,7 @@ input,select { text-shadow: 1px 1px white;  }
 }
 .tableconfig fieldset {
 	min-height: 200px;
-	height: 200px;
+	height: 230px;
 	float: left;
 	clear: none;
 	margin: 1ex 1ex 1ex 1ex;

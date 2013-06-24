@@ -105,6 +105,8 @@ function setupTableConfigDialog(dialog) {
 	dialog.find("input[name='sortingcolumn'][value='"+column+"']").prop("checked",true);
 	dialog.find("input[name='sortingorder'][value='"+order+"']").prop("checked", true);
 	
+	dialog.find("input[value='fileactions']").closest("li").hide();
+	
 	// register dialog actions:
 	dialog.find("input[name='save']").button().click(function(event) {
 		// preserve table column order:

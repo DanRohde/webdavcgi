@@ -42,10 +42,7 @@ sub render {
 	$self->setLocale();
 	unless ('selector' ~~ @main::ALLOWED_TABLE_COLUMNS) {
 		unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
-		unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';	
-		my $i=0;
-		$i++ until $i>$#main::ALLOWED_TABLE_COLUMNS || $main::ALLOWED_TABLE_COLUMNS[$i] eq 'fileactions';
-		splice(@main::ALLOWED_TABLE_COLUMNS, $i, 1) if $i <= $#main::ALLOWED_TABLE_COLUMNS;
+		unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';
 	}
 
 	if ($$self{cgi}->param('ajax')) {
@@ -87,7 +84,7 @@ sub render {
 		$content = $self->minifyHTML($self->renderTemplate($fn,$ru,$self->readTemplate('page')));
 	}
 	delete $CACHE{$self}{$fn};
-
+	
 	main::printCompressedHeaderAndContent('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->getCookies());
 }
 sub minifyHTML {
