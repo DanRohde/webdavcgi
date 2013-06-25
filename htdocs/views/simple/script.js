@@ -643,13 +643,24 @@ function applyFilter() {
 	$("#flt").trigger("fileListViewChanged");
 	return true;
 }
+function renderUploadProgressAll(uploadState, data) {
+	if (!data) data=uploadState;
+	var perc =  data.loaded / data.total * 100;
+	$('#progress .bar').css('width', perc.toFixed(2) + '%')
+		.html(parseInt(perc)+'% ('+renderByteSize(data.loaded)+'/'+renderByteSize(data.total)+')' 
+				+"; "+uploadState.done+"/"+uploadState.uploads
+				);	
+}
 function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 	$("#flt").on("fileListChanged",function() {
 		form.fileupload("option","url",$("#fileList").attr("data-uri"));
 	});
 	var uploadState = {
 		aborted: false,
-		transports: new Array()
+		transports: new Array(),
+		done: 0,
+		failed: 0,
+		uploads: 0
 	};
 	form.fileupload({ 
 		url: $("#fileList").attr("data-uri"), 
@@ -670,6 +681,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				}).appendTo(up).attr("title",$("#cancel").html()).addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
 				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): 0%");;
 				//$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
+				uploadState.uploads++;
 				return true;
 			}
 			return false;
@@ -678,9 +690,11 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			$("#progress [id='fpb"+data.files[0]["name"]+"'] .cancel").remove();
 			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
-				.addClass(data.result.error ? "failed" : "done")
+				.addClass(data.result.message ? "done" : "failed")
 				.css("width","100%")
 				.html(data.result && data.result.error ? data.result.error : data.result.message ? data.result.message : data.files[0]["name"]);
+			if (data.result.message) uploadState.done++; else uploadState.failed++;
+			renderUploadProgressAll(uploadState);
 		},
 		fail: function(e,data) {
 			$("#progress [id='fpb"+data.files[0]["name"]+"'] .cancel").remove();
@@ -689,10 +703,13 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				.addClass("failed")
 				.css("width","100%")
 				.html(data.textStatus+": "+$.map(data.files, function(v,i) { return v.name;}).join(", "));
+			uploadState.failed++;
+			renderUploadProgressAll(uploadState);
 			console.log(data);
 		},
 		stop: function(e,data) {
 			// $('#progress').dialog('close');
+			renderUploadProgressAll(uploadState);
 			$(this).data('ask.confirm',false);
 			$("#progress").dialog("option","beforeClose",function() { return true; });
 			$("#progress").dialog("option","close",function() { updateFileList(); });
@@ -702,6 +719,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			uploadState.transports = new Array();
 			uploadState.aborted = false;
 			uploadState.files = new Array();
+			uploadState.uploads = 0;
+			uploadState.failed = 0;
+			uploadState.done = 0;
 			return true;
 		},
 		start: function(e,data) {
@@ -728,8 +748,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			
 		},
 		progressall: function(e,data) {
-			var perc =  data.loaded / data.total * 100;
-			$('#progress .bar').css('width', perc.toFixed(2) + '%').html(parseInt(perc)+'% ('+renderByteSize(data.loaded)+'/'+renderByteSize(data.total)+')');
+			uploadState.total = data.total;
+			uploadState.loaded = data.loaded;
+			renderUploadProgressAll(uploadState, data);
 		},
 		submit: function(e,data) {
 			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
