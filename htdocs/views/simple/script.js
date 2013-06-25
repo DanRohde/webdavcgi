@@ -678,9 +678,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			$("#progress [id='fpb"+data.files[0]["name"]+"'] .cancel").remove();
 			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
-				.addClass("done")
+				.addClass(data.result.error ? "failed" : "done")
 				.css("width","100%")
-				.html(data.result && data.result.message ? data.result.message : data.files[0]["name"]);
+				.html(data.result && data.result.error ? data.result.error : data.result.message ? data.result.message : data.files[0]["name"]);
 		},
 		fail: function(e,data) {
 			$("#progress [id='fpb"+data.files[0]["name"]+"'] .cancel").remove();
