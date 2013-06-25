@@ -488,6 +488,17 @@ input.file-upload {
 	padding: 1px;
 	margin-bottom: 2px;
 }
+#progress .info .cancel {
+	float: right;
+	opacity: 0.5;
+	filter: Alpha(opacity: 50);
+	background: url(images/sprite.png) no-repeat center -218px;
+	width: 22px;
+}
+#progress .info .cancel:hover {
+	opacity: 1;
+	filter: Alpha(opacity: 50);
+}
 #progress .info .fileprogressbar.running {
 	border-bottom: 2px solid #4444ff;
 }
@@ -984,9 +995,18 @@ a[data-action=autorefreshmenu] {
 }
 .columnResizeHandle {
 	border:0;
-	width: 1em;
-	float: right;
-	cursor: e-resize;
+	width: 0.5em;
 	padding: 0;
 	margin: 0;
+	position:relative;
+}
+.columnResizeHandle.right {
+	float: right;
+	cursor: e-resize;
+	right: -0.5em;
+}
+.columnResizeHandle.left {
+	float: left;
+	cursor: w-resize;
+	left: -0.5em;
 }

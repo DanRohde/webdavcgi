@@ -660,8 +660,14 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		autoUpload: false,
 		add: function(e,data) {
 			if (!uploadState.aborted) {
-				uploadState.transports.push(data.submit());
-				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+data.files[0]["name"]).addClass("fileprogress");
+				var transport = data.submit();
+				var filename = data.files[0]["name"];
+				uploadState.transports.push(transport);
+				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+filename).addClass("fileprogress");
+				$("<div></div>").click(function(event) {
+					preventDefault(event);
+					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
+				}).appendTo(up).attr("title",$("#cancel").html()).addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
 				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): 0%");;
 				//$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
 				return true;
@@ -669,6 +675,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			return false;
 		},
 		done:  function(e,data) {
+			$("#progress [id='fpb"+data.files[0]["name"]+"'] .cancel").remove();
 			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("done")
@@ -676,6 +683,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				.html(data.result && data.result.message ? data.result.message : data.files[0]["name"]);
 		},
 		fail: function(e,data) {
+			$("#progress [id='fpb"+data.files[0]["name"]+"'] .cancel").remove();
 			$("div[id='fpb"+data.files[0]["name"]+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("failed")
@@ -905,7 +913,8 @@ function initFileList() {
 		.off("click")
 		.each(function(i,v) {
 			var col = $(v);
-			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle");
+			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle left");
+			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle right");
 			col.data("origWidth", col.width());
 			var wcookie = cookie(col.prop("id")+".width");
 			if (wcookie) col.width(parseFloat(wcookie));
@@ -936,14 +945,17 @@ function initFileList() {
 			startPos = parseInt(ui.offset.left);
 			column = $(this).closest("th");
 			startWidth = column.width(); 
-			origStyle = $(this).attr("style");
+			//origStyle = $(this).attr("style");
+			handlePos = $(this).hasClass("left")? "left" : "right";
 		},
 		stop: function(event,ui) {
-			$(this).attr("style", origStyle);
+			//$(this).attr("style", origStyle);
+			$(this).removeAttr("style");
 			cookie(column.attr("id")+".width", column.width(),1);
 		},
 		drag: function(event,ui) {
-			column.width( startWidth +  ui.offset.left - startPos );
+			if (handlePos=="right") column.width( startWidth +  ui.offset.left - startPos );
+			else column.width(startWidth + startPos - ui.offset.left);
 		}
  	});
 	
