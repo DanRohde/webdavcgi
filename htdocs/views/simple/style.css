@@ -145,18 +145,27 @@ table,th,td {
 	width: 20px;
 	height: 20px;
 }
-.toggleselection {
-	background: white url(images/sprite.png) no-repeat -2px -895px;
-	opacity: 0.5;
-	filter: Alpha(opacity=50);
-	width: 14px;
+.toggleselection, .selectall, .selectnone {
+	width: 20px;
 	height: 22px;
 	margin-left: 4px;
 	margin-bottom: 3px; 
 	border: 0;
 	cursor: pointer;
+	
+	opacity: 0.5;
+	filter: Alpha(opacity=50);
 }
-.toggleselection:hover {
+.toggleselection {
+	background: white url(images/sprite.png) no-repeat -2px -895px;
+}
+.selectall {
+	background: white url(images/sprite.png) no-repeat -2px -1295px;
+}
+.selectnone {
+	background: white url(images/sprite.png) no-repeat -2px -1335px;
+}
+.toggleselection:hover, .selectall:hover, .selectnone:hover {
 	opacity: 1;
 	filter: Alpha(opacity=100);
 }
@@ -1009,4 +1018,18 @@ a[data-action=autorefreshmenu] {
 	float: left;
 	cursor: w-resize;
 	left: -0.5em;
+}
+.dropdown {
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+.dropdown-menu {
+	display: none;
+	z-index: 50;
+	position: absolute;
+	background: white;
+	border: 1px solid #eeeeee;
+	padding: 0;
+	margin: 0;
 }

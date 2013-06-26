@@ -341,6 +341,17 @@ function initSearch() {
 }
 function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
+	
+	$("#flt").on("fileListChanged", function() {
+		$(".dropdown-hover").off("hover").hover(
+			function() {
+				$(".dropdown-menu",$(this)).show();
+			},
+			function() {
+				$(".dropdown-menu",$(this)).hide();
+			}
+		)
+	});
 }
 function initWindowResize() {
 	$("#flt").on("fileListChanged", handleWindowResize).on("fileListViewChanged", handleWindowResize);
