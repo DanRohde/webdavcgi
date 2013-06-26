@@ -136,6 +136,7 @@ table,th,td {
 }
 #headerSelector {
 	width: 22px;
+	padding-left: 8px;
 }
 
 #headerName img {
