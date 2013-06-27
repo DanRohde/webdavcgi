@@ -57,8 +57,8 @@ sub initialize() {
 	@main::PAGE_LIMITS = ( 5, 10, 15, 20, 25, 30, 50, 100, -1 ) unless defined @main::PAGE_LIMITS;
 	unshift @main::PAGE_LIMITS, $main::PAGE_LIMIT if defined $main::PAGE_LIMIT && $main::PAGE_LIMIT > 0 && grep(/\Q$main::PAGE_LIMIT\E/, @main::PAGE_LIMITS) <= 0 ;
 
-	$main::VIEW = $$self{cgi}->param('view') || $$self{cgi}->cookie('view') || $main::VIEW || $main::SUPPORTED_VIEWS[0];
-
+	my $view = $$self{cgi}->param('view') || $$self{cgi}->cookie('view') || $main::VIEW || $main::SUPPORTED_VIEWS[0];
+	$main::VIEW  = $view if $view ne $main::VIEW && $view ~~ @main::SUPPORTED_VIEWS;
 }
 
 sub readTLFile {

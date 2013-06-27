@@ -312,7 +312,7 @@ sub renderFileListEntry {
 				'uidNumber' => $uid,'uid'=>getpwuid($uid) || $uid,
 				'gidNumber'=> $gid, 'gid'=>getgrgid($gid) || $gid,
 				);
-	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
+	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);
 }
 sub renderVisibleTableColumns {
