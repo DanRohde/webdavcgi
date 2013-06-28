@@ -20,9 +20,9 @@ package WebInterface::Extension::SysInfo;
 
 use strict;
 
-use WebInterface::Renderer;
+use WebInterface::View::sidebar::Renderer;
 
-our @ISA = qw( WebInterface::Renderer );
+our @ISA = qw( WebInterface::View::sidebar::Renderer );
 
 sub new {
         my $this = shift;
