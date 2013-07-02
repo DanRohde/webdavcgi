@@ -50,6 +50,8 @@ $(document).ready(function() {
 	
 	initTableConfigDialog();
 	
+	initKeyboardSupport();
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -63,6 +65,22 @@ $(document).ready(function() {
 		
 	updateFileList($("#flt").attr("data-uri"));
 
+function initKeyboardSupport() {
+	$("#flt").on("fileListChanged", function() { 
+		// keyboard events for filename links
+		$("#fileList .filename a").keydown(function(event) {
+			if (event.keyCode == 32) handleRowClickEvent.call($(this).closest("tr"), event);
+		});
+		fixTabIndex();
+		$("#fileList tr").keydown(function(event) { if (event.keyCode ==32) handleRowClickEvent.call(this,event); });
+	}).on("fileListViewChanged", fixTabIndex);
+	
+}
+function fixTabIndex() {
+	$("#fileList tr:visible").each(function(i,v) {
+		$(v).attr("tabindex",i);
+	});
+}
 function initTableConfigDialog() {
 	$("#flt").on("fileListChanged", function() {
 		$(".tableconfigbutton").click(function(event) {
@@ -893,12 +911,8 @@ function initFileList() {
 		.dblclick(function(event) { 
 			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),
 					$(this).attr("data-type") == 'file');
-		}
-	);
-	// keyboard events for filename links
-	$("#fileList .filename a").keydown(function(event) {
-		if (event.keyCode == 32) handleRowClickEvent.call($(this).closest("tr"), event);
-	});
+		});
+	
 	// fix selections after tablesorter:
 	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
 

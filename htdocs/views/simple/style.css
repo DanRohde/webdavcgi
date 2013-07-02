@@ -235,7 +235,7 @@ table,th,td {
 	text-align: center;
 	font-family: monospace;
 }
-#fileList tr:hover, #fileList tr.draghover {
+#fileList tr:hover, #fileList tr.draghover, #fileList tr:focus {
 	background-color: #ededed;
 }
 #fileList tr[data-isreadable=no], #fileList tr[data-isreadable=no] a {
