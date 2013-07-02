@@ -243,7 +243,8 @@ table,th,td {
 #fileList tr[data-iseditable=no] .action.edit,
 #fileList tr[data-iswriteable=no] .action.delete,
 #fileList tr[data-iswriteable=no] .action.rename,
-#fileList tr[data-isreadable=no] .action.download
+#fileList tr[data-isreadable=no] .action.download,
+#fileList tr[data-isreadable=no] .action.props
 {
 	display: none;
 	visiblity: hidden;
@@ -292,6 +293,9 @@ table,th,td {
 }
 .action.delete {
 	background: url(images/sprite.png) no-repeat left -220px;
+}
+.action.props {
+	background: url(images/sprite.png) no-repeat 2px -21px;
 }
 .listaction.delete {
 	background: url(images/sprite.png) no-repeat 4px -214px;

@@ -143,9 +143,11 @@ sub renderEach {
 			$t=~s/\$v/$hashvar{$key}/g; $t=~s/\$\{v\}/$hashvar{$key}/g;
 			$content.=$t;
 		}
-	} elsif ($variable=~/\@/ || $variable=~/^\((.*?)\)$/s) {
+	} elsif ($variable=~/\@/ || $variable=~/^\((.*?)\)$/s || $variable=~/^\$/) {
 		my @arrvar;
-		if ($variable=~/^\((.*?)\)$/s) {
+		if ($variable=~/^\$/) {
+			@arrvar = @{eval($variable)};
+		} elsif ($variable=~/^\((.*?)\)$/s) {
 			@arrvar = split(/,/,$1);
 		} else {
 			$variable=~s/\@//g;
@@ -229,6 +231,20 @@ sub execTemplateFunction {
 	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
 	$content = $self->renderLanguageList($fn,$ru,$param) if $func eq 'langList';
+	$content = $self->renderExtension($fn,$ru,$param) if $func eq 'extension';
+	return $content;
+}
+sub renderExtension {
+	my ($self,$fn,$ru,$hook) = @_;
+	my $content = "";
+	my $extactions = $$self{config}{extensions}->handle($hook, { path=>$fn });
+	foreach my $a (@{$extactions}) {
+		if (ref($a)) {
+			$content.=$$self{cgi}->a({ -href => '#', -data_action=>$$a{action}, -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'')}, $self->tl($$a{label}));
+		} else {
+			$content.=$a;
+		}
+	}
 	return $content;
 }
 sub renderLanguageList {

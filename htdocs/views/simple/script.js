@@ -860,6 +860,8 @@ function handleFileActions(event) {
 		handleFileDelete(row);
 	} else if (action == 'edit') {
 		handleFileEdit(row);
+	} else if (action == 'props') {
+		window.location.href = concatUri(window.location.pathname, row.attr('data-file') + '?action=props');
 	}
 }
 function initFileList() {
