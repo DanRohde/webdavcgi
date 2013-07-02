@@ -916,8 +916,8 @@ function initFileList() {
 
 	$("#fileList tr[data-isviewable='no'][data-mime^='image/'][data-size!='0'] td.filename a")
 		.attr("rel","wtimggallery")
-		.fancybox({
-			beforeLoad: function() {  }
+		.fancybox({ 
+			beforeLoad: function() { this.title = $(".nametext", this.element).html(); }
 		});
 	$("#fileList tr[data-isviewable='no'][data-mime^='text/'] td.filename a, #fileList tr[data-isviewable='no'][data-type!='dir'][data-file$='.pdf'] td.filename a")
 			.attr("rel","wttxtgallery")
