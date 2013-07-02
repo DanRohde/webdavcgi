@@ -68,17 +68,24 @@ $(document).ready(function() {
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
 		// keyboard events for filename links
-		$("#fileList .filename a").keydown(function(event) {
-			if (event.keyCode == 32) handleRowClickEvent.call($(this).closest("tr"), event);
+		$("#fileList .filename a").off("keydown.ks").on("keydown.ks",function(event) {
+			if (event.keyCode == 32) { preventDefault(event); handleRowClickEvent.call($(this).closest("tr"), event); }
 		});
 		fixTabIndex();
-		$("#fileList tr").keydown(function(event) { if (event.keyCode ==32) handleRowClickEvent.call(this,event); });
+		$("#fileList tr").keydown(function(event) {
+			var tabindex = this.tabIndex || 1;
+			if (event.keyCode ==32) handleRowClickEvent.call(this,event);
+			else if (event.keyCode==13) 
+				changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),$(this).attr("data-type") == 'file')
+			else if (event.keyCode==38 && tabindex > 1 ) $("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
+			else if (event.keyCode==40) $("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
+		});
+		$("#fileList tr[tabindex='1']").focus();
 	}).on("fileListViewChanged", fixTabIndex);
-	
 }
 function fixTabIndex() {
 	$("#fileList tr:visible").each(function(i,v) {
-		$(v).attr("tabindex",i);
+		$(v).attr("tabindex",i+1);
 	});
 }
 function initTableConfigDialog() {
@@ -1116,6 +1123,7 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 		});
 		for (var r=0; r<rows.length; r++) {
 			$(val).append(rows[r]);
+			rows[r].tabIndex=r+1;
 		}
 		
 	});
