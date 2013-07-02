@@ -222,6 +222,11 @@ table,th,td {
 	padding-left: 10px; 
 	float: left;
 }
+.filename a:focus {
+	border: 1px dotted black;
+	width: 100%;
+	display: block;
+}
 #fileList .size, th#headerSize {
 	text-align: right;
 	padding-right: 8px;

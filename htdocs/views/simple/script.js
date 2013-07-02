@@ -895,7 +895,10 @@ function initFileList() {
 					$(this).attr("data-type") == 'file');
 		}
 	);
-	
+	// keyboard events for filename links
+	$("#fileList .filename a").keydown(function(event) {
+		if (event.keyCode == 32) handleRowClickEvent.call($(this).closest("tr"), event);
+	});
 	// fix selections after tablesorter:
 	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
 
