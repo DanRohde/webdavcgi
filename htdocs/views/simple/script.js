@@ -68,11 +68,11 @@ $(document).ready(function() {
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
 		// keyboard events for filename links
-		$("#fileList .filename a").off("keydown.ks").on("keydown.ks",function(event) {
+		$("#fileList .filename a").off("keydown.flca").on("keydown.flca",function(event) {
 			if (event.keyCode == 32) { preventDefault(event); handleRowClickEvent.call($(this).closest("tr"), event); }
 		});
 		fixTabIndex();
-		$("#fileList tr").keydown(function(event) {
+		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
 			if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 			else if (event.keyCode==13) 
