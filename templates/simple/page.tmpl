@@ -24,16 +24,16 @@ $INCLUDE(htmlhead)</head>
 			<li><a href="$uri" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
 			$INCLUDE(apps)
 			<!--IF($config(ALLOW_SEARCH))-->
-			<li><a href="#" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult">$tl(searchbutton)</a></li>
+			<li><a href="#" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_CHANGEPERM))-->
-				<li><a href="#" data-action="permissions" data-sel="multi" data-template="permissions">$tl(mode)</a></li>
+				<li><a href="#" data-action="permissions" data-sel="multi" data-template="permissions" accesskey="p">$tl(mode)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_AFSACLMANAGER))-->
-				<li><a href="#" data-sel="noneorone" data-seltype="dir" data-action="afsaclmanager" data-template="afsaclmanager">$tl(afs)</a></li>
+				<li><a href="#" data-sel="noneorone" data-seltype="dir" data-action="afsaclmanager" data-template="afsaclmanager" accesskey="a">$tl(afs)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_AFSGROUPMANAGER))-->
-				<li><a href="#" data-action="afsgroupmanager" data-template="afsgroupmanager">$tl(afsgroup)</a></li>
+				<li><a href="#" data-action="afsgroupmanager" data-template="afsgroupmanager" accesskey="g">$tl(afsgroup)</a></li>
 			<!--ENDIF-->
 				
 		</ul>
@@ -62,16 +62,16 @@ $INCLUDE(htmlhead)</head>
 <div id="content" class="collapse-head-listener collapse-sidebar-listener">
 	<div id="controls" class="collapse-head-listener collapse-sidebar-listener">
 		<div id="new">
-			<a href="#" data-action="new">$tl(new)</a> 
+			<a href="#" data-action="new" accesskey="n">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" data-sel="none" class="hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
+				<a href="#" data-sel="none" class="hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction paste hideit" data-sel="none" href="#" data-action="paste" title="$tl(paste)">&nbsp;</a>
+				<a class="listaction paste hideit" data-sel="none" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
 			<!--ENDIF-->			
 			<ul class="hidden">
-			<li><a href="#" data-sel="none" data-action="create-folder">$tl(createfolderbutton)</a></li>
-			<li><a href="#" data-sel="none" data-action="create-file">$tl(createnewfilebutton)</a></li>
+			<li><a href="#" data-sel="none" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
+			<li><a href="#" data-sel="none" data-action="create-file" accesskey="e">$tl(createnewfilebutton)</a></li>
 			<!--IF($config(ALLOW_SYMLINK))-->
 				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
@@ -115,18 +115,18 @@ $INCLUDE(htmlhead)</head>
 		<div id="filelistactions" data-sel="multi" class="hideit">
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction copy" href="#" title="$tl(copytooltip)" data-action="copy" data-sel="multi">&nbsp;</a>
-				<a class="listaction cut" href="#" title="$tl(cuttooltip)" data-action="cut" data-sel="multi">&nbsp;</a>
+				<a class="listaction copy" href="#" title="$tl(copytooltip)" data-action="copy" data-sel="multi" accesskey="c">&nbsp;</a>
+				<a class="listaction cut" href="#" title="$tl(cuttooltip)" data-action="cut" data-sel="multi" accesskey="x">&nbsp;</a>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-				<a class="listaction download" href="#" title="$tl(zipdownloadtext)" data-action="download" data-sel="multi">$tl(zipdownloadbutton)</a>
+				<a class="listaction download" href="#" title="$tl(zipdownloadtext)" data-action="download" data-sel="multi" accesskey="z">$tl(zipdownloadbutton)</a>
 			<!--ENDIF-->			
-			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi">$tl(deletefilesbutton)</a>
+			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi" accesskey="d">$tl(deletefilesbutton)</a>
 		</div>
 		<!--IF($config(ENABLE_NAMEFILTER))-->
 		<div class="filterbox">
 			<form id="filterbox" method="post" action="#">
-			$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)"/>
+			$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" accesskey="i"/>
 			<img data-action="clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)"/>
 			</form>
 		</div>
