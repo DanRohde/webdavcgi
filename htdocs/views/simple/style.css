@@ -203,7 +203,7 @@ table,th,td {
 	opacity: 0;
 	filter: Alpha(opacity=0); 
 }
-#fileList input[type=checkbox]:hover {
+#fileList input[type=checkbox]:hover, #fileList input[type=checkbox]:focus {
 	opacity: 0.8;
 	filter: Alpha(opacity=80); 
 }
