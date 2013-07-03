@@ -3,7 +3,7 @@ $(document).ready(function() {
 	initUIEffects();
 	
 	initBookmarks();
-
+	
 	initFileListActions();
 
 	initClipboard();
@@ -74,10 +74,12 @@ function initKeyboardSupport() {
 		fixTabIndex();
 		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
-			if (event.keyCode ==32) handleRowClickEvent.call(this,event);
-			else if (event.keyCode==13) 
-				changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),$(this).attr("data-type") == 'file')
-			else if (event.keyCode==38 && tabindex > 1 ) $("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
+			if ($(this).is(":focus")) {
+				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
+				else if (event.keyCode==13) 
+					changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),$(this).attr("data-type") == 'file')
+			}
+			if (event.keyCode==38 && tabindex > 1 ) $("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
 			else if (event.keyCode==40) $("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
 		});
 		$("#fileList tr[tabindex='1']").focus();
@@ -889,6 +891,18 @@ function handleFileActions(event) {
 		window.location.href = concatUri(window.location.pathname, row.attr('data-file') + '?action=props');
 	}
 }
+function handleFileListRowFocusIn(event) {
+	//if (event.type == 'mouseenter') $(this).focus();
+	if ($("#fileactions").length==1) $("#flt").data("#fileactions",$("#fileactions").html());
+	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>');
+	if ($("#fileactions",$(this)).length==0) {
+		$("div.filename",$(this)).after($("#fileactions"));
+		$("#fileactions a[data-action]").click(handleFileActions);
+	}	
+}
+function handleFileListRowFocusOut(event) {
+	$("#fileactions").appendTo($(".template")).find("a[data-action]").off("click");	
+}
 function initFileList() {
 	var flt = $("#fileListTable");
 	var fl = $("#fileList");
@@ -900,17 +914,15 @@ function initFileList() {
 	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").attr("disabled","disabled");
 	
 	// init single file actions:
-	$("#fileList tr[data-unselectable='no']").hover(
-			function() {
-				if ($(".fileactions",$(this)).length==0) {
-					$("div.filename",$(this)).after($("#fileactions").html());
-					$(".fileactions a[data-action]", $(this)).click(handleFileActions);
-				}
-			},
-			function() {
-				$(".fileactions",$(this)).off("click").remove();	
-			}
-	);
+	$("#fileList tr[data-unselectable='no']")
+		.hover(handleFileListRowFocusIn, handleFileListRowFocusOut)
+		.focusin(handleFileListRowFocusIn)
+		.each(function(i,v) {
+			var self = $(this);
+			self.find(".filename a").focusin(function(event) {
+				handleFileListRowFocusIn.call(self,event);
+			});
+		});
 	
 	// mouse events on a file row:
 	$("#fileList tr")
@@ -1214,13 +1226,18 @@ function handleJSONResponse(response) {
 function handleFileRename(row) {
 	var tdfilename = row.find('td.filename');
 	var filename = row.attr('data-file');
-
+	// fixes accesskey bug: multiple calls with on shurtcut usage:
+	if ($(".renamefield",tdfilename).length>0) return;
+	
 	renamefield = $('#renamefield').html();
 
 	tdfilename.wrapInner('<div class="hidden"/>').prepend(renamefield);
 	var inputfield = tdfilename.find('.renamefield input[type=text]');
-	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename)).focus().select();
 	$("#flt").enableSelection();
+	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename)).focus().select();
+	
+	inputfield.off("click").on("click", function(event) { preventDefault(event); $(this).focus();})
+		.off("dblclick").on("dblclick",function(event) { preventDefault(event);});
 	inputfield.keydown(function(event) {
 		var row = $(this).closest('tr');
 		var file = $(this).closest('tr').attr('data-file');
@@ -1250,7 +1267,13 @@ function handleFileRename(row) {
 			row.find('.renamefield').remove();
 			row.find('td.filename div.hidden div.filename').unwrap();
 			$("#flt").disableSelection();
-		}
+			row.focus();
+		} 
+	});
+	inputfield.focusout(function(event) {
+		row.find('.renamefield').remove();
+		row.find('td.filename div.hidden div.filename').unwrap();
+		$("#flt").disableSelection();
 	});
 }
 function notify(type,msg) {

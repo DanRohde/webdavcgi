@@ -222,7 +222,7 @@ table,th,td {
 	padding-left: 10px; 
 	float: left;
 }
-.filename a:focus {
+div.filename a:focus {
 	border: 1px dotted black;
 	width: 100%;
 	display: block;

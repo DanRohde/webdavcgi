@@ -119,9 +119,9 @@ $INCLUDE(htmlhead)</head>
 				<a class="listaction cut" href="#" title="$tl(cuttooltip)" data-action="cut" data-sel="multi" accesskey="x">&nbsp;</a>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-				<a class="listaction download" href="#" title="$tl(zipdownloadtext)" data-action="download" data-sel="multi" accesskey="z">$tl(zipdownloadbutton)</a>
+				<a class="listaction download" href="#" title="$tl(zipdownloadtext)" data-action="download" data-sel="multi">$tl(zipdownloadbutton)</a>
 			<!--ENDIF-->			
-			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi" accesskey="d">$tl(deletefilesbutton)</a>
+			<a class="listaction delete" href="#" title="$tl(deletefilestext)" data-action="delete" data-sel="multi">$tl(deletefilesbutton)</a>
 		</div>
 		<!--IF($config(ENABLE_NAMEFILTER))-->
 		<div class="filterbox">
@@ -145,11 +145,11 @@ $INCLUDE(htmlhead)</head>
 	<div id="fileactions">
 	     <span class="fileactions">
 		 <a class="action edit" href="#" data-action="edit">$tl(editbutton)</a>
-		 <a class="action rename" href="#" data-action="rename">$tl(movefilesbutton)</a>
+		 <a class="action rename" href="#" data-action="rename" accesskey="m">$tl(movefilesbutton)</a>
 		 <!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-		 <a class="action download" href="#" data-action="download">$tl(zipdownloadbutton)</a>
+		 <a class="action download" href="#" data-action="download" accesskey="z">$tl(zipdownloadbutton)</a>
 		 <!--ENDIF-->
-		 <a class="action delete" href="#" data-action="delete">$tl(deletefilesbutton)</a>
+		 <a class="action delete" href="#" data-action="delete" accesskey="d">$tl(deletefilesbutton)</a>
 		 $extension(fileaction)
 	     </span>
 	</div>
