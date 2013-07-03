@@ -1678,6 +1678,10 @@ function handleInplaceInput(target, defval) {
 				target.html(target.data('orig-html'));
 				target.trigger('canceled');
 			}
+		}).focusout(function(event) {
+			target.data('is-active',false);
+			target.html(target.data('orig-html'));
+			target.trigger('canceled');
 		});
 		target.html(inplace);
 		input.focus();
