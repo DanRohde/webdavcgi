@@ -81,14 +81,17 @@ function initKeyboardSupport() {
 					changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash(self.attr('data-file')))),self.attr("data-type") == 'file')
 			}
 			if (event.keyCode==38 && tabindex > 1 ) {
-				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey))
+				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
-				
+					$("#flt").trigger("fileListSelChanged");
+				}
 				$("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
 				removeTextSelections();
 			} else if (event.keyCode==40) {
-				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey))
+				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
+					$("#flt").trigger("fileListSelChanged");
+				}
 				$("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
 				removeTextSelections();
 			}
