@@ -257,7 +257,7 @@ div.filename a:focus {
 #fileList tr.selected {
 	background-color: #dadada;
 }
-#fileList tr.selected:hover {
+#fileList tr.selected:hover, #fileList tr.selected:focus {
 	background-color: #aaaaaa;
 }
 #fileList tr.cutted, #fileList tr.cutted a {

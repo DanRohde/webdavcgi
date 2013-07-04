@@ -74,13 +74,24 @@ function initKeyboardSupport() {
 		fixTabIndex();
 		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
-			if ($(this).is(":focus")) {
+			var self = $(this);
+			if (self.is(":focus")) {
 				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 				else if (event.keyCode==13) 
-					changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),$(this).attr("data-type") == 'file')
+					changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash(self.attr('data-file')))),self.attr("data-type") == 'file')
 			}
-			if (event.keyCode==38 && tabindex > 1 ) $("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
-			else if (event.keyCode==40) $("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
+			if (event.keyCode==38 && tabindex > 1 ) {
+				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey))
+					toggleRowSelection(self, true);
+				
+				$("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
+				removeTextSelections();
+			} else if (event.keyCode==40) {
+				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey))
+					toggleRowSelection(self, true);
+				$("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
+				removeTextSelections();
+			}
 		});
 		$("#fileList tr[tabindex='1']").focus();
 	}).on("fileListViewChanged", fixTabIndex);
@@ -1030,13 +1041,16 @@ function initFileList() {
  	});
 	
 	// fix annyoing text selection after a double click on text in the file list:
+	removeTextSelections();
+	
+	$("#flt").trigger("fileListChanged");
+}
+function removeTextSelections() {
 	if (document.selection && document.selection.empty) document.selection.empty();
 	else if (window.getSelection) {
 		var sel = window.getSelection();
 		if (sel && sel.removeAllRanges) sel.removeAllRanges();
 	}
-	
-	$("#flt").trigger("fileListChanged");
 }
 function handleFileListColumnDrop(event, ui) {
 	var didx = ui.draggable.prop("cellIndex");
@@ -1294,9 +1308,17 @@ function notifyInfo(info) {
 function notifyWarn(warn) {
 	notify('warning',warn);
 }
+function toggleRowSelection(row,on) {
+	if (!row) return;
+	row.toggleClass("selected", on);
+	row.find("input[name='file'][type='checkbox']").prop('checked', row.hasClass("selected"));
+}
+function isSelectableRow(row) {
+	return row.attr("data-file") != '..' && row.attr("data-unselectable") != "yes";
+}
 function handleRowClickEvent(event) {
 	var flt = $('#fileListTable');
-	if ($(this).attr('data-file') != '..' && $(this).attr('data-unselectable')!='yes' ) {
+	if (isSelectableRow($(this))) {
 		var start = this.rowIndex;
 		var end = start;
 		if ((event.ctrlKey || event.shiftKey || event.metaKey || event.altKey) && flt.data('lastSelectedRowIndex')) {
@@ -1309,14 +1331,11 @@ function handleRowClickEvent(event) {
 			for (var r = start + 1 ; r < end ; r++ ) {
 				var row = $("#fileList tr").filter(function(i){ return this.rowIndex == r});
 				if (!row) continue;
-				row.toggleClass("selected");
-				row.find("input[name='file'][type='checkbox']").prop('checked', row.hasClass("selected"));
+				toggleRowSelection(row);
 				row = row.next();
-
 			}
-		} 
-		$(this).toggleClass("selected");
-		$(this).find("input[type=checkbox]").prop('checked', $(this).hasClass("selected"));
+		}
+		toggleRowSelection($(this));
 		flt.data('lastSelectedRowIndex', this.rowIndex);
 		$("#flt").trigger("fileListSelChanged");
 	}
