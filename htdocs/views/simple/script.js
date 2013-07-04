@@ -1587,6 +1587,7 @@ function handleFileListActionEventDelete() {
 function uncheckSelectedRows() {
 	$("#fileList tr.selected:visible input[type=checkbox]").prop('checked',false);
 	$("#fileList tr.selected:visible").removeClass("selected");
+	$("#fileList tr:visible").first().focus();
 	$("#flt").trigger("fileListSelChanged");
 }
 function handleFileListActionEvent(event) {
