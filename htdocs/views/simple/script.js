@@ -500,6 +500,7 @@ function initBookmarks() {
 }
 function toggleButton(button, disabled) {
 	if (button.hasClass("button")) button.button("option","disabled",disabled);
+	button.attr("tabindex",disabled ? -1 : 0);
 	button.toggleClass("disabled", disabled);
 	$.each(button, function(i,v) { if ($(v).hasClass("hideit")) $(v).toggle(!disabled) });
 }
@@ -1668,7 +1669,8 @@ function handleClipboard() {
 	var datauri = concatUri($("#fileList").attr("data-uri"),"/");
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
-	$('a.listaction.paste').button("option","disabled",  (!files || files=="" || srcuri  == datauri)); 
+	var disabled = (!files || files=="" || srcuri  == datauri);
+	$('a.listaction.paste').button("option","disabled", disabled).attr("tabindex", disabled ? -1 : 0);  
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
