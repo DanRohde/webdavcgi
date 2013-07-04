@@ -75,10 +75,21 @@ function initKeyboardSupport() {
 		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
 			var self = $(this);
+			//console.log(event.keyCode);
 			if (self.is(":focus")) {
 				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 				else if (event.keyCode==13) 
 					changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash(self.attr('data-file')))),self.attr("data-type") == 'file')
+				else if (event.keyCode==46) {
+					if ($("#fileList tr.selected:visible").length==0) { 
+						if (isSelectableRow(self)) handleFileDelete(self);
+					} else handleFileListActionEventDelete();
+				} else if (event.keyCode==36) 
+					$("#fileList tr:visible").first().focus();
+				else if (event.keyCode==35) 
+					$("#fileList tr:visible").last().focus();
+				else if (event.keyCode==45) 
+					$(".paste").trigger("click");
 			}
 			if (event.keyCode==38 && tabindex > 1 ) {
 				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
@@ -94,7 +105,7 @@ function initKeyboardSupport() {
 				}
 				$("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
 				removeTextSelections();
-			}
+			} 
 		});
 		$("#fileList tr[tabindex='1']").focus();
 	}).on("fileListViewChanged", fixTabIndex);
@@ -1553,38 +1564,42 @@ function postAction(data) {
 	form.submit();
 	form.remove();
 }
+function handleFileListActionEventDelete() {
+	$("#fileList tr.selected:visible").fadeTo("slow",0.5);
+	confirmDialog($('#deletefilesconfirm').html(), {
+		confirm: function() {
+			var block = blockPage();
+			var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function(v,i) { return $(v).attr("data-file") })}, function(response) {
+				block.remove();
+					removeFileListRow($("#fileList tr.selected:visible"));
+				uncheckSelectedRows();
+				if (response.error) updateFileList();
+				handleJSONResponse(response);
+			});
+			renderAbortDialog(xhr);
+		},
+		cancel: function() {
+			$("#fileList tr.selected:visible").fadeTo("fast",1);
+			$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',true);
+		}
+	});	
+}
+function uncheckSelectedRows() {
+	$("#fileList tr.selected:visible input[type=checkbox]").prop('checked',false);
+	$("#fileList tr.selected:visible").removeClass("selected");
+	$("#flt").trigger("fileListSelChanged");
+}
 function handleFileListActionEvent(event) {
 	var action = $(this).attr('data-action');
 	preventDefault(event);
-	function uncheckSelectedRows() {
-		$("#fileList tr.selected:visible input[type=checkbox]").prop('checked',false);
-		$("#fileList tr.selected:visible").removeClass("selected");
-		$("#flt").trigger("fileListSelChanged");
-	}
+
 	if ($(this).hasClass("disabled")) return;
 	if (action == "download") {
 		var data =  { "zip" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")}) }; 
 		postAction(data);
 		uncheckSelectedRows();
 	} else if (action == "delete") {
-		$("#fileList tr.selected:visible").fadeTo("slow",0.5);
-		confirmDialog($('#deletefilesconfirm').html(), {
-			confirm: function() {
-				var block = blockPage();
-				var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function(v,i) { return $(v).attr("data-file") })}, function(response) {
-					block.remove();
- 					removeFileListRow($("#fileList tr.selected:visible"));
-					uncheckSelectedRows();
-					if (response.error) updateFileList();
-					handleJSONResponse(response);
-				});
-				renderAbortDialog(xhr);
-			},
-			cancel: function() {
-				$("#fileList tr.selected:visible").fadeTo("fast",1);
-				$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',true);
-			}
-		});
+		handleFileListActionEventDelete();
 	} else if (action == "cut"||action=="copy") {
 		$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
 		var selfiles = $.map($("#fileList tr.selected"), function(val,i) { return $(val).attr("data-file"); });	
