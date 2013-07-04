@@ -92,6 +92,7 @@ function initKeyboardSupport() {
 					$(".paste").trigger("click");
 			}
 			if (event.keyCode==38 && tabindex > 1 ) {
+				preventDefault(event);
 				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
@@ -99,6 +100,7 @@ function initKeyboardSupport() {
 				$("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
 				removeTextSelections();
 			} else if (event.keyCode==40) {
+				preventDefault(event);
 				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
