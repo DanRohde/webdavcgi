@@ -111,6 +111,15 @@ function initKeyboardSupport() {
 		});
 		$("#fileList tr[tabindex='1']").focus();
 	}).on("fileListViewChanged", fixTabIndex);
+	
+	$('<a accesskey="0" title="Access key details"></a>')
+		.on("click", renderAccessKeyDetails)
+		.appendTo("body");
+	$('<a href="#" title="go to file list" accesskey="l" class="gotofilelist"></a>')
+		.on("focusin", function(event) {
+			$("#fileList tr:visible").first().focus();
+		})
+		.appendTo("body");
 }
 function fixTabIndex() {
 	$("#fileList tr:visible").each(function(i,v) {
@@ -1295,6 +1304,7 @@ function handleFileRename(row) {
 				doRename();
 			}
 		} else if (event.keyCode == 27 || (event.keyCode==13 && file == newname)) {
+			preventDefault(event);
 			row.find('.renamefield').remove();
 			row.find('td.filename div.hidden div.filename').unwrap();
 			$("#flt").disableSelection();
@@ -1698,6 +1708,7 @@ function handleClipboard() {
 function handleInplaceInput(target, defval) {
 	target.click(function(event) {
 		preventDefault(event);
+		if (target.closest("ul").hasClass("hidden")) target.closest("ul").removeClass("hidden");
 		if (target.hasClass("disabled")) return;
 		if (target.data('is-active')) return;
 		target.data('is-active', true);
@@ -2024,6 +2035,25 @@ function renderAbortDialog(xhr, timeout) {
 		}, 200);
 		
 	}, timeout || 5000);
+}
+function renderAccessKeyDetails() {
+	if ($("#accesskeydetails").length>0) {
+		$("#accesskeydetails").dialog("destroy").remove();
+		return;
+	}
+	var text = "";
+	var refs = $("*[accesskey]").get().sort(function(a,b) {
+		var aa = $(a).attr("accesskey");
+		var bb = $(b).attr("accesskey");
+		return aa < bb ? -1 : aa > bb ? 1 : 0; 
+	})
+	$.each(refs, function(i,v) {
+		text += "<li>"+$(v).attr("accesskey")+": "+($(v).attr("title")? $(v).attr("title") : $(v).html())+"</li>";
+	});
+	$('<div id="accesskeydetails"/>')
+		.html('<ul class="accesskeydetails">'+text+"</ul>")
+		.dialog({title: $(this).attr("title"), width: "auto", height: "auto",
+				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]});
 }
 // ready ends: 
 });

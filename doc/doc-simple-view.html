@@ -46,7 +46,7 @@ Look for include statements in the page template (<code>templates/simple/page.tm
 <li> Create a custom template <code>templates/simple/apps.custom.tmpl</code> to add a new menu entry </li>
 <li> and add a list item to the custom template (see <code>page.tmpl</code> for examples):
 <pre>
-&lt;li&gt;&lt;a class="home-button" data-action="changeuri" href="/afs/.cms.hu-berlin.de/user/$eval@substr($main::REMOTE_USER,0,1)@/$USER/">Home&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="home-button" data-action="changeuri" href="/afs/.cms.hu-berlin.de/user/$eval@substr($main::REMOTE_USER,0,1)@/$USER/" accesskey="1">Home&lt;/a&gt;&lt;/li&gt;
 
 </pre>
 </li>
@@ -65,7 +65,7 @@ Overview of existing page template hooks (template file name pattern: <code>temp
 <li> Create a custom template: <code>vi templates/simple/apps.custom.tmpl</code></li>
 <li> Add HTML code to the new template (change href value to your preferred URL):
 <pre>
-&lt;li&gt;&lt;a class="home-button" data-action="changeuri" href="/.cms.hu-berlin.de/user/$eval@substr($main::REMOTE_USER,0,1)@/$USER/"&gt;Home&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="home-button" data-action="changeuri" href="/.cms.hu-berlin.de/user/$eval@substr($main::REMOTE_USER,0,1)@/$USER/" accesskey="1"&gt;Home&lt;/a&gt;&lt;/li&gt;
 </pre>
 </li>
 </ol>
@@ -74,7 +74,7 @@ Overview of existing page template hooks (template file name pattern: <code>temp
 <li> Create a custom template: <code>vi templates/simple/help.custom.templ</code></li>
 <li> Add HTTML code to the new template (change href values to your preferred URLs):
 <pre>
-&lt;li&gt;&lt;a class="help-button" target="_blank" href="link_to_my_help"&gt;Help&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="help-button" target="_blank" href="link_to_my_help" accesskey="6"&gt;Help&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a class="logout-button" href="/logout"&gt;Logout&lt;/a>&lt;/li&gt;
 </pre>
 </li>

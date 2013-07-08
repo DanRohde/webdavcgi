@@ -1044,3 +1044,6 @@ a[data-action=autorefreshmenu] {
 	margin: 0;
 	box-shadow: 3px 0 7px #dddddd;
 }
+.accesskeydetails {
+	font-family: monospace;
+}
