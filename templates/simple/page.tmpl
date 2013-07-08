@@ -45,18 +45,18 @@ $INCLUDE(htmlhead)</head>
 					<h3>$tl(viewoptions)</h3> 
 					<div>
 						<ul>$each#@main::SUPPORTED_VIEWS#'<li><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
-							<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
+							<li><a href="#" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
 						</ul>
 					</div>
 				</div>
 			</li>
 			<!--ENDIF-->
 			<!--IF($#main::SUPPORTED_VIEWS<1)-->
-				<li><a href="#" data-action="viewfilter" data-template="viewfilter">$tl(filter.title)</a></li>
+				<li><a href="#" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
 			<!--ENDIF-->
 			<li><a href="#" data-action="settings" class="dialog">$tl(settings)</a></li>
 			$INCLUDE(help)
-			<li><a href="#" data-action="about" class="dialog">$tl(about)</a></li>
+			<li><a href="#" data-action="about" class="dialog" accesskey="8">$tl(about)</a></li>
 		</ul>
 	</div>
 <div id="content" class="collapse-head-listener collapse-sidebar-listener">
@@ -73,10 +73,10 @@ $INCLUDE(htmlhead)</head>
 			<li><a href="#" data-sel="none" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
 			<li><a href="#" data-sel="none" data-action="create-file" accesskey="e">$tl(createnewfilebutton)</a></li>
 			<!--IF($config(ALLOW_SYMLINK))-->
-				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
+				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-				<li class="sep"><a href="#" title="&le;$maxuploadsizehr" data-action="uncompress" data-sel="none" id="zipfileuploadbutton">$tl(zipfileupload)</a>
+				<li class="sep"><a href="#" title="$tl(zipfileupload) &le;$maxuploadsizehr" data-action="uncompress" data-sel="none" id="zipfileuploadbutton" accesskey="w">$tl(zipfileupload)</a>
 				<form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
 			<!--ENDIF-->
 			</ul>
