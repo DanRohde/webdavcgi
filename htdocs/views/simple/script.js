@@ -979,12 +979,14 @@ function initFileList() {
 	$("#fileList tr[data-isviewable='yes'][data-iseditable='no']:not([data-file$='.pdf'])[data-size!='0'] td.filename a")
 		.attr("rel","imggallery")
 		.fancybox({
+			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
 	$("#fileList tr[data-isviewable='yes'][data-iseditable='yes'][data-size!='0'] td.filename a,#fileList tr[data-isviewable='yes'][data-file$='.pdf'] td.filename a")
 		.attr("rel","txtgallery")
 		.fancybox({
+			afterShow: function() { $(".fancybox-close").focus();},
 			type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
@@ -992,11 +994,13 @@ function initFileList() {
 	$("#fileList tr[data-isviewable='no'][data-mime^='image/'][data-size!='0'] td.filename a")
 		.attr("rel","wtimggallery")
 		.fancybox({ 
+			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(".nametext", this.element).html(); }
 		});
 	$("#fileList tr[data-isviewable='no'][data-mime^='text/'] td.filename a, #fileList tr[data-isviewable='no'][data-type!='dir'][data-file$='.pdf'] td.filename a")
 			.attr("rel","wttxtgallery")
 			.fancybox({
+				afterShow: function() { $(".fancybox-close").focus();},
 				type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(".nametext",$(this.element)).html();}
 			});
 	
