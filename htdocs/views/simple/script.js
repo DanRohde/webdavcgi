@@ -1942,7 +1942,7 @@ function handleAFSACLManager(event){
 					$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
 				});
 			});
-			renderAbortDialog(xhr)
+			renderAbortDialog(xhr);
 			return false;
 		});
 		aclmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { $(self).removeClass("disabled"); aclmanager.remove(); }}).show();
