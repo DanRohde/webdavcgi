@@ -76,7 +76,7 @@ $INCLUDE(htmlhead)</head>
 				<li><a href="#" data-action="create-symlink" data-sel="one" title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-				<li class="sep"><a href="#" title="$tl(zipfileupload) &le;$maxuploadsizehr" data-action="uncompress" data-sel="none" id="zipfileuploadbutton" accesskey="w">$tl(zipfileupload)</a>
+				<li class="sep"><a href="#" title="$tl(zipfileupload) (&le;$maxuploadsizehr)" data-action="uncompress" data-sel="none" id="zipfileuploadbutton" accesskey="w">$tl(zipfileupload)</a>
 				<form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
 			<!--ENDIF-->
 			</ul>
