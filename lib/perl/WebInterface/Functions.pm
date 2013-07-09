@@ -461,7 +461,6 @@ sub doAFSFSSETACLCmd {
 	my $output = "";
 	if ( $pacls ne "" ) {
 		my $cmd;
-
 		$fn =~ s/(["\$\\])/\\$1/g;
 		$cmd = sprintf( '%s setacl -dir "%s" -acl %s -clear 2>&1',
 			$main::AFS_FSCMD, $$self{backend}->resolveVirt($fn), $pacls );
@@ -491,10 +490,11 @@ sub doAFSFSSETAclCmdRecursive {
 	$fn.='/' if $fn!~/\/$/ && $$self{backend}->isDir($fn);
 	my ($msg, $errmsg, $msgparam); 
 	foreach my $f ( @{$$self{backend}->readDir($fn)}) {
-		if ($$self{backend}->isDir("$fn$f")) {
-			next unless $$self{backend}->_checkCallerAccess("$fn$f/","a","w");
-			($msg, $errmsg, $msgparam) = $self->doAFSFSSETACLCmd("$fn$f/", $pacls, $nacls);
-			($msg, $errmsg, $msgparam) = $self->doAFSFSSETAclCmdRecursive("$fn$f/", $pacls, $nacls);
+		my $nf = "$fn$f";
+		if ($$self{backend}->isDir($nf) && !$$self{backend}->isLink($nf) && $$self{backend}->_checkCallerAccess($nf,"a","a")) {
+			$nf.='/';
+			($msg, $errmsg, $msgparam) = $self->doAFSFSSETACLCmd($nf, $pacls, $nacls);
+			($msg, $errmsg, $msgparam) = $self->doAFSFSSETAclCmdRecursive($nf, $pacls, $nacls);
 		}
 	}
 	return ($msg, $errmsg, $msgparam);
