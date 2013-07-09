@@ -1932,14 +1932,17 @@ function handleAFSACLManager(event){
 		$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
 		("#afasaclmanager",aclmanager).submit(function() {
 			$("input[type='submit']",aclmanager).attr("disabled","disable");
-			$.post(target, $("#afsaclmanager",aclmanager).serialize(), function(response) {
+			var block = blockPage();
+			var xhr = $.post(target, $("#afsaclmanager",aclmanager).serialize(), function(response) {
 				handleJSONResponse(response);
+				block.remove();
 				//aclmanager.dialog("close");
 				$.get(target, {ajax: "getAFSACLManager", template: template}, function(response) {
 					aclmanager.html($(response).unwrap());
 					$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
 				});
 			});
+			renderAbortDialog(xhr)
 			return false;
 		});
 		aclmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { $(self).removeClass("disabled"); aclmanager.remove(); }}).show();
