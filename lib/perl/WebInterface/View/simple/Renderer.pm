@@ -325,8 +325,8 @@ sub renderFileListEntry {
 				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
 				'mode' => sprintf('%04o', $mode & 07777),
 				'modestr' => $self->mode2str($full, $mode),
-				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0),
-				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0),
+				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0) || $uid,
+				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0) || $gid,
 				);
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);
