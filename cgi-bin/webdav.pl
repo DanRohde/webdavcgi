@@ -153,10 +153,16 @@ $MAXNAVPATHSIZE = 50;
 	'application/msword' => '${VHTDOCS}icons/text.gif',
 	'application/vnd.ms-powerpoint' => '${VHTDOCS}icons/world2.gif',
 	'application/vnd.ms-excel' => '${VHTDOCS}icons/quill.gif',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => '${VHTDOCS}icons/text.gif',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.template' => '${VHTDOCS}icons/text.gif',
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => '${VHTDOCS}icons/quill.gif',
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.template'=> '${VHTDOCS}icons/quill.gif',
 	'application/x-dvi'=>'${VHTDOCS}icons/dvi.gif', 'text/x-chdr' =>'${VHTDOCS}icons/c.gif', 'text/x-csrc'=>'${VHTDOCS}icons/c.gif',
 	'video/x-msvideo'=>'${VHTDOCS}icons/movie.gif', 'video/x-ms-wmv'=>'${VHTDOCS}icons/movie.gif', 'video/ogg'=>'${VHTDOCS}icons/movie.gif',
 	'video/mpeg'=>'${VHTDOCS}icons/movie.gif', 'video/quicktime'=>'${VHTDOCS}icons/movie.gif',
 	'audio/mpeg'=>'${VHTDOCS}icons/sound2.gif',
+	'application/x-msdos-program'=>'${VHTDOCS}icons/binary.gif',
+	'text/x-sh'=> '${VHTDOCS}icons/script.gif', 'text/x-csh'=> '${VHTDOCS}icons/script.gif',
 	default => '${VHTDOCS}icons/unknown.gif',
 );
 
