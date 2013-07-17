@@ -2,6 +2,8 @@ $(document).ready(function() {
 	
 	initUIEffects();
 	
+	initPopupMenu();
+	
 	initBookmarks();
 	
 	initFileListActions();
@@ -51,6 +53,7 @@ $(document).ready(function() {
 	initTableConfigDialog();
 	
 	initKeyboardSupport();
+
 	
 	$.ajaxSetup({ traditional: true });
 	
@@ -75,7 +78,7 @@ function initKeyboardSupport() {
 		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
 			var self = $(this);
-			//console.log(event.keyCode);
+			// console.log(event.keyCode);
 			if (self.is(":focus")) {
 				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 				else if (event.keyCode==13) 
@@ -176,7 +179,8 @@ function setupTableConfigDialog(dialog) {
 		var vc = visiblecolumns.slice(0); // clone visiblecolumns
 		var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
 		
-		// this is more inefficient than cookie("visibletablecolumns,vtc.join(",")); 
+		// this is more inefficient than
+		// cookie("visibletablecolumns,vtc.join(","));
 		// but preserves table column order:
 		// remove unselected elements:
 		var removedEls = new Array();
@@ -346,7 +350,10 @@ function initSettingsDialog() {
 		$("select[name^='settings.']", settings)
 			.change(function(){
 				cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
-				window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
+				window.location.href = window.location.pathname; // reload
+																	// bug fixed
+																	// (if query
+																	// view=...)
 			})
 			.each(function(i,v) {
 				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);	
@@ -489,13 +496,14 @@ function initClock() {
 }
 function initTooltips() {
 /*
-	$("[title]").powerTip({smartPlacement: true});
-	$("#flt")
-		.on("fileListChanged",  function() { $("#content [title]").powerTip({smartPlacement: true}); })
-		.on("fileListViewChanged",  function() { $("#content [title]").powerTip({smartPlacement: true}); })
-		.on("fileListSelChanged",  function() { $("#content [title]").powerTip({smartPlacement: true}); })
-		.on("bookmarksChanged", function() { $("#bookmarks [title]").powerTip({smartPlacement: true}); });
-*/
+ * $("[title]").powerTip({smartPlacement: true}); $("#flt")
+ * .on("fileListChanged", function() { $("#content
+ * [title]").powerTip({smartPlacement: true}); }) .on("fileListViewChanged",
+ * function() { $("#content [title]").powerTip({smartPlacement: true}); })
+ * .on("fileListSelChanged", function() { $("#content
+ * [title]").powerTip({smartPlacement: true}); }) .on("bookmarksChanged",
+ * function() { $("#bookmarks [title]").powerTip({smartPlacement: true}); });
+ */
 }
 function initBookmarks() {
 	var bookmarks = $("#bookmarks");
@@ -755,7 +763,8 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
 				}).appendTo(up).attr("title",$("#cancel").html()).addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
 				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): 0%");;
-				//$("#progress .info").scrollTop($("#progress .info")[0].scrollHeight);
+				// $("#progress .info").scrollTop($("#progress
+				// .info")[0].scrollHeight);
 				uploadState.uploads++;
 				return true;
 			}
@@ -912,29 +921,28 @@ function confirmDialog(text, data) {
 function getVisibleAndSelectedFiles() {
 	return $("#fileList tr.isreadable-yes.unselectable-no").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
 }
-function handleFileActions(event) {
+function handleFileActionEvent(event) {
 	preventDefault(event);
 	var row = $(this).closest("tr");
-	var action = $(this).attr('data-action');
-	if (action == 'download') {
+	if ($(this).hasClass("download")) {
 		postAction({"zip" : "yes", "file" : row.attr('data-file')});
-	} else if (action == 'rename') {
+	} else if ($(this).hasClass("rename")) {
 		handleFileRename(row);
-	} else if (action == 'delete') {
+	} else if ($(this).hasClass("delete")) {
 		handleFileDelete(row);
-	} else if (action == 'edit') {
+	} else if ($(this).hasClass("edit")) {
 		handleFileEdit(row);
-	} else if (action == 'props') {
+	} else if ($(this).hasClass("props")) {
 		window.location.href = concatUri(window.location.pathname, row.attr('data-file') + '?action=props');
 	}
 }
 function handleFileListRowFocusIn(event) {
-	//if (event.type == 'mouseenter') $(this).focus();
+	// if (event.type == 'mouseenter') $(this).focus();
 	if ($("#fileactions").length==1) $("#flt").data("#fileactions",$("#fileactions").html());
 	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>');
 	if ($("#fileactions",$(this)).length==0) {
 		$("div.filename",$(this)).after($("#fileactions"));
-		$("#fileactions .action").click(handleFileActions);
+		$("#fileactions .action").click(handleFileActionEvent);
 	}	
 }
 function handleFileListRowFocusOut(event) {
@@ -1056,11 +1064,11 @@ function initFileList() {
 			startPos = parseInt(ui.offset.left);
 			column = $(this).closest("th");
 			startWidth = column.width(); 
-			//origStyle = $(this).attr("style");
+			// origStyle = $(this).attr("style");
 			handlePos = $(this).hasClass("left")? "left" : "right";
 		},
 		stop: function(event,ui) {
-			//$(this).attr("style", origStyle);
+			// $(this).attr("style", origStyle);
 			$(this).removeAttr("style");
 			cookie(column.attr("id")+".width", column.width(),1);
 		},
@@ -1070,7 +1078,8 @@ function initFileList() {
 		}
  	});
 	
-	// fix annyoing text selection after a double click on text in the file list:
+	// fix annyoing text selection after a double click on text in the file
+	// list:
 	removeTextSelections();
 	
 	$("#flt").trigger("fileListChanged");
@@ -1325,9 +1334,10 @@ function notify(type,msg) {
 	console.log("notify["+type+"]: "+msg);
 	if (cookie("settings.messages."+type)=="no") return;
 	noty({text: msg, type: type, layout: 'topCenter', timeout: 30000 });
-//	var notification = $("#notification");
-//	notification.removeClass().hide();
-//	notification.unbind('click').click(function() { $(this).hide().removeClass(); }).addClass(type).html('<span>'+simpleEscape(msg)+'</span>').show();
+// var notification = $("#notification");
+// notification.removeClass().hide();
+// notification.unbind('click').click(function() { $(this).hide().removeClass();
+// }).addClass(type).html('<span>'+simpleEscape(msg)+'</span>').show();
 	// .fadeOut(30000,function() { $(this).removeClass(type).html("");});
 }
 function notifyError(error) {
@@ -1386,12 +1396,14 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
-	$(".listaction").button().click(handleFileListActionEvent);
+	$(".listaction.uibutton").button();
+	$(".listaction").click(handleFileListActionEvent);
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
 }
 function updateFileListActions() {
 	var s = getFolderStatistics();
-	//if (s["sumselcounter"] > 0 ) $('#filelistactions').show(); else $('#filelistactions').hide();
+	// if (s["sumselcounter"] > 0 ) $('#filelistactions').show(); else
+	// $('#filelistactions').hide();
 	
 	toggleButton($(".sel-none"), s["sumselcounter"]!=0);
 	toggleButton($(".sel-one"), s["sumselcounter"]!=1);
@@ -1471,7 +1483,7 @@ function updateFolderStatistics() {
 	if (hs.length > 0) hs.attr('title', hs.attr('data-title').replace(/\$foldersize/, renderByteSizes(fs)));
 }
 function simpleEscape(text) {
-	//return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
+	// return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
 	return $('<div/>').text(text).html();
 }
 function changeUri(uri, leaveUnblocked) {
@@ -1512,6 +1524,7 @@ function updateFileList(newtarget, data) {
 	$.get(newtarget, data, function(response) {
 		if ($("#flt").data("timestamp") != timestamp) return; 
 		$("#flt")
+			.trigger("beforeFileListChange")
 			.show()
 			.html(response.content)
 			.attr("data-uri",newtarget);
@@ -1521,6 +1534,7 @@ function updateFileList(newtarget, data) {
 	});
 }
 function removeFileListRow(row) {
+	$("#flt").trigger("beforeFileListChange");
 	row.remove();
 	$("#flt").trigger("fileListChanged");
 }
@@ -1580,14 +1594,17 @@ function postAction(data) {
 	form.submit();
 	form.remove();
 }
-function handleFileListActionEventDelete() {
+function handleFileListActionEventDelete(event) {
 	$("#fileList tr.selected:visible").fadeTo("slow",0.5);
+	var self = $(this);
 	confirmDialog($('#deletefilesconfirm').html(), {
 		confirm: function() {
 			var block = blockPage();
-			var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function(v,i) { return $(v).attr("data-file") })}, function(response) {
+			var selrows = $("#fileList tr.selected:visible");
+			if (selrows.length == 0) selrows = self.closest("tr");
+			var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map(selrows, function(v,i) { return $(v).attr("data-file") })}, function(response) {
 				block.remove();
-					removeFileListRow($("#fileList tr.selected:visible"));
+				removeFileListRow(selrows);
 				uncheckSelectedRows();
 				if (response.error) updateFileList();
 				handleJSONResponse(response);
@@ -1607,26 +1624,27 @@ function uncheckSelectedRows() {
 	$("#flt").trigger("fileListSelChanged");
 }
 function handleFileListActionEvent(event) {
-	var action = $(this).attr('data-action');
 	preventDefault(event);
-
-	if ($(this).hasClass("disabled")) return;
-	if (action == "download") {
-		var data =  { "zip" : "yes", "file" : $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")}) }; 
+	var self = $(this);
+	if (self.hasClass("disabled")) return;
+	if (self.hasClass("download")) {
+		var selfiles = $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")});
+		if (selfiles.length==0) selfiles = new Array($(this).closest("tr").attr("data-file"));
+		var data =  { "zip" : "yes", "file" : selfiles }; 
 		postAction(data);
 		uncheckSelectedRows();
-	} else if (action == "delete") {
-		handleFileListActionEventDelete();
-	} else if (action == "cut"||action=="copy") {
+	} else if (self.hasClass("delete")) {
+		handleFileListActionEventDelete.call(this,event);
+	} else if (self.hasClass("cut")||self.hasClass("copy")) {
 		$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
-		var selfiles = $.map($("#fileList tr.selected"), function(val,i) { return $(val).attr("data-file"); });	
+		var selfiles = $.map($("#fileList tr.selected"), function(val,i) { return $(val).attr("data-file"); });
 		cookie('clpfiles', selfiles.join('@/@'));
-		cookie('clpaction',action);
+		cookie('clpaction',self.hasClass("cut")?"cut":"copy");
 		cookie('clpuri',concatUri($("#fileList").attr('data-uri'),"/"));
-		if (action=="cut") $("#fileList tr.selected").addClass("cutted").fadeTo("slow",0.5);
+		if (self.hasClass("cut")) $("#fileList tr.selected").addClass("cutted").fadeTo("slow",0.5);
 		handleClipboard();
 		uncheckSelectedRows();
-	} else if (action == "paste") {
+	} else if (self.hasClass("paste")) {
 		var files = cookie("clpfiles");
 		var action= cookie("clpaction");
 		var srcuri= cookie("clpuri");
@@ -1702,7 +1720,7 @@ function handleClipboard() {
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
 	var disabled = (!files || files=="" || srcuri  == datauri);
-	$('a.listaction.paste').button("option","disabled", disabled).attr("tabindex", disabled ? -1 : 0);  
+	toggleButton($(".listaction.paste"), disabled);  
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
@@ -1712,35 +1730,43 @@ function handleClipboard() {
 function handleInplaceInput(target, defval) {
 	target.click(function(event) {
 		preventDefault(event);
-		if (target.closest("ul").hasClass("hidden")) target.closest("ul").removeClass("hidden");
-		if (target.hasClass("disabled")) return;
-		if (target.data('is-active')) return;
-		target.data('is-active', true);
-		target.data('orig-html', target.html());
+		var self = $(this);
+		if (self.closest("ul").hasClass("hidden")) self.closest("ul").removeClass("hidden");
+		if (self.hasClass("disabled")) return;
+		if (self.data('is-active')) return;
+		self.data('is-active', true);
+		self.data('orig-html', target.html());
 		inplace=$('<div class="inplace"><form method="post" action="#"><input class="inplace input"/></form></div>');
 		var input = inplace.find('input');
+		inplace.off("click").on("click",function(e) { preventDefault(e); $(this).focus()} )
+			.off("dblclick").on("dblclick",function(e) { preventDefeault(e);});
 		if (defval) input.val(defval);
-		inplace.keydown(function(event) {
+		$("#flt").enableSelection();
+		input.keydown(function(event) {
+			console.log(event);
 			if (event.keyCode == 13) {
 				preventDefault(event);
-				target.data('is-active', false);
-				target.html(target.data('orig-html'));
+				$("#flt").disableSelection();
+				self.data('is-active', false);
+				self.html(self.data('orig-html'));
 				if ((defval && input.val() == defval)||(input.val() == "")) {
-					target.data('value',input.val()).trigger('unchanged');
+					self.data('value',input.val()).trigger('unchanged');
 				} else {
-					target.data('value',input.val()).trigger('changed');
+					self.data('value',input.val()).trigger('changed');
 				}
 			} else if (event.keyCode == 27) {
-				target.data('is-active', false);
-				target.html(target.data('orig-html'));
-				target.trigger('canceled');
+				self.data('is-active', false);
+				$("#flt").disableSelection();
+				self.html(self.data('orig-html'));
+				self.trigger('canceled');
 			}
 		}).focusout(function(event) {
-			target.data('is-active',false);
-			target.html(target.data('orig-html'));
-			target.trigger('canceled');
+			self.data('is-active',false);
+			$("#flt").disableSelection();
+			self.html(self.data('orig-html'));
+			self.trigger('canceled');
 		});
-		target.html(inplace);
+		self.html(inplace);
 		input.focus();
 	});
 	return target;
@@ -1748,15 +1774,15 @@ function handleInplaceInput(target, defval) {
 function initNewActions() {
 	$('#new [data-action=new]').button().click(function(event) {
 		preventDefault(event);
-		$('#new ul').toggleClass('hidden');
+		$('#new ul').toggle();
 	});
 	$('#new ul').mouseout(function(event) {
 		// $('#new ul').addClass('hidden');
 	}).keypress(function(event) {
-		if (event.keyCode == 27) $('#new ul').toggleClass('hidden');
+		if (event.keyCode == 27) $('#new ul').toggle();
 	});
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
-		$('#new ul').toggleClass('hidden');
+		$(this).closest("ul").toggle();
 		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : $(this).data('value') }, function(response) {
 			if (!response.error && response.message) updateFileList();
 			handleJSONResponse(response);
@@ -1764,7 +1790,8 @@ function initNewActions() {
 	});
 
 	handleInplaceInput($('.action.create-file')).on('changed', function(event) {
-		$('#new ul').toggleClass('hidden');
+		//$('#new ul').toggleClass('hidden');
+		$(this).closest("ul").toggle();
 		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : $(this).data('value') }, function(response) {
 			if (!response.error && response.message) updateFileList();
 			handleJSONResponse(response);
@@ -1772,7 +1799,8 @@ function initNewActions() {
 	});
 
 	handleInplaceInput($('.action.create-symlink')).on('changed', function(event) {
-		$('#new ul').toggleClass('hidden');
+		//$('#new ul').toggleClass('hidden');
+		$(this).closest("ul").toggle();
 		var row = $('#fileList tr.selected');
 		$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: $(this).data('value'), file: row.attr('data-file') }, function(response) {
 			if (!response.error && response.message) updateFileList();
@@ -1791,8 +1819,8 @@ function trimString(str,charcount) {
 	return str;
 }
 function initAFS() {
-	$("[data-action='afsaclmanager']").click(handleAFSACLManager);
-	$("[data-action='afsgroupmanager']").click(handleAFSGroupManager);
+	$(".action.afsaclmanager").click(handleAFSACLManager);
+	$(".action.afsgroupmanager").click(handleAFSGroupManager);
 }
 function initGroupManager(groupmanager, template, target){
 	var groupmanager, groupManagerResponseHandler;
@@ -1936,7 +1964,7 @@ function handleAFSACLManager(event){
 			var xhr = $.post(target, $("#afsaclmanager",aclmanager).serialize(), function(response) {
 				handleJSONResponse(response);
 				block.remove();
-				//aclmanager.dialog("close");
+				// aclmanager.dialog("close");
 				$.get(target, {ajax: "getAFSACLManager", template: template}, function(response) {
 					aclmanager.html($(response).unwrap());
 					$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
@@ -1980,7 +2008,7 @@ function initPermissionsDialog() {
 	});
 }
 function initViewFilterDialog() {
-	$("a[data-action='viewfilter']").click(function(event){
+	$(".action.viewfilter").click(function(event){
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		var self = this;
@@ -2053,7 +2081,7 @@ function renderAccessKeyDetails() {
 		var aa = $(a).attr("accesskey");
 		var bb = $(b).attr("accesskey");
 		return aa < bb ? -1 : aa > bb ? 1 : 0; 
-	})
+	});
 	$.each(refs, function(i,v) {
 		text += "<li>"+$(v).attr("accesskey")+": "+($(v).attr("title")? $(v).attr("title") : $(v).html())+"</li>";
 	});
@@ -2062,5 +2090,33 @@ function renderAccessKeyDetails() {
 		.dialog({title: $(this).attr("title"), width: "auto", height: "auto",
 				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]});
 }
-// ready ends: 
+function initPopupMenu() {
+	
+	$("#popupmenu .action").click(function(event) {
+		handleFileActionEvent.call(this,event);
+		handleFileListActionEvent.call(this,event);
+	});
+	$("#flt")
+		.on("beforeFileListChange", function() {
+			$("#popupmenu").appendTo("body").hide();
+		})
+		.on("fileListChanged", function(){
+			$("#fileList tr").off("contextmenu").on("contextmenu", function(event) {
+				if (event.which==3) {
+					preventDefault(event);
+					if ($("#popupmenu").is(":visible")) {
+						$("#popupmenu").hide().appendTo("body");
+						return;
+					}  else {
+						$("#popupmenu")
+							.appendTo($(event.originalEvent.originalTarget).closest("td"))
+							.css({position: "fixed", left: (event.clientX-3)+"px", top: (event.clientY-3)+"px"})
+							.fadeIn(1)
+							.find(".action").first().focus();
+					}
+				}
+			});
+		});
+}
+// ready ends:
 });

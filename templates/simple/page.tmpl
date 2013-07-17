@@ -45,14 +45,14 @@ $INCLUDE(htmlhead)</head>
 					<h3>$tl(viewoptions)</h3> 
 					<div>
 						<ul>$each#@main::SUPPORTED_VIEWS#'<li><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
-							<li><a href="#" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
+							<li><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
 						</ul>
 					</div>
 				</div>
 			</li>
 			<!--ENDIF-->
 			<!--IF($#main::SUPPORTED_VIEWS<1)-->
-				<li><a href="#" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
+				<li><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
 			<!--ENDIF-->
 			<li><a href="#" data-action="settings" class="dialog action settings">$tl(settings)</a></li>
 			$INCLUDE(help)
@@ -67,7 +67,7 @@ $INCLUDE(htmlhead)</head>
 				<a href="#" class="sel-none hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction paste hideit sel-none" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
+				<a class="listaction paste hideit sel-none uibutton" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
 			<!--ENDIF-->			
 			<ul class="hidden">
 			<li><a href="#" class="action create-folder sel-none" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
@@ -115,13 +115,13 @@ $INCLUDE(htmlhead)</head>
 		<div id="filelistactions" class="sel-multi hideit">
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction copy sel-multi" href="#" title="$tl(copytooltip)" data-action="copy" accesskey="c">&nbsp;</a>
-				<a class="listaction cut sel-multi" href="#" title="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
+				<a class="listaction copy sel-multi uibutton" href="#" title="$tl(copytooltip)" data-action="copy" accesskey="c">&nbsp;</a>
+				<a class="listaction cut sel-multi uibutton" href="#" title="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-				<a class="listaction download sel-multi" href="#" title="$tl(zipdownloadtext)" data-action="download" >$tl(zipdownloadbutton)</a>
+				<a class="listaction download sel-multi uibutton" href="#" title="$tl(zipdownloadtext)" data-action="download" >$tl(zipdownloadbutton)</a>
 			<!--ENDIF-->			
-			<a class="listaction delete sel-multi" href="#" title="$tl(deletefilestext)" data-action="delete" >$tl(deletefilesbutton)</a>
+			<a class="listaction delete sel-multi uibutton" href="#" title="$tl(deletefilestext)" data-action="delete" >$tl(deletefilesbutton)</a>
 		</div>
 		<!--IF($config(ENABLE_NAMEFILTER))-->
 		<div class="filterbox">
@@ -188,6 +188,7 @@ $INCLUDE(htmlhead)</head>
 	</div>
 	<div id="confirmdialogsetting">$tl(confirmdialog.setting)</div>
 	<div id="uploadaborted">$tl(upload.aborted)</div>
+	$INCLUDE(popupmenu)
 	$INCLUDE(settings)
 </div>
 <!--IF(%main::AUTOREFRESH)-->

@@ -245,7 +245,7 @@ tr.isreadable-no:hover {
 	color: #999999;
 	background-color: #ffaaaa;
 }
-.editable-no .action.edit,
+.iseditable-no .action.edit,
 .iswriteable-no .action.delete,
 .iswriteable-no .action.rename,
 .isreadable-no .action.download,
@@ -739,16 +739,16 @@ td.center {
 #nav .action.search {
 	background: url(images/sprite.png) no-repeat 2px -1092px;
 }
-#nav a[data-action=afsgroupmanager] {
+#nav .action.afsgroupmanager {
 	background: url(images/sprite.png) no-repeat 2px -326px;
 }
-#nav a[data-action=viewfilter] {
+#nav .action.viewfilter {
 	background: url(images/sprite.png) no-repeat 2px -648px;
 }
 #nav .action.permissions {
 	background: url(images/sprite.png) no-repeat 2px -610px;
 }
-#nav a[data-action=afsaclmanager] {
+#nav .action.afsaclmanager {
 	background: url(images/sprite.png) no-repeat 2px -564px;
 }
 #nav .action.settings {
@@ -1051,4 +1051,38 @@ a#fileuploadbutton {
 }
 .accesskeydetails {
 	font-family: monospace;
+}
+#popupmenu {
+	position: absolute;
+	display: hidden;
+	width: auto;
+	height: auto;
+	background: white;
+	border: 1px solid #dddddd;
+	box-shadow: 3px 0 7px #dddddd;
+	text-align: left;
+	float: none;
+	clear: all;
+	z-index: 102;
+}
+#popupmenu  {
+	margin: 0;
+	padding: 2px;
+}
+#popupmenu li {
+	height: 1.2em;
+	padding: 0.4em;
+}
+#popupmenu .action, #popupmenu .listaction {
+	padding-left: 22px;
+	cursor: pointer;
+}
+#popupmenu .listaction.copy {
+	background: url(images/sprite.png) no-repeat left -134px;
+}
+#popupmenu .listaction.cut {
+	background: url(images/sprite.png) no-repeat left -174px;
+}
+#popupmenu .listaction.paste {
+	background: url(images/sprite.png) no-repeat left -374px;
 }

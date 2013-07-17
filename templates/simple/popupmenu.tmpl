@@ -1,0 +1,18 @@
+<ul id="popupmenu" style="opacity: 1; filter: Alpha(opacity=100);">
+<li class="action create-folder sel-none">$tl(createfolderbutton)</li>
+<li class="action create-file sel-none">$tl(createnewfilebutton)</li>
+<!--IF($config(ALLOW_SYMLINK))-->
+	<li class="action create-symlink sel-one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
+<!--ENDIF--> 
+
+<li class="sep listaction copy sel-multi">$tl(copy)</li>
+<li class="listaction cut sel-multi">$tl(cut)</li>
+<li class="listaction paste sel-none">$tl(paste)</li>
+
+<li class="action edit sep">$tl(editbutton)</li>
+<li class="action rename sep">$tl(movefilesbutton)</li>
+<!--IF($config(ALLOW_ZIP_UPLOAD))-->
+	<li class="listaction download hideit sep">$tl(zipdownloadbutton)</li>
+<!--ENDIF-->
+<li class="listaction delete hideit sep">$tl(deletefilesbutton)</li>
+</ul>
