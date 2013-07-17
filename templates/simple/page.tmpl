@@ -88,14 +88,14 @@ $INCLUDE(htmlhead)</head>
 			<a href="#" class="action changedir" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">
-					<a href="#" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
+					<a href="#" class="action addbookmark" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
 					<div id="bookmarksmenu">
-					<a href="#" data-action="bookmarkmenu" title="$tl(bookmarks)">&nbsp;</a>
+					<a href="#" class="action bookmarkmenu" data-action="bookmarkmenu" title="$tl(bookmarks)">&nbsp;</a>
 					<ul id="bookmarksmenulist" class="hidden">
-						<li id="bookmarktemplate" class="hidden">$bookmarktext<img class="right neverdisabled" alt="$tl(rmbookmarktitle)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
-						<li class="sep link" data-action="bookmarksortpath">$tl(sortbookmarkbypath)<span class="path right">&uarr;</span><span class="path-desc right">&darr;</span></li>
-						<li class="link" data-action="bookmarksorttime">$tl(sortbookmarkbytime)<span class="time right">&uarr;</span><span class="time-desc right">&darr;</span></li>
-						<li class="sep link" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
+						<li id="bookmarktemplate" class="hidden">$bookmarktext<img class="action rmsinglebookmark right neverdisabled" alt="$tl(rmbookmarktitle)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
+						<li class="sep link action bookmarksortpath" data-action="bookmarksortpath">$tl(sortbookmarkbypath)<span class="path right">&uarr;</span><span class="path-desc right">&darr;</span></li>
+						<li class="link action bookmarksorttime" data-action="bookmarksorttime">$tl(sortbookmarkbytime)<span class="time right">&uarr;</span><span class="time-desc right">&darr;</span></li>
+						<li class="sep link action rmallbookmarks" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
 					</ul>
 					</div>
 				</div>
@@ -160,7 +160,7 @@ $INCLUDE(htmlhead)</head>
 	<div id="deletefilesconfirm">$tl(deletefilesconfirm)</div>
 	<div id="movefileconfirm">$tl(movefileconfirm)</div>
 	<div id="fileuploadconfirm">$tl(fileuploadconfirm)</div>
-	<div id="edittextdata"><form id="edittextdataform" method="post" action="#"><textarea name="textdata" rows="15" cols="70"></textarea><div><a href="#" data-action="cancel-edit">$tl(cancel)</a><a href="#" data-action="savetextdata">$tl(savebutton)</a></div></form></div>
+	<div id="edittextdata"><form id="edittextdataform" method="post" action="#"><textarea name="textdata" rows="15" cols="70"></textarea><div><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div></form></div>
 	<div id="confirmsavetextdata">$tl(confirmsavetextdata)</div>
 	<div id="canceledit">$tl(canceledit)</div>
 	<div id="fancybox"></div>

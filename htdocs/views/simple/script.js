@@ -499,7 +499,7 @@ function initTooltips() {
 }
 function initBookmarks() {
 	var bookmarks = $("#bookmarks");
-	$("[data-action='addbookmark']", bookmarks).button();
+	$(".action.addbookmark", bookmarks).button();
 	$("#flt").on("bookmarksChanged", buildBookmarkList)
 	.on("bookmarksChanged",toggleBookmarkButtons)
 	.on("fileListChanged", function() {
@@ -508,9 +508,10 @@ function initBookmarks() {
 	});
 	
 	// register bookmark actions:
-	$("[data-action='addbookmark'],[data-action='rmbookmark'],[data-action='rmallbookmarks'],[data-action='bookmarksortpath'],[data-action='bookmarksorttime'],[data-action='gotobookmark']",bookmarks).click(handleBookmarkActions);
+	$(".action.addbookmark,.action.rmbookmark,.action.rmallbookmarks,.action.bookmarksortpath,.action.bookmarksorttime,.action.gotobookmark",bookmarks)
+		.click(handleBookmarkActions);
 	// enable bookmark menu button:
-	$("[data-action='bookmarkmenu']", bookmarks).click(
+	$(".action.bookmarkmenu", bookmarks).click(
 		function(event) {
 			preventDefault(event);
 			$("#bookmarksmenu ul").toggleClass("hidden");
@@ -536,25 +537,25 @@ function toggleBookmarkButtons() {
 		if (cookie("bookmark"+i) != "-") count++;
 		i++;
 	}
-	toggleButton($("#bookmarks [data-action='addbookmark']"), isCurrentPathBookmarked);
-	toggleButton($("#bookmarks [data-action='rmbookmark']"), !isCurrentPathBookmarked);
-	toggleButton($("#bookmarks [data-action='bookmarksortpath']"), count<2);
-	toggleButton($("#bookmarks [data-action='bookmarksorttime']"), count<2);
-	toggleButton($("#bookmarks [data-action='rmallbookmarks']"), count==0);
+	toggleButton($(".action.addbookmark"), isCurrentPathBookmarked);
+	toggleButton($(".action.rmbookmark"), !isCurrentPathBookmarked);
+	toggleButton($(".action.bookmarksortpath"), count<2);
+	toggleButton($(".action.bookmarksorttime"), count<2);
+	toggleButton($(".action.rmallbookmarks"), count==0);
 
 	var sort= cookie("bookmarksort")==null ? "time-desc" : cookie("bookmarksort");
-	$("#bookmarks [data-action='bookmarksortpath'] .path").hide();
-	$("#bookmarks [data-action='bookmarksortpath'] .path-desc").hide();
-	$("#bookmarks [data-action='bookmarksorttime'] .time").hide();
-	$("#bookmarks [data-action='bookmarksorttime'] .time-desc").hide();
+	$(".action.bookmarksortpath .path").hide();
+	$(".action.bookmarksortpath .path-desc").hide();
+	$(".action.bookmarksorttime .time").hide();
+	$(".action.bookmarksorttime .time-desc").hide();
 	if (sort == "path" || sort=="path-desc" || sort=="time" || sort=="time-desc") {
-		$("#bookmarks [data-action='bookmarksort"+sort.replace(/-desc/,"")+"'] ."+sort).show();
+		$("#bookmarks .action.bookmarksort"+sort.replace(/-desc/,"")+" ."+sort).show();
 	}
 }
 function buildBookmarkList() {
 	var currentPath = concatUri($("#flt").attr("data-uri"),"/");
 	// remove all bookmark list entries:
-	$("#bookmarks [data-dyn='bookmark']").each(function(i,val) {
+	$(".dyn-bookmark").each(function(i,val) {
 		$(val).remove();
 	});
 	// read existing bookmarks:
@@ -578,14 +579,13 @@ function buildBookmarkList() {
 		var epath = unescape(val["path"]);
 		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val["path"]).replace(/\$bookmarktext/,simpleEscape(trimString(epath,20))) + "</li>")
 			.insertAfter($("#bookmarktemplate"))
-			.attr("data-dyn","bookmark")
 			.click(handleBookmarkActions)
-			.addClass("link")
+			.addClass("link dyn-bookmark")
 			.attr('data-action','gotobookmark')
 			.attr('data-bookmark',val["path"])
 			.attr("title",simpleEscape(epath)+" ("+(new Date(parseInt(val["time"])))+")")
 			.toggleClass("disabled", val["path"] == currentPath)
-			.find("[data-action='rmsinglebookmark']").click(handleBookmarkActions);
+			.find(".action.rmsinglebookmark").click(handleBookmarkActions);
 	});
 }
 function removeBookmark(path) {
@@ -934,11 +934,11 @@ function handleFileListRowFocusIn(event) {
 	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>');
 	if ($("#fileactions",$(this)).length==0) {
 		$("div.filename",$(this)).after($("#fileactions"));
-		$("#fileactions a[data-action]").click(handleFileActions);
+		$("#fileactions .action").click(handleFileActions);
 	}	
 }
 function handleFileListRowFocusOut(event) {
-	$("#fileactions").appendTo($(".template")).find("a[data-action]").off("click");	
+	$("#fileactions").appendTo($(".template")).find(".action").off("click");	
 }
 function initFileList() {
 	var flt = $("#fileListTable");
@@ -1195,7 +1195,7 @@ function handleFileEdit(row) {
 			text.attr("data-file",row.attr("data-file"));
 			text.val(response);
 			text.data("response", text.val());
-			dialog.find('a[data-action=savetextdata]').button().unbind('click').click(function(event) {
+			dialog.find('.action.savetextdata').button().unbind('click').click(function(event) {
 				preventDefault(event);
 				
 				function doSaveTextData() {
@@ -1213,7 +1213,7 @@ function handleFileEdit(row) {
 				else
 					doSaveTextData();
 			});
-			dialog.find('a[data-action=cancel-edit]').button().unbind('click').click(function(event) {
+			dialog.find('.action.cancel-edit').button().unbind('click').click(function(event) {
 				preventDefault(event);
 				text.trigger("editsubmit");
 				dialog.dialog('close');
@@ -1755,7 +1755,7 @@ function initNewActions() {
 	}).keypress(function(event) {
 		if (event.keyCode == 27) $('#new ul').toggleClass('hidden');
 	});
-	handleInplaceInput($('#new a[data-action=create-folder]')).on('changed', function(event) {
+	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
 		$('#new ul').toggleClass('hidden');
 		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : $(this).data('value') }, function(response) {
 			if (!response.error && response.message) updateFileList();
@@ -1763,7 +1763,7 @@ function initNewActions() {
 		});
 	});
 
-	handleInplaceInput($('#new [data-action=create-file]')).on('changed', function(event) {
+	handleInplaceInput($('.action.create-file')).on('changed', function(event) {
 		$('#new ul').toggleClass('hidden');
 		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : $(this).data('value') }, function(response) {
 			if (!response.error && response.message) updateFileList();
@@ -1771,7 +1771,7 @@ function initNewActions() {
 		});
 	});
 
-	handleInplaceInput($('#new a[data-action=create-symlink]')).on('changed', function(event) {
+	handleInplaceInput($('.action.create-symlink')).on('changed', function(event) {
 		$('#new ul').toggleClass('hidden');
 		var row = $('#fileList tr.selected');
 		$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: $(this).data('value'), file: row.attr('data-file') }, function(response) {

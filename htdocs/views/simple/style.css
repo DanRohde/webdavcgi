@@ -288,7 +288,7 @@ tr.isreadable-no:hover {
 	padding-left: 1em;
 	padding-right: 0em;
 }
-.action {
+.fileactions .action {
 	padding-left: 22px;
 	padding-right: 0em;
 }
@@ -408,16 +408,16 @@ tr.isreadable-no:hover {
 #new ul li a, #bookmarks ul li a  {
 	padding: 0.2em 0.5em 0.2em 22px ;
 }
-#new a[data-action=create-folder] {
+.action.create-folder {
 	background: url(images/sprite.png) no-repeat left -738px;
 }
-#new a[data-action=create-file] {
+.action.create-file {
 	background: url(images/sprite.png) no-repeat left -778px;
 }
-#new a[data-action=create-symlink] {
+.action.create-symlink {
 	background: url(images/sprite.png) no-repeat left -818px;
 }
-#new a[data-action=uncompress] {
+.action.uncompress {
 	background: url(images/sprite.png) no-repeat left -698px;
 }
 .renamefield {
@@ -536,8 +536,8 @@ input.file-upload {
 	white-space: normal;
 	height: auto;
 }
-#edittextdata a[data-action=savetextdata] { display: block; width: 40%; float: right;}
-#edittextdata a[data-action=cancel-edit] { display: block; width: 40%;  float: left; }
+#edittextdata .action.savetextdata { display: block; width: 40%; float: right;}
+#edittextdata .action.cancel-edit { display: block; width: 40%;  float: left; }
 .ajax-loader {
 	z-index: 10000;
 	background: white url(images/ajax-loader.gif) no-repeat 2em 5em;
@@ -590,13 +590,13 @@ li.sep {
 	display: inline;
 	position: absolute;
 }
-#bookmarks [data-action=addbookmark] {
+.action.addbookmark {
 	background: url(images/sprite.png) no-repeat center -54px;
 }
-#bookmarks [data-action=bookmarkmenu] {
+.action.bookmarkmenu {
 	background: white url(images/sprite.png) no-repeat center -94px;
 }
-#bookmarks [data-action=rmsinglebookmark] {
+.action.rmsinglebookmark {
 	background: url(images/sprite.png) no-repeat left -218px;
 	width: 22px;
 }
@@ -604,23 +604,23 @@ li.sep {
 	padding: 0;
 	margin: 0;
 }
-#bookmarksmenu ul  li{
+#bookmarksmenu ul li{
 	background-color: white;
 	width: 30ex;
 	z-index: 100;
 	padding: 2px 2px 2px 22px;
 	margin:0;
 }
-#bookmarksmenu [data-action=rmbookmark] {
+.action.rmbookmark {
 	background: white url(images/sprite.png) no-repeat 2px -212px;
 	padding-left: 24px;
 }
-#bookmarksmenu [data-action=rmallbookmarks] {
+.action.rmallbookmarks {
 	background: white url(images/sprite.png) no-repeat 2px -216px;
 	padding-left: 24px;
 
 }
-#bookmarksmenu [data-action=gotobookmark] {
+.action.gotobookmark {
 	background: white url(images/sprite.png) no-repeat 2px -56px;
 	padding-left: 24px;
 
