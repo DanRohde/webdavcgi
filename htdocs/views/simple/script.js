@@ -1720,7 +1720,8 @@ function handleClipboard() {
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
 	var disabled = (!files || files=="" || srcuri  == datauri);
-	toggleButton($(".listaction.paste"), disabled);  
+	$(".listaction.paste").toggleClass("disabled",disabled).attr("tabindex",disabled?-1:0);
+	$(".listaction.paste.uibutton").button().button("option","disabled",disabled);
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
@@ -2113,6 +2114,7 @@ function initPopupMenu() {
 							.css({position: "fixed", left: (event.clientX-3)+"px", top: (event.clientY-3)+"px"})
 							.fadeIn(1)
 							.find(".action").first().focus();
+						handleClipboard();
 					}
 				}
 			});

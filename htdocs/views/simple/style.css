@@ -1086,3 +1086,9 @@ a#fileuploadbutton {
 #popupmenu .listaction.paste {
 	background: url(images/sprite.png) no-repeat left -374px;
 }
+#popupmenu .listaction.delete {
+	background: url(images/sprite.png) no-repeat left -214px;
+}
+#popupmenu .listaction.download {
+	background: url(images/sprite.png) no-repeat left -254px;
+}
