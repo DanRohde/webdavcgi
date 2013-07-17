@@ -230,9 +230,9 @@ function setupTableConfigDialog(dialog) {
 	
 }
 function initCollapsible() {
-	$("[data-action='collapse-sidebar']").click(function(event) {
+	$(".action.collapse-sidebar").click(function(event) {
 		preventDefault(event);
-		$("[data-action='collapse-sidebar']").toggleClass("collapsed");
+		$(".action.collapse-sidebar").toggleClass("collapsed");
 		var collapsed = $(this).hasClass("collapsed");
 		$(".collapse-sidebar-collapsible").toggle(!collapsed).toggleClass("collapsed", collapsed);
 		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed);
@@ -240,21 +240,21 @@ function initCollapsible() {
 		togglecookie("sidebar", "false", collapsed,1);
 	});
 	
-	if (cookie("sidebar") == "false") $("[data-action='collapse-sidebar']").first().trigger("click");
+	if (cookie("sidebar") == "false") $(".action.collapse-sidebar").first().trigger("click");
 	
-	$("[data-action='collapse-head']").click(function(event) {
+	$(".action.collapse-head").click(function(event) {
 		preventDefault(event);
-		$("[data-action='collapse-head']").toggleClass("collapsed");
+		$(".action.collapse-head").toggleClass("collapsed");
 		var collapsed = $(this).hasClass("collapsed");
 		$(".collapse-head-collapsible").toggle(!collapsed);
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
 		handleWindowResize();
 		togglecookie("head","false",collapsed, 1);
 	});
-	if (cookie("head") == "false") $("[data-action='collapse-head']").first().trigger("click");
+	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
 function initAutoRefresh() {
-	$("a[data-action='autorefreshmenu']").button().click(function(event) {
+	$(".action.autorefreshmenu").button().click(function(event) {
 		preventDefault(event);
 		$("#autorefresh ul").toggleClass("hidden");
 	}).dblclick(function(event) {
@@ -265,11 +265,11 @@ function initAutoRefresh() {
 	$("#autorefresh").on("started", function() {
 		$("a.autorefreshrunning").removeClass("disabled");
 		$("#autorefreshtimer").show();
-		$("a[data-action='autorefreshtoggle']").addClass("running")
+		$(".action.autorefreshtoggle").addClass("running")
 	}).on("stopped", function() {
 		$("a.autorefreshrunning").addClass("disabled");
 		$("#autorefreshtimer").hide();
-		$("a[data-action='autorefreshtoggle']").removeClass("running");
+		$(".action.autorefreshtoggle").removeClass("running");
 	});
 	
 	$("#flt").on("fileListChanged", function() {
@@ -285,7 +285,7 @@ function initAutoRefresh() {
 		cookie("autorefresh", $(this).attr("data-value"));
 		startAutoRefreshTimer(parseInt($(this).attr("data-value")));
 	});
-	$("a[data-action='autorefreshclear']").click(function(event) {
+	$(".action.autorefreshclear").click(function(event) {
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		window.clearInterval($("#autorefresh").data("timer"));
@@ -293,23 +293,23 @@ function initAutoRefresh() {
 		$("#autorefresh").trigger("stopped");
 		$("#autorefresh ul").addClass("hidden");
 	});
-	$("a[data-action='autorefreshtoggle']").click(function(event) {
+	$(".action.autorefreshtoggle").click(function(event) {
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		var af = $("#autorefresh");
 		if (af.data("timer")!=null) {
 			window.clearInterval(af.data("timer"));
 			af.data("timer",null);
-			$("a[data-action='autorefreshtoggle']").removeClass("running");
+			$(".action.autorefreshtoggle").removeClass("running");
 		} else {
 			startAutoRefreshTimer(af.data("timeout"));
-			$("a[data-action='autorefreshtoggle']").addClass("running");
+			$(".action.autorefreshtoggle").addClass("running");
 		}
 		$("#autorefresh ul").addClass("hidden");
 	});
 }
 function renderAutoRefreshTimer(aftimeout) {
-	var t = $("[data-action='autorefreshtimer']");
+	var t = $(".action.autorefreshtimer");
 	var f = t.attr("data-template") || "%sm %ss";
 	var minutes = Math.floor(aftimeout / 60);
 	var seconds = aftimeout % 60;
@@ -354,7 +354,7 @@ function initSettingsDialog() {
 	}});
 }
 function initSearch() {
-	$("a[data-action='search']").click(function(event) {
+	$(".action.search").click(function(event) {
 		preventDefault(event)
 		if ($(this).hasClass("disabled")) return;
 		var self = this;
@@ -429,7 +429,7 @@ function handleWindowResize() {
 
 function initChangeUriAction() {
 	$("a[data-action=changeuri]").click(handleChangeUriAction);
-	$("a[data-action=refresh]").click(function(event) {
+	$(".action.refresh").click(function(event) {
 		preventDefault(event);
 		updateFileList();
 	});
@@ -451,20 +451,20 @@ function initSelect() {
 			preventDefault(event);
 			$("#fileList tr:not(:hidden).unselectable-no").each(function(i,row) {
 				$(this).toggleClass("selected");
-				$("input[type=checkbox]", $(this)).prop("checked", $(this).hasClass("selected"));
+				$(".selectbutton", $(this)).prop("checked", $(this).hasClass("selected"));
 			});
 			$("#flt").trigger("fileListSelChanged");
 		});	
 		$("#fileListTable .selectnone").off("click").click(function(event) {
 			preventDefault(event);
 			$("#fileList tr.selected:not(:hidden)").removeClass("selected");
-			$("#fileList tr:not(:hidden) input[type=checkbox]:checked").prop("checked", false);
+			$("#fileList tr:not(:hidden) .selectbutton:checked").prop("checked", false);
 			$("#flt").trigger("fileListSelChanged");
 		});
 		$("#fileListTable .selectall").off("click").click(function(event) {
 			preventDefault(event);
 			$("#fileList tr:not(.selected):not(:hidden).unselectable-no").addClass("selected");
-			$("#fileList tr:not(:hidden).unselectable-no input[type=checkbox]:not(:checked)").prop("checked", true);
+			$("#fileList tr:not(:hidden).unselectable-no .selectbutton:not(:checked)").prop("checked", true);
 			$("#flt").trigger("fileListSelChanged");
 		});
 	});
@@ -948,7 +948,7 @@ function initFileList() {
 
 	$("#fileList.selectable-false tr").attr("data-unselectable", "yes");
 	
-	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").attr("disabled","disabled");
+	$("#fileList tr[data-unselectable='yes'] .selectbutton").attr("disabled","disabled");
 	
 	// init single file actions:
 	$("#fileList tr.unselectable-no")
@@ -970,7 +970,7 @@ function initFileList() {
 		});
 	
 	// fix selections after tablesorter:
-	$("#fileList tr.selected td input[type='checkbox']:not(:checked)").prop("checked",true);
+	$("#fileList tr.selected td .selectbutton:not(:checked)").prop("checked",true);
 
 	// fix annyoing text selection for shift+click:
 	$('#flt').disableSelection();
@@ -1342,7 +1342,7 @@ function notifyWarn(warn) {
 function toggleRowSelection(row,on) {
 	if (!row) return;
 	row.toggleClass("selected", on);
-	row.find("input[name='file'][type='checkbox']").prop('checked', row.hasClass("selected"));
+	row.find(".selectbutton").prop('checked', row.hasClass("selected"));
 }
 function isSelectableRow(row) {
 	return row.attr("data-file") != '..' && row.attr("data-unselectable") != "yes";
@@ -1372,7 +1372,7 @@ function handleRowClickEvent(event) {
 	}
 }
 function initDialogActions() {
-	$('a.dialog').click(handleDialogActionEvent);
+	$('.dialog.action').click(handleDialogActionEvent);
 }
 function handleDialogActionEvent(event) {
 	preventDefault(event);
@@ -1596,12 +1596,12 @@ function handleFileListActionEventDelete() {
 		},
 		cancel: function() {
 			$("#fileList tr.selected:visible").fadeTo("fast",1);
-			$("#fileList tr.selected:not(:visible) input[name='file'][type='checkbox']").prop('checked',true);
+			$("#fileList tr.selected:not(:visible) .selectbutton").prop('checked',true);
 		}
 	});	
 }
 function uncheckSelectedRows() {
-	$("#fileList tr.selected:visible input[type=checkbox]").prop('checked',false);
+	$("#fileList tr.selected:visible .selectbutton").prop('checked',false);
 	$("#fileList tr.selected:visible").removeClass("selected");
 	$("#fileList tr:visible").first().focus();
 	$("#flt").trigger("fileListSelChanged");
@@ -1949,7 +1949,7 @@ function handleAFSACLManager(event){
 	});
 }
 function initPermissionsDialog() {
-	$("a[data-action='permissions']").click(function(event){
+	$(".action.permissions").click(function(event){
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		var self = this;

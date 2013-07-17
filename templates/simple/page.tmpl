@@ -21,10 +21,10 @@ $INCLUDE(htmlhead)</head>
 	</div>
 	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible">
 		<ul id="apps">
-			<li><a href="$uri" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
+			<li><a href="$uri" class="action refresh" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
 			$INCLUDE(apps)
 			<!--IF($config(ALLOW_SEARCH))-->
-			<li><a href="#" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
+			<li><a href="#" class="action search" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_CHANGEPERM))-->
 				<li><a href="#" class="action permissions sel-multi" data-action="permissions" data-template="permissions" accesskey="p">$tl(mode)</a></li>
@@ -54,9 +54,9 @@ $INCLUDE(htmlhead)</head>
 			<!--IF($#main::SUPPORTED_VIEWS<1)-->
 				<li><a href="#" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
 			<!--ENDIF-->
-			<li><a href="#" data-action="settings" class="dialog">$tl(settings)</a></li>
+			<li><a href="#" data-action="settings" class="dialog action settings">$tl(settings)</a></li>
 			$INCLUDE(help)
-			<li><a href="#" data-action="about" class="dialog" accesskey="8">$tl(about)</a></li>
+			<li><a href="#" data-action="about" class="dialog action about" accesskey="8">$tl(about)</a></li>
 		</ul>
 	</div>
 <div id="content" class="collapse-head-listener collapse-sidebar-listener">
@@ -102,12 +102,12 @@ $INCLUDE(htmlhead)</head>
 			<!--ENDIF-->
 			<!--IF(%main::AUTOREFRESH)-->
 				<div id="autorefresh" title="$tl(autorefresh.select.title)">
-					<a href="#" data-action="autorefreshmenu">&nbsp;</a>
+					<a href="#" class="action autorefreshmenu" data-action="autorefreshmenu">&nbsp;</a>
 					<ul id="autorefreshmenulist" class="hidden">
-						<li><a href="#" data-action="setautorefresh" data-value="now">$tl(autorefresh.now)</a></li>
-						$each@%main::AUTOREFRESH@'<li><a href="#" data-action="setautorefresh" data-value="$k">$v</a></li>'@
-						<li class="sep"><a href="#" class="autorefreshrunning" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
-						<li><a href="#" class="autorefreshrunning" data-action="autorefreshclear">$tl(autorefresh.clear)</a></li>
+						<li><a href="#" class="action setautorefresh" data-action="setautorefresh" data-value="now">$tl(autorefresh.now)</a></li>
+						$each@%main::AUTOREFRESH@'<li><a href="#" class="action setautorefresh" data-action="setautorefresh" data-value="$k">$v</a></li>'@
+						<li class="sep"><a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
+						<li><a href="#" class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear">$tl(autorefresh.clear)</a></li>
 					</ul>
 				</div>
 			<!--ENDIF-->
@@ -192,17 +192,17 @@ $INCLUDE(htmlhead)</head>
 </div>
 <!--IF(%main::AUTOREFRESH)-->
 	<div id="autorefreshtimer" title="$tl(autorefresh.select.title)">
-		<span data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
-		<a href="#" class="autorefreshrunning" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
-		<a href="#" class="autorefreshrunning" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
+		<span class="action autorefreshtimer" data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
+		<a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
+		<a href="#" class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
 	</div>
 <!--ENDIF-->
 <!--IF($config(ALLOW_POST_UPLOADS))-->
 	<div id="progress" data-title="$tl(upload)"><div class="bar"></div><div class="info"></div></div>
 <!--ENDIF-->
-<img class="collapsible left" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
-<img class="collapsible right" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
-<img class="collapsible top" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
-<img class="collapsible bottom" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
+<img class="collapsible left action collapse-head" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
+<img class="collapsible right action collapse-head" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
+<img class="collapsible top action collapse-sidebar" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
+<img class="collapsible bottom action collapse-sidebar" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
 </body>
 </html>
