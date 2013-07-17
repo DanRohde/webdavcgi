@@ -449,7 +449,7 @@ function initSelect() {
 	$("#flt").on("fileListChanged", function() {
 		$("#fileListTable .toggleselection").off("click").click(function(event) {
 			preventDefault(event);
-			$("#fileList tr:not(:hidden)[data-unselectable='no']").each(function(i,row) {
+			$("#fileList tr:not(:hidden).unselectable-no").each(function(i,row) {
 				$(this).toggleClass("selected");
 				$("input[type=checkbox]", $(this)).prop("checked", $(this).hasClass("selected"));
 			});
@@ -463,8 +463,8 @@ function initSelect() {
 		});
 		$("#fileListTable .selectall").off("click").click(function(event) {
 			preventDefault(event);
-			$("#fileList tr:not(.selected):not(:hidden)[data-unselectable='no']").addClass("selected");
-			$("#fileList tr:not(:hidden)[data-unselectable='no'] input[type=checkbox]:not(:checked)").prop("checked", true);
+			$("#fileList tr:not(.selected):not(:hidden).unselectable-no").addClass("selected");
+			$("#fileList tr:not(:hidden).unselectable-no input[type=checkbox]:not(:checked)").prop("checked", true);
 			$("#flt").trigger("fileListSelChanged");
 		});
 	});
@@ -655,7 +655,7 @@ function initChangeDir() {
 			changeUri($(this).val());
 		}
 	});
-	$("#path a[data-action='changedir']").button().click(function(event) {
+	$(".action.changedir").button().click(function(event) {
 		preventDefault(event);
 		$('#pathinput').toggle();
 		$('#quicknav').toggle();
@@ -678,11 +678,11 @@ function initFilterBox() {
 	$("form#filterbox").submit(function(event) { return false;});
 	$("form#filterbox input").keyup(applyFilter).change(applyFilter).autocomplete({minLength: 1, select: applyFilter, close: applyFilter});
 	// clear button:
-	$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$("form#filterbox input").val() == "");
+	$("form#filterbox .action.clearfilter").toggleClass("invisible",$("form#filterbox input").val() == "");
 	$("form#filterbox input").keyup(function() {
-		$("form#filterbox [data-action=clearfilter]").toggleClass("invisible",$(this).val() == "");
+		$("form#filterbox .action.clearfilter").toggleClass("invisible",$(this).val() == "");
 	});
-	$("form#filterbox [data-action=clearfilter]").click(function(event) {
+	$("form#filterbox .action.clearfilter").click(function(event) {
 		preventDefault(event);
 		$("form#filterbox input").val("");
 		applyFilter();
@@ -841,7 +841,7 @@ function checkUploadedFilesExist(data) {
 }
 function initZipFileUpload() { 
 	initUpload($("#zipfile-upload-form"), $("#zipuploadconfirm").html(),$("#progress").attr('data-title'), false);
-	$("a[data-action='uncompress']").click(
+	$(".action.uncompress").click(
 			function (event) { 
 				preventDefault(event);
 				$("#zipfile-upload-form input[type=file]").trigger("click"); 
@@ -910,7 +910,7 @@ function confirmDialog(text, data) {
 	}).show();
 }
 function getVisibleAndSelectedFiles() {
-	return $("#fileList tr[data-isreadable='yes'][data-unselectable='no']").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
+	return $("#fileList tr.isreadable-yes.unselectable-no").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
 }
 function handleFileActions(event) {
 	preventDefault(event);
@@ -951,7 +951,7 @@ function initFileList() {
 	$("#fileList tr[data-unselectable='yes'] input[type=checkbox]").attr("disabled","disabled");
 	
 	// init single file actions:
-	$("#fileList tr[data-unselectable='no']")
+	$("#fileList tr.unselectable-no")
 		.hover(handleFileListRowFocusIn, handleFileListRowFocusOut)
 		.focusin(handleFileListRowFocusIn)
 		.each(function(i,v) {
@@ -976,14 +976,14 @@ function initFileList() {
 	$('#flt').disableSelection();
 	
 	// init fancybox:
-	$("#fileList tr[data-isviewable='yes'][data-iseditable='no']:not([data-file$='.pdf'])[data-size!='0']:visible td.filename a")
+	$("#fileList tr.isviewable-yes.iseditable-no:not([data-file$='.pdf'])[data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","imggallery")
 		.fancybox({
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
-	$("#fileList tr[data-isviewable='yes'][data-iseditable='yes'][data-size!='0']:visible td.filename a,#fileList tr[data-isviewable='yes'][data-file$='.pdf'] td.filename a")
+	$("#fileList tr.isviewable-yes.iseditable-yes[data-size!='0']:visible td.filename a,#fileList tr.isviewable-yes[data-file$='.pdf'] td.filename a")
 		.attr("data-fancybox-group","txtgallery")
 		.fancybox({
 			afterShow: function() { $(".fancybox-close").focus();},
@@ -991,13 +991,13 @@ function initFileList() {
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
 
-	$("#fileList tr[data-isviewable='no'][data-mime^='image/'][data-size!='0']:visible td.filename a")
+	$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","wtimggallery")
 		.fancybox({ 
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(".nametext", this.element).html(); }
 		});
-	$("#fileList tr[data-isviewable='no'][data-mime^='text/']:visible td.filename a, #fileList tr[data-isviewable='no'][data-type!='dir'][data-file$='.pdf'] td.filename a")
+	$("#fileList tr.isviewable-no[data-mime^='text/']:visible td.filename a, #fileList tr.isviewable-no[data-type!='dir'][data-file$='.pdf'] td.filename a")
 			.attr("data-fancybox-group","wttxtgallery")
 			.fancybox({
 				afterShow: function() { $(".fancybox-close").focus();},
@@ -1005,9 +1005,9 @@ function initFileList() {
 			});
 	
 	// init drag & drop:
-	$("#fileList:not(.dnd-false) tr[data-iswriteable='yes'][data-type='dir']")
+	$("#fileList:not(.dnd-false) tr.iswriteable-yes[data-type='dir']")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
-	$("#fileList:not(.dnd-false) tr[data-isreadable='yes'][data-unselectable='no'] div.filename")
+	$("#fileList:not(.dnd-false) tr.isreadable-yes.unselectable-no div.filename")
 			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
 	
 	// init column drag & drop:
@@ -1386,27 +1386,27 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
-	$('a.listaction[data-action]').button().click(handleFileListActionEvent);
+	$(".listaction").button().click(handleFileListActionEvent);
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
 }
 function updateFileListActions() {
 	var s = getFolderStatistics();
 	//if (s["sumselcounter"] > 0 ) $('#filelistactions').show(); else $('#filelistactions').hide();
 	
-	toggleButton($("[data-sel='none']"), s["sumselcounter"]!=0);
-	toggleButton($("[data-sel='one']"), s["sumselcounter"]!=1);
-	toggleButton($("[data-sel='multi']"), s["sumselcounter"]==0);
-	toggleButton($("[data-sel='noneorone']"), s["sumselcounter"]>1);
+	toggleButton($(".sel-none"), s["sumselcounter"]!=0);
+	toggleButton($(".sel-one"), s["sumselcounter"]!=1);
+	toggleButton($(".sel-multi"), s["sumselcounter"]==0);
+	toggleButton($(".sel-noneorone"), s["sumselcounter"]>1);
 
-	toggleButton($("[data-sel='none'][data-seltype='dir']"), s["fileselcounter"]!=0 );
-	toggleButton($("[data-sel='one'][data-seltype='dir']"), s["fileselcounter"]>0 || s["dirselcounter"]!=1);
-	toggleButton($("[data-sel='multi'][data-seltype='dir']"), s["fileselcounter"]>0 || s["dirselcounter"]==0);
-	toggleButton($("[data-sel='noneorone'][data-seltype='dir']"), s["fileselcounter"]>0 || s["dirselcounter"]>1);
+	toggleButton($(".sel-none.sel-dir"), s["fileselcounter"]!=0 );
+	toggleButton($(".sel-one.sel-dir"), s["fileselcounter"]>0 || s["dirselcounter"]!=1);
+	toggleButton($(".sel-multi.sel-dir"), s["fileselcounter"]>0 || s["dirselcounter"]==0);
+	toggleButton($(".sel-noneorone.sel-dir"), s["fileselcounter"]>0 || s["dirselcounter"]>1);
 
-	toggleButton($("[data-sel='none'][data-seltype='file']"),  s["fileselcounter"]!=0)
-	toggleButton($("[data-sel='one'][data-seltype='file']"), s["dirselcounter"]>0 || s["fileselcounter"]!=1);
-	toggleButton($("[data-sel='multi'][data-seltype='file']"), s["dirselcounter"]>0 || s["fileselcounter"]==0);
-	toggleButton($("[data-sel='noneorone'][data-seltype='file']"), s["dirselcounter"]>0 || s["fileselcounter"]>1);
+	toggleButton($(".sel-none.sel-file"),  s["fileselcounter"]!=0)
+	toggleButton($(".sel-one.sel-file"), s["dirselcounter"]>0 || s["fileselcounter"]!=1);
+	toggleButton($(".sel-multi.sel-file"), s["dirselcounter"]>0 || s["fileselcounter"]==0);
+	toggleButton($(".sel-noneorone.sel-file"), s["dirselcounter"]>0 || s["fileselcounter"]>1);
 }
 function initFolderStatistics() {
 	$("#flt").on("fileListChanged", updateFolderStatistics).on("fileListViewChanged", updateFolderStatistics);

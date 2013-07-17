@@ -238,18 +238,20 @@ div.filename a:focus {
 #fileList tr:hover, #fileList tr.draghover, #fileList tr:focus {
 	background-color: #ededed;
 }
-#fileList tr[data-isreadable=no], #fileList tr[data-isreadable=no] a {
+tr.isreadable-no, tr.isreadable-no a {
 	color: #999999;
 }
-#fileList tr[data-isreadable=no]:hover {
+tr.isreadable-no:hover {
 	color: #999999;
 	background-color: #ffaaaa;
 }
-#fileList tr[data-iseditable=no] .action.edit,
-#fileList tr[data-iswriteable=no] .action.delete,
-#fileList tr[data-iswriteable=no] .action.rename,
-#fileList tr[data-isreadable=no] .action.download,
-#fileList tr[data-isreadable=no] .action.props
+.editable-no .action.edit,
+.iswriteable-no .action.delete,
+.iswriteable-no .action.rename,
+.isreadable-no .action.download,
+.isreadable-no .action.props,
+.isreadable-no .action.edit,
+.iswriteable-no .action.edit 
 {
 	display: none;
 	visiblity: hidden;
@@ -272,9 +274,12 @@ div.filename a:focus {
 	font-weight: bold;
 	z-index: 80;
 }
-.filterbox img[data-action=clearfilter] {
+.filterbox .action.clearfilter {
 		background: url(images/sprite.png) no-repeat left -215px;
 		width: 22px;
+}
+.filterbox input:focus {
+	width: 15em;
 }
 .invisible {
 	visibility: hidden;
@@ -349,7 +354,7 @@ div.filename a:focus {
 	text-shadow: 0 1px 0 #f8f8f8;
 	font-size: 100%;
 }
-#path a[data-action=changedir] {
+.action.changedir {
 	background: url(images/sprite.png) no-repeat center -856px;
 }
 #pathinput {
