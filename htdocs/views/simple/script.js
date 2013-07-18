@@ -2109,10 +2109,12 @@ function initPopupMenu() {
 						$("#popupmenu").hide().appendTo("body");
 						return;
 					}  else {
+						var left = event.clientX - 3;
+						var top = event.clientY - 3;
 						$("#popupmenu")
-							.appendTo($(event.originalEvent.originalTarget).closest("td"))
-							.css({position: "fixed", left: (event.clientX-3)+"px", top: (event.clientY-3)+"px"})
-							.fadeIn(1)
+							.appendTo($(event.originalEvent.target).closest("td"))
+							.css({position: "fixed", left: left+"px", top: top+"px", opacity: 1})
+							.show()
 							.find(".action").first().focus();
 						handleClipboard();
 					}
