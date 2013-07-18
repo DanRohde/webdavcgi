@@ -861,7 +861,8 @@ function initZipFileUpload() {
 function initFileUpload() {
 	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'), $(document));
 	
-	$('#fileuploadbutton').button().click(function(event) { 
+	$(".action.upload.uibutton").button();
+	$(".action.upload").click(function(event) { 
 		preventDefault(event); 
 		$("#file-upload-form input[type=file]").trigger('click'); 
 	});
@@ -2092,7 +2093,6 @@ function renderAccessKeyDetails() {
 				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]});
 }
 function initPopupMenu() {
-	
 	$("#popupmenu .action").click(function(event) {
 		handleFileActionEvent.call(this,event);
 		handleFileListActionEvent.call(this,event);
@@ -2109,13 +2109,21 @@ function initPopupMenu() {
 						$("#popupmenu").hide().appendTo("body");
 						return;
 					}  else {
-						var left = event.clientX - 3;
-						var top = event.clientY - 3;
+						var target = $(event.originalEvent.target).closest("td");
+						// fixed position (buggy: does not scroll):
+						var position = "fixed";
+						var left = event.clientX;
+						var top = event.clientY;
+						// absolute position is better but I have no idea yet to calculate it:
+						//var position = "absolute";
+						//var left = event.clientX;
+						//var top = target.clientY;
 						$("#popupmenu")
-							.appendTo($(event.originalEvent.target).closest("td"))
-							.css({position: "fixed", left: left+"px", top: top+"px", opacity: 1})
+							.appendTo(target)
+							.css({position: position, left: left+"px", top: top+"px", opacity: 1})
 							.show()
 							.find(".action").first().focus();
+						//$("#popupmenu .action").last().scrollMinimal();
 						handleClipboard();
 					}
 				}

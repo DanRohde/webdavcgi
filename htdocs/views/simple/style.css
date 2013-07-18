@@ -402,8 +402,16 @@ tr.isreadable-no:hover {
 }
 #new ul li, #bookmarks ul li  {
 	padding: 0.4em;
-	height: 2em;
+
 	background-color: white;
+	border: 1px solid white;
+}
+#new ul li.sep, #bookmarks ul li.sep {
+	border-top: 1px solid #999999;
+}
+#new ul li:hover, #bookmarks ul li:hover {
+	background-color: #f0f0f0;
+	border: 1px dotted #dddddd;
 }
 #new ul li a, #bookmarks ul li a  {
 	padding: 0.2em 0.5em 0.2em 22px ;
@@ -471,12 +479,6 @@ input.file-upload {
 	top: -1000px;
 	z-index: 0;
 }
-/*
-#fileuploadbutton {
-	margin: 0;
-	padding: 0;
-}
-*/
 #progress {
 	display: none;
 	z-index: 100;
@@ -578,7 +580,7 @@ a.disabled, .link.disabled {
 	text-align: center;
 }
 li.sep {
-	border-top: 1px solid #dddddd;
+	border-top: 1px solid #999999;
 }
 #content.hover {
 	border: 5px solid green;
@@ -801,7 +803,7 @@ input[readonly=readonly] {
 img {
 	border: 0;
 }
-a#fileuploadbutton {
+.action.upload {
 	background: url(images/sprite.png) no-repeat left -534px;
 	padding-left: 8px;
 }
@@ -1055,8 +1057,6 @@ a#fileuploadbutton {
 #popupmenu {
 	position: absolute;
 	display: hidden;
-	width: auto;
-	height: auto;
 	background: white;
 	border: 1px solid #dddddd;
 	box-shadow: 3px 0 7px #dddddd;
@@ -1064,14 +1064,22 @@ a#fileuploadbutton {
 	float: none;
 	clear: all;
 	z-index: 102;
-}
-#popupmenu  {
 	margin: 0;
-	padding: 2px;
+	padding: 0;
 }
 #popupmenu li {
 	height: 1.2em;
 	padding: 0.4em;
+	width: 150px;
+	border: 1px solid white;
+	color: black;
+}
+#popupmenu li.sep {
+	border-top: 1px solid #999999;
+}
+#popupmenu li:hover, #popupmenu li:focus {
+	border: 1px dotted #999999;
+	background-color: #ededed;
 }
 #popupmenu .action, #popupmenu .listaction {
 	padding-left: 22px;
@@ -1091,4 +1099,42 @@ a#fileuploadbutton {
 }
 #popupmenu .listaction.download {
 	background: url(images/sprite.png) no-repeat left -254px;
+}
+#popupmenu .action.permissions {
+	background: url(images/sprite.png) no-repeat 2px -614px;
+}
+#popupmenu .action.afsaclmanager {
+	background: url(images/sprite.png) no-repeat 2px -574px;
+}
+#popupmenu .action.afsgroupmanager {
+	background: url(images/sprite.png) no-repeat 2px -334px;
+}
+#popupmenu ul {
+	display: none;
+	position: absolute;
+	top: 1px;
+	left: 150px;
+	background-color: white;
+	box-shadow: 3px 0 7px #dddddd;
+	padding: 0;
+	margin: 0;
+	z-index: 103;
+}
+#popupmenu ul li {
+	min-width: 150px;
+	width: auto;
+	height: auto;
+	color: black;
+}
+#popupmenu li:hover ul {
+	display: block;
+}
+#popupmenu li ul:hover {
+	display: block;
+}
+#popupmenu li.subpopupmenu {
+	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right center;
+}
+#popupmenu li.subpopupmenu:hover {
+	background-color: #f9f9f9;
 }

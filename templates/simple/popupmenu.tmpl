@@ -1,11 +1,20 @@
 <ul id="popupmenu" style="opacity: 1; filter: Alpha(opacity=100);">
+<li class="subpopupmenu">$tl(new)
+<ul>
 <li class="action create-folder sel-none">$tl(createfolderbutton)</li>
 <li class="action create-file sel-none">$tl(createnewfilebutton)</li>
 <!--IF($config(ALLOW_SYMLINK))-->
 	<li class="action create-symlink sel-one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</a></li>
 <!--ENDIF--> 
-
-<li class="sep listaction copy sel-multi">$tl(copy)</li>
+<!--IF($config(ALLOW_ZIP_UPLOAD))-->
+<li class="action uncompress sel-none sep" title="$tl(zipfileupload) (&le;$maxuploadsizehr)">$tl(zipfileupload)</li>
+<!--ENDIF-->
+</ul>
+</li>
+<!--IF($config(ALLOW_POST_UPLOADS))-->
+	<li class="action upload">$tl(fileuploadbutton)</li>
+<!--ENDIF-->
+<li class="listaction copy sel-multi sep">$tl(copy)</li>
 <li class="listaction cut sel-multi">$tl(cut)</li>
 <li class="listaction paste sel-none">$tl(paste)</li>
 
@@ -14,5 +23,15 @@
 <!--IF($config(ALLOW_ZIP_UPLOAD))-->
 	<li class="listaction download hideit sep">$tl(zipdownloadbutton)</li>
 <!--ENDIF-->
+<!--IF($config(ALLOW_CHANGEPERM))-->
+	<li class="action permissions sel-multi sep" data-template="permissions">$tl(mode)</li>
+<!--ENDIF-->
+<!--IF($config(ENABLE_AFSACLMANAGER))-->
+	<li class="action afsaclmanager sel-noneorone sel-dir sep" data-template="afsaclmanager">$tl(afs)</li>
+<!--ENDIF-->
+<!--IF($config(ENABLE_AFSGROUPMANAGER))-->
+	<li class="action afsgroupmanager" data-template="afsgroupmanager">$tl(afsgroup)</li>
+<!--ENDIF-->
+
 <li class="listaction delete hideit sep">$tl(deletefilesbutton)</li>
 </ul>
