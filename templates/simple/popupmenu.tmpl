@@ -1,8 +1,8 @@
 <ul id="popupmenu" style="opacity: 1; filter: Alpha(opacity=100);">
-<li class="subpopupmenu">$tl(new)
+<li class="subpopupmenu" title="$tl(new)">$tl(new)
 <ul>
-<li class="action create-folder sel-none">$tl(createfolderbutton)</li>
-<li class="action create-file sel-none">$tl(createnewfilebutton)</li>
+<li class="action create-folder sel-none" title="$tl(createfolderbutton)">$tl(createfolderbutton)</li>
+<li class="action create-file sel-none" title="$tl(createnewfilebutton)">$tl(createnewfilebutton)</li>
 <!--IF($config(ALLOW_SYMLINK))-->
 	<li class="action create-symlink sel-one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
 <!--ENDIF--> 
@@ -12,26 +12,26 @@
 </ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-	<li class="action upload">$tl(fileuploadbutton)</li>
+	<li class="action upload" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
 <!--ENDIF-->
-<li class="listaction copy sel-multi sep">$tl(copy)</li>
-<li class="listaction cut sel-multi">$tl(cut)</li>
-<li class="listaction paste sel-none">$tl(paste)</li>
+<li class="listaction copy sel-multi sep" title="$tl(copytooltip)">$tl(copy)</li>
+<li class="listaction cut sel-multi" title="$tl(cuttooltip)">$tl(cut)</li>
+<li class="listaction paste sel-none" title="$tl(paste)">$tl(paste)</li>
 
-<li class="action edit sep">$tl(editbutton)</li>
-<li class="action rename sep">$tl(movefilesbutton)</li>
+<li class="action edit sep" title="$tl(editbutton)">$tl(editbutton)</li>
+<li class="action rename sep" title="$tl(movefilesbutton)">$tl(movefilesbutton)</li>
 <!--IF($config(ALLOW_ZIP_UPLOAD))-->
-	<li class="listaction download hideit sep">$tl(zipdownloadbutton)</li>
+	<li class="listaction download hideit sep" title="$tl(zipfileupload) (&le;$maxuploadsizehr)">$tl(zipdownloadbutton)</li>
 <!--ENDIF-->
 <!--IF($config(ALLOW_CHANGEPERM))-->
-	<li class="action permissions sel-multi sep" data-template="permissions">$tl(mode)</li>
+	<li class="action permissions sel-multi sep" data-template="permissions" title="$tl(mode)">$tl(mode)</li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_AFSACLMANAGER))-->
-	<li class="action afsaclmanager sel-noneorone sel-dir sep" data-template="afsaclmanager">$tl(afs)</li>
+	<li class="action afsaclmanager sel-noneorone sel-dir sep" data-template="afsaclmanager" title="$tl(afs)">$tl(afs)</li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_AFSGROUPMANAGER))-->
-	<li class="action afsgroupmanager" data-template="afsgroupmanager">$tl(afsgroup)</li>
+	<li class="action afsgroupmanager" data-template="afsgroupmanager" title="$tl(afsgroup)">$tl(afsgroup)</li>
 <!--ENDIF-->
 
-<li class="listaction delete hideit sep">$tl(deletefilesbutton)</li>
+<li class="listaction delete hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 </ul>
