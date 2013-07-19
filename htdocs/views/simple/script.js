@@ -65,9 +65,17 @@ $(document).ready(function() {
 		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText);
 		$("div.overlay").remove();
 	});
-		
+	
+	initActions();
+	
 	updateFileList($("#flt").attr("data-uri"));
 
+function initActions() {
+	$("#flt").on("fileListChanged", function() {
+		toggleButton($(".action.access-writeable,.listaction.access-writeable"), $("#fileListTable").hasClass("iswriteable-no"));
+	});
+}
+	
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
 		// keyboard events for filename links
@@ -527,10 +535,13 @@ function initBookmarks() {
 
 }
 function toggleButton(button, disabled) {
-	if (button.hasClass("button")) button.button("option","disabled",disabled);
-	button.attr("tabindex",disabled ? -1 : 0);
-	button.toggleClass("disabled", disabled);
-	$.each(button, function(i,v) { if ($(v).hasClass("hideit")) $(v).toggle(!disabled) });
+	$.each(button, function(i,v) { 
+		var self = $(v);
+		if (self.hasClass("hideit")) self.toggle(!disabled);
+		if (self.hasClass("button")) self.button("option","disabled",disabled);
+		self.attr("tabindex",disabled ? -1 : 0);
+		self.toggleClass("disabled", disabled);
+	});
 }
 function toggleBookmarkButtons() {
 	var currentPath = concatUri($("#flt").attr("data-uri"),"/");	
@@ -850,6 +861,7 @@ function initZipFileUpload() {
 	$(".action.uncompress").click(
 			function (event) { 
 				preventDefault(event);
+				if ($(this).hasClass("disabled")) return;
 				$("#zipfile-upload-form input[type=file]").trigger("click"); 
 				$('#new ul').addClass('hidden'); 
 			}
@@ -861,6 +873,7 @@ function initFileUpload() {
 	$(".action.upload.uibutton").button();
 	$(".action.upload").click(function(event) { 
 		preventDefault(event); 
+		if ($(this).hasClass("disabled")) return;
 		$("#file-upload-form input[type=file]").trigger('click'); 
 	});
 	
@@ -952,10 +965,10 @@ function initFileList() {
 	var fl = $("#fileList");
 	
 	initTableSorter();
-
-	$("#fileList.selectable-false tr").attr("data-unselectable", "yes");
 	
-	$("#fileList tr[data-unselectable='yes'] .selectbutton").attr("disabled","disabled");
+	$("#fileList.selectable-false tr").removeClass("unselectable-no").addClass("unselectable-yes");
+	
+	$("#fileList tr.unselectable-yes .selectbutton").attr("disabled","disabled");
 	
 	// init single file actions:
 	$("#fileList tr.unselectable-no")
@@ -1354,7 +1367,7 @@ function toggleRowSelection(row,on) {
 	row.find(".selectbutton").prop('checked', row.hasClass("selected"));
 }
 function isSelectableRow(row) {
-	return row.attr("data-file") != '..' && row.attr("data-unselectable") != "yes";
+	return row.attr("data-file") != '..' && !row.hasClass("unselectable-yes");
 }
 function handleRowClickEvent(event) {
 	var flt = $('#fileListTable');
@@ -1718,7 +1731,7 @@ function handleClipboard() {
 	var datauri = concatUri($("#fileList").attr("data-uri"),"/");
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
-	var disabled = (!files || files=="" || srcuri  == datauri);
+	var disabled = (!files || files=="" || srcuri  == datauri || $("#fileListTable").hasClass("iswriteable-no"));
 	$(".listaction.paste").toggleClass("disabled",disabled).attr("tabindex",disabled?-1:0);
 	$(".listaction.paste.uibutton").button().button("option","disabled",disabled);
 	if (srcuri == datauri && action == "cut") 

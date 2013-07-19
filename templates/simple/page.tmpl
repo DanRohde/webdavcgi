@@ -64,19 +64,19 @@ $INCLUDE(htmlhead)</head>
 		<div id="new">
 			<a href="#" data-action="new" accesskey="n">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" class="action upload uibutton sel-none hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
+				<a href="#" class="action upload uibutton sel-none access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste hideit sel-none uibutton" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
 			<!--ENDIF-->			
 			<ul class="hidden">
-			<li><a href="#" class="action create-folder sel-none" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
-			<li><a href="#" class="action create-file sel-none" data-action="create-file" accesskey="e">$tl(createnewfilebutton)</a></li>
+			<li><a href="#" class="action create-folder sel-none access-writeable" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
+			<li><a href="#" class="action create-file sel-none access-writeable" data-action="create-file" accesskey="e">$tl(createnewfilebutton)</a></li>
 			<!--IF($config(ALLOW_SYMLINK))-->
-				<li><a href="#" class="action create-symlink sel-one" data-action="create-symlink"  title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</a></li>
+				<li><a href="#" class="action create-symlink sel-one access-writeable" data-action="create-symlink"  title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-				<li class="sep"><a href="#" class="action uncompress sel-none" title="$tl(zipfileupload) (&le;$maxuploadsizehr)" data-action="uncompress"  id="zipfileuploadbutton" accesskey="w">$tl(zipfileupload)</a>
+				<li class="sep"><a href="#" class="action uncompress sel-none access-writeable" title="$tl(zipfileupload) (&le;$maxuploadsizehr)" data-action="uncompress"  id="zipfileuploadbutton" accesskey="w">$tl(zipfileupload)</a>
 				<form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
 			<!--ENDIF-->
 			</ul>
@@ -116,7 +116,7 @@ $INCLUDE(htmlhead)</head>
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction copy sel-multi uibutton" href="#" title="$tl(copytooltip)" data-action="copy" accesskey="c">&nbsp;</a>
-				<a class="listaction cut sel-multi uibutton" href="#" title="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
+				<a class="listaction cut sel-multi access-writeable uibutton" href="#" title="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
 				<a class="listaction download sel-multi uibutton" href="#" title="$tl(zipdownloadtext)" data-action="download" >$tl(zipdownloadbutton)</a>

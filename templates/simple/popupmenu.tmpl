@@ -1,18 +1,18 @@
 <ul id="popupmenu" style="opacity: 1; filter: Alpha(opacity=100);">
 <li class="subpopupmenu" title="$tl(new)">$tl(new)
 <ul>
-<li class="action create-folder sel-none" title="$tl(createfolderbutton)">$tl(createfolderbutton)</li>
-<li class="action create-file sel-none" title="$tl(createnewfilebutton)">$tl(createnewfilebutton)</li>
+<li class="action create-folder sel-none access-writeable" title="$tl(createfolderbutton)">$tl(createfolderbutton)</li>
+<li class="action create-file sel-none access-writeable" title="$tl(createnewfilebutton)">$tl(createnewfilebutton)</li>
 <!--IF($config(ALLOW_SYMLINK))-->
-	<li class="action create-symlink sel-one" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
+	<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
 <!--ENDIF--> 
 <!--IF($config(ALLOW_ZIP_UPLOAD))-->
-<li class="action uncompress sel-none sep" title="$tl(zipfileupload) (&le;$maxuploadsizehr)">$tl(zipfileupload)</li>
+<li class="action uncompress sel-none sep access-writeable" title="$tl(zipfileupload) (&le;$maxuploadsizehr)">$tl(zipfileupload)</li>
 <!--ENDIF-->
 </ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-	<li class="action upload" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
+	<li class="action upload access-writeable hideit" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
 <!--ENDIF-->
 <li class="listaction copy sel-multi sep" title="$tl(copytooltip)">$tl(copy)</li>
 <li class="listaction cut sel-multi" title="$tl(cuttooltip)">$tl(cut)</li>

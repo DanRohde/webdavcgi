@@ -251,7 +251,10 @@ tr.isreadable-no:hover {
 .isreadable-no .action.download,
 .isreadable-no .action.props,
 .isreadable-no .action.edit,
-.iswriteable-no .action.edit 
+.iswriteable-no .action.edit, 
+.unselectable-yes .listaction.download,
+.unselectable-yes .listaction.delete,
+.unselectable-yes .action.rename
 {
 	display: none;
 	visiblity: hidden;

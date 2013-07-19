@@ -264,12 +264,24 @@ sub isViewFiltered {
 	return 1 if $$self{cgi}->param('search.name') || $$self{cgi}->param('search.types') || $$self{cgi}->param('search.size');
 	return $$self{cgi}->cookie('filter.name') || $$self{cgi}->cookie('filter.types') || $$self{cgi}->cookie('filter.size') ? 1 : 0;
 }
+sub isUnselectable {
+	my ($self,$fn) = @_;
+	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
+	return $$self{backend}->basename($fn) eq '..' || $fn =~ /^$unselregex$/;	
+}
 sub renderFileListTable {
 	my ($self, $fn, $ru, $template) = @_;
 	my $filelisttabletemplate = $self->readTemplate($template);
 	my $columns = $self->renderVisibleTableColumns($filelisttabletemplate).$self->renderInvisibleAllowedTableColumns($filelisttabletemplate);
-	$filelisttabletemplate=~s/\$filelistheadcolumns/$columns/egs;
-	$filelisttabletemplate=~s/\$visiblecolumncount/scalar($self->getVisibleTableColumns())/egs;
+	my %stdvars = 
+		( 
+			filelistheadcolumns => $columns,
+			visiblecolumncount => scalar($self->getVisibleTableColumns()),
+			isreadable => $$self{backend}->isReadable($fn) ? 'yes' : 'no',
+			iswriteable=>$$self{backend}->isWriteable($fn) ? 'yes' : 'no',
+			unselectable => $self->isUnselectable($fn) ? 'yes' : 'no'
+		);
+	$filelisttabletemplate=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	my %jsondata = ( content => $self->minifyHTML($self->renderTemplate($fn,$ru,$filelisttabletemplate) ) );
 	if (!$$self{backend}->isReadable($fn)) {
 		$jsondata{error} = $self->tl('foldernotreadable');
@@ -287,7 +299,6 @@ sub renderFileListEntry {
 	
 	my $hdr = $CACHE{renderFileListEntry}{hdr} ? $CACHE{renderFileListEntry}{hdr} : $CACHE{renderFileListEntry}{hdr} = DateTime::Format::Human::Duration->new();
 	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;
-	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
 	
 	my $full = "$fn$file";
 	my $fulle = $ru.$$self{cgi}->escape($file);
@@ -321,7 +332,7 @@ sub renderFileListEntry {
 				'isviewable'=>$$self{backend}->isReadable($full) && $self->canCreateThumbnail($full) ? 'yes' : 'no',
 				'type'=>$file =~ /^\.\.?$/ || $$self{backend}->isDir($full)?'dir':($$self{backend}->isLink($full)?'link':'file'),
 				'fileuri'=>$fulle,
-				'unselectable'=> $file eq '..' || $full =~ /^$unselregex$/ ? 'yes' : 'no',
+				'unselectable'=> $file eq '..' || $self->isUnselectable($full) ? 'yes' : 'no',
 				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
 				'mode' => sprintf('%04o', $mode & 07777),
 				'modestr' => $self->mode2str($full, $mode),
