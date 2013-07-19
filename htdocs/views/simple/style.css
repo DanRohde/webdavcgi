@@ -1087,30 +1087,39 @@ img {
 #popupmenu .action, #popupmenu .listaction {
 	padding-left: 22px;
 	cursor: pointer;
+	background-repeat: no-repeat;
 }
 #popupmenu .listaction.copy {
-	background: url(images/sprite.png) no-repeat left -134px;
+	background-image: url(images/sprite.png);
+	background-position: left -134px;
 }
 #popupmenu .listaction.cut {
-	background: url(images/sprite.png) no-repeat left -174px;
+	background-image: url(images/sprite.png);
+	background-position: left -174px;
 }
 #popupmenu .listaction.paste {
-	background: url(images/sprite.png) no-repeat left -374px;
+	background-image: url(images/sprite.png);
+	background-position: left -374px;
 }
 #popupmenu .listaction.delete {
-	background: url(images/sprite.png) no-repeat left -214px;
+	background-image: url(images/sprite.png);
+	background-position: left -214px;
 }
 #popupmenu .listaction.download {
-	background: url(images/sprite.png) no-repeat left -254px;
+	background-image: url(images/sprite.png);
+	backgorund-position: left -254px;
 }
 #popupmenu .action.permissions {
-	background: url(images/sprite.png) no-repeat 2px -614px;
+	background-image: url(images/sprite.png);
+	background-position: 2px -614px;
 }
 #popupmenu .action.afsaclmanager {
-	background: url(images/sprite.png) no-repeat 2px -574px;
+	background-image: url(images/sprite.png);
+	background-position: 2px -574px;
 }
 #popupmenu .action.afsgroupmanager {
-	background: url(images/sprite.png) no-repeat 2px -334px;
+	background-image: url(images/sprite.png);
+	background-position: 2px -334px;
 }
 #popupmenu ul {
 	display: none;

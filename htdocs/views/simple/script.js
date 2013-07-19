@@ -72,8 +72,8 @@ $(document).ready(function() {
 
 function initActions() {
 	$("#flt").on("fileListChanged", function() {
-		toggleButton($(".action.access-writeable,.listaction.access-writeable"), $("#fileListTable").hasClass("iswriteable-no"));
-		updateFileListActions();
+		toggleButton($(".action.access-writeable:not(.disabled),.listaction.access-writeable:not(.disabled)"), $("#fileListTable").hasClass("iswriteable-no"));
+		//updateFileListActions();
 	});
 }
 	
