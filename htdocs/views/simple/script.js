@@ -350,10 +350,7 @@ function initSettingsDialog() {
 		$("select[name^='settings.']", settings)
 			.change(function(){
 				cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
-				window.location.href = window.location.pathname; // reload
-																	// bug fixed
-																	// (if query
-																	// view=...)
+				window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
 			})
 			.each(function(i,v) {
 				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);	
@@ -938,6 +935,7 @@ function handleFileActionEvent(event) {
 	}
 }
 function handleFileListRowFocusIn(event) {
+	if (cookie("settings.show.fileactions")=="no") return;
 	// if (event.type == 'mouseenter') $(this).focus();
 	if ($("#fileactions").length==1) $("#flt").data("#fileactions",$("#fileactions").html());
 	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>');
@@ -2109,21 +2107,16 @@ function initPopupMenu() {
 						$("#popupmenu").hide().appendTo("body");
 						return;
 					}  else {
-						var target = $(event.originalEvent.target).closest("td");
-						// fixed position (buggy: does not scroll):
-						var position = "fixed";
-						var left = event.clientX;
-						var top = event.clientY;
-						// absolute position is better but I have no idea yet to calculate it:
-						//var position = "absolute";
+						// fixed position (buggy: does not scroll); use absolute positioning 
+						//var position = "fixed";
 						//var left = event.clientX;
-						//var top = target.clientY;
+						//var top = event.clientY;
+						var offset = $("#content").position();
 						$("#popupmenu")
-							.appendTo(target)
-							.css({position: position, left: left+"px", top: top+"px", opacity: 1})
+							.appendTo($(this))
+							.css({position: "absolute", left: (event.pageX-offset.left)+"px", top: (event.pageY-offset.top)+"px", opacity: 1})
 							.show()
 							.find(".action").first().focus();
-						//$("#popupmenu .action").last().scrollMinimal();
 						handleClipboard();
 					}
 				}

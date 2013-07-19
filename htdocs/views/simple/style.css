@@ -1063,7 +1063,7 @@ img {
 	text-align: left;
 	float: none;
 	clear: all;
-	z-index: 102;
+	z-index: 1;
 	margin: 0;
 	padding: 0;
 }
@@ -1118,7 +1118,7 @@ img {
 	box-shadow: 3px 0 7px #dddddd;
 	padding: 0;
 	margin: 0;
-	z-index: 103;
+	z-index: 2;
 }
 #popupmenu ul li {
 	min-width: 150px;
