@@ -62,14 +62,14 @@ $INCLUDE(htmlhead)</head>
 <div id="content" class="collapse-head-listener collapse-sidebar-listener">
 	<div id="controls" class="collapse-head-listener collapse-sidebar-listener">
 		<div id="new">
-			<a href="#" data-action="new" accesskey="n">$tl(new)</a> 
+			<a href="#" class="action new" data-action="new" accesskey="n">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
 				<a href="#" class="action upload uibutton sel-none access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste hideit sel-none uibutton" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
 			<!--ENDIF-->			
-			<ul class="hidden">
+			<ul class="new popup hidden">
 			<li><a href="#" class="action create-folder sel-none access-writeable" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
 			<li><a href="#" class="action create-file sel-none access-writeable" data-action="create-file" accesskey="e">$tl(createnewfilebutton)</a></li>
 			<!--IF($config(ALLOW_SYMLINK))-->

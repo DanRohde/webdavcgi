@@ -73,6 +73,7 @@ $(document).ready(function() {
 function initActions() {
 	$("#flt").on("fileListChanged", function() {
 		toggleButton($(".action.access-writeable,.listaction.access-writeable"), $("#fileListTable").hasClass("iswriteable-no"));
+		updateFileListActions();
 	});
 }
 	
@@ -862,8 +863,8 @@ function initZipFileUpload() {
 			function (event) { 
 				preventDefault(event);
 				if ($(this).hasClass("disabled")) return;
-				$("#zipfile-upload-form input[type=file]").trigger("click"); 
-				$('#new ul').addClass('hidden'); 
+				$(this).closest(".popup.hidden").hide();
+				$("#zipfile-upload-form input[type=file]").trigger("click");
 			}
 	);
 }
@@ -1744,7 +1745,7 @@ function handleInplaceInput(target, defval) {
 	target.click(function(event) {
 		preventDefault(event);
 		var self = $(this);
-		if (self.closest("ul").hasClass("hidden")) self.closest("ul").removeClass("hidden");
+		self.closest(".popup.hidden").show();
 		if (self.hasClass("disabled")) return;
 		if (self.data('is-active')) return;
 		self.data('is-active', true);
@@ -1756,7 +1757,7 @@ function handleInplaceInput(target, defval) {
 		if (defval) input.val(defval);
 		$("#flt").enableSelection();
 		input.keydown(function(event) {
-			console.log(event);
+			//console.log(event);
 			if (event.keyCode == 13) {
 				preventDefault(event);
 				$("#flt").disableSelection();
@@ -1785,17 +1786,16 @@ function handleInplaceInput(target, defval) {
 	return target;
 }
 function initNewActions() {
-	$('#new [data-action=new]').button().click(function(event) {
+	$(".action.new").button().click(function(event) {
 		preventDefault(event);
-		$('#new ul').toggle();
+		$(".new.popup").toggle();
+		if ($(".new.popup").is(":visible")) $(".new.popup .action").first().focus();
 	});
-	$('#new ul').mouseout(function(event) {
-		// $('#new ul').addClass('hidden');
-	}).keypress(function(event) {
-		if (event.keyCode == 27) $('#new ul').toggle();
+	$(".new.popup").keydown(function(event) {
+		if (event.keyCode == 27) $(this).hide();
 	});
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
-		$(this).closest("ul").toggle();
+		$(this).closest(".popup.hidden").hide();
 		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : $(this).data('value') }, function(response) {
 			if (!response.error && response.message) updateFileList();
 			handleJSONResponse(response);
@@ -1803,8 +1803,7 @@ function initNewActions() {
 	});
 
 	handleInplaceInput($('.action.create-file')).on('changed', function(event) {
-		//$('#new ul').toggleClass('hidden');
-		$(this).closest("ul").toggle();
+		$(this).closest(".popup.hidden").hide();
 		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : $(this).data('value') }, function(response) {
 			if (!response.error && response.message) updateFileList();
 			handleJSONResponse(response);
@@ -1812,8 +1811,7 @@ function initNewActions() {
 	});
 
 	handleInplaceInput($('.action.create-symlink')).on('changed', function(event) {
-		//$('#new ul').toggleClass('hidden');
-		$(this).closest("ul").toggle();
+		$(this).closest(".popup.hidden").hide();
 		var row = $('#fileList tr.selected');
 		$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: $(this).data('value'), file: row.attr('data-file') }, function(response) {
 			if (!response.error && response.message) updateFileList();
@@ -2106,8 +2104,10 @@ function renderAccessKeyDetails() {
 function initPopupMenu() {
 	$("#popupmenu .action").click(function(event) {
 		handleFileActionEvent.call(this,event);
-		handleFileListActionEvent.call(this,event);
+		//handleFileListActionEvent.call(this,event);
 	});
+	$("#popupmenu .action, #popupmenu .listaction").dblclick(function(event) { preventDefault(event);});
+	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});
 	$("#flt")
 		.on("beforeFileListChange", function() {
 			$("#popupmenu").appendTo("body").hide();
