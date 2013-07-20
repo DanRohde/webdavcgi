@@ -24,7 +24,7 @@ $INCLUDE(htmlhead)</head>
 			<li><a href="$uri" class="action refresh" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
 			$INCLUDE(apps)
 			<!--IF($config(ALLOW_SEARCH))-->
-			<li><a href="#" class="action search" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
+			<li><a href="#" class="action search access-readable" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
 			<!--ENDIF-->
 			<!--IF($config(ALLOW_CHANGEPERM))-->
 				<li><a href="#" class="action permissions sel-multi" data-action="permissions" data-template="permissions" accesskey="p">$tl(mode)</a></li>

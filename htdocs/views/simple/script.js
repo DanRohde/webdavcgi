@@ -53,7 +53,6 @@ $(document).ready(function() {
 	initTableConfigDialog();
 	
 	initKeyboardSupport();
-
 	
 	$.ajaxSetup({ traditional: true });
 	
@@ -66,16 +65,7 @@ $(document).ready(function() {
 		$("div.overlay").remove();
 	});
 	
-	initActions();
-	
 	updateFileList($("#flt").attr("data-uri"));
-
-function initActions() {
-	$("#flt").on("fileListChanged", function() {
-		toggleButton($(".action.access-writeable:not(.disabled),.listaction.access-writeable:not(.disabled)"), $("#fileListTable").hasClass("iswriteable-no"));
-		//updateFileListActions();
-	});
-}
 	
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
@@ -1417,21 +1407,29 @@ function updateFileListActions() {
 	var s = getFolderStatistics();
 	// if (s["sumselcounter"] > 0 ) $('#filelistactions').show(); else
 	// $('#filelistactions').hide();
+	var flt = $("#fileListTable");
+	var exclude = flt.hasClass("iswriteable-no") ? ":not(.access-writeable)" : "";
+	exclude += flt.hasClass("isreadable-no") ? ":not(.access-readable)" : "";
+	exclude += flt.hasClass("unselectable-no") ? ":not(.access-selectable)" : "";
 	
-	toggleButton($(".sel-none"), s["sumselcounter"]!=0);
-	toggleButton($(".sel-one"), s["sumselcounter"]!=1);
-	toggleButton($(".sel-multi"), s["sumselcounter"]==0);
-	toggleButton($(".sel-noneorone"), s["sumselcounter"]>1);
+	toggleButton($(".access-writeable"), flt.hasClass("iswriteable-no"));
+	toggleButton($(".access-readable"), flt.hasClass("isreadable-no"));
+	toggleButton($(".access-selectable"), flt.hasClass("unselectable-yes"));
+	
+	toggleButton($(".sel-none"+exclude), s["sumselcounter"]!=0);
+	toggleButton($(".sel-one"+exclude), s["sumselcounter"]!=1);
+	toggleButton($(".sel-multi"+exclude), s["sumselcounter"]==0);
+	toggleButton($(".sel-noneorone"+exclude), s["sumselcounter"]>1);
 
-	toggleButton($(".sel-none.sel-dir"), s["fileselcounter"]!=0 );
-	toggleButton($(".sel-one.sel-dir"), s["fileselcounter"]>0 || s["dirselcounter"]!=1);
-	toggleButton($(".sel-multi.sel-dir"), s["fileselcounter"]>0 || s["dirselcounter"]==0);
-	toggleButton($(".sel-noneorone.sel-dir"), s["fileselcounter"]>0 || s["dirselcounter"]>1);
+	toggleButton($(".sel-none.sel-dir"+exclude), s["fileselcounter"]!=0 );
+	toggleButton($(".sel-one.sel-dir"+exclude), s["fileselcounter"]>0 || s["dirselcounter"]!=1);
+	toggleButton($(".sel-multi.sel-dir"+exclude), s["fileselcounter"]>0 || s["dirselcounter"]==0);
+	toggleButton($(".sel-noneorone.sel-dir"+exclude), s["fileselcounter"]>0 || s["dirselcounter"]>1);
 
-	toggleButton($(".sel-none.sel-file"),  s["fileselcounter"]!=0)
-	toggleButton($(".sel-one.sel-file"), s["dirselcounter"]>0 || s["fileselcounter"]!=1);
-	toggleButton($(".sel-multi.sel-file"), s["dirselcounter"]>0 || s["fileselcounter"]==0);
-	toggleButton($(".sel-noneorone.sel-file"), s["dirselcounter"]>0 || s["fileselcounter"]>1);
+	toggleButton($(".sel-none.sel-file"+exclude),  s["fileselcounter"]!=0)
+	toggleButton($(".sel-one.sel-file"+exclude), s["dirselcounter"]>0 || s["fileselcounter"]!=1);
+	toggleButton($(".sel-multi.sel-file"+exclude), s["dirselcounter"]>0 || s["fileselcounter"]==0);
+	toggleButton($(".sel-noneorone.sel-file"+exclude), s["dirselcounter"]>0 || s["fileselcounter"]>1);
 }
 function initFolderStatistics() {
 	$("#flt").on("fileListChanged", updateFolderStatistics).on("fileListViewChanged", updateFolderStatistics);
