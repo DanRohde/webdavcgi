@@ -144,8 +144,8 @@ $INCLUDE(htmlhead)</head>
 	<div id="confirmdialog" data-title="$tl(confirm)"></div>
 	<div id="fileactions">
 	     <span class="fileactions">
-		 <a class="action edit" href="#" data-action="edit">$tl(editbutton)</a>
-		 <a class="action rename" href="#" data-action="rename" accesskey="m">$tl(movefilesbutton)</a>
+		 <a class="action edit access-readable access-writeable" href="#" data-action="edit">$tl(editbutton)</a>
+		 <a class="action rename access-writeable" href="#" data-action="rename" accesskey="m">$tl(movefilesbutton)</a>
 		 <!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
 		 <a class="action download" href="#" data-action="download" accesskey="z">$tl(zipdownloadbutton)</a>
 		 <!--ENDIF-->

@@ -1,4 +1,4 @@
-<tr class="isviewable-$isviewable unselectable-$unselectable iseditable-$iseditable isreadable-$isreadable iswriteable-$iswriteable" data-file="$name" data-size="$realsize" data-uid="$uid" data-gid="$gid" data-mime="$mime" data-type="$type" data-lastmodified="$lastmodifiedtime" data-created="$createdtime" data-displayname="$displayname" data-mode="$modestr">
+<tr class="isviewable-$isviewable unselectable-$unselectable iseditable-$iseditable isreadable-$isreadable iswriteable-$iswriteable is-$type" data-file="$name" data-size="$realsize" data-uid="$uid" data-gid="$gid" data-mime="$mime" data-type="$type" data-lastmodified="$lastmodifiedtime" data-created="$createdtime" data-displayname="$displayname" data-mode="$modestr">
 
 <!--TEMPLATE(selector)[<td class="selector -hidden"><input type="checkbox" class="selectbutton" name="file" value="$name" tabindex="-1"/> </td>]-->
 $filelistentrycolumns
@@ -6,7 +6,7 @@ $filelistentrycolumns
 <!--TEMPLATE(name)[
 <td class="filename -hidden" title="$name$linkinfo <!--IF($config(ALLOW_CHANGEPERM))-->($mode $modestr)<!--ENDIF-->"> 
      <div class="filename">
-	     <a href="$fileuri" data-action="changeuri" title="$name$linkinfo">
+	     <a href="$fileuri" class="action changeuri" title="$name$linkinfo">
 	     	<img src="$iconurl" class="$iconclass" alt="icon" title="$mime"/>
 	     	<span class="nametext"><!--IF($cgi->param('ajax') eq 'search')-->$name<!--ELSE-->$displayname<!--ENDIF--></span>
 	     </a>

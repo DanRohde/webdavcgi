@@ -240,7 +240,11 @@ sub renderExtension {
 	my $extactions = $$self{config}{extensions}->handle($hook, { path=>$fn });
 	foreach my $a (@{$extactions}) {
 		if (ref($a)) {
-			$content.=$$self{cgi}->a({ -href => '#', -data_action=>$$a{action}, -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'')}, $self->tl($$a{label}));
+			if ($$a{type} && $$a{type} eq 'li') {
+				$content.=$$self{cgi}->li({-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'')}, $self->tl($$a{label}));
+			} else {
+				$content.=$$self{cgi}->a({ -href => '#', -data_action=>$$a{action}, -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'')}, $self->tl($$a{label}));
+			}
 		} else {
 			$content.=$a;
 		}

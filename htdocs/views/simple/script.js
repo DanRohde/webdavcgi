@@ -63,6 +63,7 @@ $(document).ready(function() {
 		console.log(exception);
 		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText);
 		$("div.overlay").remove();
+		if (jqxhr.status = 404) window.history.back();
 	});
 	
 	updateFileList($("#flt").attr("data-uri"));
@@ -431,13 +432,13 @@ function handleWindowResize() {
 }
 
 function initChangeUriAction() {
-	$("a[data-action=changeuri]").click(handleChangeUriAction);
+	$(".action.changeuri").click(handleChangeUriAction);
 	$(".action.refresh").click(function(event) {
 		preventDefault(event);
 		updateFileList();
 	});
 	$("#flt").on("fileListChanged", function() {
-		$("#fileList tr[data-type='dir'] a[data-action=changeuri]").click(handleChangeUriAction);
+		$("#fileList tr.is-dir .action.changeuri").click(handleChangeUriAction);
 	});
 }
 function handleChangeUriAction(event) {

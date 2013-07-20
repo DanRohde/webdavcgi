@@ -37,7 +37,7 @@ sub init {
 
 	$hookreg->register('gethandler', $self);
 	$hookreg->register('fileaction', $self);
-
+	$hookreg->register('fileactionpopup', $self);
 }
 
 sub handle { 
@@ -53,6 +53,8 @@ sub handle {
 		return 0;
  	} elsif ($hook eq 'fileaction') {
 		return { action=>'props', disabled=>!$$self{backend}->isReadable($$params{path}), label=>'showproperties', path=>$$params{path} };
+	} elsif( $hook eq 'fileactionpopup') {
+		return { action=>'props', disabled=>!$$self{backend}->isReadable($$params{path}), label=>'showproperties', path=>$$params{path}, type=>'li' };
 	}
 	return 0;
 }
