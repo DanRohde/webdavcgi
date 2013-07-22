@@ -274,6 +274,8 @@ tr.isreadable-no:hover {
 	top: 3px;
 	right: 2em;
 	color: #888888;
+	background-color: #F7F7F7;
+	height: 2.7em;
 	font-weight: bold;
 	z-index: 80;
 }

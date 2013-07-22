@@ -1768,6 +1768,7 @@ function handleInplaceInput(target, defval) {
 					self.data('value',input.val()).trigger('changed');
 				}
 			} else if (event.keyCode == 27) {
+				preventDefault(event);
 				self.data('is-active', false);
 				$("#flt").disableSelection();
 				self.html(self.data('orig-html'));
