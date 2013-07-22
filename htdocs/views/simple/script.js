@@ -1763,7 +1763,7 @@ function handleInplaceInput(target, defval) {
 				self.data('is-active', false);
 				self.html(self.data('orig-html'));
 				if ((defval && input.val() == defval)||(input.val() == "")) {
-					self.data('value',input.val()).trigger('unchanged');
+					self.data('value',input.val()).focus().trigger('unchanged');
 				} else {
 					self.data('value',input.val()).trigger('changed');
 				}
@@ -1771,7 +1771,7 @@ function handleInplaceInput(target, defval) {
 				preventDefault(event);
 				self.data('is-active', false);
 				$("#flt").disableSelection();
-				self.html(self.data('orig-html'));
+				self.html(self.data('orig-html')).focus();
 				self.trigger('canceled');
 			}
 		}).focusout(function(event) {
