@@ -3,6 +3,8 @@
 <head>
 <title>$config(TITLEPREFIX) $uri</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="application-name" content="WebDAV CGI"/>
+<meta name="author" content="(C) ZE CMS, Humboldt-Universitaet zu Berlin, Written by Daniel Rohde"/>
 <link rel="alternate" href="?action=mediarss" type="application/rss+xml" title="" id="gallery"/>
 <link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/contrib/contrib.min.css"/>
 <link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/style.min.css"/>
@@ -172,6 +174,7 @@ $INCLUDE(htmlhead)</head>
 	<div id="confirm">$tl(confirm)</div>
 	<div id="zipuploadconfirm">$tl(zipuploadconfirm)</div>
 	<div id="tableconfigdialogtemplate">$INCLUDE(tableconfig)</div>
+	<div id="titleprefix">$config(TITLEPREFIX)</div>
 	<div id="about">
 		<span class="nowrap">&copy; 2013 ZE Computer and Media Services, Humboldt-University at Berlin</span><br/>
 		<span class="nowrap">Written 2010-2013 by Daniel Rohde &lt;<a href="mailto:d.rohde@cms.hu-berlin.de">d.rohde@cms.hu-berlin.de</a>&gt;</span><br/>
