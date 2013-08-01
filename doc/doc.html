@@ -57,7 +57,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
 <p>Note: All steps are done with root rights.</p>
 <p>Upgrade Note: Please take a look at the <a href="#upgrade">Upgrade</a> section for further information.</p>
 <ol>
-<li><a href="index.html#download">download WebDAV CGI</a></li>
+<li><a href="index.html#download">download WebDAV CGI</a> (note: not necessary for Gentoo)</li>
 <li>install required CPAN modules (Debian/Ubuntu package name):
   <ul>
     <li>CGI (included in most Linux dists; older dists need that: libcgi-perl)</li>
@@ -95,7 +95,7 @@ apt-get install libfilesys-smbclient-perl
 
 ## only for RCS backend users:
 apt-get install librcs-perl
-   </pre>
+   </pre>   
 </li>
 <li>install additional binaries/packages for a better WebDAV CGI experience:
 <ul>
@@ -114,9 +114,20 @@ apt-get install smbclient
 ## only for SMB and AFS backend users:
 apt-get install krb5-user
 </pre>
+<pre>
+## Gentoo quick install:
+emerge -va dev-perl/SpeedyCGI
+emerge -va app-text/ghostscript-gpl
+
+## only for SMB backend users:
+emerge -va net-fs/cifs-utils
+
+## only for SMB and AFS backend users:
+emerge -va app-crypt/heimdal
+</pre>
 </li>
 <li>change directory to your preferred installation path, e.g. <code>cd /etc</code></li>
-<li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code></li>
+<li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code> (Gentoo: <code>emerge -va www-apps/webdavcgi</code>)</li>
 <li>change directory to the source base (e.g: <code>cd webdavcgi*</code>) and call <code>bash install.sh</code> to compile all wrappers and to fix file permissions </li>
 <li> <a href="#setup">configure webdav.pl</a></li>
 <li> <a id="apache"></a>configure your web server:
@@ -175,6 +186,12 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 0.8.5 to 0.8.6</h3>
+<ol>
+<li>The Simple View:
+<ul>
+<li>Home button template was changed: <code>data-action="changeuri"</code> was replaced by <code>class="action changeuri"</code> (see <a href="doc-simple-view.html#hooks">The Simple View Documentation</a>)</li></ul></li>
+</ol>
 <h3>Upgrading from 0.8.4 to 0.8.5</h3>
 <ol>
 <li> the SVN repository URL has changed: <code> svn switch --relocate https://webdavcgi.svn.sourceforge.net/svnroot/webdavcgi/trunk http://svn.code.sf.net/p/webdavcgi/code/trunk</code></li>
