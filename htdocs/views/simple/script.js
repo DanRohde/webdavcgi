@@ -2154,7 +2154,7 @@ function initPopupMenu() {
 			
 		});
 	$("body").on("click", function(event) {
-		if ($("#popupmenu").is(":visible")) $("#popupmenu").hide().appendTo("body");
+		$("#popupmenu:visible").hide().appendTo("body");
 	});
 }
 // ready ends:
