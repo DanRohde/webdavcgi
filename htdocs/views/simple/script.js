@@ -2151,7 +2151,11 @@ function initPopupMenu() {
 					}
 				}
 			});
+			
 		});
+	$("body").on("click", function(event) {
+		if ($("#popupmenu").is(":visible")) $("#popupmenu").hide().appendTo("body");
+	});
 }
 // ready ends:
 });
