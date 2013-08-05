@@ -430,7 +430,7 @@ tr.isreadable-no:hover {
 #new ul li.sep, #bookmarks ul li.sep {
 	border-top: 1px solid #999999;
 }
-#new ul li:hover, #bookmarks ul li:hover {
+#new ul li:hover, #bookmarks ul li:hover, #autorefresh ul li:hover {
 	background-color: #f0f0f0;
 	border: 1px dotted #dddddd;
 }
@@ -887,6 +887,7 @@ img {
 }
 #autorefresh ul li {
 	padding: 2px;
+	border: 1px solid white;
 }
 .action.setautorefresh {
 	padding-left: 24px;
