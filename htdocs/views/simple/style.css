@@ -1123,21 +1123,25 @@ img {
 	background-image: url(images/sprite.png);
 	background-position: left -214px;
 }
+#popupmenu .action.rename {
+	background-image: url(images/sprite.png);
+	background-position: left -495px;
+}
 #popupmenu .listaction.download {
 	background-image: url(images/sprite.png);
-	backgorund-position: left -254px;
+	background-position: left -256px;
 }
 #popupmenu .action.permissions {
 	background-image: url(images/sprite.png);
-	background-position: 2px -614px;
+	background-position: left -614px;
 }
 #popupmenu .action.afsaclmanager {
 	background-image: url(images/sprite.png);
-	background-position: 2px -574px;
+	background-position: left -574px;
 }
 #popupmenu .action.afsgroupmanager {
 	background-image: url(images/sprite.png);
-	background-position: 2px -334px;
+	background-position: left -334px;
 }
 #popupmenu ul {
 	display: none;
