@@ -75,7 +75,7 @@ getTicket() {
 	if test -f "$ticketfn" ; then
 		mtime=$(stat -c %Y "$ticketfn.age")
 		time=$(date +%s)
-		if test $(( $time - $mtime )) -ge $TICKET_LIFETIME; then
+		if test $(( $time - $mtime )) -ge $TICKET_LIFETIME -o ! -s "$ticketfn" ; then
 			rm -f "$ticketfn" "$ticketfn.age"
 			debug "old ticket cache $ticketfn delete"
 		fi	

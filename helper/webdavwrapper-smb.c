@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
 		/* dstfilename does not exists or the ticket lifetime is exceeded: */
 		int exists = stat(dstmtimefilename, &dststat);
-		if ( (exists == -1)  || (seconds - dststat.st_mtime > ticket_lifetime) ) {
+		if ( (exists == -1) || (seconds - dststat.st_mtime > ticket_lifetime) || (dststat.st_size == 0) ) {
 			if (exists == 0) {
 				unlink(dstfilename); 
 				unlink(dstmtimefilename);
