@@ -276,11 +276,12 @@ function initCollapsible() {
 function initAutoRefresh() {
 	$(".action.autorefreshmenu").button().click(function(event) {
 		preventDefault(event);
-		$("#autorefresh ul").toggleClass("hidden");
+		$("#autorefresh ul").toggle();
 	}).dblclick(function(event) {
 		preventDefault(event);
 		updateFileList();
 	});
+	$("body").click(function(){ $("#autorefresh ul:visible").hide()});
 	$("a.autorefreshrunning").addClass("disabled");
 	$("#autorefresh").on("started", function() {
 		$("a.autorefreshrunning").removeClass("disabled");
@@ -535,10 +536,10 @@ function initBookmarks() {
 	$(".action.bookmarkmenu", bookmarks).click(
 		function(event) {
 			preventDefault(event);
-			$("#bookmarksmenu ul").toggleClass("hidden");
+			$("#bookmarksmenu ul").toggle();
 		}
 	).button();
-	
+	$("body").click(function() { $("#bookmarksmenu ul:visible").hide();});
 	
 
 }
@@ -1808,6 +1809,7 @@ function initNewActions() {
 		$(".new.popup").toggle();
 		if ($(".new.popup").is(":visible")) $(".new.popup .action").first().focus();
 	});
+	$("body").on("click", function() { $(".new.popup:visible").hide(); });
 	$(".new.popup").keydown(function(event) {
 		if (event.keyCode == 27) $(this).hide();
 	});
@@ -2137,10 +2139,6 @@ function initPopupMenu() {
 						$("#popupmenu").hide().appendTo("body");
 						return;
 					}  else {
-						// fixed position (buggy: does not scroll); use absolute positioning 
-						//var position = "fixed";
-						//var left = event.clientX;
-						//var top = event.clientY;
 						var offset = $("#content").position();
 						$("#popupmenu")
 							.appendTo($(this))
@@ -2151,11 +2149,8 @@ function initPopupMenu() {
 					}
 				}
 			});
-			
 		});
-	$("body").on("click", function(event) {
-		$("#popupmenu:visible").hide().appendTo("body");
-	});
+	$("body").click(function() { $("#popupmenu:visible").hide().appendTo("body"); });
 }
 // ready ends:
 });
