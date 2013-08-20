@@ -1,7 +1,7 @@
 #!/bin/bash
 ## needs ImageMagick's montage
 
-FILES="about.png addbookmark.png bookmarks.png copy.png cut.png delete.png download.png edit.png group.png paste.png refresh.png remove.png rename.png upload.png user-edit.png user-properties.png view-filter.png zip.png createfolder.png createfile.png createlink.png changedir.png toggleselection.png logout.png help.png home.png add.png search.png settings.png refresh-start.png refresh-pause.png refresh-stop.png selectall.png selectnone.png"
+FILES="about.png addbookmark.png bookmarks.png copy.png cut.png delete.png download.png edit.png group.png paste.png refresh.png remove.png rename.png upload.png user-edit.png user-properties.png view-filter.png zip.png createfolder.png createfile.png createlink.png changedir.png toggleselection.png logout.png help.png home.png add.png search.png settings.png refresh-start.png refresh-pause.png refresh-stop.png selectall.png selectnone.png contact.png"
 
 
 FILESWITHNULL="null: $(echo $FILES | sed -e 's@ @ null: @g')"

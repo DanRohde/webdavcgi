@@ -4,7 +4,7 @@ TMPPATH=/tmp/webdavcgi-${RELEASE}
 
 test -e ${TMPPATH} && rm -rf ${TMPPATH}
 
-svn export https://webdavcgi.svn.sourceforge.net/svnroot/webdavcgi/trunk/ ${TMPPATH}
+svn export svn://svn.code.sf.net/p/webdavcgi/code/trunk ${TMPPATH}
 
 
 (cd `dirname ${TMPPATH}`; zip -r  webdavcgi-${RELEASE}.zip `basename ${TMPPATH}`)

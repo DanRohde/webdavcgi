@@ -840,6 +840,10 @@ img {
 	padding-left: 22px;
 	background: url(images/sprite.png) no-repeat 2px -1012px;
 }
+.contact-button {
+	padding-left: 22px;
+	background: url(images/sprite.png) no-repeat 2px -1372px;
+}
 .small {
 	font-size: 0.2em;
 	color: #888888;
