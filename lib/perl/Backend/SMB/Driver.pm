@@ -282,11 +282,21 @@ sub getFileContent {
 	}
 	return $content;
 }
+sub _checkOpenDir {
+	my ($self, $file) = @_;
+	return 0 unless $self->_isAllowed($file)  && $self->exists($file);
+	return 1 if !$self->isDir($file);
+	if (my $dir = $self->getSmbClient()->opendir($self->_getSmbURL($file))) {
+		$self->getSmbClient()->closedir($dir);
+		return 1;
+	}
+	return 0;
+}
 sub isReadable {
 	my ($self, $file) = @_;
 	return $self->_existsCacheEntry('isReadable', $file) 
 			? $self->_getCacheEntry('isReadable',$file) 
-			: $self->_setCacheEntry('isReadable',$file,_isRoot($file) || _isShare($file) || $self->exists($file));
+			: $self->_setCacheEntry('isReadable',$file,_isRoot($file) || _isShare($file) || $self->_checkOpenDir($file));
 }
 sub isWriteable {
 	my ($self, $file) = @_;
