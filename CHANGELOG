@@ -1,4 +1,5 @@
 0.8.7: BETA
+     - removed classic view, sidebar view, unused code
      - added mising contact button
      - fixed directory access check for the SMB backend
 0.8.6: 2013/7/8

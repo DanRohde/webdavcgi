@@ -175,21 +175,7 @@ sub escapeQuotes {
         return $q;
 }
 
-sub getVisibleTableColumns {
-        my ($self) = @_;
-        my @vc;
 
-        if (my $vcs = $$self{cgi}->cookie('visibletablecolumns')) {
-                my @cvc = split(',', $vcs);
-                my ($allowed) = 1;
-                foreach my $c (@cvc) {
-                        push @vc, $c if grep(/^\Q$c\E$/, @main::ALLOWED_TABLE_COLUMNS);
-                }
-        } else {
-                @vc = @main::VISIBLE_TABLE_COLUMNS;
-        }
-        return @vc;
-}
 sub renderByteValue {
         my ($self, $v, $f, $ft) = @_; # v-value, f-accuracy, ft-title accuracy
         $f = 2 unless defined $f;
@@ -251,98 +237,6 @@ sub filter {
         }
         return $ret;
 }
-sub renderPageNavBar {
-        my ($self, $ru, $count, $files) = @_;
-        my $limit = $main::PAGE_LIMIT || -1;
-        my $showall = $$self{cgi}->param('showpage') ? 0 : $$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0;
-        my $page = $$self{cgi}->param('page') || 1;
-
-        my $content = "";
-        return $content if $limit <1; # || $count <= $limit;
-
-        my $maxpages = ceil($count / $limit);
-        return $content if $maxpages == 0;
-
-        return $$self{cgi}->div({-class=>'showall'}, $$self{cgi}->a({href=>$ru."?showpage=1", -title=>$self->tl('navpageviewtooltip')}, $self->tl('navpageview')). ', '.$self->renderNameFilterForm()) if ($showall);
-        if ($count >$limit) {
-
-                $content .= ($page > 1 )
-                                ? $$self{cgi}->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,1,$limit), -title=>$self->tl('navfirsttooltip')}, $self->tl('navfirst'))
-                                : $self->tl('navfirstblind');
-                $content .= ($page > 1 )
-                                ? $$self{cgi}->a({-href=>sprintf('%s?page=%d;pagelimit=%d',$ru,$page-1,$limit), -title=>$self->tl('navprevtooltip')}, $self->tl('navprev'))
-                                : $self->tl('navprevblind');
-                #$content .= $self->tl('navpage')."$page/$maxpages: ";
-                $content .= $self->tl('navpage');
-
-                my %attributes;
-                if ($maxpages > 1 && $maxpages <= 50) {
-                        foreach my $i ( 1 .. $maxpages ) {
-                                $attributes{$i}{title}=$$self{cgi}->escapeHTML(sprintf('%s,...,%s',substr($$files[($i-1)*$limit],0,8),substr(($i*$limit -1 > $#$files ? $$files[$#$files] : $$files[$i*$limit -1]),0,8)));
-                        }
-                }
-
-                $content .= $maxpages < 2 || $maxpages > 50 ? $page : $$self{cgi}->popup_menu(-default=>$page, -name=>'page', -values=> [ 1 .. $maxpages ], -attributes=>\%attributes, -onchange=>'javascript:window.location.href=window.location.pathname+"?page="+this.value;' );
-                $content .= " / $maxpages: ";
-
-                $content .= sprintf("%02d-%02d/%d",(($limit * ($page - 1)) + 1) , ( $page < $maxpages || $count % $limit == 0 ? $limit * $page : ($limit*($page-1)) + $count % $limit), $count);
-
-                $content .= ($page < $maxpages)
-                                ? $$self{cgi}->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $page+1, $limit), -title=>$self->tl('navnexttooltip')},$self->tl('navnext'))
-                                : $self->tl('navnextblind');
-
-                $content .= ($page < $maxpages)
-                                ? $$self{cgi}->a({-href=>sprintf('%s?page=%d;pagelimit=%d', $ru, $maxpages, $limit), -title=>$self->tl('navlasttooltip')},$self->tl('navlast'))
-                                : $self->tl('navlastblind');
-        } else {
-                $content .= '&nbsp;';
-        }
-
-        $content .= ' '.$$self{cgi}->span({-class=>'pagelimit',-title=>$self->tl('pagelimittooltip')}, $self->tl('pagelimit').' '.$$self{cgi}->popup_menu(-name=>'pagelimit', -onchange=>'javascript: window.location.href=window.location.pathname + (this.value==-1 ? "?showall=1" : "?page=1;pagelimit="+this.value);', -values=>\@main::PAGE_LIMITS, -default=>$limit, -labels=>{-1=>$self->tl('navall')}, -attributes=>{-1=>{title=>$self->tl('navalltooltip')}}));
-
-        ##$content .= ' '. $$self{cgi}->a({-href=>$ru."?showall=1", -title=>$self->tl('navalltooltip')}, $self->tl('navall'));
-
-
-        return $$self{cgi}->div({-class=>'pagenav'},$content);
-}
-
-sub getfancyfilename {
-        my ($self, $full,$s,$m,$fn,$isUnReadable) = @_;
-        my $ret = $s;
-
-        $full = '/' if $full eq '//'; # fixes root folder navigation bug
-	my $displayname = $$self{backend}->getDisplayName($fn);
-        my $fntext = $s =~ /^\.{1,2}$/ ? $s : $displayname;
-        $fntext =substr($fntext,0,$main::MAXFILENAMESIZE-5) if length($displayname)>$main::MAXFILENAMESIZE;
-
-        my $linkit =  $fn=~/^\.{1,2}$/ || (!$$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) || $$self{backend}->isExecutable($fn);
-
-        $ret = $linkit ? $$self{cgi}->a({href=>$full},$$self{cgi}->escapeHTML($fntext)) : $$self{cgi}->escapeHTML($fntext);
-        $ret .=  length($displayname) > $main::MAXFILENAMESIZE ? '[...]' : (' 'x($main::MAXFILENAMESIZE-length($displayname)));
-
-        $full=~/([^\.]+)$/;
-        my $suffix = $1 || $m;
-        my $icon = $self->getIcon($m);
-        my $width = $main::ICON_WIDTH || 18;
-        my $onmouseover="";
-        my $onmouseout="";
-        my $align="";
-        my $id='i'.time().$$self{WEB_ID};
-        $id=~s/\"//g;
-
-        my $cssclass='icon';
-        if ($main::ENABLE_THUMBNAIL && $self->hasThumbSupport($m) && $$self{backend}->isReadable($fn) && !$$self{backend}->isEmpty($fn))  {
-                $icon=$full.($full=~/\?.*/?';':'?').'action=thumb';
-                if ($main::THUMBNAIL_WIDTH && $main::ICON_WIDTH < $main::THUMBNAIL_WIDTH) {
-                        $cssclass='thumb';
-                        $onmouseover = qq@javascript:this.intervalFunc=function() { if (this.width<$main::THUMBNAIL_WIDTH) this.width+=@.(($main::THUMBNAIL_WIDTH-$main::ICON_WIDTH)/15).qq@; else window.clearInterval(this.intervalObj);}; this.intervalObj = window.setInterval("document.getElementById('$id').intervalFunc();", 10);@;
-                        $onmouseout = qq@javascript:window.clearInterval(this.intervalObj);this.width=$main::ICON_WIDTH;@;
-                }
-        }
-        my $img =  $$self{cgi}->img({id=>$id, src=>$icon,alt=>'['.$suffix.']', -class=>$cssclass, -width=>$width, -onmouseover=>$onmouseover,-onmouseout=>$onmouseout});
-        $ret = ($linkit ? $$self{cgi}->a(  {href=>$full}, $img):$img).' '.$ret;
-        return $ret;
-}
 sub mode2str {
         my ($self,$fn,$m) = @_;
 
@@ -376,166 +270,12 @@ sub getIcon {
         my ($self,$type) = @_;
         return $self->replaceVars(exists $main::ICONS{$type} ? $main::ICONS{$type} : $main::ICONS{default});
 }
-sub getUIIcon {
-        my ($self,$action) = @_;
-        return $self->replaceVars(exists $main::UI_ICONS{$action} ? $main::UI_ICONS{$action} : $main::UI_ICONS{default});
-}
 sub hasThumbSupport {
         my ($self,$mime) = @_;
 	return 1 if $mime =~ /^image\// || $mime =~ /^text\/plain/ || ($main::ENABLE_THUMBNAIL_PDFPS && $mime =~ /^application\/(pdf|ps)$/);
 	return 0;
 }
-sub renderFileActionsWithIcons {
-        my ($self,$fid, $file, $full) = @_;
-        my %attr= ();
-        my %disabled = ();
-        my @actions = ('edit','rename','zip','delete');
-        my %labels = ( rename=>$self->tl('movefilesbutton'),edit=>$self->tl('editbutton'),delete=>$self->tl('deletefilesbutton'), zip=>$self->tl('zipdownloadbutton'));
-        delete $actions[2] unless $main::ALLOW_ZIP_DOWNLOAD;
-        my $extactions = $$self{config}{extensions}->handle('fileaction', { path=>$full });
-        map { push @actions, $$_{action}; $labels{$$_{action}}=$self->tl($$_{label}); $disabled{$$_{action}}=$$_{disabled};  }  @{$extactions};
-        if (! $$self{backend}->isWriteable($full)) {
-                $disabled{rename}=1;
-                $disabled{delete}=1;
-        }
-        if (! $$self{backend}->isReadable($full)) {
-                $disabled{zip}=1;
-        }
-        if ($main::ALLOW_EDIT) {
-                my $ef = '('.join('|',@main::EDITABLEFILES).')';
-                $disabled{edit} = 1 unless $$self{backend}->basename($file) =~/$ef/i && $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full);
-        }
-        my $content="";
-        foreach my $action (@actions) {
-                $attr{$action}{-id}=qq@fileactions_${action}_${fid}@;
-                ###$attr{$action}{-name}='actions';
-                $attr{$action}{-class}='actionicon'.($disabled{$action}?' disabled':'');
-                $attr{$action}{-onclick}=$disabled{$action}? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
-                $attr{$action}{-ondblclick}=$disabled{$action} ? 'return false;' : qq@handleFileAction('$action','${fid}',event,'select');@;
-                $attr{$action}{-src}=$self->getUIIcon($action);
-                $attr{$action}{-title}=$labels{$action};
-                $content.= $$self{cgi}->img($attr{$action});
-        }
-        return $$self{cgi}->div({-class=>'actionicons'},$content);
-}
-sub renderFileActions {
-        my $self = shift;
-        return $main::FILE_ACTIONS_TYPE && $main::FILE_ACTIONS_TYPE eq 'select' ? $self->renderFileActionsWithSelect(@_) : $self->renderFileActionsWithIcons(@_);
-}
-sub renderFileActionsWithSelect {
-        my ($self,$fid, $file, $full) = @_;
-        my @values = ('--','rename','edit','zip','delete');
-        delete $values[3] unless $main::ALLOW_ZIP_DOWNLOAD;
-        my %labels = ( '--'=> '', rename=>$self->tl('movefilesbutton'),edit=>$self->tl('editbutton'),delete=>$self->tl('deletefilesbutton'), zip=>$self->tl('zipdownloadbutton') );
-        my %attr;
 
-        my $extactions = $$self{config}{extensions}->handle('fileaction', { path=>$full });
-        map { push @values, $$_{action}; $labels{$$_{action}}=$self->tl($$_{label}); $attr{$$_{action}}{disabled}='disabled' if $$_{disabled};  }  @{$extactions};
-
-        if (! $$self{backend}->isWriteable($full)) {
-                $attr{rename}{disabled}='disabled';
-                $attr{delete}{disabled}='disabled';
-        }
-        if (! $$self{backend}->isReadable($full)) {
-                $attr{zip}{disabled}='disabled';
-        }
-
-        if ($main::ALLOW_EDIT) {
-                my $ef = '('.join('|',@main::EDITABLEFILES).')';
-                $attr{edit}{disabled}='disabled' unless $$self{backend}->basename($file) =~/$ef/i && ($$self{backend}->isFile($full) && $$self{backend}->isWriteable($full));
-        } else {
-                @values = grep(!/^edit$/,@values);
-        }
-
-        return $$self{cgi}->popup_menu(-name=>'actions', -id=>'fileactions_'.$fid, -onchange=>"handleFileAction(this.value,'$fid',event,'select');", -values=>\@values, -labels=>\%labels, -attributes=>\%attr);
-}
-sub renderTableConfig {
-        my ($self, $action) = @_;
-	$action='window.location.reload()' unless $action;
-        my $content = "";
-
-        my $sortingcolumndefault ='name';
-        my $sortingorderdefault = 'asc';
-        if ($main::ORDER && $main::ORDER =~/^([^_]+)(_(.*))?$/) {
-                ($sortingcolumndefault,$sortingorderdefault) = ($1, $3 || 'asc');
-        }
-        my @tablecolumns = @main::ALLOWED_TABLE_COLUMNS;
-        my @sortingcolumns = grep(!/^fileactions$/,@main::ALLOWED_TABLE_COLUMNS);
-        my @visiblecolumns = $self->getVisibleTableColumns();
-        my %tablecolumnlabels;
-        my @tablecolumndefaults;
-        foreach my $col  (@tablecolumns) {
-                $tablecolumnlabels{$col} = $self->tl($col);
-                push @tablecolumndefaults, $col if grep(/^\Q$col\E$/,@visiblecolumns);
-        }
-        my %tablecolumnattributes = ( 'name'=>{ -disabled=>'disabled' } );
-
-        $content.=$$self{cgi}->div({-class=>'tableconfigbutton', -title=>$self->tl('tableconfig.button.title'), -onclick=>'toggleClassNameById("tableconfig","hidden",!document.getElementById("tableconfig").className.match(/hidden/));'}, $self->tl('tableconfig.button'));
-
-        $content.=$$self{cgi}->div({-id=>'tableconfig',-class=>'tableconfig hidden'},
-                $self->renderFieldSet('tableconfig.tablecolumns', $$self{cgi}->checkbox_group({-name=>'tablecolumns',-cols=>1,-values=>\@tablecolumns,-labels=>\%tablecolumnlabels,-defaults=>\@tablecolumndefaults, -attributes=>\%tablecolumnattributes}))
-                .$self->renderFieldSet('tableconfig.sortingcolumns', $$self{cgi}->radio_group({-name=>'sortingcolumns',-cols=>1, -values=>\@sortingcolumns,-labels=>\%tablecolumnlabels,-default=>$sortingcolumndefault}))
-                .$self->renderFieldSet('tableconfig.sortingorder', $$self{cgi}->radio_group({-name=>'sortingorder',-cols=>1, -values=>['asc','desc'], -labels=>{'asc'=>$self->tl('tableconfig.ascending'),'desc'=>$self->tl('tableconfig.descending')}, -default=>$sortingorderdefault}))
-                .$$self{cgi}->div({-class=>'tableconfigactions'},
-                        $$self{cgi}->button({-value=>$self->tl('cancel'),-onclick=>'toggleClassNameById("tableconfig","hidden",1)'})
-                        .$$self{cgi}->button({-value=>$self->tl('savebutton'), -onclick=>'if (saveTableConfig()) '.$action})
-                 )
-        );
-
-        return $$self{cgi}->div({-class=>'tableconfigcontainer'},$content);
-}
-sub renderToggleFieldSet {
-        my($self,$name,$content,$notoggle) = @_;
-
-        my $display = $$self{cgi}->cookie('toggle'.$name) || 'none';
-        return qq@<fieldset><legend>@
-                .($notoggle ? '' : $$self{cgi}->span({-id=>"togglebutton$name",-onclick=>"toggle('$name');", -class=>'toggle'},$display eq 'none' ? '+' : '-'))
-                .$$self{cgi}->escapeHTML($self->tl($name))
-                .qq@</legend>@
-                .$$self{cgi}->div({-id=>"toggle$name",-style=>($notoggle ? 'display:block;' : 'display:'.$display.';')}, $content)
-                .qq@</fieldset>@;
-}
-sub renderFieldSet { my $self=shift; return $self->renderToggleFieldSet($_[0],$_[1],1); }
-
-sub renderFrontendFilter {
-        my ($self ) = @_;
-        my $content  = "";
-        if ($$self{cgi}->cookie('filter.name') && $$self{cgi}->cookie('filter.name')=~/^(\=\~|\^|\$|eq|ne|lt|le|gt|ge) (.*)$/) {
-                my ($nameop, $nameval) = ($1,$2);
-                my %nameops = ( '=~' => $self->tl('filter.name.regexmatch'), '^' => $self->tl('filter.name.startswith'), '$' => $self->tl('filter.name.endswith'), 'eq' => $self->tl('filter.name.equal'), 'ne' => $self->tl('filter.name.notequal'), 'lt' => $self->tl('filter.name.lessthan'), 'gt' => $self->tl('filter.name.greaterthan'), 'le' => $self->tl('filter.name.lessorequal'), 'ge' => $self->tl('filter.name.greaterorequal'));
-                $content.=$self->tl('filter.name.showonly').$nameops{$nameop}.'&nbsp;"'.$$self{cgi}->span($nameval).'"';
-
-        }
-        if ($$self{cgi}->cookie('filter.types') && $$self{cgi}->cookie('filter.types')=~/^[dfl]+$/ && length($$self{cgi}->cookie('filter.types'))<3) {
-                my $filter = $$self{cgi}->cookie('filter.types');
-                my $t=$filter=~/d/ ? $self->tl('filter.types.folder') : '';
-                if ($filter=~/f/) {
-                        $t.=', ' if $t ne '';
-                        $t.=$self->tl('filter.types.files');
-                }
-                if ($filter=~/l/) {
-                        $t.=', ' if $t ne '';
-                        $t.=$self->tl('filter.types.links');
-                }
-                $content.='; ' if $content ne '';
-                $content.=$self->tl('filter.types.showonly').$t;
-        }
-
-        if ($$self{cgi}->cookie('filter.size') && $$self{cgi}->cookie('filter.size')  =~ /^([\<\>\=]{1,2})(\d+)(\w*)$/) {
-                my ($op,$val,$unit) = ($1,$2,$3);
-                my ($v,$t) = $self->renderByteValue($val*($$self{BYTEUNITS}{$unit}||1),2,2);
-                my %sizeops = ( '<'=>$self->tl('filter.size.lessthan'), '<='=>$self->tl('filter.size.lessorequal'), '=='=> $self->tl('filter.size.equal'), '>'=>$self->tl('filter.size.greaterthan'), '>='=>$self->tl('filter.size.greaterorequal'),);
-                $content.='; ' if $content ne '';
-                $content.=$self->tl('filter.size.showonly').$sizeops{$op}.$$self{cgi}->span({-title=>$t},$v);
-        }
-        if ($$self{cgi}->cookie('filter.time') && $$self{cgi}->cookie('filter.time') =~ /^([\<\>\=]{1,2})(\d+)$/) {
-                my ($op,$val) = ($1,$2);
-                $content.='; ' if $content ne '';
-                $content.=$self->tl('filter.time.showonly').$op.localtime($val);
-        }
-
-        return $content ne "" ? $$self{cgi}->div({-class=>'filter'},$self->tl('filter').$content) : $content;
-}
 
 sub getVisibleTableColumns {
 	my ($self) = @_;
@@ -552,4 +292,3 @@ sub getVisibleTableColumns {
     return @vc;
 }
 1;
-
