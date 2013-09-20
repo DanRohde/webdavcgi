@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
 	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-	    	%RCS %FSVLINK %SUPPORTED_LANGUAGES @FILTERS %RO
+	    	%RCS %FSVLINK %SUPPORTED_LANGUAGES %RO
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -698,11 +698,6 @@ $DEBUG = 0;
 ## EXAMPLE: %EXTENSION_CONFIG = ( 'SysInfo' => { showall=>1 }); 
 #%EXTENSION_CONFIG = ( 'SysInfo' => { showall=>1 });
 
-## -- FILTERS
-## a list of Web interface filters:
-## EXAMPLE: @FILTERS = ('PublicUriShow');
-#@FILTERS = ();
- 
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props);

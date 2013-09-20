@@ -23,7 +23,7 @@ use strict;
 use Module::Load;
 
 ##our @SUPPORTED_HOOKS = ( 'gethandler', 'posthandler', 'header', 'search', 'viewtools', 'quota', 'sidebar', 'getFolderList', 'toolbar' );
-our @SUPPORTED_HOOKS = ( 'gethandler', 'fileaction', 'fileactionpopup' );
+our @SUPPORTED_HOOKS = ( 'gethandler', 'fileaction', 'fileactionpopup', 'css', 'javascript' );
 
 ##  HOOKS:
 ##     gethandler - return: 1 (handled) | 0 (not handled)

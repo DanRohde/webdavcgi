@@ -343,6 +343,14 @@ sub renderFileListEntry {
 				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0) || $uid,
 				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0) || $gid,
 				);
+	# fileprop hook by Harald Strack <hstrack@ssystems.de>
+	my $filepropExtensions = $$self{config}{extensions}->handle('fileprop', { path=>$full });
+	if (defined ($filepropExtensions)) {
+		foreach my $ret (@{$filepropExtensions}) {
+			my %newHash = (%$ret, %stdvars); 
+			%stdvars = %newHash;
+		}
+	}
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
 	return $self->renderTemplate($fn,$ru,$e);
 }

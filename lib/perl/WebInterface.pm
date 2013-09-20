@@ -88,7 +88,13 @@ sub handlePostRequest {
         my $redirtarget = $main::REQUEST_URI;
         $redirtarget =~s/\?.*$//; # remove query
 	my $handled = 1;
-        if ($$self{cgi}->param('delete')||$$self{cgi}->param('rename')||$$self{cgi}->param('mkcol')||$$self{cgi}->param('changeperm')||$$self{cgi}->param('edit')||$$self{cgi}->param('savetextdata')||$$self{cgi}->param('savetextdatacont')||$$self{cgi}->param('createnewfile')||$$self{cgi}->param('createsymlink')) {
+	
+	my $retByExt = $$self{config}{extensions}->handle('posthandler', $$self{config});
+	my $handledByExt = $retByExt ?  join('',@{$retByExt}) : '';
+
+	if ($handledByExt =~ /1/) {
+		## done.	
+	} elsif ($$self{cgi}->param('delete')||$$self{cgi}->param('rename')||$$self{cgi}->param('mkcol')||$$self{cgi}->param('changeperm')||$$self{cgi}->param('edit')||$$self{cgi}->param('savetextdata')||$$self{cgi}->param('savetextdatacont')||$$self{cgi}->param('createnewfile')||$$self{cgi}->param('createsymlink')) {
                 $self->getFunctions()->handleFileActions();
         } elsif ($main::ALLOW_POST_UPLOADS && $$self{backend}->isDir($main::PATH_TRANSLATED) && defined $$self{cgi}->param('filesubmit')) {
                 $self->getFunctions()->handlePostUpload($redirtarget);
