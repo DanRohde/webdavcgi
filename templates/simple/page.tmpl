@@ -10,8 +10,10 @@
 <link rel="stylesheet" type="text/css" href="${baseuri}_webdavcgi_/views/simple/style.min.css"/>
 <!--IF("$config(CSS)" ne "")--><style>$config(CSS)</style> <!--ENDIF-->
 <!--IF("$config(CSSURI)" ne "")--><link rel="stylesheet" type="text/css" href="$config(CSSURI)"/><!--ENDIF-->
+$extension(css)
 <script src="${baseuri}_webdavcgi_/views/simple/contrib/contrib.min.js"></script>
 <script src="${baseuri}_webdavcgi_/views/simple/script.min.js"></script>
+$extension(javascript)
 $config(HTMLHEAD)
 $INCLUDE(htmlhead)</head>
 <body>

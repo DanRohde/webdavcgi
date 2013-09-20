@@ -83,7 +83,7 @@ $(document).ready(function() {
 	});
 	
 	updateFileList($("#flt").attr("data-uri"));
-	
+});	
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
 		// keyboard events for filename links
@@ -943,17 +943,20 @@ function getVisibleAndSelectedFiles() {
 }
 function handleFileActionEvent(event) {
 	preventDefault(event);
-	var row = $(this).closest("tr");
-	if ($(this).hasClass("download")) {
+	var self = $(this);
+	var row = self.closest("tr");
+	if (self.hasClass("download")) {
 		postAction({"zip" : "yes", "file" : row.attr('data-file')});
-	} else if ($(this).hasClass("rename")) {
+	} else if (self.hasClass("rename")) {
 		handleFileRename(row);
-	} else if ($(this).hasClass("delete")) {
+	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
-	} else if ($(this).hasClass("edit")) {
+	} else if (self.hasClass("edit")) {
 		handleFileEdit(row);
-	} else if ($(this).hasClass("props")) {
+	} else if (self.hasClass("props")) {
 		window.location.href = concatUri(window.location.pathname, row.attr('data-file') + '?action=props');
+	} else if (self.hasClass("extension")) {
+		$("body").trigger("handleFileActionEvent", self);
 	}
 }
 function handleFileListRowFocusIn(event) {
@@ -2153,4 +2156,4 @@ function initPopupMenu() {
 	$("body").click(function() { $("#popupmenu:visible").hide().appendTo("body"); });
 }
 // ready ends:
-});
+//});

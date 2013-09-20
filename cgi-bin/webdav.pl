@@ -68,8 +68,8 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
-	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-	    	%RCS %FSVLINK %SUPPORTED_LANGUAGES
+	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
+	    	%RCS %FSVLINK %SUPPORTED_LANGUAGES @FILTERS %RO
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -666,6 +666,10 @@ $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 ## RCS backend configuration (see doc/doc.html):
 %RCS = ();
 
+## -- RO
+## RO backend configuration (see doc/doc.html):
+## EXAMPLE: %RO = ( backend => 'FS');
+#%RO = ( backend =>'FS');
 ## -- FSVLINK
 ## FSVLINK provides virtual file system links 
 ## FORMAT:
@@ -689,6 +693,16 @@ $DEBUG = 0;
 ## EXAMPLE: @EXTENSIONS = ( 'SysInfo' , 'PropertiesViewer' );
 #@EXTENSIONS = ( 'SysInfo' );
 
+## -- EXTENSION_CONFIG
+## allowes extension configurations supported by a activated extension (see @EXTENSIONS)
+## EXAMPLE: %EXTENSION_CONFIG = ( 'SysInfo' => { showall=>1 }); 
+#%EXTENSION_CONFIG = ( 'SysInfo' => { showall=>1 });
+
+## -- FILTERS
+## a list of Web interface filters:
+## EXAMPLE: @FILTERS = ('PublicUriShow');
+#@FILTERS = ();
+ 
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props);
@@ -2615,6 +2629,9 @@ sub rcopy {
         } else {
                 return 0;
         }
+        #BUGFIX: properties have no trailing slash
+        $src =~ s/\/$//;
+        $dst =~ s/\/$//;
 	my $db = getDBDriver();
         $db->db_deleteProperties($dst);
         $db->db_copyProperties($src,$dst);
