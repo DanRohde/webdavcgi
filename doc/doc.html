@@ -186,6 +186,11 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 0.8.6 ro 0.8.7</h3>
+<ul>
+<li> The classic view and the sidebar view are removed from code base.<ul>
+<li>%UI_ICONS configuration variable is obsolete</li></ul></li>
+</ul>
 <h3>Upgrading from 0.8.5 to 0.8.6</h3>
 <ol>
 <li>The Simple View:
@@ -377,7 +382,6 @@ Graphics::Magick does not compile:
 <li> You can use Image::Magick instead but it makes trouble in conjunction with <a href="#speedy">Speedy</a>: 
 <pre>sed -i -e 's@Graphics::Magick@Image::Magick@g' \
                 checkenv \
-		lib/perl/WebInterface/View/classic/Renderer.pm \
 		lib/perl/WebInterface/Renderer.pm</pre>
 </li>
 </ul>

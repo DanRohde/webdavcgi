@@ -67,7 +67,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
-	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX %UI_ICONS $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
+	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
 	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    	%RCS %FSVLINK %SUPPORTED_LANGUAGES
 ); 
@@ -166,17 +166,8 @@ $MAXNAVPATHSIZE = 50;
 	default => '${VHTDOCS}icons/unknown.gif',
 );
 
-## -- UI_ICONS
+## -- UI_ICONS - obsolete 
 ## user interface icons
-## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
-%UI_ICONS = (
-	rename => '${VHTDOCS}actions/Actions-edit-rename-icon.png',
-	##edit => '${VHTDOCS}actions/txt-icon.png',
-	edit => '${VHTDOCS}actions/desktop-icon.png',
-	zip => '${VHTDOCS}actions/tgz-icon.png',
-	delete => '${VHTDOCS}actions/trashcan-full-icon.png',
-	props => '${VHTDOCS}actions/readme-icon.png',
-);
 
 ## -- ALLOW_EDIT
 ## allow changing text files (@EDITABLEFILES) with the Web interface
@@ -294,12 +285,12 @@ $PAGE_LIMIT=15;
 $ENABLE_BOOKMARKS = 1;
 
 ## -- VIEW
-## defines the default view (sidebar or classic)
+## defines the default view 
 $VIEW = 'simple';
 
 ## -- SUPPORTED_VIEWS
 ## define supported views
-@SUPPORTED_VIEWS = ( 'simple', 'sidebar', 'classic' );
+@SUPPORTED_VIEWS = ( 'simple' );
 
 ## -- ALLOW_POST_UPLOADS
 ## enables a upload form in a fancy index of a folder (browser access)
@@ -1020,10 +1011,6 @@ if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DEL
 	gotomethod($method);
 	$backend->finalize() if $backend;
 	getDBDriver()->finalize();
-	if (!$DBI_PERSISTENT && $DBI_INIT) {
-		$DBI_INIT->disconnect();
-		$DBI_INIT=undef;
-	}
 } else {
 	printHeaderAndContent('405 Method Not Allowed');
 }

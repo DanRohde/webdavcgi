@@ -2,6 +2,7 @@
      - removed classic view, sidebar view, unused code
      - added mising contact button
      - fixed directory access check for the SMB backend
+     - fixed DBI_PERSISTANT feature
 0.8.6: 2013/7/8
      - fixed cookie related bug
      - added head toggle

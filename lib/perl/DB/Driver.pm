@@ -32,7 +32,12 @@ sub new {
 	return $self;
 }
 sub finalize {
+	my $self = shift;
 	%CACHE = ();
+	if (!$main::DBI_PERSISTENT && $$self{DBI_INIT}) {
+		$$self{DBI_INIT}->disconnect();
+		delete $$self{DBI_INIT};
+	}
 }
 
 sub db_isRootFolder {
@@ -221,7 +226,7 @@ sub db_delete {
         return $ret;
 }
 sub db_init {
-	my $self = shift;
+		my $self = shift;
         return $$self{DBI_INIT} if defined $$self{DBI_INIT};
 
         my $dbh = DBI->connect($main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS, { RaiseError=>0, PrintError=>0, AutoCommit=>0 }) || die("You need a database (see \$DBI_SRC configuration)");
