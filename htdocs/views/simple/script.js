@@ -1327,11 +1327,20 @@ function handleFileRename(row) {
 			preventDefault(event);
 			function doRename() {
 				$.post($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
-					if (response.error) {
+					//if (response.error) {
 						row.find('.renamefield').remove();
 						row.find('td.filename div.hidden div.filename').unwrap();
-					} else if (response.message) {
-						updateFileList();
+					//} else 
+					if (response.message) {
+						//updateFileList();
+						$.get($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
+							var d = $("tr[data-file='"+newname+"']");
+							if (d.length>0) d.remove();
+							var newrow = $(r);
+							row.replaceWith(newrow);
+							row = newrow;
+							initFileList();
+						});
 					}
 					handleJSONResponse(response);
 				});
