@@ -83,7 +83,7 @@ $(document).ready(function() {
 	});
 	
 	updateFileList($("#flt").attr("data-uri"));
-});	
+
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
 		// keyboard events for filename links
@@ -1239,6 +1239,7 @@ function handleFileEdit(row) {
 								var newrow = $(r);
 								row.replaceWith(newrow);
 								row = newrow;
+								initFileList();
 							});
 						}
 						handleJSONResponse(response);
@@ -2159,4 +2160,4 @@ function initPopupMenu() {
 	$("body").click(function() { $("#popupmenu:visible").hide().appendTo("body"); });
 }
 // ready ends:
-//});
+});
