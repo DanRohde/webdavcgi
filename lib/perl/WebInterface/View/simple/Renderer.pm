@@ -65,6 +65,11 @@ sub render {
 		} elsif ($ajax eq 'search') {
 			$content = $self->handleSearchRequest($fn, $ru, $$self{cgi}->param('template'));
 			$contenttype='application/json';
+		} elsif ($ajax eq 'getFileListEntry') {
+			my $entrytemplate=$self->readTemplate($$self{cgi}->param('template'));
+			my $columns = $self->renderVisibleTableColumns($entrytemplate).$self->renderInvisibleAllowedTableColumns($entrytemplate);
+			$entrytemplate=~s/\$filelistentrycolumns/$columns/esg;
+			$content = $self->renderFileListEntry($fn, $ru, $$self{cgi}->param('file'), $entrytemplate);
 		}
 	} elsif ($$self{cgi}->param('msg') || $$self{cgi}->param('errmsg') 
 			|| $$self{cgi}->param('aclmsg') || $$self{cgi}->param('aclerrmsg')

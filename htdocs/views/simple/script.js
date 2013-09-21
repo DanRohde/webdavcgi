@@ -1234,7 +1234,12 @@ function handleFileEdit(row) {
 					$.post(addMissingSlash($('#fileList').attr('data-uri')), { savetextdata: 'yes', filename: row.attr('data-file'), textdata: text.val() }, function(response) {
 						if (!response.error && response.message) {
 							text.data("response", text.val());
-							updateFileList();
+							//updateFileList();
+							$.get(addMissingSlash($('#fileList').attr('data-uri')), { ajax: 'getFileListEntry', template: $('#fileList').attr("data-entrytemplate"), file: row.attr('data-file')}, function(r) {
+								var newrow = $(r);
+								row.replaceWith(newrow);
+								row = newrow;
+							});
 						}
 						handleJSONResponse(response);
 					});	
