@@ -1326,13 +1326,11 @@ function handleFileRename(row) {
 		if (event.keyCode == 13 && file != newname) {
 			preventDefault(event);
 			function doRename() {
+				var block = blockPage();
 				$.post($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
-					//if (response.error) {
-						row.find('.renamefield').remove();
-						row.find('td.filename div.hidden div.filename').unwrap();
-					//} else 
+					row.find('.renamefield').remove();
+					row.find('td.filename div.hidden div.filename').unwrap();
 					if (response.message) {
-						//updateFileList();
 						$.get($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
 							var d = $("tr[data-file='"+newname+"']");
 							if (d.length>0) d.remove();
@@ -1340,7 +1338,10 @@ function handleFileRename(row) {
 							row.replaceWith(newrow);
 							row = newrow;
 							initFileList();
+							block.remove();
 						});
+					} else {
+						block.remove();
 					}
 					handleJSONResponse(response);
 				});
