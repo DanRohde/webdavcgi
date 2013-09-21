@@ -20,8 +20,8 @@ package WebInterface::Extension::PropertiesViewer;
 
 use strict;
 
-use WebInterface::View::sidebar::Renderer;
-our @ISA = qw( WebInterface::View::sidebar::Renderer);
+use WebInterface::Renderer;
+our @ISA = qw( WebInterface::Renderer);
 
 sub new {
         my $this = shift;
@@ -63,7 +63,7 @@ sub renderPropertiesViewer {
         my ($self, $fn, $ru) = @_;
         $self->setLocale();
         my $content = "";
-        $content .= $self->start_html("$main::TITLEPREFIX $ru properties");
+        $content .= $$self{cgi}->start_html("$main::TITLEPREFIX $ru properties");
         $content .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
         $content .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
         my $fullparent = main::getParentURI($ru) .'/';

@@ -57,9 +57,9 @@ sub initialize {
 
 	if (!defined $DB) {
 		$DB = DBI->connect(
-				$main::DBB{dsn} || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db', 
-				$main::DBB{user} || "", 
-				$main::DBB{password} || "", 
+				$main::BACKEND_CONFIG{$main::BACKEND}{dsn} || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db', 
+				$main::BACKEND_CONFIG{$main::BACKEND}{user} || "", 
+				$main::BACKEND_CONFIG{$main::BACKEND}{password} || "", 
 				{ RaiseError=>0, AutoCommit=>0 }
 		);
 		if (defined $DB) {

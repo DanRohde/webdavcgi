@@ -412,6 +412,9 @@ sub handleFileActions {
 			$errmsg = 'createnewfileerr';
 		}
 	}
+	else {
+		return 0;
+	}
 	print $$self{cgi}->redirect( $redirtarget
 		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
 }
@@ -463,11 +466,11 @@ sub doAFSFSSETACLCmd {
 		my $cmd;
 		$fn =~ s/(["\$\\])/\\$1/g;
 		$cmd = sprintf( '%s setacl -dir "%s" -acl %s -clear 2>&1',
-			$main::AFS_FSCMD, $$self{backend}->resolveVirt($fn), $pacls );
+			$main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $$self{backend}->resolveVirt($fn), $pacls );
 		$output = qx@$cmd@;
 		if ( $nacls ne "" ) {
 			$cmd = sprintf( '%s setacl -dir "%s" -acl %s -negative 2>&1',
-				$main::AFS_FSCMD, $$self{backend}->resolveVirt($fn), $nacls );
+				$main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $$self{backend}->resolveVirt($fn), $nacls );
 			$output .= qx@$cmd@;
 		}
 	}

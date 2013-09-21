@@ -530,7 +530,7 @@ sub readAFSAcls {
 
 	$fn=$$self{backend}->resolveVirt($fn);
 	$fn=~s/(["\$\\])/\\$1/g;
-	open(my $afs, sprintf("%s listacl \"%s\"|", $main::AFS_FSCMD, $fn)) or die("cannot execute $main::AFS_FSCMD list \"$fn\"");
+	open(my $afs, sprintf("%s listacl \"%s\"|", $main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $fn)) or die("cannot execute $main::BACKEND_CONFIG{$main::BACKEND}{fscmd} list \"$fn\"");
 	my @lines = <$afs>;
 	close($afs);
 

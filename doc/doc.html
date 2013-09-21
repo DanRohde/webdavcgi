@@ -33,6 +33,7 @@ Content of this topic:
 	<li><a href="#smb">SMB/CIFS Support</a></li>
 	<li><a href="#dbb">DBB database backend</a></li>
 	<li><a href="#rcs">RCS backend</a></li>
+	<li><a href="#ro">Read-only backend RO</a></li>
 	<li><a href="#performance">Performance</a></li>
 	<li><a href="#speedy">Speedy Support</a></li>
 	<!--[<li><a href="#security">Security</a></li>]-->
@@ -186,10 +187,21 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
-<h3>Upgrading from 0.8.6 ro 0.8.7</h3>
+<h3>Upgrading from 0.8.6 to 0.8.7</h3>
 <ul>
-<li> The classic view and the sidebar view are removed from code base.<ul>
-<li>%UI_ICONS configuration variable is obsolete</li></ul></li>
+<li> The classic view and the sidebar view are removed from code base.
+	<ul><li> %UI_ICONS configuration variable is obsolete and was removed</li></ul></li>
+<li> The complete backend configuration was changed:
+<ul>
+<li><code>%FSVLINK=(...);</code> was replaced by <code>$BACKEND_CONFIG{FS}{fsvlink}={...};</code></li>
+<li><code>%SMB=(...);</code> was replaced by <code>$BACKEND_CONFIG{SMB}={...};</code></li>
+<li><code>%RCS=(...);</code> was replaced by <code>$BACKEND_CONFIG{RCS}={...};</code></li>
+<li><code>$GFSQUOTA='...';</code> was replaced by <code>$BACKEND_CONFIG{GFS}{quota}='...';</code></li>
+<li><code>$AFS_FSCMD='...';</code> was replaced by <code>$BACKEND_CONFIG{AFS}{fscmd}='...';</code></li>
+<li><code>$AFSQUOTA='...';</code> was replaced by <code>$BACKEND_CONFIG{AFS}{quota}='...';</code></li>
+<li><code>%DBB=(...);</code> was replaced by <code>$BACKEND_CONFIG{DBB}={...};</code></li>
+</ul></li>
+<li> A extension configuration variable was added: <code>%EXTENSION_CONFIG</code></li>
 </ul>
 <h3>Upgrading from 0.8.5 to 0.8.6</h3>
 <ol>
@@ -822,7 +834,7 @@ $DBI_USER='';
 $DBI_PASS=''; 
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
-$AFSQUOTA='/usr/bin/fs listquota $FS';
+$BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota $FS';
 
 $ENABLE_AFSACLMANAGER = 1;
 $ALLOW_AFSACLCHANGES = 1;
@@ -832,7 +844,7 @@ $ALLOW_AFSGROUPCHANGES = 1;
 
 $ALLOW_SEARCH = 0;
 $ALLOW_CHANGEPERM = 0;
-$ENABLE_AFS = 1;
+
 
 $MIMEFILE='/etc/mime.types';
 
@@ -859,7 +871,7 @@ $DBI_USER='';
 $DBI_PASS=''; 
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
-$GFSQUOTA='/usr/sbin/gfs_quota -f';
+$BACKEND_CONFIG{GFS}{quota}='/usr/sbin/gfs_quota -f';
 </pre>
 
 <h2 id="smb">SMB/CIFS Support</h2>
@@ -971,7 +983,7 @@ $ALLOW_SYMLINK = 0;
 #### SMB backend setup:
 ### required entries: defaultdomain, domains, fileserver
 ### optional entries: sharefilter, usersharefilter, shares, sharealiases
-%SMB = (
+$BACKEND_CONFIG{SMB} = {
   defaultdomain => 'MY.EXAMPLE.DOMAIN.ORG',	#required
 
   ## allow only configured server names and shares (default: 0)
@@ -1030,7 +1042,7 @@ $ALLOW_SYMLINK = 0;
       },
     },
   },
-);
+};
 </pre>
 
 <h3>... with username/password/workgroup authentication</h3>
@@ -1059,8 +1071,8 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
 
 <code>/etc/webdav.conf</code> example: <a href="#smbconf">see previous section</a>
 
-<h2 id="dbb">DBD database backend</h2>
-<p>The DBD backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
+<h2 id="dbb">DBB database backend</h2>
+<p>The DBB backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
 Features:
 <ul>
 <li> puts all data to a single database table (binaries too)</li>
@@ -1089,11 +1101,11 @@ $ALLOW_SYMLINK = 0;
 
 $BACKEND = 'DBB';
 
-%DBB = (
+$BACKEND_CONFIG{DBB} = {
 	dsn => 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db',
 	username => '',
 	password => '',
-);
+};
 
 </pre>
 <h2 id="rcs">RCS backend</h2>
@@ -1129,7 +1141,7 @@ Requirements:
 ...
 $BACKEND = 'RCS';
 
-%RCS = (
+$BACKEND_CONFIG{RCS} = {
         ## backend used for versioning:
         backend=>'FS',                  # required 
 
@@ -1159,10 +1171,18 @@ $BACKEND = 'RCS';
         ## ignore filenames (check is case insensitive):
         # ignorefilenames=> [ '.*~'],   # optional
 
-);
+};
 ...
 </pre>
-
+<h2 id="ro">Read-only backend RO</h2>
+<p> The RO backend is a backend wrapper for all other backends and allows only read-only access to files and folders.</p>
+<code>webdav.conf</code> example:
+<pre>
+...
+$BACKEND='RO';
+$BACKEND_CONFIG{RO}{backend} = 'FS';
+...
+</pre>
 <h2 id="performance">Performance</h2>
 <ul>
   <li> Use a fast (local) database.</li>

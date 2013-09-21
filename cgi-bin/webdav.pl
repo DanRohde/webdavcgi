@@ -42,7 +42,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG %ELEMENTORDER
             $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
             $ALLOW_INFINITE_PROPFIND %NAMESPACES %NAMESPACEELEMENTS %ELEMENTS %NAMESPACEABBR %DATATYPES
-            $CHARSET $LOGFILE %CACHE $GFSQUOTA $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE @PROTECTED_PROPS
+            $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE @PROTECTED_PROPS
             @UNSUPPORTED_PROPS $ENABLE_ACL $ENABLE_CALDAV @ALLPROP_PROPS $ENABLE_LOCK
             @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS @IGNORE_PROPS @KNOWN_CALDAV_COLL_PROPS
             @KNOWN_COLL_LIVE_PROPS @KNOWN_FILE_LIVE_PROPS
@@ -62,14 +62,14 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR 
             $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
 	    	$ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
-	    	$LIMIT_FOLDER_DEPTH $AFS_FSCMD $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
+	    	$LIMIT_FOLDER_DEPTH $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD $ENABLE_AFSGROUPMANAGER $ALLOW_AFSGROUPCHANGES 
-            $WEB_ID $ENABLE_BOOKMARKS $ENABLE_AFS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
+            $WEB_ID $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER @PAGE_LIMITS
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
-	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %SMB %DBB $ALLOW_SYMLINK
+	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-	    	%RCS %FSVLINK %SUPPORTED_LANGUAGES %RO
+	    	%SUPPORTED_LANGUAGES 
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -166,7 +166,7 @@ $MAXNAVPATHSIZE = 50;
 	default => '${VHTDOCS}icons/unknown.gif',
 );
 
-## -- UI_ICONS - obsolete 
+## -- UI_ICONS -- obsolete, use stylesheets instead 
 ## user interface icons
 
 ## -- ALLOW_EDIT
@@ -386,7 +386,7 @@ $HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as 
 ## -- SIGNATURE
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
-$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2012 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
+$SIGNATURE = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
 
 
 ## -- LANG
@@ -473,35 +473,37 @@ $BUFSIZE = 1048576;
 ## EXAMPLE: $LOGFILE='/tmp/webdavcgi.log';
 # $LOGFILE='/tmp/webdavcgi.log';
 
-## -- GFSQUOTA
+## -- GFSQUOTA -- obsolete, use $BACKEND_CONFIG{GFS}{quota}='...' instead
 ## if you use a GFS/GFS2 filesystem and if you want quota property support set this variable
 ## EXAMPLE: $GFSQUOTA='/usr/sbin/gfs2_quota -f';
 #$GFSQUOTA='/usr/sbin/gfs_quota -f';
 
-## -- ENABLE_AFS -- obsolete - use $BACKEND = 'AFS' instead
+## -- ENABLE_AFS -- obsolete, use $BACKEND = 'AFS' instead
 ## to enable AFS support set: $BACKEND = 'AFS';
 ## $ENABLE_AFS is only used to enable AFS ACL manager and AFS group manager
 # $ENABLE_AFS = 1;
 
-## -- AFSQUOTA
+## -- AFSQUOTA -- obsolete, use $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota'; instead
 ## if you use a AFS filesystem and if you want quota property support set this variable
 ## EXAMPLE: $AFSQUOTA='/usr/bin/fs listquota';
 #$AFSQUOTA='/usr/bin/fs listquota';
+$BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota';
 
-## -- AFS_FSCMD
+## -- AFS_FSCMD -- obsolete, use $BACKEND_CONFIG{AFS}{fscmd}='/usr/bin/fs'; instead 
 ## file path for the fs command to change acls
 ## EXAMPLE: $AFS_FSCMD='/usr/bin/fs';
-$AFS_FSCMD='/usr/bin/fs';
+#$AFS_FSCMD='/usr/bin/fs';
+$BACKEND_CONFIG{AFS}{fscmd}='/usr/bin/fs';
 
-## -- ENABLE_AFSACLMANAGER
+## -- ENABLE_AFSACLMANAGER -- 
 ## enables AFS ACL Manager for the Web interface
 ## EXAMPLE: $ENABLE_AFSACLMANAGER = 1;
-$ENABLE_AFSACLMANAGER = $ENABLE_AFS;
+$ENABLE_AFSACLMANAGER = 0;
 
 ## -- ALLOW_AFSACLCHANGES
 ## allows AFS ACL changes. if disabled the AFS ACL Manager shows only the ACLs of a folder.
 ## EXAMLE: $ALLOW_AFSACLCHANGES = 1;
-$ALLOW_AFSACLCHANGES = $ENABLE_AFS;
+$ALLOW_AFSACLCHANGES = 0;
 
 ## -- PROHIBIT_AFS_ACL_CHANGES_FOR
 ## prohibits AFS ACL changes for listed users/groups
@@ -511,12 +513,12 @@ $ALLOW_AFSACLCHANGES = $ENABLE_AFS;
 ## -- ENABLE_AFSGROUPMANAGER 
 ## enables the AFS Group Manager
 ## EXAMPLE: $ENABLE_AFSGROUPMANAGER = 1;
-$ENABLE_AFSGROUPMANAGER = $ENABLE_AFS;
+#$ENABLE_AFSGROUPMANAGER = 0;
 
 ## -- ALLOW_AFSGROUPCHANGES
 ## enables AFS group change support
 ## EXAMPLE: $ALLOW_AFSGROUPCHANGES = 1;
-$ALLOW_AFSGROUPCHANGES = $ENABLE_AFS;
+#$ALLOW_AFSGROUPCHANGES = 0;
 
 ## -- AFS_PTSCMD
 ## file path to the AFS pts command
@@ -656,21 +658,21 @@ $LIMIT_FOLDER_DEPTH = 20;
 
 ## -- BACKEND
 ## defines the WebDAV/Web interface backend (see $INSTALL_BASE/lib/perl/Backend/<BACKEND> for supported backends)
-$BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
+$BACKEND =  'FS';
 
-## -- SMB
+## -- BACKEND_CONFIG
+## allowes backend specific configurations (see doc/doc.html)
+## EXAMPLE: $BACKEND_CONFIG{FS}={ fsvlink=> { '/home/testuser/' => {'testlink' => '/home/testuser/testlinkdest' } }}
+
+## -- SMB -- obsolte, use $BACKEND_CONFIG{SMB} = { } instead
 ## SMB backend configuration (see doc/doc.html):
-%SMB = ();
+#%SMB = ();
 
-## -- RCS
+## -- RCS -- obsolete, use $BACKEND_CONFIG{RCS} = { } instead
 ## RCS backend configuration (see doc/doc.html):
-%RCS = ();
+#%RCS = ();
 
-## -- RO
-## RO backend configuration (see doc/doc.html):
-## EXAMPLE: %RO = ( backend => 'FS');
-#%RO = ( backend =>'FS');
-## -- FSVLINK
+## -- FSVLINK -- obsolete, use $BACKEND_CONFIG{FS} = { fsvlink=> { ... }} instead;
 ## FSVLINK provides virtual file system links 
 ## FORMAT:
 ##         <directory> => { <linkname> => <linkdest>,  <linkname2> = > <linkdest2>, ...},
@@ -680,7 +682,7 @@ $BACKEND =  $ENABLE_AFS ? 'AFS' : 'FS';
 ##         <linkname> entries must not contain slashes
 ##         <linnkdest> entries have to be absolute folder names
 ## EXAMPLE: %FSVLINK = ( '/home/testuser/' => { 'testlink' => '/home/testuser/testlinkdest' } );
-%FSVLINK = ();
+#%FSVLINK = ();
 
 ## -- DEBUG
 ## enables/disables debug output

@@ -116,8 +116,8 @@ sub readDir {
                         push @files, $file;
                 }
                 closedir($dir);
-		if (exists $main::FSVLINK{$dirname} && (!defined $limit || $#files < $limit)) {
-			foreach my $file (keys %{$main::FSVLINK{$dirname}}) {
+		if (exists $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$dirname} && (!defined $limit || $#files < $limit)) {
+			foreach my $file (keys %{$main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$dirname}}) {
 				last if defined $limit && $#files >= $limit;
 				next if $self->filter($filter, $dirname, $file);
 				push @files, $file;
@@ -371,23 +371,23 @@ sub copy {
 }
 sub isVirtualLink {
 	my ($self, $fn) = @_;
-	return exists $main::FSVLINK{$self->dirname($fn).'/'} && exists $main::FSVLINK{$self->dirname($fn).'/'}{$self->basename($fn)};
+	return exists $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$self->dirname($fn).'/'} && exists $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$self->dirname($fn).'/'}{$self->basename($fn)};
 }
 sub getVirtualLinkTarget {
 	my ($self, $src) = @_;
 	my $target = $src;
 	if (!exists $CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys}) {
-		my @fslinkkeys = sort { $b cmp $a } keys %main::FSVLINK;
+		my @fslinkkeys = sort { $b cmp $a } keys %{$main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}};
 		$CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys} = \@fslinkkeys;
 	}
 
 	foreach my $linkdir ( @{$CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys}}) {
 		if (!exists $CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir}) {
-			my @linkdirkeys =  keys %{$main::FSVLINK{$linkdir}} ;
+			my @linkdirkeys =  keys %{$main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$linkdir}} ;
 			$CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir} = \@linkdirkeys;
 		}
 		foreach my $link ( @{$CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir}} ) { 
-			$target=~s /^\Q$linkdir$link\E(\/?|\/.+)?$/$main::FSVLINK{$linkdir}{$link}$1/ && last;
+			$target=~s /^\Q$linkdir$link\E(\/?|\/.+)?$/$main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$linkdir}{$link}$1/ && last;
 		}
 	}
 	return $target;

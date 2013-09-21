@@ -955,9 +955,7 @@ function handleFileActionEvent(event) {
 		handleFileEdit(row);
 	} else if (self.hasClass("props")) {
 		window.location.href = concatUri(window.location.pathname, row.attr('data-file') + '?action=props');
-	} else if (self.hasClass("extension")) {
-		$("body").trigger("handleFileActionEvent", self);
-	}
+	} 
 }
 function handleFileListRowFocusIn(event) {
 	if (cookie("settings.show.fileactions")=="no") return;

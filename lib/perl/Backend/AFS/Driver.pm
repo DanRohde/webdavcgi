@@ -71,7 +71,7 @@ sub stat {
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::AFSQUOTA && open(my $cmd, sprintf("%s \"%s\"|", $main::AFSQUOTA, $self->resolveVirt($fn)))) {
+	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd, sprintf("%s \"%s\"|", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/, $lines[1]);
@@ -89,7 +89,7 @@ sub _getCallerAccess {
 	my $access = "";
 
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (open(my $cmd, sprintf("%s getcalleraccess \"%s\" 2>/dev/null|", $main::AFS_FSCMD, $fn))) {
+	if (open(my $cmd, sprintf("%s getcalleraccess \"%s\" 2>/dev/null|", $main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $fn))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		chomp @lines;

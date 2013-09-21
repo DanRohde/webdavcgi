@@ -140,9 +140,9 @@ sub db_deleteProperties {
         my $ret = 0;
         if (defined $sth) {
                 $sth->execute($fn);
-                $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
                 delete $CACHE{Properties}{$fn};
+                $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
         }
         return $ret;
         
@@ -181,6 +181,19 @@ sub db_removeProperty {
                 delete $CACHE{Properties}{$fn}{$propname};
         }
         return $ret;
+}
+sub db_getPropertyFnByValue {
+        my ($self,$propname,$value) = @_;
+        my $dbh = $self->db_init();
+        my $sth = $dbh->prepare('SELECT fn FROM webdav_props WHERE propname = ? and value = ?');
+        if (defined $sth) {
+                $sth->execute($propname,$value);
+                if (!$sth->err) {
+                        my $rows = $sth->fetchall_arrayref();
+                        return $$rows[0] if $rows;
+                }
+        }
+        return undef;
 }
 sub db_insert {
         my ($self, $basefn, $fn, $type, $scope, $token, $depth, $timeout, $owner) = @_;

@@ -20,9 +20,8 @@ package WebInterface::Extension::SysInfo;
 
 use strict;
 
-use WebInterface::View::sidebar::Renderer;
-
-our @ISA = qw( WebInterface::View::sidebar::Renderer );
+use WebInterface::Renderer;
+our @ISA = qw( WebInterface::Renderer );
 
 sub new {
         my $this = shift;
@@ -53,7 +52,7 @@ sub handle {
 sub renderSysInfo {
         my $self = shift;
         my $i = "";
-        $i.= $self->start_html("$main::TITLEPREFIX SysInfo");
+        $i.= $$self{cgi}->start_html("$main::TITLEPREFIX SysInfo");
 
         $i.= $$self{cgi}->h1('WebDAV CGI SysInfo');
         $i.= $$self{cgi}->h2('Process - '.$0);

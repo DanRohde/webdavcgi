@@ -94,8 +94,8 @@ sub handlePostRequest {
 
 	if ($handledByExt =~ /1/) {
 		## done.	
-	} elsif ($$self{cgi}->param('delete')||$$self{cgi}->param('rename')||$$self{cgi}->param('mkcol')||$$self{cgi}->param('changeperm')||$$self{cgi}->param('edit')||$$self{cgi}->param('savetextdata')||$$self{cgi}->param('savetextdatacont')||$$self{cgi}->param('createnewfile')||$$self{cgi}->param('createsymlink')) {
-                $self->getFunctions()->handleFileActions();
+	} elsif ($self->getFunctions()->handleFileActions()) {
+                ## done.
         } elsif ($main::ALLOW_POST_UPLOADS && $$self{backend}->isDir($main::PATH_TRANSLATED) && defined $$self{cgi}->param('filesubmit')) {
                 $self->getFunctions()->handlePostUpload($redirtarget);
         } elsif ($main::ALLOW_ZIP_DOWNLOAD && defined $$self{cgi}->param('zip')) {

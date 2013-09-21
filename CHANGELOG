@@ -1,11 +1,13 @@
 0.8.7: BETA
      - removed classic view, sidebar view, unused code
-     - added mising contact button
+     - added missing contact button
      - fixed directory access check for the SMB backend
      - fixed DBI_PERSISTENT feature
      - added read-only backend wrapper RO 
      - added some missing extension hooks
      - fixed properties bug reported by Harald Strack @ ssystems
+     - add extension configuration support
+     - improved backend configuration support
 0.8.6: 2013/7/8
      - fixed cookie related bug
      - added head toggle

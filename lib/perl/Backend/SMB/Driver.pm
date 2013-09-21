@@ -33,7 +33,7 @@ use Fcntl qw(:flock);
 
 use vars qw( $SHARESEP $DOCUMENT_ROOT %CACHE %SMBCLIENT);
 
-$SHARESEP =  $main::SMB{sharesep} || '~';
+$SHARESEP =  $main::BACKEND_CONFIG{$main::BACKEND}{sharesep} || '~';
 $DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
 
 sub new {
@@ -90,7 +90,7 @@ sub readDir {
 
 	$base .=  '/' if $base !~ /\/$/;
 	if (_isRoot($base)) {
-		my $dom = $main::SMB{domains}{_getUserDomain()};
+		my $dom = $main::BACKEND_CONFIG{$main::BACKEND}{domains}{_getUserDomain()};
 		foreach my $fserver (keys %{$$dom{fileserver}}) {
 			if (exists $$dom{fileserver}{$fserver}{usershares} && exists $$dom{fileserver}{$fserver}{usershares}{_getUsername()}) {
 				push @files, split(/, /, $fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{usershares}{_getUsername()}}));
@@ -108,7 +108,7 @@ sub readDir {
 				}
 				#push @files, split(/, /, $fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}) );
 			} elsif (my $dir = $self->getSmbClient()->opendir("smb://$fserver/")) {
-				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter(\%main::SMB)));
+				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter($main::BACKEND_CONFIG{$main::BACKEND})));
 				while (my $f = $self->getSmbClient()->readdir_struct($dir)) {
 					$self->_setCacheEntry('readDir',"$DOCUMENT_ROOT$fserver$SHARESEP$$f[1]", { type=>$$f[0], comment=>$$f[2] });
 					push @files, "$fserver$SHARESEP$$f[1]" if $$f[0] == $self->getSmbClient()->SMBC_FILE_SHARE && (!defined $sfilter || $$f[1]!~/$sfilter/);
@@ -160,10 +160,10 @@ sub _isAllowed {
 	my ($server, $share, $path, $shareidx) = _getPathInfo($file);
 	my ($userdomain) = _getUserDomain();
 	return $self->_setCacheEntry('_isAllowed', $file, 
-				!$main::SMB{secure}
+				!$main::BACKEND_CONFIG{$main::BACKEND}{secure}
 				|| _isRoot($file) 
-				|| (exists $main::SMB{domains}{$userdomain}{fileserver}{$server} && !exists $main::SMB{domains}{$userdomain}{fileserver}{$server}{shares})
-				|| $share ~~ @{$main::SMB{domains}{$userdomain}{fileserver}{$server}{shares}}
+				|| (exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server} && !exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares})
+				|| $share ~~ @{$main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares}}
 			);
 }
 sub isLink {
@@ -349,7 +349,7 @@ sub getDisplayName {
 	my $name;
 	if (_isShare($file)) {
 		my ($server, $share, $path, $shareidx) = _getPathInfo($file);
-		my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server};
+		my $fs = $main::BACKEND_CONFIG{$main::BACKEND}{domains}{_getUserDomain()}{fileserver}{$server};
 		my $initdir = undef;
 		if  (defined $shareidx && $$fs{shares}[$shareidx]=~/:?(\/.*)/) {
 			$initdir=$1;
@@ -376,7 +376,7 @@ sub getDisplayName {
 sub _getAllShareAliases {
 	my ($domain) = @_;
 	my @aliases;
-	foreach my $server ( keys %{$$main::SMB{domains}{$domain}{sharealiases}}) {
+	foreach my $server ( keys %{$$main::BACKEND_CONFIG{$main::BACKEND}{domains}{$domain}{sharealiases}}) {
 		push @aliases, keys %{$server};
 	}
 	return \@aliases;
@@ -393,7 +393,7 @@ sub _getUserDomain {
 	if ($ENV{REMOTE_USER} =~ /\@(.*)$/ ) {
 		$domain = $1;
 	} else {
-		$domain = $main::SMB{defaultdomain};
+		$domain = $main::BACKEND_CONFIG{$main::BACKEND}{defaultdomain};
 	}
 	return $domain ? $domain : undef;
 }
@@ -444,7 +444,7 @@ sub _getPathInfo {
 sub _getSmbURL {
 	my ($self, $file) = @_;
 	my $url = $file;
-	my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver};
+	my $fs = $main::BACKEND_CONFIG{$main::BACKEND}{domains}{_getUserDomain()}{fileserver};
 	if ($file =~ /^\Q$DOCUMENT_ROOT\E([^\Q$SHARESEP\E]+)\Q$SHARESEP\E([^\/\Q$SHARESEP\E]*)(\Q$SHARESEP\E(\d+))?(\/.*)?$/) {
 		my ($server, $share, $initdir, $path, $shareidx) = ($1, $2, $$fs{$1}{initdir}{$2}, $5, $4);
 
@@ -476,7 +476,7 @@ sub getQuota {
 	$share=~s/'/\\'/g if $share;
 	$path=~s/'/\\'/g if $path;
 	$path='/' unless $path;
-	my $fs = $main::SMB{domains}{_getUserDomain()}{fileserver}{$server};
+	my $fs = $main::BACKEND_CONFIG{$main::BACKEND}{domains}{_getUserDomain()}{fileserver}{$server};
 	my $initdir = $$fs{initdir}{$share};
 	if (defined $shareidx && $$fs{shares}[$shareidx] =~ /:?(\/.*)/) {
 		$initdir = $1;
