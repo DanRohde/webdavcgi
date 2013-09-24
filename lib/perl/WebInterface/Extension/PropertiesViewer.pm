@@ -63,13 +63,13 @@ sub renderPropertiesViewer {
         my ($self, $fn, $ru) = @_;
         $self->setLocale();
         my $content = "";
-        $content .= $$self{cgi}->start_html("$main::TITLEPREFIX $ru properties");
-        $content .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
-        $content .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
+        $content .= $$self{cgi}->start_html(-title=>"$main::TITLEPREFIX $ru properties",-head=>$$self{cgi}->meta({-http_equiv=>'Content-Type', -content=>'text/html;charset=utf-8'}));
+        #$content .= $self->replaceVars($main::LANGSWITCH) if defined $main::LANGSWITCH;
+        #$content .= $self->replaceVars($main::HEADER) if defined $main::HEADER;
         my $fullparent = main::getParentURI($ru) .'/';
         $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
-        $content .=$$self{cgi}->h2( { -class=>'foldername' }, ($$self{backend}->isDir($fn) ? $self->getQuickNavPath($fn,$ru)
-                                    : $self->getQuickNavPath($$self{backend}->getParent($fn), $fullparent)
+        $content .=$$self{cgi}->h2( { -class=>'foldername' }, ($$self{backend}->isDir($fn) ? $fn
+                                    : $$self{backend}->getParent($fn) . '/'
                                        .' '.$$self{cgi}->a({-href=>$ru}, main::getBaseURIFrag($ru))
                               ). $self->tl('properties'));
         $content .= $$self{cgi}->br().$$self{cgi}->a({href=>$ru,title=>$self->tl('clickforfullsize')},$$self{cgi}->img({-src=>$ru.($main::ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($main::ENABLE_THUMBNAIL?$main::THUMBNAIL_WIDTH:200)})) if $self->hasThumbSupport(main::getMIMEType($fn));

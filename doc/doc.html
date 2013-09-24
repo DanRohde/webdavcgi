@@ -758,7 +758,7 @@ mkdir("${DOCUMENT_ROOT}.addressbook")
 <h2 id="afs">AFS Support</h2>
 WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It's a complete replacement for <a href="http://filedrawers.org/">filedrawers</a>.
 
-<h3>... without mod_auth_kerberos </h3>
+<h3>... without mod_auth_kerberos (recommended) </h3>
 Requirements:
 
 <ol>
@@ -768,6 +768,8 @@ Requirements:
 <li>The <code>AUTHHEADER</code> environment variable with the HTTP Authorization header value has to be passed to the wrapper: see RewriteRule of the Apache config example.</li>
 <li>The <code>TICKET_LIFETIME</code> environment variable value should be a little bit smaller than your Kerberos ticket lifetime.</li>
 <li><code>cgi-bin/webdavwrapper-afs</code> (call <code>bash install.sh</code> from your installation directory to compile helper/webdavwrapper-afs.c)</li>
+<li>Replace the pagsh with a bourne shell in the afswrapper script to improve performance and avoid trouble with PAG limits: 
+   <br/><code>sed -i -e 's@^#!/usr/bin/pagsh@#!/bin/sh@' cgi-bin/afswrapper</code></li>
 </ol>
 
 Apache example:
@@ -1207,7 +1209,12 @@ $BACKEND_CONFIG{RO}{backend} = 'FS';
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
   <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance. Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
-  <li>Slow response working with WebDAV resources on Windows Vista or Windows 7: <a href="http://support.microsoft.com/kb/2445570">KB2445570</a></li>
+  <li> Slow response working with WebDAV resources on Windows Vista or Windows 7: <a href="http://support.microsoft.com/kb/2445570">KB2445570</a></li>
+  <li> For AFS backend users: 
+  	<ul><li>prevent usage of mod_auth_kerberos and mod_waklog</li>
+  		<li>replace pagsh with a fast bourne shell (e.g. DASH) in the afswrapper script (<code>cgi-bin/afswrapper</code>)</li>
+  	</ul> </li>
+  	
 </ul>
 <h2 id="speedy">Speedy Support</h2>
 <a target="_blank" href="http://daemoninc.com/SpeedyCGI/">Speedy or PersistentPerl</a> allows you to increase the request/response speed of WebDAV CGI. WebDAV CGI is up to 7 times faster with Speedy than without.
