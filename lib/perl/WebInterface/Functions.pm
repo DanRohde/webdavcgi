@@ -207,9 +207,9 @@ sub handleFileActions {
 				{
 					$errmsg = 'renameerr';
 				}
-				elsif ( $newname =~ /\// ) {
-					$errmsg = 'renamenotargeterr';
-				}
+				#elsif ( $newname =~ /\// ) {
+				#	$errmsg = 'renamenotargeterr';
+				#}
 				else {
 					$msgparam = 'p1='
 					  . $$self{cgi}->escape( join( ', ', @files ) ) . ';p2='

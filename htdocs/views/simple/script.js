@@ -1315,7 +1315,7 @@ function handleFileRename(row) {
 	tdfilename.wrapInner('<div class="hidden"/>').prepend(renamefield);
 	var inputfield = tdfilename.find('.renamefield input[type=text]');
 	$("#flt").enableSelection();
-	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename)).focus().select();
+	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename).replace(/\/$/,"")).focus().select();
 	
 	inputfield.off("click").on("click", function(event) { preventDefault(event); $(this).focus();})
 		.off("dblclick").on("dblclick",function(event) { preventDefault(event);});
