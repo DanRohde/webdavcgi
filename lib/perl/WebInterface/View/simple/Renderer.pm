@@ -178,8 +178,8 @@ sub renderTemplate {
 	# replace each:
 	$content=~s/\$each(.)(.*?)\1(.*?)\1((.)(.*?)\5\1)?/$self->renderEach($fn,$ru,$2,$3,$6)/egs;
 	# replace functions:
-	$content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg;
-
+	while ($content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg) {};
+	
 	my $vbase = $ru=~/^($main::VIRTUAL_BASE)/ ? $1 : $ru;
 
 	my %quota =  %{$self->getQuotaData($fn)};
