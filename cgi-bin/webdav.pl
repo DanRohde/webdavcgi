@@ -1,3 +1,4 @@
+#!/usr/bin/speedy  -- -r50 -M7 -t3600
 #!/usr/bin/perl
 ##!/usr/bin/speedy  -- -r50 -M7 -t3600
 ##!/usr/bin/perl -d:NYTProf
@@ -702,7 +703,7 @@ $DEBUG = 0;
 
 ############  S E T U P - END ###########################################
 #########################################################################
-use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props);
+use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
 use CGI;
 
 ## flush immediately:
@@ -724,6 +725,8 @@ if (defined $CONFIGFILE) {
 		##warn "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
 	}
 }
+
+$eventChannel->broadcastEvent('INIT') if $eventChannel;
 
 use POSIX qw(strftime);
 
@@ -748,7 +751,6 @@ use Utils;
 $utils = new Utils();
 $config->setProperty('utils',$utils);
 
- 
 umask $UMASK;
 
 
@@ -1015,13 +1017,17 @@ map { $known_coll_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_COLL_PR
 map { $known_file_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_FILE_PROPS;
 map { $unsupported_props{$_} = 1; } @UNSUPPORTED_PROPS;
 
+# register event handler:
+require DatabaseEventAdapter;
+getEventChannel()->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED'],'DatabaseEventAdapter');
+
 # method handling:
 if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/) { 
 
 	### performance is much better than eval:
 	gotomethod($method);
 	$backend->finalize() if $backend;
-	getDBDriver()->finalize();
+	$eventChannel->broadcastEvent('FINALIZE');
 } else {
 	printHeaderAndContent('405 Method Not Allowed');
 }
@@ -1231,6 +1237,7 @@ sub _PROPPATCH {
 			printHeaderAndContent('400 Bad Request');
 			return;
 		}
+		$eventChannel->broadcastEvent('PROPPATCH', { file=>$fn, data=>$dataRef }) if $eventChannel;
 		my @resps = ();
 		my %resp_200 = ();
 		my %resp_403 = ();
@@ -1242,6 +1249,7 @@ sub _PROPPATCH {
 		$status='207 Multi-Status';
 		$type='text/xml';
 		$content = createXML( { multistatus => { response => \@resps} });
+		$eventChannel->broadcastEvent('PROPPATCHED', { file=>$fn, data=>$dataRef }) if $eventChannel;
 	} else {
 		$status='404 Not Found';
 	}
@@ -1278,6 +1286,7 @@ sub _PUT {
 		if ($backend->saveStream($PATH_TRANSLATED, \*STDIN)) {
 			inheritLock();
 			logger("PUT($PATH_TRANSLATED)");
+			$eventChannel->broadcastEvent('PUT', {file=>$PATH_TRANSLATED}) if $eventChannel;
 		} else {
 			$status=isInsufficientStorage() ? '507 Insufficient Storage':'403 Forbidden';
 			$content="";
@@ -1310,20 +1319,24 @@ sub _COPY {
 	} elsif ( !isAllowed($destination,$backend->isDir($PATH_TRANSLATED)) ) {
 		$status = '423 Locked';
 	} elsif ( $backend->isDir($PATH_TRANSLATED) && $depth == 0 ) {
+		$eventChannel->broadcastEvent('COPY', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 		if ($backend->exists($destination)) {
 			$status = '204 No Content' ;
 		} else {
 			if ($backend->mkcol($destination)) {
 				inheritLock($destination);
+				$eventChannel->broadcastEvent('COPIED', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 			} else {
 				$status = '403 Forbidden (mkcol($destination) failed)';
 			}
 		}
 	} else {
+		$eventChannel->broadcastEvent('COPY', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 		$status = '204 No Content' if $backend->exists($destination);
 		if (rcopy($PATH_TRANSLATED, $destination)) {
 			inheritLock($destination,1);
 			logger("COPY($PATH_TRANSLATED, $destination)");
+			$eventChannel->broadcastEvent('COPIED', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 		} else {
 			$status = "403 Forbidden - copy failed (rcopy($PATH_TRANSLATED,$destination))";
 		}
@@ -1351,14 +1364,13 @@ sub _MOVE {
 	} elsif (!isAllowed($PATH_TRANSLATED,$backend->isDir($PATH_TRANSLATED)) || !isAllowed($destination, $backend->isDir($destination))) {
 		$status = '423 Locked';
 	} else {
+		$eventChannel->broadcastEvent('MOVE', { file => $PATH_TRANSLATED, destination=>$destination, overwrite=>$overwrite}) if $eventChannel;
 		$backend->unlinkFile($destination) if $backend->exists($destination) && $backend->isFile($destination);
 		$status = '204 No Content' if $backend->exists($destination);
 		if (rmove($PATH_TRANSLATED, $destination)) {
-			my $db = getDBDriver();
-			$db->db_moveProperties($PATH_TRANSLATED, $destination);
-			$db->db_delete($PATH_TRANSLATED);
 			inheritLock($destination,1);
 			logger("MOVE($PATH_TRANSLATED, $destination)");
+			$eventChannel->broadcastEvent('MOVED', { file => $PATH_TRANSLATED, destination=>$destination, overwrite=>$overwrite}) if $eventChannel;
 		} else {
 			$status = "403 Forbidden (rmove($PATH_TRANSLATED, $destination) failed)";
 		}
@@ -1380,6 +1392,7 @@ sub _DELETE {
 	} elsif (!isAllowed($PATH_TRANSLATED)) {
 		$status='423 Locked';
 	} else {
+		$eventChannel->broadcastEvent('DELETE', {file => $PATH_TRANSLATED}) if $eventChannel;
 		if ($ENABLE_TRASH) {
 			$status='404 Forbidden' unless moveToTrash($PATH_TRANSLATED) > 0;
 		} else {
@@ -1391,6 +1404,7 @@ sub _DELETE {
 			}
 			$status = '207 Multi-Status' if $#resps>-1;
 		}
+		$eventChannel->broadcastEvent('DELETED', {file => $PATH_TRANSLATED}) if $eventChannel;
 	}
 		
 	my $content = $#resps>-1 ? createXML({ 'multistatus' => { 'response'=>\@resps} }) : "";
@@ -1443,13 +1457,14 @@ sub _MKCOL {
 		$status='507 Insufficient Storage';
 	} elsif ($backend->isDir($backend->getParent($PATH_TRANSLATED))) {
 		debug("_MKCOL: create $PATH_TRANSLATED");
-
+		$eventChannel->broadcastEvent("MKCOL", {file=>$PATH_TRANSLATED}) if $eventChannel;
 		if ($backend->mkcol($PATH_TRANSLATED)) {
 			my (%resp_200, %resp_403);
 			handlePropertyRequest($body, $dataRef, \%resp_200, \%resp_403);
 			## ignore errors from property request
 			inheritLock();
 			logger("MKCOL($PATH_TRANSLATED)");
+			$eventChannel->broadcastEvent('MDCOL',{file=>$PATH_TRANSLATED}) if $eventChannel;
 		} else {
 			$status = '403 Forbidden'; 
 		}
@@ -1842,9 +1857,14 @@ sub _BIND {
 		} elsif ($backend->exists($dst) && $backend->isLink($ndst) && $overwrite eq "F") {
 			$status = '403 Forbidden';
 		} else {
+			$eventChannel->broadcastEvent('BIND', { file=>$src, destination=>$dst}) if $eventChannel;
 			$status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
 			$backend->unlinkFile($ndst) if $backend->isLink($ndst);
-			$status = '403 Forbidden' if (!$backend->createSymLink($src, $dst));
+			if ($backend->createSymLink($src, $dst)) {
+				$eventChannel->broadcastEvent('BOUND', {file=>$src, destination=>$dst}) if $eventChannel;
+			} else {	
+				$status = '403 Forbidden';
+			} 
 		}
 	}
 	printHeaderAndContent($status, $type, $content);
@@ -1861,11 +1881,14 @@ sub _UNBIND {
 	} else {
 		my $segment = $$xmldata{'{DAV:}segment'};
 		my $dst = $PATH_TRANSLATED.$segment;
+		$eventChannel->broadcastEvent('UNBIND', {file=>$dst}) if $eventChannel;
 		if (!$backend->exists($dst) ) {
 			$status = '404 Not Found';
 		} elsif (!$backend->isLink($dst)) {
 			$status = '403 Forbidden';
-		} elsif (!$backend->unlinkFile($dst)) {
+		} elsif ($backend->unlinkFile($dst)) {
+			$eventChannel->broadcastEvent('UNBOUND',{file=>$dst}) if $eventChannel;
+		} else {
 			$status = '403 Forbidden';
 		}
 	}
@@ -1904,11 +1927,16 @@ sub _REBIND {
 		} elsif (isInsufficientStorage()) {
 			$status = '507 Insufficient Storage';
 		} else {
+			$eventChannel->broadcastEvent('REBIND',{file=>$nsrc, destination=>$ndst}) if $eventChannel;
 			$status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
 			$backend->unlinkFile($ndst) if $backend->isLink($ndst);
 			if (!rmove($nsrc, $ndst)) { ### check rename->rmove OK?
 				my $orig = $backend->getLinkSrc($nsrc);
-				$status = '403 Forbidden' unless $backend->createSymLink($orig, $dst) && $backend->unlinkFile($nsrc);
+				if ($backend->createSymLink($orig, $dst) && $backend->unlinkFile($nsrc)) {
+					$eventChannel->broadcastEvent('REBOUND',{file=>$orig, destination=>$dst}) if $eventChannel;	
+				} else {
+					$status = '403 Forbidden';
+				} 
 			}
 		}
 	}
@@ -2629,11 +2657,7 @@ sub rcopy {
         #BUGFIX: properties have no trailing slash
         $src =~ s/\/$//;
         $dst =~ s/\/$//;
-	my $db = getDBDriver();
-        $db->db_deleteProperties($dst);
-        $db->db_copyProperties($src,$dst);
-        $db->db_deleteProperties($src) if $move;
-        
+        getEventChannel()->broadcastEvent($move ? 'FILEMOVED' : 'FILECOPIED', { file=>$src, destination=>$dst});        
         return 1;
 }
 
@@ -2703,4 +2727,11 @@ sub isInsufficientStorage {
 		}
 	}
 	return $ret;
+}
+sub getEventChannel {
+	if (!$eventChannel) {
+		require Events::EventChannel;
+		$eventChannel = new Events::EventChannel();
+	}
+	return $eventChannel;
 }
