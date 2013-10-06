@@ -1027,7 +1027,7 @@ if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DEL
 	### performance is much better than eval:
 	gotomethod($method);
 	$backend->finalize() if $backend;
-	$eventChannel->broadcastEvent('FINALIZE');
+	$eventChannel->broadcastEvent('FINALIZE') if $eventChannel;
 } else {
 	printHeaderAndContent('405 Method Not Allowed');
 }
@@ -1325,7 +1325,7 @@ sub _COPY {
 		} else {
 			if ($backend->mkcol($destination)) {
 				inheritLock($destination);
-				$eventChannel->broadcastEvent('COPIED', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
+				$eventChannel->broadcastEvent('FILECOPIED', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 			} else {
 				$status = '403 Forbidden (mkcol($destination) failed)';
 			}
@@ -2657,7 +2657,7 @@ sub rcopy {
         #BUGFIX: properties have no trailing slash
         $src =~ s/\/$//;
         $dst =~ s/\/$//;
-        getEventChannel()->broadcastEvent($move ? 'FILEMOVED' : 'FILECOPIED', { file=>$src, destination=>$dst});        
+        getEventChannel()->broadcastEvent($move ? 'FILEMOVED' : 'FILECOPIED', { file=>$src, destination=>$dst, depth=>$depth, overwrite=>'T'});        
         return 1;
 }
 
