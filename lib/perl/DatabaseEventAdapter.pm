@@ -20,21 +20,22 @@ package DatabaseEventAdapter;
 
 use Events::EventListener;
 @ISA = ('Events::EventListener');
-
 use vars qw( %CHACHE );
 
 sub receiveEvent {
-	my ($self, $event, $data) = @_;
-	if ($event eq 'FINALIZE') {
+	my ( $self, $event, $data ) = @_;
+	if ( $event eq 'FINALIZE' ) {
 		main::getDBDriver()->finalize();
-	} elsif ($event eq 'FILEMOVED') {
+	}
+	elsif ( $event eq 'FILEMOVED' ) {
 		my $db = main::getDBDriver();
-		$db->db_deleteProperties($$data{destination});
-		$db->db_moveProperties($$data{file}, $$data{destination});
-		$db->db_delete($$data{file});
-	} elsif ($event eq 'FILECOPIED') {
+		$db->db_deleteProperties( $$data{destination} );
+		$db->db_moveProperties( $$data{file}, $$data{destination} );
+		$db->db_delete( $$data{file} );
+	}
+	elsif ( $event eq 'FILECOPIED' ) {
 		my $db = main::getDBDriver();
-        	$db->db_deleteProperties($$data{destination});
-        	$db->db_copyProperties($$data{file},$$data{destination});
-	}	
+		$db->db_deleteProperties( $$data{destination} );
+		$db->db_copyProperties( $$data{file}, $$data{destination} );
+	}
 }

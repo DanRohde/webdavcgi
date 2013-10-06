@@ -19,45 +19,53 @@ package Events::EventChannel;
 
 sub new {
 	my $class = shift;
-	my $self = { };
+	my $self  = {};
 	return bless $self, $class;
 }
 
 sub addEventListener {
-	my ($self, $event, $eventListener) = @_;
-	if (defined $eventListener) {	
-		$eventListener->isa('Events::EventListener') or die("I need a Events::EventListener for $event");
+	my ( $self, $event, $eventListener ) = @_;
+	if ( defined $eventListener ) {
+		$eventListener->isa('Events::EventListener')
+		  or die("I need a Events::EventListener for $event");
 	}
-	if (ref($event) eq 'ARRAY') {
-		foreach my $e (@{$event}) {
+	if ( ref($event) eq 'ARRAY' ) {
+		foreach my $e ( @{$event} ) {
 			$$self{$e}{$eventListener} = $eventListener;
 		}
-	} elsif (ref($event) eq 'HASH') {
-		foreach my $e (keys %{$event}) {
-			$$event{$e}->isa('Events::EventListener') or die("I need a Events::EventListener for $e");
-			$$self{$e}{$$event{$e}} = $$event{$e};
+	}
+	elsif ( ref($event) eq 'HASH' ) {
+		foreach my $e ( keys %{$event} ) {
+			$$event{$e}->isa('Events::EventListener')
+			  or die("I need a Events::EventListener for $e");
+			$$self{$e}{ $$event{$e} } = $$event{$e};
 		}
-	} else {
+	}
+	else {
 		$$self{$event}{$eventListener} = $eventListener;
 	}
 	return 1;
 }
 
 sub removeEventListener {
-	my ($self, $event, $eventListener) = @_;
-	if (defined $eventListener) {
-		$eventListener->isa('Events::EventListener') or die("I need a Events::EventListener for $event");
+	my ( $self, $event, $eventListener ) = @_;
+	if ( defined $eventListener ) {
+		$eventListener->isa('Events::EventListener')
+		  or die("I need a Events::EventListener for $event");
 	}
-	if (ref($event) eq 'ARRAY') {
-		foreach my $e (@{$event}) {
+	if ( ref($event) eq 'ARRAY' ) {
+		foreach my $e ( @{$event} ) {
 			delete $$self{$e}{$eventListener};
 		}
-	} elsif (ref($event) eq 'HASH') {
-		foreach my $e (keys %{$event}) {
-			$$event{$e}->isa('Events::EventListener') or die("I need a Events::EventListener for $e");
-			delete $$self{$e}{$$event{$e}};
+	}
+	elsif ( ref($event) eq 'HASH' ) {
+		foreach my $e ( keys %{$event} ) {
+			$$event{$e}->isa('Events::EventListener')
+			  or die("I need a Events::EventListener for $e");
+			delete $$self{$e}{ $$event{$e} };
 		}
-	} else {
+	}
+	else {
 		delete $$self{$event}{$eventListener};
 	}
 	return 1;
@@ -65,12 +73,12 @@ sub removeEventListener {
 
 sub broadcastEvent {
 	#my ($self, $event, $data) = @_;
-	my $self = shift;
-	my $event = shift;
-	my @listeners = (values %{$$self{$event}}, values %{$$self{ALL}});
+	my $self      = shift;
+	my $event     = shift;
+	my @listeners = ( values %{ $$self{$event} }, values %{ $$self{ALL} } );
 	foreach my $listener (@listeners) {
-		eval { $listener->receiveEvent($event, @_); };
-		warn $@ if ($@);		
+		eval { $listener->receiveEvent( $event, @_ ); };
+		warn $@ if ($@);
 	}
 }
 
