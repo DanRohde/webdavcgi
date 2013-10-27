@@ -1,0 +1,38 @@
+/*********************************************************************
+(C) ssystems, Harald Strack
+Written 2012 by Harald Strack <hstrack@ssystems.de>
+Modified 2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+#fileList tr[data-puri=no] .action.depuri,
+#fileList tr[data-puri=no] .action.spuri
+{
+	display: none;
+	visiblity: hidden;
+}
+#fileList tr[data-puri^=__] .action.puri
+{
+	display: none;
+	visiblity: hidden;
+}
+.action.puri {
+	background: url(images/puri.png) no-repeat left;
+}
+.action.spuri
+{
+	background: url(images/spuri.png) no-repeat left;
+}
+.action.depuri {
+	background: url(images/depuri.png) no-repeat left;
+}
