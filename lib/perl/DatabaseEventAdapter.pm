@@ -38,4 +38,8 @@ sub receiveEvent {
 		$db->db_deleteProperties( $$data{destination} );
 		$db->db_copyProperties( $$data{file}, $$data{destination} );
 	}
+	elsif ( $event eq 'DELETED') {
+		$db->db_deleteProperties($$data{file});
+		$db->db_delete($$data{file});
+	}
 }
