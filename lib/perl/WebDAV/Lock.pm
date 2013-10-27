@@ -102,8 +102,10 @@ sub _checkTimedOut {
 	my $ret = 0;
 	my $now = time();
 	$main::DBI_TIMEZONE = $main::DBI_SRC =~ /dbi:SQLite/i ? 'GMT' : 'localtime' unless $main::DBI_TIMEZONE;
+	$main::DEFAULT_LOCK_TIMEOUT = 3600 unless $main::DEFAULT_LOCK_TIMEOUT;
 	while (my $row = shift @{$rows}) {
 		my ($token, $timeout, $timestamp) = ($$row[4], $$row[6], int(str2time($$row[8], $main::DBI_TIMEZONE)));
+		$timeout="Second-$main::DEFAULT_LOCK_TIMEOUT" if !defined $timeout || $timeout =~ /^\s*$/;
 		main::debug("_checkTimedOut($fn): token=$token, timeout=$timeout, timestamp=$timestamp");
 		if ($timeout =~ /(\d+)$/) {
 			my $val = $1;

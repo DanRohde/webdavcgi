@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
 	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-	    	%SUPPORTED_LANGUAGES 
+	    	%SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -455,6 +455,10 @@ $CREATE_DB = 1;
 ## lock owner if not given by client
 ## EXAMPLE: $DEFAULT_LOCK_OWNER=$ENV{REMOTE_USER}.'@'.$ENV{REMOTE_ADDR}; ## loggin user @ ip
 $DEFAULT_LOCK_OWNER= { href=> ($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'@'.$ENV{REMOTE_ADDR} };
+
+## -- DEFAULT_LOCK_TIMEOUT 
+## sets a default lock timout in seconds if a WebDAV client forget to set one
+$DEFAULT_LOCK_TIMEOUT = 3600;
 
 ## -- CHARSET
 ## change it if you get trouble with special characters
@@ -1019,7 +1023,7 @@ map { $unsupported_props{$_} = 1; } @UNSUPPORTED_PROPS;
 
 # register event handler:
 require DatabaseEventAdapter;
-getEventChannel()->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED'],'DatabaseEventAdapter');
+getEventChannel()->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED'],'DatabaseEventAdapter');
 
 # method handling:
 if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/) { 

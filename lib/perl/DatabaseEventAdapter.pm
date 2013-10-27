@@ -24,22 +24,22 @@ use vars qw( %CHACHE );
 
 sub receiveEvent {
 	my ( $self, $event, $data ) = @_;
+	my $db = main::getDBDriver();
 	if ( $event eq 'FINALIZE' ) {
-		main::getDBDriver()->finalize();
+		$db->finalize();
 	}
 	elsif ( $event eq 'FILEMOVED' ) {
-		my $db = main::getDBDriver();
 		$db->db_deleteProperties( $$data{destination} );
 		$db->db_moveProperties( $$data{file}, $$data{destination} );
 		$db->db_delete( $$data{file} );
 	}
 	elsif ( $event eq 'FILECOPIED' ) {
-		my $db = main::getDBDriver();
 		$db->db_deleteProperties( $$data{destination} );
 		$db->db_copyProperties( $$data{file}, $$data{destination} );
 	}
-	elsif ( $event eq 'DELETED') {
-		$db->db_deleteProperties($$data{file});
-		$db->db_delete($$data{file});
+	elsif ( $event eq 'DELETED' ) {
+		$db->db_deleteProperties( $$data{file} );
+		$db->db_delete( $$data{file} );
 	}
 }
+1;
