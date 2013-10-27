@@ -82,9 +82,7 @@ sub handleZipUpload {
 		{
 			push @zipfiles, $rfn;
 			$$self{backend}->unlinkFile( $main::PATH_TRANSLATED . $rfn )
-			  if $$self{backend}
-			  ->uncompressArchive( "$main::PATH_TRANSLATED$rfn",
-				$main::PATH_TRANSLATED );
+			  if $$self{backend} ->uncompressArchive( "$main::PATH_TRANSLATED$rfn",	$main::PATH_TRANSLATED );
 		}
 	}
 	if ( $#zipfiles > -1 ) {
@@ -96,8 +94,7 @@ sub handleZipUpload {
 	else {
 		$errmsg = 'zipuploadnothingerr';
 	}
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
+	print $$self{cgi}->redirect( $redirtarget . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
 }
 
 sub createMsgQuery {
@@ -225,9 +222,7 @@ sub handleFileActions {
 						  )
 						{
 							$msg = 'rename';
-							main::logger(
-"MOVE $main::PATH_TRANSLATED$file to $target via POST"
-							);
+							main::logger("MOVE $main::PATH_TRANSLATED$file to $target via POST");
 						}
 						else {
 							$errmsg = 'renameerr';

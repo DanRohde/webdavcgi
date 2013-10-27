@@ -339,6 +339,7 @@ sub renderFileListEntry {
 				'iswriteable'=>$$self{backend}->isWriteable($full) || $$self{"backend"}->isLink($full)?'yes':'no',
 				'iseditable'=>$self->isEditable($full) ? 'yes' : 'no',
 				'isviewable'=>$$self{backend}->isReadable($full) && $self->canCreateThumbnail($full) ? 'yes' : 'no',
+				'islocked'=> $main::SHOW_LOCKS && main::getLockModule()->isLocked($full) ? 'yes' : 'no',
 				'type'=>$file =~ /^\.\.?$/ || $$self{backend}->isDir($full)?'dir':($$self{backend}->isLink($full)?'link':'file'),
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $self->isUnselectable($full) ? 'yes' : 'no',

@@ -44,7 +44,7 @@ sub db_isRootFolder {
         my ($self, $fn, $token) = @_;
         my $rows =  [];
         my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner FROM webdav_locks WHERE fn = ? AND basefn = ? AND token = ?');
+        my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn = ? AND basefn = ? AND token = ?');
         if (defined $sth) {
                 $sth->execute($fn, $fn, $token);
                 $rows = $sth->fetchall_arrayref();
@@ -56,7 +56,7 @@ sub db_getLike {
         my ($self,$fn) = @_;
         my $rows;
         my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner FROM webdav_locks WHERE fn like ?');
+        my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn like ?');
         if (defined $sth) {
                 $sth->execute($fn);
                 $rows = $sth->fetchall_arrayref();
@@ -67,7 +67,7 @@ sub db_get {
         my ($self,$fn,$token) = @_;
         my $rows;
         my $dbh = $self->db_init();
-        my $sel = 'SELECT basefn,fn,type,scope,token,depth,timeout,owner FROM webdav_locks WHERE fn = ?';
+        my $sel = 'SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn = ?';
         my @params;
         push @params, $fn;
         if (defined $token) {

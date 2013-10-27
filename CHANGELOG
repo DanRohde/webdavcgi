@@ -9,6 +9,8 @@
      - add extension configuration support
      - improved back-end configuration support
      - added event handling for extensions
+     - added show locks feature ($SHOW_LOCKS)
+     - fixed timed out locks bug reported by Harald Strack @ ssystems
 0.8.6: 2013/7/8
      - fixed cookie related bug
      - added head toggle

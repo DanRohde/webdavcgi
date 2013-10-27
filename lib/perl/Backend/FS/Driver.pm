@@ -347,7 +347,7 @@ sub rename {
 	delete $CACHE{$_[0]}{$_[1]};
 	delete $CACHE{$_[0]}{$_[2]};
 	return 0 if $_[0]->isVirtualLink($_[1]) || $_[0]->isVirtualLink($_[2]);
-	return CORE::rename($_[0]->resolveVirt($_[1]),$_[0]->resolveVirt($_[2]));
+	return main::isAllowed($_[0]->resolveVirt($_[1]),1) ? CORE::rename($_[0]->resolveVirt($_[1]),$_[0]->resolveVirt($_[2])) : 0;
 }
 sub getQuota {
 	my ($self, $fn) = @_;
