@@ -1013,6 +1013,7 @@ function initFileList() {
 			beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
+/*	
 	$("#fileList tr.isviewable-yes.iseditable-yes[data-size!='0']:visible td.filename a,#fileList tr.isviewable-yes[data-file$='.pdf'] td.filename a")
 		.attr("data-fancybox-group","txtgallery")
 		.fancybox({
@@ -1020,20 +1021,21 @@ function initFileList() {
 			type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
-
+*/
 	$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","wtimggallery")
 		.fancybox({ 
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(".nametext", this.element).html(); }
 		});
+/*	
 	$("#fileList tr.isviewable-no[data-mime^='text/']:visible td.filename a, #fileList tr.isviewable-no[data-type!='dir'][data-file$='.pdf'] td.filename a")
 			.attr("data-fancybox-group","wttxtgallery")
 			.fancybox({
 				afterShow: function() { $(".fancybox-close").focus();},
 				type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(".nametext",$(this.element)).html();}
 			});
-	
+*/	
 	// init drag & drop:
 	$("#fileList:not(.dnd-false) tr.iswriteable-yes[data-type='dir']")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
