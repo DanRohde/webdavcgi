@@ -44,10 +44,12 @@ sub handlePostUpload {
 		next unless $$self{cgi}->uploadInfo($filename);
 		my $rfn = $filename;
 		$rfn =~ s/\\/\//g;    # fix M$ Windows backslashes
-		my $destination =
-		  $main::PATH_TRANSLATED . $$self{backend}->basename($rfn);
+		my $destination = $main::PATH_TRANSLATED . $$self{backend}->basename($rfn);
 		push( @filelist, $$self{backend}->basename($rfn) );
-		if ( !$$self{backend}->saveStream( $destination, $filename ) ) {
+		if (main::isLocked("$destination$filename")) {
+			$errmsg = 'locked';
+			$msgparam = 'p1='.$$self{cgi}->escape($rfn);
+		} elsif ( !$$self{backend}->saveStream( $destination, $filename ) ) {
 			$errmsg = 'uploadforbidden';
 			if ( $msgparam eq '' ) { $msgparam = 'p1=' . $rfn; }
 			else { $msgparam .= ', ' . $rfn; }
@@ -77,8 +79,12 @@ sub handleZipUpload {
 		my $rfn = $fh;
 		$rfn =~ s/\\/\//g;    # fix M$ Windows backslashes
 		$rfn = $$self{backend}->basename($rfn);
-
-		if ( $$self{backend}->saveStream( "$main::PATH_TRANSLATED$rfn", $fh ) )
+		if (main::isLocked("$main::PATH_TRANSLATED$rfn")) {
+			$errmsg='locked';
+			$msgparam='p1='.$$self{cgi}->escape($rfn);
+			last;	
+		}
+		elsif ( $$self{backend}->saveStream( "$main::PATH_TRANSLATED$rfn", $fh ) )
 		{
 			push @zipfiles, $rfn;
 			$$self{backend}->unlinkFile( $main::PATH_TRANSLATED . $rfn )
@@ -117,8 +123,10 @@ sub handleClipboardAction {
 	my $srcdir = $main::DOCUMENT_ROOT . $srcuri;
 	my ( @success, @failed );
 	foreach my $file ( split( /\@\/\@/, $$self{cgi}->param('files') ) ) {
-
-		if (
+		if (main::isLocked("$srcdir$file") || main::isLocked("$main::PATH_TRANSLATED$file")) {
+			$errmsg = 'locked';
+			push @failed, $file;
+		} elsif (
 			main::rcopy(
 				"$srcdir$file",
 				"$main::PATH_TRANSLATED$file",
@@ -164,8 +172,13 @@ sub handleFileActions {
 			my $count = 0;
 			foreach my $file ( $$self{cgi}->param('file') ) {
 				$file = "" if $file eq '.';
-				my $fullname =
-				  $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
+				my $fullname = $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
+				if (main::isLocked($fullname,1)) {
+					$count=0;
+					$errmsg='locked';
+					$msgparam = 'p1=' . $$self{cgi}->escape($file);
+					last;
+				} 
 				if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
 					if ($main::ENABLE_TRASH) {
 						$count +=
@@ -193,14 +206,16 @@ sub handleFileActions {
 	}
 	elsif ( $$self{cgi}->param('rename') ) {
 		if ( $$self{cgi}->param('file') ) {
-			if ( my $newname = $$self{cgi}->param('newname') ) {
+			if (main::isLocked($main::PATH_TRANSLATED.$$self{cgi}->param('file'))) {
+				$errmsg = 'locked';
+				$msgparam = 'p1='.$$self{cgi}->escape($$self{cgi}->param('file'));
+			} elsif ($$self{cgi}->param('newname') && main::isLocked($main::PATH_TRANSLATED.$$self{cgi}->param('newname'))) {
+				$errmsg = 'locked';
+				$msgparam = 'p1='.$$self{cgi}->escape($$self{cgi}->param('newname'));
+			} elsif ( my $newname = $$self{cgi}->param('newname') ) {
 				$newname =~ s/\/$//;
 				my @files = $$self{cgi}->param('file');
-				if (
-					( $#files > 0 )
-					&& ( !$$self{backend}
-						->isDir( $main::PATH_TRANSLATED . $newname ) )
-				  )
+				if (( $#files > 0 ) && ( !$$self{backend}->isDir( $main::PATH_TRANSLATED . $newname ) ) )
 				{
 					$errmsg = 'renameerr';
 				}
@@ -356,6 +371,7 @@ sub handleFileActions {
 		my $full  = $main::PATH_TRANSLATED . $file;
 		my $regex = '(' . join( '|', @main::EDITABLEFILES ) . ')';
 		if (   $file !~ /\//
+			&& !main::isLocked($full)
 			&& $file =~ /$regex/
 			&& $$self{backend}->isFile($full)
 			&& $$self{backend}->isWriteable($full) )
@@ -363,7 +379,7 @@ sub handleFileActions {
 			$msgparam = 'edit=' . $$self{cgi}->escape($file) . '#editpos';
 		}
 		else {
-			$errmsg   = 'editerr';
+			$errmsg   = main::isLocked($full) ? 'locked': 'editerr';
 			$msgparam = 'p1=' . $$self{cgi}->escape($file);
 		}
 	}
@@ -371,10 +387,12 @@ sub handleFileActions {
 		|| $$self{cgi}->param('savetextdatacont') )
 	{
 		my $file = $main::PATH_TRANSLATED . $$self{cgi}->param('filename');
-		if (   $$self{backend}->isFile($file)
+		if (main::isLocked($file)) {
+			$errmsg = 'locked';	
+		} 
+		elsif (   $$self{backend}->isFile($file)
 			&& $$self{backend}->isWriteable($file)
-			&& $$self{backend}
-			->saveData( $file, $$self{cgi}->param('textdata') ) )
+			&& $$self{backend}->saveData( $file, $$self{cgi}->param('textdata') ) )
 		{
 			$msg = 'textsaved';
 		}
@@ -578,8 +596,7 @@ sub doAFSGroupActions {
 		my $ngrp = $$self{cgi}->param('afsnewgrpname') || '';
 		if ( $self->isValidAFSGroupName($grp) ) {
 			if ( $self->isValidAFSGroupName($ngrp) ) {
-				$output =
-qx@$main::AFS_PTSCMD rename -oldname \"$grp\" -newname \"$ngrp\" 2>&1@;
+				$output = qx@$main::AFS_PTSCMD rename -oldname \"$grp\" -newname \"$ngrp\" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsgrprenamed';
 					$msgparam = 'afsgrp='
@@ -623,8 +640,7 @@ qx@$main::AFS_PTSCMD rename -oldname \"$grp\" -newname \"$ngrp\" 2>&1@;
 			}
 			if ( $#users > -1 ) {
 				my $userstxt = '"' . join( '" "', @users ) . '"';
-				$output =
-qx@$main::AFS_PTSCMD removeuser -user $userstxt -group \"$grp\" 2>&1@;
+				$output = qx@$main::AFS_PTSCMD removeuser -user $userstxt -group \"$grp\" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsuserremoved';
 					$msgparam = 'afsgrp='
@@ -661,8 +677,7 @@ qx@$main::AFS_PTSCMD removeuser -user $userstxt -group \"$grp\" 2>&1@;
 			}
 			if ( $#users > -1 ) {
 				my $userstxt = '"' . join( '" "', @users ) . '"';
-				$output =
-qx@$main::AFS_PTSCMD adduser -user $userstxt -group "$grp" 2>&1@;
+				$output = qx@$main::AFS_PTSCMD adduser -user $userstxt -group "$grp" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsuseradded';
 					$msgparam = 'afsgrp='

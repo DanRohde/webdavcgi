@@ -1545,7 +1545,7 @@ sub _UNLOCK {
 	
 	if (!defined $token) {
 		$status = '400 Bad Request';
-	} elsif (getLockModule()->isLocked($PATH_TRANSLATED)) {
+	} elsif (isLocked($PATH_TRANSLATED)) {
 		if (getLockModule()->unlockResource($PATH_TRANSLATED, $token)) {
 			$status = '204 No Content';
 		} else {
@@ -2322,7 +2322,7 @@ sub isAllowed {
 	my $ifheader = getIfHeaderComponents($cgi->http('If'));
 	
 	return 0 if $backend->exists($fn) && !$backend->isWriteable($fn); # not writeable
-	return 1 unless getLockModule()->isLocked($fn); # no lock
+	return 1 unless isLocked($fn); # no lock
 	return 0 unless defined $ifheader;
 	my $rowsRef = $recurse ? getDBDriver()->db_getLike("$fn%") : getDBDriver()->db_get( $fn );
 	
@@ -2693,6 +2693,10 @@ sub getPropertyModule {
 sub getLockModule {
 	require WebDAV::Lock;
 	return $CACHE{webdavlock} || ($CACHE{webdavlock} = new WebDAV::Lock($config,getDBDriver()));
+}
+sub isLocked {
+	my ($fn, $r) = @_;
+	return $r ? getLockModule()->isLockedRecurse($fn) : getLockModule()->isLocked($fn);
 }
 sub getBaseURIFrag {
         return $_[0]=~/([^\/]+)\/?$/ ? ( $1 || '/' ) : '/';
