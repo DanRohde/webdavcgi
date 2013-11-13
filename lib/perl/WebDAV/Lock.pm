@@ -58,10 +58,13 @@ sub lockResource {
         $activelock{depth}=$depth;
         $activelock{lockroot}=$ru;
 
+	my $rfn = $$self{backend}->resolveVirt($fn);
+	my $rbase = $$self{backend}->resolveVirt($base?$base:$fn);
+
         # save lock to database (structure: basefn, fn, type, scope, token, timeout(null), owner(null)):
-        if ($$self{db}->db_insert(defined $base?$base:$fn,$fn,$locktype,$lockscope,$token,$depth,$timeout, $owner))  {
+        if ($$self{db}->db_insert(defined $base?$rbase:$rfn,$rfn,$locktype,$lockscope,$token,$depth,$timeout, $owner))  {
                 push @prop, { activelock=> \%activelock };
-        } elsif ($$self{db}->db_update(defined $base?$base:$fn,$fn,$timeout)) {
+        } elsif ($$self{db}->db_update(defined $base?$rbase:$rfn,$rfn,$timeout)) {
                 push @prop, { activelock=> \%activelock };
         } else {
                 push @{$resp{multistatus}{response}},{href=>$ru, status=>'HTTP/1.1 403 Forbidden (db update failed)'};
@@ -95,6 +98,7 @@ sub lockResource {
 }
 sub unlockResource {
         my ($self, $fn, $token) = @_;
+        $fn = $$self{backend}->resolveVirt($fn);
         return $$self{db}->db_isRootFolder($fn, $token) && $$self{db}->db_delete($fn,$token);
 }
 sub _checkTimedOut {
@@ -124,17 +128,20 @@ sub _checkTimedOut {
 sub isLockedRecurse {
         my ($self,$fn) = @_;
         $fn = $main::PATH_TRANSLATED unless defined $fn;
+        $fn = $$self{backend}->resolveVirt($fn);
         my $rows = $$self{db}->db_getLike("$fn\%");
         return $#{$rows} >-1 && !$self->_checkTimedOut($fn, $rows);
 }
 sub isLocked {
         my ($self,$fn) = @_;
+        $fn = $$self{backend}->resolveVirt($fn);
         $fn.='/' if $$self{backend}->isDir($fn) && $fn !~/\/$/;
         my $rows = $$self{db}->db_get($fn);
-        return ($#{$rows}>-1) && !$self->_checkTimedOut($fn, $rows)?1:0;
+        return (($#{$rows}>-1) && !$self->_checkTimedOut($fn, $rows)) ? 1 : 0;
 }
 sub isLockable  { # check lock and exclusive
         my ($self, $fn,$xmldata) = @_;
+        $fn = $$self{backend}->resolveVirt($fn);
         my @lockscopes = keys %{$$xmldata{'{DAV:}lockscope'}};
         my $lockscope = @lockscopes && $#lockscopes >-1 ? $lockscopes[0] : 'exclusive';
 
@@ -155,5 +162,74 @@ sub isLockable  { # check lock and exclusive
         }
         return $ret;
 }
+sub getLockDiscovery {
+	my ($self, $fn) = @_;
+	my $rfn = $$self{backend}->resolveVirt($fn);
+	main::debug("getLockDiscovery($fn) (rfn=$rfn)");
+	my $rowsRef = $$self{db}->db_get($rfn);
+	
+	my @resp = ();
+	main::debug("getLockDiscovery: rowcount=".$#{$rowsRef});
+	if ($#$rowsRef > -1) {
+		foreach my $row (@{$rowsRef}) { # basefn,fn,type,scope,token,depth,timeout,owner
+			my %lock;
+			$lock{locktype}{$$row[2]}=undef;
+			$lock{lockscope}{$$row[3]}=undef;
+			$lock{locktoken}{href}=$$row[4];
+			$lock{depth}=$$row[5];
+			$lock{timeout}= defined $$row[6] ? $$row[6] : 'Infinite';
+			$lock{owner}=$$row[7] if defined $$row[7];
 
+			push @resp, {activelock=>\%lock};
+		}
+
+	}
+	main::debug("getLockDiscovery: resp count=".$#resp);
+	
+	return $#resp >-1 ? \@resp : undef;
+}
+sub getTokens {
+	my ($self, $fn, $recurse) = @_;
+	$fn = $$self{backend}->resolveVirt($fn);
+	my $rowsRef = $recurse ? $$self{db}->db_getLike("$fn%") : $$self{db}->db_get( $fn );
+	my @tokens = map { $$_[4]} @{$rowsRef};
+	return \@tokens;
+}
+sub inheritLock {
+	my ($self, $fn,$checkContent, $visited) = @_;
+	$fn =  $main::PATH_TRANSLATED unless defined $fn;
+	my $backend = $$self{backend};
+
+	my $nfn = $backend->resolve($fn);
+	return if exists $$visited{$nfn};
+	$$visited{$nfn}=1;
+
+	my $bfn = $backend->getParent($fn).'/';
+
+	main::debug("inheritLock: check lock for $bfn ($fn)");
+	my $db = $$self{db};
+	my $rows = $db->db_get($backend->resolveVirt($bfn));
+	return if $#{$rows} == -1 and !$checkContent;
+	main::debug("inheritLock: $bfn is locked") if $#{$rows}>-1;
+	if ($checkContent) {
+		$rows = $db->db_get($backend->resolveVirt($fn));
+		return if $#{$rows} == -1;
+		main::debug("inheritLock: $fn is locked");
+	}
+	my $row = $$rows[0];
+	if ($backend->isDir($fn)) {
+		main::debug("inheritLock: $fn is a collection");
+		$db->db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
+		if ($backend->isReadable($fn)) {
+			foreach my $f (@{$backend->readDir($fn,main::getFileLimit($fn),$main::utils)}) {
+				my $full = $fn.$f;
+				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
+				$db->db_insert($backend->resolveVirt($$row[0]),$backend->resolveVirt($full),$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
+				$self->inheritLock($full,undef,$visited);
+			}
+		}
+	} else {
+		$db->db_insert($backend->resolveVirt($$row[0]),$backend->resolveVirt($fn),$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
+	}
+}
 1;

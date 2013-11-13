@@ -123,7 +123,7 @@ sub getProperty {
         $$resp_200{prop}{getcontenttype}=($isDir?'httpd/unix-directory':main::getMIMEType($fn)) if $prop eq 'getcontenttype';
         $$resp_200{prop}{getetag}=main::getETag($fn) if $prop eq 'getetag';
         $$resp_200{prop}{getlastmodified}=strftime('%a, %d %b %Y %T GMT' ,gmtime($mtime)) if $prop eq 'getlastmodified';
-        $$resp_200{prop}{lockdiscovery}=main::getLockDiscovery($fn) if $prop eq 'lockdiscovery';
+        $$resp_200{prop}{lockdiscovery}=main::getLockModule()->getLockDiscovery($fn) if $prop eq 'lockdiscovery';
         $$resp_200{prop}{resourcetype}=($isDir?{collection=>undef}:undef) if $prop eq 'resourcetype';
         if ($main::ENABLE_LOCK) {
                 if ($prop eq 'supportedlock') {

@@ -1288,7 +1288,7 @@ sub _PUT {
 				 . qq@<<body><h1>Created</h1><p>Resource $ENV{'QUERY_STRING'} has been created.</p></body></html>\n@;
 		}
 		if ($backend->saveStream($PATH_TRANSLATED, \*STDIN)) {
-			inheritLock();
+			getLockModule()->inheritLock();
 			logger("PUT($PATH_TRANSLATED)");
 			$eventChannel->broadcastEvent('PUT', {file=>$PATH_TRANSLATED}) if $eventChannel;
 		} else {
@@ -1328,7 +1328,7 @@ sub _COPY {
 			$status = '204 No Content' ;
 		} else {
 			if ($backend->mkcol($destination)) {
-				inheritLock($destination);
+				getLockModule()->inheritLock($destination);
 				$eventChannel->broadcastEvent('FILECOPIED', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 			} else {
 				$status = '403 Forbidden (mkcol($destination) failed)';
@@ -1338,7 +1338,7 @@ sub _COPY {
 		$eventChannel->broadcastEvent('COPY', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 		$status = '204 No Content' if $backend->exists($destination);
 		if (rcopy($PATH_TRANSLATED, $destination)) {
-			inheritLock($destination,1);
+			getLockModule()->inheritLock($destination,1);
 			logger("COPY($PATH_TRANSLATED, $destination)");
 			$eventChannel->broadcastEvent('COPIED', { file => $PATH_TRANSLATED, destination=>$destination, depth=>$depth, overwrite=>$overwrite}) if $eventChannel;
 		} else {
@@ -1372,7 +1372,7 @@ sub _MOVE {
 		$backend->unlinkFile($destination) if $backend->exists($destination) && $backend->isFile($destination);
 		$status = '204 No Content' if $backend->exists($destination);
 		if (rmove($PATH_TRANSLATED, $destination)) {
-			inheritLock($destination,1);
+			getLockModule()->inheritLock($destination,1);
 			logger("MOVE($PATH_TRANSLATED, $destination)");
 			$eventChannel->broadcastEvent('MOVED', { file => $PATH_TRANSLATED, destination=>$destination, overwrite=>$overwrite}) if $eventChannel;
 		} else {
@@ -1466,7 +1466,7 @@ sub _MKCOL {
 			my (%resp_200, %resp_403);
 			handlePropertyRequest($body, $dataRef, \%resp_200, \%resp_403);
 			## ignore errors from property request
-			inheritLock();
+			getLockModule()->inheritLock();
 			logger("MKCOL($PATH_TRANSLATED)");
 			$eventChannel->broadcastEvent('MDCOL',{file=>$PATH_TRANSLATED}) if $eventChannel;
 		} else {
@@ -1503,7 +1503,7 @@ sub _LOCK {
 		if (isAllowed($fn)) {
 			$status='200 OK';
 			getLockModule()->lockResource($fn, $ru, $xmldata, $depth, $timeout, $token);
-			$content = createXML({prop=>{lockdiscovery => getLockDiscovery($fn)}});	
+			$content = createXML({prop=>{lockdiscovery => getLockModule()->getLockDiscovery($fn)}});	
 		} else {
 			$status='423 Locked';
 			$type='text/plain';
@@ -2261,35 +2261,10 @@ sub simpleXMLParser {
 	$param{KeepRoot}=1 if $keepRoot;
 	return XMLin($text,%param);
 }
-sub getLockDiscovery {
-	my ($fn) = @_;
-
-	my $rowsRef = getDBDriver()->db_get($fn);
-	my @resp = ();
-	if ($#$rowsRef > -1) {
-		debug("getLockDiscovery: rowcount=".$#{$rowsRef});
-		foreach my $row (@{$rowsRef}) { # basefn,fn,type,scope,token,depth,timeout,owner
-			my %lock;
-			$lock{locktype}{$$row[2]}=undef;
-			$lock{lockscope}{$$row[3]}=undef;
-			$lock{locktoken}{href}=$$row[4];
-			$lock{depth}=$$row[5];
-			$lock{timeout}= defined $$row[6] ? $$row[6] : 'Infinite';
-			$lock{owner}=$$row[7] if defined $$row[7];
-
-			push @resp, {activelock=>\%lock};
-		}
-
-	}
-	debug("getLockDiscovery: resp count=".$#resp);
-	
-	return $#resp >-1 ? \@resp : undef;
-}
 sub preConditionFailed {
 	my ($fn) = @_;
 	$fn = $backend->getParent($fn).'/' if ! $backend->exists($fn);
 	my $ifheader = getIfHeaderComponents($cgi->http('If'));
-	my $rowsRef = getDBDriver()->db_get( $fn );
 	my $t =0; # token found
 	my $nnl = 0; # not no-lock found
 	my $nl = 0; # no-lock found
@@ -2324,58 +2299,20 @@ sub isAllowed {
 	return 0 if $backend->exists($fn) && !$backend->isWriteable($fn); # not writeable
 	return 1 unless isLocked($fn); # no lock
 	return 0 unless defined $ifheader;
-	my $rowsRef = $recurse ? getDBDriver()->db_getLike("$fn%") : getDBDriver()->db_get( $fn );
-	
 	my $ret = 0;
-	for (my $i=0; $i<=$#{$rowsRef}; $i++) {
+	foreach my $token (@{getLockModule()->getTokens($fn, $recurse)}) {
 		for (my $j=0; $j<=$#{$$ifheader{list}}; $j++) {
 			my $iftoken = $$ifheader{list}[$j]{token};
 			$iftoken="" unless defined $iftoken;
 			$iftoken=~s/[\<\>\s]+//g; 
-			debug("isAllowed: $iftoken send, needed for $$rowsRef[$i][4]: ". ($iftoken eq $$rowsRef[$i][4]?"OK":"FAILED") );
-			if ($$rowsRef[$i][4] eq $iftoken) {
+			debug("isAllowed: $iftoken send, needed for $token: ". ($iftoken eq $token?"OK":"FAILED") );
+			if ($token eq $iftoken) {
 				$ret = 1;
 				last;
 			}
 		}
 	}
 	return $ret;
-}
-sub inheritLock {
-	my ($fn,$checkContent, $visited) = @_;
-	$fn =  $PATH_TRANSLATED unless defined $fn;
-
-	my $nfn = $backend->resolve($fn);
-	return if exists $$visited{$nfn};
-	$$visited{$nfn}=1;
-
-	my $bfn = $backend->getParent($fn).'/';
-
-	debug("inheritLock: check lock for $bfn ($fn)");
-	my $db = getDBDriver();
-	my $rows = $db->db_get($bfn);
-	return if $#{$rows} == -1 and !$checkContent;
-	debug("inheritLock: $bfn is locked") if $#{$rows}>-1;
-	if ($checkContent) {
-		$rows = $db->db_get($fn);
-		return if $#{$rows} == -1;
-		debug("inheritLock: $fn is locked");
-	}
-	my $row = $$rows[0];
-	if ($backend->isDir($fn)) {
-		debug("inheritLock: $fn is a collection");
-		$db->db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
-		if ($backend->isReadable($fn)) {
-			foreach my $f (@{$backend->readDir($fn,getFileLimit($fn),$utils)}) {
-				my $full = $fn.$f;
-				$full .='/' if $backend->isDir($full) && $full !~/\/$/;
-				$db->db_insert($$row[0],$full,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
-				inheritLock($full,undef,$visited);
-			}
-		}
-	} else {
-		$db->db_insert($$row[0],$fn,$$row[2],$$row[3],$$row[4],$$row[5],$$row[6],$$row[7]);
-	}
 }
 sub getIfHeaderComponents {
         my($if) = @_;
