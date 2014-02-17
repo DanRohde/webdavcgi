@@ -112,6 +112,7 @@ $INCLUDE(htmlhead)</head>
 						$each@%main::AUTOREFRESH@'<li><a href="#" class="action setautorefresh" data-action="setautorefresh" data-value="$k">$v</a></li>'@
 						<li class="sep"><a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
 						<li><a href="#" class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear">$tl(autorefresh.clear)</a></li>
+						<li class="sep"><span class="action autorefreshtimer" data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span></li> 
 					</ul>
 				</div>
 			<!--ENDIF-->

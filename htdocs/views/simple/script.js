@@ -283,11 +283,14 @@ function initAutoRefresh() {
 	});
 	$("body").click(function(){ $("#autorefresh ul:visible").hide()});
 	$("a.autorefreshrunning").addClass("disabled");
+	$(".action.autorefreshtimer").addClass("disabled");
 	$("#autorefresh").on("started", function() {
+		$(".action.autorefreshtimer").removeClass("disabled");
 		$("a.autorefreshrunning").removeClass("disabled");
 		$("#autorefreshtimer").show();
-		$(".action.autorefreshtoggle").addClass("running")
+		$(".action.autorefreshtoggle").addClass("running");
 	}).on("stopped", function() {
+		$(".action.autorefreshtimer").addClass("disabled");
 		$("a.autorefreshrunning").addClass("disabled");
 		$("#autorefreshtimer").hide();
 		$(".action.autorefreshtoggle").removeClass("running");

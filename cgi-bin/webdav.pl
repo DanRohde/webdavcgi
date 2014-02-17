@@ -31,8 +31,6 @@
 #    - see http://webdavcgi.sf.net/doc.html#installation
 # CHANGES:
 #    - see CHANGELOG
-# TODO:
-#    - see TODO
 # KNOWN PROBLEMS:
 #    - see http://webdavcgi.sf.net/
 #########################################################################

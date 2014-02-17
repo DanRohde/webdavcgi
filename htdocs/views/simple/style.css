@@ -900,6 +900,9 @@ img {
 	padding: 2px;
 	border: 1px solid white;
 }
+#autorefresh ul li.sep {
+	border-top: 1px solid #999999;
+}
 .action.setautorefresh {
 	padding-left: 24px;
 	background: url(images/sprite.png) no-repeat 2px -422px;
@@ -950,6 +953,10 @@ img {
 	background: url(images/sprite.png) no-repeat center -1262px;
 	width: 24px;
 	padding-left: 24px;
+}
+.action.autorefreshtimer.disabled {
+	display: none;
+	visibility: hidden;
 }
 .collapsible {
 	position: fixed;
