@@ -82,6 +82,9 @@ h1,h2,h3,#contact {
 .screenshottable {
 	margin-left: auto;
 	margin-right: auto;
+	border: 0;
+	border-spacing: 20px;
+	padding: 10px;
 }
 .screenshottable th {
 	background-color: #eeeeee;
@@ -91,6 +94,11 @@ h1,h2,h3,#contact {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#ccc')";
 	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color=#ccc);
 	border: 1px solid #999999;
+	padding: 10px;
+}
+.screenshottable td {
+	text-align: center;
+	vertical-align: bottom;
 }
 pre,code {
 	border: 1px dotted #999999;

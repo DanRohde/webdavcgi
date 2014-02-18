@@ -13,6 +13,8 @@
      - fixed timed out locks bug reported by Harald Strack @ ssystems
      - fixed web interface ignoring WebDAV locks bug
      - fixed locks in virtual links bug
+     - add missing Speedy related doc (thanx Harald Strack @ sssystems)
+   
 0.8.6: 2013/7/8
      - fixed cookie related bug
      - added head toggle

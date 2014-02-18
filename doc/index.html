@@ -1,5 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html>
 <head>
   <meta name="keywords" content="WebDAV CGI wrapper UID" />
   <meta name="author" content="Daniel Rohde" />
@@ -33,7 +33,7 @@ Content of this site:
 <li><a href="#licensing">Licensing</a></li>
 </ul>
 </div>
-<a name="features"></a>
+<a id="features"></a>
 <h2>Features</h2>
 WebDAV CGI ...
 <ul>
@@ -122,57 +122,57 @@ Known Problems:
 <li>nautilus cannot copy folders via clipboard</li>
 <li> more: <a href="#client">see Client issues</a></li>
 </ul>
-<a name="screenshots"></a>
+<a id="screenshots"></a>
 <h2>Screenshots</h2>
-<table border="0" cellpadding="10" cellspacing="0" class="screenshottable">
-<tr><th colspan="7">Web interface</th></tr>
+<table class="screenshottable">
+<tr><th colspan="5">Web interface</th></tr>
 <tr>
-<td align="center" valign="bottom" >
+<td >
 <a href="images/webdavcgi-webinterface.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface.png" alt="Web interface file/folder browser" title="Web interface file/folder browser - click for full size"/></a>
 <div class="screenshottitle">file/folder browser</div>
 </td>
 <td>&nbsp;</td>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-webinterface-afs.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface-afs.png" alt="Web interface AFS dialogs" title="Web interface AFS dialogs - click for full size"/></a>
 <div class="screenshottitle">AFS Group &amp; ACL Manager</div>
 </td>
 <td>&nbsp;</td>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-webinterface-permissions.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface-permissions.png" alt="Web interface permissions dialog" title="Web interface permissions dialog - click for full size"/></a>
 <div class="screenshottitle">Permissions dialog</div>
 </td>
 </tr>
 <tr>
-<th colspan="7">WebDAV clients</th>
+<th colspan="5">WebDAV clients</th>
 </tr>
 <tr>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-client-nautilus.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-nautilus.png" alt="Nautilus" title="Nautilus - click for full size"/></a>
 <div class="screenshottitle">Nautilus</div>
 </td>
 <td>&nbsp;</td>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-client-konqueror.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-konqueror.png" alt="Konqueror" title="Konqueror - click for full size"/></a>
 <div class="screenshottitle">Konqueror</div>
 </td>
 <td>&nbsp;</td>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-client-cadaver.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-cadaver.png" alt="cadaver" title="cadaver - click for full size"/></a>
 <div class="screenshottitle">cadaver</div>
 </td>
 </tr>
 <tr>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-client-davfs.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-davfs.png" alt="davfs" title="davfs- click for full size"/></a>
 <div class="screenshottitle">davfs2</div>
 </td>
 <td>&nbsp;</td>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-client-wexplorer.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-wexplorer.png" alt="M$ Windows Explorer" title="M$ Windows Explorer - click for full size"/></a>
 <div class="screenshottitle">M$ Windows Explorer (XP)</div>
 </td>
 <td>&nbsp;</td>
-<td align="center" valign="bottom">
+<td>
 <a href="images/webdavcgi-client-bitkinex.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-bitkinex.png" alt="BitKinex 3.2.3" title="BitKinex 3.2.3 - click for full size"/></a>
 <div class="screenshottitle">BitKinex 3.2.3</div>
 </td>
@@ -180,7 +180,7 @@ Known Problems:
 </table>
 
 
-<a name="download"></a>
+<a id="download"></a>
 <h2>Download</h2>
 <p>
 Latest release: <a href="http://sourceforge.net/projects/webdavcgi/files/webdavcgi-latest.zip/download">zip</a> | <a href="http://sourceforge.net/projects/webdavcgi/files/webdavcgi-latest.tar.bz2/download">tar.bz2</a> (Changes: see <a href="http://sourceforge.net/p/webdavcgi/code/HEAD/tree/trunk/CHANGELOG">CHANGELOG</a> from SVN).
@@ -189,12 +189,12 @@ Latest release: <a href="http://sourceforge.net/projects/webdavcgi/files/webdavc
 The latest BETA release is also available: checkout source <code>svn checkout svn://svn.code.sf.net/p/webdavcgi/code/trunk webdavcgi</code>
 
 </p>
-<a name="installation"></a>
+<a id="installation"></a>
 <h2>Installation</h2>
 
 see <a href="doc.html">Documentation</a>
 
-<a name="client"></a>
+<a id="client"></a>
 <h2>Client issues</h2>
 Finder (MacOS X 10.x):
 <ul>
@@ -230,14 +230,14 @@ Windows Vista/7:
 </ul>
 
 
-<a name="licensing"></a>
+<a id="licensing"></a>
 <h2>Licensing</h2>
 <a href="http://www.gnu.org/licenses/gpl.txt">GPLv3</a>
 
 
 <hr/>
 <div id="contact">
-&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2011 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV CGI">Daniel Rohde</a>  
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2011 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a>  
 </div>
  <p>
      <a href="http://validator.w3.org/check?uri=referer"><img border="0"
