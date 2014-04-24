@@ -6,14 +6,14 @@
      - added read-only back-end wrapper RO 
      - added some missing extension hooks
      - fixed properties bug reported by Harald Strack @ ssystems
-     - add extension configuration support
+     - added extension configuration support
      - improved back-end configuration support
      - added event handling for extensions
      - added show locks feature ($SHOW_LOCKS)
      - fixed timed out locks bug reported by Harald Strack @ ssystems
      - fixed web interface ignoring WebDAV locks bug
      - fixed locks in virtual links bug
-     - add missing Speedy related doc (thanx Harald Strack @ sssystems)
+     - added missing Speedy related doc (thanx Harald Strack @ sssystems)
    
 0.8.6: 2013/7/8
      - fixed cookie related bug
