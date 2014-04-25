@@ -1991,11 +1991,11 @@ function handleAFSGroupManager(event) {
 	var target = $("#fileList").attr('data-uri');
 	if ($(this).hasClass("disabled")) return false;
 	var self = this;
-	$(this).addClass("disabled");
+	$(".action.afsgroupmanager").addClass("disabled");
 	$.get(target, { ajax : "getAFSGroupManager", template: template }, function(response) {
 		var groupmanager = $(response);
 		initGroupManager(groupmanager, template, target);
-		groupmanager.dialog({modal: false, width: "auto", height: "auto", close: function() { $(self).removeClass("disabled"); groupmanager.remove();}}).show();
+		groupmanager.dialog({modal: false, width: "auto", height: "auto", close: function() { $(".action.afsgroupmanager").removeClass("disabled"); groupmanager.remove();}}).show();
 	});	
 }
 function handleAFSACLManager(event){
