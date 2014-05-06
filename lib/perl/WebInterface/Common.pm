@@ -88,7 +88,8 @@ sub readViewTL  {
 }
 sub readExtensionsTL {
 	my ($self, $l) = @_;
-	foreach my $lfn (@{$$self{config}{extensions}->handle('locales')}) {
+	my $locales = $$self{config}{extensions}->handle('locales') || [];
+	foreach my $lfn (@{$locales}) {
 		main::debug("readExtensionsTL($l): $lfn");
 		foreach my $f (('default',$l)) {
 			my $fn = $lfn.'_'.$f.'.msg';
