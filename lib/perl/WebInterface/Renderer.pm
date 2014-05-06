@@ -52,6 +52,9 @@ sub renderWebInterface {
 sub printStylesAndVHTOCSFiles {
         my ($self,$fn) = @_;
         my $file = $fn =~ /\Q$main::VHTDOCS\E(.*)/ ? $main::INSTALL_BASE.'htdocs/'.$1 : $main::INSTALL_BASE.'lib/'.$$self{backend}->basename($fn);
+        if ($fn =~ /\Q$main::VHTDOCS\E\_EXTENSION\(([^\)]+)\)_(.*)/) {
+        	$file = $main::INSTALL_BASE.'lib/perl/WebInterface/Extension/'.$1.$2;
+        } 
         $file=~s/\/\.\.\///g;
         my $compression = !-e $file && -e "$file.gz";
         my $nfile = $file;

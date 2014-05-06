@@ -1,6 +1,6 @@
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,13 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package WebInterface::Extension::Template;
+package WebInterface::Extension::DiskUsage;
 
 use strict;
 
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension );
-
 
 sub new {
         my $this = shift;
@@ -35,17 +34,28 @@ sub new {
 
 sub init { 
 	my($self, $hookreg) = @_; 
-	$hookreg->register('gethandler', $self);
+	$hookreg->register('fileaction', $self);
+	$hookreg->register('fileactionpopup', $self);
+	$hookreg->register('css', $self);
+	$hookreg->register('javascript', $self);
+	$hookreg->register('locales', $self);
 }
 
 sub handle { 
-	my ($self, $hook, $config, $params) = @_; 
-	my $handled = 0;
-	if ($hook eq 'gethandler') {
-		## do something here
-		$handled = 1;
+	my ($self, $hook, $config, $params) = @_;
+	$$self{backend} = $$config{backend};
+	if ($hook eq 'fileaction') {
+		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'diskusage', path=>$$params{path} };
+	} elsif( $hook eq 'fileactionpopup') {
+		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'diskusage', path=>$$params{path}, type=>'li' };
+	} elsif ( $hook eq 'css' ) {
+		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('DiskUsage','htdocs/style.css').q@">@;
+	} elsif ( $hook eq 'javascript' ) {
+		return q@<script src="@.$self->getExtensionUri('DiskUsage','htdocs/script.js').q@"></script>@;
+	} elsif ( $hook eq 'locales') {
+		return $self->getExtensionLocation('DiskUsage','locale/locale');
 	}
-	return $handled; 
+	return 0; 
 }
 
 1;

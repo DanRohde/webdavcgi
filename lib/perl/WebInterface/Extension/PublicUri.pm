@@ -21,7 +21,8 @@ package WebInterface::Extension::PublicUri;
 use strict;
 
 use WebInterface::Renderer;
-our @ISA = qw( WebInterface::Renderer );
+use WebInterface::Extension;
+our @ISA = qw( WebInterface::Renderer WebInterface::Extension );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
@@ -166,17 +167,16 @@ sub handle {
 		}
 	}
 	elsif ( $hook eq 'css' ) {
-		return
-q@<link rel="stylesheet" type="text/css" href="__PublicUri__/style.css"/>@;
+		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('PublicUri','htdocs/style.css').q@"/>@;
 	}
 	elsif ( $hook eq 'javascript' ) {
-		return q@<script src="__PublicUri__/script.js"></script>@;
+		return q@<script src="@.$self->getExtensionUri('PublicUri','htdocs/script.js').q@"></script>@;
 	}
 	elsif ( $hook eq 'filelistentrydata' ) {
 		return q@data-puri="$puri"@;
 	}
 	elsif ( $hook eq 'locales' ) {
-		return 'PublicUri/locale/locale';
+		return $self->getExtensionLocation('PublicUri','locale/locale');
 	}
 	elsif ( $hook eq 'templates' ) {
 		return

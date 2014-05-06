@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -16,36 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package WebInterface::Extension::Template;
-
-use strict;
-
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension );
+package WebInterface::Extension;
 
 
-sub new {
-        my $this = shift;
-        my $class = ref($this) || $this;
-        my $self = { };
-        bless $self, $class;
-        $self->init(shift);
-        return $self;
+sub getExtensionLocation {
+	my ($self, $extension, $file) = @_;
+	return $main::INSTALL_BASE.'lib/perl/WebInterface/Extension/'.$extension.'/'.$file;
 }
-
-sub init { 
-	my($self, $hookreg) = @_; 
-	$hookreg->register('gethandler', $self);
+sub getExtensionUri {
+	my ($self, $extension, $file) = @_;	
+	return $main::VHTDOCS.'_EXTENSION('.$extension.')_/'.$file;
 }
-
-sub handle { 
-	my ($self, $hook, $config, $params) = @_; 
-	my $handled = 0;
-	if ($hook eq 'gethandler') {
-		## do something here
-		$handled = 1;
-	}
-	return $handled; 
-}
-
 1;

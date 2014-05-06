@@ -86,6 +86,17 @@ sub readViewTL  {
 	$self->readTLFile($fn, $main::TRANSLATION{$l});
         $main::TRANSLATION{$l}{x__VIEWREAD__x}=1;
 }
+sub readExtensionsTL {
+	my ($self, $l) = @_;
+	foreach my $lfn (@{$$self{config}{extensions}->handle('locales')}) {
+		main::debug("readExtensionsTL($l): $lfn");
+		foreach my $f (('default',$l)) {
+			my $fn = $lfn.'_'.$f.'.msg';
+			$self->readTLFile($fn, $main::TRANSLATION{$l}) if -e $fn;
+		}
+	}
+	$main::TRANSLATION{$l}{x__EXTENSIONSREAD__x}=1;
+}
 sub tl {
         my $self = shift;
         my $key = shift;
@@ -93,6 +104,7 @@ sub tl {
 	$self->readViewTL('default') if !exists $main::TRANSLATION{default}{x__VIEWREAD__x};
         $self->readTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__READ__x};
 	$self->readViewTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__VIEWREAD__x};
+	$self->readExtensionsTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__EXTENSIONSREAD__x};
 
         my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $key;
         return $#_>-1 ? sprintf( $val, @_) : $val;

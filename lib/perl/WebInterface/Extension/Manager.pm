@@ -23,11 +23,16 @@ use strict;
 use Module::Load;
 
 ##our @SUPPORTED_HOOKS = ( 'gethandler', 'posthandler', 'header', 'search', 'viewtools', 'quota', 'sidebar', 'getFolderList', 'toolbar' );
-our @SUPPORTED_HOOKS = ( 'gethandler', 'fileaction', 'fileactionpopup', 'css', 'javascript' );
+our @SUPPORTED_HOOKS = ( 'gethandler', 'fileaction', 'fileactionpopup', 'css', 'javascript', 'locales' );
 
 ##  HOOKS:
 ##     gethandler - return: 1 (handled) | 0 (not handled)
-##     fileaction - return: { action=>'actionname', label=>'keyfromlocaledb', disabled=>0 }
+##     fileaction - return: { action=>'actionname', label=>'keyfromlocaledb', disabled=>0, path=>'', type=>'li' }
+##     fileactionpopup 
+##                - like fileaction 
+##     locales    - return: local path to locale file without language and extension (use getExtensionLocation from WebInterface::Extension)
+##     css        - return: <link/> or <style></style>
+##     javascript - return: <script></script>
 
 our %HOOKS;
 
