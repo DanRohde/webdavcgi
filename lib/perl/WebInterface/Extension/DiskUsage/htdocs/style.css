@@ -22,7 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .is-file .action.diskusage,
-.isreadable-no .action.diskusage {
+.isreadable-no .action.diskusage,
+.unselectable-yes .action.diskusage {
 	display: none;
 	visibility: hidden;
 }
