@@ -15,10 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #popupmenu .action.diskusage {
-	background: url(disk-icon.png) no-repeat 2px center;
+	background: url(disk-icon.png) no-repeat 2px 6px;
 }
 .action.diskusage {
-	background: url(disk-icon.png) no-repeat left bottom;
+	background: url(disk-icon.png) no-repeat 4px bottom;
 }
 
 .is-file .action.diskusage,

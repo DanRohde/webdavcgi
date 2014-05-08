@@ -56,9 +56,9 @@ sub handle {
 	} elsif( $hook eq 'fileactionpopup') {
 		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'du_diskusage', path=>$$params{path}, type=>'li' };
 	} elsif ( $hook eq 'css' ) {
-		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('DiskUsage','htdocs/style.css').q@">@;
+		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('DiskUsage','htdocs/style.min.css').q@">@;
 	} elsif ( $hook eq 'javascript' ) {
-		return q@<script src="@.$self->getExtensionUri('DiskUsage','htdocs/script.js').q@"></script>@;
+		return q@<script src="@.$self->getExtensionUri('DiskUsage','htdocs/script.min.js').q@"></script>@;
 	} elsif ( $hook eq 'locales') {
 		return $self->getExtensionLocation('DiskUsage','locale/locale');
 	} elsif ( $hook eq 'gethandler' && $$config{cgi}->param('action') eq 'diskusage') {
