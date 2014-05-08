@@ -72,7 +72,7 @@ sub handle {
 			$details.=$$self{cgi}->Tr({},$$self{cgi}->th({-class=>'diskusage filename'},$self->tl('name')).$$self{cgi}->th({-class=>'diskusage size',-title=>$bv[1]},$self->tl('size')));
 			foreach my $p (sort { $du[1]{$b} <=> $du[1]{$a} } keys %{$du[1]}) {
 				my @pbv = $self->renderByteValue($du[1]{$p});
-				$details.=$$self{cgi}->Tr({-class=>'diskusage entry'}, $$self{cgi}->td({-class=>'diskusage filename'},$$self{cgi}->a({-class=>'action changeuri',-title=>$p,-href=>getURI($p)},$p)).$$self{cgi}->td({-title=>$pbv[1], -class=>'diskusage size'},$pbv[0]));
+				$details.=$$self{cgi}->Tr({-class=>'diskusage entry'}, $$self{cgi}->td({-class=>'diskusage filename'},$$self{cgi}->a({-class=>'action changeuri',-href=>$self->getURI($p)},$$self{cgi}->escapeHTML($p))).$$self{cgi}->td({-title=>$pbv[1], -class=>'diskusage size'},$pbv[0]));
 			}
 			$details.=$$self{cgi}->end_table();
 			$text.=$$self{cgi}->div({-class=>'diskusage accordion'}, $$self{cgi}->h3($self->tl('du_details')).$$self{cgi}->div($details));
@@ -84,8 +84,8 @@ sub handle {
 	return 0; 
 }
 sub getURI { 
-	my ($relpath) = @_;
-	return $main::REQUEST_URI.$relpath;
+	my ($self, $relpath) = @_;
+	return $main::REQUEST_URI.join('/',map({ $$self{cgi}->escape($_) } split(/\//,$relpath)));
 }
 sub getDiskUsage {
 	my ($self,$path,$file,$sizes) = @_;
