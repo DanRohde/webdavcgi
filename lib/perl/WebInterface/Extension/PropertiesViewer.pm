@@ -21,7 +21,8 @@ package WebInterface::Extension::PropertiesViewer;
 use strict;
 
 use WebInterface::Renderer;
-our @ISA = qw( WebInterface::Renderer);
+use WebInterface::Extension;
+our @ISA = qw( WebInterface::Renderer WebInterface::Extension );
 
 sub new {
         my $this = shift;

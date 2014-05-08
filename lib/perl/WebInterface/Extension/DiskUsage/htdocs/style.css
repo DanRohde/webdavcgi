@@ -15,14 +15,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 #popupmenu .action.diskusage {
-	
+	background: url(disk-icon.png) no-repeat 2px center;
 }
 .action.diskusage {
-	// background: url(data:image/png;base64,) no-repeat left;
+	background: url(disk-icon.png) no-repeat left bottom;
 }
 
 .is-file .action.diskusage,
 .isreadable-no .action.diskusage {
 	display: none;
 	visibility: hidden;
+}
+.diskusage.details {
+	border-collapse: collapse;
+	width: 100%;
+}
+.diskusage.size, .diskusage.filename {
+	margin: 0;
+	padding: 1px;
+	vertical-align: top;
+	border-bottom: 1px solid gray;
+	
+}
+.diskusage.size {
+	text-align: right;	
+}
+.diskusage.entry:hover {
+	background-color: #ededed;
 }
