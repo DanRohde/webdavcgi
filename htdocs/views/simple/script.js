@@ -959,7 +959,7 @@ function handleFileActionEvent(event) {
 	} else if (self.hasClass("props")) {
 		window.location.href = concatUri(window.location.pathname, row.attr('data-file') + '?action=props');
 	} else { // extension support:
-		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file') });
+		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row });
 	}
 }
 function handleFileListRowFocusIn(event) {
@@ -1467,11 +1467,13 @@ function updateFileListActions() {
 	toggleButton($(".sel-one.sel-dir"+exclude), s["fileselcounter"]>0 || s["dirselcounter"]!=1);
 	toggleButton($(".sel-multi.sel-dir"+exclude), s["fileselcounter"]>0 || s["dirselcounter"]==0);
 	toggleButton($(".sel-noneorone.sel-dir"+exclude), s["fileselcounter"]>0 || s["dirselcounter"]>1);
+	toggleButton($(".sel-noneormulti.sel-dir"+exclude), s["fileselcounter"]>0);
 
 	toggleButton($(".sel-none.sel-file"+exclude),  s["fileselcounter"]!=0)
 	toggleButton($(".sel-one.sel-file"+exclude), s["dirselcounter"]>0 || s["fileselcounter"]!=1);
 	toggleButton($(".sel-multi.sel-file"+exclude), s["dirselcounter"]>0 || s["fileselcounter"]==0);
 	toggleButton($(".sel-noneorone.sel-file"+exclude), s["dirselcounter"]>0 || s["fileselcounter"]>1);
+	toggleButton($(".sel-noneormulti.sel-file"+exclude), s["dirselcounter"]>0);
 }
 function initFolderStatistics() {
 	$("#flt").on("fileListChanged", updateFolderStatistics).on("fileListViewChanged", updateFolderStatistics);

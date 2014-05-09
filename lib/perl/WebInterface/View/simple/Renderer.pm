@@ -246,9 +246,9 @@ sub renderExtension {
 	foreach my $a (@{$extactions}) {
 		if (ref($a)) {
 			if ($$a{type} && $$a{type} eq 'li') {
-				$content.=$$self{cgi}->li({-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'')}, $self->tl($$a{label}));
+				$content.=$$self{cgi}->li({-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:'')}, $self->tl($$a{label}));
 			} else {
-				$content.=$$self{cgi}->a({ -href => '#', -data_action=>$$a{action}, -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'')}, $self->tl($$a{label}));
+				$content.=$$self{cgi}->a({ -href => '#', -data_action=>$$a{action}, -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:'')}, $self->tl($$a{label}));
 			}
 		} else {
 			$content.=$a;
