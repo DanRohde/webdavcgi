@@ -1723,6 +1723,9 @@ function handleFileListActionEvent(event) {
 					.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
 			confirmDialog(msg, { confirm: doPasteAction, setting: "settings.confirm.paste" });
 		} else doPasteAction();
+	} else {
+		var row = $(this).closest("tr");
+		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row });
 	}
 }
 function uri2html(uri) {

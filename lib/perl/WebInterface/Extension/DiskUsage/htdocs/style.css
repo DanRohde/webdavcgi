@@ -17,10 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.diskusage {
 	background: url(disk-icon.png) no-repeat 2px 6px;
 }
+#nav .listaction.diskusage {
+	background: url(disk-icon.png) no-repeat 4px center;
+}
 .action.diskusage {
 	background: url(disk-icon.png) no-repeat 4px bottom;
 }
-
+ 
 .is-file .action.diskusage,
 .isreadable-no .action.diskusage,
 .unselectable-yes .action.diskusage {

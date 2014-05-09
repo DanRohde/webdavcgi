@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+#
+# SETUP:
+# disable_fileaction - disables fileaction entry
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_app - disables sidebar menu entry
+# 
 
 package WebInterface::Extension::DiskUsage;
 
@@ -35,12 +41,13 @@ sub new {
 
 sub init { 
 	my($self, $hookreg) = @_; 
-	$hookreg->register('fileaction', $self);
-	$hookreg->register('fileactionpopup', $self);
+	$hookreg->register('fileaction', $self) unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileaction};
+	$hookreg->register('fileactionpopup', $self) unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileactionpopup};
 	$hookreg->register('css', $self);
 	$hookreg->register('javascript', $self);
 	$hookreg->register('locales', $self);
 	$hookreg->register('posthandler', $self);
+	$hookreg->register('apps', $self) unless $main::EXTENSION_CONFIG{DiskUsage}{disable_app};
 }
 
 sub handle { 
@@ -55,6 +62,8 @@ sub handle {
 		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'du_diskusage', path=>$$params{path}};
 	} elsif( $hook eq 'fileactionpopup') {
 		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'du_diskusage', path=>$$params{path}, type=>'li', classes=>'listaction sel-noneormulti sel-dir' };
+	} elsif ($hook eq 'apps') {
+		return $$self{cgi}->li({-title=>$self->tl('du_diskusage')},$$self{cgi}->a({-class=>'action listaction diskusage sel-nonormulti sel-dir disabled', -href=>'#'},$self->tl('du_diskusage_short')));
 	} elsif ( $hook eq 'css' ) {
 		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('DiskUsage','htdocs/style.min.css').q@">@;
 	} elsif ( $hook eq 'javascript' ) {
@@ -68,7 +77,7 @@ sub handle {
 			my $dudetails = {};
 			my $du = $self->getDiskUsage($main::PATH_TRANSLATED,$file,$dudetails);
 			my @bv = $self->renderByteValue($du);
-			my $label = sprintf($self->tl('du_diskusagefor'), $file);
+			my $label = sprintf($self->tl('du_diskusagefor'), $file eq '' ? '.' : $file);
 			my $dutext = "$label: " . $$self{cgi}->span({-title=>$bv[1]},$bv[0]);
 			
 			$completedu+=$du;
