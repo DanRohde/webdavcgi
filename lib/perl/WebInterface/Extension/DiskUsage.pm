@@ -87,7 +87,12 @@ sub handle {
 				$details.=$$self{cgi}->Tr({},$$self{cgi}->th({-class=>'diskusage filename'},$self->tl('name')).$$self{cgi}->th({-class=>'diskusage size',-title=>$bv[1]},$self->tl('size')));
 				foreach my $p (sort { $$dudetails{$b} <=> $$dudetails{$a} || $b cmp $a } keys %{$dudetails}) {
 					my @pbv = $self->renderByteValue($$dudetails{$p});
-					$details.=$$self{cgi}->Tr({-class=>'diskusage entry'}, $$self{cgi}->td({-class=>'diskusage filename'},$$self{cgi}->a({-class=>'action changeuri',-href=>$self->getURI($p)},$$self{cgi}->escapeHTML($p))).$$self{cgi}->td({-title=>$pbv[1], -class=>'diskusage size'},$pbv[0]));
+					my $perc =  100*$$dudetails{$p}/$du;
+					$details.=$$self{cgi}->Tr({-class=>'diskusage entry'}, 
+						$$self{cgi}->td({-class=>'diskusage filename',-title=>sprintf('%.2f%%',$perc)},
+							$$self{cgi}->div({-class=>'diskusage perc',-style=>sprintf('width: %.0f%%;',$perc)},
+								$$self{cgi}->a({-class=>'action changeuri',-href=>$self->getURI($p)},$$self{cgi}->escapeHTML($p))))
+						.$$self{cgi}->td({-title=>$pbv[1], -class=>'diskusage size'}, $pbv[0]));
 				}
 				$details.=$$self{cgi}->end_table();
 				$dutext.=$$self{cgi}->div({-class=>'diskusage accordion'}, $$self{cgi}->h3($self->tl('du_details')).$$self{cgi}->div($details));

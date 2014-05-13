@@ -47,3 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .diskusage.entry:hover {
 	background-color: #ededed;
 }
+.diskusage.perc {
+	white-space:nowrap;
+	border-bottom: 8px solid gray;
+}
