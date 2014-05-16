@@ -1651,10 +1651,11 @@ function postAction(data) {
 function handleFileListActionEventDelete(event) {
 	$("#fileList tr.selected:visible").fadeTo("slow",0.5);
 	var self = $(this);
-	confirmDialog($('#deletefilesconfirm').html(), {
+	var selrows = $("#fileList tr.selected:visible");
+	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,simpleEscape(selrows.attr('data-file'))), {
 		confirm: function() {
 			var block = blockPage();
-			var selrows = $("#fileList tr.selected:visible");
+			
 			if (selrows.length == 0) selrows = self.closest("tr");
 			var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map(selrows, function(v,i) { return $(v).attr("data-file") })}, function(response) {
 				block.remove();
