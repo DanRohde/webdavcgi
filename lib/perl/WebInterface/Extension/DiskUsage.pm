@@ -73,29 +73,35 @@ sub handle {
 	} elsif ( $hook eq 'posthandler' && $$config{cgi}->param('action') eq 'diskusage') {
 		my $text =""; 
 		my $completedu = 0;
+		my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
+		
 		foreach my $file ($$config{cgi}->param('file')) {
-			my $dudetails = {};
-			my $du = $self->getDiskUsage($main::PATH_TRANSLATED,$file,$dudetails);
+			my ($dudetails, $fcdetails) = ({},{});
+			my $du = $self->getDiskUsage($main::PATH_TRANSLATED,$file,$dudetails,$fcdetails);
 			my @bv = $self->renderByteValue($du);
 			my $label = sprintf($self->tl('du_diskusagefor'), $file eq '' ? '.' : $file);
 			my $dutext = "$label: " . $$self{cgi}->span({-title=>$bv[1]},$bv[0]);
-			
+			my $fullstat = sprintf($statfstring, $$fcdetails{'//__STAT__//'}{files}, $$fcdetails{'//__STAT__//'}{folders}, $$fcdetails{'//__STAT__//'}{sum});	
 			$completedu+=$du;
 		
 			if (keys %{$dudetails} > 0) {
-				my $details = $$self{cgi}->start_table({-class=>'diskusage details'});
-				$details.=$$self{cgi}->Tr({},$$self{cgi}->th({-class=>'diskusage filename'},$self->tl('name')).$$self{cgi}->th({-class=>'diskusage size',-title=>$bv[1]},$self->tl('size')));
+				my $details = "";
+				$details .= $$self{cgi}->div($fullstat); 
+				$details .= $$self{cgi}->start_table({-class=>'diskusage details'});
+				$details .= $$self{cgi}->Tr({},$$self{cgi}->th({-class=>'diskusage filename'},$self->tl('name')).$$self{cgi}->th({-class=>'diskusage size',-title=>$bv[1]},$self->tl('size')));
 				foreach my $p (sort { $$dudetails{$b} <=> $$dudetails{$a} || $b cmp $a } keys %{$dudetails}) {
 					my @pbv = $self->renderByteValue($$dudetails{$p});
-					my $perc =  100*$$dudetails{$p}/$du;
+					my $perc =  $du > 0 ? 100*$$dudetails{$p}/$du : 0;
 					$details.=$$self{cgi}->Tr({-class=>'diskusage entry'}, 
-						$$self{cgi}->td({-class=>'diskusage filename',-title=>sprintf('%.2f%%',$perc)},
+						$$self{cgi}->td({-class=>'diskusage filename',-title=>sprintf('%.2f%%, '.$statfstring,$perc,$$fcdetails{$p}{files},$$fcdetails{$p}{folders},$$fcdetails{$p}{sum})},
 							$$self{cgi}->div({-class=>'diskusage perc',-style=>sprintf('width: %.0f%%;',$perc)},
 								$$self{cgi}->a({-class=>'action changeuri',-href=>$self->getURI($p)},$$self{cgi}->escapeHTML($p))))
 						.$$self{cgi}->td({-title=>$pbv[1], -class=>'diskusage size'}, $pbv[0]));
 				}
 				$details.=$$self{cgi}->end_table();
 				$dutext.=$$self{cgi}->div({-class=>'diskusage accordion'}, $$self{cgi}->h3($self->tl('du_details')).$$self{cgi}->div($details));
+			} else {
+				$dutext .= $$self{cgi}->div( $fullstat );
 			}
 			$text .= $$self{cgi}->div($dutext);
 		}
@@ -110,7 +116,7 @@ sub getURI {
 	return $main::REQUEST_URI.join('/',map({ $$self{cgi}->escape($_) } split(/\//,$relpath)));
 }
 sub getDiskUsage {
-	my ($self,$path,$file,$sizes) = @_;
+	my ($self,$path,$file,$sizes,$fcounts) = @_;
 	my $backend = $$self{backend};
 	my $size = 0;
 	foreach my $f (@{$$self{backend}->readDir("$path$file")}) {
@@ -118,11 +124,17 @@ sub getDiskUsage {
 		my $np = "$path$nf";
 		if ($backend->isDir($np)&&!$backend->isLink($np)) {
 			$nf.='/';
-			$$sizes{$nf}=$self->getDiskUsage($path,$nf,$sizes); ## + ($backend->stat("$path$nf"))[7]; # folders have sometimes a size but is not relevant
+			$$sizes{$nf}=$self->getDiskUsage($path,$nf,$sizes,$fcounts); ## + ($backend->stat("$path$nf"))[7]; # folders have sometimes a size but is not relevant
 			$size+=$$sizes{$nf};
+			$$fcounts{$file}{folders}++;
+			$$fcounts{'//__STAT__//'}{folders}++;
 		} else {
 			$size+=($backend->stat($np))[7];
+			$$fcounts{$file}{files}++;
+			$$fcounts{'//__STAT__//'}{files}++;
 		}
+		$$fcounts{$file}{sum}++;
+		$$fcounts{'//__STAT__//'}{sum}++;
 	}
 	return $size;
 }
