@@ -1,7 +1,7 @@
 <div id="fileListTableContent">
 	<form id="filelistform" method="post" action="#">
 	<input id="filelistaction" type="hidden" name="__set__" value=""/>
-	<!--IF($config(SHOW_QUOTA))-->
+	<!--IF($config(SHOW_QUOTA) && parseByteSize("$quotalimit") > 0)-->
 	<div id="quota">
 			<div class="quotabar" title="$tl(quotaavailable) $quotaavailable (${quotaavailableperc}%) / $quotalimit"><div title="$tl(quotaused) $quotaused (${quotausedperc}%) / $quotalimit" class="$quotalevel quotaused" style="$quotastyle; width: ${quotausedperc}%;">${quotausedperc}%</div></div>
 			$tl(quotalimit) <span title="$quotalimittitle">$quotalimit</span>, 
