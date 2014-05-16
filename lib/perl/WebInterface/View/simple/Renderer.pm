@@ -190,6 +190,7 @@ sub renderTemplate {
 			maxuploadsize=>$main::POST_MAX_SIZE,
 			maxuploadsizehr=>($self->renderByteValue($main::POST_MAX_SIZE,2,2))[0],
 			quotalimit => ($self->renderByteValue($quota{quotalimit},2,))[0],
+			quotalimitbytes => $quota{quotalimit},
 			quotalimittitle => ($self->renderByteValue($quota{quotalimit},2,))[1],
 			quotaused => ($self->renderByteValue($quota{quotaused},2,2))[0],
 			quotausedtitle => ($self->renderByteValue($quota{quotaused},2,2))[1],
@@ -792,4 +793,3 @@ sub parseByteSize {
 	return $1 * ($3 ? ($sf{lc($3)} || 1) : 1);
 }
 1;
-
