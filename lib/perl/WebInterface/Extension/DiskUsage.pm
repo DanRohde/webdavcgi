@@ -81,7 +81,7 @@ sub handle {
 			my @bv = $self->renderByteValue($du);
 			my $label = sprintf($self->tl('du_diskusagefor'), $file eq '' ? '.' : $file);
 			my $dutext = "$label: " . $$self{cgi}->span({-title=>$bv[1]},$bv[0]);
-			my $fullstat = sprintf($statfstring, $$fcdetails{'//__STAT__//'}{files}, $$fcdetails{'//__STAT__//'}{folders}, $$fcdetails{'//__STAT__//'}{sum});	
+			my $fullstat = sprintf($statfstring, $$fcdetails{$file}{files}, $$fcdetails{$file}{folders}, $$fcdetails{$file}{sum});	
 			$completedu+=$du;
 		
 			if (keys %{$dudetails} > 0) {
@@ -127,14 +127,14 @@ sub getDiskUsage {
 			$$sizes{$nf}=$self->getDiskUsage($path,$nf,$sizes,$fcounts); ## + ($backend->stat("$path$nf"))[7]; # folders have sometimes a size but is not relevant
 			$size+=$$sizes{$nf};
 			$$fcounts{$file}{folders}++;
-			$$fcounts{'//__STAT__//'}{folders}++;
+			$$fcounts{$file}{folders}+=$$fcounts{$nf}{folders};
+			$$fcounts{$file}{files}+=$$fcounts{$nf}{files};
+			$$fcounts{$file}{sum}+=$$fcounts{$nf}{sum};
 		} else {
 			$size+=($backend->stat($np))[7];
 			$$fcounts{$file}{files}++;
-			$$fcounts{'//__STAT__//'}{files}++;
 		}
 		$$fcounts{$file}{sum}++;
-		$$fcounts{'//__STAT__//'}{sum}++;
 	}
 	return $size;
 }
