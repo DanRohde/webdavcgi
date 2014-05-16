@@ -1003,6 +1003,9 @@ $BACKEND_CONFIG{SMB} = {
   ## don't use a separator symbol like '$', '-', '_', '#', '%', '?', '&amp;', '/', '\', or letters/numbers
   ## good alternative separators are '!', ':', '=', '\'', '"', '`', '+', '*', or '@'
 
+  ## enables/disables quota support for all domains and shares:
+  quota => 1, # optional
+
   domains => { #required
     'MY.EXAMPLE.DOMAIN.ORG' => {	#required (multiple domain entries allowed for forrests)
       ## a domain based filter (overwrites sharefilter and userfilter above):
@@ -1024,6 +1027,9 @@ $BACKEND_CONFIG{SMB} = {
 
           ## disables all filter and (slow) automatic share detection:
           shares => [ 'MyFirstShare', 'MySecondShare', 'MyThirdShare/start/here' ],	#optional
+          
+          ## enables/disables quota support for given shares:
+          quota => { 'MyFirstShare' => 0 }, # optional
 
 	  ## defines a initial directory for a share (don't forget the initial '/'):
 	  initdir => { 			#optional

@@ -482,6 +482,7 @@ sub getQuota {
 		$initdir = $1;
 	}
 	$path = "$initdir/$path" if defined $initdir;
+	return (0,0) if !$share || $share eq ''|| (defined $$fs{quota}{$share} && !$$fs{quota}{$share}) || (!defined $$fs{quota}{$share} && defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && !$main::BACKEND_CONFIG{$main::BACKEND}{quota});
 	my $smbclient =  "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du";
 	$smbclient = "/usr/bin/smbclient '//$server/$share' '$ENV{SMBPASSWORD}' -U '$ENV{SMBUSER}' -W '$ENV{SMBWORKGROUP}' -D '$path' -c du" if exists $ENV{SMBWORKGROUP} && exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD};
 	if ($server && open(my $c, "$smbclient 2>/dev/null |" )) {
