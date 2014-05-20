@@ -35,7 +35,7 @@ sub new {
 
 sub init { 
 	my($self, $hookreg) = @_; 
-	$hookreg->register('gethandler', $self);
+	$hookreg->register(['gethandler'], $self);
 }
 
 sub handle { 

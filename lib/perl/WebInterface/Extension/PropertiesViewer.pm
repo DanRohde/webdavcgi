@@ -20,9 +20,8 @@ package WebInterface::Extension::PropertiesViewer;
 
 use strict;
 
-use WebInterface::Renderer;
 use WebInterface::Extension;
-our @ISA = qw( WebInterface::Renderer WebInterface::Extension );
+our @ISA = qw( WebInterface::Extension );
 
 sub new {
         my $this = shift;
@@ -35,11 +34,7 @@ sub new {
 
 sub init { 
 	my($self, $hookreg) = @_;
-	$hookreg->register('javascript', $self);
-	$hookreg->register('css', $self);
-	$hookreg->register('posthandler', $self);
-	$hookreg->register('fileaction', $self);
-	$hookreg->register('fileactionpopup', $self);
+	$hookreg->register(['javascript','css','posthandler','fileaction','fileactionpopup'], $self);
 }
 
 sub handle { 
@@ -50,16 +45,15 @@ sub handle {
 	$$self{db} = $$config{db};
 	$$self{backend}=$$config{backend};
 	if ($hook eq 'javascript') {
-		$ret = q@<script src="@.$self->getExtensionUri('PropertiesViewer','htdocs/script.min.js').q@"></script>@;
+		$ret = $self->handleJavascriptHook('PropertiesViewer');
 	} elsif ($hook eq 'css') {
-		$ret = q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('PropertiesViewer','htdocs/style.min.css').q@">@;
+		$ret = $self->handleCssHook('PropertiesViewer');
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'props') {	
-		$self->renderPropertiesViewer($main::PATH_TRANSLATED, $main::REQUEST_URI);
-		$ret = 1;
+		$ret = $self->renderPropertiesViewer($main::PATH_TRANSLATED.$$self{cgi}->param('file'), $main::REQUEST_URI.$$self{cgi}->param('file'));
  	} elsif ($hook eq 'fileaction') {
 		$ret = { action=>'props', disabled=>!$$self{backend}->isReadable($$params{path}), label=>'showproperties', path=>$$params{path} };
 	} elsif( $hook eq 'fileactionpopup') {
-		$ret = { action=>'props', disabled=>!$$self{backend}->isReadable($$params{path}), label=>'showproperties', path=>$$params{path}, type=>'li' };
+		$ret = { action=>'props', disabled=>!$$self{backend}->isReadable($$params{path}), label=>'showproperties', path=>$$params{path}, type=>'li', classes=>'sel-noneorone listaction' };
 	}
 	return $ret;
 }
@@ -108,5 +102,6 @@ sub renderPropertiesViewer {
         $content.=$$self{cgi}->hr().$$self{cgi}->div({-class=>'signature'},$self->replaceVars($main::SIGNATURE)) if defined $main::SIGNATURE;
         $content = $$self{cgi}->div({-title=>"$main::TITLEPREFIX $ru properties", -class=>'props'}, $content);
         main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
+        return 1;
 }
 1;

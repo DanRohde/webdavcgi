@@ -20,8 +20,8 @@ package WebInterface::Extension::SysInfo;
 
 use strict;
 
-use WebInterface::Renderer;
-our @ISA = qw( WebInterface::Renderer );
+use WebInterface::Extension;
+our @ISA = qw( WebInterface::Extension );
 
 sub new {
         my $this = shift;
@@ -34,7 +34,7 @@ sub new {
 
 sub init { 
 	my ($self, $hookreg) = @_; 
-	$hookreg->register('gethandler', $self);
+	$hookreg->register(['gethandler','apps'], $self);
 }
 
 sub handle { 
@@ -45,6 +45,8 @@ sub handle {
 	if ($hook eq 'gethandler' && $$self{cgi}->request_uri() =~ /\/sysinfo.html$/) {
 		$self->renderSysInfo();
 		$handled = 1;
+	}elsif ($hook eq 'apps') {
+		return $$self{cgi}->li({-title=>$self->tl('SysInfo')},$$self{cgi}->a({-class=>'action sysinfo', -href=>'sysinfo.html'},$self->tl('SysInfo')));
 	}
 
 	return $handled; 

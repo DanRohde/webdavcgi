@@ -19,7 +19,7 @@
 # SETUP:
 # disable_fileaction - disables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
-# disable_app - disables sidebar menu entry
+# disable_apps - disables sidebar menu entry
 # 
 
 package WebInterface::Extension::DiskUsage;
@@ -27,8 +27,7 @@ package WebInterface::Extension::DiskUsage;
 use strict;
 
 use WebInterface::Extension;
-use WebInterface::Renderer;
-our @ISA = qw( WebInterface::Extension WebInterface::Renderer );
+our @ISA = qw( WebInterface::Extension  );
 
 sub new {
         my $this = shift;
@@ -41,13 +40,11 @@ sub new {
 
 sub init { 
 	my($self, $hookreg) = @_; 
-	$hookreg->register('fileaction', $self) unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileaction};
-	$hookreg->register('fileactionpopup', $self) unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileactionpopup};
-	$hookreg->register('css', $self);
-	$hookreg->register('javascript', $self);
-	$hookreg->register('locales', $self);
-	$hookreg->register('posthandler', $self);
-	$hookreg->register('apps', $self) unless $main::EXTENSION_CONFIG{DiskUsage}{disable_app};
+	my @hooks = ('css','javascript','locales','posthandler');
+	push @hooks,'fileaction' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileaction};
+	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileactionpopup};
+	push @hooks,'apps' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_apps};
+	$hookreg->register(\@hooks, $self);
 }
 
 sub handle { 
@@ -63,13 +60,13 @@ sub handle {
 	} elsif( $hook eq 'fileactionpopup') {
 		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'du_diskusage', path=>$$params{path}, type=>'li', classes=>'listaction sel-noneormulti sel-dir' };
 	} elsif ($hook eq 'apps') {
-		return $$self{cgi}->li({-title=>$self->tl('du_diskusage')},$$self{cgi}->a({-class=>'action listaction diskusage sel-nonormulti sel-dir disabled', -href=>'#'},$self->tl('du_diskusage_short')));
+		return $self->handleAppsHook($$self{cgi},'listaction diskusage sel-noneormulti sel-dir disabled','du_diskusage_short','du_diskusage'); 
 	} elsif ( $hook eq 'css' ) {
-		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('DiskUsage','htdocs/style.min.css').q@">@;
+		return $self->handleCssHook('DiskUsage');
 	} elsif ( $hook eq 'javascript' ) {
-		return q@<script src="@.$self->getExtensionUri('DiskUsage','htdocs/script.min.js').q@"></script>@;
+		return $self->handleJavascriptHook('DiskUsage');
 	} elsif ( $hook eq 'locales') {
-		return $self->getExtensionLocation('DiskUsage','locale/locale');
+		return $self->handleLocalesHook('DiskUsage');
 	} elsif ( $hook eq 'posthandler' && $$config{cgi}->param('action') eq 'diskusage') {
 		my $text =""; 
 		my $completedu = 0;

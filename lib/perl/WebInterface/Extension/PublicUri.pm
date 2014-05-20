@@ -20,9 +20,8 @@
 package WebInterface::Extension::PublicUri;
 use strict;
 
-use WebInterface::Renderer;
 use WebInterface::Extension;
-our @ISA = qw( WebInterface::Renderer WebInterface::Extension );
+our @ISA = qw( WebInterface::Extension );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
@@ -74,12 +73,7 @@ sub init {
 	$hookreg->register( 'fileprop',    $self );
 
 	## dro: added some handlers:
-	$hookreg->register( 'css',               $self );
-	$hookreg->register( 'javascript',        $self );
-	$hookreg->register( 'filelistentrydata', $self );
-	$hookreg->register( 'locales',           $self );
-	$hookreg->register( 'templates',         $self );
-	$hookreg->register( 'gethandler',        $self );
+	$hookreg->register(['css','javascript','filelistentrydata','locales','templates','gethandler'], $self);
 
 	## dro: define some defaults:
 	$main::EXTENSION_CONFIG{PublicUri}{public_prop} =
@@ -167,16 +161,16 @@ sub handle {
 		}
 	}
 	elsif ( $hook eq 'css' ) {
-		return q@<link rel="stylesheet" type="text/css" href="@.$self->getExtensionUri('PublicUri','htdocs/style.css').q@"/>@;
+		return $self->handleCssHook('PublicUri','htdocs/style.css');
 	}
 	elsif ( $hook eq 'javascript' ) {
-		return q@<script src="@.$self->getExtensionUri('PublicUri','htdocs/script.js').q@"></script>@;
+		return $self->handleJavascriptHook('PublicUri','htdocs/script.js');
 	}
 	elsif ( $hook eq 'filelistentrydata' ) {
 		return q@data-puri="$puri"@;
 	}
 	elsif ( $hook eq 'locales' ) {
-		return $self->getExtensionLocation('PublicUri','locale/locale');
+		return $self->handleLocalesHook('PublicUri');
 	}
 	elsif ( $hook eq 'templates' ) {
 		return

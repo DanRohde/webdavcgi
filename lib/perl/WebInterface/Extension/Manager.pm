@@ -23,7 +23,7 @@ use strict;
 use Module::Load;
 
 ##our @SUPPORTED_HOOKS = ( 'gethandler', 'posthandler', 'header', 'search', 'viewtools', 'quota', 'sidebar', 'getFolderList', 'toolbar' );
-our @SUPPORTED_HOOKS = ( 'gethandler', 'fileaction', 'fileactionpopup', 'css', 'javascript', 'locales' );
+our @SUPPORTED_HOOKS = ( 'gethandler', 'fileaction', 'fileactionpopup', 'css', 'javascript', 'locales', 'apps', 'posthandler' );
 
 ##  HOOKS:
 ##     gethandler - return: 1 (handled) | 0 (not handled)
@@ -60,8 +60,19 @@ sub init {
 
 sub register {
 	my($self, $hook, $handler) = @_;
-	$HOOKS{$self}{$hook} = [ ] unless exists $HOOKS{$self}{$hook};
-	push @{$HOOKS{$self}{$hook}}, $handler;
+	my $ref = ref($hook);
+	if ($ref eq 'ARRAY') {
+		foreach my $h (@{$hook}) {
+			$self->register($h, $handler);
+		}
+	} elsif ($ref eq 'HASH') {
+		foreach my $h (keys %{$hook}) {
+			$self->register($h, $$hook{$h} || $handler);
+		}
+	} else {
+		$HOOKS{$self}{$hook} = [ ] unless exists $HOOKS{$self}{$hook};
+		push @{$HOOKS{$self}{$hook}}, $handler;
+	}
 	return 1;
 }
 
