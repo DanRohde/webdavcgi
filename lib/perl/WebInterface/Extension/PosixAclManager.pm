@@ -83,23 +83,31 @@ sub handleAclUpdate {
 	foreach my $param ($c->param()) {
 		my $val = join('',$c->param($param));
 		my $cmd = undef;
-		if ($val=~/^[rwxM]+$/ && $param =~/^acl:(\S+:\S*)$/ ) {
+		if ($val=~/^[rwxM\-]+$/ && $param =~/^acl:(\S+:\S*)$/ ) {
 			my $e = $1;
 			if ($val eq 'M') {
 				if ($e=~/^\S+:$/) {
-					$cmd = 	sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
+					$cmd = sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
 				} else {
-					$cmd = 	sprintf('%s %s -x %s -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
+					$cmd = sprintf('%s %s -x %s -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
 				}
 			} else {
 				$val=~s/M//g;
-				$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $e,$val, $fn);
+				if ($val=~/---/) {
+					$cmd = sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);	
+				} else {
+					$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $e,$val, $fn);
+				}
 			}
 			
 		} elsif ($param eq 'newacl' && $val=~/^\S+:\S*$/) {
 			my $e = join("",$c->param('newaclpermissions'));
-			if ($e && $e=~/^[rwx]+$/) {
-				$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $val, $e, $fn);
+			if ($e && $e=~/^[rwx\-]+$/) {
+				if ($e =~ /---/) {
+					$cmd = sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $val, $fn);
+				} else {
+					$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $val, $e, $fn);
+				}
 			}			
 		}
 		if (defined $cmd) {
@@ -122,7 +130,7 @@ sub renderPosixAclManager {
 	my $content = "";
 	my $c = $$self{cgi};
 	
-	my @defaultpermissions = ('r','w','x');
+	my @defaultpermissions = ('r','w','x','---');
 
 	my $f = $c->param('files');
 	$f='.' if $f eq '';
@@ -137,13 +145,13 @@ sub renderPosixAclManager {
 		
 		$row.=$c->td($$e{type}.':'.$$e{uid});
 		my $permentry = "";
-		my @perms = split(//, $$e{permission});
-		$permentry.=$c->checkbox_group(-name=>'acl:'.$$e{type}.':'.$$e{uid}, -values=>\@defaultpermissions, -defaults=>\@perms);
+		my @perms = $$e{permission} eq '---' ? ('---') : split(//, $$e{permission});
+		$permentry.=$c->checkbox_group(-name=>'acl:'.$$e{type}.':'.$$e{uid}, -values=>\@defaultpermissions, -class=>'permissions', -defaults=>\@perms);
 		$permentry.=$c->hidden(-name=>'acl:'.$$e{type}.':'.$$e{uid}, -value=>'M');		
 		$row.=$c->td($permentry);
-		$content.=$c->Tr($row);	
+		$content.=$c->Tr({-title=>"$$e{type}:$$e{uid}"},$row);	
 	};
-	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions',-values=>\@defaultpermissions)));
+	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions', -class=>'permissions',-values=>\@defaultpermissions)));
 	$content.=$c->Tr($c->td($c->checkbox(-name=>'recursive',-value=>'yes',-label=>$self->tl('pacl_recursive'))).$c->td($c->submit(-name=>'pacl_update',-value=>$self->tl('pacl_update'))));
 	$content .= $c->end_table();
 	$content .= $c->end_form();
@@ -163,7 +171,7 @@ sub getAclEntries {
 	while (<$g>) {
 		chomp;
 		next if /^\#/;
-		next unless /^\S+:\S*:[rwxts\-]+$/;
+		next unless /^\S+:\S*:[rwx\-]+$/;
 		my ($type, $uid, $permission) = split(/:/);
 		push @rights, { type=>$type, uid=>$uid, permission=>$permission};
 	}
