@@ -73,46 +73,52 @@ sub handle {
 	}
 	return $ret; 
 }
+sub quoteParam {
+	my ($self,$v) = @_;
+	$v =~ s@(["\$\\])@\\$1@g;
+	return $v;
+}
 sub handleAclUpdate {
 	my ($self) = @_;
 	my $c = $$self{cgi};
-	my $fn = $$self{backend}->resolveVirt($main::PATH_TRANSLATED);
+	my $fn = $self->quoteParam($$self{backend}->resolveVirt($main::PATH_TRANSLATED));
 	
 	my $recursive = $c->param('recursive') eq 'yes' ? '-R' : '';
 	my $output = "";
 	foreach my $param ($c->param()) {
 		my $val = join('',$c->param($param));
 		my $cmd = undef;
-		if ($val=~/^[rwxM\-]+$/ && $param =~/^acl:(\S+:\S*)$/ ) {
-			my $e = $1;
+		if ($val=~/^[rwxM\-]+$/ && $param =~/^acl:([a-z]+:[^"\s]*)$/i ) {
+			my $e = $self->quoteParam($1);
 			if ($val eq 'M') {
 				if ($e=~/^\S+:$/) {
-					$cmd = sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
+					$cmd = sprintf('%s %s -m "%s:"- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
 				} else {
-					$cmd = sprintf('%s %s -x %s -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
+					$cmd = sprintf('%s %s -x "%s" -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
 				}
 			} else {
 				$val=~s/M//g;
 				if ($val=~/---/) {
-					$cmd = sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);	
+					$cmd = sprintf('%s %s -m "%s:-" -- "%s"',$$self{setfacl}, $recursive, $e, $fn);	
 				} else {
-					$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $e,$val, $fn);
+					$cmd = sprintf('%s %s -m "%s:%s" -- "%s"',$$self{setfacl}, $recursive, $e,$val, $fn);
 				}
 			}
 			
-		} elsif ($param eq 'newacl' && $val=~/^\S+:\S*$/) {
-			my $e = join("",$c->param('newaclpermissions'));
+		} elsif ($param eq 'newacl' && $val=~/^[a-z]+:[^"\s]*$/i) {
+			my $e = $self->quoteParam(join("",$c->param('newaclpermissions')));
 			if ($e && $e=~/^[rwx\-]+$/) {
 				if ($e =~ /---/) {
-					$cmd = sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $val, $fn);
+					$cmd = sprintf('%s %s -m "%s:-" -- "%s"',$$self{setfacl}, $recursive, $val, $fn);
 				} else {
-					$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $val, $e, $fn);
+					$cmd = sprintf('%s %s -m "%s:%s" -- "%s"',$$self{setfacl}, $recursive, $val, $e, $fn);
 				}
 			}			
 		}
 		if (defined $cmd) {
 			main::debug($cmd);
 			$output .=qx@$cmd 2>&1@;
+			#$output.= $?==-1 ? 'command failed' : ( $? & 127 ? 'child died with '.($? & 127) : 'command failed with exit code '.($? >>8)) if $?;
 		}
 	}
 	my %jsondata;
