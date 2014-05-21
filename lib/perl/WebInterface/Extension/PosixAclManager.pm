@@ -84,7 +84,11 @@ sub handleAclUpdate {
 		if ($val=~/^[rwxM]+$/ && $param =~/^acl:(\S+:\S*)$/ ) {
 			my $e = $1;
 			if ($val eq 'M') {
-				$cmd = 	sprintf('%s -x %s -- "%s"',$$self{setfacl}, $e, $fn);
+				if ($e=~/^\S+:$/) {
+					$cmd = 	sprintf('%s -m %s:- -- "%s"',$$self{setfacl}, $e, $fn);
+				} else {
+					$cmd = 	sprintf('%s -x %s -- "%s"',$$self{setfacl}, $e, $fn);
+				}
 			} else {
 				$val=~s/M//g;
 				$cmd = sprintf('%s -m %s:%s -- "%s"',$$self{setfacl},$e,$val, $fn);
