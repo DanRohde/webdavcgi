@@ -695,7 +695,7 @@ $DEBUG = 0;
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
 ## supported: 'SysInfo', 'PropertiesViewer'
-## EXAMPLE: @EXTENSIONS = ( 'SysInfo' , 'PropertiesViewer', 'DiskUsage' );
+## EXAMPLE: @EXTENSIONS = ( 'SysInfo' , 'PropertiesViewer', 'DiskUsage' , 'PosixAclManager');
 #@EXTENSIONS = ( 'SysInfo' );
 
 ## -- EXTENSION_CONFIG

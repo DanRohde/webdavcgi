@@ -77,6 +77,8 @@ sub handleAclUpdate {
 	my ($self) = @_;
 	my $c = $$self{cgi};
 	my $fn = $$self{backend}->resolveVirt($main::PATH_TRANSLATED);
+	
+	my $recursive = $c->param('recursive') eq 'yes' ? '-R' : '';
 	my $output = "";
 	foreach my $param ($c->param()) {
 		my $val = join('',$c->param($param));
@@ -85,30 +87,29 @@ sub handleAclUpdate {
 			my $e = $1;
 			if ($val eq 'M') {
 				if ($e=~/^\S+:$/) {
-					$cmd = 	sprintf('%s -m %s:- -- "%s"',$$self{setfacl}, $e, $fn);
+					$cmd = 	sprintf('%s %s -m %s:- -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
 				} else {
-					$cmd = 	sprintf('%s -x %s -- "%s"',$$self{setfacl}, $e, $fn);
+					$cmd = 	sprintf('%s %s -x %s -- "%s"',$$self{setfacl}, $recursive, $e, $fn);
 				}
 			} else {
 				$val=~s/M//g;
-				$cmd = sprintf('%s -m %s:%s -- "%s"',$$self{setfacl},$e,$val, $fn);
+				$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $e,$val, $fn);
 			}
 			
 		} elsif ($param eq 'newacl' && $val=~/^\S+:\S*$/) {
 			my $e = join("",$c->param('newaclpermissions'));
 			if ($e && $e=~/^[rwx]+$/) {
-				$cmd = sprintf('%s -m %s:%s -- "%s"',$$self{setfacl}, $val, $e, $fn);
+				$cmd = sprintf('%s %s -m %s:%s -- "%s"',$$self{setfacl}, $recursive, $val, $e, $fn);
 			}			
 		}
 		if (defined $cmd) {
-			#$cmd.=" 2>&1";
-			print STDERR "$cmd\n";
+			main::debug($cmd);
 			$output .=qx@$cmd 2>&1@;
 		}
 	}
 	my %jsondata;
 	if ($output ne "") {
-		 $jsondata{error} = $c->escapeHTML($output); 
+		$jsondata{error} = $c->escapeHTML($output); 
 	} else {
 		$jsondata{msg} = sprintf($self->tl('pacl_msg_success'), $c->escapeHTML($c->param('filename')));
 	}
@@ -143,7 +144,7 @@ sub renderPosixAclManager {
 		$content.=$c->Tr($row);	
 	};
 	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions',-values=>\@defaultpermissions)));
-	$content.=$c->Tr($c->td($c->submit(-name=>'pacl_update',-value=>$self->tl('pacl_update'))));#   .$c->td($c->submit(-name=>'pacl_cancel',-value=>$self->tl('cancel'))));
+	$content.=$c->Tr($c->td($c->checkbox(-name=>'recursive',-value=>'yes',-label=>$self->tl('pacl_recursive'))).$c->td($c->submit(-name=>'pacl_update',-value=>$self->tl('pacl_update'))));
 	$content .= $c->end_table();
 	$content .= $c->end_form();
 	
