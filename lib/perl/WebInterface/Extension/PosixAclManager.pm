@@ -63,7 +63,7 @@ sub handle {
 	} elsif ( $hook eq 'locales') {
 		$ret = $self->handleLocalesHook('PosixAclManager');
 	} elsif ( $hook eq 'apps') {
-		$ret = $self->handleAppsHook($$self{cgi}, 'pacl sel-noneorone disabled','pacl');
+		$ret = $self->handleAppsHook($$self{cgi}, 'pacl listaction sel-noneorone disabled','pacl');
 	} elsif ( $hook eq 'posthandler') {
 		if ($$self{cgi}->param('ajax') eq 'getPosixAclManager') {
 			$ret = $self->renderPosixAclManager();
@@ -125,7 +125,7 @@ sub renderPosixAclManager {
 	$content .= $c->hidden(-name=>'filename', -value=>$f).$c->hidden(-name=>'action',-value=>'pacl_update');
 	$content .= $c->start_table();
 	
-	$content.= $c->Tr($c->th({-colspan=>2},$f));
+	$content.= $c->Tr($c->th({-colspan=>2},$c->escapeHTML($f)));
 	#$content.= $c->Tr($c->th($self->tl('pacl_entry')).$c->th($self->tl('pacl_rights')));
 	foreach my $e (@{$self->getAclEntries($f)}) {
 		my $row = "";
