@@ -69,6 +69,8 @@ sub handle {
 			$ret = $self->renderPosixAclManager();
 		} elsif ($$self{cgi}->param('action') eq 'pacl_update') {
 			$ret = $self->handleAclUpdate();
+		} elsif ($$self{cgi}->param('ajax') eq 'searchUserOrGroupEntry') {
+			$ret = $self->handleUserOrGroupEntrySearch();
 		}
 	}
 	return $ret; 
@@ -157,13 +159,60 @@ sub renderPosixAclManager {
 		$row.=$c->td($permentry);
 		$content.=$c->Tr({-title=>"$$e{type}:$$e{uid}"},$row);	
 	};
-	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions', -class=>'permissions',-values=>\@defaultpermissions)));
+	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl', -class=>'pacl newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions', -class=>'permissions',-values=>\@defaultpermissions)));
 	$content.=$c->Tr($c->td($c->checkbox(-name=>'recursive',-value=>'yes',-label=>$self->tl('pacl_recursive'))).$c->td($c->submit(-name=>'pacl_update',-value=>$self->tl('pacl_update'))));
 	$content .= $c->end_table();
 	$content .= $c->end_form();
 	
 	main::printCompressedHeaderAndContent('200 OK','text/html',$c->div({-class=>'pacl manager',-title=>$self->tl('pacl')},$content), 'Cache-Control: no-cache, no-store');
 	return 1;
+}
+sub handleUserOrGroupEntrySearch {
+	my ($self) = @_;
+	
+	
+	my $term = $$self{cgi}->param('term');
+	my @result = ();
+	if ($term) {
+		if ($term=~/^user:(.*)/i) {
+			@result = $self->searchUserEntry($1, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});
+		} elsif ($term=~/^group:(.*)/i) {
+			@result = $self->searchGroupEntry($1, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});	
+		}
+	} else {
+		@result = $self->searchUserEntry($term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});
+	} 
+	my $json = new JSON;
+	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode({result=>\@result}) , 'Cache-Control: no-cache, no-store');
+	return 1;
+}
+sub searchUserEntry {
+	my ($self, $term,$listlimit, $searchlimit) = @_;
+	my @ret = ();
+	my $counter = 0;
+	setpwent();
+	while (my @ent = getpwent()) {
+		push @ret, "user:$ent[0]" if !$term || ($ent[0] =~ /^\Q$term\E/i || $ent[6] =~ /\Q$term\E/i);
+		last if $searchlimit && $#ret >= $searchlimit;
+		$counter++;
+		last if $listlimit && $counter >= $listlimit;
+	}
+	endpwent();
+	return \@ret;
+}
+sub searchGroupEntry {
+	my ($self, $term,$listlimit, $searchlimit) = @_;
+	my @ret = ();
+	my $counter = 0;
+	setgrent();
+	while (my @ent = getgrent()) {
+		push @ret, "group:$ent[0]" if !$term || $ent[0] =~ /^\Q$term\E/i;
+		last if $searchlimit && $#ret >=$searchlimit;
+		$counter++;
+		last if $listlimit && $counter >= $listlimit;
+	}
+	endgrent();
+	return \@ret;
 }
 sub getAclEntries {
 	my($self, $fn) = @_;

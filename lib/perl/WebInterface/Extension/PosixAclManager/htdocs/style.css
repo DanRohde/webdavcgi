@@ -21,3 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .action.pacl {
 	background: url(user-edit.png) no-repeat 4px center;
 }
+ul.ui-autocomplete {
+	z-index: 1100;
+}
