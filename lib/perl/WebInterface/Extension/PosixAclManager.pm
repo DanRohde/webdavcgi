@@ -194,7 +194,7 @@ sub searchUserEntry {
 	setpwent();
 	while (my @ent = getpwent()) {
 		push @ret, "user:$ent[0]" if !$term || ($ent[0] =~ /^\Q$term\E/i || $ent[6] =~ /\Q$term\E/i);
-		last if $searchlimit && $#ret >= $searchlimit;
+		last if $searchlimit && $#ret+1 >= $searchlimit;
 		$counter++;
 		last if $listlimit && $counter >= $listlimit;
 	}
@@ -208,7 +208,7 @@ sub searchGroupEntry {
 	setgrent();
 	while (my @ent = getgrent()) {
 		push @ret, "group:$ent[0]" if !$term || $ent[0] =~ /^\Q$term\E/i;
-		last if $searchlimit && $#ret >=$searchlimit;
+		last if $searchlimit && $#ret+1 >=$searchlimit;
 		$counter++;
 		last if $listlimit && $counter >= $listlimit;
 	}
