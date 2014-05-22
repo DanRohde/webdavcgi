@@ -169,21 +169,22 @@ sub renderPosixAclManager {
 }
 sub handleUserOrGroupEntrySearch {
 	my ($self) = @_;
-	
-	
 	my $term = $$self{cgi}->param('term');
-	my @result = ();
+	my $result = [];
 	if ($term) {
-		if ($term=~/^user:(.*)/i) {
-			@result = $self->searchUserEntry($1, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});
-		} elsif ($term=~/^group:(.*)/i) {
-			@result = $self->searchGroupEntry($1, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});	
-		}
+		if ($term=~/^group:(.*)/i) {
+			$result = $self->searchGroupEntry($1, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});	
+		} else {
+			$result = $self->searchUserEntry($term=~/^user:(.*)/? $1: $term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});
+			push @{$result},@{$self->searchGroupEntry($term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit})}
+				unless $term=~/^user:(.*)/;
+		} 
 	} else {
-		@result = $self->searchUserEntry($term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit});
+		push @{$result},@{$self->searchUserEntry($term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit})},
+				@{$self->searchGroupEntry($term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit})};
 	} 
 	my $json = new JSON;
-	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode({result=>\@result}) , 'Cache-Control: no-cache, no-store');
+	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode({result=>$result}) , 'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub searchUserEntry {
