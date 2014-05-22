@@ -144,7 +144,7 @@ sub renderPosixAclManager {
 	$f='.' if $f eq '';
 	$content .= $c->start_form(-method=>'POST',-action=>"$main::REQUEST_URI$f",-class=>'pacl form');
 	$content .= $c->hidden(-name=>'filename', -value=>$f).$c->hidden(-name=>'action',-value=>'pacl_update');
-	$content .= $c->start_table();
+	$content .= $c->start_table({-class=>'pacl table'});
 	
 	$content.= $c->Tr($c->th({-colspan=>2},$c->escapeHTML($f)));
 	#$content.= $c->Tr($c->th($self->tl('pacl_entry')).$c->th($self->tl('pacl_rights')));
@@ -161,8 +161,8 @@ sub renderPosixAclManager {
 	};
 	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl', -class=>'pacl newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions', -class=>'permissions',-values=>\@defaultpermissions)));
 	$content.=$c->Tr($c->td($c->checkbox(-name=>'recursive',-value=>'yes',-label=>$self->tl('pacl_recursive'))).$c->td($c->submit(-name=>'pacl_update',-value=>$self->tl('pacl_update'))));
-	$content .= $c->end_table();
-	$content .= $c->end_form();
+	$content.=$c->end_table().$c->end_form();
+	$content.=$c->div({-class=>'pacl legend'}, $self->tl('pacl_legend')); 
 	
 	main::printCompressedHeaderAndContent('200 OK','text/html',$c->div({-class=>'pacl manager',-title=>$self->tl('pacl')},$content), 'Cache-Control: no-cache, no-store');
 	return 1;

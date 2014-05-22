@@ -24,3 +24,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ul.ui-autocomplete {
 	z-index: 1100;
 }
+.pacl.table {
+	width: 100%;
+}
+.pacl.legend {
+	font-size: small;
+	color: #999999;
+}
