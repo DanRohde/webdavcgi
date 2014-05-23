@@ -159,10 +159,12 @@ sub renderPosixAclManager {
 		$row.=$c->td($permentry);
 		$content.=$c->Tr({-title=>"$$e{type}:$$e{uid}"},$row);	
 	};
-	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl', -class=>'pacl newacl')),$c->td($c->checkbox_group(-name=>'newaclpermissions', -class=>'permissions',-values=>\@defaultpermissions)));
+	$content.=$c->Tr($c->td($c->textfield(-name=>'newacl', -class=>'pacl newacl')),$c->td({-class=>'pacl newaclpermissions'},$c->checkbox_group(-name=>'newaclpermissions', -class=>'permissions',-values=>\@defaultpermissions)));
 	$content.=$c->Tr($c->td($c->checkbox(-name=>'recursive',-value=>'yes',-label=>$self->tl('pacl_recursive'))).$c->td($c->submit(-name=>'pacl_update',-value=>$self->tl('pacl_update'))));
 	$content.=$c->end_table().$c->end_form();
 	$content.=$c->div({-class=>'pacl legend'}, $self->tl('pacl_legend')); 
+	$content.=$c->div({-class=>'template',-id=>'pacl_msg_err_usergroup'}, $self->tl('pacl_msg_err_usergroup'));
+	$content.=$c->div({-class=>'template',-id=>'pacl_msg_err_perm'}, $self->tl('pacl_msg_err_perm'));
 	
 	main::printCompressedHeaderAndContent('200 OK','text/html',$c->div({-class=>'pacl manager',-title=>$self->tl('pacl')},$content), 'Cache-Control: no-cache, no-store');
 	return 1;

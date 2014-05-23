@@ -31,3 +31,9 @@ ul.ui-autocomplete {
 	font-size: small;
 	color: #999999;
 }
+input.pacl.newacl.error {
+	border: 2px inset red;
+}
+td.pacl.newaclpermissions.error {
+	border: 2px solid red;
+}
