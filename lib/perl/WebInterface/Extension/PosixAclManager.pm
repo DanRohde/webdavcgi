@@ -142,13 +142,15 @@ sub renderPosixAclManager {
 
 	my $f = $c->param('files');
 	$f='.' if $f eq '';
+	my $fn = $self->normalizeFilename($f);
+	
 	$content .= $c->start_form(-method=>'POST',-action=>"$main::REQUEST_URI$f",-class=>'pacl form');
 	$content .= $c->hidden(-name=>'filename', -value=>$f).$c->hidden(-name=>'action',-value=>'pacl_update');
 	$content .= $c->start_table({-class=>'pacl table'});
 	
-	$content.= $c->Tr($c->th({-colspan=>2},$c->escapeHTML($f)));
+	$content.= $c->Tr($c->th({-title=>$self->getStatInfo($fn),-colspan=>2},$c->escapeHTML($f)));
 	#$content.= $c->Tr($c->th($self->tl('pacl_entry')).$c->th($self->tl('pacl_rights')));
-	foreach my $e (@{$self->getAclEntries($f)}) {
+	foreach my $e (@{$self->getAclEntries($fn)}) {
 		my $row = "";
 		
 		$row.=$c->td($$e{type}.':'.$$e{uid});
@@ -168,6 +170,11 @@ sub renderPosixAclManager {
 	
 	main::printCompressedHeaderAndContent('200 OK','text/html',$c->div({-class=>'pacl manager',-title=>$self->tl('pacl')},$content), 'Cache-Control: no-cache, no-store');
 	return 1;
+}
+sub getStatInfo {
+	my($self,$fn) = @_;
+	my @stat = $$self{backend}->stat($fn);
+	return "uid=".scalar(getpwuid($stat[4]))." ($stat[4]), gid=".scalar(getgrgid($stat[5]))." ($stat[5]), mode=".sprintf("%04o\n",$stat[2] & 07777).' ('.$self->mode2str($fn,$stat[2]).')';
 }
 sub handleUserOrGroupEntrySearch {
 	my ($self) = @_;
@@ -217,14 +224,17 @@ sub searchGroupEntry {
 	endgrent();
 	return \@ret;
 }
-sub getAclEntries {
-	my($self, $fn) = @_;
-	$fn = $$self{backend}->resolveVirt($fn);
+sub normalizeFilename {
+	my($self,$f) = @_;
+	my $fn = $f;
 	$fn=~s/\/$//;
 	$fn=~s/\/[^\/]+\/\.\.$//;
 	$fn=~s/(["\$\\])/\\$1/g;
-	my $command = sprintf('%s -c -- "%s%s"|', $$self{getfacl}, $main::PATH_TRANSLATED, $fn);
-	open(my $g, sprintf('%s -c -- "%s%s"|', $$self{getfacl}, $main::PATH_TRANSLATED, $fn)) || return [];
+	return $$self{backend}->resolveVirt($main::PATH_TRANSLATED.$fn);
+}
+sub getAclEntries {
+	my($self, $fn) = @_;
+	open(my $g, sprintf('%s -c -- "%s"|', $$self{getfacl}, $fn)) || return [];
 	my @rights = ();
 	while (<$g>) {
 		chomp;
