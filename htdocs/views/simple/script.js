@@ -2036,7 +2036,7 @@ function handleAFSACLManager(event){
 }
 function initAFSACLManager(aclmanager) {
 	$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
-	$("input.afsaclmanager.add",aclmanager).autocomplete( { minLength: 6, source: function(request,response) {
+	$("input.afsaclmanager.add",aclmanager).autocomplete( { minLength: 4, source: function(request,response) {
 		$.get($("#fileList").data('uri'), {ajax: 'searchAFSUserOrGroupEntry', term: request.term}, function(resp) {
 			response(resp.result ? resp.result : new Array());
 		});

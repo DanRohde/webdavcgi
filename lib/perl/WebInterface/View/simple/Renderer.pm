@@ -592,7 +592,7 @@ sub searchAFSUserOrGroupEntry {
 	my ($self, $term) = @_;
 	my $result = [];
 	#push @{$result}, @{$self->searchAFSUser($term,undef,20)} unless $term=~/:/;
-	my @groups = grep(/^\Q$term\E/,@{$self->readAFSGroupList($main::PATH_TRANSLATED, $main::REQUEST_URI)});
+	my @groups = grep(/\Q$term\E/i,@{$self->readAFSGroupList($main::PATH_TRANSLATED, $main::REQUEST_URI)});
 	splice(@groups, 9 - $#$result) if ($#$result + $#groups>=10); 
 	push @{$result}, @groups;
 	my $json = new JSON();
