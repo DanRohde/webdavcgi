@@ -2015,7 +2015,7 @@ function handleAFSACLManager(event){
 	if (seldir.length>0) target = concatUri(target,encodeURIComponent(stripSlash($(seldir[0]).attr('data-file')))+"/");
 	$.get(target, { ajax : "getAFSACLManager", template : template }, function(response) {
 		var aclmanager = $(response);
-		$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
+		initAFSACLManager(aclmanager);
 		("#afasaclmanager",aclmanager).submit(function() {
 			$("input[type='submit']",aclmanager).attr("disabled","disable");
 			var block = blockPage();
@@ -2025,7 +2025,7 @@ function handleAFSACLManager(event){
 				// aclmanager.dialog("close");
 				$.get(target, {ajax: "getAFSACLManager", template: template}, function(response) {
 					aclmanager.html($(response).unwrap());
-					$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
+					initAFSACLManager(aclmanager);
 				});
 			});
 			renderAbortDialog(xhr);
@@ -2033,6 +2033,14 @@ function handleAFSACLManager(event){
 		});
 		aclmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { $(".action.afsaclmanager").removeClass("disabled"); aclmanager.remove(); }}).show();
 	});
+}
+function initAFSACLManager(aclmanager) {
+	$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
+	$("input.afsaclmanager.add",aclmanager).autocomplete( { minLength: 3, source: function(request,response) {
+		$.get($("#fileList").data('uri'), {ajax: 'searchAFSUserOrGroupEntry', term: request.term}, function(resp) {
+			response(resp.result ? resp.result : new Array());
+		});
+	}});
 }
 function initPermissionsDialog() {
 	$(".action.permissions").click(function(event){

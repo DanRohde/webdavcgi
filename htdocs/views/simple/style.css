@@ -702,6 +702,9 @@ li.sep {
 	display: inline;
 	float: right;
 }
+ul.ui-autocomplete {
+	z-index: 1100;
+}
 td.center {
 	text-align: center;
 }
