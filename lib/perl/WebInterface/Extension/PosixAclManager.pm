@@ -234,7 +234,7 @@ sub normalizeFilename {
 }
 sub getAclEntries {
 	my($self, $fn) = @_;
-	open(my $g, sprintf('%s -c -- "%s"|', $$self{getfacl}, $fn)) || return [];
+	open(my $g, sprintf('%s -c -- "%s"|', $$self{getfacl}, $self->quoteParam($fn))) || return [];
 	my @rights = ();
 	while (<$g>) {
 		chomp;
