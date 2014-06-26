@@ -84,12 +84,11 @@ $INCLUDE(htmlhead)</head>
 				<form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
 			<!--ENDIF-->
 			</ul>
-		
 		</div>
 		<div id="path" class="sel-none hideit">
 			<span id="quicknav">$[quicknavpath]</span>
 			<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></span></form>
-			<a href="#" class="action changedir" data-action="changedir" title="$tl(changedir)">&nbsp;</a> 
+			<a href="#" class="action changedir" data-action="changedir" title="$tl(changedir)">&nbsp;</a>
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">
 					<a href="#" class="action addbookmark" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
@@ -136,7 +135,6 @@ $INCLUDE(htmlhead)</head>
 			</form>
 		</div>
 		<!--ENDIF-->
-		
 	</div>
 	<div id="notification"></div>
 	<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>

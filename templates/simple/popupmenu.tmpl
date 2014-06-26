@@ -21,8 +21,8 @@
 <li class="action edit access-writeable access-readable sep" title="$tl(editbutton)">$tl(editbutton)</li>
 <li class="action rename sep" title="$tl(movefilesbutton)">$tl(movefilesbutton)</li>
 $extension(fileactionpopup)
-<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-	<li class="listaction download hideit sep" title="$tl(zipfileupload) (&le;$maxuploadsizehr)">$tl(zipdownloadbutton)</li>
+<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
+	<li class="listaction download hideit sep" title="$tl(zipdownloadbutton)">$tl(zipdownloadbutton)</li>
 <!--ENDIF-->
 <!--IF($config(ALLOW_CHANGEPERM))-->
 	<li class="action permissions sel-multi sep" data-template="permissions" title="$tl(mode)">$tl(mode)</li>
