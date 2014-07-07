@@ -29,17 +29,9 @@ use strict;
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
-sub new {
-        my $this = shift;
-        my $class = ref($this) || $this;
-        my $self = { };
-        bless $self, $class;
-        $self->init(shift);
-        return $self;
-}
-
 sub init { 
 	my($self, $hookreg) = @_; 
+	$self->setExtension('DiskUsage');
 	my @hooks = ('css','javascript','locales','posthandler');
 	push @hooks,'fileaction' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileaction};
 	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileactionpopup};
@@ -49,11 +41,9 @@ sub init {
 
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
-	$$self{cgi} = $$config{cgi};
-	$$self{backend}=$$config{backend};
-	$$self{config}=$config;
-	$self->initialize(); ## Common::initialize to set correct LANG, ...
-	$self->setLocale(); ## Common:setLocale to set right locale
+
+	my $suret = $self->SUPER::handle($hook, $config, $params);
+	return $suret if $suret;
 	
 	if ($hook eq 'fileaction') {
 		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'du_diskusage', path=>$$params{path}};
@@ -61,12 +51,6 @@ sub handle {
 		return { action=>'diskusage', disabled=>!$$self{backend}->isDir($$params{path})||!$$self{backend}->isReadable($$params{path}), label=>'du_diskusage', path=>$$params{path}, type=>'li', classes=>'listaction sel-noneormulti sel-dir' };
 	} elsif ($hook eq 'apps') {
 		return $self->handleAppsHook($$self{cgi},'listaction diskusage sel-noneormulti sel-dir disabled','du_diskusage_short','du_diskusage'); 
-	} elsif ( $hook eq 'css' ) {
-		return $self->handleCssHook('DiskUsage');
-	} elsif ( $hook eq 'javascript' ) {
-		return $self->handleJavascriptHook('DiskUsage');
-	} elsif ( $hook eq 'locales') {
-		return $self->handleLocalesHook('DiskUsage');
 	} elsif ( $hook eq 'posthandler' && $$config{cgi}->param('action') eq 'diskusage') {
 		my $text =""; 
 		my $completedu = 0;

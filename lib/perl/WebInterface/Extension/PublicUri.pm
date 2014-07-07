@@ -25,16 +25,6 @@ our @ISA = qw( WebInterface::Extension );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
-#CONSTRUCTOR
-sub new {
-	my $this  = shift;
-	my $class = ref($this) || $this;
-	my $self  = {};
-	bless $self, $class;
-	$self->init(shift);
-	return $self;
-}
-
 #URI CRUD
 sub setPublicUri {
 	my ( $self, $fn, $value ) = @_;
@@ -68,6 +58,8 @@ sub resolveFile {
 
 sub init {
 	my ( $self, $hookreg ) = @_;
+	$self->setExtension('PublicUri');
+	
 	$hookreg->register( 'posthandler', $self );
 	$hookreg->register( 'fileaction',  $self );
 	$hookreg->register( 'fileprop',    $self );
@@ -102,9 +94,9 @@ sub handleZipDownloadRequest {
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
 
-	$$self{cgi}     = $$config{cgi};
-	$$self{db}      = $$config{db};
-	$$self{backend} = $$config{backend};
+	my $ret = $self->SUPER::handle($hook, $config, $params);
+	return $ret if $ret;
+
 	if ( $hook eq 'posthandler' ) {
 
 		#handle actions
@@ -160,17 +152,8 @@ sub handle {
 			return { 'puri' => $prop };
 		}
 	}
-	elsif ( $hook eq 'css' ) {
-		return $self->handleCssHook('PublicUri','htdocs/style.css');
-	}
-	elsif ( $hook eq 'javascript' ) {
-		return $self->handleJavascriptHook('PublicUri','htdocs/script.js');
-	}
 	elsif ( $hook eq 'filelistentrydata' ) {
 		return q@data-puri="$puri"@;
-	}
-	elsif ( $hook eq 'locales' ) {
-		return $self->handleLocalesHook('PublicUri');
 	}
 	elsif ( $hook eq 'templates' ) {
 		return

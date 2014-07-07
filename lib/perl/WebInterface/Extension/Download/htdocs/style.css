@@ -1,0 +1,14 @@
+.is-dir .action.dwnload,
+.is-readable-no .action.dwnload {
+	display: none;
+	visibility: hidden;
+}
+#popupmenu .action.dwnload {
+	background: url(download.png) no-repeat 2px 6px;
+}
+#nav .listaction.dwnload {
+	background: url(download.png) no-repeat 4px center;
+}
+.action.dwnload {
+	background: url(download.png) no-repeat 4px bottom;
+}

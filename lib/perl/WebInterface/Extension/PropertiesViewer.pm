@@ -23,32 +23,17 @@ use strict;
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension );
 
-sub new {
-        my $this = shift;
-        my $class = ref($this) || $this;
-        my $self = { };
-        bless $self, $class;
-        $self->init(shift);
-        return $self;
-}
-
 sub init { 
 	my($self, $hookreg) = @_;
+	$self->setExtension('PropertiesViewer');
 	$hookreg->register(['javascript','css','posthandler','fileaction','fileactionpopup'], $self);
 }
 
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
-	my $ret = 0;
-	$$self{config} = $config; 
-	$$self{cgi} = $$config{cgi};
-	$$self{db} = $$config{db};
-	$$self{backend}=$$config{backend};
-	if ($hook eq 'javascript') {
-		$ret = $self->handleJavascriptHook('PropertiesViewer');
-	} elsif ($hook eq 'css') {
-		$ret = $self->handleCssHook('PropertiesViewer');
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'props') {	
+	my $ret = $self->SUPER::handle($hook,$config,$params);
+	return $ret if $ret;
+	if ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'props') {	
 		$ret = $self->renderPropertiesViewer($main::PATH_TRANSLATED.$$self{cgi}->param('file'), $main::REQUEST_URI.$$self{cgi}->param('file'));
  	} elsif ($hook eq 'fileaction') {
 		$ret = { action=>'props', disabled=>!$$self{backend}->isReadable($$params{path}), label=>'showproperties', path=>$$params{path} };

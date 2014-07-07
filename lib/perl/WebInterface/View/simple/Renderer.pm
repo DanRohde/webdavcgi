@@ -250,9 +250,13 @@ sub renderExtension {
 	foreach my $a (@{$extactions}) {
 		if (ref($a)) {
 			if ($$a{type} && $$a{type} eq 'li') {
-				$content.=$$self{cgi}->li({-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:'')}, $self->tl($$a{label}));
+				my %params = (-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
+				$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+				$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
 			} else {
-				$content.=$$self{cgi}->a({ -href => '#', -data_action=>$$a{action}, -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:'')}, $self->tl($$a{label}));
+				my %params = ( -href => '#', -data_action=>$$a{action},  -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
+				$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+				$content.=$$self{cgi}->a(\%params, $self->tl($$a{label}));
 			}
 		} else {
 			$content.=$a;

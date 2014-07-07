@@ -37,6 +37,9 @@ sub new {
 
 sub init { 
 	my($self, $hookreg) = @_; 
+	
+	$self->setExtension('PosixAclManager');
+	
 	$hookreg->register(['css','javascript','gethandler','fileactionpopup','apps','locales','posthandler'], $self);
 	
 	## set some defaults:
@@ -47,21 +50,14 @@ sub init {
 sub handle { 
 	my ($self, $hook, $config, $params) = @_; 
 	my $ret = 0;
-	$$self{cgi} = $$config{cgi};
-	$$self{config} = $config;
-	$$self{backend} = $$config{backend};
-	$self->initialize(); ## Common::initialize to set correct LANG, ...
-	$self->setLocale(); ## Common:setLocale to set right locale
+
+	$ret = $self->SUPER::handle( $hook, $config, $params);
+	return $ret if $ret;
+	
 	if ($hook eq 'fileaction') {
 		$ret = { action=>'pacl', disabled=>0, label=>'pacl', path=>$$params{path}};
 	} elsif( $hook eq 'fileactionpopup') {
 		$ret = { action=>'pacl', disabled=>0, label=>'pacl', path=>$$params{path}, type=>'li', classes=>'sel-noneorone' };
-	} elsif ( $hook eq 'css' ) {
-		$ret = $self->handleCssHook('PosixAclManager');
-	} elsif ( $hook eq 'javascript' ) {
-		$ret = $self->handleJavascriptHook('PosixAclManager');
-	} elsif ( $hook eq 'locales') {
-		$ret = $self->handleLocalesHook('PosixAclManager');
 	} elsif ( $hook eq 'apps') {
 		$ret = $self->handleAppsHook($$self{cgi}, 'pacl listaction sel-noneorone disabled','pacl');
 	} elsif ( $hook eq 'posthandler') {

@@ -23,24 +23,15 @@ use strict;
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension );
 
-sub new {
-        my $this = shift;
-        my $class = ref($this) || $this;
-        my $self = { };
-        bless $self, $class;
-	$self->init(shift);
-        return $self;
-}
-
 sub init { 
-	my ($self, $hookreg) = @_; 
+	my ($self, $hookreg) = @_;
+	$self->setExtension('SysInfo'); 
 	$hookreg->register(['gethandler','apps'], $self);
 }
 
 sub handle { 
-	my ($self, $hook, $config) = @_; 
-	my $handled = 0;
-	$$self{cgi} = $$config{cgi};
+	my ($self, $hook, $config, $params) = @_; 
+	my $handled = $self->SUPER::handle($hook,$config,$params);
 
 	if ($hook eq 'gethandler' && $$self{cgi}->request_uri() =~ /\/sysinfo.html$/) {
 		$self->renderSysInfo();
