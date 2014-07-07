@@ -45,8 +45,7 @@ sub init {
 
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
-	my $ret = 0;
-	$ret = $self->SUPER::handle($hook, $config, $params);
+	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	
 	my $add_classes = $main::EXTENSION_CONFIG{Download}{force_binarydownload} ? 'forcebinarydownload' : '';
@@ -60,7 +59,7 @@ sub handle {
 		my $fn = $$self{cgi}->param('file');
 		my $file = $main::PATH_TRANSLATED.$fn;
 		if ( $$self{backend}->exists($file) && !main::is_hidden($file) ) {
-			if ($$self{backend}->isReadable($fn)) {
+			if (!$$self{backend}->isReadable($file)) {
 				main::printHeaderAndContent(main::getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
 			} else {
 				my $qfn = $fn;
