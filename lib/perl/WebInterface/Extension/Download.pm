@@ -19,8 +19,8 @@
 # SETUP:
 # disable_fileaction - disables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
-# enable_apps - disables sidebar menu entry
-# 
+# enable_apps - enables sidebar menu entry
+# force_binarydownload - sets the MIME type to application/octet-stream
 # 
 
 package WebInterface::Extension::Download;
@@ -39,6 +39,7 @@ sub init {
 	push @hooks,'fileaction' unless $main::EXTENSION_CONFIG{Download}{disable_fileaction};
 	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{Download}{disable_fileactionpopup};
 	push @hooks,'apps' if $main::EXTENSION_CONFIG{Download}{enable_apps};
+	push @hooks,'gethandler' if $main::EXTENSION_CONFIG{Download}{force_binarydownload};
 	$hookreg->register(\@hooks, $self);
 }
 
@@ -48,12 +49,29 @@ sub handle {
 	$ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	
+	my $add_classes = $main::EXTENSION_CONFIG{Download}{force_binarydownload} ? 'forcebinarydownload' : '';
 	if ($hook eq 'fileaction') {
-		$ret = { action=>'dwnload',label=>'dwnload', path=>$$params{path}, classes=>'access-readable is-file'};
+		$ret = { action=>'dwnload',label=>'dwnload', path=>$$params{path}, classes=>'access-readable is-file '.$add_classes};
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { accesskey=>'s', action=>'dwnload', label=>'dwnload', path=>$$params{path}, type=>'li'};	
+		$ret = { accesskey=>'s', action=>'dwnload', label=>'dwnload', path=>$$params{path}, type=>'li', classes=>$add_classes};	
 	} elsif ($hook eq 'apps') {
-		$ret = $self->handleAppsHook($$self{cgi},'listaction dwnload sel-one sel-file disabled','dwnload','dwnload'); 		
+		$ret = $self->handleAppsHook($$self{cgi},'listaction dwnload sel-one sel-file disabled '.$add_classes,'dwnload','dwnload'); 		
+	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') eq 'dwnload') {
+		my $fn = $$self{cgi}->param('file');
+		my $file = $main::PATH_TRANSLATED.$fn;
+		if ( $$self{backend}->exists($file) && !main::is_hidden($file) ) {
+			if ($$self{backend}->isReadable($fn)) {
+				main::printHeaderAndContent(main::getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
+			} else {
+				my $qfn = $fn;
+				$qfn=~s/"/\\"/gs;
+				main::printFileHeader($file, {-Content_Disposition=>'attachment; filename="'.$qfn.'"', -type=>'application/octet-stream'});
+				$$self{backend}->printFile($file,\*STDOUT);
+			}
+		} else {
+			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
+		}
+		$ret = 1;
 	}
 	return $ret;
 }
