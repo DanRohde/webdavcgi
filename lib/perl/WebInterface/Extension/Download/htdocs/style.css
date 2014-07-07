@@ -1,5 +1,5 @@
 .is-dir .action.dwnload,
-.is-readable-no .action.dwnload {
+.isreadable-no .action.dwnload {
 	display: none;
 	visibility: hidden;
 }
