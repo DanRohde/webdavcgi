@@ -944,6 +944,12 @@ function confirmDialog(text, data) {
 function getVisibleAndSelectedFiles() {
 	return $("#fileList tr.isreadable-yes.unselectable-no").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
 }
+function getSelectedFiles(el) {
+	var selfiles = $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")});
+	if (selfiles.length==0) selfiles = new Array($(el).closest("tr").attr("data-file"));
+	if (selfiles.length==0) selfiles =  $.map($("#fileList tr:visible:focus"), function(v,i){ return $(v).attr("data-file")});
+	return selfiles;
+}
 function handleFileActionEvent(event) {
 	preventDefault(event);
 	var self = $(this);
@@ -957,7 +963,7 @@ function handleFileActionEvent(event) {
 	} else if (self.hasClass("edit")) {
 		handleFileEdit(row);
 	} else { // extension support:
-		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row });
+		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: getSelectedFiles(this), row: row });
 	}
 }
 function handleFileListRowFocusIn(event) {

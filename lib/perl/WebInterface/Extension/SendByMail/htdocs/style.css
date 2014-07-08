@@ -1,0 +1,37 @@
+.isreadable-no .sendbymail {
+	display: none;
+	visibility: hidden;
+}
+
+
+#popupmenu .action.sendbymail {
+	background: url(sendbymail.png) no-repeat 2px 6px;
+}
+#nav .listaction.sendbymail {
+	background: url(sendbymail.png) no-repeat 4px center;
+}
+.action.sendbymail {
+	background: url(sendbymail.png) no-repeat 4px bottom;
+}
+ 
+
+.sendbymail.button {
+	text-align: right;
+}
+.sendbymail input.error {
+	border: 2px solid red;
+	
+}
+.sendbymail.remove {
+	width: 8px;
+	height: 8px;
+	background-color: #aa0000;
+	float:left;
+	clear: both;
+	margin: 4px;
+	border: 1px solid black;
+	
+}
+.sendbymail.note {
+	font-size: smaller;
+}

@@ -304,4 +304,22 @@ sub getVisibleTableColumns {
 	}
     return @vc;
 }
+sub readTemplate {
+	my ($self,$filename,$tmplpath) = @_;
+	return $CACHE{template}{$tmplpath}{$filename} ||= $self->__readTemplate($filename,$tmplpath);
+}
+sub __readTemplate {
+	my ($self,$filename, $tmplpath) = @_;
+	my $text = "";
+	$filename=~s/\//\./g;
+	$filename .= '.custom' if -r "${tmplpath}/${filename}.custom.tmpl";
+	if (open(IN, "${tmplpath}/${filename}.tmpl")) {
+		my @tmpl = <IN>;
+		close(IN);
+		$text = join("",@tmpl);
+		$text =~ s/\$INCLUDE\((.*?)\)/$self->readTemplate($1,$tmplpath)/egs;	
+	}
+	return $text;
+}
+
 1;

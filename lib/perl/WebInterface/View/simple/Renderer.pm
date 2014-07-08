@@ -243,24 +243,34 @@ sub execTemplateFunction {
 	$content = $self->renderExtension($fn,$ru,$param) if $func eq 'extension';
 	return $content;
 }
+sub renderExtensionElement {
+	my($self,$fn,$ru,$a) = @_;
+	my $content = "";
+	if (ref($a) eq 'HASH') {
+		if ($$a{type} && $$a{type} eq 'li') {
+			my %params = (-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
+			$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+			$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
+		} else {
+			my %params = ( -href => '#', -data_action=>$$a{action},  -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
+			$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+			$content.=$$self{cgi}->a(\%params, $self->tl($$a{label}));
+		}
+	} elsif (ref($a) eq 'ARRAY') {
+		foreach my $ac (@{$a}) {
+			$content.=$self->renderExtensionElement($fn,$ru,$ac);
+		}
+	} else {
+		$content.=$a;
+	}
+	return $content;
+}
 sub renderExtension {
 	my ($self,$fn,$ru,$hook) = @_;
 	my $content = "";
 	my $extactions = $$self{config}{extensions}->handle($hook, { path=>$fn });
 	foreach my $a (@{$extactions}) {
-		if (ref($a)) {
-			if ($$a{type} && $$a{type} eq 'li') {
-				my %params = (-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
-				$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
-				$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
-			} else {
-				my %params = ( -href => '#', -data_action=>$$a{action},  -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
-				$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
-				$content.=$$self{cgi}->a(\%params, $self->tl($$a{label}));
-			}
-		} else {
-			$content.=$a;
-		}
+		$content.=$self->renderExtensionElement($fn,$ru,$a);
 	}
 	return $content;
 }
@@ -465,18 +475,7 @@ sub isEditable {
 }
 sub readTemplate {
 	my ($self,$filename) = @_;
-	
-	my $text = "";
-	$filename=~s/\//\./g;
-	$filename .= '.custom' if -r "$main::INSTALL_BASE/templates/simple/${filename}.custom.tmpl";
-	return $CACHE{template}{$filename} if exists $CACHE{template}{$filename};
-	if (open(IN, "$main::INSTALL_BASE/templates/simple/$filename.tmpl")) {
-		my @tmpl = <IN>;
-		close(IN);
-		$text = join("",@tmpl);
-		$text =~ s/\$INCLUDE\((.*?)\)/$self->readTemplate($1)/egs;	
-	}
-	return $CACHE{template}{$filename}=$text;
+	return $self->SUPER::readTemplate($filename, "$main::INSTALL_BASE/templates/simple/");
 }
 sub renderQuickNavPath {
         my ($self, $fn,$ru, $query) = @_;

@@ -79,5 +79,8 @@ sub handle {
 	}
 	return 0;
 }
-
+sub config {
+	my ($self, $var, $default) = @_;
+	return $main::EXTENSION_CONFIG{$$self{EXTENSION}}{$var} || $default;
+}
 1;
