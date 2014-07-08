@@ -20,7 +20,7 @@
 # disable_fileaction - disables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # enable_apps - enables sidebar menu entry
-# force_binarydownload - sets the MIME type to application/octet-stream
+# disable_binarydownload - sets the right MIME type 
 # 
 
 package WebInterface::Extension::Download;
@@ -39,7 +39,7 @@ sub init {
 	push @hooks,'fileaction' unless $main::EXTENSION_CONFIG{Download}{disable_fileaction};
 	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{Download}{disable_fileactionpopup};
 	push @hooks,'apps' if $main::EXTENSION_CONFIG{Download}{enable_apps};
-	push @hooks,'gethandler' if $main::EXTENSION_CONFIG{Download}{force_binarydownload};
+	push @hooks,'gethandler' unless $main::EXTENSION_CONFIG{Download}{disable_binarydownload};
 	$hookreg->register(\@hooks, $self);
 }
 
@@ -48,7 +48,7 @@ sub handle {
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	
-	my $add_classes = $main::EXTENSION_CONFIG{Download}{force_binarydownload} ? 'forcebinarydownload' : '';
+	my $add_classes = $main::EXTENSION_CONFIG{Download}{disable_binarydownload} ? 'disablebinarydownload' : '';
 	if ($hook eq 'fileaction') {
 		$ret = { action=>'dwnload',label=>'dwnload', path=>$$params{path}, classes=>'access-readable is-file '.$add_classes};
 	} elsif ($hook eq 'fileactionpopup') {
