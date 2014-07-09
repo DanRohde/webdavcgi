@@ -23,6 +23,9 @@
 #   password - sets the password for the login (default: not used)
 #   sizelimit - sets the mail size limit (depends on your SMTP setup, default: 20971520 bytes)
 #   defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
+#   defaultto - sets default recipient (default: empty string)
+#   defaultsubject - sets default subject (default: empty string)
+#   defaultmessage - sets default message (default: empty string)
 #   zipdefaultfilename - sets a default filename for ZIP files
 #   enable_savemailasfile - allows to save a mail as a eml file
 #   disable_fileactionpopup - disables fileaction entry in popup menu
@@ -187,8 +190,11 @@ sub renderMailDialog {
 			sumfilesizes => $sfz,
 			sumfilesizes_title => $sfzt,
 			defaultfrom => $self->config('defaultfrom', $main::REMOTE_USER),
+			defaultto => $self->config('defaultto',''),
+			defaultsubject=>$self->config('defaultsubject',''),
+			defaultmessage=>$self->config('defaultmessage','')
 			);
-	$content=~s/\$(\w+)/$vars{$1} || $1/esg;
+	$content=~s/\$\{?(\w+)\}?/exists $vars{$1} ? $vars{$1} : ''/esg;
 	
 	main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
 }
