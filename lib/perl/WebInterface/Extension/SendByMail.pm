@@ -80,8 +80,10 @@ sub buildMailFile {
 	my ($self,$limit) = @_;
 	my $body = MIME::Entity->build('Type'=>'multipart/mixed');
 	$body->attach(Data=>$$self{cgi}->param('message'), Type=>'text/plain; charset=UTF-8', Encoding=>'8bit') if $$self{cgi}->param('message');
+	
+	my  ($tmpfh, $tmpfn);
 	if ($$self{cgi}->param("zip")) {
-		my ($tmpfh, $tmpfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-zip-XXXXX', CLEANUP=>1, SUFFIX=>"zip");
+		($tmpfh, $tmpfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-zip-XXXXX', CLEANUP=>1, SUFFIX=>"zip");
 		$$self{backend}->compressFiles($tmpfh, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
 		if ((stat($tmpfh))[7] > $limit) {
 			unlink $tmpfn;
@@ -102,7 +104,7 @@ sub buildMailFile {
 	
 	my ($bodyfh, $bodyfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-XXXXX', CLEANUP=>1, SUFFIX=>"mime");
 	$body->print($bodyfh);
-	return $bodyfn;
+	return ($bodyfn, $tmpfn);
 }
 sub checkMailAddresses {
 	my $self = shift @_;
@@ -123,7 +125,7 @@ sub sendMail {
 	my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
 	my ($subject) = $self->sanitizeParam($cgi->param('subject') || "some files");
 	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {	
-		my $mailfile = $self->buildMailFile($limit);
+		my ($mailfile,$tmpfile) = $self->buildMailFile($limit);
 		if (!$mailfile || (stat($mailfile))[7]>$limit) {
 			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
 		} else {
@@ -147,6 +149,7 @@ sub sendMail {
 		 	$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),join(', ',@to));
 		}
 		unlink $mailfile if $mailfile;
+		unlink $tmpfile if $tmpfile;
 	} else {
 		$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
 		$jsondata{field} = ! $self->checkMailAddresses(@to) ? "to" : "from";
