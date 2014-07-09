@@ -22,6 +22,7 @@
 #   login - sets the  login for the mail relay (default: not used)
 #   password - sets the password for the login (default: not used)
 #   sizelimit - sets the mail size limit (depends on your SMTP setup, default: 20971520 bytes)
+#   defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
 #   zipdefaultfilename - sets a default filename for ZIP files
 #   enable_savemailasfile - allows to save a mail as a eml file
 #   disable_fileactionpopup - disables fileaction entry in popup menu
@@ -73,22 +74,30 @@ sub handle {
 	return $ret;
 }
 sub buildMailFile {
-	my ($self) = @_;
+	my ($self,$limit) = @_;
 	my $body = MIME::Entity->build('Type'=>'multipart/mixed');
 	$body->attach(Data=>$$self{cgi}->param('message'), Type=>'text/plain; charset=UTF-8', Encoding=>'8bit') if $$self{cgi}->param('message');
 	if ($$self{cgi}->param("zip")) {
-		my ($tmpfh, $tmpfn) = tempfile();
+		my ($tmpfh, $tmpfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-zip-XXXXX', CLEANUP=>1, SUFFIX=>"zip");
 		$$self{backend}->compressFiles($tmpfh, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
+		if ((stat($tmpfh))[7] > $limit) {
+			unlink $tmpfn;
+			return undef;
+		}; 
 		my $zipfilename = $$self{cgi}->param('zipfilename') || 'files.zip';
 		$body->attach(Path=>$tmpfn, Filename=> $zipfilename, Type=> main::getMIMEType($zipfilename),Disposition=>'attachment', Encoding=>'base64');
 		
 	} else {
+		my $sumsizes = 0;
 		foreach my $fn ( $$self{cgi}->param('files')) {
-			$body->attach(Path=>$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$fn), Filename=>$fn, Type=> main::getMIMEType($fn),Disposition=>'attachment', Encoding=>'base64');	
+			my $file = $$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$fn);
+			$body->attach(Path=>$file, Filename=>$fn, Type=> main::getMIMEType($fn),Disposition=>'attachment', Encoding=>'base64');
+			$sumsizes+=(stat($file))[7];
+			return undef if $sumsizes > $limit;	
 		}
 	}
 	
-	my ($bodyfh, $bodyfn) = tempfile();
+	my ($bodyfh, $bodyfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-XXXXX', CLEANUP=>1, SUFFIX=>"mime");
 	$body->print($bodyfh);
 	return $bodyfn;
 }
@@ -106,12 +115,13 @@ sub sendMail {
 	my ($status,$mime) = ("200 OK", "application/json");
 	my %jsondata = ();
 	my $cgi = $$self{cgi};
+	my $limit = $self->config("sizelimit",20971520);
 	my ($from) = $self->sanitizeParam($cgi->param('from'));
 	my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
 	my ($subject) = $self->sanitizeParam($cgi->param('subject') || "some files");
 	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {	
-		my $mailfile = $self->buildMailFile();
-		if ((stat($mailfile))[7]>$self->config("sizelimit",20971520)) {
+		my $mailfile = $self->buildMailFile($limit);
+		if (!$mailfile || (stat($mailfile))[7]>$limit) {
 			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
 		} else {
 			my $smtp = Net::SMTP->new($self->config("mailrelay") || 'localhost', Timeout=> $self->config("timeout") || 2);
@@ -132,8 +142,8 @@ sub sendMail {
 		 	$smtp->dataend();
 		 	$smtp->quit();
 		 	$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),join(', ',@to));
-	
 		}
+		unlink $mailfile if $mailfile;
 	} else {
 		$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
 		$jsondata{field} = ! $self->checkMailAddresses(@to) ? "to" : "from";
@@ -176,6 +186,7 @@ sub renderMailDialog {
 			zipdefaultfilename => $self->config('zipdefaultfilename') || $$self{backend}->basename($main::PATH_TRANSLATED).'.zip',
 			sumfilesizes => $sfz,
 			sumfilesizes_title => $sfzt,
+			defaultfrom => $self->config('defaultfrom') || $main::REMOTE_USER,
 			);
 	$content=~s/\$(\w+)/$vars{$1} || $1/esg;
 	
