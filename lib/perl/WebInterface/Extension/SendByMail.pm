@@ -183,10 +183,10 @@ sub renderMailDialog {
 	my ($sfz, $sfzt ) = $self->renderByteValue($sumfilesizes);
 	my %vars = (	FILES => $FILES, 
 			mailsizelimit => $l, mailsizelimit_title => $lt, 
-			zipdefaultfilename => $self->config('zipdefaultfilename') || $$self{backend}->basename($main::PATH_TRANSLATED).'.zip',
+			zipdefaultfilename => $self->config('zipdefaultfilename',$$self{backend}->basename($main::PATH_TRANSLATED).'.zip'),
 			sumfilesizes => $sfz,
 			sumfilesizes_title => $sfzt,
-			defaultfrom => $self->config('defaultfrom') || $main::REMOTE_USER,
+			defaultfrom => $self->config('defaultfrom', $main::REMOTE_USER),
 			);
 	$content=~s/\$(\w+)/$vars{$1} || $1/esg;
 	
