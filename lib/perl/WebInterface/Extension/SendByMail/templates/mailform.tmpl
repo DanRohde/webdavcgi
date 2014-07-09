@@ -3,8 +3,9 @@
 <input type="hidden" name="ajax" value="send"/>
 <input type="hidden" name="action" value="sendbymail"/>
 <table class="sendbymail">
+<tr class="sendbymail error hidden" id="inputfailure"><th colspan="2" class="sendbymail error">$TL{sendbymail_msg_inputfailure}</th></tr>
 <tr class="sendbymail from"><th>$TL{sendbymail_from}</th><td><input type="text" size="50" name="from" value="$USER"/></td></tr>
-<tr class="sendbymail to"><th>$TL{sendbymail_to}</th><td><input type="text" size="50" name="to"/></td></tr>
+<tr class="sendbymail to" title="$TL{sendbymail_to_tooltip}"><th>$TL{sendbymail_to}</th><td><input type="text" size="50" name="to"/></td></tr>
 <tr class="sendbymail subject"><th>$TL{sendbymail_subject}</th><td><input type="text" size="50" name="subject"/></td></tr>
 <tr class="sendbymail message"><th>$TL{sendbymail_message}</th><td><textarea cols="48" rows="4" name="message"></textarea></td></tr>
 <tr class="sendbymail attachments"><th>$TL{sendbymail_attachments} 
@@ -15,5 +16,5 @@
 <tr class="sendbymail button"><th class="sendbymail button" colspan="2"><input type="submit" name="send" value="$TL{sendbymail_send}"/></th></tr>
 </table>
 </form>
-<!--FILES[ <div title="$filename" class="sendbymail files $filetype" data-filename="$filename"><div data-filename="$filename" title="$TL{sendbymail_remove}" class="sendbymail remove"></div>$filename_short (<span title="$size_title">$size</span>) <input type="hidden" name="files" value="$filename"/></div>  ]-->
+<!--FILES[ <div title="$filename" class="sendbymail files $filetype" data-filename="$filename"><div data-filename="$filename" title="$TL{sendbymail_remove}" class="sendbymail remove">-</div>$filename_short (<span title="$size_title">$size</span>) <input type="hidden" name="files" value="$filename"/></div>  ]-->
 </div>

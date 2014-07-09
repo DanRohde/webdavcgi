@@ -74,11 +74,8 @@ sub handle {
 }
 sub buildMailFile {
 	my ($self) = @_;
-	
 	my $body = MIME::Entity->build('Type'=>'multipart/mixed');
-	
 	$body->attach(Data=>$$self{cgi}->param('message'), Type=>'text/plain; charset=UTF-8', Encoding=>'8bit') if $$self{cgi}->param('message');
-	
 	if ($$self{cgi}->param("zip")) {
 		my ($tmpfh, $tmpfn) = tempfile();
 		$$self{backend}->compressFiles($tmpfh, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
@@ -87,15 +84,22 @@ sub buildMailFile {
 		
 	} else {
 		foreach my $fn ( $$self{cgi}->param('files')) {
-			my ($tmpfh, $tmpfn) = tempfile();
-			$$self{backend}->printFile($main::PATH_TRANSLATED.$fn, $tmpfh);
-			$body->attach(Path=>$tmpfn, Filename=>$fn, Type=> main::getMIMEType($fn),Disposition=>'attachment', Encoding=>'base64');	
+			$body->attach(Path=>$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$fn), Filename=>$fn, Type=> main::getMIMEType($fn),Disposition=>'attachment', Encoding=>'base64');	
 		}
 	}
 	
 	my ($bodyfh, $bodyfn) = tempfile();
 	$body->print($bodyfh);
 	return $bodyfn;
+}
+sub checkMailAddresses {
+	my $self = shift @_;
+	for (my $i=0; $i<=$#_;$i++) {
+		$_[$i]=~s/\s//g;
+		$_[$i]=~s/^[^<]*<(.*)>.*$/$1/g; ### Name <email> > email
+		return 0 unless $_[$i] =~ /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
+	}
+	return 1;
 }
 sub sendMail {
 	my ($self) = @_;
@@ -108,43 +112,45 @@ sub sendMail {
 		$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
 	} else {
 		my $cgi = $$self{cgi};
-		my $smtp = Net::SMTP->new($self->config("mailrelay") || 'localhost', Timeout=> $self->config("timeout") || 2);
+		my ($from) = $self->sanitizeParam($cgi->param('from'));
+		my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
+		my ($subject) = $self->sanitizeParam($cgi->param('subject') || "some files");
+		if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {
 		
-		my $from = $self->sanitizeParam($cgi->param('from'));
-		my $to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
-		my $subject = $self->sanitizeParam($cgi->param('subject') || "some files");
-		
-		$smtp->auth($self->config('login'), $self->config('password'));
-		$smtp->mail($from);
-		$smtp->to($to);
-		$smtp->data();
-		
-		$smtp->datasend("To: $to\n");
-		$smtp->datasend("From: $from\n");
-		$smtp->datasend("Subject: $subject\n");
-		$smtp->datasend("X-Mailer: WebDAV CGI\n");
-		if (open(my $fh, "<", $mailfile)) {
-			while (read($fh, my $buffer, 1048576)>0) {
-				$smtp->datasend($buffer);
+			my $smtp = Net::SMTP->new($self->config("mailrelay") || 'localhost', Timeout=> $self->config("timeout") || 2);
+			$smtp->auth($self->config('login'), $self->config('password'));
+			$smtp->mail($from);
+			$smtp->to(@to);
+			$smtp->data();
+			$smtp->datasend(sprintf("To: \%s\n",join(", ",@to)));
+			$smtp->datasend("From: $from\n");
+			$smtp->datasend("Subject: $subject\n");
+			$smtp->datasend("X-Mailer: WebDAV CGI\n");
+			if (open(my $fh, "<", $mailfile)) {
+				while (read($fh, my $buffer, 1048576)>0) {
+					$smtp->datasend($buffer);
+				}
+				close($fh);
 			}
-			close($fh);
+		 	$smtp->dataend();
+		 	$smtp->quit();
+		 	$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),join(', ',@to));
+		} else {
+			$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
+			$jsondata{field} = ! $self->checkMailAddresses(@to) ? "to" : "from";
 		}
-	 	$smtp->dataend();
-	 	$smtp->quit();
-	 	
-	 	$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),$to);
-	
-	 	
 	}
 	my $json = new JSON();
 	main::printHeaderAndContent($status, $mime, $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
 }
 sub sanitizeParam {
-	my ($self, $param) = @_;
-	
-	$param=~s/[\r\n]+//sg;
-	
-	return $param;
+	my $self = shift @_;
+	my @ret = ();
+	while (my $param = shift @_) {
+		$param=~s/[\r\n]//sg;
+		push @ret, $param;
+	} ;
+	return @ret;
 }
 
 sub renderMailDialog {

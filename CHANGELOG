@@ -3,6 +3,7 @@
      - added disk usage web interface extension 'DiskUsage'
      - added POSIX ACL web interface extension 'PosixAclManager'
      - added web interface extension 'Download' 
+     - added web interface extension 'SendByMail'
 
 0.9.0: 2014/25/4
      - removed classic view, sidebar view, unused code
