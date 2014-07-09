@@ -105,18 +105,15 @@ sub sendMail {
 	my ($self) = @_;
 	my ($status,$mime) = ("200 OK", "application/json");
 	my %jsondata = ();
-	
-	my $mailfile = $self->buildMailFile();
-
-	if ((stat($mailfile))[7]>$self->config("sizelimit",20971520)) {
-		$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
-	} else {
-		my $cgi = $$self{cgi};
-		my ($from) = $self->sanitizeParam($cgi->param('from'));
-		my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
-		my ($subject) = $self->sanitizeParam($cgi->param('subject') || "some files");
-		if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {
-		
+	my $cgi = $$self{cgi};
+	my ($from) = $self->sanitizeParam($cgi->param('from'));
+	my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
+	my ($subject) = $self->sanitizeParam($cgi->param('subject') || "some files");
+	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {	
+		my $mailfile = $self->buildMailFile();
+		if ((stat($mailfile))[7]>$self->config("sizelimit",20971520)) {
+			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
+		} else {
 			my $smtp = Net::SMTP->new($self->config("mailrelay") || 'localhost', Timeout=> $self->config("timeout") || 2);
 			$smtp->auth($self->config('login'), $self->config('password'));
 			$smtp->mail($from);
@@ -135,10 +132,11 @@ sub sendMail {
 		 	$smtp->dataend();
 		 	$smtp->quit();
 		 	$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),join(', ',@to));
-		} else {
-			$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
-			$jsondata{field} = ! $self->checkMailAddresses(@to) ? "to" : "from";
+	
 		}
+	} else {
+		$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
+		$jsondata{field} = ! $self->checkMailAddresses(@to) ? "to" : "from";
 	}
 	my $json = new JSON();
 	main::printHeaderAndContent($status, $mime, $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
