@@ -77,7 +77,7 @@ sub handle {
 	return $ret;
 }
 sub buildMailFile {
-	my ($self,$limit) = @_;
+	my ($self,$limit,$filehandle) = @_;
 	my $body = MIME::Entity->build('Type'=>'multipart/mixed');
 	$body->attach(Data=>$$self{cgi}->param('message'), Type=>'text/plain; charset=UTF-8', Encoding=>'8bit') if $$self{cgi}->param('message');
 	
@@ -85,7 +85,7 @@ sub buildMailFile {
 	if ($$self{cgi}->param("zip")) {
 		($tmpfh, $tmpfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-zip-XXXXX', CLEANUP=>1, SUFFIX=>"zip");
 		$$self{backend}->compressFiles($tmpfh, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
-		if ((stat($tmpfh))[7] > $limit) {
+		if ($limit && (stat($tmpfh))[7] > $limit) {
 			unlink $tmpfn;
 			return undef;
 		}; 
@@ -98,9 +98,14 @@ sub buildMailFile {
 			my $file = $$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$fn);
 			$body->attach(Path=>$file, Filename=>$fn, Type=> main::getMIMEType($fn),Disposition=>'attachment', Encoding=>'base64');
 			$sumsizes+=(stat($file))[7];
-			return undef if $sumsizes > $limit;	
+			return undef if $limit && $sumsizes > $limit;	
 		}
 	}
+	
+	if ($filehandle) {
+		$body->print($filehandle,$tmpfn);
+		return $filehandle;
+	} 
 	
 	my ($bodyfh, $bodyfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-XXXXX', CLEANUP=>1, SUFFIX=>"mime");
 	$body->print($bodyfh);
@@ -123,9 +128,31 @@ sub sendMail {
 	my $limit = $self->config("sizelimit",20971520);
 	my ($from) = $self->sanitizeParam($cgi->param('from'));
 	my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
-	my ($subject) = $self->sanitizeParam($cgi->param('subject') || "some files");
+	my ($subject) = $self->sanitizeParam($cgi->param('subject') || $self->config('defaultsubject',''));
+	
+	if ($cgi->param('download') eq "yes") {
+		
+		my ($tmpfh,$tmpfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-XXXXX', CLEANUP=>1, SUFFIX=>".eml");
+		print $tmpfh "To: ".join(", ",@to)."\nFrom: $from\nSubject: $subject\nX-Mailer: WebDAV CGI\n";
+		my $tmpfile;
+		($tmpfh, $tmpfile) = $self->buildMailFile(0,$tmpfh);
+		
+		main::printLocalFileHeader($tmpfn, {-Content_Disposition=>'attachment; filename="email.eml', -type=>'application/octet-stream'});
+		if (open(my $fh, "<", $tmpfn)) {
+			binmode(STDOUT);
+                	while (read($fh,my $buffer, $main::BUFSIZE || 1048576 )>0) {
+                        	print $buffer;
+                	}
+                	close($fh);
+		} else {
+			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
+		}
+		unlink $tmpfn;
+		unlink $tmpfile if $tmpfile;
+		return;
+	} 
 	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {	
-		my ($mailfile,$tmpfile) = $self->buildMailFile($limit);
+		my ($mailfile,$tmpfile) = $self->buildMailFile();
 		if (!$mailfile || (stat($mailfile))[7]>$limit) {
 			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
 		} else {
@@ -144,9 +171,9 @@ sub sendMail {
 				}
 				close($fh);
 			}
-		 	$smtp->dataend();
-		 	$smtp->quit();
-		 	$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),join(', ',@to));
+	 		$smtp->dataend();
+	 		$smtp->quit();
+	 		$jsondata{msg}=sprintf($self->tl('sendbymail_msg_send'),join(', ',@to));
 		}
 		unlink $mailfile if $mailfile;
 		unlink $tmpfile if $tmpfile;

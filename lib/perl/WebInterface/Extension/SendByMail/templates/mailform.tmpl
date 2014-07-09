@@ -13,7 +13,7 @@
                                        <div class="sendbymail note" title="$mailsizelimit_title">($TL{sendbymail_sizelimit}: $mailsizelimit)</div></th>
                                    <td>$FILES</td></tr>
 <tr class="sendbymail zip"><th></th><td class="sendbymail zip"><input type="checkbox" name="zip"> $TL{sendbymail_zip}</input>, $TL{sendbymail_zipfilename} <input type="text" name="zipfilename" value="$zipdefaultfilename" size="11"/></td></tr>
-<tr class="sendbymail button"><th class="sendbymail button" colspan="2"><input type="submit" name="send" value="$TL{sendbymail_send}"/></th></tr>
+<tr class="sendbymail button"><th><input type="submit" name="download" value="$TL{sendbymail_download}"/></th><th class="sendbymail button"><input type="submit" name="send" value="$TL{sendbymail_send}"/></th></tr>
 </table>
 </form>
 <!--FILES[ <div title="$filename" class="sendbymail files $filetype" data-filename="$filename"><div data-filename="$filename" title="$TL{sendbymail_remove}" class="sendbymail remove">-</div>$filename_short (<span title="$size_title">$size</span>) <input type="hidden" name="files" value="$filename"/></div>  ]-->
