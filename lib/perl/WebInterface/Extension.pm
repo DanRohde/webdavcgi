@@ -32,7 +32,6 @@ sub new {
 }
 sub init {
 	my ($self, $hookreg) = @_;
-	$self->setExtension('Extension');
 }
 sub setExtension {
 	my ($self, $extension) = @_;

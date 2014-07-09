@@ -55,6 +55,7 @@ sub init {
 		eval { 
 			load "WebInterface::Extension::$extname";
 			my $extension = "WebInterface::Extension::$extname"->new($self);
+			$extension->setExtension($extname);
 		};
 		warn("Can't load extensions $extname: $@") if $@;
 	}

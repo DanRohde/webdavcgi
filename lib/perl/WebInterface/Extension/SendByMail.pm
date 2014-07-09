@@ -47,9 +47,6 @@ use File::Temp qw( tempfile );
 
 sub init { 
 	my($self, $hookreg) = @_; 
-	
-	$self->setExtension('SendByMail');
-	
 	my @hooks = ('css','locales','javascript', 'posthandler');
 	push @hooks,'fileactionpopup' unless $self->config('disable_fileactionpopup');
 	push @hooks,'apps' if $self->config('enable_apps');
