@@ -99,15 +99,13 @@ sub renderDiffOutput {
 		$t.=$cgi->Tr($cgi->th('#').$cgi->th($f1).$cgi->th('#').$cgi->th($f2));
 		while (<DIFF>) {
 			chomp;
-			
-			print STDERR "$_\n";
 			if (/^-{3}\s+(\S+)/) {
 				my $f = $self->substBasepath($1);
-				$t.='<tr>'.$cgi->th({-colspan=>2},$f) unless $f eq $f1;
+				$t.='<tr>'.$cgi->th({-colspan=>2},$f) unless $f eq $f1 || $f=~/^\/tmp\//;
 				next;
 			} elsif (/^\+{3}\s+(\S+)/) {
 				my $f = $self->substBasepath($1);
-				$t.=$cgi->th({-colspan=>2},$f).'</tr>'  unless $f eq $f2;
+				$t.=$cgi->th({-colspan=>2},$f).'</tr>'  unless $f eq $f2 || $f =~/^\/tmp\//;
 				next;
 			} elsif (/^diff /) {
 				next;

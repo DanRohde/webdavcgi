@@ -263,7 +263,7 @@ sub saveData {
 sub getLocalFilename {
 	my ($self, $file) = @_;
 	if ($self->exists($file)) {
-		$file=~/(\.[^\.]+)$/;
+		$file=~/(\.[^\.\/]+)$/;
 		my $suffix = $1;
 		my ($fh, $filename) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>$suffix);
 		$self->printFile($file, $fh);
