@@ -12,6 +12,7 @@
 .diff.dialog {
 	max-height: 600px;
 	max-width: 1024px;
+	overlow: auto;
 }
 .diff.table {
 	empty-cells: show;
