@@ -10,8 +10,6 @@
 	visibility: hidden;
 }
 .diff.dialog {
-	max-height: 600px;
-	max-width: 1024px;
 	overlow: auto;
 }
 .diff.table {
@@ -25,13 +23,13 @@
 	border:0;
 	padding: 2px;
 	margin:0;
-	color: black;
 	
 }
 .diff.table th {
 	background-color: #fafafa;
 	font-weight: bold;
 	text-align: left;
+	color: black;
 }
 .diff.table tr {
 	border-bottom: 1px solid #999999;
