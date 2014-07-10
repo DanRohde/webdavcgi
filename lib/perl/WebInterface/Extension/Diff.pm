@@ -130,6 +130,8 @@ sub renderDiffOutput {
 				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, sprintf($self->tl('diff_binary'),$self->substBasepath($1),$self->substBasepath($2))));
 			} elsif (/^Only in (.*?): (.*)$/) {
 				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, sprintf($self->tl('diff_onlyin'),$self->substBasepath($1),$self->substBasepath($2))));
+			} elsif (/^\\\s*No newline at end of file/i) {
+				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, $self->tl('diff_nonewline')));
 			} elsif (/^\\ (.*)/ || /^(\w+.*)/) {
 				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, $cgi->pre({-class=>'diff pre'},$1)));
 			}
