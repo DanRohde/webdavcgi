@@ -78,7 +78,7 @@ sub checkFilesOnly {
 	my $self = shift @_;
 	return 1 unless $self->config('files_only',0);
 	while (my $f = shift @_) {
-		return 0 unless $$self{backend}->isFile($f);
+		return 0 unless $$self{backend}->isFile($main::PATH_TRANSLATED.$f);
 	} 
 	return 1;
 }
