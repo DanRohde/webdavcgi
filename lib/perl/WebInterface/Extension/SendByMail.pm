@@ -108,6 +108,7 @@ sub buildMailFile {
 }
 sub checkMailAddresses {
 	my $self = shift @_;
+	return 0 unless scalar(@_)>0; 
 	for (my $i=0; $i<=$#_;$i++) {
 		$_[$i]=~s/\s//g;
 		$_[$i]=~s/^[^<]*<(.*)>.*$/$1/g; ### Name <email> > email
@@ -150,8 +151,8 @@ sub sendMail {
 		if (!$mailfile || (stat($mailfile))[7]>$limit) {
 			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
 		} else {
-			my $smtp = Net::SMTP->new($self->config("mailrelay") || 'localhost', Timeout=> $self->config("timeout") || 2);
-			$smtp->auth($self->config('login'), $self->config('password'));
+			my $smtp = Net::SMTP->new($self->config('mailrelay','localhost'), Timeout=> $self->config('timeout',2));
+			$smtp->auth($self->config('login'), $self->config('password')) if $self->config('login',0);
 			$smtp->mail($from);
 			$smtp->to(@to);
 			$smtp->data();
@@ -173,7 +174,7 @@ sub sendMail {
 		unlink $zipfile if $zipfile;
 	} else {
 		$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
-		$jsondata{field} = ! $self->checkMailAddresses(@to) ? "to" : "from";
+		$jsondata{field} = ! $self->checkMailAddresses(@to) ? 'to' : 'from';
 	}
 	my $json = new JSON();
 	main::printHeaderAndContent($status, $mime, $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
@@ -224,7 +225,7 @@ sub renderMailDialog {
 }
 sub renderFileAttributes {
 	my ($self,$fn) = @_;
-	my $bytesize = ($$self{backend}->stat("${main::PATH_TRANSLATED}${fn}"))[7];
+	my $bytesize = ($$self{backend}->stat($main::PATH_TRANSLATED.$fn))[7];
 	my ($s,$st) = $self->renderByteValue($bytesize);
 	my %attr = ( 
 		filename => $$self{cgi}->escapeHTML($fn),
@@ -238,11 +239,11 @@ sub renderFileAttributes {
 }
 sub renderFileSize {
 	my($self,$fn) = @_;
-	my $size = ($$self{backend}->stat("${main::PATH_TRANSLATED}${fn}"))[7];
+	my $size = ($$self{backend}->stat($main::PATH_TRANSLATED.$fn))[7];
 	return $size;	
 }
 sub readTemplate {
 	my ($self,$filename) = @_;
-	return $self->SUPER::readTemplate($filename, $self->getExtensionLocation("SendByMail","templates/"));
+	return $self->SUPER::readTemplate($filename, $self->getExtensionLocation('SendByMail','templates/'));
 }
 1;

@@ -42,7 +42,7 @@ sub getExtensionLocation {
 	return $main::INSTALL_BASE.'lib/perl/WebInterface/Extension/'.$extension.'/'.$file;
 }
 sub getExtensionUri {
-	my ($self, $extension, $file) = @_;	
+	my ($self, $extension, $file) = @_;
 	return $main::VHTDOCS.'_EXTENSION('.$extension.')_/'.$file;
 }
 sub handleJavascriptHook {
@@ -80,6 +80,6 @@ sub handle {
 }
 sub config {
 	my ($self, $var, $default) = @_;
-	return $main::EXTENSION_CONFIG{$$self{EXTENSION}}{$var} || $default;
+	return exists $main::EXTENSION_CONFIG{$$self{EXTENSION}}{$var} ? $main::EXTENSION_CONFIG{$$self{EXTENSION}}{$var} : $default;
 }
 1;
