@@ -96,12 +96,12 @@ sub renderDiffOutput {
 	if (open(DIFF, '-|', $self->config('diff','/usr/bin/diff'), '-ru',$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f1),$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f2))) {
 		my $t = $cgi->start_table({-class=>'diff table'});
 		my ($lr,$ll) = (0,0);
-		$t.=$cgi->Tr($cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f1).$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f2));
+		$t.=$cgi->Tr({-class=>'diff filename'},$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f1).$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f2));		
 		while (<DIFF>) {
 			chomp;
 			if (/^-{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
-				$t.='<tr>'.$cgi->td({-colspan=>2,-class=>'diff filename'},$f) unless $f eq $f1 || $f=~/^\/tmp\//;
+				$t.='<tr class="diff filename">'.$cgi->td({-colspan=>2,-class=>'diff filename'},$f) unless $f eq $f1 || $f=~/^\/tmp\//;
 				next;
 			} elsif (/^\+{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
@@ -127,9 +127,9 @@ sub renderDiffOutput {
 				$t.=$cgi->Tr({-class=>'diff unchanged'},$cgi->td({-class=>'diff line'},$ll).$cgi->td({-class=>'diff unchanged'},$o).$cgi->td({-class=>'diff line'},$lr).$cgi->td({-class=>'diff unchanged'},$o));
 				$ll++; $lr++;
 			} elsif (/^Binary files (.*?) and (.*?) differ/) {
-				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, sprintf($self->tl('diff_binary'),$self->substBasepath($1),$self->substBasepath($2))));
+				$t.=$cgi->Tr({-class=>'diff binary'},$cgi->td({-class=>'diff binary',-colspan=>4}, sprintf($self->tl('diff_binary'),$self->substBasepath($1),$self->substBasepath($2))));
 			} elsif (/^Only in (.*?): (.*)$/) {
-				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, sprintf($self->tl('diff_onlyin'),$self->substBasepath($1),$self->substBasepath($2))));
+				$t.=$cgi->Tr({-class=>'diff onlyin'},$cgi->td({-class=>'diff onlyin',-colspan=>4}, sprintf($self->tl('diff_onlyin'),$self->substBasepath($1),$self->substBasepath($2))));
 			} elsif (/^\\\s*No newline at end of file/i) {
 				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, $self->tl('diff_nonewline')));
 			} elsif (/^\\ (.*)/ || /^(\w+.*)/) {
