@@ -101,11 +101,11 @@ sub renderDiffOutput {
 			chomp;
 			if (/^-{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
-				$t.='<tr class="diff filename">'.$cgi->td({-colspan=>2,-class=>'diff filename'},$f) unless $f eq $f1 || $f=~/^\/tmp\//;
+				$t.='<tr class="diff filename">'.$cgi->td({-colspan=>2,-class=>'diff filename'},$f) unless $f =~/^\s*\Q$f1\E\s*$/ || $f=~/^\/tmp\//;
 				next;
 			} elsif (/^\+{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
-				$t.=$cgi->td({-colspan=>2,-class=>'diff filename'},$f).'</tr>'  unless $f eq $f2 || $f =~/^\/tmp\//;
+				$t.=$cgi->td({-colspan=>2,-class=>'diff filename'},$f).'</tr>'  unless $f=~/^\s*\Q$f2\E\s*$/ || $f =~/^\/tmp\//;
 				next;
 			} elsif (/^diff /) {
 				next;
