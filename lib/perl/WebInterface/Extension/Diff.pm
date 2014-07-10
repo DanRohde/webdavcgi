@@ -84,6 +84,7 @@ sub checkFilesOnly {
 }
 sub substBasepath {
 	my($self,$f) = @_;
+	$f=$$self{backend}->resolveVirt($f);
 	$f=~s/^\Q$main::PATH_TRANSLATED\E//;
 	return $f;
 }
