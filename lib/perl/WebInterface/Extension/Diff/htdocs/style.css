@@ -18,6 +18,8 @@
 	empty-cells: show;
 	border-collapse: collapse;
 	border:0;
+	width: 100%;
+	overflow:auto;
 }
 .diff.table tr, .diff.table td,  .diff.table th {
 	border:0;
