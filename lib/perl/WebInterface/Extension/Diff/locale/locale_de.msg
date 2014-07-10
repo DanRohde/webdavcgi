@@ -1,0 +1,6 @@
+diff		"Vergleiche Dateien"
+diff_short	"Vergleiche"
+diff_binary	"Binär-Dateien '%s' und '%s' unterscheiden sich."
+diff_onlyin	"Nur in %s: %s"
+diff_msg_selecttwo	"Bitte wählen sie genau zwei Dateien oder Order für den Vergleich."
+diff_msg_differror	"Entschuldigen sie bitte, aber '%s' kann nicht mit '%s' verglichen werden."
