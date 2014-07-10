@@ -134,6 +134,7 @@ sub renderDiffOutput {
 				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, $cgi->pre({-class=>'diff pre'},$1)));
 			}
 		}
+		$t.=$cgi->Tr({-class=>'diff comment'}, $cgi->td({-class=>'diff comment',colspan=>4},$self->tl('diff_nomorediffs')));
 		$t.=$cgi->end_table();
 		$ret = $cgi->div({-title=>$self->tl('diff'),-class=>'diff dialog'}, $t);	
 		close(DIFF)
