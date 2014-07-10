@@ -25,14 +25,12 @@
 	margin:0;
 	
 }
-.diff.table th {
-	background-color: #fafafa;
-	font-weight: bold;
-	text-align: left;
-	color: black;
-}
 .diff.table tr {
 	border-bottom: 1px solid #999999;
+}
+.diff.filename {
+	font-weight: bold;
+	background-color: #fafafa;
 }
 .diff.added {
 	background-color: #eeffee;

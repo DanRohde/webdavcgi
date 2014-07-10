@@ -96,16 +96,16 @@ sub renderDiffOutput {
 	if (open(DIFF, '-|', $self->config('diff','/usr/bin/diff'), '-ru',$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f1),$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f2))) {
 		my $t = $cgi->start_table({-class=>'diff table'});
 		my ($lr,$ll) = (0,0);
-		$t.=$cgi->Tr($cgi->td({-class=>'diff line'},'#').$cgi->td($f1).$cgi->td({-class=>'diff line'},'#').$cgi->td($f2));
+		$t.=$cgi->Tr($cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f1).$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f2));
 		while (<DIFF>) {
 			chomp;
-			if (/^-{3}\s+(\S+)/) {
+			if (/^-{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
-				$t.='<tr>'.$cgi->td({-colspan=>2},$f) unless $f eq $f1 || $f=~/^\/tmp\//;
+				$t.='<tr>'.$cgi->td({-colspan=>2,-class=>'diff filename'},$f) unless $f eq $f1 || $f=~/^\/tmp\//;
 				next;
-			} elsif (/^\+{3}\s+(\S+)/) {
+			} elsif (/^\+{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
-				$t.=$cgi->td({-colspan=>2},$f).'</tr>'  unless $f eq $f2 || $f =~/^\/tmp\//;
+				$t.=$cgi->td({-colspan=>2,-class=>'diff filename'},$f).'</tr>'  unless $f eq $f2 || $f =~/^\/tmp\//;
 				next;
 			} elsif (/^diff /) {
 				next;
