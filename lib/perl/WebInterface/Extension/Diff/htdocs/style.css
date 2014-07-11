@@ -1,8 +1,12 @@
 #popupmenu .action.diff {
-	background: url(diff.png) no-repeat 2px 6px;
+	background-image: url(diff.png);
+	background-repeat: no-repeat;
+	background-position: 2px 6px;
 }
 #nav .listaction.diff {
-	background: url(diff.png) no-repeat 4px center;
+	background-image: url(diff.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
 }
 .isreadable-no .diff,
 .unselectable-yes .diff {

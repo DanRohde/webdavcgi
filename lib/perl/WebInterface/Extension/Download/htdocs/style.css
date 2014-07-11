@@ -4,11 +4,17 @@
 	visibility: hidden;
 }
 #popupmenu .action.dwnload {
-	background: url(download.png) no-repeat 2px 6px;
+	background-image: url(download.png);
+	background-repeat: no-repeat;
+	background-position: 2px 6px;
 }
 #nav .listaction.dwnload {
-	background: url(download.png) no-repeat 4px center;
+	background-image: url(download.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
 }
 .action.dwnload {
-	background: url(download.png) no-repeat 4px bottom;
+	background-image: url(download.png);
+	background-repeat: no-repeat;
+	background-position: 4px bottom;
 }
