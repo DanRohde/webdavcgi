@@ -2196,6 +2196,7 @@ function initPopupMenu() {
 			});
 		});
 	$("body").click(function() { hidePopupMenu(); }).on("keydown", function(e) { if (e.which == 27) hidePopupMenu(); });
+	$("#filler").on("contextmenu", function() { hidePopupMenu() });
 }
 // ready ends:
 });
