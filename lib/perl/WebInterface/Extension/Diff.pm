@@ -133,7 +133,8 @@ sub renderDiffOutput {
 				$t.=$cgi->Tr({-class=>'diff unchanged'},$cgi->td({-class=>'diff line'},$ll).$cgi->td({-class=>'diff unchanged'},$o).$cgi->td({-class=>'diff line'},$lr).$cgi->td({-class=>'diff unchanged'},$o));
 				$ll++; $lr++;
 			} elsif (/^Binary files (.*?) and (.*?) differ/) {
-				$t.=$cgi->Tr({-class=>'diff binary'},$cgi->td({-class=>'diff binary',-colspan=>4}, sprintf($self->tl('diff_binary'),$self->substBasepath($1),$self->substBasepath($2))));
+				my ($ff1,$ff2) = $self->config('files_only',0) ?($f1,$f2): ($1,$2);
+				$t.=$cgi->Tr({-class=>'diff binary'},$cgi->td({-class=>'diff binary',-colspan=>4}, sprintf($self->tl('diff_binary'),$self->substBasepath($ff1),$self->substBasepath($ff2))));
 				$diffcounter++;
 			} elsif (/^Only in (.*?): (.*)$/) {
 				$t.=$cgi->Tr({-class=>'diff onlyin'},$cgi->td({-class=>'diff onlyin',-colspan=>4}, sprintf($self->tl('diff_onlyin'),$self->substBasepath($1),$self->substBasepath($2))));
