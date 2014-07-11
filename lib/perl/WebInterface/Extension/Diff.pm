@@ -52,10 +52,10 @@ sub handle {
 		$ret = $self->handleAppsHook($$self{cgi},'listaction diff sel-oneormore disabled','diff_short','diff'); 
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'diff') {
 		my %jsondata  = ();
-		my $content;
+		my ($content, $raw);
 		my @files = $$self{cgi}->param('files');
 		if (scalar(@files)==2) { 
-			$content = $self->renderDiffOutput(@files) if $self->checkFilesOnly(@files);
+			($content,$raw) = $self->renderDiffOutput(@files) if $self->checkFilesOnly(@files);
 		}
 		if (!$content) {
 			if (scalar(@files)!= 2) {
@@ -66,6 +66,7 @@ sub handle {
 			
 		} else {
 			$jsondata{content} = $content;
+			$jsondata{raw} = $raw;
 		}
 		my $json = new JSON();
 		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
@@ -93,12 +94,14 @@ sub renderDiffOutput {
 	my $ret = 0;
 	my $cgi = $$self{cgi};
 	my ($f1,$f2) = @files;
+	my $raw = ""; 
 	if (open(DIFF, '-|', $self->config('diff','/usr/bin/diff'), '-ru',$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f1),$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f2))) {
 		my $t = $cgi->start_table({-class=>'diff table'});
 		my ($lr,$ll) = (0,0);
 		$t.=$cgi->Tr({-class=>'diff filename'},$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f1).$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f2));
 		my $diffcounter = 0;		
 		while (<DIFF>) {
+			$raw.=$_;
 			chomp;
 			if (/^-{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
@@ -143,9 +146,10 @@ sub renderDiffOutput {
 		}
 		$t.=$cgi->Tr({-class=>'diff comment'}, $cgi->td({-class=>'diff comment',colspan=>4},sprintf($self->tl('diff_nomorediffs'),$diffcounter)));
 		$t.=$cgi->end_table();
+		$t.=$cgi->div({-class=>'diff raw'},$self->tl('diff_showrawdiff'));
 		$ret = $cgi->div({-title=>$self->tl('diff'),-class=>'diff dialog'}, $t);	
 		close(DIFF)
 	} 
-	return $ret;
+	return ($ret,$raw);
 }
 1;

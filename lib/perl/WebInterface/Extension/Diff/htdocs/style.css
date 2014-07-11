@@ -20,10 +20,13 @@
 	overflow:auto;
 }
 .diff.table td,  .diff.table th {
-	border:0;
 	padding: 2px;
 	margin:0;
 	vertical-align: top;
+	border-top: 0;
+	border-bottom: 0;
+	border-left: 1px solid #999999;
+	border-right: 1px solid #999999;
 	
 }
 .diff.table tr {
@@ -54,4 +57,12 @@
 	margin: 0;
 	border: 0;
 	font-family: monospace;
+}
+.diff.raw {
+	cursor: pointer;
+	border: 2px outset #eeeeee;
+	text-align:center;
+	width: 50%;
+	margin-left: auto;
+	margin-right: auto;
 }
