@@ -2169,6 +2169,9 @@ function initPopupMenu() {
 	});
 	$("#popupmenu .action, #popupmenu .listaction").dblclick(function(event) { preventDefault(event);});
 	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});
+	function hidePopupMenu() {
+		$("#popupmenu:visible").hide().appendTo("body");
+	}
 	$("#flt")
 		.on("beforeFileListChange", function() {
 			$("#popupmenu").appendTo("body").hide();
@@ -2178,7 +2181,7 @@ function initPopupMenu() {
 				if (event.which==3) {
 					preventDefault(event);
 					if ($("#popupmenu").is(":visible")) {
-						$("#popupmenu").hide().appendTo("body");
+						hidePopupMenu();
 						return;
 					}  else {
 						var offset = $("#content").position();
@@ -2192,7 +2195,7 @@ function initPopupMenu() {
 				}
 			});
 		});
-	$("body").click(function() { $("#popupmenu:visible").hide().appendTo("body"); });
+	$("body").click(function() { hidePopupMenu(); }).on("keydown", function(e) { if (e.which == 27) hidePopupMenu(); });
 }
 // ready ends:
 });
