@@ -2184,12 +2184,19 @@ function initPopupMenu() {
 						hidePopupMenu();
 						return;
 					}  else {
+						var popup = $("#popupmenu");
 						var offset = $("#content").position();
-						$("#popupmenu")
+						var left = (event.pageX-offset.left);
+						var top = (event.pageY-offset.top);
+						popup
 							.appendTo($(this))
-							.css({position: "absolute", left: (event.pageX-offset.left)+"px", top: (event.pageY-offset.top)+"px", opacity: 1})
-							.show()
-							.find(".action").first().focus();
+							.css({position: "absolute", left: left+"px", top: top+"px", opacity: 1})
+							.show();
+						var popupHeight = popup.height();
+						var popupWidth = popup.width();
+						if (popupHeight + top +offset.top > $(window).height() && top-popupHeight>= 0 ) top-=popupHeight;
+						if (popupWidth + left + offset.left> $(window).width() && left-popupWidth>=0) left-=popupWidth;
+						popup.css({"top":top+"px","left":left+"px"}).find(".action").first().focus();
 						handleClipboard();
 					}
 				}
