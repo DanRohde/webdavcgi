@@ -446,7 +446,7 @@ function initWindowResize() {
 	handleWindowResize();
 }
 function handleWindowResize() {
-	var width = $(window).width()-$("#nav").width()
+	var width = $(window).width()-$("#nav").width();
 	$("#content").width(width);
 	$("#controls").width(width);
 }

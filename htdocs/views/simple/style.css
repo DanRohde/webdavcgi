@@ -1194,3 +1194,11 @@ img {
 #popupmenu li.subpopupmenu:hover {
 	background-color: #f9f9f9;
 }
+#filler {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: -1;
+}
