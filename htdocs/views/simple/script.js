@@ -1658,7 +1658,7 @@ function handleFileListActionEventDelete(event) {
 	$("#fileList tr.selected:visible").fadeTo("slow",0.5);
 	var self = $(this);
 	var selrows = $("#fileList tr.selected:visible");
-	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,simpleEscape(selrows.attr('data-file'))), {
+	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,simpleEscape(selrows.first().attr('data-file'))), {
 		confirm: function() {
 			var block = blockPage();
 			
@@ -2192,11 +2192,12 @@ function initPopupMenu() {
 							.appendTo($(this))
 							.css({position: "absolute", left: left+"px", top: top+"px", opacity: 1})
 							.show();
+						var win = $(window);
 						var popupHeight = popup.height();
 						var popupWidth = popup.width();
-						if (popupHeight + top +offset.top > $(window).height() && top-popupHeight>= 0 ) top-=popupHeight;
-						if (popupWidth + left + offset.left> $(window).width() && left-popupWidth>=0) left-=popupWidth;
-						popup.css({"top":top+"px","left":left+"px"}).find(".action").first().focus();
+						if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
+						if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
+						popup.css({"top":top+"px","left":left+"px"});
 						handleClipboard();
 					}
 				}
