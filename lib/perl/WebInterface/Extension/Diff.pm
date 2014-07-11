@@ -117,7 +117,7 @@ sub renderDiffOutput {
 			
 			my $o =$_;
 			$o=~s/^.//;
-			$o=$cgi->pre({-class=>'diff pre'},$cgi->escapeHTML($o));
+			$o=$cgi->div({-class=>'diff pre'},$cgi->escapeHTML($o));
 			if (/^\+/) {
 				$t.=$cgi->Tr({-class=>'diff added'}, $cgi->td({-class=>'diff line'},"").$cgi->td({-class>='diff added'},"").$cgi->td({-class=>'diff line'},$lr).$cgi->td({-class=>'diff added'},$o));
 				$lr++; 

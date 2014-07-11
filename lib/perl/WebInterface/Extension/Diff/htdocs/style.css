@@ -23,6 +23,7 @@
 	border:0;
 	padding: 2px;
 	margin:0;
+	vertical-align: top;
 	
 }
 .diff.table tr {
@@ -52,4 +53,5 @@
 .diff.pre {
 	margin: 0;
 	border: 0;
+	font-family: monospace;
 }
