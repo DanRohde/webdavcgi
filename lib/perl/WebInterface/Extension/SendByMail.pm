@@ -76,7 +76,7 @@ sub handle {
 sub buildMailFile {
 	my ($self,$limit,$filehandle) = @_;
 	my $body = MIME::Entity->build('Type'=>'multipart/mixed');
-	$body->attach(Data=>$$self{cgi}->param('message'), Type=>'text/plain; charset=UTF-8', Encoding=>'8bit') if $$self{cgi}->param('message');
+	$body->attach(Data=>$$self{cgi}->param('message') || '', Type=>'text/plain; charset=UTF-8', Encoding=>'8bit');
 	
 	my  ($zipfh, $zipfn);
 	if ($$self{cgi}->param("zip")) {
