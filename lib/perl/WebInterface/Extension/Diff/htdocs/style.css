@@ -65,9 +65,4 @@
 }
 .diff.raw {
 	cursor: pointer;
-	border: 2px outset #eeeeee;
-	text-align:center;
-	width: 50%;
-	margin-left: auto;
-	margin-right: auto;
 }
