@@ -2172,6 +2172,18 @@ function initPopupMenu() {
 	function hidePopupMenu() {
 		$("#popupmenu:visible").hide().appendTo("body");
 	}
+	function adjustPopupPosition(pageX,pageY) {
+		var popup = $("#popupmenu");
+		var offset = $("#content").position();
+		var left = (pageX-offset.left);
+		var top = (pageY-offset.top);
+		var win = $(window);
+		var popupHeight = popup.height();
+		var popupWidth = popup.width();
+		if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
+		if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
+		popup.css({"top":top+"px","left":left+"px"});
+	}
 	$("#flt")
 		.on("beforeFileListChange", function() {
 			$("#popupmenu").appendTo("body").hide();
@@ -2184,20 +2196,8 @@ function initPopupMenu() {
 						hidePopupMenu();
 						return;
 					}  else {
-						var popup = $("#popupmenu");
-						var offset = $("#content").position();
-						var left = (event.pageX-offset.left);
-						var top = (event.pageY-offset.top);
-						popup
-							.appendTo($(this))
-							.css({position: "absolute", left: left+"px", top: top+"px", opacity: 1})
-							.show();
-						var win = $(window);
-						var popupHeight = popup.height();
-						var popupWidth = popup.width();
-						if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
-						if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
-						popup.css({"top":top+"px","left":left+"px"});
+						$("#popupmenu").appendTo($(this)).css({position: "absolute", opacity: 1}).show();
+						adjustPopupPosition(event.pageX,event.pageY);
 						handleClipboard();
 					}
 				}
