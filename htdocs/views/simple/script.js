@@ -2191,11 +2191,16 @@ function initPopupMenu() {
 	$("#filler").on("contextmenu", function() { hidePopupMenu() });
 }
 function initToolBox() {
-	ToolBox.postAction = postAction;
-	ToolBox.blockPage = blockPage;
-	ToolBox.uncheckSelectedRows = uncheckSelectedRows;
-	ToolBox.preventDefault = preventDefault;
-	ToolBox.initUpload = initUpload;
+	ToolBox = { postAction: postAction,
+			blockPage: blockPage,
+			uncheckSelectedRows : uncheckSelectedRows,
+			preventDefault : preventDefault,
+			initUpload : initUpload,
+			handleJSONResponse : handleJSONResponse,
+			confirmDialog : confirmDialog,
+			cookie : cookie,
+			togglecookie : togglecookie
+	};
 }
 // ready ends:
 });

@@ -20,6 +20,7 @@
 package WebInterface::Common;
 
 use strict;
+no strict "refs";
 
 use POSIX qw( strftime ceil locale_h );
 
@@ -138,7 +139,7 @@ sub getCookies {
         ];
 }
 sub replaceVars {
-        my ($self,$t) = @_;
+        my ($self,$t,$v) = @_;
         $t=~s/\${?NOW}?/strftime($self->tl('varnowformat'), localtime())/eg;
         $t=~s/\${?TIME}?/strftime($self->tl('vartimeformat'), localtime())/eg;
         $t=~s/\${?USER}?/$main::REMOTE_USER/g;
@@ -149,12 +150,14 @@ sub replaceVars {
         $t=~s@\${?CLOCK}?@<span id="clock"></span><script>startClock('clock','$clockfmt');</script>@;
         $t=~s/\${?LANG}?/$main::LANG/g;
         $t=~s/\${?TL{([^}]+)}}?/$self->tl($1)/eg;
-
         $main::REQUEST_URI =~ /^($main::VIRTUAL_BASE)/;
         my $vbase= $1;
         $t=~s/\${?VBASE}?/$vbase/g;
         $t=~s/\${?VHTDOCS}?/$vbase$main::VHTDOCS/g;
-
+	if ($v) {
+		$t=~s/\$\[(\w+)\]/exists $$v{$1}?$$v{$1}:"\$$1"/egs;
+		$t=~s/\$\{?(\w+)\}?/exists $$v{$1}?$$v{$1}:"\$$1"/egs;
+	}
         return $t;
 }
 sub cmp_strings {
@@ -330,6 +333,74 @@ sub createMsgQuery {
 	$query .= ";${prefix}errmsg=$errmsg" if defined $errmsg;
 	$query .= ";$errmsgparam"            if defined $errmsg && $errmsgparam;
 	return "?t=" . time() . $query;
+}
+sub flexSorter {
+	return $a <=> $b if ($a=~/^[\d\.]+$/ && $b=~/^[\d\.]+$/); 
+	return $a cmp $b;
+}
+sub renderEach {
+	my ($self, $fn, $ru, $variable, $tmplfile, $filter) = @_;
+	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
+	$filter = $self->renderTemplate($fn,$ru,$filter) if defined $filter;
+	my $content = "";
+	if ($variable=~/^\%/) {
+		$variable=~s/^\%//;
+		my %hashvar = %{"$variable"};
+		foreach my $key (sort flexSorter keys %hashvar) {
+			next if defined $filter && $hashvar{$key} =~ $filter;
+			my $t=$tmpl;
+			$t=~s/\$k/$key/g; $t=~s/\$\{k\}/$key/g;
+			$t=~s/\$v/$hashvar{$key}/g; $t=~s/\$\{v\}/$hashvar{$key}/g;
+			$content.=$t;
+		}
+	} elsif ($variable=~/\@/ || $variable=~/^\((.*?)\)$/s || $variable=~/^\$/) {
+		my @arrvar;
+		if ($variable=~/^\$/) {
+			@arrvar = @{eval($variable)};
+		} elsif ($variable=~/^\((.*?)\)$/s) {
+			@arrvar = split(/,/,$1);
+		} else {
+			$variable=~s/\@//g;
+			@arrvar = @{"$variable"};	
+		}
+		foreach my $val (@arrvar) {
+			next if defined $filter && $val =~ $filter;
+			my $t= $tmpl;
+			$t=~s/\$[kv]/$val/g;
+			$t=~s/\$\{[kv]\}/$val/g;
+			$content.=$t;
+		}
+	}
+	return $content;
+}
+sub execTemplateFunction {
+	my ($self, $fn, $ru, $func, $param) = @_;
+	my $content;
+	$content = ${"main::${param}"} || '' if $func eq 'config';
+	$content = $ENV{$param} || '' if $func eq 'env';
+	$content = $self->tl($param) if $func eq 'tl';
+	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
+	return $content;
+}
+sub renderTemplate {
+	my ($self,$fn,$ru,$content, $vars) = @_;
+
+	my $cgi = $$self{cgi}; ## allowes easer access from templates
+	
+	# replace eval:
+	$content=~s/\$eval(.)(.*?)\1/eval($2)/egs;
+	# replace each:
+	$content=~s/\$each(.)(.*?)\1(.*?)\1((.)(.*?)\5\1)?/$self->renderEach($fn,$ru,$2,$3,$6)/egs;
+	# replace functions:
+	while ($content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg) {};
+	
+	$content=~s/\${?ENV{([^}]+?)}}?/$ENV{$1}/egs;
+	$content=~s/\${?TL{([^}]+)}}?/$self->tl($1)/egs;
+	$content=~s/\$\[(\w+)\]/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
+	$content=~s/\$\{?(\w+)\}?/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
+	$content=~s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/egs;
+	$content=~s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/egs;
+	return $content;
 }
 
 1;

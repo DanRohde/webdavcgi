@@ -86,4 +86,11 @@ sub readTemplate {
 	my ($self,$filename) = @_;
 	return $self->SUPER::readTemplate($filename, $self->getExtensionLocation($$self{EXTENSION},'templates/'));
 }
+sub execTemplateFunction {
+	my ($self, $fn, $ru, $func, $param) = @_;
+	my $content;
+	$content = $self->config($param,0) || '' if $func eq 'extconfig';	
+	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;	
+	return $content;
+}
 1;

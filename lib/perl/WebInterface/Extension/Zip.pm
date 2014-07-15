@@ -66,7 +66,6 @@ sub handle {
 	} elsif ($hook eq 'templates') {
 		$ret = $self->renderMessageTemplate();
 	} elsif ($hook eq 'posthandler') {
-		
 		if ($$self{cgi}->param('action') eq 'zipdwnload') {
 			$self->handleZipDownload();
 			$ret = 1;
@@ -75,17 +74,14 @@ sub handle {
 			$ret = 1;
 		}
 	}
-	print STDERR "handle: ret=$ret\n";
 	return $ret;
 }
 sub renderUploadFormTemplate {
 	my($self) = @_;
-	print STDERR "renderUploadFormTemplate\n";
 	return $self->replaceVars($self->readTemplate('zipfileuploadform'));
 }
 sub renderMessageTemplate {
 	my ($self) = @_;
-	print STDERR "renderMessageTemplate\n";
 	return $self->replaceVars($self->readTemplate('messages'));
 }
 sub handleZipUpload {

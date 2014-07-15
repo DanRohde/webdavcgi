@@ -161,5 +161,4 @@ sub printDAVMount {
         main::printHeaderAndContent('200 OK','application/davmount+xml',
                qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@);
 }
-
 1;

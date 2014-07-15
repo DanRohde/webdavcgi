@@ -33,9 +33,6 @@ our @ISA = qw( WebInterface::Extension  );
 use JSON;
 sub init { 
 	my($self, $hookreg) = @_; 
-	
-	$self->setExtension('Diff');
-	
 	my @hooks = ('css','locales','javascript', 'posthandler');
 	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{Diff}{disable_fileactionpopup};
 	push @hooks,'apps' if $main::EXTENSION_CONFIG{Diff}{enable_apps};

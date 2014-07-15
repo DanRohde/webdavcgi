@@ -687,82 +687,17 @@ li.sep {
 #afsaclmanager table {
 	padding: 5px;
 }
-#afsgroupactions {
-	display: inline;
-	float: right;
-}
 ul.ui-autocomplete {
 	z-index: 1100;
 }
 td.center {
 	text-align: center;
 }
-#afsgroupeditor {
-	float:left;
-}
-#afsmembereditor {
-	float:right;
-	padding-left: 2em;
-}
-.afsnewmembers, .afsnewgroup {
-	padding-top: 1em;
-	
-}
-.afsgroups, .afsmembers {
-	border: 1px solid #666666;
-	max-height: 10em;
-	overflow-y: auto;
-	padding: 5px;
-	height: 10em;
-	width: 30ex;
-}
-.afsgroups ul, .afsmembers ul {
-	border:0;
-	padding:0;
-	margin:0;
-	outline: 0;
-}
-.afsgroups ul li, .afsmembers ul li {
-	border: 1px;
-	margin: 0 ;
-	padding: 0;
-	outline: 0;
-	clear: both;
-	cursor: pointer;
-}
-#afsgrouplist li.selected, #afsmemberlist li.selected {
-	background-color: #dadada;
-}
-
-#afsgrouplist li:hover, #afsmemberlist li:hover {
-	background-color: #aaaaaa;
-}
-#afsgrouplist li.selected:hover, #afsmemberlist li.selected:hover {
-	background-color: #ededed;
-}
- 
-#afsmembereditor a[data-action=afsmemberdelete], #afsgroupeditor a[data-action=afsgroupdelete], 
-#afsmembereditor a[data-action=afsremoveselectedmembers] {
-	background: url(images/sprite.png) no-repeat 0 -460px;
-	padding: 0 0 0 22px;
-	float: right;
-	margin: 0 0 0 1em;
-	width:22px;
-}
-#afsmembereditor img[data-action=afsaddusr], #afsgroupeditor img[data-action=afscreatenewgrp] {
-	width: 16px;
-	height: 16px;
-	background: url(images/sprite.png) no-repeat -2px -1062px;
-	cursor: pointer;
-} 
 #nav .action.refresh {
 	background: url(images/sprite.png) no-repeat 2px -410px;
 }
 #nav .action.search {
 	background: url(images/sprite.png) no-repeat 2px -1092px;
-}
-#nav .action.afsgroupmanager {
-	background: url(images/sprite.png) no-repeat 2px -326px;
 }
 #nav .action.viewfilter {
 	background: url(images/sprite.png) no-repeat 2px -648px;
@@ -1145,10 +1080,6 @@ img {
 #popupmenu .action.afsaclmanager {
 	background-image: url(images/sprite.png);
 	background-position: left -574px;
-}
-#popupmenu .action.afsgroupmanager {
-	background-image: url(images/sprite.png);
-	background-position: left -334px;
 }
 #popupmenu ul {
 	display: none;

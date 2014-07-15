@@ -53,10 +53,8 @@ sub render {
 		} elsif ($ajax eq 'getAFSACLManager') {
 			$content = $self->renderAFSACLManager($fn,$ru, $$self{cgi}->param('template'));
 		} elsif ($ajax eq 'searchAFSUserOrGroupEntry') {
-			$content = $self->searchAFSUserOrGroupEntry($$self{cgi}->param('term'));
-			$contenttype='application/json';
-		} elsif ($ajax eq 'getAFSGroupManager') {
-			$content = $self->renderAFSGroupManager($fn,$ru, $$self{cgi}->param('template'));
+                        $content = $self->searchAFSUserOrGroupEntry($$self{cgi}->param('term'));
+                        $contenttype='application/json';	
 		} elsif ($ajax eq 'getPermissionsDialog') {
 			$content = $self->renderPermissionsDialog($fn,$ru, $$self{cgi}->param('template'));
 		} elsif ($ajax eq 'getViewFilterDialog') {
@@ -132,60 +130,11 @@ sub getQuotaData {
 
 	return $ret;
 }
-sub flexSorter {
-	return $a <=> $b if ($a=~/^[\d\.]+$/ && $b=~/^[\d\.]+$/); 
-	return $a cmp $b;
-}
-sub renderEach {
-	my ($self, $fn, $ru, $variable, $tmplfile, $filter) = @_;
-	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
-	$filter = $self->renderTemplate($fn,$ru,$filter) if defined $filter;
-	my $content = "";
-	if ($variable=~/^\%/) {
-		$variable=~s/^\%//;
-		my %hashvar = %{"$variable"};
-		foreach my $key (sort flexSorter keys %hashvar) {
-			next if defined $filter && $hashvar{$key} =~ $filter;
-			my $t=$tmpl;
-			$t=~s/\$k/$key/g; $t=~s/\$\{k\}/$key/g;
-			$t=~s/\$v/$hashvar{$key}/g; $t=~s/\$\{v\}/$hashvar{$key}/g;
-			$content.=$t;
-		}
-	} elsif ($variable=~/\@/ || $variable=~/^\((.*?)\)$/s || $variable=~/^\$/) {
-		my @arrvar;
-		if ($variable=~/^\$/) {
-			@arrvar = @{eval($variable)};
-		} elsif ($variable=~/^\((.*?)\)$/s) {
-			@arrvar = split(/,/,$1);
-		} else {
-			$variable=~s/\@//g;
-			@arrvar = @{"$variable"};	
-		}
-		foreach my $val (@arrvar) {
-			next if defined $filter && $val =~ $filter;
-			my $t= $tmpl;
-			$t=~s/\$[kv]/$val/g;
-			$t=~s/\$\{[kv]\}/$val/g;
-			$content.=$t;
-		}
-	}
-	return $content;
-}
 sub renderTemplate {
 	my ($self,$fn,$ru,$content) = @_;
-
-	my $cgi = $$self{cgi}; ## allowes easer access from templates
-	
-	# replace eval:
-	$content=~s/\$eval(.)(.*?)\1/eval($2)/egs;
-	# replace each:
-	$content=~s/\$each(.)(.*?)\1(.*?)\1((.)(.*?)\5\1)?/$self->renderEach($fn,$ru,$2,$3,$6)/egs;
-	# replace functions:
-	while ($content=~s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg) {};
-	
 	my $vbase = $ru=~/^($main::VIRTUAL_BASE)/ ? $1 : $ru;
-
 	my %quota =  %{$self->getQuotaData($fn)};
+	
 	# replace standard variables:
 	my %stdvars = ( uri => $ru, 
 			baseuri=>$$self{cgi}->escapeHTML($vbase),
@@ -214,33 +163,24 @@ sub renderTemplate {
 			VBASE=>$$self{cgi}->escapeHTML($vbase),
 			VHTDOCS=>$vbase.$main::VHTDOCS,
 	);
-	$content=~s/\${?ENV{([^}]+?)}}?/$ENV{$1}/egs;
-	$content=~s/\${?TL{([^}]+)}}?/$self->tl($1)/egs;
-	$content=~s/\$\[(\w+)\]/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-	$content=~s/\$\{?(\w+)\}?/exists $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-	$content=~s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/egs;
-	$content=~s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/egs;
-	return $content;
+	return $self->SUPER::renderTemplate($fn,$ru,$content, \%stdvars);
 }
 sub execTemplateFunction {
 	my ($self, $fn, $ru, $func, $param) = @_;
-	my $content = $self->tl('error');
+	my $content; 
 	
-	$content = ${"main::${param}"} || '' if $func eq 'config';
-	$content = $ENV{$param} || '' if $func eq 'env';
-	$content = $self->tl($param) if $func eq 'tl';
 	$content = $self->renderFileList($fn,$ru,$param) if $func eq 'filelist';
 	$content = $self->renderAFSACLList($fn,$ru,1,$param) if $func eq 'afsnormalacllist';
 	$content = $self->renderAFSACLList($fn,$ru,0,$param) if $func eq 'afsnegativeacllist';
-	$content = $self->renderAFSGroupList($fn,$ru,$param) if $func eq 'afsgrouplist';
-	$content = $self->renderAFSMemberList($fn,$ru,$param) if $func eq 'afsmemberlist';
 	$content = $self->isViewFiltered() if $func eq 'isviewfiltered';
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
-	$content = $$self{cgi}->param($param) ? $$self{cgi}->param($param) : "" if $func eq 'cgiparam';
 	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
 	$content = $self->renderLanguageList($fn,$ru,$param) if $func eq 'langList';
 	$content = $self->renderExtension($fn,$ru,$param) if $func eq 'extension';
+	
+	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
+	
 	return $content;
 }
 sub renderExtensionElement {
@@ -254,7 +194,9 @@ sub renderExtensionElement {
 		$params{-class}.=' hidden' if $$a{disabled};
 		$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
 		$params{-title}=$self->tl($$a{title}) if $$a{title};
+		$params{-data_template} = $$a{template} if $$a{template};
 		$content.=$$a{prehtml} if $$a{prehtml};
+		
 		if ($$a{type} && $$a{type} eq 'li') {	
 			$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
 		} else {
@@ -599,46 +541,6 @@ sub uridecode {
 	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/eigs;
 	return $txt;
 }
-sub searchAFSUserOrGroupEntry {
-	my ($self, $term) = @_;
-	my $result = [];
-	#push @{$result}, @{$self->searchAFSUser($term,undef,20)} unless $term=~/:/;
-	my @groups = grep(/\Q$term\E/i,@{$self->readAFSGroupList($main::PATH_TRANSLATED, $main::REQUEST_URI)});
-	splice(@groups, 9 - $#$result) if ($#$result + $#groups>=10); 
-	push @{$result}, @groups;
-	my $json = new JSON();
-	return $json->encode({result=>$result});
-}
-#sub searchAFSUser {
-#	my ($self, $term,$listlimit, $searchlimit) = @_;
-#	my @ret = ();
-#	my $counter = 0;
-#	setpwent();
-#	while (my @ent = getpwent()) {
-#		push @ret, $ent[0] if !$term || ($ent[0] =~ /^\Q$term\E/i || $ent[6] =~ /\Q$term\E/i);
-#		last if $searchlimit && $#ret+1 >= $searchlimit;
-#		$counter++;
-#		last if $listlimit && $counter >= $listlimit;
-#	}
-#	endpwent();
-#	return \@ret;
-#}
-sub renderAFSACLManager {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = "";
-	if ($$self{backend}->_getCallerAccess($fn) eq "") {
-		$content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
-	} else {
-		$content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-		my $stdvars = {
-			afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
-											$$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
-											$$self{cgi}->escapeHTML(uridecode($ru))),
-		};
-		$content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
-	}
-	return $content;
-}
 sub readAFSGroupList {
 	my ($self, $fn, $ru) = @_;
 	return $CACHE{$self}{$fn}{afsgrouplist} if exists $CACHE{$self}{$fn}{afsgrouplist};
@@ -649,53 +551,45 @@ sub readAFSGroupList {
 	$CACHE{$self}{$fn}{afsgrouplist} = \@groups;
 	return \@groups;
 }
-sub renderAFSGroupListEntry {
-	my ($self,$groups) = @_;
+sub searchAFSUserOrGroupEntry {
+        my ($self, $term) = @_;
+        my $result = [];
+        #push @{$result}, @{$self->searchAFSUser($term,undef,20)} unless $term=~/:/;
+        my @groups = grep(/\Q$term\E/i,@{$self->readAFSGroupList($main::PATH_TRANSLATED, $main::REQUEST_URI)});
+        splice(@groups, 9 - $#$result) if ($#$result + $#groups>=10); 
+        push @{$result}, @groups;
+        my $json = new JSON();
+        return $json->encode({result=>$result});
 }
-sub renderAFSGroupList {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content ="";
-	my $tmpl = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-	foreach my $group (@{$self->readAFSGroupList($fn,$ru)}) {
-		my $t = $tmpl;
-		$t=~s/\$afsgroupname/$group/g;
-		$content.=$t;
-	}
-	return $content;
-}
-sub readAFSMembers {
-	my ($self, $grp) = @_;
-	return [] unless $grp;
-	my @users = split(/\r?\n/, qx@$main::AFS_PTSCMD members '$grp'@);
-	shift @users; # remove comment
-	s/^\s+//g foreach (@users);
-	@users = sort @users;
-	chomp @users;
-	return \@users;
-}
-sub renderAFSMemberList {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = "";
-	my $tmpl = $self->readTemplate($tmplfile);
-	my $afsgrp = $$self{cgi}->param('afsgrp');
-	foreach my $user (@{$self->readAFSMembers($afsgrp)}) {
-		my $t = $tmpl;
-		$t=~s/\$afsmember/$user/sg;
-		$t=~s/\$afsgroupname/$afsgrp/sg;
-		$content.=$t;
-	}
-	return $self->renderTemplate($fn,$ru,$content);
-}
-sub renderAFSGroupManager {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-	my $stdvars = {
-		afsgroupeditorhead => sprintf($self->tl('afsgroups'), $$self{cgi}->escapeHTML($main::REMOTE_USER)),
-		afsmembereditorhead=> $$self{cgi}->param('afsgrp') ? sprintf($self->tl('afsgrpusers'), $$self{cgi}->escapeHTML($$self{cgi}->param('afsgrp'))): "",
-		user => $main::REMOTE_USER,
-	};
-	$content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : "\$${1}"/egs;
-	return $content;
+#sub searchAFSUser {
+#       my ($self, $term,$listlimit, $searchlimit) = @_;
+#       my @ret = ();
+#       my $counter = 0;
+#       setpwent();
+#       while (my @ent = getpwent()) {
+#               push @ret, $ent[0] if !$term || ($ent[0] =~ /^\Q$term\E/i || $ent[6] =~ /\Q$term\E/i);
+#               last if $searchlimit && $#ret+1 >= $searchlimit;
+#               $counter++;
+#               last if $listlimit && $counter >= $listlimit;
+#       }
+#       endpwent();
+#       return \@ret;
+#}
+sub renderAFSACLManager {
+        my ($self, $fn, $ru, $tmplfile) = @_;
+        my $content = "";
+        if ($$self{backend}->_getCallerAccess($fn) eq "") {
+                $content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
+        } else {
+                $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
+                my $stdvars = {
+                        afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
+                                                                                        $$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
+                                                                                        $$self{cgi}->escapeHTML(uridecode($ru))),
+                };
+                $content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
+        }
+        return $content;
 }
 sub checkPermAllowed {
 	my ($p,$r) = @_;

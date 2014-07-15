@@ -1,0 +1,93 @@
+/*********************************************************************
+(C) ZE CMS, Humboldt-Universitaet zu Berlin
+Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+#nav .action.afsgroupmngr {
+	background-image: url(group.png);
+	background-repeat: no-repeat;
+	background-position: 2px center;
+}
+#popupmenu .action.afsgroupmngr {
+	background-image: url(group.png);
+	background-position: 2px center;
+	background-repeat: no-repeat;
+}
+
+#afsgroupactions {
+	display: inline;
+	float: right;
+}
+#afsgroupeditor {
+	float:left;
+}
+#afsmembereditor {
+	float:right;
+	padding-left: 2em;
+}
+.afsnewmembers, .afsnewgroup {
+	padding-top: 1em;
+	
+}
+.afsgroups, .afsmembers {
+	border: 1px solid #666666;
+	max-height: 10em;
+	overflow-y: auto;
+	padding: 5px;
+	height: 10em;
+	width: 30ex;
+}
+.afsgroups ul, .afsmembers ul {
+	border:0;
+	padding:0;
+	margin:0;
+	outline: 0;
+}
+.afsgroups ul li, .afsmembers ul li {
+	border: 1px;
+	margin: 0 ;
+	padding: 0;
+	outline: 0;
+	clear: both;
+	cursor: pointer;
+}
+#afsgrouplist li.selected, #afsmemberlist li.selected {
+	background-color: #dadada;
+}
+
+#afsgrouplist li:hover, #afsmemberlist li:hover {
+	background-color: #aaaaaa;
+}
+#afsgrouplist li.selected:hover, #afsmemberlist li.selected:hover {
+	background-color: #ededed;
+}
+ 
+#afsmembereditor a[data-action=afsmemberdelete], #afsgroupeditor a[data-action=afsgroupdelete], 
+#afsmembereditor a[data-action=afsremoveselectedmembers] {
+	background-image: url(remove.png);
+	background-repeat: no-repeat;
+	background-position: center 0 ;
+	padding: 0 0 0 22px;
+	float: right;
+	margin: 0 0 0 1em;
+	width:22px;
+}
+#afsmembereditor img[data-action=afsaddusr], #afsgroupeditor img[data-action=afscreatenewgrp] {
+	width: 16px;
+	height: 16px;
+	background-image: url(add.png);
+	background-repeat: no-repeat;
+	background-position:  0 0;
+	cursor: pointer;
+} 
