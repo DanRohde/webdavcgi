@@ -187,6 +187,22 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 0.9.0 to 0.9.1</h3>
+<ul>
+<li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...)</code></li>
+<li> The AFS Groupmanager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
+<li> A lot of new extensions were added (activation: <code>@EXTENSIONS= ('ExtensionName')</code>):
+	<ul>
+	<li> Download - adds a download button</li>
+	<li> Diff - compares two files/folders</li>
+	<li> SendByMail - sends files/folders by e-mail ( Perl module MIME::Entity from MIME tools required; Debian/Ubuntu: <code>apt-get install libmime-tools-perl</code>)</li>
+	<li> PosixAclManager - allows POSIX ACL changes</li>
+	<li> DiskUsage - shows disk usage for folders</li>
+	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
+	<li> AFSGroupManager - allows AFS Group management</li>
+	</ul>
+</li>
+</ul>
 <h3>Upgrading from 0.8.6 to 0.9.0</h3>
 <ul>
 <li> The classic view and the sidebar view are removed from code base.
@@ -841,8 +857,8 @@ $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota $FS';
 $ENABLE_AFSACLMANAGER = 1;
 $ALLOW_AFSACLCHANGES = 1;
 
-$ENABLE_AFSGROUPMANAGER = 1;
-$ALLOW_AFSGROUPCHANGES = 1;
+@EXTENSIONS = ('AFSGroupManager');
+$EXTENSION_CONFIG{AFSGroupManager} = { disallow_groupchanges=>0 };
 
 $ALLOW_SEARCH = 0;
 $ALLOW_CHANGEPERM = 0;
