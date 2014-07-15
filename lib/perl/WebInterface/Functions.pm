@@ -376,6 +376,8 @@ sub handleFileActions {
 		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
 }
 sub isValidAFSACL       { return $_[1] =~ /^[rlidwka]+$/; }
+sub isValidAFSGroupName { return $_[1] =~ /^[a-z0-9\_\@\:]+$/i; }
+sub isValidAFSUserName  { return $_[1] =~ /^[a-z0-9\_\@]+$/i; }
 
 sub buildAFSFSSETACLParam {
 	my ($self) = @_;
