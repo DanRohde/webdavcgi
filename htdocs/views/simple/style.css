@@ -264,11 +264,9 @@ tr.isreadable-no:hover {
 .iseditable-no .action.edit,
 .iswriteable-no .action.delete,
 .iswriteable-no .action.rename,
-.isreadable-no .action.download,
 .isreadable-no .action.props,
 .isreadable-no .action.edit,
 .iswriteable-no .action.edit, 
-.unselectable-yes .listaction.download,
 .unselectable-yes .listaction.delete,
 .unselectable-yes .action.rename,
 .islocked-yes .action.delete,
@@ -337,12 +335,6 @@ tr.isreadable-no:hover {
 }
 .listaction.delete {
 	background: url(images/sprite.png) no-repeat 4px -214px;
-}
-.action.download {
-	background: url(images/sprite.png) no-repeat left -260px;
-}
-.listaction.download {
-	background: url(images/sprite.png) no-repeat 4px -254px;
 }
 .listaction.copy {
 	background: url(images/sprite.png) no-repeat center -134px;
@@ -452,9 +444,6 @@ tr.isreadable-no:hover {
 }
 .action.create-symlink {
 	background: url(images/sprite.png) no-repeat left -818px;
-}
-.action.uncompress {
-	background: url(images/sprite.png) no-repeat left -698px;
 }
 .renamefield {
 	background-color: inherit;
@@ -1148,10 +1137,6 @@ img {
 #popupmenu .action.rename {
 	background-image: url(images/sprite.png);
 	background-position: left -495px;
-}
-#popupmenu .listaction.download {
-	background-image: url(images/sprite.png);
-	background-position: left -256px;
 }
 #popupmenu .action.permissions {
 	background-image: url(images/sprite.png);

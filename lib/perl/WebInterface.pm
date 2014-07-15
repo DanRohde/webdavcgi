@@ -98,10 +98,6 @@ sub handlePostRequest {
                 ## done.
         } elsif ($main::ALLOW_POST_UPLOADS && $$self{backend}->isDir($main::PATH_TRANSLATED) && defined $$self{cgi}->param('filesubmit')) {
                 $self->getFunctions()->handlePostUpload($redirtarget);
-        } elsif ($main::ALLOW_ZIP_DOWNLOAD && defined $$self{cgi}->param('zip')) {
-                $self->getFunctions()->handleZipDownload($redirtarget);
-        } elsif ($main::ALLOW_ZIP_UPLOAD && defined $$self{cgi}->param('uncompress')) {
-                $self->getFunctions()->handleZipUpload();
         } elsif ($main::ALLOW_AFSACLCHANGES && $$self{cgi}->param('saveafsacl')) {
                 $self->getFunctions()->doAFSSaveACL($redirtarget);
         } elsif ($$self{cgi}->param('afschgrp')|| $$self{cgi}->param('afscreatenewgrp') || $$self{cgi}->param('afsdeletegrp') || $$self{cgi}->param('afsrenamegrp') || $$self{cgi}->param('afsaddusr') || $$self{cgi}->param('afsremoveusr')) {

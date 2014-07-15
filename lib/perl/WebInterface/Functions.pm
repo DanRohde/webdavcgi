@@ -71,49 +71,6 @@ sub handlePostUpload {
 		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
 }
 
-sub handleZipUpload {
-	my ( $self, $redirtarget ) = @_;
-	my @zipfiles;
-	my ( $msg, $errmsg, $msgparam );
-	foreach my $fh ( $$self{cgi}->param('zipfile_upload') ) {
-		my $rfn = $fh;
-		$rfn =~ s/\\/\//g;    # fix M$ Windows backslashes
-		$rfn = $$self{backend}->basename($rfn);
-		if (main::isLocked("$main::PATH_TRANSLATED$rfn")) {
-			$errmsg='locked';
-			$msgparam='p1='.$$self{cgi}->escape($rfn);
-			last;	
-		}
-		elsif ( $$self{backend}->saveStream( "$main::PATH_TRANSLATED$rfn", $fh ) )
-		{
-			push @zipfiles, $rfn;
-			$$self{backend}->unlinkFile( $main::PATH_TRANSLATED . $rfn )
-			  if $$self{backend} ->uncompressArchive( "$main::PATH_TRANSLATED$rfn",	$main::PATH_TRANSLATED );
-		}
-	}
-	if ( $#zipfiles > -1 ) {
-		$msg = ( $#zipfiles > 0 ) ? 'zipuploadmulti' : 'zipuploadsingle';
-		$msgparam = 'p1='
-		  . ( $#zipfiles + 1 ) . ';p2='
-		  . $$self{cgi}->escape( substr( join( ', ', @zipfiles ), 0, 150 ) );
-	}
-	else {
-		$errmsg = 'zipuploadnothingerr';
-	}
-	print $$self{cgi}->redirect( $redirtarget . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
-}
-
-sub createMsgQuery {
-	my ( $self, $msg, $msgparam, $errmsg, $errmsgparam, $prefix ) = @_;
-	$prefix = '' unless defined $prefix;
-	my $query = "";
-	$query .= ";${prefix}msg=$msg"       if defined $msg;
-	$query .= ";$msgparam"               if $msgparam;
-	$query .= ";${prefix}errmsg=$errmsg" if defined $errmsg;
-	$query .= ";$errmsgparam"            if defined $errmsg && $errmsgparam;
-	return "?t=" . time() . $query;
-}
-
 sub handleClipboardAction {
 	my ( $self, $redirtarget ) = @_;
 	my ( $msg, $msgparam, $errmsg );
@@ -150,19 +107,6 @@ sub handleClipboardAction {
 		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
 }
 
-sub handleZipDownload {
-	my $self = shift;
-	my $zfn  = $$self{backend}->basename($main::PATH_TRANSLATED) . '.zip';
-	$zfn =~ s/ /_/;
-	print $$self{cgi}->header(
-		-status              => '200 OK',
-		-type                => 'application/zip',
-		-Content_disposition => 'attachment; filename=' . $zfn
-	);
-	$$self{backend}->compressFiles( \*STDOUT, $main::PATH_TRANSLATED,
-		$$self{cgi}->param('file') );
-
-}
 
 sub handleFileActions {
 	my ( $self, $redirtarget ) = @_;

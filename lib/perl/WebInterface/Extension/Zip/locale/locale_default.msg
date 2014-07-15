@@ -1,0 +1,7 @@
+zipup					"ZIP Archive Upload"
+zipdwnload				"ZIP Download"
+zipdwnloadtext			" selected files/folders (ZIP archive)"
+zipupconfirm			"Do you really want to upload ZIP, extract it and replace existing files?"
+msg_zipupmulti			"%s ZIP archives (%s) uploaded successfully."
+msg_zipupnothingerr		"Please select a local ZIP archive (Browse...) for upload."
+msg_zipupsingle			"%s ZIP archive (%s) uploaded successfully."

@@ -14,21 +14,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-$(document).ready(function() {
-	$("body").on('fileActionEvent', function(event, data) {
-		if (data.obj.hasClass('disabled') || !data.obj.hasClass('dwnload')) return;
-		if (data.obj.hasClass('listaction')) {
-			var selrows = $("#fileList tr.selected.is-file:visible");
-			var files = selrows.length>0 ? $.map(selrows, function(val,i) { return $(val).attr("data-file")}) : new Array(!data.file ? '' : data.file);
-			file = files[0];
-		} else {
-			file = data.file;
-		}
-		if (!data.obj.hasClass('disablebinarydownload')) {
-			window.location.href = window.location.pathname + '?' + $.param({action:'dwnload',file:file});
-		} else {
-			var sep = window.location.pathname.lastIndexOf('/') + 1 == window.location.pathname.length ? '' : '/';
-			window.location.href = window.location.pathname + sep + file;
-		}
-	});
-});
+.isreadable-no .action.zipdwnload,
+.unselectable-yes .listaction.zipdwnload {
+	display: none;
+	visiblity: hidden;
+}
+
+.action.zipup {
+	background-image: url(zipup.png);
+	background-repeat: no-repeat;
+	background-position: 2px center;
+}
+.action.zipdwnload {
+	background-image: url(zipdwnload.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
+}
+.listaction.zipdwnload {
+	background-image: url(zipdwnload.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
+}
+#popupmenu .listaction.zipdwnload {
+	background-image: url(zipdwnload.png);
+	background-position: 2px center;
+}
+

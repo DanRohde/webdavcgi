@@ -321,5 +321,15 @@ sub __readTemplate {
 	}
 	return $text;
 }
+sub createMsgQuery {
+	my ( $self, $msg, $msgparam, $errmsg, $errmsgparam, $prefix ) = @_;
+	$prefix = '' unless defined $prefix;
+	my $query = "";
+	$query .= ";${prefix}msg=$msg"       if defined $msg;
+	$query .= ";$msgparam"               if $msgparam;
+	$query .= ";${prefix}errmsg=$errmsg" if defined $errmsg;
+	$query .= ";$errmsgparam"            if defined $errmsg && $errmsgparam;
+	return "?t=" . time() . $query;
+}
 
 1;

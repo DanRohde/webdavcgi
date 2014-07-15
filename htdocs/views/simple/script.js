@@ -14,6 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
+var ToolBox = new Object();
 $(document).ready(function() {
 	
 	initUIEffects();
@@ -35,8 +36,6 @@ $(document).ready(function() {
 	initFilterBox();
 
 	initFileUpload();
-
-	initZipFileUpload();
 
 	initSelectionStatistics();
 
@@ -70,6 +69,8 @@ $(document).ready(function() {
 	
 	initKeyboardSupport();
 	
+	initToolBox();
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -83,6 +84,7 @@ $(document).ready(function() {
 	});
 	
 	updateFileList($("#flt").attr("data-uri"));
+	
 
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
@@ -868,17 +870,6 @@ function checkUploadedFilesExist(data) {
 	}
 	return false;
 }
-function initZipFileUpload() { 
-	initUpload($("#zipfile-upload-form"), $("#zipuploadconfirm").html(),$("#progress").attr('data-title'), false);
-	$(".action.uncompress").click(
-			function (event) { 
-				preventDefault(event);
-				if ($(this).hasClass("disabled")) return;
-				$(this).closest(".popup.hidden").hide();
-				$("#zipfile-upload-form input[type=file]").trigger("click");
-			}
-	);
-}
 function initFileUpload() {
 	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'), $(document));
 	
@@ -953,10 +944,9 @@ function getSelectedFiles(el) {
 function handleFileActionEvent(event) {
 	preventDefault(event);
 	var self = $(this);
+	if (self.hasClass('disabled')) return false;
 	var row = self.closest("tr");
-	if (self.hasClass("download")) {
-		postAction({"zip" : "yes", "file" : row.attr('data-file')});
-	} else if (self.hasClass("rename")) {
+	if (self.hasClass("rename")) {
 		handleFileRename(row);
 	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
@@ -1688,13 +1678,7 @@ function handleFileListActionEvent(event) {
 	preventDefault(event);
 	var self = $(this);
 	if (self.hasClass("disabled")) return;
-	if (self.hasClass("download")) {
-		var selfiles = $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")});
-		if (selfiles.length==0) selfiles = new Array($(this).closest("tr").attr("data-file"));
-		var data =  { "zip" : "yes", "file" : selfiles }; 
-		postAction(data);
-		uncheckSelectedRows();
-	} else if (self.hasClass("delete")) {
+	if (self.hasClass("delete")) {
 		handleFileListActionEventDelete.call(this,event);
 	} else if (self.hasClass("cut")||self.hasClass("copy")) {
 		$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
@@ -1730,7 +1714,7 @@ function handleFileListActionEvent(event) {
 		} else doPasteAction();
 	} else {
 		var row = $(this).closest("tr");
-		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row });
+		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });
 	}
 }
 function uri2html(uri) {
@@ -2205,6 +2189,13 @@ function initPopupMenu() {
 		});
 	$("body").click(function() { hidePopupMenu(); }).on("keydown", function(e) { if (e.which == 27) hidePopupMenu(); });
 	$("#filler").on("contextmenu", function() { hidePopupMenu() });
+}
+function initToolBox() {
+	ToolBox.postAction = postAction;
+	ToolBox.blockPage = blockPage;
+	ToolBox.uncheckSelectedRows = uncheckSelectedRows;
+	ToolBox.preventDefault = preventDefault;
+	ToolBox.initUpload = initUpload;
 }
 // ready ends:
 });

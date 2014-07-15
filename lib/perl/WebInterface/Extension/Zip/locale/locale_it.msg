@@ -1,0 +1,7 @@
+zipup					"Carica Archivio ZIP"
+zipdwnload				"Scarica in formato ZIP"
+zipdwnloadtext			" file/cartelle selezionati(e) (archivio ZIP)"
+zipupconfirm			"Vuoi veramente caricare un archivio ZIP, estrarlo e sovrascrivere i file esistenti?"
+msg_zipupmulti			"Archvi ZIP %s (%s) caricati con successo."
+msg_zipupnothingerr		"Per favore selezionare un archivio ZIP locale (Sfoglia...) per il caricamento."
+msg_zipupsingle			"L'archvio ZIP %s (%s) caricato con successo."

@@ -80,10 +80,7 @@ $INCLUDE(htmlhead)</head>
 			<!--IF($config(ALLOW_SYMLINK))-->
 				<li><a href="#" class="action create-symlink sel-one access-writeable" data-action="create-symlink"  title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</a></li>
 			<!--ENDIF-->
-			<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-				<li class="sep"><a href="#" class="action uncompress access-writeable" title="$tl(zipfileupload) (&le;$maxuploadsizehr)" data-action="uncompress"  id="zipfileuploadbutton" accesskey="w">$tl(zipfileupload)</a>
-				<form id="zipfile-upload-form" method="post" action="#" enctype="multipart/form-data" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="uncompress" value="yes"/><input name="zipfile_upload" class="file-upload" type="file" multiple="multiple"/> </form></li>
-			<!--ENDIF-->
+			$extension(new)
 			</ul>
 		</div>
 		<div id="path" class="sel-none hideit">
@@ -122,10 +119,8 @@ $INCLUDE(htmlhead)</head>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction copy sel-multi uibutton" href="#" title="$tl(copytooltip)" data-action="copy" accesskey="c">&nbsp;</a>
 				<a class="listaction cut sel-multi access-writeable uibutton" href="#" title="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
-			<!--ENDIF-->
-			<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-				<a class="listaction download sel-multi uibutton" href="#" title="$tl(zipdownloadtext)" data-action="download" >$tl(zipdownloadbutton)</a>
-			<!--ENDIF-->			
+			<!--ENDIF-->		
+			$extension(filelistaction)	
 			<a class="listaction delete sel-multi uibutton" href="#" title="$tl(deletefilestext)" data-action="delete" >$tl(deletefilesbutton)</a>
 		</div>
 		<!--IF($config(ENABLE_NAMEFILTER))-->
@@ -150,9 +145,6 @@ $INCLUDE(htmlhead)</head>
 	     <span class="fileactions">
 		 <a class="action edit access-readable access-writeable" href="#" data-action="edit">$tl(editbutton)</a>
 		 <a class="action rename access-writeable" href="#" data-action="rename" accesskey="m">$tl(movefilesbutton)</a>
-		 <!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-		 <a class="action download" href="#" data-action="download" accesskey="z">$tl(zipdownloadbutton)</a>
-		 <!--ENDIF-->
 		 $extension(fileaction)
 		 <a class="action delete" href="#" data-action="delete" accesskey="d">$tl(deletefilesbutton)</a>
 	     </span>
@@ -174,7 +166,6 @@ $INCLUDE(htmlhead)</head>
 	<div id="close">$tl(close)</div>
 	<div id="cancel">$tl(cancel)</div>
 	<div id="confirm">$tl(confirm)</div>
-	<div id="zipuploadconfirm">$tl(zipuploadconfirm)</div>
 	<div id="tableconfigdialogtemplate">$INCLUDE(tableconfig)</div>
 	<div id="titleprefix">$config(TITLEPREFIX)</div>
 	<div id="about">
@@ -211,5 +202,6 @@ $INCLUDE(htmlhead)</head>
 <img class="collapsible right action collapse-head" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
 <img class="collapsible top action collapse-sidebar" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
 <img class="collapsible bottom action collapse-sidebar" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
+$extension(body)
 </body>
 </html>

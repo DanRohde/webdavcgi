@@ -82,4 +82,8 @@ sub config {
 	my ($self, $var, $default) = @_;
 	return exists $main::EXTENSION_CONFIG{$$self{EXTENSION}}{$var} ? $main::EXTENSION_CONFIG{$$self{EXTENSION}}{$var} : $default;
 }
+sub readTemplate {
+	my ($self,$filename) = @_;
+	return $self->SUPER::readTemplate($filename, $self->getExtensionLocation($$self{EXTENSION},'templates/'));
+}
 1;

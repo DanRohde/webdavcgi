@@ -247,15 +247,23 @@ sub renderExtensionElement {
 	my($self,$fn,$ru,$a) = @_;
 	my $content = "";
 	if (ref($a) eq 'HASH') {
-		if ($$a{type} && $$a{type} eq 'li') {
-			my %params = (-class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
-			$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+		my %params = (-class=>'');
+		$params{-class}.=' action '.$$a{action} if $$a{action};
+		$params{-class}.=' listaction '.$$a{listaction} if $$a{listaction};
+		$params{-class}.= ' '.$$a{classes} if $$a{classes};
+		$params{-class}.=' hidden' if $$a{disabled};
+		$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+		$params{-title}=$self->tl($$a{title}) if $$a{title};
+		$content.=$$a{prehtml} if $$a{prehtml};
+		if ($$a{type} && $$a{type} eq 'li') {	
 			$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
 		} else {
-			my %params = ( -href => '#', -data_action=>$$a{action},  -class=>'action '.$$a{action}.($$a{disabled}? ' hidden':'').($$a{classes}?' '.$$a{classes}:''));
-			$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
+			$params{-href}='#';
+			$params{-data_action} = $$a{action} || $$a{listaction}; 
 			$content.=$$self{cgi}->a(\%params, $self->tl($$a{label}));
+			$content=$$self{cgi}->li({-class=>$$a{liclasses} || ''},$content) if $$a{type} && $$a{type} eq 'li-a'; 
 		}
+		$content.=$$a{posthtml} if $$a{posthtml};
 	} elsif (ref($a) eq 'ARRAY') {
 		foreach my $ac (@{$a}) {
 			$content.=$self->renderExtensionElement($fn,$ru,$ac);

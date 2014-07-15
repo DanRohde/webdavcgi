@@ -1,0 +1,7 @@
+zipup					"ZIP Archiv hochladen"
+zipdwnload				"ZIP Herunterladen"
+zipdwnloadtext			" aller ausgewählten Dateien und Ordner als ZIP-Archiv."
+zipupconfirm			"Wollen Sie das ZIP-Archiv wirklich hochladen, auspacken und damit alle existierenden Dateien ersetzen?"
+msg_zipupmulti			"%s zip-Archive (%s) wurden erfolgreich hochgeladen."
+msg_zipupnothingerr		"Bitte wählen Sie ein lokales Zip-Archiv zum Hochladen aus."
+msg_zipupsingle			 "%s zip-Archiv (%s) wurde erfolgreich hochgeladen."

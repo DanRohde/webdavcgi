@@ -6,9 +6,7 @@
 <!--IF($config(ALLOW_SYMLINK))-->
 	<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
 <!--ENDIF--> 
-<!--IF($config(ALLOW_ZIP_UPLOAD))-->
-<li class="action uncompress sep access-writeable" title="$tl(zipfileupload) (&le;$maxuploadsizehr)">$tl(zipfileupload)</li>
-<!--ENDIF-->
+$extension(fileactionpopupnew)
 </ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
@@ -21,9 +19,6 @@
 <li class="action edit access-writeable access-readable sep" title="$tl(editbutton)">$tl(editbutton)</li>
 <li class="action rename sep" title="$tl(movefilesbutton)">$tl(movefilesbutton)</li>
 $extension(fileactionpopup)
-<!--IF($config(ALLOW_ZIP_DOWNLOAD))-->
-	<li class="listaction download hideit sep" title="$tl(zipdownloadbutton)">$tl(zipdownloadbutton)</li>
-<!--ENDIF-->
 <!--IF($config(ALLOW_CHANGEPERM))-->
 	<li class="action permissions sel-multi sep" data-template="permissions" title="$tl(mode)">$tl(mode)</li>
 <!--ENDIF-->

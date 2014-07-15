@@ -191,7 +191,7 @@ sub sanitizeParam {
 
 sub renderMailDialog {
 	my ($self) = @_;
-	my $content = $self->replaceVars($self->readTemplate("mailform"));
+	my $content = $self->replaceVars($self->readTemplate('mailform'));
 	
 	$content =~s/<!--FILES\[(.*?)\]-->//sg;
 	my $fntmpl = $1;
@@ -241,9 +241,5 @@ sub renderFileSize {
 	my($self,$fn) = @_;
 	my $size = ($$self{backend}->stat($main::PATH_TRANSLATED.$fn))[7];
 	return $size;	
-}
-sub readTemplate {
-	my ($self,$filename) = @_;
-	return $self->SUPER::readTemplate($filename, $self->getExtensionLocation('SendByMail','templates/'));
 }
 1;
