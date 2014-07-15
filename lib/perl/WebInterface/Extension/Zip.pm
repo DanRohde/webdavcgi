@@ -60,7 +60,7 @@ sub handle {
 	} elsif ($hook eq 'new') {	
 		$ret = { action=>'zipup',label=>'zipup', title=>'zipup', path=>$$params{path}, classes=>'access-writeable', type=>'li-a', liclasses=>'sep', accesskey=>'w'};
 	} elsif ($hook eq 'apps') {
-		$ret = $self->handleAppsHook($$self{cgi},'listaction zipdwnload sel-one sel-file disabled ','zipdwnload','zipdwnload');
+		$ret = $self->handleAppsHook($$self{cgi},'listaction zipdwnload sel-multi disabled ','zipdwnload','zipdwnload');
 	} elsif ($hook eq 'body') {
 		$ret = $self->renderUploadFormTemplate(); 		
 	} elsif ($hook eq 'templates') {
