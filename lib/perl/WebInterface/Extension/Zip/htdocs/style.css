@@ -34,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(zipdwnload.png);
 	background-repeat: no-repeat;
 	background-position: 4px center;
+	background-color: inherit;
 }
 #popupmenu .listaction.zipdwnload {
 	background-image: url(zipdwnload.png);
