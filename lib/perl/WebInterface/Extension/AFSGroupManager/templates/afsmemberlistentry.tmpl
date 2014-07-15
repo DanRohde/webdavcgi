@@ -1,1 +1,1 @@
-<li title="$afsmember" data-member="$afsmember">$afsmember <!--IF($config(ALLOW_AFSGROUPCHANGES))--><a href="#" data-action="afsmemberdelete" title="$tl(afsremoveuser)">&nbsp;</a><!--ENDIF--></li>
+<li title="$afsmember" data-member="$afsmember">$afsmember <!--IF($extconfig(disallow_afsgroupchanges))--><!--ELSE--><a href="#" class="afsmemberdelete" title="$tl(afsremoveuser)">&nbsp;</a><!--ENDIF--></li>

@@ -240,8 +240,7 @@ sub doAFSGroupActions {
 		$grp = $$self{cgi}->param('afsselgrp') || '';
 		if ( $self->isValidAFSGroupName($grp) ) {
 			my @users;
-			my @afsusr = $$self{cgi}->param('afsusr')
-			  || $$self{cgi}->param('afsusr[]');
+			my @afsusr = $$self{cgi}->param('afsusr[]') ? $$self{cgi}->param('afsusr[]') :  $$self{cgi}->param('afsusr');
 			foreach (@afsusr) {
 				push @users, $_
 				  if $self->isValidAFSUserName($_)

@@ -73,8 +73,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-color: #ededed;
 }
  
-#afsmembereditor a[data-action=afsmemberdelete], #afsgroupeditor a[data-action=afsgroupdelete], 
-#afsmembereditor a[data-action=afsremoveselectedmembers] {
+#afsmembereditor a.afsmemberdelete, #afsgroupeditor a.afsgroupdelete, 
+#afsmembereditor a.afsremoveselectedmembers {
 	background-image: url(remove.png);
 	background-repeat: no-repeat;
 	background-position: center 0 ;
@@ -83,7 +83,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	margin: 0 0 0 1em;
 	width:22px;
 }
-#afsmembereditor img[data-action=afsaddusr], #afsgroupeditor img[data-action=afscreatenewgrp] {
+#afsmembereditor img.afsaddusr, #afsgroupeditor img.afscreatenewgrp {
 	width: 16px;
 	height: 16px;
 	background-image: url(add.png);
