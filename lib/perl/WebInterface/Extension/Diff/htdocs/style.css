@@ -63,6 +63,16 @@
 	font-family: monospace;
 	overflow: auto;
 }
-.diff.raw {
+.diff.raw,.diff.formatted {
 	cursor: pointer;
+	border: 2px outset #333333;
+	display: inline-block;
+	margin-top: 4px;
+	padding: 2px;
+}
+.diff.raw:hover, .diff.formatted:hover {
+	background-color: #f0f0f0;
+}
+.diff.raw.clicked, .diff.formatted.clicked {
+	border-style: inset;
 }

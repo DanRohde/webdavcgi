@@ -66,7 +66,7 @@ sub handle {
 			
 		} else {
 			$jsondata{content} = $content;
-			$jsondata{raw} = $raw;
+			$jsondata{raw} = $$self{cgi}->pre($$self{cgi}->escapeHTML($raw)).$$self{cgi}->div({-class=>'diff formatted'},$self->tl('diff_showdiff'));
 		}
 		my $json = new JSON();
 		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
