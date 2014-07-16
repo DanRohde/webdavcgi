@@ -1644,6 +1644,7 @@ function handleFileListActionEventDelete(event) {
 	$("#fileList tr.selected:visible").fadeTo("slow",0.5);
 	var self = $(this);
 	var selrows = $("#fileList tr.selected:visible");
+	if (selrows.length == 0 ) selrows = $(this).closest('tr');
 	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,simpleEscape(selrows.first().attr('data-file'))), {
 		confirm: function() {
 			var block = blockPage();
