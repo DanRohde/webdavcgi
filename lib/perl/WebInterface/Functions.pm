@@ -24,6 +24,8 @@ use strict;
 use WebInterface::Common;
 our @ISA = ('WebInterface::Common');
 
+use JSON;
+
 sub new {
 	my $this  = shift;
 	my $class = ref($this) || $this;
@@ -35,10 +37,20 @@ sub new {
 	return $self;
 }
 
+sub printJSONResponse {
+	my ($self, $msg, $errmsg, $msgparam) = @_;
+	my %jsondata = ();
+	my @params = $msgparam ? map { $$self{cgi}->escapeHTML($_) } @{ $msgparam } : (); 
+	$jsondata{error} = sprintf($self->tl("msg_$errmsg"), @params) if $errmsg;
+	$jsondata{message} = sprintf($self->tl("msg_$msg"), @params ) if $msg;		
+	my $json = new JSON();
+	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+}
+
 sub handlePostUpload {
 	my ( $self, $redirtarget ) = @_;
 	my @filelist;
-	my ( $msg, $errmsg, $msgparam ) = ( undef, undef, '' );
+	my ( $msg, $errmsg, $msgparam ) = ( undef, undef, [] );
 	foreach my $filename ( $$self{cgi}->param('file_upload') ) {
 		next if $filename eq "";
 		next unless $$self{cgi}->uploadInfo($filename);
@@ -48,27 +60,23 @@ sub handlePostUpload {
 		push( @filelist, $$self{backend}->basename($rfn) );
 		if (main::isLocked("$destination$filename")) {
 			$errmsg = 'locked';
-			$msgparam = 'p1='.$$self{cgi}->escape($rfn);
+			$msgparam =  [ $rfn ];
 		} elsif ( !$$self{backend}->saveStream( $destination, $filename ) ) {
 			$errmsg = 'uploadforbidden';
-			if ( $msgparam eq '' ) { $msgparam = 'p1=' . $rfn; }
-			else { $msgparam .= ', ' . $rfn; }
+			push @{$msgparam}, $rfn;
 		}
 	}
 	if ( !defined $errmsg ) {
 		if ( $#filelist > -1 ) {
 			$msg = ( $#filelist > 0 ) ? 'uploadmulti' : 'uploadsingle';
-			$msgparam = 'p1='
-			  . ( $#filelist + 1 ) . ';p2='
-			  . $$self{cgi}
-			  ->escape( substr( join( ', ', @filelist ), 0, 150 ) );
+			$msgparam = [ scalar(@filelist) , substr( join( ', ', @filelist ), 0, 150 ) ];
 		}
 		else {
 			$errmsg = 'uploadnothingerr';
 		}
 	}
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
+	
+	$self->printJSONResponse($msg, $errmsg, $msgparam);
 }
 
 sub handleClipboardAction {
@@ -100,11 +108,8 @@ sub handleClipboardAction {
 		}
 	}
 	$msg = undef if defined $errmsg;
-	$msgparam = 'p1='
-	  . $$self{cgi}->escape(
-		substr( join( ', ', defined $msg ? @success : @failed ), 0, 150 ) );
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
+	$msgparam =  [ substr( join( ', ', defined $msg ? @success : @failed ), 0, 150 ) ];
+	$self->printJSONResponse($msg, $errmsg, $msgparam);
 }
 
 
@@ -120,7 +125,7 @@ sub handleFileActions {
 				if (main::isLocked($fullname,1)) {
 					$count=0;
 					$errmsg='locked';
-					$msgparam = 'p1=' . $$self{cgi}->escape($file);
+					$msgparam = [ $file ];
 					last;
 				} 
 				if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
@@ -138,7 +143,7 @@ sub handleFileActions {
 			}
 			if ( $count > 0 ) {
 				$msg = ( $count > 1 ) ? 'deletedmulti' : 'deletedsingle';
-				$msgparam = "p1=$count";
+				$msgparam =  [ $count ];
 			}
 			else {
 				$errmsg = 'deleteerr';
@@ -152,10 +157,10 @@ sub handleFileActions {
 		if ( $$self{cgi}->param('file') ) {
 			if (main::isLocked($main::PATH_TRANSLATED.$$self{cgi}->param('file'))) {
 				$errmsg = 'locked';
-				$msgparam = 'p1='.$$self{cgi}->escape($$self{cgi}->param('file'));
+				$msgparam =  [ $$self{cgi}->param('file') ];
 			} elsif ($$self{cgi}->param('newname') && main::isLocked($main::PATH_TRANSLATED.$$self{cgi}->param('newname'))) {
 				$errmsg = 'locked';
-				$msgparam = 'p1='.$$self{cgi}->escape($$self{cgi}->param('newname'));
+				$msgparam =  [ $$self{cgi}->param('newname') ];
 			} elsif ( my $newname = $$self{cgi}->param('newname') ) {
 				$newname =~ s/\/$//;
 				my @files = $$self{cgi}->param('file');
@@ -167,9 +172,7 @@ sub handleFileActions {
 				#	$errmsg = 'renamenotargeterr';
 				#}
 				else {
-					$msgparam = 'p1='
-					  . $$self{cgi}->escape( join( ', ', @files ) ) . ';p2='
-					  . $$self{cgi}->escape($newname);
+					$msgparam = [ join( ', ', @files), $newname ];
 					foreach my $file (@files) {
 						my $target = $main::PATH_TRANSLATED . $newname;
 						$target .= '/' . $file
@@ -202,7 +205,7 @@ sub handleFileActions {
 		my $colname = $$self{cgi}->param('colname')
 		  || $$self{cgi}->param('colname1');
 		if ( $colname ne "" ) {
-			$msgparam = "p1=" . $$self{cgi}->escape($colname);
+			$msgparam =  [ $colname ];
 			if (   $colname !~ /\//
 				&& $$self{backend}->mkcol( $main::PATH_TRANSLATED . $colname ) )
 			{
@@ -211,11 +214,7 @@ sub handleFileActions {
 			}
 			else {
 				$errmsg = 'foldererr';
-				$msgparam .= ';p2='
-				  . (
-					$$self{backend}->exists( $main::PATH_TRANSLATED . $colname )
-					? $$self{cgi}->escape( $self->tl('folderexists') )
-					: $$self{cgi}->escape( $self->tl($!) ) );
+				push @{$msgparam}, $$self{backend}->exists( $main::PATH_TRANSLATED . $colname ) ?  $self->tl('folderexists') : $self->tl($!);
 			}
 		}
 		else {
@@ -227,8 +226,7 @@ sub handleFileActions {
 		my $file  = $$self{cgi}->param('file');
 		if ( $lndst && $lndst ne "" ) {
 			if ( $file && $file ne "" ) {
-				$msgparam .= "p1=" . $$self{cgi}->escape($lndst);
-				$msgparam .= ";p2=" . $$self{cgi}->escape($file);
+				$msgparam = [ $lndst, $file ];
 				$file = $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
 				$lndst =
 				  $$self{backend}->resolve("$main::PATH_TRANSLATED$lndst");
@@ -240,7 +238,7 @@ sub handleFileActions {
 				}
 				else {
 					$errmsg = 'createsymlinkerr';
-					$msgparam .= ";p3=" . $$self{cgi}->escape($!);
+					push @{$msgparam}, $!;
 				}
 			}
 			else {
@@ -261,11 +259,11 @@ sub handleFileActions {
 			&& $$self{backend}->isFile($full)
 			&& $$self{backend}->isWriteable($full) )
 		{
-			$msgparam = 'edit=' . $$self{cgi}->escape($file) . '#editpos';
+			$msgparam = [ $file ];
 		}
 		else {
 			$errmsg   = main::isLocked($full) ? 'locked': 'editerr';
-			$msgparam = 'p1=' . $$self{cgi}->escape($file);
+			$msgparam =  [ $file ];
 		}
 	}
 	elsif ($$self{cgi}->param('savetextdata')
@@ -284,11 +282,7 @@ sub handleFileActions {
 		else {
 			$errmsg = 'savetexterr';
 		}
-		$msgparam =
-		  'p1=' . $$self{cgi}->escape( '' . $$self{cgi}->param('filename') );
-		$msgparam .=
-		  ';edit=' . $$self{cgi}->escape( $$self{cgi}->param('filename') )
-		  if $$self{cgi}->param('savetextdatacont');
+		$msgparam = [ ''.$$self{cgi}->param('filename') ];
 	}
 	elsif ( $$self{cgi}->param('createnewfile') ) {
 		my $fn   = $$self{cgi}->param('cnfname');
@@ -299,22 +293,17 @@ sub handleFileActions {
 			&& $$self{backend}->saveData( $full, "", 1 ) )
 		{
 			$msg      = 'newfilecreated';
-			$msgparam = 'p1=' . $$self{cgi}->escape($fn);
+			$msgparam = [ $fn ];
 		}
 		else {
-			$msgparam = 'p1='
-			  . $$self{cgi}->escape($fn) . ';p2='
-			  . ( $$self{backend}->exists($full)
-				? $$self{cgi}->escape( $self->tl('fileexists') )
-				: $$self{cgi}->escape( $self->tl($!) ) );
+			$msgparam = [ $fn , ( $$self{backend}->exists($full) ? $self->tl('fileexists') : $self->tl($!) ) ];
 			$errmsg = 'createnewfileerr';
 		}
 	}
 	else {
 		return 0;
 	}
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
+	$self->printJSONResponse($msg,$errmsg,$msgparam);
 }
 
 1;
