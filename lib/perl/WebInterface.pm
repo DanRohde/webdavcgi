@@ -75,8 +75,6 @@ sub handleHeadRequest {
 		main::printHeaderAndContent('200 OK','httpd/unix-directory');
 	} elsif ($main::PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/) {
 		main::printLocalFileHeader(-e $main::INSTALL_BASE.basename($main::PATH_TRANSLATED) ? $main::INSTALL_BASE.basename($main::PATH_TRANSLATED) : "${main::INSTALL_BASE}lib/".basename($main::PATH_TRANSLATED));
-
-
 	} else {
 		$handled = 0;
 	}
@@ -98,10 +96,6 @@ sub handlePostRequest {
                 ## done.
         } elsif ($main::ALLOW_POST_UPLOADS && $$self{backend}->isDir($main::PATH_TRANSLATED) && defined $$self{cgi}->param('filesubmit')) {
                 $self->getFunctions()->handlePostUpload($redirtarget);
-        } elsif ($main::ALLOW_AFSACLCHANGES && $$self{cgi}->param('saveafsacl')) {
-                $self->getFunctions()->doAFSSaveACL($redirtarget);
-        } elsif ($$self{cgi}->param('afschgrp')|| $$self{cgi}->param('afscreatenewgrp') || $$self{cgi}->param('afsdeletegrp') || $$self{cgi}->param('afsrenamegrp') || $$self{cgi}->param('afsaddusr') || $$self{cgi}->param('afsremoveusr')) {
-                $self->getFunctions()->doAFSGroupActions($redirtarget);
         } elsif ($main::ENABLE_CLIPBOARD && $$self{cgi}->param('action')) {
                 $self->getFunctions()->handleClipboardAction($redirtarget);
 	} else {

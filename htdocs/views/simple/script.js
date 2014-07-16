@@ -49,8 +49,6 @@ $(document).ready(function() {
 
 	initClock();
 	
-	initAFS(); 
-
 	initSelect();
 	
 	initChangeUriAction();
@@ -1866,172 +1864,7 @@ function trimString(str,charcount) {
 	if (str.length > charcount)  str = str.substr(0,4)+'...'+str.substr(str.length-charcount+7,charcount-7);
 	return str;
 }
-function initAFS() {
-	$(".action.afsaclmanager").click(handleAFSACLManager);
-	$(".action.afsgroupmanager").click(handleAFSGroupManager);
-}
-function initGroupManager(groupmanager, template, target){
-	var groupmanager, groupManagerResponseHandler;
-	groupManagerResponseHandler = function(response) {
-		groupmanager.html($(response).unwrap());
-		initGroupManager(groupmanager, template, target);
-	};
-	
-	var groupSelectionHandler = function(event) {
-		preventDefault(event);
-		$.get(target, { ajax:"getAFSGroupManager", template: template, afsgrp: $(this).closest("li").attr('data-group')}, groupManagerResponseHandler);
-	};
-	$("#afsgrouplist li[data-group='"+$("#afsmemberlist").attr("data-afsgrp")+"']").addClass("selected");
-	$("#afsgrouplist a[data-action='afsgroupdelete']", groupmanager).hide();
-	$("#afsgrouplist li", groupmanager)
-		.click(groupSelectionHandler)
-		.hover(function(){
-			$("a[data-action='afsgroupdelete']",$(this)).show();
-		},function(){
-			$("a[data-action='afsgroupdelete']", $(this)).hide();
-		});
-	
-	$("[data-action='afsgroupdelete']", groupmanager).click(function(event){
-		preventDefault(event);
-		var afsgrp = $(this).closest("li").attr('data-group');
-		confirmDialog($("#afsconfirmdeletegrp").html(),{
-			confirm: function() {
-				$.post(target,{afsdeletegrp : 1, afsgrp: afsgrp} , function(response){
-					handleJSONResponse(response);
-					$.get(target,{ajax: "getAFSGroupManager", template: template},groupManagerResponseHandler);
-				});
-			}
-		});
-	});
-	$("input[name='afsnewgrp']", groupmanager)
-		.focus(function(event) { $(this).val($(this).attr('data-user')+":").select();})
-		.keypress(function(event){
-			if (event.keyCode == 13) {
-				var afsgrp = $(this).val();
-				$.post(target,{afscreatenewgrp: "1", afsnewgrp: afsgrp}, function(response){
-					handleJSONResponse(response);
-					$.get(target, { ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-				});		
-			}
-		});
-	$("img[data-action='afscreatenewgrp']", groupmanager).click(function(event){
-		preventDefault(event);
-		var afsgrp = $("input[name='afsnewgrp']", groupmanager).val();
-		$.post(target,{afscreatenewgrp: "1", afsnewgrp: afsgrp}, function(response){
-			handleJSONResponse(response);
-			$.get(target, { ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-		});		
-	});
-	$("input[name='afsaddusers']", groupmanager).keypress(function(event){
-		if (event.keyCode == 13) {
-			var user = $(this).val();
-			var afsgrp = $(this).attr('data-afsgrp');
-			$.post(target,{afsaddusr: 1, afsaddusers: user, afsselgrp: afsgrp}, function(response){
-				handleJSONResponse(response);
-				$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-			});					
-		}
-	});
-	$("img[data-action='afsaddusr']", groupmanager).click(function(event){
-		var user =$("input[name='afsaddusers']", groupmanager).val();
-		var afsgrp = $("input[name='afsaddusers']", groupmanager).attr("data-afsgrp");
-		$.post(target,{afsaddusr: 1, afsaddusers: user, afsselgrp: afsgrp}, function(response){
-			handleJSONResponse(response);
-			$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-		});
-	});
-	$("a[data-action='afsmemberdelete']").click(function(event){
-		var afsgrp = $("#afsmemberlist").attr("data-afsgrp");
-		var member = $(this).closest("li").attr("data-member");
-		preventDefault(event);
-		confirmDialog($("#afsconfirmremoveuser").html(),{
-			confirm: function() {
-				$.post(target,{afsremoveusr:1,afsselgrp:afsgrp,afsusr: member}, function(response){
-					handleJSONResponse(response);
-					$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp}, groupManagerResponseHandler);
-				});		
-			}
-		});
-	});
-	$("a[data-action='afsremoveselectedmembers']")
-	.toggleClass("disabled", $("#afsmemberlist li.selected").length==0)
-	.click(function(event){
-		preventDefault(event);
-		if ($(this).hasClass("disabled")) return;
-		var afsmembers = $.map($("#afsmemberlist li.selected"), function(val,i){ return $(val).attr("data-member");});
-		var afsgrp = $("#afsmemberlist").attr("data-afsgrp");
-		confirmDialog($("#afsconfirmremoveuser").html(),{
-			confirm: function() {
-				$.post(target, {afsremoveusr: 1, afsselgrp: afsgrp, afsusr: afsmembers }, function(response){
-					handleJSONResponse(response);
-					$.get(target,{ajax: "getAFSGroupManager", template: template, afsgrp: afsgrp},groupManagerResponseHandler);
-				});
-			}
-		});
-	});
-	$("#afsmemberlist li a[data-action='afsmemberdelete']", groupmanager).hide();
-	$("#afsmemberlist li", groupmanager).click(function(event){
-		$(this).toggleClass("selected");
-		$("a[data-action='afsremoveselectedmembers']").toggleClass("disabled", $("#afsmemberlist li.selected").length==0)
-	}).hover(function() {
-		$("a[data-action='afsmemberdelete']",$(this)).show();
-	},function(){
-		$("a[data-action='afsmemberdelete']",$(this)).hide();
-	});
-	$("#afsgroupmanager", groupmanager).submit(function(event){return false;});
 
-}
-function handleAFSGroupManager(event) {
-	preventDefault(event);
-	var template = $(this).attr('data-template');
-	var target = $("#fileList").attr('data-uri');
-	if ($(this).hasClass("disabled")) return false;
-	var self = this;
-	$(".action.afsgroupmanager").addClass("disabled");
-	$.get(target, { ajax : "getAFSGroupManager", template: template }, function(response) {
-		var groupmanager = $(response);
-		initGroupManager(groupmanager, template, target);
-		groupmanager.dialog({modal: false, width: "auto", height: "auto", close: function() { $(".action.afsgroupmanager").removeClass("disabled"); groupmanager.remove();}}).show();
-	});	
-}
-function handleAFSACLManager(event){
-	preventDefault(event);
-	if ($(this).hasClass("disabled")) return false;
-	var self = this;
-	$(".action.afsaclmanager").addClass("disabled");
-	var target = $("#fileList").attr('data-uri');
-	var seldir = $("#fileList tr.selected[data-type='dir']");
-	var template = $(this).attr('data-template');
-	if (seldir.length>0) target = concatUri(target,encodeURIComponent(stripSlash($(seldir[0]).attr('data-file')))+"/");
-	$.get(target, { ajax : "getAFSACLManager", template : template }, function(response) {
-		var aclmanager = $(response);
-		initAFSACLManager(aclmanager);
-		("#afasaclmanager",aclmanager).submit(function() {
-			$("input[type='submit']",aclmanager).attr("disabled","disable");
-			var block = blockPage();
-			var xhr = $.post(target, $("#afsaclmanager",aclmanager).serialize(), function(response) {
-				handleJSONResponse(response);
-				block.remove();
-				// aclmanager.dialog("close");
-				$.get(target, {ajax: "getAFSACLManager", template: template}, function(response) {
-					aclmanager.html($(response).unwrap());
-					initAFSACLManager(aclmanager);
-				});
-			});
-			renderAbortDialog(xhr);
-			return false;
-		});
-		aclmanager.dialog({modal: true, width: "auto", height: "auto", close: function() { $(".action.afsaclmanager").removeClass("disabled"); aclmanager.remove(); }}).show();
-	});
-}
-function initAFSACLManager(aclmanager) {
-	$("input[readonly='readonly']",aclmanager).click(function(e) { preventDefault(e); });
-	$("input.afsaclmanager.add",aclmanager).autocomplete( { minLength: 4, source: function(request,response) {
-		$.get($("#fileList").data('uri'), {ajax: 'searchAFSUserOrGroupEntry', term: request.term}, function(resp) {
-			response(resp.result ? resp.result : new Array());
-		});
-	}});
-}
 function initPermissionsDialog() {
 	$(".action.permissions").click(function(event){
 		preventDefault(event);
@@ -2193,13 +2026,17 @@ function initPopupMenu() {
 function initToolBox() {
 	ToolBox = { postAction: postAction,
 			blockPage: blockPage,
-			uncheckSelectedRows : uncheckSelectedRows,
-			preventDefault : preventDefault,
-			initUpload : initUpload,
-			handleJSONResponse : handleJSONResponse,
+			concatUri: concatUri,
 			confirmDialog : confirmDialog,
 			cookie : cookie,
-			togglecookie : togglecookie
+			encodeURIComponent: encodeURIComponent,
+			handleJSONResponse : handleJSONResponse,
+			initUpload : initUpload,
+			preventDefault : preventDefault,
+			renderAbortDialog: renderAbortDialog,
+			stripSlash : stripSlash,
+			togglecookie : togglecookie,
+			uncheckSelectedRows : uncheckSelectedRows,
 	};
 }
 // ready ends:

@@ -48,13 +48,14 @@ sub handle {
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	if ($hook eq 'fileactionpopup') {
-		$ret = { action=>'afsgroupmngr', label=>'afsgroup', title=>'afsgroup', path=>$$params{path}, type=>'li', classes=>'listaction sep', template=>$self->config('template','afsgroupmanager')};
+		$ret = { action=>'afsgroupmngr',  classes=>'listaction', label=>'afsgroup', title=>'afsgroup', path=>$$params{path}, type=>'li', template=>$self->config('template','afsgroupmanager')};
 	} elsif ($hook eq 'apps') {
 		$ret = $self->handleAppsHook($$self{cgi},'afsgroupmngr','afsgroup','afsgroup');
 	} elsif ($hook eq 'gethandler') {
 		if ($$self{cgi}->param('ajax') eq 'getAFSGroupManager') {
 			my $content = $self->renderAFSGroupManager($main::PATH_TRANSLATED,$main::REQUEST_URI, $$self{cgi}->param('template') || $self->config('template','afsgroupmanager'));
 			main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
+			delete $CACHE{$self}{$main::PATH_TRANSLATED};
 			$ret = 1;
 		} 
 	} elsif ($hook eq 'posthandler') {

@@ -190,7 +190,8 @@ Require valid-user
 <h3>Upgrading from 0.9.0 to 0.9.1</h3>
 <ul>
 <li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...)</code></li>
-<li> The AFS Groupmanager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
+<li> The AFS Group Manager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
+<li> The AFS ACL Manager is an extension now. Add 'AFSACLManager' to your extensions list to use it.</li>
 <li> A lot of new extensions were added (activation: <code>@EXTENSIONS= ('ExtensionName')</code>):
 	<ul>
 	<li> Download - adds a download button</li>
@@ -199,7 +200,8 @@ Require valid-user
 	<li> PosixAclManager - allows POSIX ACL changes</li>
 	<li> DiskUsage - shows disk usage for folders</li>
 	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
-	<li> AFSGroupManager - allows AFS Group management</li>
+	<li> AFSGroupManager - enables AFS Group management</li>
+	<li> AFSACLManager - enables AFS ACL management</li>
 	</ul>
 </li>
 </ul>
@@ -854,10 +856,8 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota $FS';
 
-$ENABLE_AFSACLMANAGER = 1;
-$ALLOW_AFSACLCHANGES = 1;
-
-@EXTENSIONS = ('AFSGroupManager');
+@EXTENSIONS = ('AFSACLManager', 'AFSGroupManager');
+$EXTENSION_CONFIG{AFSACLManager} = { allow_afsaclchanges =>1 };
 $EXTENSION_CONFIG{AFSGroupManager} = { disallow_groupchanges=>0 };
 
 $ALLOW_SEARCH = 0;

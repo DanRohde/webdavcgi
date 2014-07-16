@@ -50,11 +50,6 @@ sub render {
 		if ($ajax eq 'getFileListTable') { 
 			$content = $self->renderFileListTable($fn,$ru, $$self{cgi}->param('template')); 
 			$contenttype='application/json';
-		} elsif ($ajax eq 'getAFSACLManager') {
-			$content = $self->renderAFSACLManager($fn,$ru, $$self{cgi}->param('template'));
-		} elsif ($ajax eq 'searchAFSUserOrGroupEntry') {
-                        $content = $self->searchAFSUserOrGroupEntry($$self{cgi}->param('term'));
-                        $contenttype='application/json';	
 		} elsif ($ajax eq 'getPermissionsDialog') {
 			$content = $self->renderPermissionsDialog($fn,$ru, $$self{cgi}->param('template'));
 		} elsif ($ajax eq 'getViewFilterDialog') {
@@ -170,11 +165,8 @@ sub execTemplateFunction {
 	my $content; 
 	
 	$content = $self->renderFileList($fn,$ru,$param) if $func eq 'filelist';
-	$content = $self->renderAFSACLList($fn,$ru,1,$param) if $func eq 'afsnormalacllist';
-	$content = $self->renderAFSACLList($fn,$ru,0,$param) if $func eq 'afsnegativeacllist';
 	$content = $self->isViewFiltered() if $func eq 'isviewfiltered';
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
-	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
 	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
 	$content = $self->renderLanguageList($fn,$ru,$param) if $func eq 'langList';
 	$content = $self->renderExtension($fn,$ru,$param) if $func eq 'extension';
@@ -488,109 +480,8 @@ sub renderQuickNavPath {
 
         return $content;
 }
-sub readAFSAcls {
-	my ($self, $fn, $ru) = @_;
-	return $CACHE{$self}{$fn}{afsacls} if exists $CACHE{$self}{$fn}{afsacls};
 
-	$fn=$$self{backend}->resolveVirt($fn);
-	$fn=~s/(["\$\\])/\\$1/g;
-	open(my $afs, sprintf("%s listacl \"%s\"|", $main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $fn)) or die("cannot execute $main::BACKEND_CONFIG{$main::BACKEND}{fscmd} list \"$fn\"");
-	my @lines = <$afs>;
-	close($afs);
 
-	shift @lines; # skip first line
-
-	my @entries;
-	my $ispositive = 1;
-	foreach my $line (@lines) {
-		chomp($line);
-		$line=~s/^\s+//;
-		next if $line=~ /^\s*$/; # skip empty lines
-		if ($line=~/^(Normal|Negative) rights:/) {
-			$ispositive = 0 if $line=~/^Negative/;
-		} else {
-			my ($user, $right) = split(/\s+/, $line);
-			push @entries, { user=> $user, right=> $right, ispositive=> $ispositive };
-		}
-	}
-
-	$CACHE{$self}{$fn}{afsacls} = \@entries;
-	return \@entries;
-}
-sub renderAFSAclEntries {
-	my ($self, $entries, $positive, $tmpl, $disabled) = @_;
-	my $content = "";
-	my $prohiregex = '^('.join('|',map { $_ ? $_ : '__undef__'} @main::PROHIBIT_AFS_ACL_CHANGES_FOR).')$';
-	foreach my $entry (sort { $$a{user} cmp $$b{user} || $$b{right} cmp $$a{right} } @{$entries}) {
-		next if $$entry{ispositive} != $positive;	
-		my $t = $tmpl;
-		$t=~s/\$entry/$$entry{user}/sg;
-		$t=~s/\$checked\((\w)\)/$$entry{right}=~m@$1@?'checked="checked"':""/egs;
-		$t=~s/\$readonly/$$entry{user}=~m@$prohiregex@ ? 'readonly="readonly"' : ""/egs;
-		$t=~s/\$disabled/$main::ALLOW_AFSACLCHANGES && !$disabled ? '' : 'disabled="disabled"'/egs;
-		$content.=$t;
-	}
-	return $content;
-}
-sub renderAFSACLList {
-	my ($self, $fn, $ru, $positive, $tmplfile) = @_;
-	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile), !$$self{backend}->_checkCallerAccess($fn,"a")));
-}
-sub uridecode {
-	my ($txt) = @_;
-	$txt=~s/\%([a-f0-9]{2})/chr(hex($1))/eigs;
-	return $txt;
-}
-sub readAFSGroupList {
-	my ($self, $fn, $ru) = @_;
-	return $CACHE{$self}{$fn}{afsgrouplist} if exists $CACHE{$self}{$fn}{afsgrouplist};
-	my @groups = split(/\r?\n\s*?/, qx@$main::AFS_PTSCMD listowned $main::REMOTE_USER@);
-	shift @groups; # remove comment
-	s/(^\s+|[\s\r\n]+$)//g foreach (@groups);
-	@groups = sort @groups;
-	$CACHE{$self}{$fn}{afsgrouplist} = \@groups;
-	return \@groups;
-}
-sub searchAFSUserOrGroupEntry {
-        my ($self, $term) = @_;
-        my $result = [];
-        #push @{$result}, @{$self->searchAFSUser($term,undef,20)} unless $term=~/:/;
-        my @groups = grep(/\Q$term\E/i,@{$self->readAFSGroupList($main::PATH_TRANSLATED, $main::REQUEST_URI)});
-        splice(@groups, 9 - $#$result) if ($#$result + $#groups>=10); 
-        push @{$result}, @groups;
-        my $json = new JSON();
-        return $json->encode({result=>$result});
-}
-#sub searchAFSUser {
-#       my ($self, $term,$listlimit, $searchlimit) = @_;
-#       my @ret = ();
-#       my $counter = 0;
-#       setpwent();
-#       while (my @ent = getpwent()) {
-#               push @ret, $ent[0] if !$term || ($ent[0] =~ /^\Q$term\E/i || $ent[6] =~ /\Q$term\E/i);
-#               last if $searchlimit && $#ret+1 >= $searchlimit;
-#               $counter++;
-#               last if $listlimit && $counter >= $listlimit;
-#       }
-#       endpwent();
-#       return \@ret;
-#}
-sub renderAFSACLManager {
-        my ($self, $fn, $ru, $tmplfile) = @_;
-        my $content = "";
-        if ($$self{backend}->_getCallerAccess($fn) eq "") {
-                $content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
-        } else {
-                $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-                my $stdvars = {
-                        afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
-                                                                                        $$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
-                                                                                        $$self{cgi}->escapeHTML(uridecode($ru))),
-                };
-                $content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
-        }
-        return $content;
-}
 sub checkPermAllowed {
 	my ($p,$r) = @_;
 	my $perms;

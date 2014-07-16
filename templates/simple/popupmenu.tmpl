@@ -22,9 +22,5 @@ $extension(fileactionpopup)
 <!--IF($config(ALLOW_CHANGEPERM))-->
 	<li class="action permissions sel-multi sep" data-template="permissions" title="$tl(mode)">$tl(mode)</li>
 <!--ENDIF-->
-<!--IF($config(ENABLE_AFSACLMANAGER))-->
-	<li class="action afsaclmanager sel-noneorone sel-dir sep" data-template="afsaclmanager" title="$tl(afs)">$tl(afs)</li>
-<!--ENDIF-->
-
 <li class="listaction delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 </ul>

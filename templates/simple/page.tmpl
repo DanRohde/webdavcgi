@@ -34,9 +34,6 @@ $INCLUDE(htmlhead)</head>
 			<!--IF($config(ALLOW_CHANGEPERM))-->
 				<li><a href="#" class="action permissions sel-multi" data-action="permissions" data-template="permissions" accesskey="p">$tl(mode)</a></li>
 			<!--ENDIF-->
-			<!--IF($config(ENABLE_AFSACLMANAGER))-->
-				<li><a href="#" class="action afsaclmanager sel-noneorone sel-dir" data-action="afsaclmanager" data-template="afsaclmanager" accesskey="a">$tl(afs)</a></li>
-			<!--ENDIF-->
 			$extension(apps)
 		</ul>
 		$INCLUDE(nav)

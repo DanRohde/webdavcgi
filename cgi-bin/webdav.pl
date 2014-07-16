@@ -60,7 +60,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR 
             $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
 	    	$ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
-	    	$LIMIT_FOLDER_DEPTH $ENABLE_AFSACLMANAGER $ALLOW_AFSACLCHANGES @PROHIBIT_AFS_ACL_CHANGES_FOR
+	    	$LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD  
             $WEB_ID $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER 
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
@@ -490,20 +490,21 @@ $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota';
 #$AFS_FSCMD='/usr/bin/fs';
 $BACKEND_CONFIG{AFS}{fscmd}='/usr/bin/fs';
 
-## -- ENABLE_AFSACLMANAGER 
+## -- ENABLE_AFSACLMANAGER -- obsolete, add 'AFSACLManager' to your @EXTENSIONS list 
 ## enables AFS ACL Manager for the Web interface
 ## EXAMPLE: $ENABLE_AFSACLMANAGER = 1;
-$ENABLE_AFSACLMANAGER = 0;
+#$ENABLE_AFSACLMANAGER = 0;
 
-## -- ALLOW_AFSACLCHANGES
+## -- ALLOW_AFSACLCHANGES -- obsolete, use $EXTENSION_CONFIG{AFSACLManager}{allow_afsaclchanges} instead
 ## allows AFS ACL changes. if disabled the AFS ACL Manager shows only the ACLs of a folder.
 # EXAMLE: $ALLOW_AFSACLCHANGES = 1;
 #$ALLOW_AFSACLCHANGES = 0;
 
-## -- PROHIBIT_AFS_ACL_CHANGES_FOR
+## -- PROHIBIT_AFS_ACL_CHANGES_FOR -- obsolete, use EXTENSION_CONFIG{AFSACLManager}{prohibit_afs_acl_changes_for} instead
 ## prohibits AFS ACL changes for listed users/groups
 ## EXAMPLE: @PROHIBIT_AFS_ACL_CHANGES_FOR = ( 'system:backup', 'system:administrators' );
-@PROHIBIT_AFS_ACL_CHANGES_FOR = ( 'system:backup', 'system:administrators', $ENV{REMOTE_USER}, $ENV{REDIRECT_REMOTE_USER} );
+##@PROHIBIT_AFS_ACL_CHANGES_FOR = ( 'system:backup', 'system:administrators', $ENV{REMOTE_USER}, $ENV{REDIRECT_REMOTE_USER} );
+$EXTENSION_CONFIG{AFSACLManager}{prohibit_afs_acl_changes_for} = [ 'system:backup', 'system:administrators', $ENV{REMOTE_USER}, $ENV{REDIRECT_REMOTE_USER} ];
 
 ## -- ENABLE_AFSGROUPMANAGER -- obsolete, use AFSGroupManager extension instead 
 ## enables the AFS Group Manager
@@ -515,10 +516,12 @@ $ENABLE_AFSACLMANAGER = 0;
 ## EXAMPLE: $ALLOW_AFSGROUPCHANGES = 1;
 #$ALLOW_AFSGROUPCHANGES = 0;
 
-## -- AFS_PTSCMD
+## -- AFS_PTSCMD -- obsolete, use  $EXTENSION_CONFIG{AFS(ACL|Group)Manager}{ptscmd} instead
 ## file path to the AFS pts command
 ## EXAMPLE: $AFS_PTSCMD = '/usr/bin/pts';
-$AFS_PTSCMD = '/usr/bin/pts';
+## $AFS_PTSCMD = '/usr/bin/pts';
+$EXTENSION_CONFIG{AFSACLManager}{ptscmd} = '/usr/bin/pts';
+$EXTENSION_CONFIG{AFSGroupManager}{ptscmd} = '/usr/bin/pts';
 
 ## -- ENABLE_LOCK
 ## enable/disable lock/unlock support (WebDAV compliance class 2) 

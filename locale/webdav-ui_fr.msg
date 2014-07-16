@@ -17,7 +17,6 @@
 add                            "ajouter (+)"
 addbookmark                    "Ajout"
 addbookmarktitle               "Ajouter le rértoire courant aux favoris"
-afs                            "Gestionnaire d'ACL AFS"
 autorefresh.select             "Rafraichir"
 bookmarks                      "-- Favoris --"
 cancel                         "Annuler"
