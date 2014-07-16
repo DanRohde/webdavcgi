@@ -63,7 +63,7 @@ sub handle {
 			
 		} else {
 			$jsondata{content} = $content;
-			$jsondata{raw} = $$self{cgi}->pre($$self{cgi}->escapeHTML($raw)).$$self{cgi}->div({-class=>'diff formatted'},$self->tl('diff_showdiff'));
+			$jsondata{raw} = $raw;
 		}
 		my $json = new JSON();
 		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
@@ -145,7 +145,11 @@ sub renderDiffOutput {
 		$t.=$cgi->Tr({-class=>'diff comment'}, $cgi->td({-class=>'diff comment',colspan=>4},sprintf($self->tl('diff_nomorediffs'),$diffcounter)));
 		$t.=$cgi->end_table();
 		$t.=$cgi->div({-class=>'diff raw'},$self->tl('diff_showrawdiff'));
-		$ret = $cgi->div({-title=>$self->tl('diff'),-class=>'diff dialog'}, $t);	
+		my $swap =$cgi->div({-class=>'diff swapfiles', -data_file1=>$f1, -data_file2=>$f2},$self->tl('diff_swapfiles'));
+		$t.=$swap;
+		$ret = $cgi->div({-title=>$self->tl('diff'),-class=>'diff dialog'}, $t);
+		
+		$raw = 	$$self{cgi}->pre($$self{cgi}->escapeHTML($raw)).$$self{cgi}->div({-class=>'diff formatted'},$self->tl('diff_showdiff')).$swap;
 		close(DIFF)
 	} 
 	return ($ret,$raw);
