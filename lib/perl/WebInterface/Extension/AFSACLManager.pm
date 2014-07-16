@@ -69,7 +69,7 @@ sub handle {
 			$ret = 1;
 		}
 	} elsif ($hook eq 'posthandler') {	
-		if ($self->config('ALLOW_AFSACLCHANGES',1) && $$self{cgi}->param('saveafsacl')) {
+		if ($self->config('allow_afsaclchanges',1) && $$self{cgi}->param('saveafsacl')) {
 			my $ru = $main::REQUEST_URI;
 			$ru=~s/\?[^\?]+$//;
                 	$self->doAFSSaveACL($ru);
@@ -169,14 +169,14 @@ sub readAFSAcls {
 sub renderAFSAclEntries {
 	my ($self, $entries, $positive, $tmpl, $disabled) = @_;
 	my $content = "";
-	my $prohiregex = '^('.join('|',map { $_ ? $_ : '__undef__'} @{ $self->config('prohibit_afs_acl_changes_for',[]) }).')$';
+	my $prohiregex = '^('.join('|',map { $_ ? $_ : '__undef__'} @{ $self->config('prohibit_afs_acl_changes_for',['^$']) }).')$';
 	foreach my $entry (sort { $$a{user} cmp $$b{user} || $$b{right} cmp $$a{right} } @{$entries}) {
 		next if $$entry{ispositive} != $positive;	
 		my $t = $tmpl;
 		$t=~s/\$entry/$$entry{user}/sg;
 		$t=~s/\$checked\((\w)\)/$$entry{right}=~m@$1@?'checked="checked"':""/egs;
 		$t=~s/\$readonly/$$entry{user}=~m@$prohiregex@ ? 'readonly="readonly"' : ""/egs;
-		$t=~s/\$disabled/$main::ALLOW_AFSACLCHANGES && !$disabled ? '' : 'disabled="disabled"'/egs;
+		$t=~s/\$disabled/$self->config('allow_afsaclchanges',1) && !$disabled ? '' : 'disabled="disabled"'/egs;
 		$content.=$t;
 	}
 	return $content;
