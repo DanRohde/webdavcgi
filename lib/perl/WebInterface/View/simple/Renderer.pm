@@ -50,8 +50,6 @@ sub render {
 		if ($ajax eq 'getFileListTable') { 
 			$content = $self->renderFileListTable($fn,$ru, $$self{cgi}->param('template')); 
 			$contenttype='application/json';
-		} elsif ($ajax eq 'getPermissionsDialog') {
-			$content = $self->renderPermissionsDialog($fn,$ru, $$self{cgi}->param('template'));
 		} elsif ($ajax eq 'getViewFilterDialog') {
 			$content = $self->renderViewFilterDialog($fn, $ru, $$self{cgi}->param('template'));
 		} elsif ($ajax eq 'getSearchDialog') {
@@ -482,22 +480,6 @@ sub renderQuickNavPath {
 }
 
 
-sub checkPermAllowed {
-	my ($p,$r) = @_;
-	my $perms;
-	$perms = join("",@{$main::PERM_USER}) if $p eq 'u';
-	$perms = join("",@{$main::PERM_GROUP}) if $p eq 'g';
-	$perms = join("",@{$main::PERM_OTHERS}) if $p eq 'o';
-	return $perms =~ m/\Q$r\E/;
-}
-sub renderPermissionsDialog {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = $self->readTemplate($tmplfile);
-	
-	$content =~ s/\$disabled\((\w)(\w)\)/&checkPermAllowed($1,$2) ? '' : 'disabled="disabled"'/egs;
-	
-	return $self->renderTemplate($fn, $ru, $content);
-}
 sub renderViewFilterDialog {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	my $content = $self->readTemplate($tmplfile);

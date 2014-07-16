@@ -59,12 +59,7 @@ sub handle {
 			$ret = 1;
 		} 
 	} elsif ($hook eq 'posthandler') {
-		if ($self->checkCgiParamList('afschgrp', 'afscreatenewgrp', 'afsdeletegrp', 'afsrenamegrp', 'afsaddusr', 'afsremoveusr')) {
-			my $ru = $main::REQUEST_URI;
-			$ru=~s/\?[^\?]+$//;
-                	$self->doAFSGroupActions($ru);
-                	$ret = 1;
-		}
+		$ret = $self->doAFSGroupActions() if $self->checkCgiParamList('afschgrp', 'afscreatenewgrp', 'afsdeletegrp', 'afsrenamegrp', 'afsaddusr', 'afsremoveusr');
 	}
 	return $ret;
 }
@@ -142,16 +137,14 @@ sub isValidAFSGroupName { return $_[1] =~ /^[a-z0-9\_\@\:]+$/i; }
 sub isValidAFSUserName  { return $_[1] =~ /^[a-z0-9\_\@]+$/i; }
 
 sub doAFSGroupActions {
-	my ( $self, $redirtarget ) = @_;
+	my ( $self ) = @_;
 	my ( $msg, $errmsg, $msgparam );
 	my $grp = $$self{cgi}->param('afsgrp') || '';
 	my $output;
 	if ( $$self{cgi}->param('afschgrp') ) {
 		if ( $$self{cgi}->param('afsgrp') ) {
 			$msg      = '';
-			$msgparam =
-			  'afsgrp=' . $$self{cgi}->escape( $$self{cgi}->param('afsgrp') )
-			  if $self->isValidAFSGroupName( $$self{cgi}->param('afsgrp') );
+			$msgparam = [  $$self{cgi}->param('afsgrp') ] if $self->isValidAFSGroupName( $$self{cgi}->param('afsgrp') );
 		}
 		else {
 			$errmsg = 'afsgrpnothingsel';
@@ -165,14 +158,11 @@ sub doAFSGroupActions {
 			$output = qx@$$self{ptscmd} delete "$grp" 2>&1@;
 			if ( $output eq "" ) {
 				$msg      = 'afsgrpdeleted';
-				$msgparam = 'p1=' . $$self{cgi}->escape($grp);
+				$msgparam =  [ $grp ];
 			}
 			else {
 				$errmsg   = 'afsgrpdeletefailed';
-				$msgparam = 'afsgroup='
-				  . $$self{cgi}->escape($grp) . ';p1='
-				  . $$self{cgi}->escape($grp) . ';p2='
-				  . $$self{cgi}->escape($output);
+				$msgparam = [ $grp, $output ];
 			}
 		}
 		else {
@@ -187,15 +177,11 @@ sub doAFSGroupActions {
 			$output = qx@$$self{ptscmd} creategroup $grp 2>&1@;
 			if ( $output eq "" || $output =~ /^group \Q$grp\E has id/i ) {
 				$msg      = 'afsgrpcreated';
-				$msgparam = 'afsgrp='
-				  . $$self{cgi}->escape($grp) . ';p1='
-				  . $$self{cgi}->escape($grp);
+				$msgparam = [ $grp ];
 			}
 			else {
 				$errmsg   = 'afsgrpcreatefailed';
-				$msgparam = 'p1='
-				  . $$self{cgi}->escape($grp) . ';p2='
-				  . $$self{cgi}->escape($output);
+				$msgparam = [ $grp, $output ];
 			}
 		}
 		else {
@@ -209,32 +195,21 @@ sub doAFSGroupActions {
 				$output = qx@$$self{ptscmd} rename -oldname \"$grp\" -newname \"$ngrp\" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsgrprenamed';
-					$msgparam = 'afsgrp='
-					  . $$self{cgi}->escape($ngrp) . ';p1='
-					  . $$self{cgi}->escape($grp) . ';p2='
-					  . $$self{cgi}->escape($ngrp);
+					$msgparam = [ $grp, $ngrp ];
 				}
 				else {
 					$errmsg   = 'afsgrprenamefailed';
-					$msgparam = 'afsgrp='
-					  . $$self{cgi}->escape($grp)
-					  . ';afsnewgrpname='
-					  . $$self{cgi}->escape($ngrp) . ';p1='
-					  . $$self{cgi}->escape($grp) . ';p2='
-					  . $$self{cgi}->escape($ngrp) . ';p3='
-					  . $$self{cgi}->escape($output);
+					$msgparam = [ $grp, $ngrp, $output ];
 				}
 			}
 			else {
 				$errmsg   = 'afsnonewgroupnamegiven';
-				$msgparam = 'afsgrp='
-				  . $$self{cgi}->escape($grp) . ';p1='
-				  . $$self{cgi}->escape($grp);
+				$msgparam =  [ $grp ];
 			}
 		}
 		else {
 			$errmsg   = 'afsgrpnothingsel';
-			$msgparam = ';afsnewgrpname=' . $$self{cgi}->escape($ngrp);
+			$msgparam = [ $ngrp ];
 		}
 	}
 	elsif ( $$self{cgi}->param('afsremoveusr') ) {
@@ -252,23 +227,16 @@ sub doAFSGroupActions {
 				$output = qx@$$self{ptscmd} removeuser -user $userstxt -group \"$grp\" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsuserremoved';
-					$msgparam = 'afsgrp='
-					  . $$self{cgi}->escape($grp) . ';p1='
-					  . $$self{cgi}->escape( join( ', ', @users ) ) . ';p2='
-					  . $$self{cgi}->escape($grp);
+					$msgparam =  [ join( ', ', @users ) , $grp ];
 				}
 				else {
 					$errmsg   = 'afsusrremovefailed';
-					$msgparam = 'afsgrp='
-					  . $$self{cgi}->escape($grp) . ';p1='
-					  . $$self{cgi}->escape( join( ', ', @users ) ) . ';p2='
-					  . $$self{cgi}->escape($grp) . ';p3='
-					  . $$self{cgi}->escape($output);
+					$msgparam =  [ join( ', ', @users ), $grp, $output ];
 				}
 			}
 			else {
 				$errmsg   = 'afsusrnothingsel';
-				$msgparam = 'afsgrp=' . $$self{cgi}->escape($grp);
+				$msgparam = [ $grp ];
 			}
 		}
 		else {
@@ -289,30 +257,17 @@ sub doAFSGroupActions {
 				$output = qx@$$self{ptscmd} adduser -user $userstxt -group "$grp" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsuseradded';
-					$msgparam = 'afsgrp='
-					  . $$self{cgi}->escape($grp) . ';p1='
-					  . $$self{cgi}->escape( join( ', ', @users ) ) . ';p2='
-					  . $$self{cgi}->escape($grp);
+					$msgparam = [ join( ', ', @users ), $grp ];
 				}
 				else {
 					$errmsg   = 'afsadduserfailed';
-					$msgparam = 'afsgrp='
-					  . $$self{cgi}->escape($grp)
-					  . ';afsaddusers='
-					  . $$self{cgi}->escape( $$self{cgi}->param('afsaddusers') )
-					  . ';p1='
-					  . $$self{cgi}->escape( $$self{cgi}->param('afsaddusers') )
-					  . ';p2='
-					  . $$self{cgi}->escape($grp) . ';p3='
-					  . $$self{cgi}->escape($output);
+					$msgparam = [ $$self{cgi}->param('afsaddusers'), $grp, $output ];
 				}
 
 			}
 			else {
 				$errmsg   = 'afsnousersgiven';
-				$msgparam = 'afsgrp='
-				  . $$self{cgi}->escape($grp) . ';p1='
-				  . $$self{cgi}->escape($grp);
+				$msgparam = [ $grp ];
 			}
 		}
 		else {
@@ -320,8 +275,12 @@ sub doAFSGroupActions {
 		}
 	}
 
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam, 'afs' )
-		  . '#afsgroupmanagerpos' );
-}
+	my %jsondata = ();
+	my @params = $msgparam ? map { $$self{cgi}->escapeHTML($_) } @{ $msgparam } : (); 
+	$jsondata{error} = sprintf($self->tl("msg_$errmsg"), @params) if $errmsg;
+	$jsondata{message} = sprintf($self->tl("msg_$msg"), @params ) if $msg;	
+	my $json = new JSON();
+	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	return 1;
+}	
 1;

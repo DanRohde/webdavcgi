@@ -43,8 +43,6 @@ $(document).ready(function() {
 
 	initTooltips();
 	
-	initPermissionsDialog();
-	
 	initViewFilterDialog();
 
 	initClock();
@@ -1865,37 +1863,6 @@ function trimString(str,charcount) {
 	return str;
 }
 
-function initPermissionsDialog() {
-	$(".action.permissions").click(function(event){
-		preventDefault(event);
-		if ($(this).hasClass("disabled")) return;
-		var self = this;
-		$(".action.permissions").addClass("disabled");
-		var target = $("#fileList").attr("data-uri");
-		var template = $(this).attr("data-template");
-		$.get(target, {ajax: "getPermissionsDialog", template: template},function(response){
-			var permissions = $(response);
-			$("form",permissions).submit(function(){
-				var permissionsform = $(this);
-				confirmDialog($("#changepermconfirm").html(), {
-					confirm: function() {
-						permissions.dialog("close");
-						var block = blockPage();
-						var xhr = $.post(target, permissionsform.serialize()+"&"+$.param({ file: $.map($("#fileList tr.selected:visible"),function(val,i) { return $(val).attr("data-file") })}), function(resp){
-							handleJSONResponse(resp);
-							block.remove();
-							updateFileList();
-						});
-						renderAbortDialog(xhr);
-					}
-				});
-				return false;
-			});
-			permissions.dialog({modal:true, width: "auto", height: "auto", close: function() {$(".action.permissions").removeClass("disabled"); permissions.remove();}}).show();
-			
-		});
-	});
-}
 function initViewFilterDialog() {
 	$(".action.viewfilter").click(function(event){
 		preventDefault(event);
@@ -2029,7 +1996,8 @@ function initToolBox() {
 			concatUri: concatUri,
 			confirmDialog : confirmDialog,
 			cookie : cookie,
-			encodeURIComponent: encodeURIComponent,
+			encodeURIComponent : encodeURIComponent,
+			getSelectedFiles : getSelectedFiles,
 			handleJSONResponse : handleJSONResponse,
 			initUpload : initUpload,
 			preventDefault : preventDefault,
@@ -2037,6 +2005,7 @@ function initToolBox() {
 			stripSlash : stripSlash,
 			togglecookie : togglecookie,
 			uncheckSelectedRows : uncheckSelectedRows,
+			updateFileList : updateFileList
 	};
 }
 // ready ends:

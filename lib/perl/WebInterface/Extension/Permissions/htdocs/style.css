@@ -14,16 +14,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#afsaclmanager table {
-	padding: 5px;
-}
-#nav .action.afsaclmanager {
-	background-image: url(aclmanager.png);
+#nav .action.permissions {
+	background-image: url(permissions.png);
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
-#popupmenu .action.afsaclmanager {
-	background-image: url(aclmanager.png);
-	background-repeat: no-repeat;
+#popupmenu .action.permissions {
+	background-image: url(permissions.png);
 	background-position: 2px center;
 }

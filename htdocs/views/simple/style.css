@@ -699,9 +699,6 @@ td.center {
 #nav .action.viewfilter {
 	background: url(images/sprite.png) no-repeat 2px -648px;
 }
-#nav .action.permissions {
-	background: url(images/sprite.png) no-repeat 2px -610px;
-}
 #nav .action.settings {
 	background: url(images/sprite.png) no-repeat 2px -1132px;
 }
@@ -1066,10 +1063,6 @@ img {
 #popupmenu .action.rename {
 	background-image: url(images/sprite.png);
 	background-position: left -495px;
-}
-#popupmenu .action.permissions {
-	background-image: url(images/sprite.png);
-	background-position: left -614px;
 }
 #popupmenu ul {
 	display: none;

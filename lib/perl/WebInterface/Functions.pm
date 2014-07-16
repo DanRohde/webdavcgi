@@ -251,65 +251,6 @@ sub handleFileActions {
 			$errmsg = 'createsymlinknolinknameerr';
 		}
 	}
-	elsif ( $$self{cgi}->param('changeperm') ) {
-		if ( $$self{cgi}->param('file') ) {
-			my $mode = 0000;
-			foreach my $userperm ( $$self{cgi}->param('fp_user') ) {
-				$mode = $mode | 0400
-				  if $userperm eq 'r'
-				  && grep( /^r$/, @{$main::PERM_USER} ) == 1;
-				$mode = $mode | 0200
-				  if $userperm eq 'w'
-				  && grep( /^w$/, @{$main::PERM_USER} ) == 1;
-				$mode = $mode | 0100
-				  if $userperm eq 'x'
-				  && grep( /^x$/, @{$main::PERM_USER} ) == 1;
-				$mode = $mode | 04000
-				  if $userperm eq 's'
-				  && grep( /^s$/, @{$main::PERM_USER} ) == 1;
-			}
-			foreach my $grpperm ( $$self{cgi}->param('fp_group') ) {
-				$mode = $mode | 0040
-				  if $grpperm eq 'r'
-				  && grep( /^r$/, @{$main::PERM_GROUP} ) == 1;
-				$mode = $mode | 0020
-				  if $grpperm eq 'w'
-				  && grep( /^w$/, @{$main::PERM_GROUP} ) == 1;
-				$mode = $mode | 0010
-				  if $grpperm eq 'x'
-				  && grep( /^x$/, @{$main::PERM_GROUP} ) == 1;
-				$mode = $mode | 02000
-				  if $grpperm eq 's'
-				  && grep( /^s$/, @{$main::PERM_GROUP} ) == 1;
-			}
-			foreach my $operm ( $$self{cgi}->param('fp_others') ) {
-				$mode = $mode | 0004
-				  if $operm eq 'r' && grep( /^r$/, @{$main::PERM_OTHERS} ) == 1;
-				$mode = $mode | 0002
-				  if $operm eq 'w' && grep( /^w$/, @{$main::PERM_OTHERS} ) == 1;
-				$mode = $mode | 0001
-				  if $operm eq 'x' && grep( /^x$/, @{$main::PERM_OTHERS} ) == 1;
-				$mode = $mode | 01000
-				  if $operm eq 't' && grep( /^t$/, @{$main::PERM_OTHERS} ) == 1;
-			}
-
-			$msg = 'changeperm';
-			$msgparam = sprintf( "p1=%04o", $mode );
-			foreach my $file ( $$self{cgi}->param('file') ) {
-				$file = "" if $file eq '.';
-				$$self{backend}->changeFilePermissions(
-					$main::PATH_TRANSLATED . $file,
-					$mode,
-					$$self{cgi}->param('fp_type'),
-					$main::ALLOW_CHANGEPERMRECURSIVE
-					  && $$self{cgi}->param('fp_recursive')
-				);
-			}
-		}
-		else {
-			$errmsg = 'chpermnothingerr';
-		}
-	}
 	elsif ( $$self{cgi}->param('edit') ) {
 		my $file  = $$self{cgi}->param('file');
 		my $full  = $main::PATH_TRANSLATED . $file;

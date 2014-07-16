@@ -54,8 +54,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $ENABLE_SEARCH $ENABLE_GROUPDAV %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS
             @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
             $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
-            $ENABLE_BIND $ALLOW_CHANGEPERM $ALLOW_CHANGEPERMRECURSIVE $LANGSWITCH
-            $PERM_USER $PERM_GROUP $PERM_OTHERS
+            $ENABLE_BIND $LANGSWITCH
             $DBI_PERSISTENT
             $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR 
             $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
@@ -332,32 +331,36 @@ $SHOW_CURRENT_FOLDER_ROOTONLY = 0;
 ## shows the parent folder '..' for navigation
 $SHOW_PARENT_FOLDER = 1;
 
-## -- ALLOW_CHANGEPERM
+## -- ALLOW_CHANGEPERM -- obsolete; add 'Permissions' to your @EXTENSIONS list
 ## allow users to change file permissions
 ## DEFAULT: ALLOW_CHANGEPERM = 0;
-$ALLOW_CHANGEPERM = 1;
+##$ALLOW_CHANGEPERM = 1;
 
-## -- ALLOW_CHANGEPERMRECURSIVE
+## -- ALLOW_CHANGEPERMRECURSIVE -- obsolete; use '$EXTENSION_CONFIG{Permissions}{allow_changepermrecursive}
 ## allow users to change file/folder permissions recursively
-$ALLOW_CHANGEPERMRECURSIVE = 1;
+##$ALLOW_CHANGEPERMRECURSIVE = 1;
+$EXTENSION_CONFIG{Permissions}{allow_changepermrecursive} = 1;
 
-## -- PERM_USER
+## -- PERM_USER -- obsolete; use '$EXTENSION_CONFIG{Permissions}{user}'
 # if ALLOW_CHANGEPERM is set to 1 the PERM_USER variable 
 # defines the file/folder permissions for user/owner allowed to change
 # EXAMPLE: $PERM_USER = [ 'r','w','x','s' ];
-$PERM_USER = [ 'r','w','x','s' ];
+## $PERM_USER = [ 'r','w','x','s' ];
+$EXTENSION_CONFIG{Permissions}{user} = [ 'r','w','x','s' ];
 
-## -- PERM_GROUP
+## -- PERM_GROUP -- obsolete; use '$EXTENSION_CONFIG{Permissions}{group}'
 # if ALLOW_CHANGEPERM is set to 1 the PERM_GROUP variable 
 # defines the file/folder permissions for group allowed to change
 # EXMAMPLE: $PERM_GROUP = [ 'r','w','x','s' ];
-$PERM_GROUP = [ 'r','w','x','s' ];
+# $PERM_GROUP = [ 'r','w','x','s' ];
+$EXTENSION_CONFIG{Permissions}{group} = [ 'r','w','x','s' ];
 
-## -- PERM_OTHERS
+## -- PERM_OTHERS -- obsolete; use '$EXTENSION_CONFIG{Permissions}{others}'
 # if ALLOW_CHANGEPERM is set to 1 the PERM_OTHERS variable 
 # defines the file/folder permissions for other users allowed to change
 # EXAMPLE: $PERM_OTHERS = [ 'r','w','x','t' ];
-$PERM_OTHERS = [ 'r','w','x','t' ];
+# $PERM_OTHERS = [ 'r','w','x','t' ];
+$EXTENSION_CONFIG{Permissions}{others} = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch

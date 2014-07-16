@@ -31,9 +31,6 @@ $INCLUDE(htmlhead)</head>
 			<!--IF($config(ALLOW_SEARCH))-->
 			<li><a href="#" class="action search access-readable" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
 			<!--ENDIF-->
-			<!--IF($config(ALLOW_CHANGEPERM))-->
-				<li><a href="#" class="action permissions sel-multi" data-action="permissions" data-template="permissions" accesskey="p">$tl(mode)</a></li>
-			<!--ENDIF-->
 			$extension(apps)
 		</ul>
 		$INCLUDE(nav)

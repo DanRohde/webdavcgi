@@ -8,9 +8,11 @@
      - added web interface extension 'Zip' 
      - added web interface extension 'AFSGroupManager'
      - added web interface extension 'AFSACLManager'
+     - added web interface extension 'Permissions'
      - removed ALLOW_ZIP_(UP|DOWN)LOAD support (replaced by 'Zip' extension)
      - removed ENABLE_AFSGROUPMANAGER (replaced by 'AFSGroupManager' extension)
      - removed ENABLE_AFSACLMANAGER (replaced by 'AFSACLManager' extension)
+     - removed ENABLE_PERMISSIONS (replaced by 'Permissions' extension)
 
 0.9.0: 2014/25/4
      - removed classic view, sidebar view, unused code

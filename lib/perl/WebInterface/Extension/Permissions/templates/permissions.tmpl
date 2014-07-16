@@ -36,7 +36,7 @@ $tl(changefilepermissions)
 			<option value="s">$tl(set)</option>
 			<option value="r">$tl(remove)</option>
 		</select>
-		<input type="checkbox" value="recursive" name="fp_recursive" <!--IF(!$config(ALLOW_CHANGEPERMRECURSIVE))-->disabled="disabled"<!--ENDIF-->>$tl(recursive)</input>	
+		<input type="checkbox" value="recursive" name="fp_recursive" <!--IF("$extconfig(allow_changepermrecursive)" ne "1")-->disabled="disabled"<!--ENDIF--> >$tl(recursive)</input>	
 		<input type="submit" value="$tl(changepermissions)" name="changeperm"/>
 	</td>
 </tr>

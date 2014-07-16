@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .action.afsgroupmngr {
 	background-image: url(group.png);
 	background-repeat: no-repeat;
-	background-position: 2px center;
+	background-position: 4px center;
 }
 #popupmenu .action.afsgroupmngr {
 	background-image: url(group.png);

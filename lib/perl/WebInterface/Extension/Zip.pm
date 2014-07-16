@@ -31,6 +31,8 @@ use strict;
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
+use JSON;
+
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript','posthandler','body','templates');
@@ -67,11 +69,9 @@ sub handle {
 		$ret = $self->renderMessageTemplate();
 	} elsif ($hook eq 'posthandler') {
 		if ($$self{cgi}->param('action') eq 'zipdwnload') {
-			$self->handleZipDownload();
-			$ret = 1;
+			$ret = $self->handleZipDownload();
 		} elsif ($$self{cgi}->param('action') eq 'zipup') {
-			$self->handleZipUpload();
-			$ret = 1;
+			$ret = $self->handleZipUpload();
 		}
 	}
 	return $ret;
@@ -85,7 +85,7 @@ sub renderMessageTemplate {
 	return $self->replaceVars($self->readTemplate('messages'));
 }
 sub handleZipUpload {
-	my ( $self, $redirtarget ) = @_;
+	my ( $self ) = @_;
 	my @zipfiles;
 	my ( $msg, $errmsg, $msgparam );
 	foreach my $fh ( $$self{cgi}->param('files') ) {
@@ -94,7 +94,7 @@ sub handleZipUpload {
 		$rfn = $$self{backend}->basename($rfn);
 		if (main::isLocked("$main::PATH_TRANSLATED$rfn")) {
 			$errmsg='locked';
-			$msgparam='p1='.$$self{cgi}->escape($rfn);
+			$msgparam= [ $rfn ];
 			last;	
 		}
 		elsif ( $$self{backend}->saveStream( "$main::PATH_TRANSLATED$rfn", $fh ) )
@@ -106,14 +106,18 @@ sub handleZipUpload {
 	}
 	if ( $#zipfiles > -1 ) {
 		$msg = ( $#zipfiles > 0 ) ? 'zipupmulti' : 'zipupsingle';
-		$msgparam = 'p1='
-		  . ( $#zipfiles + 1 ) . ';p2='
-		  . $$self{cgi}->escape( substr( join( ', ', @zipfiles ), 0, 150 ) );
+		$msgparam = [ scalar(@zipfiles), substr( join( ', ', @zipfiles ), 0, 150 ) ];
 	}
 	else {
 		$errmsg = 'zipupnothingerr';
 	}
-	print $$self{cgi}->redirect( $redirtarget . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam ) );
+	my %jsondata = ();
+	my @params = $msgparam ? map { $$self{cgi}->escapeHTML($_) } @{ $msgparam } : (); 
+	$jsondata{error} = sprintf($self->tl("msg_$errmsg"), @params) if $errmsg;
+	$jsondata{message} = sprintf($self->tl("msg_$msg"), @params ) if $msg;		
+	my $json = new JSON();
+	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	return 1;
 }
 
 sub handleZipDownload {
@@ -125,9 +129,8 @@ sub handleZipDownload {
 		-type                => 'application/zip',
 		-Content_disposition => 'attachment; filename=' . $zfn
 	);
-	$$self{backend}->compressFiles( \*STDOUT, $main::PATH_TRANSLATED,
-		$$self{cgi}->param('files') );
-
+	$$self{backend}->compressFiles( \*STDOUT, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
+	return 1;
 }
 
 1;

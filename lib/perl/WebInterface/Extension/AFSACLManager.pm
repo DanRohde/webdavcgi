@@ -32,6 +32,8 @@ use strict;
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
+use JSON;
+
 use vars qw( %CACHE );
 
 sub init { 
@@ -70,9 +72,7 @@ sub handle {
 		}
 	} elsif ($hook eq 'posthandler') {	
 		if ($self->config('allow_afsaclchanges',1) && $$self{cgi}->param('saveafsacl')) {
-			my $ru = $main::REQUEST_URI;
-			$ru=~s/\?[^\?]+$//;
-                	$self->doAFSSaveACL($ru);
+			$self->doAFSSaveACL();
 		}
 	}
 	return $ret;
@@ -244,17 +244,19 @@ sub doAFSFSSETACLCmd {
 	else { $output = $self->tl('empty normal rights'); }
 	if ( $output eq "" ) {
 		$msg      = 'afsaclchanged';
-		$msgparam = 'p1='
-		  . $$self{cgi}->escape($pacls) . ';p2='
-		  . $$self{cgi}->escape($nacls);
+		$msgparam = [ $$self{cgi}->escapeHTML($pacls), $$self{cgi}->escapeHTML($nacls) ];
 	}
 	else {
 		$errmsg   = 'afsaclnotchanged';
-		$msgparam = 'p1=' . $$self{cgi}->escape($output);
+		$msgparam = [ $self->formatHTML($$self{cgi}->escapeHTML($output)) ];
 	}
 	return ( $msg, $errmsg, $msgparam );
 }
-
+sub formatHTML {
+	my ($self,$text) = @_;
+	$text=~s/\r?\n/<br\/>/sg;
+	return $text;
+}
 sub doAFSFSSETAclCmdRecursive {
 	my ( $self, $fn, $pacls, $nacls ) = @_;
 	$fn.='/' if $fn!~/\/$/ && $$self{backend}->isDir($fn);
@@ -280,9 +282,11 @@ sub doAFSSaveACL {
 	
 	$self->doAFSFSSETAclCmdRecursive( $main::PATH_TRANSLATED, $pacls, $nacls) if ($$self{cgi}->param("setafsaclrecursive"));
 	
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam, 'acl' )
-		  . '#afsaclmanagerpos' );
+	my %jsondata = ();
+	$jsondata{error} = sprintf($self->tl('msg_'.$errmsg), $msgparam ? @{ $msgparam } : '') if $errmsg;
+	$jsondata{message} = sprintf($self->tl('msg_'.$msg), $msgparam ? @{ $msgparam } : '') if $msg;
+	my $json = new JSON();
+	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store', $self->getCookies());
 }
 sub uridecode {
 	my ($txt) = @_;
