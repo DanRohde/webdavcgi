@@ -1,0 +1,52 @@
+<div title="$tl(search.dialogtitle)" class="search dialogpane">
+<form method="post" action="#">
+	<input type="hidden" name="ajax" value="search"/>
+	<input type="hidden" class="search id" name="searchid" value="$getSearchId()"/>
+   $renderSelectedFiles(<input type="hidden" name="files" value="$v"/>)
+<div class="search formpanel">
+	<div class="search query">
+		$tl(search.query): <input type="text" name="query" value=""/> 
+	</div>
+	<div class="search filenamesearch">
+		<!--IF("$extconfig(allow_contentsearch)" eq "1")-->
+			<input type="radio" name="searchin" value="filename" checked="checked"/>$tl(search.filenameoption)
+			<input type="radio" name="searchin" value="content"/>$tl(search.contentoption)
+		<!--ENDIF-->
+	</div>
+	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
+	<div class="search moreoptions">
+		<div class="search typeonly">$tl(search.typeonly): 
+				<input type="checkbox" name="filetype" checked="checked"/> $tl(search.filetype)  
+				<input type="checkbox" name="foldertype" checked="checked"/> $tl(search.foldertype)
+				<input type="checkbox" name="linktype" checked="checked"/> $tl(search.linktype) 
+		</div>
+		<div class="search size">$tl(search.size):
+			<select name="sizecomparator">
+				<option value="<">&lt;</option>
+				<option value="<=">&le;</option>
+				<option value="==" selected="selected">=</option>
+				<option value=">=">&ge;</option>
+				<option value=">">&gt;</option>
+			</select>
+			<input type="text" name="size"/>
+			<select name="sizeunits">
+				$each#@BYTEUNITORDER#'<option value="$v">$v</option>'#'$view'#
+			</select>
+		</div>
+	</div>
+</div>
+<div class="search buttonpanel">
+	<div><input class="search start" type="submit" name="search" value="$tl(search.startsearch)"/></div>
+	<div><input class="search cancel" type="button" name="cancel" value="$tl(search.cancelsearch)"/></div>
+</div>
+<div class="search resultpanel">
+	<div class="search resultcontentpane">$tl(search.noresult)</div>
+	<div class="search statusbar"> </div>
+</div>
+
+</form>
+<div class="template">
+<div class="msg search inprogress">$tl(search.inprogress)</div>
+<div class="msg search aborted">$tl(search.aborted)</div>
+</div>
+</div>

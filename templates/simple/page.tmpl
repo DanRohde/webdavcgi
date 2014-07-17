@@ -28,9 +28,6 @@ $INCLUDE(htmlhead)</head>
 		<ul id="apps">
 			<li><a href="$uri" class="action refresh" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
 			$INCLUDE(apps)
-			<!--IF($config(ALLOW_SEARCH))-->
-			<li><a href="#" class="action search access-readable" data-action="search" data-dialogtemplate="searchdialog" data-resulttemplate="searchresult" accesskey="f">$tl(searchbutton)</a></li>
-			<!--ENDIF-->
 			$extension(apps)
 		</ul>
 		$INCLUDE(nav)

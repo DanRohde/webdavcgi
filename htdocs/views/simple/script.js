@@ -53,7 +53,7 @@ $(document).ready(function() {
 
 	initWindowResize();
 	
-	initSearch();
+	/* initSearch(); */
 	
 	initSettingsDialog();
 	
@@ -74,9 +74,9 @@ $(document).ready(function() {
 		console.log(jqxhr); 
 		console.log(settings);
 		console.log(exception);
-		if (jqxhr && jqxhr.statusText) notifyError(jqxhr.statusText);
+		if (jqxhr && jqxhr.statusText && jqxhr.statusText != 'abort') notifyError(jqxhr.statusText);
 		$("div.overlay").remove();
-		if (jqxhr.status = 404) window.history.back();
+		//if (jqxhr.status = 404) window.history.back();
 	});
 	
 	updateFileList($("#flt").attr("data-uri"));

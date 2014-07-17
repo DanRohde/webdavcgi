@@ -693,9 +693,6 @@ td.center {
 #nav .action.refresh {
 	background: url(images/sprite.png) no-repeat 2px -410px;
 }
-#nav .action.search {
-	background: url(images/sprite.png) no-repeat 2px -1092px;
-}
 #nav .action.viewfilter {
 	background: url(images/sprite.png) no-repeat 2px -648px;
 }
