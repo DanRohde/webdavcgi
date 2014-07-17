@@ -74,10 +74,18 @@ sub getTempFilename {
 	my $searchid = $$self{cgi}->param('searchid');
 	return "/tmp/webdavcgi-search-$main::REMOTE_USER-$searchid.$type";
 }
+sub getResultTemplate {
+	my($self) = @_;
+	return $CACHE{$self}{resulttemplate} ||= $self->readTemplate($self->config('resulttemplate', 'result'));
+}
 sub addSearchResult {
 	my ($self, $base, $file, $counter) = @_;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
-		print $fh $$self{cgi}->div($$self{cgi}->a({-href=>$main::REQUEST_URI.$file, -target=>'_blank'},$$self{cgi}->escapeHTML($file)));
+		my $filename = $file eq "" ? "." : $$self{cgi}->escapeHTML($file);
+		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate(), 
+			{ fileuri=>$$self{cgi}->escapeHTML($main::REQUEST_URI.$file), 
+				filename=>$filename,
+				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($main::REQUEST_URI.$file))});
 		$$counter{results}++;
 		close($fh);
 	}
@@ -94,7 +102,7 @@ sub filterFiles {
 			&& (!$$self{backend}->isFile($base.$file) || ($$self{backend}->stat($base.$file))[7] > $self->config('sizelimit', 2097152) || $$self{backend}->getFileContent($base.$file) !~/\Q$query\E/i);
 		
 
-	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($base.$file);
+	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($base.$file) && !$$self{backend}->isLink($base.$file);
 	$ret |= 1 if !$$self{cgi}->param('foldertype') && $$self{backend}->isDir($base.$file);
 	$ret |= 1 if !$$self{cgi}->param('linktype') && $$self{backend}->isLink($base.$file);
 	

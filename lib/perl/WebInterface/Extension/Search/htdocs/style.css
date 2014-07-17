@@ -52,7 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	overflow: auto;
 }
 .search.statusbar {
-	background-color: #f0f0f0;
+	background-color: #ededed;
 	height: 1.5em;
 	width: 100%;
 	position: absolute;
@@ -64,6 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 input.search.start, input.search.cancel {
 	width: 100%;
+	margin-bottom: 8px;
 }
 .search.moreoptionscollapser {
 	font-size: small;
@@ -83,4 +84,18 @@ input.search.start, input.search.cancel {
 }
 .search.typeonly {
 	margin-bottom: 8px;
+}
+.search.result.entry {
+	clear:both;
+}
+.search.result.entry:hover  {
+	background-color: #ededed;
+}
+.search.result.entry.folder {
+	display: inline-block;
+	float: right;
+}
+.search.result.entry.folder a {
+	color: #999999;
+	font-size: small;
 }
