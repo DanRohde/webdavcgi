@@ -110,11 +110,12 @@ sub filterFiles {
 	my $full = $base.$file;
 	 
 	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /\Q$query\E/i;
+	
 	$ret = 1 if  $query && $self->config('allow_contentsearch',0) && $searchin eq 'content' 
 			&& (	!$$self{backend}->isReadable($full)  
 				|| !$$self{backend}->isFile($full)
 				|| ($$self{backend}->stat($full))[7] > $self->config('sizelimit', 2097152) 
-				|| $$self{backend}->getFileContent($$full) !~/\Q$query\E/i
+				|| $$self{backend}->getFileContent($full) !~/\Q$query\E/i
 			);
 		
 	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full);
