@@ -8,10 +8,14 @@
 		$tl(search.query): <input class="search query" type="text" name="query" value=""/> 
 	</div>
 	<div class="search filenamesearch">
-		<!--IF("$extconfig(allow_contentsearch)" eq "1")-->
+		
 			<input type="radio" name="searchin" value="filename" checked="checked"/>$tl(search.filenameoption)
-			<input type="radio" name="searchin" value="content"/>$tl(search.contentoption)
-		<!--ENDIF-->
+			<!--IF("$extconfig(allow_contentsearch)" eq "1")-->
+				<input type="radio" name="searchin" value="content"/>
+			<!--ELSE-->
+				<input type="radio" name="searchin" value="content" disabled="disabled"/>
+			<!--ENDIF-->
+			$tl(search.contentoption)
 	</div>
 	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">

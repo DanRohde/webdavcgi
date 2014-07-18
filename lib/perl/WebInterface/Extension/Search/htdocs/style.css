@@ -94,6 +94,13 @@ input.search.start, input.search.cancel {
 .search.result.entry.parent.folder {
 	display: inline-block;
 	float: right;
+	width: 16px;
+	height: 16px;
+	background-image: url(go-parent-folder.png);
+	background-repeat: no-repeat;
+	background-pos: left top;
+	opacity: 0.5;
+	filter: Alpha(opacity=50);
 }
 .search.result.entry.parent.folder a {
 	color: #999999;
