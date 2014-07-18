@@ -21,7 +21,7 @@
 # disable_apps - disables sidebar menu entry
 # allow_contentsearch - allowes search file content
 # resultlimit - sets result limit (default: 1000)
-# searchtimeout = sets a timeout in seconds for a single search (default: 30 seconds) 
+# searchtimeout - sets a timeout in seconds for a single search (default: 30 seconds) 
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))
 
 
@@ -134,7 +134,7 @@ sub filterFiles {
 }
 sub limitsReached {
 	my ($self, $counter) = @_;
-	return $$counter{results} >= $self->config('resultlimit', 1000) || (time() - $$counter{starttime}) >  $self->config('searchtimeout', 30);
+	return $$counter{results} >= $self->config('resultlimit', 1000) || (time() - $$counter{started}) >  $self->config('searchtimeout', 30);
 }
 sub doSearch {
 	my ($self, $base, $file, $counter) = @_;
@@ -162,12 +162,14 @@ sub handleSearch {
 	@files = ( '' ) if scalar(@files) == 0;
 	my @results = ();
 	unlink $self->getTempFilename('result');
-	my %counter = ( starttime => time(), results => 0, files => 0, folders => 0);
+	my %counter = ( started => time(), results => 0, files => 0, folders => 0);
 	foreach my $file (@files) {
 		last if $self->limitsReached(\%counter);
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);
 	}
-	my $status = sprintf($self->tl('search.completed'),$counter{results} || '0',$counter{files} || '0' ,$counter{folders} || '0');
+	$counter{completed} = time();
+	my $duration = $counter{completed} - $counter{started};
+	my $status = sprintf($self->tl('search.completed'),$counter{results} || '0', $duration, $counter{files} || '0' ,$counter{folders} || '0');
 	my $data = !$counter{results} ? $$self{cgi}->div($self->tl('search.noresult')) : undef; 
 	$self->getSearchResult($status, $data);
 	unlink $self->getTempFilename('result');
