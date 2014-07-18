@@ -20,7 +20,7 @@
 
 MODULES='CGI DBI POSIX File::Temp Date::Parse UUID::Tiny XML::Simple Quota Archive::Zip IO::Compress::Gzip IO::Compress::Deflate Digest::MD5 Module::Load JSON File::Copy::Link DateTime DateTime::Format::Human::Duration URI::Escape'
 
-OPTIONALMODULES='DBD::SQLite DBD::mysql DBD::Pg'
+OPTIONALMODULES='DBD::SQLite DBD::mysql DBD::Pg MIME::Entity'
 FSBACKENDMODULES='File::Spec::Link'
 AFSBACKENDMODULES=$FSBACKENDMODULES
 GFSBACKENDMODULES=$FSBACKENDMODULES

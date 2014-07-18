@@ -50,6 +50,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .search.resultcontentpane {
 	max-height: 40ex;
 	overflow: auto;
+	min-width: 700px;
 }
 .search.statusbar {
 	background-color: #ededed;
