@@ -402,5 +402,13 @@ sub renderTemplate {
 	$content=~s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/egs;
 	return $content;
 }
+sub canCreateThumbnail {
+	my ($self,$fn) = @_;
+	return $main::ENABLE_THUMBNAIL 
+		&& $self->hasThumbSupport(main::getMIMEType($fn)) 
+		&& $$self{backend}->isReadable($fn) 
+		&& !$$self{backend}->isEmpty($fn);
+}
+
 
 1;

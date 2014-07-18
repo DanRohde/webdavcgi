@@ -110,7 +110,7 @@ a {
 	width: 100%;
 	z-index: 50;
 }
-#fileListTableContent, #searchresult {
+#fileListTableContent {
 	padding-top: 3em;
 }
 #fileListTable {

@@ -50,7 +50,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $ENABLE_CALDAV_SCHEDULE
             $ENABLE_CARDDAV @KNOWN_CARDDAV_COLL_PROPS @KNOWN_CARDDAV_FILE_PROPS $CURRENT_USER_PRINCIPAL
             %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET 
-            $ENABLE_TRASH $TRASH_FOLDER $ALLOW_SEARCH $SHOW_STAT $HEADER $CONFIGFILE
+            $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
             $ENABLE_SEARCH $ENABLE_GROUPDAV %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS
             @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
             $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
@@ -233,9 +233,9 @@ $ALLOW_FILE_MANAGEMENT = 1;
 ## EXAMPLE: $REDIRECT_TO='http:/';
 #$REDIRECT_TO='http:/';
 
-## -- ALLOW_SEARCH
+## -- ALLOW_SEARCH -- obsolete; add 'Search' extension to your @EXTENSIONS list
 ## enable file/folder search in the Web interface
-$ALLOW_SEARCH = 1;
+##$ALLOW_SEARCH = 1;
 
 ### -- ALLOW_SYMLINK
 ## enable symbolic link support
@@ -692,9 +692,9 @@ $DEBUG = 0;
 
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
-## supported: 'SysInfo', 'PropertiesViewer'
-## EXAMPLE: @EXTENSIONS = ( 'SysInfo' , 'PropertiesViewer', 'DiskUsage' , 'PosixAclManager','Zip','Download','PosixAclManager','Diff');
-@EXTENSIONS = ( 'Download', 'Zip','Diff' );
+## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'Permissions','PosixAclManager', 'PropertiesViewer','Search','SendByMail', 'SysInfo', 'Zip'
+## EXAMPLE: @EXTENSIONS = ( 'Search', 'SysInfo' , 'PropertiesViewer', 'DiskUsage', 'Zip','Download','PosixAclManager','Diff');
+@EXTENSIONS = ( 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)

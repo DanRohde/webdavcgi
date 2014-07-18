@@ -91,11 +91,14 @@ input.search.start, input.search.cancel {
 .search.result.entry:hover  {
 	background-color: #ededed;
 }
-.search.result.entry.folder {
+.search.result.entry.parent.folder {
 	display: inline-block;
 	float: right;
 }
-.search.result.entry.folder a {
+.search.result.entry.parent.folder a {
 	color: #999999;
 	font-size: small;
+}
+.search.result.entry .icon {
+	float: none;
 }

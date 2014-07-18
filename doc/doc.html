@@ -80,6 +80,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>JSON (libjson-perl) - (since v0.8.5)</li>
     <li>DateTime - (since v0.8.5)</li>
     <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
+    <li><span style="optinal">optional for SendByMaile extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -87,7 +88,8 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
 apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
-                libfile-copy-link-perl libjson-perl libdatetime-perl
+                libfile-copy-link-perl libjson-perl libdatetime-perl \
+                libmime-tools-perl
 
 perl -MCPAN -e "install DateTime::Format::Human::Duration"
 
@@ -192,16 +194,19 @@ Require valid-user
 <li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...)</code></li>
 <li> The AFS Group Manager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
 <li> The AFS ACL Manager is an extension now. Add 'AFSACLManager' to your extensions list to use it.</li>
+<li> Search support was moved to a new extension (Search). Expand your extension list to enable search <code>@EXTENSIONS=('Search',...)</code></li>
 <li> A lot of new extensions were added (activation: <code>@EXTENSIONS= ('ExtensionName')</code>):
 	<ul>
-	<li> Download - adds a download button</li>
-	<li> Diff - compares two files/folders</li>
-	<li> SendByMail - sends files/folders by e-mail ( Perl module MIME::Entity from MIME tools required; Debian/Ubuntu: <code>apt-get install libmime-tools-perl</code>)</li>
-	<li> PosixAclManager - allows POSIX ACL changes</li>
-	<li> DiskUsage - shows disk usage for folders</li>
-	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
-	<li> AFSGroupManager - enables AFS Group management</li>
 	<li> AFSACLManager - enables AFS ACL management</li>
+	<li> AFSGroupManager - enables AFS Group management</li>
+	<li> Diff - compares two files/folders</li>
+	<li> DiskUsage - shows disk usage for folders</li>
+	<li> Download - adds a download button</li>
+	<li> Permissions - manage POSIX file permissions (user,group,others:rwxst)</li>
+	<li> PosixAclManager - allows POSIX ACL changes</li>
+	<li> Search - enables file/content search support</li>
+	<li> SendByMail - sends files/folders by e-mail ( Perl module MIME::Entity from MIME tools required; Debian/Ubuntu: <code>apt-get install libmime-tools-perl</code>)</li>
+	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
 	</ul>
 </li>
 </ul>

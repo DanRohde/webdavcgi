@@ -53,8 +53,6 @@ $(document).ready(function() {
 
 	initWindowResize();
 	
-	/* initSearch(); */
-	
 	initSettingsDialog();
 	
 	initAutoRefresh();
@@ -374,55 +372,6 @@ function initSettingsDialog() {
 				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);	
 			});
 	}});
-}
-function initSearch() {
-	$(".action.search").click(function(event) {
-		preventDefault(event)
-		if ($(this).hasClass("disabled")) return;
-		var self = this;
-		$(this).addClass("disabled");
-		var resulttemplate = $(this).attr("data-resulttemplate");
-		$.get($("#fileList").attr("data-uri"),{ajax: "getSearchDialog", template: $(this).attr("data-dialogtemplate")}, function(response){
-			var dialog = $(response);
-			
-			$("div[data-action='search.apply']", dialog).button().click(function(event){
-				preventDefault(event);
-				var f = $("form",dialog);
-				// XXX check all form elements (only one must have values)
-				
-				
-				var data = { ajax: "search", template: resulttemplate };
-				
-				if ($("input[name='search.size.val']",f).val() != "") {
-					$.extend(data, {
-						"search.size" : $("select[name='search.size.op'] option:selected",f).val() 
-										+ $("input[name='search.size.val']",f).val() 
-										+ $("select[name='search.size.unit'] option:selected",f).val()
-					});
-				}
-				if ($("input[name='search.name.val']",f).val() != "") {
-					$.extend(data, {
-						"search.name" : $("select[name='search.name.op'] option:selected",f).val() 
-										+ " "
-										+ $("input[name='search.name.val']",f).val()
-					});
-				}	
-				if ($("input[name='search.types']:checked", f).length > 0) {
-					var filtertypes = "";
-					$("input[name='search.types']:checked", f).each(function(i,val) {
-						filtertypes += $(val).val();
-					});
-					$.extend(data, { "search.types" : filtertypes});
-				}
-				dialog.dialog("close");
-				
-				updateFileList($("#fileList").attr("data-uri"), data);
-			
-			});
-			handleJSONResponse(response);
-			dialog.dialog({modal: true, width: "auto", height: "auto", close: function(){ $(self).removeClass("disabled"); dialog.dialog("destroy");}}).show();
-		});
-	});
 }
 function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
@@ -1994,6 +1943,7 @@ function initPopupMenu() {
 function initToolBox() {
 	ToolBox = { postAction: postAction,
 			blockPage: blockPage,
+			changeUri: changeUri,
 			concatUri: concatUri,
 			confirmDialog : confirmDialog,
 			cookie : cookie,

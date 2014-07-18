@@ -31,6 +31,7 @@ use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
+use Time::HiRes qw(time);
 
 use vars qw( %CACHE );
 sub init { 
@@ -46,9 +47,9 @@ sub handle {
 	return $ret if $ret;
 	
 	if( $hook eq 'fileactionpopup') {
-		$ret = { action=>'search', label=>'searchbutton', path=>$$params{path}, type=>'li', classes=>'access-readable sel-dir' };
+		$ret = { action=>'search', label=>'search', path=>$$params{path}, type=>'li', classes=>'access-readable sel-dir' };
 	} elsif ($hook eq 'apps') {
-		$ret = $self->handleAppsHook($$self{cgi},'search access-readable ','searchbutton','searchbutton'); 
+		$ret = $self->handleAppsHook($$self{cgi},'search access-readable ','search','search'); 
 	} elsif ($hook eq 'gethandler') {
 		my $ajax = $$self{cgi}->param('ajax');
 		if ($ajax eq 'getSearchForm') {
@@ -82,10 +83,18 @@ sub addSearchResult {
 	my ($self, $base, $file, $counter) = @_;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
 		my $filename = $file eq "" ? "." : $$self{cgi}->escapeHTML($file);
+		my $full = $base.$file;
+		my $uri = $main::REQUEST_URI.$file;
+		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate(), 
-			{ fileuri=>$$self{cgi}->escapeHTML($main::REQUEST_URI.$file), 
+			{ fileuri=>$$self{cgi}->escapeHTML($uri), 
 				filename=>$filename,
-				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($main::REQUEST_URI.$file))});
+				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
+				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
+				iconclass=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
+				mime => $$self{cgi}->escapeHTML($mime),
+				type=> $mime eq '<folder>' ? 'folder' : 'file', 
+			});
 		$$counter{results}++;
 		close($fh);
 	}
@@ -96,26 +105,29 @@ sub filterFiles {
 	my $query = $$self{cgi}->param('query');
 	my $size = $$self{cgi}->param('size');
 	my $searchin = $$self{cgi}->param('searchin') || 'filename';
+	my $full = $base.$file;
 	 
 	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /\Q$query\E/i;
 	$ret = 1 if  $query && $self->config('allow_contentsearch',0) && $searchin eq 'content' 
-			&& (!$$self{backend}->isFile($base.$file) || ($$self{backend}->stat($base.$file))[7] > $self->config('sizelimit', 2097152) || $$self{backend}->getFileContent($base.$file) !~/\Q$query\E/i);
+			&& (	!$$self{backend}->isReadable($full)  
+				|| !$$self{backend}->isFile($full)
+				|| ($$self{backend}->stat($full))[7] > $self->config('sizelimit', 2097152) 
+				|| $$self{backend}->getFileContent($$full) !~/\Q$query\E/i
+			);
 		
-
-	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($base.$file) && !$$self{backend}->isLink($base.$file);
-	$ret |= 1 if !$$self{cgi}->param('foldertype') && $$self{backend}->isDir($base.$file);
-	$ret |= 1 if !$$self{cgi}->param('linktype') && $$self{backend}->isLink($base.$file);
+	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full);
+	$ret |= 1 if !$$self{cgi}->param('foldertype') && $$self{backend}->isDir($full);
+	$ret |= 1 if !$$self{cgi}->param('linktype') && $$self{backend}->isLink($full);
 	
 	if (defined $size && $size=~/^\d+$/) {
 		my $sizecomparator = $$self{cgi}->param('sizecomparator');
 		$sizecomparator = '==' if $sizecomparator eq '=';
 		if ($sizecomparator =~ /^[<>=]{1,2}$/) { 
-			my $filesize = ($$self{backend}->stat($base.$file))[7];
+			my $filesize = ($$self{backend}->stat($full))[7];
 			my $realsize = $size * ( $$self{BYTEUNITS}{$$self{cgi}->param('sizeunits')} || 1);
 			$ret |= ! eval "$filesize $sizecomparator $realsize";
 		}
 	}
-	
 	return $ret;
 }
 sub doSearch {

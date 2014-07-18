@@ -56,9 +56,6 @@ sub render {
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
 		} elsif ($ajax eq 'getTableConfigDialog') {
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
-		} elsif ($ajax eq 'search') {
-			$content = $self->handleSearchRequest($fn, $ru, $$self{cgi}->param('template'));
-			$contenttype='application/json';
 		} elsif ($ajax eq 'getFileListEntry') {
 			my $entrytemplate=$self->readTemplate($$self{cgi}->param('template'));
 			my $columns = $self->renderVisibleTableColumns($entrytemplate).$self->renderInvisibleAllowedTableColumns($entrytemplate);
@@ -165,7 +162,6 @@ sub execTemplateFunction {
 	$content = $self->renderFileList($fn,$ru,$param) if $func eq 'filelist';
 	$content = $self->isViewFiltered() if $func eq 'isviewfiltered';
 	$content = $self->renderFilterInfo() if $func eq 'filterInfo';
-	$content = $self->renderSearchResultList($fn,$ru,$param) if $func eq 'searchResultList';
 	$content = $self->renderLanguageList($fn,$ru,$param) if $func eq 'langList';
 	$content = $self->renderExtension($fn,$ru,$param) if $func eq 'extension';
 	
@@ -400,13 +396,6 @@ sub renderFilterInfo {
 		return $#filter > -1 ? join(", ",@filter) : "";
 	
 }
-sub canCreateThumbnail {
-	my ($self,$fn) = @_;
-	return $main::ENABLE_THUMBNAIL 
-		&& $self->hasThumbSupport(main::getMIMEType($fn)) 
-		&& $$self{backend}->isReadable($fn) 
-		&& !$$self{backend}->isEmpty($fn);
-}
 sub isEditable {
 	my ($self,$fn) = @_;
 	my $ef = $CACHE{$self}{editablefilesregex} ? $CACHE{$self}{editablefilesregex} : $CACHE{$self}{editablefilesregex}='('.join('|',@main::EDITABLEFILES).')';
@@ -510,52 +499,6 @@ sub round {
 	return $ret;
 }
 
-sub searchFile {
-	my($self, $basefn, $relfn, $filter) = @_;
-	my @result;
-	
-	return \@result if !$$self{backend}->isReadable($basefn);
-	
-	foreach my $file (@{$$self{backend}->readDir($basefn.$relfn,main::getFileLimit($basefn.$relfn))}) {
-		my $newrelfn = $relfn eq "" ? $file : "$relfn$file";
-		my $full = "$basefn$newrelfn";
-		push @result, @{$self->searchFile($basefn,"$newrelfn/", $filter)} if !$$self{backend}->isLink($full) && $$self{backend}->isDir($full);
-		push @result, $newrelfn unless $filter->filter("$basefn$relfn",$file);
-	} 
-	return \@result;
-}
-sub renderSearchResultList {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $entrytmpl = $self->readTemplate($tmplfile);
-	my $content = "";
-	my @searchResult = @{$self->searchFile($fn,"",$self)};
-	push @ERRORS, $self->tl('searchnothingfound').$self->renderFilterInfo() if $#searchResult <0;
-	
-	
-	my $columns = $self->renderVisibleTableColumns($entrytmpl).$self->renderInvisibleAllowedTableColumns($entrytmpl);
-	$entrytmpl=~s/\$filelistentrycolumns/$columns/esg;
-	
-	foreach my $result (@searchResult) {
-		$content .= $self->renderFileListEntry($fn, $ru, $result, $entrytmpl);
-		#$content=~s/unselectable=\"no\"/unselectable=\"yes\"/g;
-	}
-	return $content;
-}
-sub handleSearchRequest {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	local @ERRORS;
-	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
-	my $columns = $self->renderVisibleTableColumns($content).$self->renderInvisibleAllowedTableColumns($content);
-	$content=~s/\$filelistheadcolumns/$columns/egs;
-	$content=~s/\$visiblecolumncount/scalar($self->getVisibleTableColumns())/egs;
-	my %jsondata;
-	$jsondata{content} = $content;
-	$jsondata{error} = \@ERRORS if $#ERRORS>-1; 
-	my $json = new JSON();
-	return $json->encode(\%jsondata);
-	
-	return $json;
-}
 sub filter {
         my ($self,$path, $file) = @_;
         return 1 if $$self{utils}->filter($path,$file);
