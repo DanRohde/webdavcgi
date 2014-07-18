@@ -1,5 +1,5 @@
 /**
- * noty - jQuery Notification Plugin v2.0.3
+ * noty - jQuery Notification Plugin v2.2.0
  * Contributors: https://github.com/needim/noty/graphs/contributors
  *
  * Examples and Documentation - http://needim.github.com/noty/
@@ -29,7 +29,11 @@ if (typeof Object.create !== 'function') {
             this.options = $.extend({}, $.noty.defaults, options);
 
             this.options.layout = (this.options.custom) ? $.noty.layouts['inline'] : $.noty.layouts[this.options.layout];
-            this.options.theme = $.noty.themes[this.options.theme];
+
+			if ($.noty.themes[this.options.theme])
+            	this.options.theme = $.noty.themes[this.options.theme];
+			else
+				options.themeClassName = this.options.theme;
 
             delete options.layout;
             delete options.theme;
@@ -49,10 +53,13 @@ if (typeof Object.create !== 'function') {
         _build:function () {
 
             // Generating noty bar
-            var $bar = $('<div class="noty_bar"></div>').attr('id', this.options.id);
+            var $bar = $('<div class="noty_bar noty_type_' + this.options.type + '"></div>').attr('id', this.options.id);
             $bar.append(this.options.template).find('.noty_text').html(this.options.text);
 
             this.$bar = (this.options.layout.parent.object !== null) ? $(this.options.layout.parent.object).css(this.options.layout.parent.css).append($bar) : $bar;
+
+			if (this.options.themeClassName)
+				this.$bar.addClass(this.options.themeClassName).addClass('noty_container_type_' + this.options.type);
 
             // Set buttons if available
             if (this.options.buttons) {
@@ -68,7 +75,7 @@ if (typeof Object.create !== 'function') {
                 var self = this;
 
                 $.each(this.options.buttons, function (i, button) {
-                    var $button = $('<button/>').addClass((button.addClass) ? button.addClass : 'gray').html(button.text)
+                    var $button = $('<button/>').addClass((button.addClass) ? button.addClass : 'gray').html(button.text).attr('id', button.id ? button.id : 'button-' + i)
                         .appendTo(self.$bar.find('.noty_buttons'))
                         .bind('click', function () {
                             if ($.isFunction(button.onClick)) {
@@ -91,9 +98,10 @@ if (typeof Object.create !== 'function') {
 
             var self = this;
 
-            $(self.options.layout.container.selector).append(self.$bar);
+			(self.options.custom) ? self.options.custom.find(self.options.layout.container.selector).append(self.$bar) : $(self.options.layout.container.selector).append(self.$bar);
 
-            self.options.theme.style.apply(self);
+			if (self.options.theme && self.options.theme.style)
+            	self.options.theme.style.apply(self);
 
             ($.type(self.options.layout.css) === 'function') ? this.options.layout.css.apply(self.$bar) : self.$bar.css(this.options.layout.css || {});
 
@@ -101,10 +109,17 @@ if (typeof Object.create !== 'function') {
 
             self.options.layout.container.style.apply($(self.options.layout.container.selector));
 
-            self.options.theme.callback.onShow.apply(this);
+            self.showing = true;
+
+			if (self.options.theme && self.options.theme.style)
+            	self.options.theme.callback.onShow.apply(this);
 
             if ($.inArray('click', self.options.closeWith) > -1)
-                self.$bar.css('cursor', 'pointer').one('click', function () {
+                self.$bar.css('cursor', 'pointer').one('click', function (evt) {
+                    self.stopPropagation(evt);
+                    if (self.options.callback.onCloseClick) {
+                        self.options.callback.onCloseClick.apply(self);
+                    }
                     self.close();
                 });
 
@@ -114,7 +129,8 @@ if (typeof Object.create !== 'function') {
                 });
 
             if ($.inArray('button', self.options.closeWith) > -1)
-                self.$closeButton.one('click', function () {
+                self.$closeButton.one('click', function (evt) {
+                    self.stopPropagation(evt);
                     self.close();
                 });
 
@@ -130,6 +146,7 @@ if (typeof Object.create !== 'function') {
                 self.options.animation.easing,
                 function () {
                     if (self.options.callback.afterShow) self.options.callback.afterShow.apply(self);
+                    self.showing = false;
                     self.shown = true;
                 });
 
@@ -146,10 +163,20 @@ if (typeof Object.create !== 'function') {
         close:function () {
 
             if (this.closed) return;
+            if (this.$bar && this.$bar.hasClass('i-am-closing-now')) return;
 
             var self = this;
 
-            if (!this.shown) { // If we are still waiting in the queue just delete from queue
+            if (this.showing) {
+              self.$bar.queue(
+                function () {
+                  self.close.apply(self);
+                }
+              )
+              return;
+            }
+
+            if (!this.shown && !this.showing) { // If we are still waiting in the queue just delete from queue
                 var queue = [];
                 $.each($.noty.queue, function (i, n) {
                     if (n.options.id != self.options.id) {
@@ -205,7 +232,10 @@ if (typeof Object.create !== 'function') {
                         $.notyRenderer.render();
                     }
 
-                });
+					if (self.options.maxVisible > 0 && self.options.dismissQueue) {
+						$.notyRenderer.render();
+					}
+                })
 
         }, // end close
 
@@ -237,7 +267,17 @@ if (typeof Object.create !== 'function') {
             return this;
         },
 
+        stopPropagation:function (evt) {
+            evt = evt || window.event;
+            if (typeof evt.stopPropagation !== "undefined") {
+                evt.stopPropagation();
+            } else {
+                evt.cancelBubble = true;
+            }
+        },
+
         closed:false,
+        showing:false,
         shown:false
 
     }; // end NotyObject
@@ -248,6 +288,9 @@ if (typeof Object.create !== 'function') {
 
         // Renderer creates a new noty
         var notification = Object.create(NotyObject).init(options);
+
+		if (notification.options.killer)
+			$.noty.closeAll();
 
         (notification.options.force) ? $.noty.queue.unshift(notification) : $.noty.queue.push(notification);
 
@@ -262,7 +305,15 @@ if (typeof Object.create !== 'function') {
 
         if ($.type(instance) === 'object') {
             if (instance.options.dismissQueue) {
-                $.notyRenderer.show($.noty.queue.shift());
+				if (instance.options.maxVisible > 0) {
+					if ($(instance.options.layout.container.selector + ' li').length < instance.options.maxVisible) {
+						$.notyRenderer.show($.noty.queue.shift());
+					} else {
+
+					}
+				} else {
+					$.notyRenderer.show($.noty.queue.shift());
+				}
             } else {
                 if ($.noty.ontap) {
                     $.notyRenderer.show($.noty.queue.shift());
@@ -283,15 +334,19 @@ if (typeof Object.create !== 'function') {
         }
 
         // Where is the container?
-        if ($(notification.options.layout.container.selector).length == 0) {
-            if (notification.options.custom) {
-                notification.options.custom.append($(notification.options.layout.container.object).addClass('i-am-new'));
-            } else {
-                $('body').append($(notification.options.layout.container.object).addClass('i-am-new'));
-            }
-        } else {
-            $(notification.options.layout.container.selector).removeClass('i-am-new');
-        }
+		if (notification.options.custom) {
+			if (notification.options.custom.find(notification.options.layout.container.selector).length == 0) {
+				notification.options.custom.append($(notification.options.layout.container.object).addClass('i-am-new'));
+			} else {
+				notification.options.custom.find(notification.options.layout.container.selector).removeClass('i-am-new');
+			}
+		} else {
+			if ($(notification.options.layout.container.selector).length == 0) {
+				$('body').append($(notification.options.layout.container.object).addClass('i-am-new'));
+			} else {
+				$(notification.options.layout.container.selector).removeClass('i-am-new');
+			}
+		}
 
         $.notyRenderer.setLayoutCountFor(notification, +1);
 
@@ -393,6 +448,8 @@ if (typeof Object.create !== 'function') {
         timeout:false,
         force:false,
         modal:false,
+        maxVisible:5,
+		killer: false,
         closeWith:['click'],
         callback:{
             onShow:function () {
@@ -402,6 +459,8 @@ if (typeof Object.create !== 'function') {
             onClose:function () {
             },
             afterClose:function () {
+            },
+            onCloseClick:function () {
             }
         },
         buttons:false
@@ -416,98 +475,6 @@ if (typeof Object.create !== 'function') {
 })(jQuery);
 
 // Helpers
-function noty(options) {
-
-    // This is for BC  -  Will be deleted on v2.2.0
-    var using_old = 0
-        , old_to_new = {
-            'animateOpen':'animation.open',
-            'animateClose':'animation.close',
-            'easing':'animation.easing',
-            'speed':'animation.speed',
-            'onShow':'callback.onShow',
-            'onShown':'callback.afterShow',
-            'onClose':'callback.onClose',
-            'onClosed':'callback.afterClose'
-        };
-
-    jQuery.each(options, function (key, value) {
-        if (old_to_new[key]) {
-            using_old++;
-            var _new = old_to_new[key].split('.');
-
-            if (!options[_new[0]]) options[_new[0]] = {};
-
-            options[_new[0]][_new[1]] = (value) ? value : function () {
-            };
-            delete options[key];
-        }
-    });
-
-    if (!options.closeWith) {
-        options.closeWith = jQuery.noty.defaults.closeWith;
-    }
-
-    if (options.hasOwnProperty('closeButton')) {
-        using_old++;
-        if (options.closeButton) options.closeWith.push('button');
-        delete options.closeButton;
-    }
-
-    if (options.hasOwnProperty('closeOnSelfClick')) {
-        using_old++;
-        if (options.closeOnSelfClick) options.closeWith.push('click');
-        delete options.closeOnSelfClick;
-    }
-
-    if (options.hasOwnProperty('closeOnSelfOver')) {
-        using_old++;
-        if (options.closeOnSelfOver) options.closeWith.push('hover');
-        delete options.closeOnSelfOver;
-    }
-
-    if (options.hasOwnProperty('custom')) {
-        using_old++;
-        if (options.custom.container != 'null') options.custom = options.custom.container;
-    }
-
-    if (options.hasOwnProperty('cssPrefix')) {
-        using_old++;
-        delete options.cssPrefix;
-    }
-
-    if (options.theme == 'noty_theme_default') {
-        using_old++;
-        options.theme = 'defaultTheme';
-    }
-
-    if (!options.hasOwnProperty('dismissQueue')) {
-        options.dismissQueue = jQuery.noty.defaults.dismissQueue;
-    }
-
-    if (options.buttons) {
-        jQuery.each(options.buttons, function (i, button) {
-            if (button.click) {
-                using_old++;
-                button.onClick = button.click;
-                delete button.click;
-            }
-            if (button.type) {
-                using_old++;
-                button.addClass = button.type;
-                delete button.type;
-            }
-        });
-    }
-
-    if (using_old) {
-        if (typeof console !== "undefined" && console.warn) {
-            console.warn('You are using noty v2 with v1.x.x options. @deprecated until v2.2.0 - Please update your options.');
-        }
-    }
-
-    // console.log(options);
-    // End of the BC
-
+window.noty = function noty(options) {
     return jQuery.notyRenderer.init(options);
-}
+};
