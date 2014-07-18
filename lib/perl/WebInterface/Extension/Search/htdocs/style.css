@@ -101,4 +101,6 @@ input.search.start, input.search.cancel {
 }
 .search.result.entry .icon {
 	float: none;
+	vertical-align: text-bottom;
+	padding: 1px;
 }
