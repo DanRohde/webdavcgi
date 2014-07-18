@@ -171,13 +171,15 @@ sub handleSearch {
 	my $duration = $counter{completed} - $counter{started};
 	my $status = sprintf($self->tl('search.completed'),$counter{results} || '0', $duration, $counter{files} || '0' ,$counter{folders} || '0');
 	my $data = !$counter{results} ? $$self{cgi}->div($self->tl('search.noresult')) : undef; 
-	$self->getSearchResult($status, $data);
+	my %messages = ();
+	$messages{warn} = $$self{cgi}->escapeHTML(sprintf($self->tl('search.limitsreached'), $self->config('resultlimit', 1000), $self->config('searchtimeout',30))) if $self->limitsReached(\%counter);
+	$self->getSearchResult($status, $data, \%messages);
 	unlink $self->getTempFilename('result');
 	return 1;
 }
 sub getSearchResult {
-	my ($self, $status, $data) = @_;
-	my %jsondata = ();
+	my ($self, $status, $data, $messages) = @_;
+	my %jsondata = $messages ? %{$messages} : ();
 	my $tmpfn = $self->getTempFilename('result');
 	$jsondata{status} = $status || $self->tl('search.inprogress');
 	if ($data) {
