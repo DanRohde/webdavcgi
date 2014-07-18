@@ -20,6 +20,7 @@
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # disable_apps - disables sidebar menu entry
 # allow_contentsearch - allowes search file content
+# resultlimit - sets result limit (default: 1000)
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))
 
 
@@ -135,6 +136,7 @@ sub doSearch {
 	my $backend = $$self{backend};
 	my $full = $base.$file;
 	
+	return if $$counter{results} >= $self->config('resultlimit', 1000);
 	$self->addSearchResult($base, $file, $counter) unless $self->filterFiles($base,$file);
 	
 	if ($backend->isDir($full) && !$backend->isLink($full)) {
@@ -157,6 +159,7 @@ sub handleSearch {
 	my %counter;
 	foreach my $file (@files) {
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);
+		last if  $counter{results} >= $self->config('resultlimit',1000)
 	}
 	my $status = sprintf($self->tl('search.completed'),$counter{results} || '0',$counter{files} || '0' ,$counter{folders} || '0');
 	my $data = !$counter{results} ? $$self{cgi}->div($self->tl('search.noresult')) : undef; 
