@@ -98,7 +98,7 @@ input.search.start, input.search.cancel {
 	height: 20px;
 	background-image: url(open-parent-folder.png);
 	background-repeat: no-repeat;
-	background-pos: left top;
+	background-position: left bottom;
 	opacity: 0.7;
 	filter: Alpha(opacity=70);
 }
