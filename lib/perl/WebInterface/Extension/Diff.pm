@@ -44,7 +44,7 @@ sub handle {
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	if ($hook eq 'fileactionpopup') {
-		$ret ={ action=>'diff', label=>'diff', path=>$$params{path}, type=>'li'};	
+		$ret ={ action=>'diff', label=>'diff', path=>$$params{path}, type=>'li',classes=>$self->config('files_only',1)?'sel-multi sel-file':'sel-multi'};	
 	} elsif ($hook eq 'apps') {
 		$ret = $self->handleAppsHook($$self{cgi},'listaction diff sel-oneormore disabled','diff_short','diff'); 
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'diff') {
