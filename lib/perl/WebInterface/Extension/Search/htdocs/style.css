@@ -81,10 +81,7 @@ input.search.start, input.search.cancel {
 .search.moreoptionscollapser.uncollapsed {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gcRDzkwnWTBPgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAeSURBVAjXY/z//z8DNsDEgAPglGA0MTEhUQf1LAcAezQGpKUYLeIAAAAASUVORK5CYII=);
 }
-.search.query {
-	margin-bottom: 8px;
-}
-.search.typeonly {
+.search.query, .search.typeonly, .search.infolders {
 	margin-bottom: 8px;
 }
 .search.result.entry {

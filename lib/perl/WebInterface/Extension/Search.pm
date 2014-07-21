@@ -66,9 +66,17 @@ sub handle {
 	}
 	return $ret;
 }
+sub cutLongString {
+	my ($self, $string, $limit) = @_;
+	$limit = 100 unless $limit;
+	return $string if (length($string)<=$limit);
+	return substr($string, 0, $limit-3).'...';
+}
 sub getSearchForm {
 	my ($self) = @_;
-	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')));
+	my $searchinfolders = $$self{cgi}->param('files') ? join(", ", $$self{cgi}->param('files')) : $self->tl('search.currentfolder');
+	my $vars = { searchinfolders => $$self{cgi}->escapeHTML($self->cutLongString($searchinfolders)), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders)};
+	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')), $vars);
 	main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
 	return 1;
 }

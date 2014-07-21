@@ -3,6 +3,8 @@
 	<input type="hidden" name="ajax" value="search"/>
 	<input type="hidden" class="search id" name="searchid" value="$getSearchId()"/>
    $renderSelectedFiles(<input type="hidden" name="files" value="$v"/>)
+   
+<div class="search infolders" title="$searchinfolderstitle">$tl(search.searchinfolders): $searchinfolders</div>
 <div class="search formpanel">
 	<div class="search query">
 		$tl(search.query): <input class="search query" type="text" name="query" value=""/> 
