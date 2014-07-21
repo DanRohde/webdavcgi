@@ -74,7 +74,7 @@ sub cutLongString {
 }
 sub getSearchForm {
 	my ($self) = @_;
-	my $searchinfolders = $$self{cgi}->param('files') ? join(", ", $$self{cgi}->param('files')) : $self->tl('search.currentfolder');
+	my $searchinfolders = $$self{cgi}->param('files') ? join(", ", map{ $$self{backend}->getDisplayName($main::PATH_TRANSLATED.$_)} $$self{cgi}->param('files')) : $self->tl('search.currentfolder');
 	my $vars = { searchinfolders => $$self{cgi}->escapeHTML($self->cutLongString($searchinfolders)), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders)};
 	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')), $vars);
 	main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
@@ -92,7 +92,7 @@ sub getResultTemplate {
 sub addSearchResult {
 	my ($self, $base, $file, $counter) = @_;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
-		my $filename = $file eq "" ? "." : $$self{cgi}->escapeHTML($file);
+		my $filename = $file eq "" ? "." : $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($base.$file));
 		my $full = $base.$file;
 		my $uri = $main::REQUEST_URI.$file;
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
