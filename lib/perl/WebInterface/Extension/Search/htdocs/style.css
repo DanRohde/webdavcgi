@@ -40,15 +40,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .search.resultpanel {
 	min-height: 350px; 
-	height: 70%;
 	border: 2px inset #999999;
 	clear: both;
-	position: relative;
-/*	margin-bottom: 1.5em; */
 	
 }
 .search.resultcontentpane {
-	max-height: 40ex;
+	max-height: 750px;
 	overflow: auto;
 	min-width: 700px;
 }
@@ -56,10 +53,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-color: #ededed;
 	height: 1.5em;
 	width: 100%;
-/*	position: absolute;
-	bottom: -1.9em;
-	left: -1px;
-*/
 }
 .search.dialogpane.searchinprogress {
 	cursor: wait;
