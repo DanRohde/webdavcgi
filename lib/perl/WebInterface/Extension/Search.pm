@@ -23,6 +23,7 @@
 # resultlimit - sets result limit (default: 1000)
 # searchtimeout - sets a timeout in seconds for a single search (default: 30 seconds) 
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))
+# disable_dupseaerch - disables duplicate file search
 
 
 package WebInterface::Extension::Search;
@@ -34,6 +35,8 @@ our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
 use Time::HiRes qw(time);
+
+use Digest::MD5 qw(md5_hex);
 
 use vars qw( %CACHE );
 sub init { 
@@ -86,8 +89,8 @@ sub getTempFilename {
 	return "/tmp/webdavcgi-search-$main::REMOTE_USER-$searchid.$type";
 }
 sub getResultTemplate {
-	my($self) = @_;
-	return $CACHE{$self}{resulttemplate} ||= $self->readTemplate($self->config('resulttemplate', 'result'));
+	my($self, $tmplname) = @_;
+	return $CACHE{$self}{resulttemplate}{$tmplname} ||= $self->readTemplate($tmplname);
 }
 sub addSearchResult {
 	my ($self, $base, $file, $counter) = @_;
@@ -96,7 +99,7 @@ sub addSearchResult {
 		my $full = $base.$file;
 		my $uri = $main::REQUEST_URI.$file;
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate(), 
+		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri), 
 				filename=>$filename,
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
@@ -110,7 +113,7 @@ sub addSearchResult {
 	}
 }
 sub filterFiles {
-	my ($self, $base, $file) = @_;
+	my ($self, $base, $file, $counter) = @_;
 	my $ret = 0;
 	my $query = $$self{cgi}->param('query');
 	my $size = $$self{cgi}->param('size');
@@ -139,6 +142,12 @@ sub filterFiles {
 			$ret |= ! eval "$filesize $sizecomparator $realsize";
 		}
 	}
+	if (!$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch')) {
+		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)) {  ## && ($$self{backend}->stat($full))[7] <= $self->config('sizelimit',2097152)) {
+			push @{$$counter{dupsearch}{sizes}{($$self{backend}->stat($full))[7]}}, { base=>$base, file=>$file };
+		}
+		$ret = 1;
+	}
 	return $ret;
 }
 sub limitsReached {
@@ -152,7 +161,7 @@ sub doSearch {
 	;
 	return if $self->limitsReached($counter);
 	
-	$self->addSearchResult($base, $file, $counter) unless $self->filterFiles($base,$file);
+	$self->addSearchResult($base, $file, $counter) unless $self->filterFiles($base,$file,$counter);
 	
 	if ($backend->isDir($full) && !$backend->isLink($full)) {
 		$$counter{folders}++;
@@ -163,6 +172,75 @@ sub doSearch {
 	} else {
 		$$counter{files}++;
 	}	
+}
+sub getSampleData {
+	my ($self, $data, $size) = @_;
+	
+	foreach my $fileinfo (@{$$data{dupsearch}{sizes}{$size}}) {
+		if ($size>0) {
+			my $full = $$fileinfo{base}.$$fileinfo{file};
+			my $md5 = md5_hex($$self{backend}->getFileContent($full, $self->config('duplicate_sample_size', 1024)));
+			push @{$$data{dupsearch}{md5sample}{$size}{$md5}}, $fileinfo;
+		} else {
+			push @{$$data{dupsearch}{md5sample}{$size}{0}}, $fileinfo; 
+		}
+	}
+}
+sub getFullData {
+	my ($self, $data, $size, $md5sample) = @_;
+	foreach my $fileinfo (@{$$data{dupsearch}{md5sample}{$size}{$md5sample},}) {
+		if ($size <= $self->config('duplicate_sample_size',1024)) {
+			push @{$$data{dupsearch}{md5}{$size}{$md5sample}}, $fileinfo;
+			next;
+		}
+		my $md5 = md5_hex($$self{backend}->getFileContent($$fileinfo{base}.$$fileinfo{file}, $self->config('sizelimit',2097152)));
+		push @{$$data{dupsearch}{md5}{$size}{$md5}}, $fileinfo;		
+	}
+}
+sub addDuplicateClusterResult {
+	my ($self, $data, $size, $md5) = @_;
+	if (open(my $fh,">>", $self->getTempFilename('result'))) {
+		my ($s,$st) = $self->renderByteValue($size);
+		my $sizelimit = $self->config('sizelimit',2097152);
+		my ($sl, $slt) = $self->renderByteValue($sizelimit);
+		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchtemplate', 'dupsearch')), 
+			{
+				filecount => scalar(@{$$data{dupsearch}{md5}{$size}{$md5}}),
+				digest => $md5,
+				size => $s,
+				sizetitle=> $st,
+				bytesize=>$size,
+				sizelimit => $sizelimit,
+				sizelimittext => $sl,
+				sizelimittitle=> $slt,
+			}
+		);	
+		close($fh); 
+	}	
+	foreach my $fileinfo (@{$$data{dupsearch}{md5}{$size}{$md5}}) {
+		$self->addSearchResult($$fileinfo{base}, $$fileinfo{file}, $data);
+	}
+}
+sub doDupSearch {
+	my ($self, $data) = @_;
+	
+	foreach my $size (sort { $a <=> $b} keys %{$$data{dupsearch}{sizes}}) {
+		## check count of files with same size:
+		next unless scalar(@{$$data{dupsearch}{sizes}{$size}})>1;
+		## get sample data:
+		$self->getSampleData($data, $size);
+		## check sample data md5 sums:		
+		foreach my $md5sample (keys %{$$data{dupsearch}{md5sample}{$size}}) {		
+			next unless scalar(@{$$data{dupsearch}{md5sample}{$size}{$md5sample}}) >1;
+			$self->getFullData( $data, $size, $md5sample);
+		}
+		## check md5 sums:	
+		foreach my $md5 (keys %{$$data{dupsearch}{md5}{$size}}) {
+			next unless scalar(@{$$data{dupsearch}{md5}{$size}{$md5}}) >1;
+			## TODO: compare bitwise
+			$self->addDuplicateClusterResult($data, $size, $md5);
+		}		
+	}
 }
 sub handleSearch {
 	my ($self) = @_;
@@ -176,6 +254,9 @@ sub handleSearch {
 		last if $self->limitsReached(\%counter);
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);
 	}
+	
+	$self->doDupSearch(\%counter) if !$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch');
+	
 	$counter{completed} = time();
 	my $duration = $counter{completed} - $counter{started};
 	my $status = sprintf($self->tl('search.completed'),$counter{results} || '0', $duration, $counter{files} || '0' ,$counter{folders} || '0');

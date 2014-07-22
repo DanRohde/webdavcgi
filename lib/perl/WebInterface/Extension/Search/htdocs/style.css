@@ -74,7 +74,7 @@ input.search.start, input.search.cancel {
 .search.moreoptionscollapser.uncollapsed {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gcRDzkwnWTBPgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAeSURBVAjXY/z//z8DNsDEgAPglGA0MTEhUQf1LAcAezQGpKUYLeIAAAAASUVORK5CYII=);
 }
-.search.query, .search.typeonly, .search.infolders {
+.search.query, .search.typeonly, .search.infolders, .search.size, .search.duplicate {
 	margin-bottom: 8px;
 }
 .search.result.entry {
@@ -103,4 +103,10 @@ input.search.start, input.search.cancel {
 	float: none;
 	vertical-align: text-bottom;
 	padding: 1px;
+}
+.search.result.entry.duplicates {
+	background-color: #ffaaaa;
+}
+.search.result.entry.duplicates.limitexceeded {
+	background-color: #ffffaa;
 }

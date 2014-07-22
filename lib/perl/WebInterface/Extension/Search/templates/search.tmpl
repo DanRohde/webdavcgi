@@ -39,6 +39,9 @@
 				$each#@BYTEUNITORDER#'<option value="$v">$v</option>'#'$view'#
 			</select>
 		</div>
+		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->
+			<div class="search duplicate"><input type="checkbox" name="dupsearch">$tl(search.duplicatefiles)</div>
+		<!--ENDIF-->
 	</div>
 </div>
 <div class="search buttonpanel">

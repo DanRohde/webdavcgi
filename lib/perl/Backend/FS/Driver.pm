@@ -305,14 +305,16 @@ sub resolve {
 }
 
 sub getFileContent {
-        my ($self,$fn) = @_;
+        my ($self,$fn,$limit) = @_;
         my $content="";
-        if ($self->exists($fn) && !$self->isDir($fn) && open(F,"<".$self->resolveVirt($fn))) {
-                $content = join("",<F>);
-                close(F);
+        if ($self->exists($fn) && !$self->isDir($fn) && open(my $fh,"<",$self->resolveVirt($fn))) {
+        	binmode $fh;
+                read($fh,$content,$limit || ($self->stat($fn))[7]);
+                close($fh);
         }
         return $content;
 }
+
 sub hasSetUidBit {
 	return -u $_[0]->resolveVirt($_[1]); 
 }

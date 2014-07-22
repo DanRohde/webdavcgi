@@ -274,10 +274,7 @@ sub getLocalFilename {
 sub getFileContent {
 	my $content;
 	if (my $fh = $_[0]->getSmbClient()->open("<".$_[0]->_getSmbURL($_[1]))) {
-		$content = "";
-		while (my $buffer = $_[0]->getSmbClient()->read($fh, $main::BUFSIZE || 1048576))  {
-			$content.=$buffer;
-		}
+		$content = $_[0]->getSmbClient()->read($fh, $_[2] || ($_[0]->stat($_[1]))[7]);
 		$_[0]->getSmbClient()->close($fh);
 	}
 	return $content;
