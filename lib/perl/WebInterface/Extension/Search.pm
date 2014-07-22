@@ -97,10 +97,11 @@ sub addSearchResult {
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
 		my $filename = $file eq "" ? "." : $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($base.$file));
 		my $full = $base.$file;
-		my $uri = $main::REQUEST_URI.$file;
+		my $uri = $main::REQUEST_URI.$$self{cgi}->escape($file);
+		$uri=~s/\%2f/\//gi; 
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
-			{ fileuri=>$$self{cgi}->escapeHTML($uri), 
+			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
 				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
