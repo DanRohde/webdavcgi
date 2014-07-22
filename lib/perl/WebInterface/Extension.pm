@@ -43,7 +43,9 @@ sub getExtensionLocation {
 }
 sub getExtensionUri {
 	my ($self, $extension, $file) = @_;
-	return $main::VHTDOCS.'_EXTENSION('.$extension.')_/'.$file;
+	my $vbase = $main::REQUEST_URI=~/^($main::VIRTUAL_BASE)/ ? $1 : $REQUEST_URI;
+	$vbase.='/' unless $vbase=~/\/$/;
+	return $vbase.$main::VHTDOCS.'_EXTENSION('.$extension.')_/'.$file;
 }
 sub handleJavascriptHook {
 	my($self, $extension, $file) = @_;
