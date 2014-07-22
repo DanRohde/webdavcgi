@@ -143,7 +143,7 @@ sub filterFiles {
 		}
 	}
 	if (!$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch')) {
-		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)) {  ## && ($$self{backend}->stat($full))[7] <= $self->config('sizelimit',2097152)) {
+		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)&& !$$self{backend}->isDir($full)) {  ## && ($$self{backend}->stat($full))[7] <= $self->config('sizelimit',2097152)) {
 			push @{$$counter{dupsearch}{sizes}{($$self{backend}->stat($full))[7]}}, { base=>$base, file=>$file };
 		}
 		$ret = 1;
