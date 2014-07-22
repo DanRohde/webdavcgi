@@ -158,7 +158,7 @@ sub doSearch {
 	my ($self, $base, $file, $counter) = @_;
 	my $backend = $$self{backend};
 	my $full = $$self{backend}->resolveVirt($base.$file);
-	;
+	
 	return if $self->limitsReached($counter);
 	
 	$self->addSearchResult($base, $file, $counter) unless $self->filterFiles($base,$file,$counter);
@@ -225,13 +225,14 @@ sub doDupSearch {
 	my ($self, $data) = @_;
 	
 	foreach my $size (sort { $a <=> $b} keys %{$$data{dupsearch}{sizes}}) {
+		return if $self->limitsReached($data);
 		## check count of files with same size:
 		next unless scalar(@{$$data{dupsearch}{sizes}{$size}})>1;
 		## get sample data:
 		$self->getSampleData($data, $size);
 		## check sample data md5 sums:		
 		foreach my $md5sample (keys %{$$data{dupsearch}{md5sample}{$size}}) {		
-			next unless scalar(@{$$data{dupsearch}{md5sample}{$size}{$md5sample}}) >1;
+			next unless scalar(@{$$data{dupsearch}{md5sample}{$size}{$md5sample}}) >1; 
 			$self->getFullData( $data, $size, $md5sample);
 		}
 		## check md5 sums:	
