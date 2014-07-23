@@ -926,18 +926,18 @@ function initFileList() {
 	
 	// init single file actions:
 	$("#fileList tr.unselectable-no")
-		.hover(handleFileListRowFocusIn, handleFileListRowFocusOut)
-		.focusin(handleFileListRowFocusIn)
+		.off("hover").hover(handleFileListRowFocusIn, handleFileListRowFocusOut)
+		.off("focusin").focusin(handleFileListRowFocusIn)
 		.each(function(i,v) {
 			var self = $(this);
-			self.find(".filename a").focusin(function(event) {
+			self.find(".filename a").off("focusin").focusin(function(event) {
 				handleFileListRowFocusIn.call(self,event);
 			});
 		});
 	
 	// mouse events on a file row:
 	$("#fileList tr")
-		.click(handleRowClickEvent)
+		.off("click").click(handleRowClickEvent)
 		.dblclick(function(event) { 
 			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),
 					$(this).attr("data-type") == 'file');
