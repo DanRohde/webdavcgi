@@ -281,10 +281,10 @@ sub compressFiles {
 
 	require Archive::Zip;
 	my $zip =  Archive::Zip->new();
-	foreach my $file (@files) {
+	foreach my $file (@files) {	
 		if ($self->isDir($basepath.$file)) {
 			$zip->addTree($self->resolveVirt($basepath.$file), $file);
-		} elsif ($self->exists($basepath.$file)) {
+		} elsif ($self->isReadable($basepath.$file) && $self->exists($basepath.$file)) {
 			$zip->addFile($self->resolveVirt($basepath.$file), $file);
 		}
 	}

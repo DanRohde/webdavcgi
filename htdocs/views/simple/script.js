@@ -926,19 +926,19 @@ function initFileList() {
 	
 	// init single file actions:
 	$("#fileList tr.unselectable-no")
-		.off("hover").hover(handleFileListRowFocusIn, handleFileListRowFocusOut)
-		.off("focusin").focusin(handleFileListRowFocusIn)
+		.off("mouseenter.initFileList").off("mouseleave.initFileList").on("mouseenter.initFileList",handleFileListRowFocusIn).on("mouseleave.initFileList", handleFileListRowFocusOut)
+		.off("focusin.initFileList").on("focusin.initFileList",handleFileListRowFocusIn)
 		.each(function(i,v) {
 			var self = $(this);
-			self.find(".filename a").off("focusin").focusin(function(event) {
+			self.find(".filename a").off("focusin.initFileList").on("focusin.initFileList",function(event) {
 				handleFileListRowFocusIn.call(self,event);
 			});
 		});
 	
 	// mouse events on a file row:
 	$("#fileList tr")
-		.off("click").click(handleRowClickEvent)
-		.dblclick(function(event) { 
+		.off("click.initFileList").on("click.initFileList",handleRowClickEvent)
+		.off("dblclick.initFileList").on("dblclick.initFileList",function(event) { 
 			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),
 					$(this).attr("data-type") == 'file');
 		});
@@ -997,7 +997,7 @@ function initFileList() {
 	
 	// init column drag and dblclick resize
 	$("#fileListTable th:not(.resizable-false)")
-		.off("click")
+		.off("click.initFileList")
 		.each(function(i,v) {
 			var col = $(v);
 			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle left");
@@ -1008,7 +1008,7 @@ function initFileList() {
 			
 			// handle click and dblclick at the same time:
 			var clicks = 0;
-			$(v).click(function(event) {
+			$(v).on("click.initFileList",function(event) {
 				var self = $(this);
 				clicks++;
 				if (clicks == 1) {
@@ -1857,7 +1857,7 @@ function initViewFilterDialog() {
 		});
 	});
 }
-function renderAbortDialog(xhr, timeout) {
+function renderAbortDialog(xhr, timeout, handler) {
 	window.setTimeout(function() {
 		if (xhr.readyState > 2) return;
 		
@@ -1867,6 +1867,7 @@ function renderAbortDialog(xhr, timeout) {
 		dialog.click(function(event){
 			if (xhr.readyState !=4) xhr.abort();
 			dialog.hide().remove();
+			if (handler) handler.call(this);
 		}).appendTo("body").show();
 		var interval = window.setInterval(function() {
 			if (xhr.readyState == 4) {
