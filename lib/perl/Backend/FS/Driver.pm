@@ -44,8 +44,14 @@ sub finalize {
 	$$self{cache}=\%CACHE;
 }
 
+sub __basename {
+	my $bn = main::getBaseURIFrag($_[1]);
+	$bn =~s /\Q$_[2]\E// if $_[2];
+	return $bn;
+}
 sub basename {
-	return exists $CACHE{$_[0]}{$_[1]}{basename} ? $CACHE{$_[0]}{$_[1]}{basename} : ($CACHE{$_[0]}{$_[1]}{basename} = main::getBaseURIFrag($_[1]));
+	return $CACHE{$_[0]}{$_[1]}{basename} ||= $_[0]->__basename($_[1], $_[2]);
+	##return exists $CACHE{$_[0]}{$_[1]}{basename} ? $CACHE{$_[0]}{$_[1]}{basename} : ($CACHE{$_[0]}{$_[1]}{basename} = main::getBaseURIFrag($_[1]));
 }
 sub dirname {
 	return main::getParentURI($_[1]);

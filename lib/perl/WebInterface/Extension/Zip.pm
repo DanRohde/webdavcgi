@@ -32,6 +32,8 @@ use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
+use File::Temp qw(tempfile);
+use POSIX qw(strftime);
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -56,7 +58,9 @@ sub handle {
 	} elsif ($hook eq 'filelistaction') {
 		$ret = { listaction=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, classes=>'sel-multi uibutton'};
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction sep'};
+		$ret = [ { action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction sep'},
+			 { action=>'zipcompress', label=>'zip.compress', title=>'zip.compress', path=>$$params{path}, type=>'li' },
+			 { action=>'zipuncompress',label=>'zip.uncompress', title=>'zip.uncompress', path=>$$params{path}, type=>'li' } ];
 	} elsif ($hook eq 'fileactionpopupnew') {
 		$ret = { action=>'zipup', label=>'zipup', title=>'zipup', path=>$$params{path}, type=>'li', classes=>'access-writeable sep'};
 	} elsif ($hook eq 'new') {	
@@ -72,7 +76,11 @@ sub handle {
 			$ret = $self->handleZipDownload();
 		} elsif ($$self{cgi}->param('action') eq 'zipup') {
 			$ret = $self->handleZipUpload();
-		}
+		} elsif ($$self{cgi}->param('action') eq 'zipcompress') {
+			$ret = $self->handleZipCompress();
+		} elsif ($$self{cgi}->param('action') eq 'zipuncompress') {
+			$ret = $self->handleZipUncompress();
+		} 
 	}
 	return $ret;
 }
@@ -130,6 +138,59 @@ sub handleZipDownload {
 		-Content_disposition => 'attachment; filename=' . $zfn
 	);
 	$$self{backend}->compressFiles( \*STDOUT, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
+	return 1;
+}
+sub handleZipCompress {
+	my $self = shift;
+	
+	my @files = $$self{cgi}->param('files');
+	my $time = strftime('%Y-%m-%d-%H:%M:%S',localtime);
+	my $zipfilename = $$self{backend}->basename(scalar(@files) > 1 ? $main::REQUEST_URI : $files[0],'.zip') . "-$time.zip";
+	$zipfilename=~s/\//_/g;
+	
+	my ($zipfh, $zipfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-Zip-XXXXX', CLEANUP=>1, SUFFIX=>".zip");
+	my $error;
+	if (open($zipfh,">","$zipfn")) {
+		$$self{backend}->compressFiles($zipfh, $main::PATH_TRANSLATED, @files); 
+		close($zipfh);
+		if ((stat($zipfn))[7]>0) {
+			my ($quotahrd,$quotacur) = main::getQuota();
+			if ($quotahrd == 0 || (stat($zipfn))[7] + $quotacur < $quotahrd) {
+				if (open($zipfh,"<",$zipfn)) {;
+					$$self{backend}->saveStream($main::PATH_TRANSLATED.$zipfilename, $zipfh);
+					close($zipfh);
+				}
+			} else {
+				$error = $self->tl('msg_zipcompress_quotaexceeded');
+			}
+		} else {
+			$error=$self->tl('msg_zipcompress_failed');
+		}
+	}
+	my %jsondata = ();
+	
+	if ($error) {
+		$jsondata{error} = $error;		
+	} else {
+		$jsondata{message} = sprintf($self->tl('msg_zipcompress'), $$self{cgi}->escapeHTML($zipfilename), $$self{cgi}->escapeHTML(scalar(@files)>1 ? $files[0].",..." : $files[0]));
+	}
+	unlink $zipfn;		
+
+	
+	my $json = new JSON();
+	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	return 1;
+}
+sub handleZipUncompress {
+	my ($self) = @_;
+	my @files = $$self{cgi}->param('files');
+	foreach my $file ($$self{cgi}->param('files')) {
+		$$self{backend}->uncompressArchive($main::PATH_TRANSLATED.$file, $main::PATH_TRANSLATED);
+	}
+	my %jsondata = ();
+	$jsondata{message} = sprintf($self->tl('msg_zipuncompress'), $$self{cgi}->escapeHTML(join(', ',@files)));
+	my $json = new JSON();
+	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 

@@ -40,4 +40,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(zipdwnload.png);
 	background-position: 2px center;
 }
-
+.action.zipcompress {
+	background-image: url(compress.png);
+	background-position: left bottom;
+}
+.action.zipuncompress {
+	background-image: url(uncompress.png);
+	background-position: left bottom;
+}
