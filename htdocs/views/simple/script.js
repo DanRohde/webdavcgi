@@ -1346,7 +1346,7 @@ function handleRowClickEvent(event) {
 	if (isSelectableRow($(this))) {
 		var start = this.rowIndex;
 		var end = start;
-		if ((event.ctrlKey || event.shiftKey || event.metaKey || event.altKey) && flt.data('lastSelectedRowIndex')) {
+		if ((event.shiftKey || event.metaKey || event.altKey) && flt.data('lastSelectedRowIndex')) {
 			end = flt.data('lastSelectedRowIndex');
 			if (end < start ) {
 				var c = end;
