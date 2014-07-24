@@ -42,9 +42,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .action.zipcompress {
 	background-image: url(compress.png);
-	background-position: left bottom;
+	background-position: left center;
 }
 .action.zipuncompress {
 	background-image: url(uncompress.png);
-	background-position: left bottom;
+	background-position: left center;
 }

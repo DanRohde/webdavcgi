@@ -173,6 +173,9 @@ sub renderExtensionElement {
 	my($self,$fn,$ru,$a) = @_;
 	my $content = "";
 	if (ref($a) eq 'HASH') {
+		if ($$a{subpopupmenu}) {
+			return $$self{cgi}->li({-title=>$$a{title} ||'', -class=>'subpopupmenu extension'. ($$a{classes}? ' '.$$a{classes}:'')},($$a{title} || '').$$self{cgi}->ul({-class=>'subpopupmenu extension'},$self->renderExtensionElement($fn,$ru,$$a{subpopupmenu}))) ;
+		}
 		my %params = (-class=>'');
 		$params{-class}.=' action '.$$a{action} if $$a{action};
 		$params{-class}.=' listaction '.$$a{listaction} if $$a{listaction};

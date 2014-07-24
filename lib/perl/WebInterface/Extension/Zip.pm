@@ -58,9 +58,14 @@ sub handle {
 	} elsif ($hook eq 'filelistaction') {
 		$ret = { listaction=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, classes=>'sel-multi uibutton'};
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = [ { action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction sep'},
-			 { action=>'zipcompress', label=>'zip.compress', title=>'zip.compress.title', path=>$$params{path}, type=>'li' },
-			 { action=>'zipuncompress',label=>'zip.uncompress', title=>'zip.uncompress.title', path=>$$params{path}, type=>'li' } ];
+		$ret = { title=>$self->tl('zip.menu'), classes=>'sep zipmenu', subpopupmenu=> 
+			[ 
+				{ action=>'zipup', label=>'zipup', title=>'zipup', path=>$$params{path}, type=>'li', classes=>'access-writeable sep'},
+				{ action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction sep'},
+				{ action=>'zipcompress', label=>'zip.compress', title=>'zip.compress.title', path=>$$params{path}, type=>'li' },
+				{ action=>'zipuncompress',label=>'zip.uncompress', title=>'zip.uncompress.title', path=>$$params{path}, type=>'li' } 
+			] 
+		};
 	} elsif ($hook eq 'fileactionpopupnew') {
 		$ret = { action=>'zipup', label=>'zipup', title=>'zipup', path=>$$params{path}, type=>'li', classes=>'access-writeable sep'};
 	} elsif ($hook eq 'new') {	

@@ -1090,6 +1090,13 @@ img {
 #popupmenu li.subpopupmenu:hover {
 	background-color: #f9f9f9;
 }
+#popupmenu li.subpopupmenu.extension {
+	position: relative;
+}
+#popupmenu li.subpopupmenu.extension ul.subpopupmenu.extension {
+	position: absolute;
+	left: 150px;
+}
 #filler {
 	position: absolute;
 	top: 0;
