@@ -58,10 +58,10 @@ sub handle {
 	} elsif ($hook eq 'filelistaction') {
 		$ret = { listaction=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, classes=>'sel-multi uibutton'};
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { title=>$self->tl('zip.menu'), classes=>'sep zipmenu', subpopupmenu=> 
+		$ret = { title=>$self->tl('zip.menu'), subpopupmenu=> 
 			[ 
 				{ action=>'zipup', label=>'zipup', title=>'zipup', path=>$$params{path}, type=>'li', classes=>'access-writeable sep'},
-				{ action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction sep'},
+				{ action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction'},
 				{ action=>'zipcompress', label=>'zip.compress', title=>'zip.compress.title', path=>$$params{path}, type=>'li' },
 				{ action=>'zipuncompress',label=>'zip.uncompress', title=>'zip.uncompress.title', path=>$$params{path}, type=>'li' } 
 			] 

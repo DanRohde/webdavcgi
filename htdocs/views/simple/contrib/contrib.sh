@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
-JS="jquery.min.js jquery-ui.min.js jquery.fileupload.js jquery.fancybox.pack.js jquery.fancybox-thumbs.min.js jquery.cookie.min.js multidraggable.min.js jquery.noty.min.js jquery.noty.layout.topCenter.min.js jquery.noty.themes.default.min.js"
+JS="jquery.min.js jquery-ui.min.js jquery.fileupload.js jquery.fancybox.pack.js jquery.fancybox-thumbs.min.js jquery.fancybox-buttons.min.js jquery.cookie.min.js multidraggable.min.js jquery.noty.min.js jquery.noty.layout.topCenter.min.js jquery.noty.themes.default.min.js"
 #jquery.fileupload-fp.js
 #jquery.fileupload-ui.js
 #jquery.powertip.min.js
 
-CSS="jquery-ui.min.css jquery.fancybox.min.css jquery.fancybox-thumbs.min.css"
+CSS="jquery-ui.min.css jquery.fancybox.min.css jquery.fancybox-thumbs.min.css jquery.fancybox-buttons.min.css"
 #jquery.powertip.min.css
 
 concat() {

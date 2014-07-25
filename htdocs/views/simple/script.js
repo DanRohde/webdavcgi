@@ -955,7 +955,7 @@ function initFileList() {
 		.fancybox({
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(this.element).html(); }, 
-			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
+			helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
 /*	
 	$("#fileList tr.isviewable-yes.iseditable-yes[data-size!='0']:visible td.filename a,#fileList tr.isviewable-yes[data-file$='.pdf'] td.filename a")
@@ -970,7 +970,8 @@ function initFileList() {
 		.attr("data-fancybox-group","wtimggallery")
 		.fancybox({ 
 			afterShow: function() { $(".fancybox-close").focus();},
-			beforeLoad: function() { this.title = $(".nametext", this.element).html(); }
+			beforeLoad: function() { this.title = $(".nametext", this.element).html(); },
+			helpers: { buttons: {} }
 		});
 /*	
 	$("#fileList tr.isviewable-no[data-mime^='text/']:visible td.filename a, #fileList tr.isviewable-no[data-type!='dir'][data-file$='.pdf'] td.filename a")
@@ -1948,7 +1949,6 @@ function initToolBox() {
 			concatUri: concatUri,
 			confirmDialog : confirmDialog,
 			cookie : cookie,
-			encodeURIComponent : encodeURIComponent,
 			getSelectedFiles : getSelectedFiles,
 			handleJSONResponse : handleJSONResponse,
 			initUpload : initUpload,
