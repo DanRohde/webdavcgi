@@ -51,3 +51,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	white-space:nowrap;
 	border-bottom: 8px solid gray;
 }
+.diskusage .treemappanel {
+	cursor: pointer;
+}
+.diskusage.treemap.tooltip {
+	color: black;
+	background-color: white;
+	border: 1px solid black;
+	width: 20em;
+	opacity: 0.7;
+	filter: Alpha(opacity=70);
+}
