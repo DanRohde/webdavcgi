@@ -66,7 +66,7 @@ sub handle {
 }
 sub gs {
 	my ($v) = @_;
-	my $r = sprintf('%.2f',$v);
+	my $r = sprintf('%.4f',$v);
 	$r=~s/\,/\./;
 	return $r;
 }
