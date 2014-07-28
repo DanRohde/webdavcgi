@@ -129,7 +129,7 @@ sub renderDiskUsage {
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
 		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
 		my $foldername = $folder;
-		$foldername=~s/^\Q$main::REQUEST_URI\E//;
+		$foldername=~s/^\Q$main::PATH_TRANSLATED\E//;
 		$foldername='./' if $foldername eq "";
 		my $uri = $self->getURI($foldername);
 		$table.= $cgi->Tr({-class=>'diskusage entry'},
