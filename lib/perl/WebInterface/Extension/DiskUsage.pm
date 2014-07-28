@@ -260,9 +260,9 @@ sub getDiskUsage {
 		$$counter{size}{files}{$path}{$file eq "" ? '.' : $file}+=$fs;
 		
 		
-		if ($file=~/(\.[^.]+)$/) {
-			$$counter{suffixes}{size}{$1}+=$fs;
-			$$counter{suffixes}{count}{$1}++;
+		if ($file=~/(\.[^.]+)$/ && length($1)<5) {
+			$$counter{suffixes}{size}{lc($1)}+=$fs;
+			$$counter{suffixes}{count}{lc($1)}++;
 		}
 	}
 	
