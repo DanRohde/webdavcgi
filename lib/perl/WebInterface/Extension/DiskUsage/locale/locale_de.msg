@@ -1,6 +1,6 @@
 du_diskusage			"Speicherverbrauch"
 du_diskusage_short		"Speicher"
-du_diskusagefor			"Speicherverbrauch von '%s'"
+du_diskusageof			"Speicherverbrauch von '%s'"
 du_details				"Details"
 du_treemap				"Baumdiagramm"
 du_treemap_bysize       "Baumdiagramm nach Datei-Größe"
