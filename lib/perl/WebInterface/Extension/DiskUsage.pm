@@ -84,7 +84,7 @@ sub renderDiskUsage {
 	my $cc = 0;
 	my $ccst = 1/6;
 
-
+	
 	foreach my $file ($cgi->param('file')) {
 		$self->getDiskUsage($main::PATH_TRANSLATED,$file,$counter);		
 	}	
@@ -105,14 +105,17 @@ sub renderDiskUsage {
 	my $filecountall = $$counter{count}{all}{files};
 	my @folders = sort {$$counter{size}{path}{$b} <=> $$counter{size}{path}{$a} || $a cmp $b} keys %{$$counter{size}{path}};
 	
+	my $maxfilesizesum = $$counter{size}{allmaxsum};
 	# limit folders for view and fix sizeall,filecountall for treemap:
 	if ($self->config('folderlimit',50) > 0 && scalar(@folders) > $self->config('folderlimit',50)) {
 		splice @folders, $self->config('folderlimit',50);
 		$sizeall = 0;
 		$filecountall = 0;
+		$maxfilesizesum = 0;
 		foreach my $folder (@folders) {
 			$sizeall+= $$counter{size}{path}{$folder};
 			$filecountall+=$$counter{count}{files}{$folder};
+			$maxfilesizesum+=$$counter{size}{pathmax}{$folder};
 		}
 	}
 	
@@ -149,10 +152,12 @@ sub renderDiskUsage {
 			my $perc = $foldersize > 0 ? $$files{$file} / $foldersize : 0;
 			
 			my $uri = $self->getURI($foldername);
-			push @childmapdata, { uri=>$uri, title=>"<br/>$foldername: $pbv[0] $title", val=>$pbvfile[0], id=>$file, size=>[gs($perc),gs($perc)],color=>[gs($cc),gs($cc)]};
+			push @childmapdata, { uri=>$uri, title=>"<br/>$foldername: $pbv[0] $title", val=>$pbvfile[0], id=>$file, size=>[gs($perc),gs($perc),gs($perc)],color=>[gs($cc),gs($cc),gs($cc)]};
 		}
 		my $perccount = $filecountall >0 ? $$counter{count}{files}{$folder} / $filecountall : 0;
-		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri,color=>[$cc,$cc], size=>[gs($$counter{size}{path}{$folder}/$sizeall), gs($perccount)], children=>\@childmapdata };
+		my $percfolder = $sizeall > 0 ? $$counter{size}{path}{$folder}/$sizeall : 0;
+		my $percfile  = $maxfilesizesum > 0 ? $$counter{size}{pathmax}{$folder} / $maxfilesizesum : 0;
+		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri, color=>[$cc,$cc,$cc], size=>[gs($percfolder), gs($perccount), gs($percfile)], children=>\@childmapdata };
 		$cc = ($cc+$ccst >1) ? 0 : $cc+$ccst;
 	}
 	$table.=$cgi->end_table();
@@ -162,7 +167,8 @@ sub renderDiskUsage {
 					$cgi->div( 
 					  $cgi->div({-class=>'treemappanel',-data_mapdata=>$json->encode(\%mapdata)})
 					. $cgi->div({-class=>'diskusage treemap switch'},
-						 $cgi->div({-class=>'diskusage treemap bysize'},$self->tl('du_treemap_bysize'))
+						 $cgi->div({-class=>'diskusage treemap byfoldersize'},$self->tl('du_treemap_byfoldersize'))
+						.$cgi->div({-class=>'diskusage treemap byfilesize'},$self->tl('du_treemap_byfilesize'))
 						.$cgi->div({-class=>'diskusage treemap byfilecount'}, $self->tl('du_treemap_byfilecount'))
 					))
 						);
@@ -214,6 +220,13 @@ sub getDiskUsage {
 		
 		$$counter{size}{all}+=$fs; 
 		$$counter{size}{path}{$path}+=$fs; 
+	
+		if (!$$counter{size}{pathmax}{$path} || $fs > $$counter{size}{pathmax}{$path} ) {
+			$$counter{size}{allmaxsum}-=$$counter{size}{pathmax}{$path} if $$counter{size}{pathmax}{$path};
+			$$counter{size}{allmaxsum}+=$fs;
+			$$counter{size}{pathmax}{$path} = $fs;		
+		}
+	  
 		$$counter{size}{files}{$path}{$file eq "" ? '.' : $file}+=$fs;
 		
 		
