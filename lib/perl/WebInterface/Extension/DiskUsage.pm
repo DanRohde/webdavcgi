@@ -165,17 +165,20 @@ sub renderDiskUsage {
 	}
 	$table.=$cgi->end_table();
 	# render treemap data:
-	$text.= $cgi->div({-class=>'diskusage accordion'}, $cgi->h3($self->tl('du_details')) . $cgi->div($table));
-	$text.=$cgi->div({-class=>'diskusage treemap accordion'}, $cgi->h3($self->tl('du_treemap')).
-					$cgi->div( 
-					  $cgi->div({-class=>'treemappanel',-data_mapdata=>$json->encode(\%mapdata)})
-					. $cgi->div({-class=>'diskusage treemap switch'},
-						 $cgi->div({-class=>'diskusage treemap byfoldersize'},$self->tl('du_treemap_byfoldersize'))
-						.$cgi->div({-class=>'diskusage treemap byfilesize'},$self->tl('du_treemap_byfilesize'))
-						.$cgi->div({-class=>'diskusage treemap byfilecount'}, $self->tl('du_treemap_byfilecount'))
-					))
-						);
-	$text.=$self->renderStatistics($counter, $json);
+	if (scalar(@{$mapdata{children}})>0) {
+		$text.= $cgi->div({-class=>'diskusage accordion'}, $cgi->h3($self->tl('du_details')) . $cgi->div($table));
+		$text.=$cgi->div({-class=>'diskusage treemap accordion'}, $cgi->h3($self->tl('du_treemap')).
+						$cgi->div( 
+						  $cgi->div({-class=>'treemappanel',-data_mapdata=>$json->encode(\%mapdata)})
+						. $cgi->div({-class=>'diskusage treemap switch'},
+							 $cgi->div({-class=>'diskusage treemap byfoldersize'},$self->tl('du_treemap_byfoldersize'))
+							.$cgi->div({-class=>'diskusage treemap byfilesize'},$self->tl('du_treemap_byfilesize'))
+							.$cgi->div({-class=>'diskusage treemap byfilecount'}, $self->tl('du_treemap_byfilecount'))
+						))
+							);
+		$text.=$self->renderStatistics($counter, $json);
+	}
+	
 	return $cgi->div({-title=>$self->tl('du_diskusage').': '.($self->renderByteValue($$counter{size}{all}))[0]}, $text);
 }
 sub renderStatistics {
@@ -195,7 +198,7 @@ sub renderStatistics {
 	
 	$content.=$cgi->div({-class=>'diskusage statistics chart'}, 
 					$cgi->div({class=>'diskusage statistics charttitle'},$self->tl('du_suffixesbysize')) 
-					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart1-'.time(), -data_json=>$json->encode({data=>\@data})}));
+					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart1-'.time(), -data_json=>$json->encode({data=>\@data})})) if (scalar(@data)>0);
 
 	## suffixes by file count:
 	@data = map { [ $_, $$counter{suffixes}{count}{$_} ]} sort { $$counter{suffixes}{count}{$b} <=> $$counter{suffixes}{count}{$a}} keys %{$$counter{suffixes}{count}};
@@ -208,7 +211,7 @@ sub renderStatistics {
 	
 	$content.=$cgi->div({-class=>'diskusage statistics chart'}, 
 					$cgi->div({class=>'diskusage statistics charttitle'}, $self->tl('du_suffixesbycount')) 
-					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart2-'.time(),-data_json=>$json->encode({ data=>\@data})}));
+					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart2-'.time(),-data_json=>$json->encode({ data=>\@data})})) if (scalar(@data)>0);
 	
 	
 	return $cgi->div({-class=>'diskusage statistics accordion'}, $cgi->h3($self->tl('du_statistics')).$cgi->div($content));
