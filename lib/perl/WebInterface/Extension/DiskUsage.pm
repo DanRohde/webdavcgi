@@ -102,14 +102,17 @@ sub renderDiskUsage {
 	
 	# render detail table
 	my $sizeall =$$counter{size}{all};
+	my $filecountall = $$counter{count}{all}{files};
 	my @folders = sort {$$counter{size}{path}{$b} <=> $$counter{size}{path}{$a} || $a cmp $b} keys %{$$counter{size}{path}};
 	
-	# limit folders for view and fix sizeall for treemap:
-	if (scalar(@folders) > $self->config('folderlimit',50)) {
+	# limit folders for view and fix sizeall,filecountall for treemap:
+	if ($self->config('folderlimit',50) > 0 && scalar(@folders) > $self->config('folderlimit',50)) {
 		splice @folders, $self->config('folderlimit',50);
 		$sizeall = 0;
+		$filecountall = 0;
 		foreach my $folder (@folders) {
 			$sizeall+= $$counter{size}{path}{$folder};
+			$filecountall+=$$counter{count}{files}{$folder};
 		}
 	}
 	
@@ -136,7 +139,7 @@ sub renderDiskUsage {
 		my $foldersize = $$counter{size}{path}{$folder};
 		my @files = sort { $$files{$b} cmp $$files{$a} || $a cmp $b } keys %{$files};
 		# limit files for treemap and fix foldersize:
-		if (scalar(@files) > $self->config('filelimit',50)) {
+		if ($self->config('filelimit',50)>0 && scalar(@files) > $self->config('filelimit',50)) {
 			splice @files, $self->config('filelimit',50);
 			$foldersize = 0;
 			foreach my $file (@files) { $foldersize+=$$files{$file}; }
@@ -148,7 +151,7 @@ sub renderDiskUsage {
 			my $uri = $self->getURI($foldername);
 			push @childmapdata, { uri=>$uri, title=>"<br/>$foldername: $pbv[0] $title", val=>$pbvfile[0], id=>$file, size=>[gs($perc),gs($perc)],color=>[gs($cc),gs($cc)]};
 		}
-		my $perccount = $$counter{count}{all}{files} >0 ? $$counter{count}{files}{$folder} / $$counter{count}{all}{files} : 0;
+		my $perccount = $filecountall >0 ? $$counter{count}{files}{$folder} / $filecountall : 0;
 		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri,color=>[$cc,$cc], size=>[gs($$counter{size}{path}{$folder}/$sizeall), gs($perccount)], children=>\@childmapdata };
 		$cc = ($cc+$ccst >1) ? 0 : $cc+$ccst;
 	}
