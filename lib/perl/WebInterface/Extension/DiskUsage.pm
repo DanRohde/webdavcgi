@@ -20,8 +20,8 @@
 # disable_fileaction - disables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # disable_apps - disables sidebar menu entry
-# timeout - timeout in seconds
-# filelimit - limits file count for treemap
+# timeout - timeout in seconds (default: 60)
+# filelimit - limits file count for treemap (default: 50)
 
 package WebInterface::Extension::DiskUsage;
 
@@ -60,7 +60,7 @@ sub handle {
 	} elsif ( $hook eq 'posthandler' && $$config{cgi}->param('action') eq 'diskusage') {
 		my $suffixes = {};
 		my $content = $self->renderDiskUsage();
-		main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store');
+		main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') if $content;
 		return 1;
 	}
 	return 0; 
@@ -87,6 +87,11 @@ sub renderDiskUsage {
 	foreach my $file ($cgi->param('file')) {
 		$self->getDiskUsage($main::PATH_TRANSLATED,$file,$counter);		
 	}	
+	if (time() - $$counter{start} > $self->config('timeout',60)) {
+		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode({error=>$cgi->escapeHTML(sprintf($self->tl('du_timeout'),$self->config('timeout',60)))}), 'Cache-Control: no-cache, no-store');
+		return;		
+	}; 
+	# render dialog head:
 	my @pbvsum = $self->renderByteValue($$counter{size}{all});
 	my $filenamelist = join(', ',$cgi->param('file'));
 	$filenamelist='.' if $filenamelist eq "";
@@ -94,6 +99,7 @@ sub renderDiskUsage {
 	$text.= $cgi->div({-title=>$pbvsum[1]}, sprintf($self->tl('du_diskusageof'), $filenamelist). ': '.$pbvsum[0])
 		.$cgi->div(sprintf($statfstring,$$counter{count}{all}{files},$$counter{count}{all}{folders},$$counter{count}{all}{sum}));
 	
+	# render detail table
 	my $table = $cgi->start_table({-class=>'diskusage details'})
 			.$cgi->Tr({},$cgi->th({-class=>'diskusage filename'},$self->tl('name')).$cgi->th({-class=>'diskusage size', -title=>($self->renderByteValue($$counter{size}{all}))[1]},$self->tl('size')));
 	foreach my $folder (sort {$$counter{size}{path}{$b} <=> $$counter{size}{path}{$a} || $a cmp $b} keys %{$$counter{size}{path}}) {
@@ -111,22 +117,29 @@ sub renderDiskUsage {
 			.$cgi->td({-title=>$pbv[1], -class=>'diskusage size'}, $pbv[0])
 		);
 		
+		# collect treemap data:
 		my $files = $$counter{size}{files}{$folder};
 		my @childmapdata = ();
-		foreach my $file ( keys %{$files} ) {
+		my $foldersize = $$counter{size}{path}{$folder};
+		my @files = sort { $$files{$b} cmp $$files{$a} || $a cmp $b } keys %{$files};
+		if (scalar(@files) > $self->config('filelimit',50)) {
+			splice @files, $self->config('filelimit',50);
+			$foldersize = 0;
+			foreach my $file (@files) { $foldersize+=$$files{$file}; }
+		}
+		foreach my $file ( @files ) {
 			my @pbvfile = $self->renderByteValue($$files{$file});
-			my $perc = $$counter{size}{path}{$folder} > 0 ? $$files{$file} / $$counter{size}{path}{$folder} : 0;
+			my $perc = $foldersize > 0 ? $$files{$file} / $foldersize : 0;
 			
 			my $uri = $self->getURI($foldername);
 			push @childmapdata, { uri=>$uri, title=>"<br/>$foldername: $pbv[0] $title", val=>$pbvfile[0], id=>$file, size=>[gs($perc),gs($perc)],color=>[gs($cc),gs($cc)]};
-			
-			#last if scalar(@childmapdata) >= $self->config('filelimit',50);
 		}
 		my $perccount = $$counter{count}{all}{files} >0 ? $$counter{count}{files}{$folder} / $$counter{count}{all}{files} : 0;
 		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri,color=>[$cc,$cc], size=>[gs($$counter{size}{path}{$folder}/$$counter{size}{all}), gs($perccount)], children=>\@childmapdata };
 		$cc = ($cc+$ccst >1) ? 0 : $cc+$ccst;
 	}
 	$table.=$cgi->end_table();
+	# render treemap data:
 	$text.= $cgi->div({-class=>'diskusage accordion'}, $cgi->h3($self->tl('du_details')) . $cgi->div($table));
 	$text.=$cgi->div({-class=>'diskusage treemap accordion'}, $cgi->h3($self->tl('du_treemap')).
 					$cgi->div( 
