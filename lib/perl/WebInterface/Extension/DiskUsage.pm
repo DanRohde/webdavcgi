@@ -85,7 +85,7 @@ sub renderDiskUsage {
 	my %mapdata = (  id => $main::REQUEST_URI, uri=>$cgi->escape($main::REQUEST_URI), children=> [] );
 	
 	my $cc = 0;
-	my $ccst = 1/6;
+	my $ccst = 1/5;
 
 	
 	foreach my $file ($cgi->param('file')) {
