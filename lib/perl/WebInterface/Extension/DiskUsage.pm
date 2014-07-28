@@ -22,6 +22,7 @@
 # disable_apps - disables sidebar menu entry
 # timeout - timeout in seconds (default: 60)
 # filelimit - limits file count for treemap (default: 50)
+# folderlimit - limits folder count for details and treemap (default: 50)
 
 package WebInterface::Extension::DiskUsage;
 
@@ -100,9 +101,21 @@ sub renderDiskUsage {
 		.$cgi->div(sprintf($statfstring,$$counter{count}{all}{files},$$counter{count}{all}{folders},$$counter{count}{all}{sum}));
 	
 	# render detail table
+	my $sizeall =$$counter{size}{all};
+	my @folders = sort {$$counter{size}{path}{$b} <=> $$counter{size}{path}{$a} || $a cmp $b} keys %{$$counter{size}{path}};
+	
+	# limit folders for view and fix sizeall for treemap:
+	if (scalar(@folders) > $self->config('folderlimit',50)) {
+		splice @folders, $self->config('folderlimit',50);
+		$sizeall = 0;
+		foreach my $folder (@folders) {
+			$sizeall+= $$counter{size}{path}{$folder};
+		}
+	}
+	
 	my $table = $cgi->start_table({-class=>'diskusage details'})
 			.$cgi->Tr({},$cgi->th({-class=>'diskusage filename'},$self->tl('name')).$cgi->th({-class=>'diskusage size', -title=>($self->renderByteValue($$counter{size}{all}))[1]},$self->tl('size')));
-	foreach my $folder (sort {$$counter{size}{path}{$b} <=> $$counter{size}{path}{$a} || $a cmp $b} keys %{$$counter{size}{path}}) {
+	foreach my $folder (@folders) {
 		my $perc = 100*$$counter{size}{path}{$folder}/$$counter{size}{all};
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
 		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
@@ -122,6 +135,7 @@ sub renderDiskUsage {
 		my @childmapdata = ();
 		my $foldersize = $$counter{size}{path}{$folder};
 		my @files = sort { $$files{$b} cmp $$files{$a} || $a cmp $b } keys %{$files};
+		# limit files for treemap and fix foldersize:
 		if (scalar(@files) > $self->config('filelimit',50)) {
 			splice @files, $self->config('filelimit',50);
 			$foldersize = 0;
@@ -135,7 +149,7 @@ sub renderDiskUsage {
 			push @childmapdata, { uri=>$uri, title=>"<br/>$foldername: $pbv[0] $title", val=>$pbvfile[0], id=>$file, size=>[gs($perc),gs($perc)],color=>[gs($cc),gs($cc)]};
 		}
 		my $perccount = $$counter{count}{all}{files} >0 ? $$counter{count}{files}{$folder} / $$counter{count}{all}{files} : 0;
-		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri,color=>[$cc,$cc], size=>[gs($$counter{size}{path}{$folder}/$$counter{size}{all}), gs($perccount)], children=>\@childmapdata };
+		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri,color=>[$cc,$cc], size=>[gs($$counter{size}{path}{$folder}/$sizeall), gs($perccount)], children=>\@childmapdata };
 		$cc = ($cc+$ccst >1) ? 0 : $cc+$ccst;
 	}
 	$table.=$cgi->end_table();
