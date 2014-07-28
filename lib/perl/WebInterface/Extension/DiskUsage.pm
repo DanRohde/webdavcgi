@@ -48,7 +48,10 @@ sub handle {
 	my $suret = $self->SUPER::handle($hook, $config, $params);
 	
 	if ($hook eq 'javascript') {
-		$suret .= q@<script src="@.$self->getExtensionUri('DiskUsage', 'htdocs/contrib/jquery.ui.treemap.min.js').q@"></script>@;	
+		#$suret .= q@<script src="@.$self->getExtensionUri('DiskUsage', 'htdocs/contrib/contrib.js').q@"></script>@;
+		$suret .= $self->handleJavascriptHook('DiskUsage', 'htdocs/contrib/contrib.js');	
+	} elsif ($hook eq 'css') {
+		$suret .= $self->handleCssHook('DiskUsage','htdocs/contrib/contrib.css');
 	}
 	return $suret if $suret;
 	
@@ -172,16 +175,43 @@ sub renderDiskUsage {
 						.$cgi->div({-class=>'diskusage treemap byfilecount'}, $self->tl('du_treemap_byfilecount'))
 					))
 						);
-	#$text.=$self->renderStatistics();
+	$text.=$self->renderStatistics($counter, $json);
 	return $cgi->div({-title=>$self->tl('du_diskusage').': '.($self->renderByteValue($$counter{size}{all}))[0]}, $text);
 }
 sub renderStatistics {
-	my ($self) = @_;
+	my ($self, $counter, $json) = @_;
 	my $cgi = $$self{cgi};
-	my $content = $cgi->h3($self->tl('du_statistics'));
+	my $content = "";
+	my @data;
+	
+	## suffixes by file size:
+	@data = map {[ $_, $$counter{suffixes}{size}{$_} ] } sort { $$counter{suffixes}{size}{$b} <=> $$counter{suffixes}{size}{$a} || $a cmp $b } keys %{$$counter{suffixes}{size}};
+	if (scalar(@data)>10) {
+		my @deleted = splice @data, 10;
+		my $others = 0;
+		foreach my $s (@deleted) { $others+= $$s[1]; };
+		push @data , [ 'others', $others ];	
+	}
+	
+	$content.=$cgi->div({-class=>'diskusage statistics chart'}, 
+					$cgi->div({class=>'diskusage statistics charttitle'},$self->tl('du_suffixesbysize')) 
+					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart1-'.time(), -data_json=>$json->encode({data=>\@data})}));
+
+	## suffixes by file count:
+	@data = map { [ $_, $$counter{suffixes}{count}{$_} ]} sort { $$counter{suffixes}{count}{$b} <=> $$counter{suffixes}{count}{$a}} keys %{$$counter{suffixes}{count}};
+	if (scalar(@data)>10) {
+		my @deleted = splice @data, 10;
+		my $others = 0;
+		foreach my $s (@deleted) { $others+= $$s[1]; };
+		push @data , [ 'others', $others ];	
+	}
+	
+	$content.=$cgi->div({-class=>'diskusage statistics chart'}, 
+					$cgi->div({class=>'diskusage statistics charttitle'}, $self->tl('du_suffixesbycount')) 
+					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart2-'.time(),-data_json=>$json->encode({ data=>\@data})}));
 	
 	
-	return $cgi->div({-class=>'diskusage statistics accordion'}, $content);;
+	return $cgi->div({-class=>'diskusage statistics accordion'}, $cgi->h3($self->tl('du_statistics')).$cgi->div($content));
 }
 sub getURI { 
 	my ($self, $relpath) = @_;
@@ -231,11 +261,8 @@ sub getDiskUsage {
 		
 		
 		if ($file=~/(\.[^.]+)$/) {
-			$$counter{suffixes}{all}{size}{$1}++;
-			$$counter{suffixes}{size}{$path}{$1}+=$fs;
-			
-			$$counter{suffixes}{all}{count}{$1}++;
-			$$counter{suffixes}{count}{$path}{$1}{count}++;
+			$$counter{suffixes}{size}{$1}+=$fs;
+			$$counter{suffixes}{count}{$1}++;
 		}
 	}
 	

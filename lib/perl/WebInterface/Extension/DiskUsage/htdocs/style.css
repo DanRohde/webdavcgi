@@ -62,3 +62,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	opacity: 0.7;
 	filter: Alpha(opacity=70);
 }
+.diskusage.statistics.piechart {
+	width: 400px;
+	height: 300px;
+}
+.diskusage.statistics.chart {
+	display: inline-block;
+	float: right;
+}
+.diskusage.statistics.charttitle {
+	text-align: center;
+	font-weight: bold;
+	width: 100;
+	border: 2px outset #eeeeee;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: #dadada;
+}
