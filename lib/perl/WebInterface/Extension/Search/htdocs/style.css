@@ -110,3 +110,9 @@ input.search.start, input.search.cancel {
 .search.result.entry.duplicates.limitexceeded {
 	background-color: #ffffaa;
 }
+.search.result.fileuri {
+	display: none;
+	font-size: smaller;
+	font-style: italic;
+	clear: none;
+}
