@@ -1,0 +1,49 @@
+<div title="$tl(du_diskusage): $size">
+<div title="$sizetitle">$diskusageof: $size</div>
+<div> $tl(statfiles) $files, $tl(statfolders) $folders, $tl(statsum) $sum</div>
+<div class="diskusage details accordion">
+	<h3>$tl(du_details)</h3>
+	<div>
+		<table class="diskusage details">
+		<thead>
+		<tr><th class="diskusage filename">$tl(name)</th><th class="diskusage size" title="$sizetitle">$tl(size)</th></tr>
+		</thead>
+		<tbody>
+			$details(detailsentry)
+		</tbody>
+		</table>
+	</div>
+</div>
+<div class="diskusage treemap accordion">
+	<h3>$tl(du_treemap)</h3>
+	<div>
+		<div class="diskusage treemap switch">
+			<div class="diskusage treemap dimensions" data-dimensions="[800,600]">800x600</div>
+			<div class="diskusage treemap dimensions" data-dimensions="[1200,1000]">1200x1000</div>
+			<!-- 
+			<div class="diskusage treemap color" data-color="color1">$tl(du_color) 1</div>
+			<div class="diskusage treemap color" data-color="color2">$tl(du_color) 2</div>
+			 -->
+		</div>
+		<div class="treemappanel" data-mapdata="$json(treemapdata)"></div>
+		<div class="diskusage treemap switch">
+			<div class="diskusage treemap byfoldersize">$tl(du_treemap_byfoldersize)</div>
+			<div class="diskusage treemap byfilesize">$tl(du_treemap_byfilesize)</div>
+			<div class="diskusage treemap byfilecount">$tl(du_treemap_byfilecount)</div>
+		</div>
+	</div>
+</div>
+<div class="diskusage statistics accordion">
+	<h3>$tl(du_statistics)</h3>
+	<div>
+	<div class="diskusage statistics chart">
+		<div class="diskusage statistics charttitle">$tl(du_suffixesbycount)</div>
+		<div id="chart1-$time" class="diskusage statistics piechart" data-json="$json(suffixesbycount)"></div>
+	</div>
+	<div class="diskusage statistics chart">
+		<div class="diskusage statistics charttitle">$tl(du_suffixesbysize)</div>
+		<div id="chart2-$time" class="diskusage statistics piechart" data-json="$json(suffixesbysize)"></div>
+	</div>
+	</div>
+</div>
+</div>

@@ -23,6 +23,7 @@
 # timeout - timeout in seconds (default: 60)
 # filelimit - limits file count for treemap (default: 50)
 # folderlimit - limits folder count for details and treemap (default: 50)
+# template - dialog template (default: diskusage)
 
 package WebInterface::Extension::DiskUsage;
 
@@ -63,47 +64,32 @@ sub handle {
 		return $self->handleAppsHook($$self{cgi},'listaction diskusage sel-noneormulti sel-dir disabled','du_diskusage_short','du_diskusage'); 
 	} elsif ( $hook eq 'posthandler' && $$config{cgi}->param('action') eq 'diskusage') {
 		my $suffixes = {};
-		my $content = $self->renderDiskUsage();
+		my $content = $self->renderDiskUsageTemplate();
 		main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') if $content;
 		return 1;
 	}
 	return 0; 
 }
-sub gs {
-	my ($v) = @_;
-	my $r = sprintf('%.4f',$v);
-	$r=~s/\,/\./;
-	return $r;
-}
-sub renderDiskUsage {
+
+sub renderDiskUsageTemplate {
 	my ($self) = @_;
-	my $text =""; 
-	my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
-	my $json = new JSON();
+	
 	my $cgi = $$self{cgi};
 	my $counter = { start => time() };
-	my %mapdata = (  id => $main::REQUEST_URI, uri=>$cgi->escape($main::REQUEST_URI), children=> [] );
+	my $json = new JSON();
 	
-	my $cc = 0;
-	my $ccst = 1/5;
-
+	$$self{counter}=$counter;
+	$$self{json}=$json;
 	
 	foreach my $file ($cgi->param('file')) {
 		$self->getDiskUsage($main::PATH_TRANSLATED,$file,$counter);		
-	}	
+	}
 	if (time() - $$counter{start} > $self->config('timeout',60)) {
 		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode({error=>$cgi->escapeHTML(sprintf($self->tl('du_timeout'),$self->config('timeout',60)))}), 'Cache-Control: no-cache, no-store');
 		return;		
 	}; 
-	# render dialog head:
-	my @pbvsum = $self->renderByteValue($$counter{size}{all});
-	my $filenamelist = join(', ',$cgi->param('file'));
-	$filenamelist='.' if $filenamelist eq "";
-	$filenamelist=substr($filenamelist,0,100).'...' if length($filenamelist)>100;
-	$text.= $cgi->div({-title=>$pbvsum[1]}, sprintf($self->tl('du_diskusageof'), $filenamelist). ': '.$pbvsum[0])
-		.$cgi->div(sprintf($statfstring,$$counter{count}{all}{files},$$counter{count}{all}{folders},$$counter{count}{all}{sum}));
 	
-	# render detail table
+	
 	my $sizeall =$$counter{size}{all};
 	my $filecountall = $$counter{count}{all}{files};
 	my @folders = sort {$$counter{size}{path}{$b} <=> $$counter{size}{path}{$a} || $a cmp $b} keys %{$$counter{size}{path}};
@@ -121,29 +107,109 @@ sub renderDiskUsage {
 			$maxfilesizesum+=$$counter{size}{pathmax}{$folder};
 		}
 	}
+	$$self{folders} = \@folders;
+	$$self{sizeall} = $sizeall;
+	$$self{filecountall} = $filecountall;
+	$$self{maxfilesizesum} = $maxfilesizesum;
 	
-	my $table = $cgi->start_table({-class=>'diskusage details'})
-			.$cgi->Tr({},$cgi->th({-class=>'diskusage filename'},$self->tl('name')).$cgi->th({-class=>'diskusage size', -title=>($self->renderByteValue($$counter{size}{all}))[1]},$self->tl('size')));
-	foreach my $folder (@folders) {
+	
+	
+	my @pbvsum = $self->renderByteValue($$counter{size}{all});
+	my $filenamelist = join(', ',$cgi->param('file'));
+	$filenamelist='.' if $filenamelist eq "";
+	$filenamelist=substr($filenamelist,0,100).'...' if length($filenamelist)>100;
+	my $vars = {
+		diskusageof => $cgi->escapeHTML(sprintf($self->tl('du_diskusageof'),$filenamelist)),
+		files=>$$counter{count}{all}{files},
+		folders=>$$counter{count}{all}{folders},
+		sum=>$$counter{count}{all}{sum},
+		size=>$pbvsum[0],
+		sizetitle=>$pbvsum[1],
+		time=>time(),
+	};
+	
+	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','diskusage')), $vars);
+	
+	return $content;
+	
+}
+sub renderDiskUsageDetails {
+	my ($self, $template) = @_;
+	my $tmpl = $template=~/^'(.*)'$/ ? $1 : $self->readTemplate($template) ;
+	my $counter = $$self{counter};
+	my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
+	my $details = "";
+	my $cgi=$$self{cgi};
+	foreach my $folder (@{$$self{folders}}) {
 		my $perc = 100*$$counter{size}{path}{$folder}/$$counter{size}{all};
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
 		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
-		my $foldername = $folder;
-		$foldername=~s/^\Q$main::PATH_TRANSLATED\E//;
-		$foldername='./' if $foldername eq "";
+		my $foldername = $self->_getFolderName($folder);
 		my $uri = $self->getURI($foldername);
-		$table.= $cgi->Tr({-class=>'diskusage entry'},
-			$cgi->td({-class=>'diskusage filename',-title=>$title}, 
-				$cgi->div({-class=>'diskusage perc',-style=>sprintf('width: %.0f%%;',$perc)},
-							$cgi->a({-class=>'action changeuri',-href=>$main::REQUEST_URI.$uri},$cgi->escapeHTML($foldername))))
-			.$cgi->td({-title=>$pbv[1], -class=>'diskusage size'}, $pbv[0])
-		);
 		
+		my $vars = {
+			foldername=>$cgi->escapeHTML($foldername),
+			folderuri=> $main::REQUEST_URI.$uri,
+			foldersize=>$pbv[0],
+			foldersizetitle=>$pbv[1],
+			filecount=>$$counter{count}{files}{$folder} || 0,
+			foldercount=>$$counter{count}{folders}{$folder} || 0,
+			sumcount=>$$counter{count}{sum}{$folder} || 0,
+			percstyle=>sprintf('width: %.0f%%;',$perc),
+		};
+		
+		$details.= $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $tmpl, $vars);
+	}
+	return $details;
+}
+sub execTemplateFunction {
+	my ($self, $fn, $ru, $func, $param) = @_;
+	my $content;
+	$content = $self->renderDiskUsageDetails($param) if $func eq 'details';
+	$content = $self->collectTreemapData() if $func eq 'json' && $param eq 'treemapdata';
+	$content = $self->collectSuffixData('count') if $func eq 'json' && $param eq 'suffixesbycount';
+	$content = $self->collectSuffixData('size') if $func eq 'json' && $param eq 'suffixesbysize';
+	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
+	return $content;
+}
+sub collectSuffixData {
+	my ($self, $key) = @_;
+	my $counter = $$self{counter};
+	my @data;
+	
+	## suffixes by file size:
+	@data = map {[ $_, $$counter{suffixes}{$key}{$_} ] } sort { $$counter{suffixes}{$key}{$b} <=> $$counter{suffixes}{$key}{$a} || $a cmp $b } keys %{$$counter{suffixes}{$key}};
+	if (scalar(@data)>10) {
+		my @deleted = splice @data, 10;
+		my $others = 0;
+		foreach my $s (@deleted) { $others+= $$s[1]; };
+		push @data , [ 'others', $others ];	
+	}
+	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
+}
+sub collectTreemapData {
+	my ($self) = @_;
+	my $cgi = $$self{cgi};
+	my $counter = $$self{counter};
+	my %mapdata = (  id => $main::REQUEST_URI, uri=>$cgi->escape($main::REQUEST_URI), children=> [] );
+	my $cc = 0;
+	my $ccst = 1/5;
+	my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
+	my ($filecountall, $sizeall, $maxfilesizesum) = ($$self{filecountall},$$self{sizeall},$$self{maxfilesizesum});
+	
+	foreach my $folder (@{$$self{folders}}) {
 		# collect treemap data:
 		my $files = $$counter{size}{files}{$folder};
 		my @childmapdata = ();
 		my $foldersize = $$counter{size}{path}{$folder};
 		my @files = sort { $$files{$b} cmp $$files{$a} || $a cmp $b } keys %{$files};
+		my $foldername = $self->_getFolderName($folder);
+		my $uri = $self->getURI($foldername);
+		my $perc = 100*$$counter{size}{path}{$folder}/$$counter{size}{all};
+		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
+		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
+		
+		
 		# limit files for treemap and fix foldersize:
 		if ($self->config('filelimit',50)>0 && scalar(@files) > $self->config('filelimit',50)) {
 			splice @files, $self->config('filelimit',50);
@@ -163,59 +229,22 @@ sub renderDiskUsage {
 		push @{$mapdata{children}}, { id=>$foldername, uri=>$uri, color=>[$cc,$cc,$cc], size=>[gs($percfolder), gs($perccount), gs($percfile)], children=>\@childmapdata };
 		$cc = ($cc+$ccst >1) ? 0 : $cc+$ccst;
 	}
-	$table.=$cgi->end_table();
-	# render treemap data:
-	if (scalar(@{$mapdata{children}})>0) {
-		$text.= $cgi->div({-class=>'diskusage accordion'}, $cgi->h3($self->tl('du_details')) . $cgi->div($table));
-		$text.=$cgi->div({-class=>'diskusage treemap accordion'}, $cgi->h3($self->tl('du_treemap')).
-						$cgi->div( 
-						  $cgi->div({-class=>'treemappanel',-data_mapdata=>$json->encode(\%mapdata)})
-						. $cgi->div({-class=>'diskusage treemap switch'},
-							 $cgi->div({-class=>'diskusage treemap byfoldersize'},$self->tl('du_treemap_byfoldersize'))
-							.$cgi->div({-class=>'diskusage treemap byfilesize'},$self->tl('du_treemap_byfilesize'))
-							.$cgi->div({-class=>'diskusage treemap byfilecount'}, $self->tl('du_treemap_byfilecount'))
-						))
-							);
-		$text.=$self->renderStatistics($counter, $json);
-	}
-	
-	return $cgi->div({-title=>$self->tl('du_diskusage').': '.($self->renderByteValue($$counter{size}{all}))[0]}, $text);
+	return $cgi->escapeHTML($$self{json}->encode(\%mapdata));
 }
-sub renderStatistics {
-	my ($self, $counter, $json) = @_;
-	my $cgi = $$self{cgi};
-	my $content = "";
-	my @data;
-	
-	## suffixes by file size:
-	@data = map {[ $_, $$counter{suffixes}{size}{$_} ] } sort { $$counter{suffixes}{size}{$b} <=> $$counter{suffixes}{size}{$a} || $a cmp $b } keys %{$$counter{suffixes}{size}};
-	if (scalar(@data)>10) {
-		my @deleted = splice @data, 10;
-		my $others = 0;
-		foreach my $s (@deleted) { $others+= $$s[1]; };
-		push @data , [ 'others', $others ];	
-	}
-	
-	$content.=$cgi->div({-class=>'diskusage statistics chart'}, 
-					$cgi->div({class=>'diskusage statistics charttitle'},$self->tl('du_suffixesbysize')) 
-					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart1-'.time(), -data_json=>$json->encode({data=>\@data})})) if (scalar(@data)>0);
+sub gs {
+	my ($v) = @_;
+	my $r = sprintf('%.4f',$v);
+	$r=~s/\,/\./;
+	return $r;
+}
+sub _getFolderName {
+	my ($self,$folder) = @_;
+	my $foldername = $folder;
+	$foldername=~s/^\Q$main::PATH_TRANSLATED\E//;
+	$foldername='./' if $foldername eq "";
+	return $foldername;
+}
 
-	## suffixes by file count:
-	@data = map { [ $_, $$counter{suffixes}{count}{$_} ]} sort { $$counter{suffixes}{count}{$b} <=> $$counter{suffixes}{count}{$a}} keys %{$$counter{suffixes}{count}};
-	if (scalar(@data)>10) {
-		my @deleted = splice @data, 10;
-		my $others = 0;
-		foreach my $s (@deleted) { $others+= $$s[1]; };
-		push @data , [ 'others', $others ];	
-	}
-	
-	$content.=$cgi->div({-class=>'diskusage statistics chart'}, 
-					$cgi->div({class=>'diskusage statistics charttitle'}, $self->tl('du_suffixesbycount')) 
-					.$cgi->div({-class=>'diskusage statistics piechart', -id=>'piechart2-'.time(),-data_json=>$json->encode({ data=>\@data})})) if (scalar(@data)>0);
-	
-	
-	return $cgi->div({-class=>'diskusage statistics accordion'}, $cgi->h3($self->tl('du_statistics')).$cgi->div($content));
-}
 sub getURI { 
 	my ($self, $relpath) = @_;
 	return join('/',map({ $$self{cgi}->escape($_) } split(/\//,$relpath)));
@@ -237,10 +266,10 @@ sub getDiskUsage {
 	
 	
 	my $full = $path.$file;
-	if ($backend->isDir($full) && !$backend->isLink($full)) {
+	if ($backend->isDir($full)) {
 		$$counter{count}{all}{folders}++;
 		$$counter{count}{folders}{$path}++; 
-		
+		next if $backend->isLink($full);
 		#$file.='/' unless $file=~/\/$/;
 		foreach my $f (@{$backend->readDir($full)}) {
 			$f.='/' if $backend->isDir($full.$f);
@@ -267,7 +296,6 @@ sub getDiskUsage {
 			$$counter{suffixes}{size}{lc($1)}+=$fs;
 			$$counter{suffixes}{count}{lc($1)}++;
 		}
-	}
-	
+	}	
 }
 1;
