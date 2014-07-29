@@ -24,6 +24,7 @@
 # filelimit - limits file count for treemap (default: 50)
 # folderlimit - limits folder count for details and treemap (default: 50)
 # template - dialog template (default: diskusage)
+# followsymlink - follows sym links (default: 0 (off))
 
 package WebInterface::Extension::DiskUsage;
 
@@ -269,7 +270,7 @@ sub getDiskUsage {
 	if ($backend->isDir($full)) {
 		$$counter{count}{all}{folders}++;
 		$$counter{count}{folders}{$path}++; 
-		next if $backend->isLink($full);
+		next if !$self->config("followsympink",0)  && $backend->isLink($full);
 		#$file.='/' unless $file=~/\/$/;
 		foreach my $f (@{$backend->readDir($full)}) {
 			$f.='/' if $backend->isDir($full.$f);

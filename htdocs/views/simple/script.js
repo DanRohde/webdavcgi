@@ -1954,6 +1954,8 @@ function initToolBox() {
 			initUpload : initUpload,
 			preventDefault : preventDefault,
 			renderAbortDialog: renderAbortDialog,
+			renderByteSize: renderByteSize,
+			renderByteSizes: renderByteSizes,
 			stripSlash : stripSlash,
 			togglecookie : togglecookie,
 			uncheckSelectedRows : uncheckSelectedRows,
