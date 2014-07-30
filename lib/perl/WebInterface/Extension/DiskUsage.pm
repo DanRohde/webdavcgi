@@ -127,6 +127,7 @@ sub renderDiskUsageTemplate {
 		sum=>$$counter{count}{all}{sum},
 		size=>$pbvsum[0],
 		sizetitle=>$pbvsum[1],
+		bytesize => $$counter{size}{all},
 		time=>time(),
 	};
 	
@@ -269,7 +270,7 @@ sub collectTreemapData {
 		my @files = sort { $$files{$b} cmp $$files{$a} || $a cmp $b } keys %{$files};
 		my $foldername = $self->_getFolderName($folder);
 		my $uri = $self->getURI($foldername);
-		my $perc = 100*$$counter{size}{path}{$folder}/$$counter{size}{all};
+		my $perc = $$counter{size}{all} >0 ? 100*$$counter{size}{path}{$folder}/$$counter{size}{all} : 0;
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
 		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
 		
