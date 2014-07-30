@@ -88,7 +88,7 @@ a {
 }
 #nav ul#prefs {
 	position: fixed;
-	bottom:0;
+	bottom: 2em;
 	width: 12.5em;
 }
 #content {
@@ -890,7 +890,7 @@ img {
 	z-index:76;
 }
 .collapsible.bottom {
-	bottom: 0.5em;
+	bottom: 2.5em;
 }
 .collapsible.top {
 	top: 4.5em;
