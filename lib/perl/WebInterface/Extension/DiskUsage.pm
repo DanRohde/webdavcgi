@@ -34,6 +34,7 @@ use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
+use POSIX qw(floor ceil);
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -141,8 +142,11 @@ sub renderDiskUsageDetails {
 	my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
 	my $details = "";
 	my $cgi=$$self{cgi};
+	
+	return "[]" if $$counter{size}{all} == 0;
+	
 	foreach my $folder (@{$$self{folders}}) {
-		my $perc = 100*$$counter{size}{path}{$folder}/$$counter{size}{all};
+		my $perc = $$counter{size}{all} >0 ? 100*$$counter{size}{path}{$folder}/$$counter{size}{all} : 0;
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
 		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
 		my $foldername = $self->_getFolderName($folder);
@@ -170,8 +174,65 @@ sub execTemplateFunction {
 	$content = $self->collectTreemapData() if $func eq 'json' && $param eq 'treemapdata';
 	$content = $self->collectSuffixData('count') if $func eq 'json' && $param eq 'suffixesbycount';
 	$content = $self->collectSuffixData('size') if $func eq 'json' && $param eq 'suffixesbysize';
+	#$content = $self->collectHistoByFileSizeData() if $func eq 'json' && $param eq 'histobyfilesize';
+	#$content = $self->collectHistoByFolderSizeData() if $func eq 'json' && $param eq 'histobyfoldersize';
 	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
 	return $content;
+}
+sub collectHistoByFileSizeData() {
+	my ($self) = @_;
+	my $counter = $$self{counter};
+	my @data = ();
+	
+	my @sizes = keys %{$$counter{size}{histo}{sizes}};
+	
+	my @buckets = ();
+	my $bucketcount = 10;
+	my $filemax = $$counter{size}{histo}{filemax};
+	my $deccount = floor(log($filemax) / log(10));
+	my $byteexp = floor($deccount*log(10)/log(1024));
+	my $bval = 1024 ** $byteexp;
+	my $bucketmax = ceil( $filemax / (10**$deccount) + 1) * $bval;
+	my $bucketsize = $bucketmax / $bucketcount;
+	$bucketsize=1 if $bucketsize == 0;
+	#print STDERR "filemax=$filemax,  deccount=$deccount, byteexp=$byteexp, bval=$bval, bucketmax=$bucketmax, bucketsize=$bucketsize\n";
+
+	foreach my $size (@sizes) {
+		$buckets[ floor($size/$bucketsize) ] ++;
+	}
+	
+	@data = map {  [  ($self->renderByteValue($_ * $bucketsize,1))[0], $buckets[$_] || 0  ] } 0 .. $bucketcount-1;
+	
+	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
+}
+sub _min {
+	return $_[0] < $_[1] ? $_[0] : $_[1]; 
+}
+sub _max {
+	return $_[0] > $_[1] ? $_[0] : $_[1];
+} 
+
+sub collectHistoByFolderSizeData() {
+	my ($self) = @_;
+	my $counter = $$self{counter};
+	my @data = ();
+	
+	my @pathes = keys %{$$counter{size}{path}};
+	
+	my %buckets = ();
+	my $bucketcount = _min(scalar(@pathes),20);
+	my $pathmax = $$counter{size}{histo}{pathmax};
+	my $logval = floor(log($pathmax)/log(10));
+	my $bval = $logval > 3 ? 1024 ** ($logval-4) : 1;
+	my $bucketmax = ceil( $pathmax / $bval + 1 ) * $bval ;
+	my $bucketsize =  $bucketmax / $bucketcount;
+	
+	$bucketsize = 1 if $bucketsize == 0 ;
+	foreach my $path (@pathes) {
+		$buckets{  floor($$counter{size}{path}{$path} / $bucketsize) }+=$$counter{count}{files}{$path};		
+	}
+	@data = map { [ ($self->renderByteValue($_ *$bucketsize,1))[0], $buckets{$_} || 0 ] }  sort { $a <=> $b } keys %buckets;
+	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
 }
 sub collectSuffixData {
 	my ($self, $key) = @_;
@@ -197,6 +258,8 @@ sub collectTreemapData {
 	my $ccst = 1/5;
 	my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
 	my ($filecountall, $sizeall, $maxfilesizesum) = ($$self{filecountall},$$self{sizeall},$$self{maxfilesizesum});
+	
+	return "[]" if $$counter{size}{all} == 0;
 	
 	foreach my $folder (@{$$self{folders}}) {
 		# collect treemap data:
@@ -266,6 +329,7 @@ sub getDiskUsage {
 	$$counter{count}{subdir}{sum}{$path}{$file}++ if $file ne "";
 	
 	
+	
 	my $full = $path.$file;
 	if ($backend->isDir($full)) {
 		$$counter{count}{all}{folders}++;
@@ -289,14 +353,18 @@ sub getDiskUsage {
 			$$counter{size}{allmaxsum}+=$fs;
 			$$counter{size}{pathmax}{$path} = $fs;		
 		}
-	  
-		$$counter{size}{files}{$path}{$file eq "" ? '.' : $file}+=$fs;
 		
+		$$counter{size}{histo}{filemax} = $fs if !$$counter{size}{histo}{filemax} || $fs > $$counter{size}{histo}{filemax};
+	  	$$counter{size}{histo}{sizes}{$fs}++;
+	  	
+		#$$counter{size}{files}{$path}{$file eq "" ? '.' : $file}+=$fs;
+		$$counter{size}{files}{$path}{$file eq "" ? '.' : $file} = $fs;
 		
 		if ($file=~/(\.[^.]+)$/ && length($1)<5) {
 			$$counter{suffixes}{size}{lc($1)}+=$fs;
 			$$counter{suffixes}{count}{lc($1)}++;
 		}
-	}	
+	}
+	$$counter{size}{histo}{pathmax} = $$counter{size}{path}{$path} if !$$counter{size}{histo}{pathmax} || $$counter{size}{path}{$path} > $$counter{size}{histo}{pathmax};	
 }
 1;

@@ -1,6 +1,7 @@
 <div title="$tl(du_diskusage): $size">
 <div title="$sizetitle">$diskusageof: $size</div>
 <div> $tl(statfiles) $files, $tl(statfolders) $folders, $tl(statsum) $sum</div>
+<!--IF($size > 0)-->
 <div class="diskusage details accordion">
 	<h3>$tl(du_details)</h3>
 	<div>
@@ -48,6 +49,13 @@
 		<div id="chart2-$time" class="diskusage statistics piechart size" data-json="$json(suffixesbysize)"></div>
 		
 	</div>
+	<!-- 
+	<div>
+		<div class="diskusage statistics barchart histobyfilesize" title="$tl(du_histobyfilesize)" data-json="$json(histobyfilesize)"></div>
+		<div class="diskusage statistics barchart histobyfoldersize" title="$tl(du_histobyfoldersize)" data-json="$json(histobyfoldersize)"></div>
+	</div>
+	 -->
 	</div>
 </div>
+<!--ENDIF-->
 </div>
