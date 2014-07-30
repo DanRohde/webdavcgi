@@ -82,10 +82,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	height: 1.5ex;
 	font-size: small;
 }
+.diskusage.treemap.switch {
+	margin-top: 2px;
+	margin-bottom: 2px; 	
+}
 .diskusage.treemap.switch.space {
 	display: inline-block;
 	width: 4em;
 }
 .diskusage.treemap.active {
 	border: 2px solid black;
+}
+.smalltext {
+	font-size: small;
 }
