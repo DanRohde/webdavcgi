@@ -203,6 +203,9 @@ sub addDuplicateClusterResult {
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
 		my ($s,$st) = $self->renderByteValue($size);
 		my $sizelimit = $self->config('sizelimit',2097152);
+		my $bytesavings = (scalar(@{$$data{dupsearch}{md5}{$size}{$md5}})-1) * $size;
+		my @savings = $self->renderByteValue($bytesavings);
+		
 		my ($sl, $slt) = $self->renderByteValue($sizelimit);
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchtemplate', 'dupsearch')), 
 			{
@@ -214,6 +217,9 @@ sub addDuplicateClusterResult {
 				sizelimit => $sizelimit,
 				sizelimittext => $sl,
 				sizelimittitle=> $slt,
+				savings => $savings[0],
+				savingstitle=> $savings[1],
+				bytesavings => $bytesavings,
 			}
 		);	
 		close($fh); 
@@ -222,9 +228,22 @@ sub addDuplicateClusterResult {
 		$self->addSearchResult($$fileinfo{base}, $$fileinfo{file}, $data);
 	}
 }
+sub addDuplicateSavings {
+	my ($self, $data) = @_;
+	return if $$data{dupsearch}{savings} == 0;
+	if (open(my $fh,">>", $self->getTempFilename('result'))) {
+		my @savings  = $self->renderByteValue($$data{dupsearch}{savings});
+		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchsavingstemplate', 'dupsearchsavings')), {
+			savings => $savings[0],
+			savingstitle => $savings[1], 
+			bytesavings =>  $$data{dupsearch}{savings},
+			filecount => $$data{dupsearch}{filecount},
+		});
+		close($fh);
+	}
+}
 sub doDupSearch {
 	my ($self, $data) = @_;
-	
 	foreach my $size (sort { $a <=> $b} keys %{$$data{dupsearch}{sizes}}) {
 		return if $self->limitsReached($data);
 		## check count of files with same size:
@@ -238,11 +257,15 @@ sub doDupSearch {
 		}
 		## check md5 sums:	
 		foreach my $md5 (keys %{$$data{dupsearch}{md5}{$size}}) {
-			next unless scalar(@{$$data{dupsearch}{md5}{$size}{$md5}}) >1;
+			my $count = scalar(@{$$data{dupsearch}{md5}{$size}{$md5}});
+			next unless $count >1;
 			## TODO: compare bitwise
 			$self->addDuplicateClusterResult($data, $size, $md5);
+			$$data{dupsearch}{savings} += ($count - 1) * $size;
+			$$data{dupsearch}{filecount} += $count - 1;
 		}		
 	}
+	$self->addDuplicateSavings($data);
 }
 sub handleSearch {
 	my ($self) = @_;

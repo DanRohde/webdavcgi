@@ -208,7 +208,8 @@ sub renderByteValue {
                 $showunit=$unit if $rv{$unit} >= 1;
                 $title.= ($unit eq 'B' ? sprintf(' = %.0fB ',$rv{$unit}) : sprintf('= %.'.$ft.'f%s ', $rv{$unit}, $unit)) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
         }
-        return ( ($showunit eq 'B' ? $rv{$showunit} : sprintf('%.'.$f.'f%s',$rv{$showunit},$showunit)), $title);
+        return ( ($showunit eq 'B' ? $rv{$showunit}.'B' : sprintf('%.'.$f.'f%s',$rv{$showunit},$showunit)), $title);
+        
 }
 sub filter {
         my ($self,$path, $file) = @_;

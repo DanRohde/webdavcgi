@@ -1,13 +1,12 @@
-
-
 <!--IF( $bytesize >  $sizelimit )-->
-<div class="search result entry duplicates  limitexceeded">
+<div class="search result entry duplicates limitexceeded">
 	<span title="Digest: $digest">$tl(search.dupsearch.limitexceeded.result): $filecount</span>
-	(<span title="$sizetitle">$tl(search.size): $size</span>, <span title="$sizelimittitle">$tl(search.sizelimit): $sizelimittext</span>):
+	(<span title="$sizetitle">$tl(search.size): $size</span>, 
+	<!--IF#2($bytesavings - $bytesize > 0)--><span title="$savingstitle">$tl(search.savings): $savings,</span><!--ENDIF#2--><span title="$sizelimittitle">$tl(search.sizelimit): $sizelimittext</span>):
 <!--ELSE-->
 <div class="search result entry duplicates">
 	<span title="Digest: $digest">$tl(search.dupsearch.result): $filecount</span>  
-	(<span title="$sizetitle">$tl(search.size): $size</span>):
+	(<span title="$sizetitle">$tl(search.size): $size</span><!--IF#2($bytesavings - $bytesize > 0)--><span title="$savingstitle">, $tl(search.savings): $savings</span><!--ENDIF#2-->):
 <!--ENDIF-->
 
 </div>

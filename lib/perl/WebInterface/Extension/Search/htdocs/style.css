@@ -47,7 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .search.resultcontentpane {
 	max-height: 750px;
 	overflow: auto;
-	min-width: 700px;
+	min-width: 750px;
 }
 .search.statusbar {
 	background-color: #ededed;
@@ -115,4 +115,8 @@ input.search.start, input.search.cancel {
 	font-size: smaller;
 	font-style: italic;
 	clear: none;
+}
+.search.result.entry.duplicates.savingssummary {
+	font-style: italic;
+	background-color: #dadada;
 }
