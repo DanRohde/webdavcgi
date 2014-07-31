@@ -107,7 +107,8 @@ sub addSearchResult {
 				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
 				iconclass=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
 				mime => $$self{cgi}->escapeHTML($mime),
-				type=> $mime eq '<folder>' ? 'folder' : 'file', 
+				type=> $mime eq '<folder>' ? 'folder' : 'file',
+				parentfolder => $$self{cgi}->escapeHTML($$self{backend}->dirname($base.$file)), 
 			});
 		$$counter{results}++;
 		close($fh);
