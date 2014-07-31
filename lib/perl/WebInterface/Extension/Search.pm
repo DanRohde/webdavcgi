@@ -265,7 +265,6 @@ sub doDupSearch {
 			$$data{dupsearch}{filecount} += $count - 1;
 		}		
 	}
-	$self->addDuplicateSavings($data);
 }
 sub handleSearch {
 	my ($self) = @_;
@@ -280,7 +279,10 @@ sub handleSearch {
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);
 	}
 	
-	$self->doDupSearch(\%counter) if !$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch');
+	if (!$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch')) {
+		$self->doDupSearch(\%counter);
+		$self->addDuplicateSavings(\%counter);
+	}
 	
 	$counter{completed} = time();
 	my $duration = $counter{completed} - $counter{started};
