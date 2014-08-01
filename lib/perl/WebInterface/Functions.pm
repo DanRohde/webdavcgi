@@ -93,8 +93,8 @@ sub handleClipboardAction {
 			push @failed, $file;
 		} elsif (
 			main::rcopy(
-				"$srcdir$file",
-				"$main::PATH_TRANSLATED$file",
+				$$self{backend}->resolveVirt("$srcdir$file"),
+				$$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"),
 				$$self{cgi}->param('action') eq 'cut'
 			)
 		  )
@@ -179,7 +179,7 @@ sub handleFileActions {
 						  if $$self{backend}->isDir($target);
 						if (
 							main::rmove(
-								$main::PATH_TRANSLATED . $file, $target
+								$$self{backend}->resolveVirt($main::PATH_TRANSLATED . $file), $$self{backend}->resolveVirt($target)
 							)
 						  )
 						{

@@ -41,6 +41,7 @@ sub init {
 			  #'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 }, 
 			});
 	$$self{json} = new JSON();
+	
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
@@ -93,7 +94,7 @@ sub removeProperty {
 	my ($self) = @_;
 	my %jsondata = ();
 	foreach my $file ($$self{cgi}->param('files')) {
-		$$self{db}->db_removeProperty($$self{backend}->resolveVirt($main::PATH_TRANSLATED.$file), $$self{namespace}.$$self{cgi}->param('style'));	
+		$$self{db}->db_removeProperty($$self{backend}->resolveVirt($main::PATH_TRANSLATED.$self->stripTrailingSlash($file)), $$self{namespace}.$$self{cgi}->param('style'));	
 	}
 	
 	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
@@ -109,7 +110,7 @@ sub saveProperty {
 	my $propname = 	$$self{namespace}.$style;
 	
 	foreach my $file ($cgi->param('files')) {
-		my $full = $$self{backend}->resolveVirt($main::PATH_TRANSLATED . $file);
+		my $full = $$self{backend}->resolveVirt($main::PATH_TRANSLATED . $self->stripTrailingSlash($file));
 		my $result = $db->db_getProperty($full, $propname) ? $db->db_updateProperty($full, $propname, $value) : $db->db_insertProperty($full, $propname, $value);
 		if (!$result) {
 			$jsondata{error} = sprintf($self->tl('highlighter.highlightingfailed'), $file );
@@ -119,5 +120,10 @@ sub saveProperty {
 	
 	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
+}
+sub stripTrailingSlash {
+	my ($self, $file) = @_;
+	$file=~s/\/$//;
+	return $file;	
 }
 1;
