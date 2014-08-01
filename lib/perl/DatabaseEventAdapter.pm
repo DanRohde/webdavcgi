@@ -42,7 +42,7 @@ sub receiveEvent {
 	elsif ( $event eq 'FILECOPIED' ) {
 		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
 		$db->db_deleteProperties($dst);
-		$db->db_copyPropertiesRecursive($src, $dst);
+		$db->db_copyProperties($src, $dst);
 	}
 	elsif ( $event eq 'DELETED' ) {
 		my ($dst) = ($self->stripTrailingSlash($$data{file}));
