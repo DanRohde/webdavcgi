@@ -129,15 +129,16 @@ sub handleFileActions {
 					last;
 				} 
 				if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
+					my $eventChannel = main::getEventChannel();
+					my $full = $$self{backend}->resolveVirt($main::PATH_TRANSLATED.$file);
+					$eventChannel->broadcastEvent('DELETE', {file => $full}) if $eventChannel;
 					if ($main::ENABLE_TRASH) {
-						$count +=
-						  main::moveToTrash( $main::PATH_TRANSLATED . $file );
+						$count += main::moveToTrash( $full );
 					}
 					else {
-						$count +=
-						  $$self{backend}
-						  ->deltree( $main::PATH_TRANSLATED . $file, \my @err );
+						$count += $$self{backend}->deltree( $full, \my @err );
 					}
+					$eventChannel->broadcastEvent('DELETED', {file => $full}) if $eventChannel;
 					main::logger("DELETE($main::PATH_TRANSLATED) via POST");
 				}
 			}

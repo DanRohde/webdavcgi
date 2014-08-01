@@ -40,8 +40,7 @@ sub init {
 			  'background-color'=>{ values=>'LightCoral,GreenYellow,LightBlue,Yellow,Plum', label=>'', labelstyle=>'background-color', colorpicker=>1, order=>2},
 			  #'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 }, 
 			});
-	$$self{json} = new JSON();
-	
+	$$self{json} = new JSON();	
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
