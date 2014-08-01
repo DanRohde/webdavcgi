@@ -692,9 +692,9 @@ $DEBUG = 0;
 
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
-## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'Permissions','PosixAclManager', 'PropertiesViewer','Search','SendByMail', 'SysInfo', 'Zip'
+## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'Highlighter', 'Permissions','PosixAclManager', 'PropertiesViewer','Search','SendByMail', 'SysInfo', 'Zip'
 ## EXAMPLE: @EXTENSIONS = ( 'Search', 'SysInfo' , 'PropertiesViewer', 'DiskUsage', 'Zip','Download','PosixAclManager','Diff');
-@EXTENSIONS = ( 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
+@EXTENSIONS = ( 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)
