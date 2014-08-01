@@ -121,6 +121,19 @@ sub db_moveProperties {
         }
         return $ret;
 }
+sub db_movePropertiesRecursive {
+        my($self,$src,$dst) = @_;
+        my $dbh = $self->db_init();
+        my $sth = $dbh->prepare('UPDATE webdav_props SET fn = ? WHERE fn = ? OR fn like ?');
+        my $ret = 0;
+        if (defined $sth) {
+                $sth->execute($dst,$src,"$src/\%");
+                $ret = ($sth->rows>0)?1:0;
+                $dbh->commit();
+                delete $CACHE{Properties}{$src};
+        }
+        return $ret;
+}
 sub db_copyProperties {
         my($self,$src,$dst) = @_;
         my $dbh = $self->db_init();
@@ -128,6 +141,18 @@ sub db_copyProperties {
         my $ret = 0;
         if (defined $sth) {
                 $sth->execute($dst,$src);
+                $ret = ($sth->rows>0)?1:0;
+                $dbh->commit();
+        }
+        return $ret;
+}
+sub db_copyPropertiesRecursive {
+        my($self,$src,$dst) = @_;
+        my $dbh = $self->db_init();
+        my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ? or fn like ?');
+        my $ret = 0;
+        if (defined $sth) {
+                $sth->execute($dst,$src,"$src/\%");
                 $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
         }

@@ -22,6 +22,11 @@ use Events::EventListener;
 @ISA = ('Events::EventListener');
 use vars qw( %CHACHE );
 
+sub stripTrailingSlash {
+	my ($self, $file) = @_;
+	$file=~s/\/$//;
+	return $file;
+}
 sub receiveEvent {
 	my ( $self, $event, $data ) = @_;
 	my $db = main::getDBDriver();
@@ -29,17 +34,20 @@ sub receiveEvent {
 		$db->finalize();
 	}
 	elsif ( $event eq 'FILEMOVED' ) {
-		$db->db_deletePropertiesRecursive( $$data{destination} );
-		$db->db_moveProperties( $$data{file}, $$data{destination} );
-		$db->db_delete( $$data{file} );
+		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
+		$db->db_deleteProperties($dst);
+		$db->db_movePropertiesRecursive($src,$dst);
+		$db->db_delete($src);
 	}
 	elsif ( $event eq 'FILECOPIED' ) {
-		$db->db_deletePropertiesRecursive( $$data{destination} );
-		$db->db_copyProperties( $$data{file}, $$data{destination} );
+		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
+		$db->db_deleteProperties($dst);
+		$db->db_copyPropertiesRecursive($src, $dst);
 	}
 	elsif ( $event eq 'DELETED' ) {
-		$db->db_deletePropertiesRecursive( $$data{file} );
-		$db->db_delete( $$data{file} );
+		my ($dst) = ($self->stripTrailingSlash($$data{file}));
+		$db->db_deletePropertiesRecursive($dst);
+		$db->db_delete($dst);
 	}
 }
 1;

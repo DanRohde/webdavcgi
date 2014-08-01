@@ -112,11 +112,6 @@ sub handleClipboardAction {
 	$self->printJSONResponse($msg, $errmsg, $msgparam);
 }
 
-sub stripTrailingSlash {
-	my ( $self, $file) = @_;
-	$file=~s/\/$//;
-	return $file;
-}
 sub handleFileActions {
 	my ( $self, $redirtarget ) = @_;
 	my ( $msg, $errmsg, $msgparam );
@@ -134,7 +129,7 @@ sub handleFileActions {
 				} 
 				if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
 					my $eventChannel = main::getEventChannel();
-					my $full = $self->stripTrailingSlash($$self{backend}->resolveVirt($main::PATH_TRANSLATED.$file));
+					my $full = $$self{backend}->resolveVirt($main::PATH_TRANSLATED.$file);
 					$eventChannel->broadcastEvent('DELETE', {file => $full}) if $eventChannel;
 					if ($main::ENABLE_TRASH) {
 						$count += main::moveToTrash( $full );
