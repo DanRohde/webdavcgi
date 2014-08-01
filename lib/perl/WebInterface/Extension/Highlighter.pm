@@ -38,7 +38,7 @@ sub init {
 	$$self{attributes} = $self->config('attributes', 
 			{ 'color' =>{ values=>'Red,Green,Blue,Orange,Purple', label=>'', labelstyle=>'background-color', colorpicker=>1,order=>1}, 
 			  'background-color'=>{ values=>'LightCoral,GreenYellow,LightBlue,Yellow,Plum', label=>'', labelstyle=>'background-color', colorpicker=>1, order=>2},
-			  'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 }, 
+			  #'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 }, 
 			});
 	$$self{json} = new JSON();
 }
@@ -78,10 +78,11 @@ sub handle {
 sub getFileAttributes {
 	my ($self, $params) = @_;
 	
-	$$self{db}->db_getProperties($main::PATH_TRANSLATED); ## fills the cache
+	$$self{db}->db_getProperties($$self{backend}->resolveVirt($main::PATH_TRANSLATED)); ## fills the cache
+	my $path = $$self{backend}->resolveVirt($$params{path});
 	my %jsondata = ();
 	foreach my $prop (keys $$self{attributes}) {
-		my $val = $$self{db}->db_getProperty($$params{path}, $$self{namespace}.$prop);
+		my $val = $$self{db}->db_getProperty($path, $$self{namespace}.$prop);
 		$jsondata{$prop}=$val if $val;
 			
 	}

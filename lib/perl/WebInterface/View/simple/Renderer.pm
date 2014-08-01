@@ -320,7 +320,7 @@ sub renderFileListEntry {
 				'ext_styles' =>'',
 				);
 	# fileattr hook: collect and concatenate attribute values 
-	my $fileattrExtensions = $$self{config}{extensions}->handle('fileattr', { path=>$$self{backend}->resolveVirt("$fn$file")});
+	my $fileattrExtensions = $$self{config}{extensions}->handle('fileattr', { path=>"$fn$file"});
 	if ($fileattrExtensions ) {
 		foreach my $attrHashRef (@{$fileattrExtensions}) {
 			foreach my $supportedFileAttr ( ('ext_classes', 'ext_attributes','ext_styles')) {
@@ -330,7 +330,7 @@ sub renderFileListEntry {
 	}
 	# fileprop hook by Harald Strack <hstrack@ssystems.de>
 	# overwrites all stdvars including ext_...
-	my $filepropExtensions = $$self{config}{extensions}->handle('fileprop', { path=>$$self{backend}->resolveVirt("$fn$file")});
+	my $filepropExtensions = $$self{config}{extensions}->handle('fileprop', { path=>"$fn$file"});
 	if (defined ($filepropExtensions)) {
 		foreach my $ret (@{$filepropExtensions}) {
 			my %newHash = (%$ret, %stdvars); 
