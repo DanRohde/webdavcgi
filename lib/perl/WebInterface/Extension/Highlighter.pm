@@ -82,7 +82,7 @@ sub getFileAttributes {
 	$$self{db}->db_getProperties($$self{backend}->resolveVirt($main::PATH_TRANSLATED)); ## fills the cache
 	my $path = $$self{backend}->resolveVirt($$params{path});
 	my %jsondata = ();
-	foreach my $prop (keys $$self{attributes}) {
+	foreach my $prop (keys %{$$self{attributes}}) {
 		my $val = $$self{db}->db_getProperty($path, $$self{namespace}.$prop);
 		$jsondata{$prop}=$val if $val;
 			
