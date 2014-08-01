@@ -147,6 +147,20 @@ sub db_deleteProperties {
         return $ret;
         
 }
+sub db_deletePropertiesRecursive {
+        my($self,$fn) = @_;
+        my $dbh = $self->db_init();
+        my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? OR fn like ?');
+        my $ret = 0;
+        if (defined $sth) {
+                $sth->execute($fn,"$fn/\%");
+                $dbh->commit();
+                delete $CACHE{Properties}{$fn};
+                $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
+        }
+        return $ret;
+        
+}
 sub db_getProperties {
         my ($self,$fn) = @_;
         return $CACHE{Properties}{$fn} if exists $CACHE{Properties}{$fn} || $CACHE{Properties_flag}{$fn}; 

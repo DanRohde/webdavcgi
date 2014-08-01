@@ -29,16 +29,16 @@ sub receiveEvent {
 		$db->finalize();
 	}
 	elsif ( $event eq 'FILEMOVED' ) {
-		$db->db_deleteProperties( $$data{destination} );
+		$db->db_deletePropertiesRecursive( $$data{destination} );
 		$db->db_moveProperties( $$data{file}, $$data{destination} );
 		$db->db_delete( $$data{file} );
 	}
 	elsif ( $event eq 'FILECOPIED' ) {
-		$db->db_deleteProperties( $$data{destination} );
+		$db->db_deletePropertiesRecursive( $$data{destination} );
 		$db->db_copyProperties( $$data{file}, $$data{destination} );
 	}
 	elsif ( $event eq 'DELETED' ) {
-		$db->db_deleteProperties( $$data{file} );
+		$db->db_deletePropertiesRecursive( $$data{file} );
 		$db->db_delete( $$data{file} );
 	}
 }
