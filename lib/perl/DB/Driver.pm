@@ -124,10 +124,10 @@ sub db_moveProperties {
 sub db_movePropertiesRecursive {
         my($self,$src,$dst) = @_;
         my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('UPDATE webdav_props SET fn = ? WHERE fn = ? OR fn like ?');
+        my $sth = $dbh->prepare('UPDATE webdav_props SET fn = REPLACE(fn, ?, ?) WHERE fn = ? OR fn LIKE ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($dst,$src,"$src/\%");
+                $sth->execute($src,$dst,$src,"$src/\%");
                 $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
                 delete $CACHE{Properties}{$src};
@@ -149,10 +149,10 @@ sub db_copyProperties {
 sub db_copyPropertiesRecursive {
         my($self,$src,$dst) = @_;
         my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ? or fn like ?');
+        my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT REPLACE(fn, ?, ?), propname, value FROM webdav_props WHERE fn = ? OR fn like ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($dst,$src,"$src/\%");
+                $sth->execute($src,$dst,$src,"$src/\%");
                 $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
         }

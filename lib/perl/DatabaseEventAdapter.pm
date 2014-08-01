@@ -35,13 +35,13 @@ sub receiveEvent {
 	}
 	elsif ( $event eq 'FILEMOVED' ) {
 		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
-		$db->db_deletePropertiesRecursive($dst);
+		$db->db_deleteProperties($dst);
 		$db->db_movePropertiesRecursive($src,$dst);
 		$db->db_delete($src);
 	}
 	elsif ( $event eq 'FILECOPIED' ) {
 		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
-		$db->db_deletePropertiesRecursive($dst);
+		$db->db_deleteProperties($dst);
 		$db->db_copyPropertiesRecursive($src, $dst);
 	}
 	elsif ( $event eq 'DELETED' ) {
