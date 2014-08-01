@@ -185,7 +185,16 @@ sub renderExtensionElement {
 		$params{-title}=$self->tl($$a{title}) if $$a{title};
 		$params{-data_template} = $$a{template} if $$a{template};
 		$content.=$$a{prehtml} if $$a{prehtml};
-		
+		if ($$a{data}) {
+			foreach my $data ( keys %{$$a{data}}) {
+				$params{"-data-$data"} = $$a{data}{$data};
+			}
+		}
+		if ($$a{attr}) {
+			foreach my $attr ( keys %{$$a{attr}}) {
+				$params{"-$attr"} = $$a{attr}{$attr};
+			}
+		}
 		if ($$a{type} && $$a{type} eq 'li') {	
 			$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
 		} else {
@@ -306,9 +315,22 @@ sub renderFileListEntry {
 				'modestr' => $self->mode2str($full, $mode),
 				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0) || $uid,
 				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0) || $gid,
+				'ext_classes'=> '',
+				'ext_attributes'=>'',
+				'ext_styles' =>'',
 				);
+	# fileattr hook: collect and concatenate attribute values 
+	my $fileattrExtensions = $$self{config}{extensions}->handle('fileattr', { path=>"$fn$file"});
+	if ($fileattrExtensions ) {
+		foreach my $attrHashRef (@{$fileattrExtensions}) {
+			foreach my $supportedFileAttr ( ('ext_classes', 'ext_attributes','ext_styles')) {
+				$stdvars{$supportedFileAttr}.=' '.$$attrHashRef{$supportedFileAttr} if $$attrHashRef{$supportedFileAttr};	
+			}
+		}
+	}
 	# fileprop hook by Harald Strack <hstrack@ssystems.de>
-	my $filepropExtensions = $$self{config}{extensions}->handle('fileprop', { path=>$full });
+	# overwrites all stdvars including ext_...
+	my $filepropExtensions = $$self{config}{extensions}->handle('fileprop', { path=>"$fn$file"});
 	if (defined ($filepropExtensions)) {
 		foreach my $ret (@{$filepropExtensions}) {
 			my %newHash = (%$ret, %stdvars); 

@@ -1078,14 +1078,15 @@ img {
 	height: auto;
 	color: black;
 }
-#popupmenu li:hover ul {
+#popupmenu li:hover > ul {
 	display: block;
 }
-#popupmenu li ul:hover {
+#popupmenu li > ul:hover {
 	display: block;
 }
 #popupmenu li.subpopupmenu {
 	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right center;
+	cursor: pointer;
 }
 #popupmenu li.subpopupmenu:hover {
 	background-color: #f9f9f9;

@@ -880,11 +880,20 @@ function confirmDialog(text, data) {
 function getVisibleAndSelectedFiles() {
 	return $("#fileList tr.isreadable-yes.unselectable-no").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
 }
+function getSelectedRows(el) {
+	var selrows = $("#fileList tr.selected:visible");
+	if (selrows.length==0) selrows = $(el).closest("tr[data-file]");
+	if (selrows.length==0) selrows = $("#fileList tr:visible:focus");
+	return selrows;
+}
 function getSelectedFiles(el) {
+	return $.map(getSelectedRows(el), function (v,i) { return $(v).attr("data-file")});
+	/*
 	var selfiles = $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")});
 	if (selfiles.length==0) selfiles = new Array($(el).closest("tr").attr("data-file"));
 	if (selfiles.length==0) selfiles =  $.map($("#fileList tr:visible:focus"), function(v,i){ return $(v).attr("data-file")});
 	return selfiles;
+	*/
 }
 function handleFileActionEvent(event) {
 	preventDefault(event);
@@ -1898,16 +1907,16 @@ function renderAccessKeyDetails() {
 		.dialog({title: $(this).attr("title"), width: "auto", height: "auto",
 				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]});
 }
+function hidePopupMenu() {
+	$("#popupmenu:visible").hide().appendTo("body");
+}
 function initPopupMenu() {
 	$("#popupmenu .action").click(function(event) {
 		handleFileActionEvent.call(this,event);
 		//handleFileListActionEvent.call(this,event);
 	});
 	$("#popupmenu .action, #popupmenu .listaction").dblclick(function(event) { preventDefault(event);});
-	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});
-	function hidePopupMenu() {
-		$("#popupmenu:visible").hide().appendTo("body");
-	}
+	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});	
 	function adjustPopupPosition(pageX,pageY) {
 		var popup = $("#popupmenu");
 		var offset = $("#content").position();
@@ -1950,7 +1959,9 @@ function initToolBox() {
 			confirmDialog : confirmDialog,
 			cookie : cookie,
 			getSelectedFiles : getSelectedFiles,
+			getSelectedRows : getSelectedRows,
 			handleJSONResponse : handleJSONResponse,
+			hidePopupMenu : hidePopupMenu,
 			initUpload : initUpload,
 			preventDefault : preventDefault,
 			renderAbortDialog: renderAbortDialog,
@@ -1958,6 +1969,7 @@ function initToolBox() {
 			renderByteSizes: renderByteSizes,
 			stripSlash : stripSlash,
 			togglecookie : togglecookie,
+			toggleRowSelection : toggleRowSelection,
 			uncheckSelectedRows : uncheckSelectedRows,
 			updateFileList : updateFileList
 	};

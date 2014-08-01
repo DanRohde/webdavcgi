@@ -20,7 +20,7 @@
 # TODO: describe extension setup
 
 # TODO: change package name
-package WebInterface::Extension::Sekeleton;
+package WebInterface::Extension::Skeleton;
 
 use strict;
 
