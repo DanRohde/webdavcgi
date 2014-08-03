@@ -20,9 +20,9 @@ package DB::Driver;
 
 use strict;
 
-use vars qw( %CACHE $SUFFIX);
+use vars qw( %CACHE $PREFIX);
 
-$SUFFIX = '///-/';
+$PREFIX = '///-/';
 
 use DBI;
 
@@ -90,7 +90,7 @@ sub db_insertProperty {
         my $dbh = $self->db_init();
         my $sth = $dbh->prepare('INSERT INTO webdav_props (fn, propname, value) VALUES ( ?,?,?)');
         if (defined  $sth) {
-                $sth->execute($SUFFIX.$fn, $propname, $value);
+                $sth->execute($PREFIX.$fn, $propname, $value);
                 $ret = ($sth->rows >0)?1:0;
                 $dbh->commit();
                 $CACHE{Properties}{$fn}{$propname}=$value;
@@ -103,7 +103,7 @@ sub db_updateProperty {
         my $dbh = $self->db_init();
         my $sth = $dbh->prepare('UPDATE webdav_props SET value = ? WHERE (fn = ? OR fn = ?) AND propname = ?');
         if (defined  $sth) {
-                $sth->execute($value, $fn, $SUFFIX.$fn, $propname);
+                $sth->execute($value, $fn, $PREFIX.$fn, $propname);
                 $ret=($sth->rows>0)?1:0;
                 $dbh->commit();
                 $CACHE{Properties}{$fn}{$propname}=$value;
@@ -116,7 +116,7 @@ sub db_moveProperties {
         my $sth = $dbh->prepare('UPDATE webdav_props SET fn = ? WHERE fn = ? OR fn = ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($SUFFIX.$dst, $SUFFIX.$src,$src);
+                $sth->execute($PREFIX.$dst, $PREFIX.$src,$src);
                 $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
                 delete $CACHE{Properties}{$src};
@@ -129,7 +129,7 @@ sub db_movePropertiesRecursive {
         my $sth = $dbh->prepare('UPDATE webdav_props SET fn = REPLACE(fn, ?, ?) WHERE fn = ? OR fn = ? OR fn LIKE ? OR fn LIKE ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($SUFFIX.$src,$SUFFIX.$dst,$src,$SUFFIX.$src, "$src/\%","$SUFFIX$src/\%");
+                $sth->execute($PREFIX.$src,$PREFIX.$dst,$src,$PREFIX.$src, "$src/\%","$PREFIX$src/\%");
                 $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
                 delete $CACHE{Properties}{$src};
@@ -142,7 +142,7 @@ sub db_copyProperties {
         my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ? OR fn = ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($dst,$src, $SUFFIX.$src);
+                $sth->execute($dst,$src, $PREFIX.$src);
                 $ret = ($sth->rows>0)?1:0;
                 $dbh->commit();
         }
@@ -154,7 +154,7 @@ sub db_deleteProperties {
         my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? OR fn = ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($fn,$SUFFIX.$fn);
+                $sth->execute($fn,$PREFIX.$fn);
                 $dbh->commit();
                 delete $CACHE{Properties}{$fn};
                 $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
@@ -168,7 +168,7 @@ sub db_deletePropertiesRecursive {
         my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? OR fn = ? OR fn like ? OR fn like ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($fn,$SUFFIX.$fn,"$fn/\%","$SUFFIX$fn/\%");
+                $sth->execute($fn,$PREFIX.$fn,"$fn/\%","$PREFIX$fn/\%");
                 $dbh->commit();
                 delete $CACHE{Properties}{$fn};
                 $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
@@ -182,7 +182,7 @@ sub db_getProperties {
         my $dbh = $self->db_init();
         my $sth = $dbh->prepare('SELECT REPLACE(fn,?,""), propname, value FROM webdav_props WHERE fn like ? OR fn like ?');
         if (defined $sth) {
-                $sth->execute($SUFFIX,"$fn\%","$SUFFIX$fn\%");
+                $sth->execute($PREFIX,"$fn\%","$PREFIX$fn\%");
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
                         foreach my $row (@{$rows}) {
@@ -204,7 +204,7 @@ sub db_removeProperty {
         my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE (fn = ? OR fn = ?) AND propname = ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($fn, $SUFFIX.$fn, $propname);
+                $sth->execute($fn, $PREFIX.$fn, $propname);
                 $ret = ($sth->rows >0)?1:0;
                 $dbh->commit();
                 delete $CACHE{Properties}{$fn}{$propname};
@@ -216,7 +216,7 @@ sub db_getPropertyFnByValue {
         my $dbh = $self->db_init();
         my $sth = $dbh->prepare('SELECT REPLACE(fn,?,"") FROM webdav_props WHERE propname = ? and value = ?');
         if (defined $sth) {
-                $sth->execute($SUFFIX, $propname,$value);
+                $sth->execute($PREFIX, $propname,$value);
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
                         return $$rows[0] if $rows;

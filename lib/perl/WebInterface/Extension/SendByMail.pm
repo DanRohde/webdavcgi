@@ -30,7 +30,7 @@
 #   enable_savemailasfile - allows to save a mail as a eml file
 #   disable_fileactionpopup - disables fileaction entry in popup menu
 #   enable_apps - enables sidebar menu entry
-
+#   addressboook - Perl module name with a addressbook implementation
 
 package WebInterface::Extension::SendByMail;
 
@@ -44,6 +44,7 @@ use Net::SMTP;
 use JSON;
 use File::Temp qw( tempfile );
 
+use Module::Load;
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -67,11 +68,24 @@ sub handle {
 			$self->renderMailDialog();
 		} elsif ($$self{cgi}->param('ajax') eq 'send') {
 			$self->sendMail();
+		} elsif ($$self{cgi}->param('ajax') eq 'search') {
+			$self->searchAddress();
 		}
 		$ret=1;
 	}
 	
 	return $ret;
+}
+sub searchAddress {
+	my ($self) = @_;
+	my %jsondata = (result=>['yes it is']);
+	if ($self->config('addressbook')) {
+		my $addressbook = $self->config('addressbook');
+		load $addressbook;
+ 		$jsondata{result} =$addressbook->getMailAddresses($self, $$self{cgi}->param('query'));	
+	}
+	my $json = new JSON();
+	main::printHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
 }
 sub buildMailFile {
 	my ($self,$limit,$filehandle) = @_;
