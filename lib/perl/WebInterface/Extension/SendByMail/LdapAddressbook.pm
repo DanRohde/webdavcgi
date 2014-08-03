@@ -26,16 +26,19 @@ sub getMailAddresses {
 	my ($self, $extension, $pattern) = @_;
 	
 	my %c = (
-		server => $extension->config('ldap.server'),
+		server => $extension->config('ldap.server','localhost'),
 		debug => $extension->config('ldap.debug',0),
 		starttls => $extension->config('ldap.starttls',0),
+		verify => $extension->config('ldap.verify','required'),
+		sslversion => $extension->config('ldap.sslversion','tlsv1'),
 		binddn => $extension->config('ldap.binddn',0),
 		password => $extension->config('ldap.password'),
 		basedn => $extension->config('ldap.basedn'),
 		filter => $extension->config('ldap.filter','(|(mail=*%s*)(cn=*%s*))'),
 		scope => $extension->config('ldap.scope','sub'),
-		timelimit => $extension->config('ldap.timelimit',10),
-		sizelimit => $extension->config('ldap.sizelimit',3),
+		timelimit => $extension->config('ldap.timelimit',5),
+		sizelimit => $extension->config('ldap.sizelimit',5),
+		cn => $extension->config('ldap.cn','cn'),
 		mail => $extension->config('ldap.mail','mail'),
 	);
 	
@@ -48,7 +51,7 @@ sub getMailAddresses {
 	
 		my $ldap = Net::LDAP->new($c{server}, debug=>$c{debug});
 	
-		ldap->start_tls() if $c{starttls}; 
+		ldap->start_tls(verify=>$c{verify}, sslversion=>$c{sslversion}) if $c{starttls}; 
 	
 		my $msg = $c{binddn} ? $ldap->bind($c{binddn}, password=>$c{password}) : $ldap->bind();
 	
@@ -57,11 +60,12 @@ sub getMailAddresses {
 		$query=~s/([\(\)\&\|\=\!\>\<\~\*])/sprintf('\\%x',ord($1))/eg; 
 		$c{filter} =~ s/\%s/$query/g;
 	
-		$msg = $ldap->search(base=>$c{basedn}, scope=>$c{scope},sizelimit=>$c{sizelimit}, timelimit=>$c{timelimit}, filter=>$c{filter}, attrs=>[ $c{mail} ]);
+		$msg = $ldap->search(base=>$c{basedn}, scope=>$c{scope},sizelimit=>$c{sizelimit}, timelimit=>$c{timelimit}, filter=>$c{filter}, attrs=>[ $c{cn}, $c{mail} ]);
 		$msg->code && warn $msg->error;
 		foreach my $entry ($msg->entries) {
-			my $val = $entry->get_value( $c{mail} );
-			push @result, $pa ne "" ? "$pa, $val" : $val;
+			my $mail = $entry->get_value($c{mail});
+			my $cn = $entry->get_value($c{cn});
+			push @result, $pa ne "" ? "$pa, $cn <$mail>," : "$cn <$mail>,";
 		}
 		$ldap->unbind();
 	}

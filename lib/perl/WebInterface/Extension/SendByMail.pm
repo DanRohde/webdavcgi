@@ -138,6 +138,7 @@ sub sendMail {
 	my $limit = $self->config("sizelimit",20971520);
 	my ($from) = $self->sanitizeParam($cgi->param('from'));
 	my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
+	my ($strto) = $self->sanitizeParam($cgi->param('to'));
 	my ($subject) = $self->sanitizeParam($cgi->param('subject') || $self->config('defaultsubject',''));
 	
 	if ($cgi->param('download') eq "yes") {
@@ -170,7 +171,7 @@ sub sendMail {
 			$smtp->mail($from);
 			$smtp->to(@to);
 			$smtp->data();
-			$smtp->datasend(sprintf("To: \%s\n",join(", ",@to)));
+			$smtp->datasend("To: $strto\n");
 			$smtp->datasend("From: $from\n");
 			$smtp->datasend("Subject: $subject\n");
 			$smtp->datasend("X-Mailer: WebDAV CGI\n");
