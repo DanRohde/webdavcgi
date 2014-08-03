@@ -81,6 +81,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>DateTime - (since v0.8.5)</li>
     <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
     <li><span style="optinal">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
+    <li><span style="optinal">optional for LDAP addressbook of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -89,7 +90,7 @@ apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
                 libfile-copy-link-perl libjson-perl libdatetime-perl \
-                libmime-tools-perl
+                libmime-tools-perl libnet-ldap-perl
 
 perl -MCPAN -e "install DateTime::Format::Human::Duration"
 
