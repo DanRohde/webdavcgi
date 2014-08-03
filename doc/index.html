@@ -4,8 +4,13 @@
   <meta name="keywords" content="WebDAV CGI wrapper UID" />
   <meta name="author" content="Daniel Rohde" />
   <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
-  <link rel="stylesheet" type="text/css" href="style.css"/>
-  <script src="script.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox.min.css"/>
+  <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox-buttons.min.css"/>
+  <link rel="stylesheet" type="text/css" href="style.min.css"/>
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="fancybox/jquery.fancybox.min.js"></script>
+  <script type="text/javascript" src="fancybox/jquery.fancybox-buttons.min.js"></script>
+  <script type="text/javascript" src="script.min.js"></script>	
   <title>WebDAV CGI</title>
 </head>
 <body>
@@ -14,12 +19,11 @@
 <a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></div>
 <h1>WebDAV CGI</h1>
 <p>
-<a href="images/webdavcgi-webinterface.png"><img id="screenshot1" onmouseover="javascript:startZoom(this,50,200,500,10);" onmouseout="javascript:stopZoom(this);" class="screenshot" style="float:right" src="images/webdavcgi-webinterface.png" alt="Web interface screenshot" title="Web interface screenshot - click for full size" /></a>
+<a href="images/webdavcgi-webinterface.png"><img id="screenshot1" class="screenshot" style="float:right" src="images/webdavcgi-webinterface.png" alt="Web interface screenshot" title="Web interface screenshot - click for full size" /></a>
 ...  brings your file service to the Web. 
 WebDAV CGI adds a modern Web interface and <a href="https://secure.wikimedia.org/wikipedia/en/wiki/WebDAV" target="_blank">WebDAV</a> to file systems like AFS, NFS, CIFS/SMB, EXT, GFS, and so on. 
-It preserves existing file permissions by using the included setuid/setgid wrappers. 
+It preserves existing file permissions by using a included setuid/setgid wrapper. 
 
- 
 </p>
 <div id="toc">
 Content of this site:
@@ -74,18 +78,50 @@ Supported RFC's, drafts and M$ specs:
 <tr><th colspan="5">Web interface</th></tr>
 <tr>
 <td >
-<a href="images/webdavcgi-webinterface.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface.png" alt="Web interface file/folder browser" title="Web interface file/folder browser - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface.png"><img class="screenshot" src="images/webdavcgi-webinterface.png" alt="Web interface file/folder browser" title="Web interface file/folder browser - click for full size"/></a>
 <div class="screenshottitle">file/folder browser</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a href="images/webdavcgi-webinterface-afs.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface-afs.png" alt="Web interface AFS dialogs" title="Web interface AFS dialogs - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-afs.png"><img class="screenshot" src="images/webdavcgi-webinterface-afs.png" alt="Web interface AFS dialogs" title="Web interface AFS dialogs - click for full size"/></a>
 <div class="screenshottitle">AFS Group &amp; ACL Manager</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a href="images/webdavcgi-webinterface-permissions.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-webinterface-permissions.png" alt="Web interface permissions dialog" title="Web interface permissions dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-permissions.png"><img class="screenshot" src="images/webdavcgi-webinterface-permissions.png" alt="Web interface permissions dialog" title="Web interface permissions dialog - click for full size"/></a>
 <div class="screenshottitle">Permissions dialog</div>
+</td>
+</tr>
+<tr>
+<td >
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-search.png"><img class="screenshot" src="images/webdavcgi-webinterface-search.png" alt="Web interface search dialog" title="Web interface search dialog - click for full size"/></a>
+<div class="screenshottitle">Search dialog with duplicate search</div>
+</td>
+<td>&nbsp;</td>
+<td>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-du.png"><img class="screenshot" src="images/webdavcgi-webinterface-du.png" alt="Web interface disk usage dialog" title="Web interface disk usage dialog - click for full size"/></a>
+<div class="screenshottitle">Disk usage dialog</div>
+</td>
+<td>&nbsp;</td>
+<td>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-diff.png"><img class="screenshot" src="images/webdavcgi-webinterface-diff.png" alt="Web interface compare files/folders dialog" title="Web interface compare files/folders dialog - click for full size"/></a>
+<div class="screenshottitle">Compare files/folders dialog</div>
+</td>
+</tr>
+<tr>
+<td >
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-sendbymail.png"><img class="screenshot" src="images/webdavcgi-webinterface-sendbymail.png" alt="Web interface send by mail dialog" title="Web interface send by mail dialog - click for full size"/></a>
+<div class="screenshottitle">Send by mail dialog</div>
+</td>
+<td>&nbsp;</td>
+<td>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-posixacls.png"><img class="screenshot" src="images/webdavcgi-webinterface-posixacls.png" alt="Web interface POSIX ACL dialog" title="Web interface POSIX ACL dialog - click for full size"/></a>
+<div class="screenshottitle">POSIX ACL dialog</div>
+</td>
+<td>&nbsp;</td>
+<td>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-pictures.png"><img class="screenshot" src="images/webdavcgi-webinterface-pictures.png" alt="Web interface image gallery" title="Web interface image gallery - click for full size"/></a>
+<div class="screenshottitle">Image gallery</div>
 </td>
 </tr>
 <tr>
@@ -93,38 +129,37 @@ Supported RFC's, drafts and M$ specs:
 </tr>
 <tr>
 <td>
-<a href="images/webdavcgi-client-nautilus.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-nautilus.png" alt="Nautilus" title="Nautilus - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-nautilus.png"><img class="screenshot" src="images/webdavcgi-client-nautilus.png" alt="Nautilus" title="Nautilus - click for full size"/></a>
 <div class="screenshottitle">Nautilus</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a href="images/webdavcgi-client-konqueror.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-konqueror.png" alt="Konqueror" title="Konqueror - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-konqueror.png"><img class="screenshot" src="images/webdavcgi-client-konqueror.png" alt="Konqueror" title="Konqueror - click for full size"/></a>
 <div class="screenshottitle">Konqueror</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a href="images/webdavcgi-client-cadaver.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-cadaver.png" alt="cadaver" title="cadaver - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-cadaver.png"><img class="screenshot" src="images/webdavcgi-client-cadaver.png" alt="cadaver" title="cadaver - click for full size"/></a>
 <div class="screenshottitle">cadaver</div>
 </td>
 </tr>
 <tr>
 <td>
-<a href="images/webdavcgi-client-davfs.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-davfs.png" alt="davfs" title="davfs- click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-davfs.png"><img class="screenshot" src="images/webdavcgi-client-davfs.png" alt="davfs" title="davfs- click for full size"/></a>
 <div class="screenshottitle">davfs2</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a href="images/webdavcgi-client-wexplorer.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-wexplorer.png" alt="M$ Windows Explorer" title="M$ Windows Explorer - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-wexplorer.png"><img class="screenshot" src="images/webdavcgi-client-wexplorer.png" alt="M$ Windows Explorer" title="M$ Windows Explorer - click for full size"/></a>
 <div class="screenshottitle">M$ Windows Explorer (XP)</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a href="images/webdavcgi-client-bitkinex.png"><img onmouseover="javascript:startZoom(this, 50, 200, 500, 10);" onmouseout="javascript:stopZoom(this);" class="screenshot" src="images/webdavcgi-client-bitkinex.png" alt="BitKinex 3.2.3" title="BitKinex 3.2.3 - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-bitkinex.png"><img class="screenshot" src="images/webdavcgi-client-bitkinex.png" alt="BitKinex 3.2.3" title="BitKinex 3.2.3 - click for full size"/></a>
 <div class="screenshottitle">BitKinex 3.2.3</div>
 </td>
 </tr>
 </table>
-
 
 <a id="download"></a>
 <h2>Download</h2>
