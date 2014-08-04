@@ -66,9 +66,9 @@ sub getMailAddresses {
 		foreach my $entry ($msg->entries) {
 			my $mail = $entry->get_value($c{mail});
 			my $cn = $entry->get_value($c{cn});
-			my $re = "$cn <$mail>, ";
+			my $re = "$cn <$mail>";
 			$re = "$pa, $re" if $pa ne "";
-			push @result, $re unless $dupcheck{$re};
+			push @result, { label=>$re, value=>"$re, " } unless $dupcheck{$re};
 			$dupcheck{$re}=1;
 		}
 		$ldap->unbind();
