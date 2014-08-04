@@ -92,6 +92,7 @@ sub db_insertProperty {
         if (defined  $sth) {
                 $sth->execute($PREFIX.$fn, $propname, $value);
                 $ret = ($sth->rows >0)?1:0;
+                warn("db_insertProperty($fn, $propname,$value) failed:".$sth->errstr) if $sth->err;
                 $dbh->commit();
                 $CACHE{Properties}{$fn}{$propname}=$value;
         }
