@@ -68,7 +68,7 @@ sub handle {
 			$self->renderMailDialog();
 		} elsif ($$self{cgi}->param('ajax') eq 'send') {
 			$self->sendMail();
-		} elsif ($$self{cgi}->param('ajax') eq 'search') {
+		} elsif ($$self{cgi}->param('ajax') eq 'addressbooksearch') {
 			$self->searchAddress();
 		}
 		$ret=1;
