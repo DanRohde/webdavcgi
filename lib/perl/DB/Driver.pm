@@ -227,11 +227,11 @@ sub db_getPropertyFnByValue {
         my $sth = $dbh->prepare('SELECT REPLACE(fn,?,?) FROM webdav_props WHERE propname = ? and value = ?');
         if (defined $sth) {
                 $sth->execute($PREFIX, '',$propname,$value);
-                $self->db_handleUpdates($dbh,$sth);
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
                         return $$rows[0] if $rows;
                 }
+                $self->db_handleUpdates($dbh,$sth);
         }
         return undef;
 }
