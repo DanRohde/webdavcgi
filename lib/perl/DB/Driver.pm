@@ -188,9 +188,9 @@ sub db_getProperties {
         my ($self,$fn) = @_;
         return $CACHE{Properties}{$fn} if exists $CACHE{Properties}{$fn} || $CACHE{Properties_flag}{$fn}; 
         my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT REPLACE(fn,?,""), propname, value FROM webdav_props WHERE fn like ? OR fn like ?');
+        my $sth = $dbh->prepare('SELECT REPLACE(fn,?,?), propname, value FROM webdav_props WHERE fn like ? OR fn like ?');
         if (defined $sth) {
-                $sth->execute($PREFIX,"$fn\%","$PREFIX$fn\%");
+                $sth->execute($PREFIX,'',"$fn\%","$PREFIX$fn\%");
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
                         foreach my $row (@{$rows}) {
@@ -224,9 +224,9 @@ sub db_removeProperty {
 sub db_getPropertyFnByValue {
         my ($self,$propname,$value) = @_;
         my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT REPLACE(fn,?,"") FROM webdav_props WHERE propname = ? and value = ?');
+        my $sth = $dbh->prepare('SELECT REPLACE(fn,?,?) FROM webdav_props WHERE propname = ? and value = ?');
         if (defined $sth) {
-                $sth->execute($PREFIX, $propname,$value);
+                $sth->execute($PREFIX, '',$propname,$value);
                 $self->db_handleUpdates($dbh,$sth);
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
