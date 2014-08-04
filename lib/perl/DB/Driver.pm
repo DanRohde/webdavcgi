@@ -41,7 +41,15 @@ sub finalize {
 		delete $$self{DBI_INIT};
 	}
 }
-
+sub db_handleUpdates {
+	my ($self, $dbh, $sth) = @_;
+	if ($sth->err) {
+		warn($sth->err);
+		$dbh->rollback();
+	} else {
+		$dbh->commit();
+	}
+}
 sub db_isRootFolder {
         my ($self, $fn, $token) = @_;
         my $rows =  [];
@@ -92,8 +100,7 @@ sub db_insertProperty {
         if (defined  $sth) {
                 $sth->execute($PREFIX.$fn, $propname, $value);
                 $ret = ($sth->rows >0)?1:0;
-                warn("db_insertProperty($fn, $propname,$value) failed:".$sth->errstr) if $sth->err;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 $CACHE{Properties}{$fn}{$propname}=$value;
         }
         return $ret;
@@ -106,7 +113,7 @@ sub db_updateProperty {
         if (defined  $sth) {
                 $sth->execute($value, $fn, $PREFIX.$fn, $propname);
                 $ret=($sth->rows>0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 $CACHE{Properties}{$fn}{$propname}=$value;
         }
         return $ret;
@@ -119,7 +126,7 @@ sub db_moveProperties {
         if (defined $sth) {
                 $sth->execute($PREFIX.$dst, $PREFIX.$src,$src);
                 $ret = ($sth->rows>0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 delete $CACHE{Properties}{$src};
         }
         return $ret;
@@ -132,7 +139,7 @@ sub db_movePropertiesRecursive {
         if (defined $sth) {
                 $sth->execute($PREFIX.$src,$PREFIX.$dst,$src,$PREFIX.$src, "$src/\%","$PREFIX$src/\%");
                 $ret = ($sth->rows>0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 delete $CACHE{Properties}{$src};
         }
         return $ret;
@@ -145,7 +152,7 @@ sub db_copyProperties {
         if (defined $sth) {
                 $sth->execute($dst,$src, $PREFIX.$src);
                 $ret = ($sth->rows>0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
         }
         return $ret;
 }
@@ -156,7 +163,7 @@ sub db_deleteProperties {
         my $ret = 0;
         if (defined $sth) {
                 $sth->execute($fn,$PREFIX.$fn);
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 delete $CACHE{Properties}{$fn};
                 $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
         }
@@ -170,7 +177,7 @@ sub db_deletePropertiesRecursive {
         my $ret = 0;
         if (defined $sth) {
                 $sth->execute($fn,$PREFIX.$fn,"$fn/\%","$PREFIX$fn/\%");
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 delete $CACHE{Properties}{$fn};
                 $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
         }
@@ -190,6 +197,8 @@ sub db_getProperties {
                                 $CACHE{Properties}{$$row[0]}{$$row[1]}=$$row[2];
                         }
                         $CACHE{Properties_flag}{$fn}=1;
+                } else {
+                	$dbh->rollback();
                 }
         }
         return $CACHE{Properties}{$fn};
@@ -207,7 +216,7 @@ sub db_removeProperty {
         if (defined $sth) {
                 $sth->execute($fn, $PREFIX.$fn, $propname);
                 $ret = ($sth->rows >0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
                 delete $CACHE{Properties}{$fn}{$propname};
         }
         return $ret;
@@ -233,7 +242,7 @@ sub db_insert {
         if (defined $sth) {
                 $sth->execute($basefn,$fn,$type,$scope,$token,$depth,$timeout,$owner);
                 $ret=($sth->rows>0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
         }
         return $ret;
 }
@@ -245,7 +254,7 @@ sub db_update {
         if (defined $sth) {
                 $sth->execute($timeout, $basefn, $fn);
                 $ret = ($sth->rows>0)?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
         }
         return $ret;
 }
@@ -263,7 +272,7 @@ sub db_delete {
         if (defined $sth) {
                 $sth->execute(@params);
                 $ret = $sth->rows>0?1:0;
-                $dbh->commit();
+                $self->db_handleUpdates($dbh,$sth);
         }
         
         return $ret;
@@ -279,6 +288,7 @@ sub db_init {
                         if (defined $sth) {
                                 $sth->execute();
                                 if ($sth->err) {
+                                	$dbh->rollback();
                                         $dbh=undef;
                                 } else {
                                         $dbh->commit();
