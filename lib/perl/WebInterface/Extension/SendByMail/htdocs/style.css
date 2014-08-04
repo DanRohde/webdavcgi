@@ -61,3 +61,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	color: red;	
 	text-align: center;
 }
+ul.ui-autocomplete {
+	z-index: 99999 !important;
+}
