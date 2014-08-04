@@ -44,7 +44,7 @@ sub finalize {
 sub db_handleUpdates {
 	my ($self, $dbh, $sth) = @_;
 	if ($sth->err) {
-		warn($sth->err);
+		warn($sth->errstr);
 		$dbh->rollback();
 	} else {
 		$dbh->commit();
@@ -227,6 +227,7 @@ sub db_getPropertyFnByValue {
         my $sth = $dbh->prepare('SELECT REPLACE(fn,?,"") FROM webdav_props WHERE propname = ? and value = ?');
         if (defined $sth) {
                 $sth->execute($PREFIX, $propname,$value);
+                $self->db_handleUpdates($dbh,$sth);
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
                         return $$rows[0] if $rows;
