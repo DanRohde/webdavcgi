@@ -78,7 +78,7 @@ sub handle {
 }
 sub searchAddress {
 	my ($self) = @_;
-	my %jsondata = (result=>['yes it is']);
+	my %jsondata = (result=>[]);
 	if ($self->config('addressbook')) {
 		my $addressbook = $self->config('addressbook');
 		load $addressbook;
