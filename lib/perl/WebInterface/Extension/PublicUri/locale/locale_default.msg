@@ -1,7 +1,7 @@
 depurifileconfirm              "Do you really want to unshare "%s"?"
 depurifilesbutton              "Unshare"
 msg_disabledpuri			   "File/folder '%s' unshared."
-msg_enabledpuri			       "File/folder '%s' shared, <a href=%s>Link</a>: <input type=\"text\" value=%s>"
+msg_enabledpuri			       "File/folder '%s' shared, <a href="%s">Link</a>: <input onclick="this.select();" type="text" value="%s" readonly="readonly">"
 purifileconfirm                "Do you really want to share "%s"?"
 purifilesbutton                "Share"
 spurifilesbutton               "Show Link"				

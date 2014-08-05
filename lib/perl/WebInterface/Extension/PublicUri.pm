@@ -153,8 +153,8 @@ sub enablePuri () {
 		$digest = $self->config('public_prefix').$digest;
 		main::logger( "Creating public URI: " . $digest );
 		$self->setPublicUri( $file, $digest );
-		
-		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->param('file'), $self->config('public_url_base').$digest, $self->config('public_url_base').$digest);
+		my $url = $$self{cgi}->escapeHTML($self->config('public_url_base').$digest);
+		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
 		
 	}
 	else {
@@ -173,7 +173,8 @@ sub showPuri () {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
 		my $digest = $self->getPublicUri($file);
 		main::logger( "Showing public URI: " . $digest );
-		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->param('file'), $self->config('public_url_base').$digest, $self->config('public_url_base').$digest);
+		my $url = $$self{cgi}->escapeHTML($self->config('public_url_base').$digest);
+		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
 	}
 	else {
 		$jsondata{error} = $self->tl('foldernothingerr');
