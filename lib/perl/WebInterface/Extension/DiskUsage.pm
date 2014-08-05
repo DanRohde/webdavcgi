@@ -24,7 +24,7 @@
 # filelimit - limits file count for treemap (default: 50)
 # folderlimit - limits folder count for details and treemap (default: 50)
 # template - dialog template (default: diskusage)
-# followsymlink - follows sym links (default: 0 (off))
+# followsymlinks - follows sym links (default: 1 (on))
 
 package WebInterface::Extension::DiskUsage;
 
@@ -323,20 +323,25 @@ sub getDiskUsage {
 	
 	$file=~s/^\///;
 	
-	return if time() - $$counter{start} > $self->config('timeout',60); 
+	my $full = $path.$file;
 	
+	return if time() - $$counter{start} > $self->config('timeout',60);
+	
+	my $fullresolved = $backend->resolve($backend->resolveVirt($full));
+	return if $$counter{visited}{$fullresolved};
+	$$counter{visited}{$fullresolved} = 1;	
+	 
 	$$counter{count}{all}{sum}++;	
 	$$counter{count}{sum}{$path}++;
 	$$counter{count}{subdir}{sum}{$path}{$file}++ if $file ne "";
 	
 	
-	
-	my $full = $path.$file;
 	if ($backend->isDir($full)) {
 		$$counter{count}{all}{folders}++;
 		$$counter{count}{folders}{$path}++; 
-		next if !$self->config("followsympink",0)  && $backend->isLink($full);
-		#$file.='/' unless $file=~/\/$/;
+		
+		return if !$self->config('followsymlinks',1) && $backend->isLink($full);
+		
 		foreach my $f (@{$backend->readDir($full)}) {
 			$f.='/' if $backend->isDir($full.$f);
 			$self->getDiskUsage($full,$f,$counter);
@@ -366,6 +371,6 @@ sub getDiskUsage {
 			$$counter{suffixes}{count}{lc($1)}++;
 		}
 	}
-	$$counter{size}{histo}{pathmax} = $$counter{size}{path}{$path} if !$$counter{size}{histo}{pathmax} || $$counter{size}{path}{$path} > $$counter{size}{histo}{pathmax};	
+	$$counter{size}{histo}{pathmax} = $$counter{size}{path}{$path} if !$$counter{size}{histo}{pathmax} || $$counter{size}{path}{$path} > $$counter{size}{histo}{pathmax};
 }
 1;
