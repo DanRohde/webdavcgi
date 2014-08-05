@@ -20,6 +20,7 @@
 # uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
 # propname - property name for the share digest
 # namespace - XML namespace for public uri property (default: {http://webdavcgi.sf.net/extension/PublicUri/})
+# prefix - a prefix for URI digest (default: empty string)
 
 package WebInterface::Extension::PublicUri;
 use strict;
@@ -75,7 +76,8 @@ sub init {
 	$$self{namespace} = $self->config('namespace', '{http://webdavcgi.sf.net/extension/PublicUri/}');
 	$$self{propname} = $self->config('propname', 'public_prop');
 	$$self{uribase} = $self->config('uribase', 'https://'.$ENV{HTTP_HOST}.'/public/');  
-
+	$$self{prefix} = $self->config('prefix','');
+	
 	$$self{json} = new JSON();  
 }
 sub receiveEvent {
@@ -152,11 +154,13 @@ sub enablePuri () {
 	my %jsondata = ();
 	if ( $$self{cgi}->param('file') ) {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
-		my $digest;
-		do {
-			$digest= $self->genUrlHash($file);
-		} until (!defined $self->getFileFromCode($digest));
-		$digest = $self->config('public_prefix').$digest;
+		my $digest = $self->getPublicUri($file);
+		if (!$digest) {
+			do {
+				$digest= $self->genUrlHash($file);
+			} until (!defined $self->getFileFromCode($$self{prefix}.$digest));
+			$digest = $$self{prefix}.$digest;
+		}
 		main::debug( "Creating public URI: " . $digest );
 		$self->setPublicUri( $file, $digest );
 		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
