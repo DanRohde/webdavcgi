@@ -63,7 +63,7 @@ sub handle {
 			$ret = $self->getSearchResult();
 		}
 	} elsif ($hook eq 'posthandler') {
-		if ($$self{cgi}->param('ajax') eq 'search') {
+		if ($$self{cgi}->param('action') eq 'search') {
 			$ret = $self->handleSearch();
 		}
 	}

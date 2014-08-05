@@ -25,7 +25,9 @@ package WebInterface::Extension::PublicUri;
 use strict;
 
 use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension );
+use Events::EventListener;
+
+our @ISA = qw( WebInterface::Extension Events::EventListener );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
@@ -50,6 +52,11 @@ sub unsetPublicUri {
 	my ( $self, $fn ) = @_;
 	return $$self{db}->db_removeProperty($fn, $self->getPropertyName());
 }
+sub getFileFromCode {
+	my ( $self, $code ) = @_;
+	my $fna = $$self{db}->db_getPropertyFnByValue( $$self{namespace}.$$self{propname}, $code );
+	return $fna ? $$fna[0] : undef;
+}
 
 sub resolveFile {
 	my ( $self, $file ) = @_;
@@ -60,15 +67,23 @@ sub resolveFile {
 
 sub init {
 	my ( $self, $hookreg ) = @_;
+
+	main::getEventChannel()->addEventListener('FILECOPIED', $self);
 		
 	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction'], $self);
 
 	$$self{namespace} = $self->config('namespace', '{http://webdavcgi.sf.net/extension/PublicUri/}');
 	$$self{propname} = $self->config('propname', 'public_prop');
 	$$self{uribase} = $self->config('uribase', 'https://'.$ENV{HTTP_HOST}.'/public/');  
+
 	$$self{json} = new JSON();  
 }
-
+sub receiveEvent {
+	my ( $self, $event, $data ) = @_;
+	my $dst = $$data{destination};
+	$dst=~s/\/$//;
+	$$self{db}->db_deletePropertiesRecursiveByName($dst, $self->getPropertyName());
+}
 #Show icons and handle actions
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
@@ -76,6 +91,7 @@ sub handle {
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 
+	
 	if ( $hook eq 'posthandler' ) {
 
 		#handle actions
@@ -125,7 +141,7 @@ sub handle {
 sub genUrlHash {
 	my $self   = shift;
 	my $f      = shift;
-	my $seed   = time() . md5_hex($main::REMOTE_USER);
+	my $seed   = time().int(rand(time())) . md5_hex($main::REMOTE_USER);
 	my $digest = md5_hex( $f . $seed );
 	return substr( $digest, 0, 16 );
 }
@@ -136,7 +152,10 @@ sub enablePuri () {
 	my %jsondata = ();
 	if ( $$self{cgi}->param('file') ) {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
-		my $digest = $self->genUrlHash($file);
+		my $digest;
+		do {
+			$digest= $self->genUrlHash($file);
+		} until (!defined $self->getFileFromCode($digest));
 		$digest = $self->config('public_prefix').$digest;
 		main::debug( "Creating public URI: " . $digest );
 		$self->setPublicUri( $file, $digest );
@@ -178,6 +197,7 @@ sub disablePuri () {
 	if ( $$self{cgi}->param('file') ) {
 		my $file = $self->resolveFile( $$self{cgi}->param('file') );
 		main::debug( "Deleting public URI for file " . $file );
+		$self->unsetPublicUri($file);
 		$jsondata{message} = sprintf($self->tl('msg_disabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')));
 	}
 	else {

@@ -39,8 +39,6 @@ sub new {
 }
 sub handleGetRequest {
 	my ($self) = @_;
-	my $fn = $main::PATH_TRANSLATED;
-	my $ru = $main::REQUEST_URI;
 	my $handled = 1;
 	my $action = $$self{cgi}->param('action') || '_undef_';
 
@@ -49,20 +47,20 @@ sub handleGetRequest {
 
 	if ($handledByExt =~ /1/) {
 		## done.
-        } elsif ($fn =~ /\/webdav-ui(-[^\.\/]+)?\.(js|css)\/?$/ || $fn =~ /\Q$main::VHTDOCS\E(.*)$/)  {
-                $self->getRenderer()->printStylesAndVHTOCSFiles($fn);
-        } elsif ($main::ENABLE_DAVMOUNT && $action eq 'davmount' && $$self{backend}->exists($fn)) {
-                $self->getRenderer()->printDAVMount($fn);
-        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'mediarss' && $$self{backend}->isDir($fn) && $$self{backend}->isReadable($fn)) {
-                $self->getRenderer()->printMediaRSS($fn,$ru);
-        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'image' && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn)) {
-                $self->getRenderer()->printImage($fn);
-        } elsif ($action eq 'opensearch' && $$self{backend}->isDir($fn)) {
+        } elsif ($main::PATH_TRANSLATED =~ /\/webdav-ui(-[^\.\/]+)?\.(js|css)\/?$/ || $main::PATH_TRANSLATED =~ /\Q$main::VHTDOCS\E(.*)$/)  {
+                $self->getRenderer()->printStylesAndVHTOCSFiles($main::PATH_TRANSLATED);
+        } elsif ($main::ENABLE_DAVMOUNT && $action eq 'davmount' && $$self{backend}->exists($main::PATH_TRANSLATED)) {
+                $self->getRenderer()->printDAVMount($main::PATH_TRANSLATED);
+        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'mediarss' && $$self{backend}->isDir($main::PATH_TRANSLATED) && $$self{backend}->isReadable($main::PATH_TRANSLATED)) {
+                $self->getRenderer()->printMediaRSS($main::PATH_TRANSLATED,$main::REQUEST_URI);
+        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'image' && $$self{backend}->isFile($main::PATH_TRANSLATED) && $$self{backend}->isReadable($main::PATH_TRANSLATED)) {
+                $self->getRenderer()->printImage($main::PATH_TRANSLATED);
+        } elsif ($action eq 'opensearch' && $$self{backend}->isDir($main::PATH_TRANSLATED)) {
                 $self->getRenderer()->printOpenSearch();
-        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'thumb' && $$self{backend}->isReadable($fn) && $$self{backend}->isFile($fn)) {
-                $self->getRenderer()->printThumbnail($fn);
-        } elsif ($$self{backend}->isDir($fn)) {
-                $self->getRenderer()->renderWebInterface($fn,$ru);
+        } elsif ($main::ENABLE_THUMBNAIL && $action eq 'thumb' && $$self{backend}->isReadable($main::PATH_TRANSLATED) && $$self{backend}->isFile($main::PATH_TRANSLATED)) {
+                $self->getRenderer()->printThumbnail($main::PATH_TRANSLATED);
+        } elsif ($$self{backend}->isDir($main::PATH_TRANSLATED)) {
+                $self->getRenderer()->renderWebInterface($main::PATH_TRANSLATED,$main::REQUEST_URI);
 	} else {
 		$handled = 0;
 	}

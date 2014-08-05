@@ -1,7 +1,7 @@
 #########################################################################
 # (C) ssystems, Harald Strack
 # Written 2012 by Harald Strack <hstrack@ssystems.de>
-# Modified 2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Modified 2013,2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,116 +16,78 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-
+# SETUP:
+# allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
+# virtualbase - virtual base URI for the public link (default: /public/)
+# propname - property name for the share digest
+# namespace - XML namespace for public uri property (default: {http://webdavcgi.sf.net/extension/PublicUri/})
 package WebInterface::Extension::PublicUriShow;
-use Data::Dumper;
+
+
 use strict;
 
-use WebInterface::Renderer;
-our @ISA = qw( WebInterface::Renderer );
+use WebInterface::Extension;
+our @ISA = qw( WebInterface::Extension );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
 
 #URI CRUD
-sub getFileFromUri {
+sub getFileFromCode {
 	my ( $self, $code ) = @_;
-	my $fn = $$self{db}->db_getPropertyFnByValue( $self->config('public_prop'), $code );
-	$fn =~ s/^\Q$self->config('public_prop_prefix')\E//;
-	return $fn;
+	my $fna = $$self{db}->db_getPropertyFnByValue( $$self{namespace}.$$self{propname}, $code );
+	return $fna ? $$fna[0] : undef;
 }
 
 sub init {
-	my ($self) = @_;
+	my ($self, $hookreg) = @_;
 
-	if (   $main::REQUEST_URI !~ /$main::VHTDOCS/
-		&& $main::REQUEST_URI !~ /^${main::VIRTUAL_BASE}.*js$/
-		&& $main::REQUEST_URI !~ /^${main::VIRTUAL_BASE}.*css$/ )
-	{
-		if ( $main::PATH_TRANSLATED =~
-			/$main::DOCUMENT_ROOT$main::PUBLIC_PREFIX/ )
-		{
-			my $code = $main::PATH_TRANSLATED;			
-			$code =~ s/$main::DOCUMENT_ROOT(.*?)(\/.*?)?$/$1/;
-			my $fn = $self->getFileFromUri($code);
-			if ( !defined($fn) ) {
-				main::printHeaderAndContent('404 Not found');
-				main::logger ("Illegal public URL (wrong code): " . $main::REQUEST_URI . ". Exit 404.");
-				exit();
-			}
-			main::logger ("Public URI mapped: " . $main::REQUEST_URI . " -> " . $main::PATH_TRANSLATED );
-			$main::PATH_TRANSLATED = $fn . $2;	
-			#the first link in the WebInterface path is the alias itself
-			#this way way the alias is no link, otherwise we'd had a dead link
-			$main::VIRTUAL_BASE =~ s/\/(.*?)\//\/$1\/$code\//;
-			main::logger ("Set VIRTUAL_BASE to: " . $main::VIRTUAL_BASE);
-		}
-		else {
-			#No code
-			main::logger ("Illegal public URL (no code): " . $main::REQUEST_URI . ". Exit 404.");
-			main::printHeaderAndContent('404 Not found');
-			exit();
-		}
-	} else {
-		main::logger ("Unfiltered REQUEST_URI: $main::REQUEST_URI -> $main::PATH_TRANSLATED");
-	}
+	$hookreg->register(['posthandler','gethandler'], $self);
 
+	$$self{virtualbase} = $self->config('basepath', '/public/');
+	$$self{namespace} = $self->config('namespace', '{http://webdavcgi.sf.net/extension/PublicUri/}');
+	$$self{propname} = $self->config('propname', 'public_prop');
+	$$self{allowedpostactions} = $self->config('allowedpostactions','^(zipdwnload|diskusage|search|diff)$')
 }
 
 #Show icons and handle actions
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-
+	$self->SUPER::handle($hook, $config, $params);
 	if ( $hook eq 'posthandler' ) {
-
-		#handle actions
-		if ( $$self{cgi}->param('puri') ) {
-			enablePuri($self);
-		}
-		elsif ( $$self{cgi}->param('depuri') ) {
-			disablePuri($self);
-		}
-		else {
-			return 0;    #not handled
-		}
+		return $self->handlePublicUriAccess() if $$self{cgi}->param('action')  =~ /$$self{allowedpostactions}/;
+		main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 		return 1;
-	}
-	elsif ( $hook eq 'fileaction' ) {
-
-		#show icon
-		my $prop = $self->getPublicUri( $$params{path} );
-		my $icon = 'depuri';
-		my $txt  = "Unset Pulic Uri";
-		if ( !defined($prop) ) {
-			$icon = 'puri';
-			$txt  = 'Public URI';
-		}
-
-		return {
-			action   => $icon,
-			disabled => !$$self{backend}->isReadable( $$params{path} ),
-			label    => $txt,
-			path     => $$params{path}
-		};
+	} elsif ($hook eq 'gethandler') {
+		return $self->handlePublicUriAccess();
 	}
 	return 0;    #not handled
 }
-
-
-#Publish URI and show message
-sub enablePuri () {
+sub handlePublicUriAccess {
 	my ($self) = @_;
+	if ($main::PATH_TRANSLATED =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/) {
+		my ($code, $path) = ($1,$2);
+		my $fn = $self->getFileFromCode($code);
+		if (! defined $fn) {
+			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
+			return 1;
+		} 	
 
-	return 1;
-}
-
-#Unpublish URI and show message
-sub disablePuri () {
-	my ($self) = @_;
-
-	return 1;
+		$main::DOCUMENT_ROOT = $fn;
+		$main::DOCUMENT_ROOT.='/' if $main::DOCUMENT_ROOT !~ /\/$/;
+		$main::PATH_TRANSLATED = $fn . $path;		
+		$main::VIRTUAL_BASE = $$self{virtualbase}.$code.'/?';
+		
+		if ($$self{backend}->isDir($main::PATH_TRANSLATED)) {
+			$main::PATH_TRANSLATED .= '/' if $main::PATH_TRANSLATED !~ /\/$/;
+			$main::REQUEST_URI .= '/' if $main::REQUEST_URI !~ /\/$/;	
+		} 
+		
+		return 0;
+	} else {
+		main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
+		return 1;
+	}
 }
 
 1;

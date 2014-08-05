@@ -1,7 +1,7 @@
 depurifileconfirm              "Wollen Sie den öffentlichen Link auf "%s" wirklich entfernen?"
 depurifilesbutton              "Unshare"	
 msg_disabledpuri			   "Datei/Ordner '%s' nicht mehr freigegeben."
-msg_enabledpuri			       "Datei/Ordner '%s' freigegeben, <a href="%s">Link</a>: <input onclick="this.select();" type="text" value="%s" class="publicuri" readonly="readonly">"
+msg_enabledpuri			       "Datei/Ordner '%s' freigegeben, <a href="%s" target="_blank">Link</a>: <input onclick="this.select();" type="text" value="%s" class="publicuri" readonly="readonly">"
 purifileconfirm                "Wollen Sie "%s" wirklich freigeben?"
 purifilesbutton                "Share"		
 spurifilesbutton               "&Ouml;ff. Link"		

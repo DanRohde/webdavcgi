@@ -1038,11 +1038,10 @@ sub gotomethod {
 }
 
 sub _GET {
-	my $fn = $PATH_TRANSLATED;
-	debug("_GET: $fn");
-	if (is_hidden($fn)) {
+	debug("_GET: $PATH_TRANSLATED");
+	if (is_hidden($PATH_TRANSLATED)) {
 		printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
-	} elsif (!$FANCYINDEXING && $backend->isDir($fn)) {
+	} elsif (!$FANCYINDEXING && $backend->isDir($PATH_TRANSLATED)) {
 		if (defined $REDIRECT_TO) {
 			print $cgi->redirect($REDIRECT_TO);
 		} else {
@@ -1050,16 +1049,16 @@ sub _GET {
 		}
 	} elsif ($FANCYINDEXING && getWebInterface()->handleGetRequest()) {
 		debug("_GET: WebInterface called");
-	} elsif ($backend->exists($fn) && !$backend->isReadable($fn)) {
+	} elsif ($backend->exists($PATH_TRANSLATED) && !$backend->isReadable($PATH_TRANSLATED)) {
 		printHeaderAndContent(getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
-	} elsif ($backend->exists($fn)) {
+	} elsif ($backend->exists($PATH_TRANSLATED)) {
 		debug("_GET: DOWNLOAD");
 		binmode(STDOUT);
 		my $enc = $cgi->http('Accept-Encoding');
-		my $mime = getMIMEType($fn);
-		my @stat = $backend->stat($fn);
-		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, "<".$backend->getLocalFilename($fn))) {
-				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'no-cache');
+		my $mime = getMIMEType($PATH_TRANSLATED);
+		my @stat = $backend->stat($PATH_TRANSLATED);
+		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, "<".$backend->getLocalFilename($PATH_TRANSLATED))) {
+				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($PATH_TRANSLATED), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'no-cache');
 				my $c;
 				if ($enc =~ /gzip/i) {
 					require IO::Compress::Gzip;
@@ -1075,11 +1074,11 @@ sub _GET {
 				}
 				close($F);
 		} else {
-			printFileHeader($fn);
-			$backend->printFile($fn, \*STDOUT);
+			printFileHeader($PATH_TRANSLATED);
+			$backend->printFile($PATH_TRANSLATED, \*STDOUT);
 		}
 	} else {
-		debug("GET: $fn NOT FOUND!");
+		debug("GET: $PATH_TRANSLATED NOT FOUND!");
 		printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
 	}
 	

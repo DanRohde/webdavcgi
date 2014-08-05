@@ -144,13 +144,14 @@ sub db_movePropertiesRecursive {
         }
         return $ret;
 }
+
 sub db_copyProperties {
         my($self,$src,$dst) = @_;
         my $dbh = $self->db_init();
         my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ? OR fn = ?');
         my $ret = 0;
         if (defined $sth) {
-                $sth->execute($dst,$src, $PREFIX.$src);
+                $sth->execute($PREFIX.$dst,$src, $PREFIX.$src);
                 $ret = ($sth->rows>0)?1:0;
                 $self->db_handleUpdates($dbh,$sth);
         }
@@ -177,6 +178,20 @@ sub db_deletePropertiesRecursive {
         my $ret = 0;
         if (defined $sth) {
                 $sth->execute($fn,$PREFIX.$fn,"$fn/\%","$PREFIX$fn/\%");
+                $self->db_handleUpdates($dbh,$sth);
+                delete $CACHE{Properties}{$fn};
+                $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
+        }
+        return $ret;
+        
+}
+sub db_deletePropertiesRecursiveByName {
+        my($self,$fn,$propname) = @_;
+        my $dbh = $self->db_init();
+        my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE propname = ? AND (fn = ? OR fn = ? OR fn like ? OR fn like ?)');
+        my $ret = 0;
+        if (defined $sth) {
+                $sth->execute($propname, $fn,$PREFIX.$fn,"$fn/\%","$PREFIX$fn/\%");
                 $self->db_handleUpdates($dbh,$sth);
                 delete $CACHE{Properties}{$fn};
                 $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>

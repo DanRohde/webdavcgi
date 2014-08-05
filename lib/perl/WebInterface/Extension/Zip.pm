@@ -62,8 +62,8 @@ sub handle {
 			[ 
 				{ action=>'zipup', label=>'zipup', title=>'zipup', path=>$$params{path}, type=>'li', classes=>'access-writeable sep'},
 				{ action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction'},
-				{ action=>'zipcompress', label=>'zip.compress', title=>'zip.compress.title', path=>$$params{path}, type=>'li' },
-				{ action=>'zipuncompress',label=>'zip.uncompress', title=>'zip.uncompress.title', path=>$$params{path}, type=>'li' } 
+				{ action=>'zipcompress', label=>'zip.compress', title=>'zip.compress.title', path=>$$params{path}, type=>'li', classes=>'access-writeable' },
+				{ action=>'zipuncompress',label=>'zip.uncompress', title=>'zip.uncompress.title', path=>$$params{path}, type=>'li', classes=>'access-writeable' } 
 			] 
 		};
 	} elsif ($hook eq 'fileactionpopupnew') {
