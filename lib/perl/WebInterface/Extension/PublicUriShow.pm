@@ -26,25 +26,12 @@ our @ISA = qw( WebInterface::Renderer );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
-#CONSTRUCTOR
-sub new {
-	my $this  = shift;
-	my $class = ref($this) || $this;
-	my $self  = {};
-	bless $self, $class;
-	$$self{config}  = shift;
-	$$self{db}      = shift;
-	$$self{cgi}     = $$self{config}->getProperty('cgi');
-	$$self{backend} = $$self{config}->getProperty('backend');
-	$self->init();
-	return $self;
-}
 
 #URI CRUD
 sub getFileFromUri {
 	my ( $self, $code ) = @_;
-	my $fn = $$self{db}->db_getPropertyFnByValue( $main::EXTENSION_CONFIG{PublicUri}{public_prop}, $code );
-	$fn =~ s/^$main::EXTENSION_CONFIG{Public_Uri}{public_prop_prefix}//;
+	my $fn = $$self{db}->db_getPropertyFnByValue( $self->config('public_prop'), $code );
+	$fn =~ s/^\Q$self->config('public_prop_prefix')\E//;
 	return $fn;
 }
 
@@ -88,10 +75,9 @@ sub init {
 #Show icons and handle actions
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
+	my $ret = $self->SUPER::handle($hook, $config, $params);
+	return $ret if $ret;
 
-	$$self{cgi}     = $$config{cgi};
-	$$self{db}      = $$config{db};
-	$$self{backend} = $$config{backend};
 	if ( $hook eq 'posthandler' ) {
 
 		#handle actions
@@ -127,16 +113,6 @@ sub handle {
 	return 0;    #not handled
 }
 
-sub createMsgQuery {
-	my ( $self, $msg, $msgparam, $errmsg, $errmsgparam, $prefix ) = @_;
-	$prefix = '' unless defined $prefix;
-	my $query = "";
-	$query .= ";${prefix}msg=$msg"       if defined $msg;
-	$query .= ";$msgparam"               if $msgparam;
-	$query .= ";${prefix}errmsg=$errmsg" if defined $errmsg;
-	$query .= ";$errmsgparam"            if defined $errmsg && $errmsgparam;
-	return "?t=" . time() . $query;
-}
 
 #Publish URI and show message
 sub enablePuri () {

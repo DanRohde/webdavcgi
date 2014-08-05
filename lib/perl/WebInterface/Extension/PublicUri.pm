@@ -56,10 +56,10 @@ sub init {
 	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction'], $self);
 
 	$main::EXTENSION_CONFIG{PublicUri}{public_prop} =
-	  '{http://webdavcgi.org/webdav/extension}publicurl'
+	  '{http://webdavcgi.sf.net/extension/PublicUri/'.$main::REMOTE_USER.'}publicurl'
 	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop};
 	$main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix} = 'PublicUri:'
-	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix};
+	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix};  
 	  
 	$$self{json} = new JSON();  
 }
@@ -130,8 +130,7 @@ sub handle {
 		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) }
 	}
 	elsif ( $hook eq 'templates' ) {
-		return
-q@<div id="purifileconfirm">$tl(purifileconfirm)</div><div id="depurifileconfirm">$tl(depurifileconfirm)</div>@;
+		return q@<div id="purifileconfirm">$tl(purifileconfirm)</div><div id="depurifileconfirm">$tl(depurifileconfirm)</div>@;
 	}
 	return 0;                                         #not handled
 }
@@ -155,7 +154,7 @@ sub enablePuri () {
 		main::logger( "Creating public URI: " . $digest );
 		$self->setPublicUri( $file, $digest );
 		
-		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->param('file'), $self->config('public_uri_base').$digest, $self->config('public_uri_base').$digest);
+		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->param('file'), $self->config('public_url_base').$digest, $self->config('public_url_base').$digest);
 		
 	}
 	else {
