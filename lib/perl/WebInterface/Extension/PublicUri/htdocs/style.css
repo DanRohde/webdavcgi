@@ -41,5 +41,7 @@ input[readonly="readonly"].publicuri {
 	opacity: 1;
 }
 #fileListTable .shared .filename {
-	background: url(images/puri.png) no-repeat 10px center;
+	background-image: url(images/puri.png);
+	background-repeat: no-repeat;
+	background-position: 10px center;
 }
