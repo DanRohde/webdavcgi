@@ -37,3 +37,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.depuri {
 	background-image: url(images/depuri.png);
 }
+input[readonly="readonly"].publicuri {
+	opacity: 1;
+}
