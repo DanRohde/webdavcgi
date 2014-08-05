@@ -160,9 +160,9 @@ sub enablePuri () {
 				$digest= $self->genUrlHash($file);
 			} until (!defined $self->getFileFromCode($$self{prefix}.$digest));
 			$digest = $$self{prefix}.$digest;
+			main::debug( "Creating public URI: " . $digest );
+			$self->setPublicUri( $file, $digest );
 		}
-		main::debug( "Creating public URI: " . $digest );
-		$self->setPublicUri( $file, $digest );
 		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
 		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
 		
