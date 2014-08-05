@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+# SETUP:
+# uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
+# propname - property name for the share digest
+# namespace - XML namespace for public uri property (default: {http://webdavcgi.sf.net/extension/PublicUri/})
 
 package WebInterface::Extension::PublicUri;
 use strict;
@@ -28,24 +32,28 @@ use Digest::MD5 qw(md5 md5_hex md5_base64);
 use JSON;
 
 #URI CRUD
+sub getPropertyName {
+	my ($self) = @_;
+	return $$self{namespace}.$$self{propname};
+}
 sub setPublicUri {
 	my ( $self, $fn, $value ) = @_;
-	$$self{db}->db_insertProperty($self->config('public_prop_prefix') . $fn, $self->config('public_prop'), $value );
+	$$self{db}->db_insertProperty($fn, $self->getPropertyName(), $value );
 }
 
 sub getPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_getProperty($self->config('public_prop_prefix') . $fn, $self->config('public_prop') );
+	return $$self{db}->db_getProperty($fn, $self->getPropertyName());
 }
 
 sub unsetPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_removeProperty( $self->config('public_prop_prefix') . $fn, $self->config('public_prop') );
+	return $$self{db}->db_removeProperty($fn, $self->getPropertyName());
 }
 
 sub resolveFile {
 	my ( $self, $file ) = @_;
-	main::logger("PURI($main::PATH_TRANSLATED via POST");
+	main::debug("PURI($main::PATH_TRANSLATED via POST");
 	my $rfile = $$self{backend}->resolve($$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"));
 	return $rfile;
 }
@@ -55,28 +63,10 @@ sub init {
 		
 	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction'], $self);
 
-	$main::EXTENSION_CONFIG{PublicUri}{public_prop} =
-	  '{http://webdavcgi.sf.net/extension/PublicUri/'.$main::REMOTE_USER.'}publicurl'
-	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop};
-	$main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix} = 'PublicUri:'
-	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix};  
-	  
+	$$self{namespace} = $self->config('namespace', '{http://webdavcgi.sf.net/extension/PublicUri/}');
+	$$self{propname} = $self->config('propname', 'public_prop');
+	$$self{uribase} = $self->config('uribase', 'https://'.$ENV{HTTP_HOST}.'/public/');  
 	$$self{json} = new JSON();  
-}
-
-sub handleZipDownloadRequest {
-	my ($self) = @_;
-	my $redirtarget = $main::REQUEST_URI;
-	$redirtarget =~ s/\?.*$//;    # remove query
-	my $handled = 1;
-	if ( $main::ALLOW_ZIP_DOWNLOAD && defined $$self{cgi}->param('zip') ) {
-		main::logger("Handling ZIP download.");
-		$self->getFunctions()->handleZipDownload($redirtarget);
-	}
-	else {
-		$handled = 0;
-	}
-	return $handled;
 }
 
 #Show icons and handle actions
@@ -89,10 +79,7 @@ sub handle {
 	if ( $hook eq 'posthandler' ) {
 
 		#handle actions
-		if ( $self->handleZipDownloadRequest() ) {
-
-		}
-		elsif ( $$self{cgi}->param('puri') ) {
+		if ( $$self{cgi}->param('puri') ) {
 			enablePuri($self);
 		}
 		elsif ( $$self{cgi}->param('depuri') ) {
@@ -151,9 +138,9 @@ sub enablePuri () {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
 		my $digest = $self->genUrlHash($file);
 		$digest = $self->config('public_prefix').$digest;
-		main::logger( "Creating public URI: " . $digest );
+		main::debug( "Creating public URI: " . $digest );
 		$self->setPublicUri( $file, $digest );
-		my $url = $$self{cgi}->escapeHTML($self->config('public_url_base').$digest);
+		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
 		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
 		
 	}
@@ -172,8 +159,8 @@ sub showPuri () {
 	if ( $$self{cgi}->param('file') ) {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
 		my $digest = $self->getPublicUri($file);
-		main::logger( "Showing public URI: " . $digest );
-		my $url = $$self{cgi}->escapeHTML($self->config('public_url_base').$digest);
+		main::debug( "Showing public URI: " . $digest );
+		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
 		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
 	}
 	else {
@@ -190,8 +177,8 @@ sub disablePuri () {
 	my %jsondata = ();
 	if ( $$self{cgi}->param('file') ) {
 		my $file = $self->resolveFile( $$self{cgi}->param('file') );
-		main::logger( "Deleting public URI for file " . $file );
-		$jsondata{message} = sprintf($self->tl('msg_disabledpuri'), $$self{cgi}->param('file'));
+		main::debug( "Deleting public URI for file " . $file );
+		$jsondata{message} = sprintf($self->tl('msg_disabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')));
 	}
 	else {
 		$jsondata{error} = $self->tl('foldernothingerr');

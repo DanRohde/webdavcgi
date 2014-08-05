@@ -40,3 +40,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 input[readonly="readonly"].publicuri {
 	opacity: 1;
 }
+#fileListTable .shared .filename {
+	background: url(images/puri.png) no-repeat 10px center;
+}
