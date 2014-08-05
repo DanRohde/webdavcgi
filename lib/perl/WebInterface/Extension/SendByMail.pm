@@ -107,8 +107,10 @@ sub buildMailFile {
 		my $sumsizes = 0;
 		foreach my $fn ( $$self{cgi}->param('files')) {
 			my $file = $$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$fn);
+			my $filesize = (stat($file))[7];
+			return undef if $limit && $filesize > $limit;
 			$body->attach(Path=>$file, Filename=>$fn, Type=> main::getMIMEType($fn),Disposition=>'attachment', Encoding=>'base64');
-			$sumsizes+=(stat($file))[7];
+			$sumsizes+=$filesize;
 			return undef if $limit && $sumsizes > $limit;	
 		}
 	}
@@ -143,7 +145,7 @@ sub sendMail {
 	
 	if ($cgi->param('download') eq "yes") {
 		my ($mailfh,$mailfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-XXXXX', CLEANUP=>1, SUFFIX=>".eml");
-		print $mailfh "To: ".join(", ",@to)."\nFrom: $from\nSubject: $subject\nX-Mailer: WebDAV CGI\n";
+		print $mailfh "To: $strto\nFrom: $from\nSubject: $subject\nX-Mailer: WebDAV CGI\n";
 		my ($tmpfh, $zipfile) = $self->buildMailFile(0,$mailfh);
 		close($mailfh);
 		
@@ -162,7 +164,7 @@ sub sendMail {
 		return;
 	} 
 	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {	
-		my ($mailfile,$zipfile) = $self->buildMailFile();
+		my ($mailfile,$zipfile) = $self->buildMailFile($limit);
 		if (!$mailfile || (stat($mailfile))[7]>$limit) {
 			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
 		} else {
@@ -171,10 +173,7 @@ sub sendMail {
 			$smtp->mail($from);
 			$smtp->to(@to);
 			$smtp->data();
-			$smtp->datasend("To: $strto\n");
-			$smtp->datasend("From: $from\n");
-			$smtp->datasend("Subject: $subject\n");
-			$smtp->datasend("X-Mailer: WebDAV CGI\n");
+			$smtp->datasend("To: $strto\nFrom: $from\nSubject: $subject\n");
 			if (open(my $fh, "<", $mailfile)) {
 				while (read($fh, my $buffer, 1048576)>0) {
 					$smtp->datasend($buffer);

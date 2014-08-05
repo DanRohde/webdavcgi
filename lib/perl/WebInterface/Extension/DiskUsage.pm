@@ -319,8 +319,7 @@ sub getDiskUsage {
 	my ($self, $path, $file, $counter) = @_;
 	
 	my $backend = $$self{backend};
-	
-	
+
 	$file=~s/^\///;
 	
 	my $full = $path.$file;
@@ -334,8 +333,7 @@ sub getDiskUsage {
 	$$counter{count}{all}{sum}++;	
 	$$counter{count}{sum}{$path}++;
 	$$counter{count}{subdir}{sum}{$path}{$file}++ if $file ne "";
-	
-	
+		
 	if ($backend->isDir($full)) {
 		$$counter{count}{all}{folders}++;
 		$$counter{count}{folders}{$path}++; 
@@ -363,7 +361,6 @@ sub getDiskUsage {
 		$$counter{size}{histo}{filemax} = $fs if !$$counter{size}{histo}{filemax} || $fs > $$counter{size}{histo}{filemax};
 	  	$$counter{size}{histo}{sizes}{$fs}++;
 	  	
-		#$$counter{size}{files}{$path}{$file eq "" ? '.' : $file}+=$fs;
 		$$counter{size}{files}{$path}{$file eq "" ? '.' : $file} = $fs;
 		
 		if ($file=~/(\.[^.]+)$/ && length($1)<5) {
