@@ -1967,6 +1967,7 @@ function initToolBox() {
 			renderAbortDialog: renderAbortDialog,
 			renderByteSize: renderByteSize,
 			renderByteSizes: renderByteSizes,
+			simpleEscape: simpleEscape,
 			stripSlash : stripSlash,
 			togglecookie : togglecookie,
 			toggleRowSelection : toggleRowSelection,

@@ -1,7 +1,7 @@
 #########################################################################
 # (C) ssystems, Harald Strack
 # Written 2012 by Harald Strack <hstrack@ssystems.de>
-# Modified 2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Modified 2013,2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,54 +25,43 @@ our @ISA = qw( WebInterface::Extension );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
+use JSON;
+
 #URI CRUD
 sub setPublicUri {
 	my ( $self, $fn, $value ) = @_;
-	$$self{db}->db_insertProperty(
-		$main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix} . $fn,
-		$main::EXTENSION_CONFIG{PublicUri}{public_prop}, $value );
+	$$self{db}->db_insertProperty($self->config('public_prop_prefix') . $fn, $self->config('public_prop'), $value );
 }
 
 sub getPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_getProperty(
-		$main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix} . $fn,
-		$main::EXTENSION_CONFIG{PublicUri}{public_prop}
-	);
+	return $$self{db}->db_getProperty($self->config('public_prop_prefix') . $fn, $self->config('public_prop') );
 }
 
 sub unsetPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_removeProperty(
-		$main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix} . $fn,
-		$main::EXTENSION_CONFIG{PublicUri}{public_prop}
-	);
+	return $$self{db}->db_removeProperty( $self->config('public_prop_prefix') . $fn, $self->config('public_prop') );
 }
 
 sub resolveFile {
 	my ( $self, $file ) = @_;
 	main::logger("PURI($main::PATH_TRANSLATED via POST");
-	my $rfile = $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
+	my $rfile = $$self{backend}->resolve($$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"));
 	return $rfile;
 }
 
 sub init {
 	my ( $self, $hookreg ) = @_;
-	$self->setExtension('PublicUri');
-	
-	$hookreg->register( 'posthandler', $self );
-	$hookreg->register( 'fileaction',  $self );
-	$hookreg->register( 'fileprop',    $self );
+		
+	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction'], $self);
 
-	## dro: added some handlers:
-	$hookreg->register(['css','javascript','filelistentrydata','locales','templates','gethandler'], $self);
-
-	## dro: define some defaults:
 	$main::EXTENSION_CONFIG{PublicUri}{public_prop} =
 	  '{http://webdavcgi.org/webdav/extension}publicurl'
 	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop};
 	$main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix} = 'PublicUri:'
 	  unless defined $main::EXTENSION_CONFIG{PublicUri}{public_prop_prefix};
+	  
+	$$self{json} = new JSON();  
 }
 
 sub handleZipDownloadRequest {
@@ -118,84 +107,33 @@ sub handle {
 		return 1;
 	}
 	elsif ( $hook eq 'fileaction' ) {
-
-		#the fileaction is not handled per file in this view
-		#thus we use the the fileprop aproach
-		if ( $main::VIEW eq "simple" ) {
-			##return {};
-		}
-
-		#show icon
-		my $prop = $self->getPublicUri( $$params{path} );
-		my $icon = 'depuri';
-		my $txt  = "depurifilesbutton";
-		if ( !defined($prop) ) {
-			$icon = 'extension puri';
-			$txt  = 'purifilesbutton';
-		}
-
-		return {
-			action   => $icon,
-			disabled =>
-			  !$$self{backend}->isReadable( $$params{path} ),
-			label => $txt,
-			path  => $$params{path}
-		};
+		return [ { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path} },
+			 { action => 'spuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'spurifilesbutton', path  => $$params{path} },
+			 { action => 'depuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'depurifilesbutton', path  => $$params{path} },
+		];
 	}
-	elsif ( $hook eq 'fileprop' ) {
+	elsif ( $hook eq 'fileactionpopup') {
+		return [ { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' },
+			 { action => 'spuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'spurifilesbutton', path  => $$params{path}, type=>'li' },
+			 { action => 'depuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'depurifilesbutton', path  => $$params{path}, type=>'li' },
+		];
+	}
+	elsif ( $hook eq 'fileattr' ) {
 		my $prop = $self->getPublicUri( $$params{path} );
-
+		my ($attr,$classes);
 		if ( !defined($prop) ) {
-			return { 'puri' => "no" };
+			($classes, $attr) = ('unshared','no');
 		}
 		else {
-			return { 'puri' => $prop };
+			($classes, $attr) = ('shared', $prop);
 		}
-	}
-	elsif ( $hook eq 'filelistentrydata' ) {
-		return q@data-puri="$puri"@;
+		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) }
 	}
 	elsif ( $hook eq 'templates' ) {
 		return
 q@<div id="purifileconfirm">$tl(purifileconfirm)</div><div id="depurifileconfirm">$tl(depurifileconfirm)</div>@;
 	}
-	elsif ( $hook eq 'gethandler' ) {
-		## TODO: get handler for css/javascript file
-		if ( $main::REQUEST_URI =~
-			/__PublicUri__\/(script\.js|style\.css)/
-			|| $main::REQUEST_URI =~
-			/__PublicUri__\/(images\/[^\/]+)/ )
-		{
-			my $fn =
-			  $main::INSTALL_BASE
-			  . "lib/perl/WebInterface/Extension/PublicUri/htdocs/$1";
-			if ( open( F, "<$fn" ) ) {
-				main::printLocalFileHeader($fn);
-				binmode(STDOUT);
-				while (
-					read( F, my $buffer,
-						$main::BUFSIZE || 1048576 ) > 0
-				  )
-				{
-					print $buffer;
-				}
-				close(F);
-				return 1;
-			}
-		}
-	}
 	return 0;                                         #not handled
-}
-
-sub createMsgQuery {
-	my ( $self, $msg, $msgparam, $errmsg, $errmsgparam, $prefix ) = @_;
-	$prefix = '' unless defined $prefix;
-	my $query = "";
-	$query .= ";${prefix}msg=$msg"       if defined $msg;
-	$query .= ";$msgparam"               if $msgparam;
-	$query .= ";${prefix}errmsg=$errmsg" if defined $errmsg;
-	$query .= ";$errmsgparam"            if defined $errmsg && $errmsgparam;
-	return "?t=" . time() . $query;
 }
 
 sub genUrlHash {
@@ -209,75 +147,56 @@ sub genUrlHash {
 #Publish URI and show message
 sub enablePuri () {
 	my ($self) = @_;
-	my ( $msg, $errmsg, $msgparam );
-	my $redirtarget = $main::REQUEST_URI;
-	$redirtarget =~ s/\?.*$//;    # remove query
+	my %jsondata = ();
 	if ( $$self{cgi}->param('file') ) {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
 		my $digest = $self->genUrlHash($file);
-		$digest = "$main::PUBLIC_PREFIX$digest";
+		$digest = $self->config('public_prefix').$digest;
 		main::logger( "Creating public URI: " . $digest );
 		$self->setPublicUri( $file, $digest );
-		$msg      = 'enabledpuri';
-		$msgparam = 'p1=' . $$self{cgi}->param('file');
-		$msgparam .= ';p2=' . $main::PUBLIC_URL_BASE . $digest;
-		$msgparam .= ';p3=' . $main::PUBLIC_URL_BASE . $digest;
+		
+		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->param('file'), $self->config('public_uri_base').$digest, $self->config('public_uri_base').$digest);
+		
 	}
 	else {
-		$errmsg = 'foldernothingerr';
-
+		$jsondata{error}= $self->tl('foldernothingerr');
 	}
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam )
-	);
-
+	
+	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	
 	return 1;
 }
 
 sub showPuri () {
 	my ($self) = @_;
-	my ( $msg, $errmsg, $msgparam );
-	my $redirtarget = $main::REQUEST_URI;
-	$redirtarget =~ s/\?.*$//;    # remove query
+	my %jsondata = ();
 	if ( $$self{cgi}->param('file') ) {
 		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
 		my $digest = $self->getPublicUri($file);
 		main::logger( "Showing public URI: " . $digest );
-		$msg      = 'enabledpuri';
-		$msgparam = 'p1=' . $$self{cgi}->param('file');
-		$msgparam .= ';p2=' . $main::PUBLIC_URL_BASE . $digest;
-		$msgparam .= ';p3=' . $main::PUBLIC_URL_BASE . $digest;
+		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->param('file'), $self->config('public_url_base').$digest, $self->config('public_url_base').$digest);
 	}
 	else {
-		$errmsg = 'foldernothingerr';
+		$jsondata{error} = $self->tl('foldernothingerr');
 
 	}
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam )
-	);
-
+	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 
 #Unpublish URI and show message
 sub disablePuri () {
 	my ($self) = @_;
-	my ( $msg, $errmsg, $msgparam );
-	my $redirtarget = $main::REQUEST_URI;
-	$redirtarget =~ s/\?.*$//;    # remove query
+	my %jsondata = ();
 	if ( $$self{cgi}->param('file') ) {
 		my $file = $self->resolveFile( $$self{cgi}->param('file') );
 		main::logger( "Deleting public URI for file " . $file );
-		$self->unsetPublicUri($file);
-		$msg      = 'disabledpuri';
-		$msgparam = 'p1=' . $$self{cgi}->param('file');
+		$jsondata{message} = sprintf($self->tl('msg_disabledpuri'), $$self{cgi}->param('file'));
 	}
 	else {
-		$errmsg = 'foldernothingerr';
+		$jsondata{error} = $self->tl('foldernothingerr');
 	}
-	print $$self{cgi}->redirect( $redirtarget
-		  . $self->createMsgQuery( $msg, $msgparam, $errmsg, $msgparam )
-	);
+	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 
