@@ -16,7 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 # SETUP:
-#  see WebInterface::Extension::PublicUri::(Private|Publi)
+# 
+# virtualbase - virtual base URI for the public link (default: /public/)
+# uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
+# propname - property name for the share digest (default: public_prop)
+# seed - property name for digest seed (default: seed)
+# namespace - XML namespace for propname and seed (default: {http://webdavcgi.sf.net/extension/PublicUri/})
+# prefix - a prefix for URI digest (default: empty string)
+# allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
+
 package WebInterface::Extension::PublicUri;
 
 use strict;
@@ -35,7 +43,7 @@ sub init {
 	my $handler = $mode eq 'private' ? 'WebInterface::Extension::PublicUri::Private' : 'WebInterface::Extension::PublicUri::Public';
 	
 	load $handler;
-	my $h = $handler->new($hookreg)->setExtension('PublicUri');
+	$handler->new($hookreg)->setExtension('PublicUri');
 	
 }
 

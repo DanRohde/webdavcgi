@@ -15,11 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-#
-# SETUP:
-# TODO: describe extension setup
 
-# TODO: change package name
 package WebInterface::Extension::PublicUri::Common;
 
 use strict;
@@ -61,16 +57,19 @@ sub getSeed {
 	my ( $self, $fn) = @_;
 	return $$self{db}->db_getProperty($fn, $self->getSeedName());
 }
+sub getDigest {
+	my ($self, $fn, $seed) = @_;
+	return $$self{prefix}.substr(md5_hex($fn.$seed), 0, 16);
+}
 sub genUrlHash {
 	my ($self, $fn) = @_;
 	my $seed   = time().int(rand(time())) . md5_hex($main::REMOTE_USER);
-	my $digest = $$self{prefix}.md5_hex( $fn . $seed );
-	return substr( $digest, 0, 16 ), $seed;
+	my $digest = $self->getDigest($fn, $seed);
+	return $digest, $seed;
 }
 sub isPublicUri {
 	my ($self, $fn, $code, $seed) = @_;
-	my $digest = substr(md5_hex($fn.$seed), 0, 16);
-	return $code eq $$self{prefix}.$digest;
+	return $code eq $self->getDigest($fn, $seed);
 }
 
 1;

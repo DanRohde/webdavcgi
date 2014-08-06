@@ -16,11 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# SETUP:
-# uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
-# propname - property name for the share digest
-# namespace - XML namespace for public uri property (default: {http://webdavcgi.sf.net/extension/PublicUri/})
-# prefix - a prefix for URI digest (default: empty string)
 
 package WebInterface::Extension::PublicUri::Private;
 use strict;
@@ -65,7 +60,6 @@ sub init {
 	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction'], $self);
 
 	$self->initDefaults();
-	
 	
 	$$self{json} = new JSON();  
 }

@@ -16,11 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# SETUP:
-# allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
-# virtualbase - virtual base URI for the public link (default: /public/)
-# propname - property name for the share digest
-# namespace - XML namespace for public uri property (default: {http://webdavcgi.sf.net/extension/PublicUri/})
+
 package WebInterface::Extension::PublicUri::Public;
 
 
