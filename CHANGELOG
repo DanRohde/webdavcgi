@@ -11,7 +11,7 @@
      - added web interface extension 'Permissions'
      - added web interface extension 'Search'
      - added web interface extension 'Highlighter'
-     - added web interface extension 'PublicUri' and 'PublicUriShow' 
+     - added web interface extension 'PublicUri'
      - removed ALLOW_ZIP_(UP|DOWN)LOAD support (replaced by 'Zip' extension)
      - removed ENABLE_AFSGROUPMANAGER (replaced by 'AFSGroupManager' extension)
      - removed ENABLE_AFSACLMANAGER (replaced by 'AFSACLManager' extension)

@@ -21,36 +21,25 @@
 # virtualbase - virtual base URI for the public link (default: /public/)
 # propname - property name for the share digest
 # namespace - XML namespace for public uri property (default: {http://webdavcgi.sf.net/extension/PublicUri/})
-package WebInterface::Extension::PublicUriShow;
+package WebInterface::Extension::PublicUri::Public;
 
 
 use strict;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension );
+use WebInterface::Extension::PublicUri::Common;
+our @ISA = qw( WebInterface::Extension::PublicUri::Common );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
-
-#URI CRUD
-sub getFileFromCode {
-	my ( $self, $code ) = @_;
-	my $fna = $$self{db}->db_getPropertyFnByValue( $$self{namespace}.$$self{propname}, $code );
-	return $fna ? $$fna[0] : undef;
-}
 
 sub init {
 	my ($self, $hookreg) = @_;
 
 	$hookreg->register(['posthandler','gethandler'], $self);
-
-	$$self{virtualbase} = $self->config('basepath', '/public/');
-	$$self{namespace} = $self->config('namespace', '{http://webdavcgi.sf.net/extension/PublicUri/}');
-	$$self{propname} = $self->config('propname', 'public_prop');
-	$$self{allowedpostactions} = $self->config('allowedpostactions','^(zipdwnload|diskusage|search|diff)$')
+	
+	$self->initDefaults();
+	
 }
-
-#Show icons and handle actions
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
 	$self->SUPER::handle($hook, $config, $params);
@@ -68,6 +57,7 @@ sub handlePublicUriAccess {
 	if ($main::PATH_TRANSLATED =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/) {
 		my ($code, $path) = ($1,$2);
 		my $fn = $self->getFileFromCode($code);
+		$fn = undef unless $self->isPublicUri($fn, $code, $self->getSeed($fn));
 		if (! defined $fn) {
 			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 			return 1;
