@@ -31,7 +31,7 @@ use vars qw( %CACHE );
 
 sub new {
 	my $class = my $self = shift;
-	my $self = { BACKEND=> $main::backendmanager->getBackend($main::RCS{backend} || 'FS') };
+	my $self = { BACKEND=> $main::backendmanager->getBackend($main::BACKEND_CONFIG{RCS}{backend} || 'FS') };
 	return bless $self, $class;
 }
 sub finalize {
@@ -42,12 +42,12 @@ sub finalize {
 
 sub basename {
 	my $self = shift @_;
-	return main::getBaseURIFrag($_[0]) if $_[0] =~ /\/\Q$main::RCS{rcsdirname}\E\/\Q$main::RCS{virtualrcsdir}\E\/?/;
+	return main::getBaseURIFrag($_[0]) if $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
 	return $$self{BACKEND}->basename(@_);
 }
 sub dirname {
 	my $self = shift @_;
-	return main::getParentURI($_[0]) if  $_[0] =~ /\/\Q$main::RCS{rcsdirname}\E\/\Q$main::RCS{virtualrcsdir}\E\/?/;
+	return main::getParentURI($_[0]) if  $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
 	return $$self{BACKEND}->dirname(@_);
 }
 
@@ -128,8 +128,8 @@ sub readDir {
 	my $ret;
 	if (! ($ret = $self->_readVirtualDir($dirname, $limit, $filter))) {
 		$ret = $$self{BACKEND}->readDir($dirname, $limit, $filter);
-		push @{$ret} , $main::RCS{virtualrcsdir} 
-			unless $self->basename($dirname) ne $main::RCS{rcsdirname} || grep(/\Q$main::RCS{virtualrcsdir}\E/,@{$ret});
+		push @{$ret} , $main::BACKEND_CONFIG{RCS}{virtualrcsdir} 
+			unless $self->basename($dirname) ne $main::BACKEND_CONFIG{RCS}{rcsdirname} || grep(/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E/,@{$ret});
 	}
 	return $ret;
 }
@@ -195,7 +195,7 @@ sub saveStream {
 	my $ret = 0;
 
 	my $filename = $self->basename($destination);
-	my $remotercsfilename = $self->dirname($destination)."/$main::RCS{rcsdirname}/$filename,v";
+	my $remotercsfilename = $self->dirname($destination)."/$main::BACKEND_CONFIG{RCS}{rcsdirname}/$filename,v";
 	$destination=~/(\.[^\.]+)$/;
 	my $suffix = $1;
 	my ($tmpfh, $localfilename) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>$suffix);
@@ -235,8 +235,8 @@ sub saveStream {
 		
 		$rcs->ci();
 		my @revisions = $rcs->revisions();
-		if (defined $main::RCS{maxrevisions} && $#revisions >= $main::RCS{maxrevisions}) {
-			my @removedrevisions = splice(@revisions, $main::RCS{maxrevisions});
+		if (defined $main::BACKEND_CONFIG{RCS}{maxrevisions} && $#revisions >= $main::BACKEND_CONFIG{RCS}{maxrevisions}) {
+			my @removedrevisions = splice(@revisions, $main::BACKEND_CONFIG{RCS}{maxrevisions});
 			my $range = $removedrevisions[0];
 			$range.=":$removedrevisions[$#removedrevisions]" if $#removedrevisions > 0;
 			$rcs->rcs("-o$range");
@@ -388,7 +388,7 @@ sub getQuota {
 	my $self = shift @_;
 	if ($self->_isVirtual($_[0])) {
 		my $realpath = $_[0];
-		$realpath=~s/\/$main::RCS{rcsdirname}(\/$main::RCS{virtualrcsdir}.*)?$//;
+		$realpath=~s/\/$main::BACKEND_CONFIG{RCS}{rcsdirname}(\/$main::BACKEND_CONFIG{RCS}{virtualrcsdir}.*)?$//;
 		return $$self{BACKEND}->getQuota($realpath);
 	}
 	return $$self{BACKEND}->getQuota(@_);
@@ -449,7 +449,7 @@ sub _saveToLocal {
 sub _getRcsFile {
 	my ($self, $vpath) = @_;
 
-	$vpath=~/^(.*?\/\Q$main::RCS{rcsdirname}\E\/)\Q$main::RCS{virtualrcsdir}\E\/([^\/]+)/;
+	$vpath=~/^(.*?\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/)\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/([^\/]+)/;
 	my ($fn) = ("$1$2,v");
 
 	my $rcsfile = $self->_saveToLocal($fn, ',v');
@@ -473,24 +473,24 @@ sub _isVirtualDir {
 }
 sub _isRcsDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::RCS{rcsdirname}\E\/?$/;
+	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/?$/;
 }
 sub _isVirtualRcsDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::RCS{rcsdirname}\E\/\Q$main::RCS{virtualrcsdir}\E\/?$/;
+	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?$/;
 }
 sub _isRevisionsDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::RCS{rcsdirname}\E\/\Q$main::RCS{virtualrcsdir}\E\/[^\/]+\/?$/;
+	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/?$/;
 }
 sub _isRevisionDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::RCS{rcsdirname}\E\/\Q$main::RCS{virtualrcsdir}\E\/[^\/]+\/\d+\.\d+\/?$/;
+	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/\d+\.\d+\/?$/;
 }
 sub _getRcs {
 	my ($self) = @_;
 	my $rcs = Rcs->new;
-	$rcs->bindir($main::RCS{bindir});
+	$rcs->bindir($main::BACKEND_CONFIG{RCS}{bindir});
 	return $rcs;
 }
 sub _isAllowed {
@@ -498,17 +498,17 @@ sub _isAllowed {
 	my $ret = 1;
 	if ($filename=~/\.([^\.]+)$/) {
 		my $suffix = $1;
-		if (defined $main::RCS{allowedsuffixes}) {
-			my $regex = '^('.join('|', @{ $main::RCS{allowedsuffixes}}).')$';
+		if (defined $main::BACKEND_CONFIG{RCS}{allowedsuffixes}) {
+			my $regex = '^('.join('|', @{ $main::BACKEND_CONFIG{RCS}{allowedsuffixes}}).')$';
 			$ret = $suffix =~ /$regex/i;
 		}
-		if ($ret && defined $main::RCS{ignoresuffixes}) {
-			my $regex = '^('.join('|', @{ $main::RCS{ignoresuffixes}}).')$';
+		if ($ret && defined $main::BACKEND_CONFIG{RCS}{ignoresuffixes}) {
+			my $regex = '^('.join('|', @{ $main::BACKEND_CONFIG{RCS}{ignoresuffixes}}).')$';
 			$ret = $suffix !~ /$regex/i;
 		}
 	}
-	if ($ret && defined $main::RCS{ignorefilenames}) {
-			my $regex = '^('.join('|', @{ $main::RCS{ignorefilenames}}).')$';
+	if ($ret && defined $main::BACKEND_CONFIG{RCS}{ignorefilenames}) {
+			my $regex = '^('.join('|', @{ $main::BACKEND_CONFIG{RCS}{ignorefilenames}}).')$';
 			$ret = $$self{BACKEND}->basename($filename) !~ /$regex/i;
 	}
 	return $ret;

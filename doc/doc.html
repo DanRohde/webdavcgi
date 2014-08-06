@@ -486,7 +486,7 @@ CREATE INDEX webdav_props_idx1 ON webdav_props (fn);
 CREATE INDEX webdav_props_idx2 ON webdav_props (fn,propname);
 
 
-GRANT ALL ON DATABASE webdavcgi TO webdavcgi;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO webdavcgi;
 
 EOF
 
