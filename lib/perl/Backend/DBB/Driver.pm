@@ -65,6 +65,7 @@ sub initialize {
 		if (defined $DB) {
 			my $sth = $DB->prepare('SELECT name FROM objects');
 			if (!defined $sth) {
+				$DB->rollback();
 				$sth = $DB->prepare('CREATE TABLE objects (name varchar(255) NOT NULL, parent varchar(255) NOT NULL, type int NOT NULL, owner VARCHAR(255) NOT NULL, created timestamp NOT NULL, modified NOT NULL, size int NOT NULL, permissions int NOT NULL, data blob)'); 
 				$sth->execute();
 				$DB->commit();

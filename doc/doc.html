@@ -49,7 +49,7 @@ Content of this topic:
 <li> a <a href="#database">database</a> (SQLite3, PostgreSQL, MySQL, ... (all supported by a Perl DBI driver))</li>
 <li> a Web server software (Apache recommended)</li>
 <li> a little bit configuration: Apache setup (see <a href="#installation">Installation</a>) and a <a href="#setup">WebDAV CGI Setup</a></li>
-<li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu recommended, Windows/MacOS-X not tested and not supported) </li>
+<li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu 12.10 recommended, Windows/MacOS-X not tested and not supported) </li>
 </ul>
 
 You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav completely. 
@@ -86,7 +86,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
 ## Debian/Ubuntu quick install: 
-apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
+apt-get install libdbi-perl libdbd-sqlite3-perl sqlite3 libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
                 libfile-copy-link-perl libjson-perl libdatetime-perl \
@@ -94,11 +94,23 @@ apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
 
 perl -MCPAN -e "install DateTime::Format::Human::Duration"
 
+apt-get install speedy-cgi-perl
+
+## only for PostgreSQL users:
+apt-get install  libdbd-pg-perl
+
+## only for MySQL users:
+apt-get install libdbd-mysql-perl
+
 ## only for SMB backend users:
-apt-get install libfilesys-smbclient-perl
+apt-get install libfilesys-smbclient-perl smbclient krb5-user
 
 ## only for RCS backend users:
 apt-get install librcs-perl
+
+## only for AFS users:
+apt-get install openafs-client krb5-user openafs-krb5
+
    </pre>   
 </li>
 <li>install additional binaries/packages for a better WebDAV CGI experience:
@@ -449,6 +461,15 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 <li>DBI driver for PostgreSQL: Debian/Ubuntu package: <code>libdbd-pg-perl</code></li>
 <li> Disable the auto create feature (<code>$CREATE_DB = 0;</code>) and create the database schema with following statements (the database 'webdavcgi' must exists), e.g:
 <pre>
+## Ubuntu/Debian:
+apt-get install postgresql postgresql-client
+
+su - postgres 
+
+createuser webdavcgi -P
+
+createdb -O webdavcgi webdavcgi 
+
 psql webdavcgi &lt;&lt;EOF
 
 CREATE TABLE webdav_locks (basefn VARCHAR(255) NOT NULL, fn VARCHAR(255) NOT NULL, 
@@ -463,6 +484,9 @@ CREATE INDEX webdav_locks_idx3 ON webdav_locks (fn,basefn);
 CREATE INDEX webdav_locks_idx4 ON webdav_locks (fn,basefn,token);
 CREATE INDEX webdav_props_idx1 ON webdav_props (fn);
 CREATE INDEX webdav_props_idx2 ON webdav_props (fn,propname);
+
+
+GRANT ALL ON DATABASE webdavcgi TO webdavcgi;
 
 EOF
 
