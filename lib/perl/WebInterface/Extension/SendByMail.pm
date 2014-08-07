@@ -19,7 +19,7 @@
 #   install MIME tools (apt-get install libmime-tools-perl)
 # SETUP:
 #   mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
-#   login - sets the  login for the mail relay (default: not used)
+#   login - sets the login for the mail relay (default: not used)
 #   password - sets the password for the login (default: not used)
 #   sizelimit - sets the mail size limit 
 #               (depends on your SMTP setup, default: 20971520 bytes)

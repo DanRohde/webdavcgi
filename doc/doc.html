@@ -26,8 +26,6 @@ Content of this topic:
 	<li><a href="#foldersharing">Folder Sharing / Group Access</a></li>
 	<li><a href="#webinterface">Web interface</a></li>
 	<li><a href="doc-simple-view.html">The Simple View Documentation (own topic)</a></li>
-	<li><a href="#logout">Web interface and logout button</a></li>
-	<li><a href="#caldavcarddav">CalDAV &amp; CardDAV support</a></li>
 	<li><a href="#afs">AFS Support</a></li>
 	<li><a href="#gfs">GFS Support</a></li>
 	<li><a href="#smb">SMB/CIFS Support</a></li>
@@ -49,7 +47,7 @@ Content of this topic:
 <li> a <a href="#database">database</a> (SQLite3, PostgreSQL, MySQL, ... (all supported by a Perl DBI driver))</li>
 <li> a Web server software (Apache recommended)</li>
 <li> a little bit configuration: Apache setup (see <a href="#installation">Installation</a>) and a <a href="#setup">WebDAV CGI Setup</a></li>
-<li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu 12.10 recommended, Windows/MacOS-X not tested and not supported) </li>
+<li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu 12.04/13.10 recommended, Windows/MacOS-X not tested and not supported) </li>
 </ul>
 
 You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav completely. 
@@ -163,7 +161,7 @@ ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
 # ScriptAlias /logout /etc/webdavcgi/cgi-bin/logout
 &lt;Location /webdavcgi&gt;
         AuthType Basic
-        AuthName "WebDAV/CalDAV/CardDAV space"
+        AuthName "WebDAV space"
         AuthUserFile /path-to-my-auth-file
         Require valid-user
 &lt;/Location&gt;
@@ -312,7 +310,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 &lt;Location /webdavcgi&gt;
 	AuthType Basic
 	AuthUserFile /etc/apache2/webabusers
-	AuthName "WebDAV/CalDAV/CardDAV space"
+	AuthName "WebDAV space"
 	Require valid-user
 &lt;/Location&gt;	
 </pre>
@@ -641,6 +639,9 @@ Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt
 
 </div>
 <div>
+<a href="doc-simple-view.html">The Simple view</a> has a lot of extensions with locale files: <code>/etc/webdavcgi/lib/perl/WebInterface/Extensions/*/locale/*</code>. 
+</div>
+<div>
 And don't forget to sent <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">me</a> your translation. Thanx :-)
 </div>
 
@@ -662,6 +663,7 @@ EOF
 </li>
 <li> Set <code>$CSSURI</code> variable in your WebDAV CGI config, e.g. <code>$CSSURI='http://myserver/mystyle.css';</code></li>
 <li> Set the <code>$HTMLHEAD</code> variable in your WebDAV CGI config (e.g. <code>$HTMLHEAD='&lt;link .../&gt;';</code> or <code>$HTMLHEAD='&lt;style&gt;...&lt;/style&gt;';</code>)</li>
+<li> see <a href="doc-simple-view.html#css">Simple view</a> documentation for more.
 <li>...</li>
 </ul>
 <h3>How to add or change icons</h3>
@@ -689,46 +691,6 @@ $ERROR_DOCS{'403 Forbidden'} = "$INSTALL_BASE/htdocs/403.html";
 </li>
 </ol>
 
-
-<h3>How to integrate a WYSIWYG editor</h3>
-
-Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
-<ol>
-<li> <a href="http://ckeditor.com/">Download</a> and install CKEditor&trade; (e.g. into the <code>/srv</code> folder - or use another server)</li>
-<li> Configure the web server to access all CKEditor&trade; files, e.g. <code>RewriteRule /ckeditor /srv/ckeditor [PT,L]</code></li>
-<li> Configure WebDAV CGI:
-<pre>
-if ($cgi-&gt;param('edit') &amp;&amp; $cgi-&gt;param('edit') =~ /\.html?$/i) {
-	$HTMLHEAD = q@
-		  &lt;script type="text/javascript" src="/ckeditor/ckeditor.js"&gt;&lt;/script&gt;
-		  &lt;style&gt;.textdataresizer { display: none; }&lt;/style&gt;
-	@; 
-	my $_lang = $cgi-&gt;param('lang') || $cgi-&gt;cookie('lang') || $LANG;
-	$SIGNATURE .= qq@
-		&lt;script&gt;
-		CKEDITOR.replace('textdata', 
-			{ fullPage : true, language: '$_lang', removePlugins: 'save', 
-			  baseFloatZIndex: 
-			  	(parseInt(getCookie('dragZIndex')) == 'NaN') 
-						?  10000 
-						:  parseInt(getCookie('dragZIndex'))+1000 
-		});
-		&lt;/script&gt; 
-	@;
-}
-</pre>
-</li>
-</ol>
-Consider this if you integrate a WYSIWYG editor:
-<ol>
- <li>Allow only HTML files to edit with a WYSIWYG editor.</li>
- <li>Disable 'save' button or reconfigure it to submit 'savetextdata'.</li>
- <li>Use the id 'textdata' for the editor replacement.</li>
- <li>Disable the WebDAV CGI integrated resizer if the editor comes with its own (set display to none for style  .textdataresizer).</li>
- <li>Enable full page editing to allow changing complete HTML pages.</li>
- <li>Setup z-index style for editor to a value larger than 'dragZIndex' cookie value.</li>
-</ol>
-
 <h3>Variable substitution in $HEADER, $SIGNATURE, $LANGSWITCH, and %ICONS</h3>
 
 Following variables are substituted:
@@ -745,109 +707,6 @@ Following variables are substituted:
 <tr><td>$VBASE</td><td>virtual host base matching <code>$VIRTUAL_BASE</code></td></tr>
 <tr><td>$VHTDOCS</td><td>virtual htdocs path <code>$VHTDOCS</code> to the <code>$INSTALL_BASE/htdocs</code></td></tr>
 </table>
-
-<h2 id="logout">Web interface and logout button</h2>
-The WebDAV CGI Web interface has no logout button by default. A logout depends on the used authentication type. For a simple HTTP basic authentication you can use the sample logout script (see <code>cgi-bin/logout-dist</code> in your WebDAV CGI source base).
-
-It's quiet easy to integrate a logout button:
-<ol>
-<li> install logout script,e.g (be in the WebDAV CGI source base): 
-<pre>cp cgi-bin/logout-dist cgi-bin/logout
-chmod a+rx cgi-bin/logout
-ln -s `pwd`/cgi-bin/logout /usr/lib/cgi-bin
-</pre></li>
-<li> Add a rewrite rule to your Apache configuration, e.g: <code>RewriteRule /logout /usr/lib/cgi-bin/logout [PT,L,E=REALM:WebDAV-CGI,E=HOMEURL:/,E=TIMEOUT:0]</code>
-<br/>Note: this rule should precede the webdavwrapper rule</li>
-<li> Add the following to your WebDAV CGI config: 
-<pre>$HEADER = '&lt;div class="header"&gt;WebDAV CGI - Web interface: You are logged in as &lt;span title="'.`id -a`.'"&gt;'
-	.$ENV{REMOTE_USER}.'&lt;/span&gt; (&lt;a href="/logout"&gt;Logout&lt;/a&gt;).&lt;/div&gt;';
-</pre>
-</li>
-</ol>
-
-
-<h2 id="caldavcarddav">CalDAV &amp; CardDAV support</h2>
-<h3>CalDAV</h3>
-<div>WebDAV CGI supports CalDAV (calendar and todo sharing). Older clients need only the URL to your CalDAV enabled folder. Newer clients like iPod Touch 4, MacOS X 10.6.x, ... need some configuration efforts:
-<ol>
-<li> WebDAV CGI script must handle the root context of your Web server (see CardDAV section how to do that).</li>
-<li> Setup WebDAV CGI:
-<pre>
-...
-### https://myhost/ -> /home/userid/
-$DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
-$VIRTUAL_BASE = '/';
-
-$ENABLE_CALDAV = 1;
-
-## Note: all listed folders are not CalDAV enabled;
-## you must create and use subfolders for calendars:
-%CALENDAR_HOME_SET = ( default => '/.calendar/' );
-
-## Create .calendar folder (home set) if it does not exists:
-## Note: The home set folder is not a useable calendar folder. 
-##       Current clients need subfolders for calendar entries.
-mkdir("${DOCUMENT_ROOT}.calendar") 
-		unless -e "${DOCUMENT_ROOT}.calendar";
-## Create default calendar(s)  (subfolder(s) of the home set):
-## Note: Without a default calendar a iPhone, iPod, ... cannot use CalDAV.
-foreach my $cal (('calendar','private')) {
-	mkdir("${DOCUMENT_ROOT}.calendar/$cal") 
-			unless -e "${DOCUMENT_ROOT}.calendar/$cal";
-}
-
-...
-</pre>
-</li>
-</ol>
-</div>
-<h3>CardDAV</h3>
-<div>
-For CardDAV support (addressbook sharing) the WebDAV CGI script must handle the root context of your Web server. There are several ways to do that if your Web server is not a only used for WebDAV CGI:
-<ul>
-<li> use a new host name (alias) for your Web server and configure named virutal hosting. 
-<pre>
-NameVirtualHost *:443
-&lt;VirtualHost myvirtualhost:443>
-...
-&lt;/VirtualHost>
-</pre>
-</li>
-<li> add a new IP to your server and configure IP based virtual hosting.
-<pre>
-&lt;VirtualHost 10.0.0.0:443>
-...
-&lt;/VirtualHost>
-</pre>
-</li>
-<li> or bind your Web server to a special port and configure a virtual host for this new port.
-<pre>
-Listen 8888
-&lt;VirtualHost __default__:8888>
-...
-&lt;/VirtualHost>
-</pre>
-</li>
-</ul>
-
-After that you have to configure WebDAV CGI, e.g:
-<pre>
-...
-### https://myhost/ -> /home/userid/
-$DOCUMENT_ROOT = '/home/'.$ENV{REMOTE_USER}.'/';
-$VIRTUAL_BASE = '/';
-
-$ENABLE_CARDDAV = 1;
-
-%ADDRESSBOOK_HOME_SET = ( default => '/.addressbook/' );
-
-## create .addressbook folder if it does not exists:
-mkdir("${DOCUMENT_ROOT}.addressbook") 
-		unless -e "${DOCUMENT_ROOT}.addressbook";
-
-...
-</pre>
-</div>
 
 <h2 id="afs">AFS Support</h2>
 WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It's a complete replacement for <a href="http://filedrawers.org/">filedrawers</a>.
@@ -1275,7 +1134,7 @@ $BACKEND_CONFIG{RCS} = {
 ...
 </pre>
 <h2 id="ro">Read-only backend RO</h2>
-<p> The RO backend is a backend wrapper for all other backends and allows only read-only access to files and folders.</p>
+<p> The RO backend is a backend wrapper for all other backends and allows only read access to files and folders.</p>
 <code>webdav.conf</code> example:
 <pre>
 ...

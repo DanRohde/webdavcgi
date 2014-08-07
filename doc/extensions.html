@@ -16,6 +16,9 @@
 
 <body>
 <div id="content">
+<div style="text-align: right; font-size:0.8em;">
+<a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+</div>
 <h1>Simple View Extensions</h1>
 <h2>Howto</h2>
 <ul>
@@ -195,7 +198,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <td><pre>
 # SETUP:
 #   mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
-#   login - sets the  login for the mail relay (default: not used)
+#   login - sets the login for the mail relay (default: not used)
 #   password - sets the password for the login (default: not used)
 #   sizelimit - sets the mail size limit
 #               (depends on your SMTP setup, default: 20971520 bytes)
@@ -208,6 +211,22 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 #   disable_fileactionpopup - disables fileaction entry in popup menu
 #   enable_apps - enables sidebar menu entry
 #   addressboook - Perl module name with a addressbook implementation
+#                  LDAP: 'WebInterface::Extension::SendByMail::LdapAddressbook'
+#      ldap.server - sets the LDAP server name (IP or hostname)
+#      ldap.basedn - sets base DN for entry search 
+#      ldap.filter - sets search filter (default: '(|(mail*%s*)(cn=*%s*))' )
+#      ldap.scope - sets search scope (default: 'sub')
+#      ldap.timelimit - sets search time limit in seconds (default: 5)
+#      ldap.sizelimit - sets number of search results (default: 5)
+#      ldap.cn - sets CN attribute name (default: 'cn')
+#      ldap.mail - sets mail attribute name (default: 'mail')
+#      ldap.debug - sets debug level (default: 0) 
+#                   (see man Net::LDAP  3 - in/out hexdump, 12 - in/out dump)
+#      ldap.starttls - enables TLS support (default: 0 (off))
+#      ldap.verify - enables certificate verification for TLS (default: 'required')
+#      ldap.sslversion - sets SSL version (default: 'tlsv1')
+#      ldap.binddn - sets DN for LDAP login (default: 0 (off))
+#      ldap.password - sets password for LDAP login 
 </pre></td>
 </tr>
 </table>
@@ -226,6 +245,10 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 </pre></td>
 </tr>
 </table>
+<div id="contact">
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2014 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
+</div>
+
 </div>
 </body>
 </html>
