@@ -232,9 +232,10 @@ sub getAclEntries {
 	while (<$g>) {
 		chomp;
 		next if /^\#/;
-		next unless /^\S+:\S*:[rwx\-]+$/;
-		my ($type, $uid, $permission) = split(/:/);
-		push @rights, { type=>$type, uid=>$uid, permission=>$permission};
+		next unless /^(default:)?([^:]+):([^:]+)?:([rwx\-]+)$/;
+		my ($default, $type, $uid, $permission) = ($1,$2,$3,$4);
+		
+		push @rights, {type=>($default?$default:'').$type, uid=>$uid, permission=>$permission};
 	}
 	close($g);
 	return \@rights;
