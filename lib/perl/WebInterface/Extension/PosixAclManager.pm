@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+# SETUP:
+# getfacl - getfacl path (default: /usr/bin/getfacl)
+# setfacl - setfacl path (default: /usr/bin/setfacl)
 
 package WebInterface::Extension::PosixAclManager;
 

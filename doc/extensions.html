@@ -48,6 +48,8 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <h2 id="AFSACLManager">AFSACLManager</h2>
 <table style="width:100%">
 <tr>
+</td>
+	<td><a class="screenshot float-right" href="images/webdavcgi-webinterface-afs.png"><img alt="Web interface AFS ACL manager" class="screenshot" src="images/webdavcgi-webinterface-afs.png"/></a></td>
 	<td>
 <pre>
 # SETUP:
@@ -57,12 +59,12 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 # disable_apps - disables apps entry
 # ptscmd - path to the pts command (default: /usr/bin/pts)
 </pre>
-</td>
-	<td><a class="screenshot float-right" href="images/webdavcgi-webinterface-afs.png"><img alt="Web interface AFS ACL manager" class="screenshot" src="images/webdavcgi-webinterface-afs.png"/></a></td>
+
 </table>
 <h2 id="AFSGroupManager">AFSGroupManager</h2>
 <table style="width:100%">
 <tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-afs.png"><img alt="Web interface afs group manager" class="screenshot" src="images/webdavcgi-webinterface-afs.png"/></a></td>
 <td> 
 <pre>
 # SETUP:
@@ -72,30 +74,42 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 # disable_apps - disables sidebar menu entry
 # template - sets the template (default: afsgroupmanager)
 </pre></td>
-<td><a class="screenshot" href="images/webdavcgi-webinterface-afs.png"><img alt="Web interface afs group manager" class="screenshot" src="images/webdavcgi-webinterface-afs.png"/></a></td>
+
 </tr>
 </table>
 
 <h2 id="Diff">Diff</h2>
 <table style="width:100%">
 <tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-diff.png"><img alt="Web interface compare dialog" class="screenshot" src="images/webdavcgi-webinterface-diff.png"/></a></td>
 <td>
 <pre>
 # SETUP:
 # diff - sets the path to GNU diff (default: /usr/bin/diff)
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # enable_apps - enables sidebar menu entry
-# files_only - disables folder comparision (neccassary for none-local filesystem backends like SMB, DB) 
+# files_only - disables folder comparision (recommended for SMB, DBB) 
 </pre></td>
-<td><a class="screenshot" href="images/webdavcgi-webinterface-diff.png"><img alt="Web interface compare dialog" class="screenshot" src="images/webdavcgi-webinterface-diff.png"/></a></td>
+
 </tr>
 </table>
 
 <h2 id="DiskUsage">DiskUsage</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface-du.png"><img alt="Web interface disk usage dialog" class="screenshot" src="images/webdavcgi-webinterface-du.png"/></a></td>
+<td><pre>
+# SETUP:
+# disable_fileaction - disables fileaction entry
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_apps - disables sidebar menu entry
+# timeout - timeout in seconds (default: 60)
+# filelimit - limits file count for treemap (default: 50)
+# folderlimit - limits folder count for details and treemap (default: 50)
+# template - dialog template (default: diskusage)
+# followsymlinks - follows sym links (default: 1 (on))
+</pre></td>
+
 </tr>
 </table>
 
@@ -103,8 +117,14 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+# disable_fileaction - disables fileaction entry
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# enable_apps - enables sidebar menu entry
+# disable_binarydownload - sets the right MIME type 
+</pre></td>
+
 </tr>
 </table>
 
@@ -112,24 +132,40 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <h2 id="Highlighter">Highlighter</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+# SETUP:
+# namespace - XML namespace for attributes 
+#  (default: {http://webdavcgi.sf.net/extension/Highlighter/$main::REMOTE_USER})
+# attributes - CSS attributes to change for a file list entry 
+</pre></td>
+
 </tr>
 </table>
 
 <h2 id="Permissions">Permissions</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface-permissions.png"><img alt="Web interface permissions dialog" class="screenshot" src="images/webdavcgi-webinterface-permissions.png"/></a></td>
+<td><pre>
+# SETUP:
+# disable_fileactionpopup - disables popup menu entry
+# disable_apps - disables apps entry
+</pre></td>
+
 </tr>
 </table>
 
 <h2 id="PosixAclManager">PosixAclManager</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface-posixacls.png"><img alt="Web interface POSIX ACL manager dialog" class="screenshot" src="images/webdavcgi-webinterface-posixacls.png"/></a></td>
+<td><pre>
+# SETUP:
+# getfacl - getfacl path (default: /usr/bin/getfacl)
+# setfacl - setfacl path (default: /usr/bin/setfacl)
+</pre></td>
+
 </tr>
 </table>
 <h2>PublicUri</h2>
@@ -137,24 +173,57 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <h2 id="Search">Search</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface-search.png"><img alt="Web interface search dialog" class="screenshot" src="images/webdavcgi-webinterface-search.png"/></a></td>
+<td><pre>
+# SETUP:
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_apps - disables sidebar menu entry
+# allow_contentsearch - allowes search file content
+# resultlimit - sets result limit (default: 1000)
+# searchtimeout - sets a timeout in seconds (default: 30 seconds) 
+# sizelimit - sets size limit for content search (default: 2097152 (=2MB))
+# disable_dupseaerch - disables duplicate file search
+</pre></td>
+
 </tr>
 </table>
 
 <h2 id="SendByMail">SendByMail</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface-sendbymail.png"><img alt="Web interface send by mail dialog" class="screenshot" src="images/webdavcgi-webinterface-sendbymail.png"/></a></td>
+<td><pre>
+# SETUP:
+#   mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
+#   login - sets the  login for the mail relay (default: not used)
+#   password - sets the password for the login (default: not used)
+#   sizelimit - sets the mail size limit
+#               (depends on your SMTP setup, default: 20971520 bytes)
+#   defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
+#   defaultto - sets default recipient (default: empty string)
+#   defaultsubject - sets default subject (default: empty string)
+#   defaultmessage - sets default message (default: empty string)
+#   defaultzipfilename - sets a default filename for ZIP files
+#   enable_savemailasfile - allows to save a mail as a eml file
+#   disable_fileactionpopup - disables fileaction entry in popup menu
+#   enable_apps - enables sidebar menu entry
+#   addressboook - Perl module name with a addressbook implementation
+</pre></td>
 </tr>
 </table>
 
 <h2 id="Zip">Zip</h2>
 <table style="width:100%">
 <tr>
-<td></td>
 <td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+# SETUP:
+# disable_fileaction - disables fileaction entry
+# disable_filelistaction - disables fileaction entry
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_new - disables new menu entry
+# enable_apps - enables sidebar menu entry
+</pre></td>
 </tr>
 </table>
 </div>

@@ -21,7 +21,7 @@
 # disable_apps - disables sidebar menu entry
 # allow_contentsearch - allowes search file content
 # resultlimit - sets result limit (default: 1000)
-# searchtimeout - sets a timeout in seconds for a single search (default: 30 seconds) 
+# searchtimeout - sets a timeout in seconds (default: 30 seconds) 
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))
 # disable_dupseaerch - disables duplicate file search
 

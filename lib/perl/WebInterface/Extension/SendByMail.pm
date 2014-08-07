@@ -21,7 +21,8 @@
 #   mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
 #   login - sets the  login for the mail relay (default: not used)
 #   password - sets the password for the login (default: not used)
-#   sizelimit - sets the mail size limit (depends on your SMTP setup, default: 20971520 bytes)
+#   sizelimit - sets the mail size limit 
+#               (depends on your SMTP setup, default: 20971520 bytes)
 #   defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
 #   defaultto - sets default recipient (default: empty string)
 #   defaultsubject - sets default subject (default: empty string)

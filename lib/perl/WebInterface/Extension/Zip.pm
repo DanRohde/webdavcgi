@@ -20,7 +20,7 @@
 # disable_fileaction - disables fileaction entry
 # disable_filelistaction - disables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
-# disable_new	-disables new menu entry
+# disable_new - disables new menu entry
 # enable_apps - enables sidebar menu entry
 
 
