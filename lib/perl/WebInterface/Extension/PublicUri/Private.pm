@@ -66,9 +66,10 @@ sub init {
 sub receiveEvent {
 	my ( $self, $event, $data ) = @_;
 	my $dst = $$data{destination};
+	my $db  = $$self{db} || main::getDBDriver();
 	$dst=~s/\/$//;
-	$$self{db}->db_deletePropertiesRecursiveByName($dst, $self->getPropertyName());
-	$$self{db}->db_deletePropertiesRecursiveByName($dst, $self->getSeedName());
+	$db->db_deletePropertiesRecursiveByName($dst, $self->getPropertyName());
+	$db->db_deletePropertiesRecursiveByName($dst, $self->getSeedName());
 }
 #Show icons and handle actions
 sub handle {
