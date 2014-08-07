@@ -173,8 +173,8 @@ sub getLockDiscovery {
 	if ($#$rowsRef > -1) {
 		foreach my $row (@{$rowsRef}) { # basefn,fn,type,scope,token,depth,timeout,owner
 			my %lock;
-			$lock{locktype}{$$row[2]}=undef;
-			$lock{lockscope}{$$row[3]}=undef;
+			$lock{locktype}{$$row[2]}=undef if defined $$row[2];
+			$lock{lockscope}{$$row[3]}=undef if defined $$row[3];
 			$lock{locktoken}{href}=$$row[4];
 			$lock{depth}=$$row[5];
 			$lock{timeout}= defined $$row[6] ? $$row[6] : 'Infinite';

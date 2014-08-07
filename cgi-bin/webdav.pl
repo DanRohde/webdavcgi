@@ -1279,8 +1279,8 @@ sub _PUT {
 			debug("_PUT: created...");
 			$status='201 Created';
 			$type='text/html';
-			$content = qq@<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">\n<html><head><title>201 Created</title></head>@
-				 . qq@<<body><h1>Created</h1><p>Resource $ENV{'QUERY_STRING'} has been created.</p></body></html>\n@;
+			$content = qq@<!DOCTYPE html>\n<html><head><title>201 Created</title></head>@
+				 . qq@<body><h1>Created</h1><p>Resource $ENV{REQUEST_URI} has been created.</p></body></html>\n@;
 		}
 		if ($backend->saveStream($PATH_TRANSLATED, \*STDIN)) {
 			getLockModule()->inheritLock();
