@@ -86,6 +86,8 @@ sub readDir {
 			next if $self->filter($filter, $fn, $$e[0]);
 			push @list, $$e[0];
 		}
+	} else {
+		$DB->rollback();
 	}
 	return \@list;
 }
@@ -97,7 +99,9 @@ sub unlinkFile {
 	if ($sth && $sth->execute($self->basename($fn),$self->getParent($fn))) {
 		$DB->commit();
 		return 1;
-	} 
+	} else {
+		$DB->rollback();
+	}
 	return 0;
 }
 sub deltree {
@@ -111,6 +115,8 @@ sub deltree {
 		if ($sth && !$sth->err) {
 			$DB->commit();
 			return 1;
+		} else {
+			$DB->rollback();
 		}
 	}
 	$DB->rollback();
@@ -136,6 +142,8 @@ sub rename {
 	if ($sth && $sth->execute($self->basename($nn),$self->getParent($nn),$self->basename($on),$self->getParent($on))) {
 		$DB->commit();
 		return 1;
+	} else {
+		$DB->rollback();
 	}
 	return 0; 
 }
@@ -237,6 +245,7 @@ sub _changeDBEntry {
 		$DB->commit();
 		return 1;
 	}
+	$DB->rollback();
 	return 0;
 }
 sub _getDBEntry {

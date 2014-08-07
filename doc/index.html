@@ -19,7 +19,7 @@
 <a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></div>
 <h1>WebDAV CGI</h1>
 <p>
-<a href="images/webdavcgi-webinterface.png"><img id="screenshot1" class="screenshot" style="float:right" src="images/webdavcgi-webinterface.png" alt="Web interface screenshot" title="Web interface screenshot - click for full size" /></a>
+<a href="images/webdavcgi-webinterface.png"><img id="screenshot1" class="screenshot" style="float:right" src="images/webdavcgi-webinterface.png" alt="Web interface screenshot" title="Web interface screenshot" /></a>
 ...  brings your file service to the Web. 
 WebDAV CGI adds a modern Web interface and <a href="https://secure.wikimedia.org/wikipedia/en/wiki/WebDAV" target="_blank">WebDAV</a> to file systems like AFS, NFS, CIFS/SMB, EXT, GFS, and so on. 
 It preserves existing file permissions by using a included setuid/setgid wrapper. 
@@ -31,7 +31,14 @@ Content of this site:
 <li><a href="#features">Features</a></li>
 <li><a href="#screenshots">Screenshots</a></li>
 <li><a href="#download">Download</a></li>
-<li><a href="doc.html">Documentation:</a> <a href="doc.html#installation">Installation</a>, <a href="troubleshooting.html">Troubleshooting Guide</a></li>
+<li><a href="doc.html">Documentation:</a> 
+	<ul>
+	<li><a href="doc.html#installation">Installation</a></li>
+	<li><a href="doc-simple-view.html">Simple View</a></li>
+	<li><a href="extensions.html">Extensions</a>: <a href="extension-publicuri.html">Public Uri extension</a></li>
+	<li><a href="troubleshooting.html">Troubleshooting Guide</a></li>
+	</ul>
+</li>
 <li><a href="#licensing">Licensing</a></li>
 </ul>
 </div>
@@ -78,49 +85,49 @@ Supported RFC's, drafts and M$ specs:
 <tr><th colspan="5">Web interface</th></tr>
 <tr>
 <td >
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface.png"><img class="screenshot" src="images/webdavcgi-webinterface.png" alt="Web interface file/folder browser" title="Web interface file/folder browser - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface.png"  title="Web interface file/folder browser"><img class="screenshot" src="images/webdavcgi-webinterface.png" alt="Web interface file/folder browser"/></a>
 <div class="screenshottitle">file/folder browser</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-afs.png"><img class="screenshot" src="images/webdavcgi-webinterface-afs.png" alt="Web interface AFS dialogs" title="Web interface AFS dialogs - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-afs.png" title="Web interface AFS dialogs"><img class="screenshot" src="images/webdavcgi-webinterface-afs.png" alt="Web interface AFS dialogs"/></a>
 <div class="screenshottitle">AFS Group &amp; ACL Manager</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-permissions.png"><img class="screenshot" src="images/webdavcgi-webinterface-permissions.png" alt="Web interface permissions dialog" title="Web interface permissions dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-permissions.png" title="Web interface permissions dialog"><img class="screenshot" src="images/webdavcgi-webinterface-permissions.png" alt="Web interface permissions dialog"/></a>
 <div class="screenshottitle">Permissions dialog</div>
 </td>
 </tr>
 <tr>
 <td >
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-search.png"><img class="screenshot" src="images/webdavcgi-webinterface-search.png" alt="Web interface search dialog" title="Web interface search dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-search.png" title="Web interface search dialog"><img class="screenshot" src="images/webdavcgi-webinterface-search.png" alt="Web interface search dialog"/></a>
 <div class="screenshottitle">Search dialog with duplicate search</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-du.png"><img class="screenshot" src="images/webdavcgi-webinterface-du.png" alt="Web interface disk usage dialog" title="Web interface disk usage dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-du.png" title="Web interface disk usage dialog"><img class="screenshot" src="images/webdavcgi-webinterface-du.png" alt="Web interface disk usage dialog"/></a>
 <div class="screenshottitle">Disk usage dialog</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-diff.png"><img class="screenshot" src="images/webdavcgi-webinterface-diff.png" alt="Web interface compare files/folders dialog" title="Web interface compare files/folders dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-diff.png" title="Web interface compare files/folders dialog"><img class="screenshot" src="images/webdavcgi-webinterface-diff.png" alt="Web interface compare files/folders dialog"/></a>
 <div class="screenshottitle">Compare files/folders dialog</div>
 </td>
 </tr>
 <tr>
 <td >
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-sendbymail.png"><img class="screenshot" src="images/webdavcgi-webinterface-sendbymail.png" alt="Web interface send by mail dialog" title="Web interface send by mail dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-sendbymail.png" title="Web interface send by mail dialog"><img class="screenshot" src="images/webdavcgi-webinterface-sendbymail.png" alt="Web interface send by mail dialog"/></a>
 <div class="screenshottitle">Send by mail dialog</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-posixacls.png"><img class="screenshot" src="images/webdavcgi-webinterface-posixacls.png" alt="Web interface POSIX ACL dialog" title="Web interface POSIX ACL dialog - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-posixacls.png" title="Web interface POSIX ACL dialog"><img class="screenshot" src="images/webdavcgi-webinterface-posixacls.png" alt="Web interface POSIX ACL dialog"/></a>
 <div class="screenshottitle">POSIX ACL dialog</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-pictures.png"><img class="screenshot" src="images/webdavcgi-webinterface-pictures.png" alt="Web interface image gallery" title="Web interface image gallery - click for full size"/></a>
+<a class="screenshot" rel="webinterface" href="images/webdavcgi-webinterface-pictures.png" title="Web interface image gallery"><img class="screenshot" src="images/webdavcgi-webinterface-pictures.png" alt="Web interface image gallery"/></a>
 <div class="screenshottitle">Image gallery</div>
 </td>
 </tr>
@@ -129,33 +136,33 @@ Supported RFC's, drafts and M$ specs:
 </tr>
 <tr>
 <td>
-<a class="screenshot" rel="clients" href="images/webdavcgi-client-nautilus.png"><img class="screenshot" src="images/webdavcgi-client-nautilus.png" alt="Nautilus" title="Nautilus - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-nautilus.png" title="Nautilus"><img class="screenshot" src="images/webdavcgi-client-nautilus.png" alt="Nautilus"/></a>
 <div class="screenshottitle">Nautilus</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="clients" href="images/webdavcgi-client-konqueror.png"><img class="screenshot" src="images/webdavcgi-client-konqueror.png" alt="Konqueror" title="Konqueror - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-konqueror.png" title="Konqueror"><img class="screenshot" src="images/webdavcgi-client-konqueror.png" alt="Konqueror"/></a>
 <div class="screenshottitle">Konqueror</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="clients" href="images/webdavcgi-client-cadaver.png"><img class="screenshot" src="images/webdavcgi-client-cadaver.png" alt="cadaver" title="cadaver - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-cadaver.png" title="cadaver"><img class="screenshot" src="images/webdavcgi-client-cadaver.png" alt="cadaver"/></a>
 <div class="screenshottitle">cadaver</div>
 </td>
 </tr>
 <tr>
 <td>
-<a class="screenshot" rel="clients" href="images/webdavcgi-client-davfs.png"><img class="screenshot" src="images/webdavcgi-client-davfs.png" alt="davfs" title="davfs- click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-davfs.png" title="davfs- click for full size"><img class="screenshot" src="images/webdavcgi-client-davfs.png" alt="davfs"/></a>
 <div class="screenshottitle">davfs2</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="clients" href="images/webdavcgi-client-wexplorer.png"><img class="screenshot" src="images/webdavcgi-client-wexplorer.png" alt="M$ Windows Explorer" title="M$ Windows Explorer - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-wexplorer.png" title="M$ Windows Explorer"><img class="screenshot" src="images/webdavcgi-client-wexplorer.png" alt="M$ Windows Explorer"/></a>
 <div class="screenshottitle">M$ Windows Explorer (XP)</div>
 </td>
 <td>&nbsp;</td>
 <td>
-<a class="screenshot" rel="clients" href="images/webdavcgi-client-bitkinex.png"><img class="screenshot" src="images/webdavcgi-client-bitkinex.png" alt="BitKinex 3.2.3" title="BitKinex 3.2.3 - click for full size"/></a>
+<a class="screenshot" rel="clients" href="images/webdavcgi-client-bitkinex.png" title="BitKinex 3.2.3"><img class="screenshot" src="images/webdavcgi-client-bitkinex.png" alt="BitKinex 3.2.3"/></a>
 <div class="screenshottitle">BitKinex 3.2.3</div>
 </td>
 </tr>

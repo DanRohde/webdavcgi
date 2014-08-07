@@ -143,7 +143,11 @@ emerge -va app-crypt/heimdal
 </pre>
 </li>
 <li>change directory to your preferred installation path, e.g. <code>cd /etc</code></li>
-<li>unpack WebDAV CGI: <code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code> (Gentoo: <code>emerge -va www-apps/webdavcgi</code>)</li>
+<li>install WebDAV CGI:
+<ul><li><code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code> (Gentoo: <code>emerge -va www-apps/webdavcgi</code>)</li>
+<li>or checkout from subversion: <code>svn checkout svn://svn.code.sf.net/p/webdavcgi/code/trunk webdavcgi</code></li>
+</ul>
+</li>
 <li>change directory to the source base (e.g: <code>cd webdavcgi*</code>) and call <code>bash install.sh</code> to compile all wrappers and to fix file permissions </li>
 <li> <a href="#setup">configure webdav.pl</a></li>
 <li> <a id="apache"></a>configure your web server:
@@ -204,11 +208,21 @@ Require valid-user
 <h2 id="upgrade">Upgrade</h2>
 <h3>Upgrading from 0.9.0 to 0.9.1</h3>
 <ul>
+<li> The database schema has some bugs so it needs a update:
+<pre>
+ALTER TABLE webdav_locks ALTER COLUMN basefn TYPE varchar(5000);
+ALTER TABLE webdav_locks ALTER COLUMN fn TYPE varchar(5000);
+ALTER TABLE webdav_locks ALTER COLUMN type DROP not null;
+
+ALTER TABLE webdav_props ALTER COLUMN fn TYPE varchar(5000);
+
+</pre>
+</li>
 <li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...)</code></li>
 <li> The AFS Group Manager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
 <li> The AFS ACL Manager is an extension now. Add 'AFSACLManager' to your extensions list to use it.</li>
 <li> Search support was moved to a new extension (Search). Expand your extension list to enable search <code>@EXTENSIONS=('Search',...)</code></li>
-<li> A lot of new extensions were added (activation: <code>@EXTENSIONS= ('ExtensionName')</code>):
+<li> A lot of new extensions were added (activation: <code>@EXTENSIONS= ('ExtensionName1', 'ExtensionName2', ...  )</code>):
 	<ul>
 	<li> AFSACLManager - enables AFS ACL management</li>
 	<li> AFSGroupManager - enables AFS Group management</li>
@@ -415,6 +429,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 </li>
 <li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a></li>
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
+<li> There are a lot of <a href="extensions.html">extensions</a> to activate. </li> 
 <li> Don't forget to check the config file syntax: <code>perl -c /etc/webdav.conf</code></li>
 <li> <a href="#apache">configure your Apache web server</a></li>
 </ol>
@@ -472,12 +487,12 @@ createdb -O webdavcgi webdavcgi
 
 psql webdavcgi &lt;&lt;EOF
 
-CREATE TABLE webdav_locks (basefn VARCHAR(255) NOT NULL, fn VARCHAR(255) NOT NULL, 
-			   type VARCHAR(255) NOT NULL, scope VARCHAR(255), 
+CREATE TABLE webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, 
+			   type VARCHAR(255), scope VARCHAR(255), 
 			   token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, 
 			   timeout VARCHAR(255) NULL, owner TEXT NULL, 
 			   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE webdav_props (fn VARCHAR(255) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT);
+CREATE TABLE webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT);
 CREATE INDEX webdav_locks_idx1 ON webdav_locks (fn);
 CREATE INDEX webdav_locks_idx2 ON webdav_locks (basefn);
 CREATE INDEX webdav_locks_idx3 ON webdav_locks (fn,basefn);
@@ -508,8 +523,8 @@ $CREATE_DB = 0;
 <pre>
 mysql -p webdavcgi &lt;&lt;EOF
 
-CREATE TABLE webdav_locks (basefn VARCHAR(255) NOT NULL, fn VARCHAR(255) NOT NULL, 
-                           type VARCHAR(255) NOT NULL, scope VARCHAR(255), 
+CREATE TABLE webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, 
+                           type VARCHAR(255), scope VARCHAR(255), 
                            token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, 
                            timeout VARCHAR(255) NULL, owner TEXT NULL, 
                            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);

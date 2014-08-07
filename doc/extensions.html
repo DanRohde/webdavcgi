@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="keywords" content="WebDAV CGI wrapper UID" />
+  <meta name="author" content="Daniel Rohde" />
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox.min.css"/>
+  <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox-buttons.min.css"/>
+  <link rel="stylesheet" type="text/css" href="style.min.css"/>
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="fancybox/jquery.fancybox.min.js"></script>
+  <script type="text/javascript" src="fancybox/jquery.fancybox-buttons.min.js"></script>
+  <script type="text/javascript" src="script.min.js"></script>	
+  <title>WebDAV CGI - Documentation: Simple View Extensions </title>
+</head>
+
+<body>
+<div id="content">
+<h1>Simple View Extensions</h1>
+<h2>Howto</h2>
+<ul>
+<li>Extensions are activated by putting the extension name to the <code>@EXTENSIONS</code> list in <code>webdav.conf</code>:
+<pre>
+@EXTENSIONS = ('Highlighter','Diff','Download','Zip','DiskUsage',
+               'Search','SendByMail','Permissions');
+</pre></li>
+<li>Extensions are configured with the <code>%EXTENSION_CONFIG</code> variable in <code>webdav.conf</code>:
+<pre>
+$EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
+</pre>
+</ul>
+<h2>Supported Extensions</h2>
+<ul>
+<li><a href="#AFSACLManager">AFSACLManager</a> - manages AFS ACL</li>
+<li><a href="#AFSGroupManager">AFSGroupManager</a> - manage AFS user groups</li>
+<li><a href="#Diff">Diff</a> - compares files/folders</li>
+<li><a href="#DiskUsage">DiskUsage</a> - collects disk usage data</li>
+<li><a href="#Download">Download</a> - offers a download button to force download instead of view</li>
+<li><a href="#Highlighter">Highlighter</a> - colorizes files/folders</li>
+<li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
+<li><a href="#PosixAclManager">PosixAclManager</a> - manages POSIX ACL</li>
+<li><a href="extension-publicuri.html">PublicUri</a> - share files and folders with a public link (own page)</li>
+<li><a href="#Search">Search</a> - searches file/folders by name or content including duplicate file search</li>
+<li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
+<li><a href="#Zip">Zip</a> - (un)compresses files/folders</li>
+</ul>
+
+<h2 id="AFSACLManager">AFSACLManager</h2>
+<table style="width:100%">
+<tr>
+	<td>
+<pre>
+# SETUP:
+# allow_afsaclchanges - (dis)allows AFS ACL changes
+# template - default template
+# disable_fileactionpopup - disables popup menu entry
+# disable_apps - disables apps entry
+# ptscmd - path to the pts command (default: /usr/bin/pts)
+</pre>
+</td>
+	<td><a class="screenshot float-right" href="images/webdavcgi-webinterface-afs.png"><img alt="Web interface AFS ACL manager" class="screenshot" src="images/webdavcgi-webinterface-afs.png"/></a></td>
+</table>
+<h2 id="AFSGroupManager">AFSGroupManager</h2>
+<table style="width:100%">
+<tr>
+<td> 
+<pre>
+# SETUP:
+# disallow_afsgroupchanges - disallows afs group changes 
+# ptscmd - sets the AFS pts command (default: /usr/bin/pts)
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_apps - disables sidebar menu entry
+# template - sets the template (default: afsgroupmanager)
+</pre></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-afs.png"><img alt="Web interface afs group manager" class="screenshot" src="images/webdavcgi-webinterface-afs.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="Diff">Diff</h2>
+<table style="width:100%">
+<tr>
+<td>
+<pre>
+# SETUP:
+# diff - sets the path to GNU diff (default: /usr/bin/diff)
+# disable_fileactionpopup - disables fileaction entry in popup menu
+# enable_apps - enables sidebar menu entry
+# files_only - disables folder comparision (neccassary for none-local filesystem backends like SMB, DB) 
+</pre></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-diff.png"><img alt="Web interface compare dialog" class="screenshot" src="images/webdavcgi-webinterface-diff.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="DiskUsage">DiskUsage</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-du.png"><img alt="Web interface disk usage dialog" class="screenshot" src="images/webdavcgi-webinterface-du.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="Download">Download</h2>
+
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+</tr>
+</table>
+
+
+<h2 id="Highlighter">Highlighter</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="Permissions">Permissions</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-permissions.png"><img alt="Web interface permissions dialog" class="screenshot" src="images/webdavcgi-webinterface-permissions.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="PosixAclManager">PosixAclManager</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-posixacls.png"><img alt="Web interface POSIX ACL manager dialog" class="screenshot" src="images/webdavcgi-webinterface-posixacls.png"/></a></td>
+</tr>
+</table>
+<h2>PublicUri</h2>
+Go to <a href="extension-publicuri.html">the PublicUri page</a>.
+<h2 id="Search">Search</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-search.png"><img alt="Web interface search dialog" class="screenshot" src="images/webdavcgi-webinterface-search.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="SendByMail">SendByMail</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-sendbymail.png"><img alt="Web interface send by mail dialog" class="screenshot" src="images/webdavcgi-webinterface-sendbymail.png"/></a></td>
+</tr>
+</table>
+
+<h2 id="Zip">Zip</h2>
+<table style="width:100%">
+<tr>
+<td></td>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+</tr>
+</table>
+</div>
+</body>
+</html>

@@ -57,7 +57,7 @@ sub init {
 
 	main::getEventChannel()->addEventListener('FILECOPIED', $self);
 		
-	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction'], $self);
+	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction','fileactionpopupnew'], $self);
 
 	$self->initDefaults();
 	
@@ -106,6 +106,9 @@ sub handle {
 			 { action => 'spuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'spurifilesbutton', path  => $$params{path}, type=>'li' },
 			 { action => 'depuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'depurifilesbutton', path  => $$params{path}, type=>'li' },
 		];
+	}
+	elsif ( $hook eq 'fileactionpopupnew') {
+		return { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' };
 	}
 	elsif ( $hook eq 'fileattr' ) {
 		my $prop = $self->getPublicUri( $$params{path} );
