@@ -208,13 +208,43 @@ Require valid-user
 <h2 id="upgrade">Upgrade</h2>
 <h3>Upgrading from 0.9.0 to 0.9.1</h3>
 <ul>
-<li> The database schema has some bugs so it needs a update:
+<li> The database schema has some bugs so it needs a update (please kill all speedy processes before you start with the database schema changes):
 <pre>
+# PostgreSQL:
 ALTER TABLE webdav_locks ALTER COLUMN basefn TYPE varchar(5000);
 ALTER TABLE webdav_locks ALTER COLUMN fn TYPE varchar(5000);
 ALTER TABLE webdav_locks ALTER COLUMN type DROP not null;
-
 ALTER TABLE webdav_props ALTER COLUMN fn TYPE varchar(5000);
+
+
+# MySQL:
+ALTER TABLE webdav_locks MODIFY basefn varchar(5000) not null;
+ALTER TABLE webdav_locks MODIFY fn varchar(5000) not null;
+ALTER TABLE webdav_locks MODIFY type varchar(255);
+ALTER TABLE webdav_props MODIFY fn varchar(5000) not null;
+
+
+# SQLite:
+DROP INDEX webdav_locks_idx1;
+DROP INDEX webdav_locks_idx2;
+DROP INDEX webdav_locks_idx3;
+DROP INDEX webdav_locks_idx4;
+ALTER TABLE webdav_locks RENAME TO webdav_locks_old;
+DROP INDEX webdav_props_idx1;
+DROP INDEX webdav_props_idx2;
+ALTER TABLE webdav_props RENAME TO webdav_props_old;
+CREATE TABLE webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, type VARCHAR(255), scope VARCHAR(255), token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, timeout VARCHAR(255) NULL, owner TEXT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT);
+CREATE INDEX webdav_locks_idx1 ON webdav_locks (fn);
+CREATE INDEX webdav_locks_idx2 ON webdav_locks (basefn);
+CREATE INDEX webdav_locks_idx3 ON webdav_locks (fn,basefn);
+CREATE INDEX webdav_locks_idx4 ON webdav_locks (fn,basefn,token);
+CREATE INDEX webdav_props_idx1 ON webdav_props (fn);
+CREATE INDEX webdav_props_idx2 ON webdav_props (fn,propname);
+INSERT INTO webdav_locks SELECT * FROM webdav_locks;
+INSERT INTO webdav_props SELECT * FROM webdav_props;
+DROP TABLE webdav_locks_old;
+DROP TABLE webdav_props_old;
 
 </pre>
 </li>
