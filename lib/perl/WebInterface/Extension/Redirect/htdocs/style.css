@@ -14,9 +14,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-
-tr.redirect td.filename {
-	background-image: url(redirect.png);
-	background-position: 14px center;
-	background-repeat: no-repeat;
+.redirect .filename {
+	background: url(redirect.png) no-repeat 14px center;
 }
