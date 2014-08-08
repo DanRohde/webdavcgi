@@ -132,26 +132,29 @@ sub handleZipUpload {
 	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
-
+sub getZipFilename {
+	my ($self, $files) = @_;
+	my $time = strftime('%Y-%m-%d-%H:%M:%S',localtime);
+	my $zipfilename = $$self{backend}->basename(scalar(@$files) > 1 ? $main::REQUEST_URI : $$files[0],'.zip') . "-$time.zip";
+	$zipfilename =~ s/[\/ ]/_/g;
+	return $zipfilename;
+}
 sub handleZipDownload {
 	my $self = shift;
-	my $zfn  = $$self{backend}->basename($main::PATH_TRANSLATED) . '.zip';
-	$zfn =~ s/ /_/;
+	my @files = $$self{cgi}->param('files');
+	my $zfn  = $self->getZipFilename(\@files);
 	print $$self{cgi}->header(
 		-status              => '200 OK',
 		-type                => 'application/zip',
 		-Content_disposition => 'attachment; filename=' . $zfn
 	);
-	$$self{backend}->compressFiles( \*STDOUT, $main::PATH_TRANSLATED, $$self{cgi}->param('files') );
+	$$self{backend}->compressFiles( \*STDOUT, $main::PATH_TRANSLATED, @files);
 	return 1;
 }
 sub handleZipCompress {
 	my $self = shift;
-	
 	my @files = $$self{cgi}->param('files');
-	my $time = strftime('%Y-%m-%d-%H:%M:%S',localtime);
-	my $zipfilename = $$self{backend}->basename(scalar(@files) > 1 ? $main::REQUEST_URI : $files[0],'.zip') . "-$time.zip";
-	$zipfilename=~s/\//_/g;
+	my $zipfilename = $self->getZipFilename(\@files);
 	
 	my ($zipfh, $zipfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-Zip-XXXXX', CLEANUP=>1, SUFFIX=>".zip");
 	my $error;

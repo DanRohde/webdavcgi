@@ -47,3 +47,7 @@ input[readonly="readonly"].publicuri {
 	background-repeat: no-repeat;
 	background-position: 10px center;
 }
+a.blue {
+	color: blue;
+	font-weight: bold;
+}

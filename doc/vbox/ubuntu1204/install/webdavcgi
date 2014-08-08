@@ -29,5 +29,6 @@ apt-get install openafs-client krb5-user openafs-krb5
 cd /etc
 svn checkout svn://svn.code.sf.net/p/webdavcgi/code/trunk webdavcgi
 
+cp etc/*custom.tmpl /etc/webdavcgi/templates/simple/
 cd /etc/webdavcgi/
 bash install.sh
