@@ -47,9 +47,7 @@ sub unsetPublicUri {
 
 sub resolveFile {
 	my ( $self, $file ) = @_;
-	main::debug("PURI($main::PATH_TRANSLATED via POST");
-	my $rfile = $$self{backend}->resolve($$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"));
-	return $rfile;
+	return $$self{backend}->resolve($$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"));
 }
 
 sub init {
@@ -112,7 +110,7 @@ sub handle {
 		return { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' };
 	}
 	elsif ( $hook eq 'fileattr' ) {
-		my $prop = $self->getPublicUri( $$params{path} );
+		my $prop = $self->getPublicUri( $$self{backend}->resolve($$self{backend}->resolveVirt($$params{path} ) ) );
 		my ($attr,$classes);
 		if ( !defined($prop) ) {
 			($classes, $attr) = ('unshared','no');
