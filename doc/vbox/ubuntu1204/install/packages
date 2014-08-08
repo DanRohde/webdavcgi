@@ -1,0 +1,2 @@
+apt-get install subversion build-essential apache2 postfix slapd ldap-utils libnss-ldapd acl
+

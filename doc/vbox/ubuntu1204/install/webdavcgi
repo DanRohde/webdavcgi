@@ -1,0 +1,33 @@
+## Debian/Ubuntu quick install: 
+apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
+                libuuid-tiny-perl libxml-simple-perl libquota-perl \
+                libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
+                libfile-copy-link-perl libjson-perl libdatetime-perl \
+                libmime-tools-perl libnet-ldap-perl sqlite3
+
+perl -MCPAN -e "install DateTime::Format::Human::Duration"
+
+
+apt-get install speedy-cgi-perl
+
+
+## only for PostgreSQL users:
+apt-get install libdbd-pg-perl
+
+## only for MySQL users:
+apt-get install libdbd-mysql-perl
+
+## only for SMB backend users:
+apt-get install libfilesys-smbclient-perl smbclient krb5-user
+
+## only for RCS backend users:
+apt-get install librcs-perl
+
+## only for AFS users:
+apt-get install openafs-client krb5-user openafs-krb5
+
+cd /etc
+svn checkout svn://svn.code.sf.net/p/webdavcgi/code/trunk webdavcgi
+
+cd /etc/webdavcgi/
+bash install.sh

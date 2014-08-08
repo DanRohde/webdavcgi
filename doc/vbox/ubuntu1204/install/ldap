@@ -1,0 +1,83 @@
+dpkg-reconfigure slapd
+## domain: webdavcgi.sf.net
+## organization: webdavcgi
+## admin password: adminuser
+BASEDN="dc=webdavcgi,dc=sf,dc=net"
+
+ldapadd -x -D cn=admin,$BASEDN -w adminuser <<EOF
+dn: ou=users,$BASEDN
+objectClass: organizationalUnit
+ou: users
+
+dn: ou=groups,$BASEDN
+objectClass: organizationalUnit
+ou: groups
+
+dn: cn=testuser1,ou=groups,$BASEDN
+objectClass: posixGroup
+cn: testuser1
+gidNumber: 10000
+
+dn: uid=testuser1,ou=users,$BASEDN
+objectClass: person
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: testuser1
+uid: testuser1
+sn: testuser1
+cn: testuser1
+uidNumber: 10000
+gidNumber: 10000
+homeDirectory: /home/testuser1
+loginShell: /bin/false
+
+dn: cn=testuser2,ou=groups,$BASEDN
+objectClass: posixGroup
+cn: testuser2
+gidNumber: 10001
+
+dn: uid=testuser2,ou=users,$BASEDN
+objectClass: person
+objectClass: posixAccount
+objectClass: shadowAccount
+userPassword: testuser2
+uid: testuser2
+sn: testuser2
+cn: testuser2
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/testuser2
+loginShell: /bin/false
+
+dn: cn=project1,ou=groups,$BASEDN
+objectClass: posixGroup
+cn: project1
+gidNumber: 30000
+memberUid: testuser1
+memberUid: testuser2
+
+dn: cn=public,ou=groups,$BASEDN
+objectClass: posixGroup
+cn: public
+gidNumber: 20000
+
+dn: uid=public,ou=users,$BASEDN
+objectClass: person
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: public
+sn: public
+cn: public
+uidNumber: 20000
+gidNumber: 20000
+homeDirectory: /home/public
+loginShell: /bin/false
+
+EOF
+
+for u in testuser1 testuser2 public ; do
+
+        mkdir /home/$u
+        chown $u:$u /home/$u
+done
+
