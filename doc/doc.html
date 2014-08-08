@@ -260,6 +260,7 @@ DROP TABLE webdav_props_old;
 	<li> Highlighter - colorize text and backgrounds of files and folders</li>
 	<li> Permissions - manage POSIX file permissions (user,group,others:rwxst)</li>
 	<li> PosixAclManager - allows POSIX ACL changes</li>
+	<li> Redirect - redirects folders to any web page</li>
 	<li> Search - enables file/content search support</li>
 	<li> SendByMail - sends files/folders by e-mail ( Perl module MIME::Entity from MIME tools required; Debian/Ubuntu: <code>apt-get install libmime-tools-perl</code>)</li>
 	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
@@ -1155,7 +1156,6 @@ $BACKEND_CONFIG{RO}{backend} = 'FS';
 			<li><code>$ENABLE_THUMBNAIL=0;</code> - disables thumbnail support</li>
 			<li><code>$ENABLE_THUMBNAIL_CACHE=1;</code> - enables the thumbnail cache and reduces CPU usage (only useful if <code>$ENABLE_THUMBNAIL=1;</code>)</li>
 			<li><code>$ENABLE_THUMBNAIL_PDFPS=0;</code> - disables thumbnails for PDF/PS documents and reduces CPU usage (only useful if <code>$ENABLE_THUMBNAIL=1;</code></li>
-			<li><code>$DISABLE_SEARCH=0;</code> - disables file name search </li>
 			</ul>
 		</li>
 	</ul>

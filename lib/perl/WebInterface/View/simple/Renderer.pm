@@ -333,8 +333,7 @@ sub renderFileListEntry {
 	my $filepropExtensions = $$self{config}{extensions}->handle('fileprop', { path=>$full});
 	if (defined ($filepropExtensions)) {
 		foreach my $ret (@{$filepropExtensions}) {
-			my %newHash = (%$ret, %stdvars); 
-			%stdvars = %newHash;
+			@stdvars{keys %$ret} = values %$ret;
 		}
 	}
 	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;

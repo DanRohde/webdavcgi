@@ -43,6 +43,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
 <li><a href="#PosixAclManager">PosixAclManager</a> - manages POSIX ACL</li>
 <li><a href="extension-publicuri.html">PublicUri</a> - share files and folders with a public link (own page)</li>
+<li><a href="#Redirect">Redirect</a> - redirects folders to any web page</li>
 <li><a href="#Search">Search</a> - searches file/folders by name or content including duplicate file search</li>
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
 <li><a href="#Zip">Zip</a> - (un)compresses files/folders</li>
@@ -186,6 +187,18 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # searchtimeout - sets a timeout in seconds (default: 30 seconds) 
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))
 # disable_dupseaerch - disables duplicate file search
+</pre></td>
+
+</tr>
+</table>
+<h2 id="Redirect">Redirect</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-redirect.png"><img alt="Web interface redirect link" class="screenshot" src="images/webdavcgi-webinterface-redirect.png"/></a></td>
+<td><pre>
+# SETUP:
+# redirect - sets folder/files for a redirect
+#             format: { '/full/file/path' => 'url' , ... }
 </pre></td>
 
 </tr>
