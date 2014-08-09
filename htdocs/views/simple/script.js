@@ -1118,7 +1118,6 @@ function handleTableColumnClick(event) {
 	cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''),1);
 	setupFileListSort(cidx, sortorder);
 	sortFileList(stype,sattr,sortorder,cidx,"data-file");
-	console.log('handleTableColumnClick');
 }
 function setupFileListSort(cidx, sortorder) {
 	var flt = $("#fileListTable");
