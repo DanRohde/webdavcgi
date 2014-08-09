@@ -1007,7 +1007,7 @@ function initFileList() {
 	
 	// init column drag and dblclick resize
 	$("#fileListTable th:not(.resizable-false)")
-		.off("click.initFileList")
+		.off("click")
 		.each(function(i,v) {
 			var col = $(v);
 			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle left");
@@ -1018,7 +1018,7 @@ function initFileList() {
 			
 			// handle click and dblclick at the same time:
 			var clicks = 0;
-			$(v).on("click.initFileList",function(event) {
+			$(v).on("click",function(event) {
 				var self = $(this);
 				clicks++;
 				if (clicks == 1) {
@@ -1118,7 +1118,7 @@ function handleTableColumnClick(event) {
 	cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''),1);
 	setupFileListSort(cidx, sortorder);
 	sortFileList(stype,sattr,sortorder,cidx,"data-file");
-	
+	console.log('handleTableColumnClick');
 }
 function setupFileListSort(cidx, sortorder) {
 	var flt = $("#fileListTable");
