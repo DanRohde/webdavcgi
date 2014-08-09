@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	visibility: hidden;
 }
 .diff.dialog {
-	overlow: auto;
+	overflow: auto;
 }
 .diff.table {
 	empty-cells: show;

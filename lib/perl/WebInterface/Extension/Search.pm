@@ -277,9 +277,15 @@ sub handleSearch {
 
 	if ($$self{query} = $$self{cgi}->param('query')) {
 		$$self{query} = join('.*?', map {quotemeta($_)} split(/\s+/,$$self{query})); ## replace all
-		$$self{query} =~s/\\\*//g; ## remove * because a regex search don't need it
+		$$self{query} =~s/([^\#\\])\\[\%\*]/$1\.\*\?/g; ## wildcards *,%
+		$$self{query} =~s/([^\#\\])\\[\?_]/$1\./g; ## wildcards ?,_
+		$$self{query} =~s/([^\#\\])\\\#/$1\\d+/g; ## wildcard #
+		$$self{query} =~s/([^\#\\])\\\[(.*?([^\#\\]))\\\]/$1\[$2\]/g; ## [...]
+		$$self{query} =~s/\\\\([\#\?\%\*_\[\]])/$1/g; ## quoted wildcards
 		$$self{query} = '('.join('|', split(/\.\*\?or\.\*\?/i, $$self{query})).')' if $$self{query}=~/\.\*\?or\.\*\?/;
 		$$self{query} =~s/(\.\*\?){2,}/$1/g; ## replace .*? sequence with one .*?
+		eval { /$$self{query}/ };
+		$$self{query} = quotemeta($$self{cgi}->param('query')) if $@;
 		#print STDERR "$$self{query}\n";
 	}
 	
