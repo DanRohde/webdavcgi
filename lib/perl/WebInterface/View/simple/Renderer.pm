@@ -205,9 +205,7 @@ sub renderExtensionElement {
 		}
 		$content.=$$a{posthtml} if $$a{posthtml};
 	} elsif (ref($a) eq 'ARRAY') {
-		foreach my $ac (@{$a}) {
-			$content.=$self->renderExtensionElement($fn,$ru,$ac);
-		}
+		$content=join("", map { $self->renderExtensionElement($fn,$ru,$_)} @$a);
 	} else {
 		$content.=$a;
 	}
@@ -215,12 +213,7 @@ sub renderExtensionElement {
 }
 sub renderExtension {
 	my ($self,$fn,$ru,$hook) = @_;
-	my $content = "";
-	my $extactions = $$self{config}{extensions}->handle($hook, { path=>$fn });
-	foreach my $a (@{$extactions}) {
-		$content.=$self->renderExtensionElement($fn,$ru,$a);
-	}
-	return $content;
+	return join("",map { $self->renderExtensionElement($fn,$ru,$_) } @{$$self{config}{extensions}->handle($hook, { path=>$fn })});
 }
 sub renderLanguageList {
 	my($self, $fn, $ru, $tmplfile) = @_;

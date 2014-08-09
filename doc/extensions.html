@@ -104,7 +104,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <td><a class="screenshot" href="images/webdavcgi-webinterface-du.png"><img alt="Web interface disk usage dialog" class="screenshot" src="images/webdavcgi-webinterface-du.png"/></a></td>
 <td><pre>
 # SETUP:
-# disable_fileaction - disables fileaction entry
+# enable_fileaction - enables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # disable_apps - disables sidebar menu entry
 # timeout - timeout in seconds (default: 60)
@@ -221,7 +221,8 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 #   defaultmessage - sets default message (default: empty string)
 #   defaultzipfilename - sets a default filename for ZIP files
 #   enable_savemailasfile - allows to save a mail as a eml file
-#   disable_fileactionpopup - disables fileaction entry in popup menu
+#   disable_fileactionpopup - disables entry in popup menu
+#   disable_fileaction - disables entry in toolbar
 #   enable_apps - enables sidebar menu entry
 #   addressboook - Perl module name with a addressbook implementation
 #                  LDAP: 'WebInterface::Extension::SendByMail::LdapAddressbook'

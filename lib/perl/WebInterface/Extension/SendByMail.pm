@@ -29,7 +29,8 @@
 #   defaultmessage - sets default message (default: empty string)
 #   defaultzipfilename - sets a default filename for ZIP files
 #   enable_savemailasfile - allows to save a mail as a eml file
-#   disable_fileactionpopup - disables fileaction entry in popup menu
+#   disable_fileactionpopup - disables entry in popup menu
+#   disable_filelistaction - disables entry in toolbar
 #   enable_apps - enables sidebar menu entry
 #   addressboook - Perl module name with a addressbook implementation
 
@@ -50,8 +51,9 @@ use Module::Load;
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript', 'posthandler');
-	push @hooks,'fileactionpopup' unless $self->config('disable_fileactionpopup');
-	push @hooks,'apps' if $self->config('enable_apps');
+	push @hooks,'fileactionpopup' unless $self->config('disable_fileactionpopup',0);
+	push @hooks,'apps' if $self->config('enable_apps',0);
+	push @hooks,'filelistaction' unless $self->config('disable_filelistaction',0);
 	$hookreg->register(\@hooks, $self);
 }
 
@@ -60,7 +62,9 @@ sub handle {
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	if ($hook eq 'fileactionpopup') {
-		$ret ={ action=>'sendbymail', label=>'sendbymail', path=>$$params{path}, type=>'li'};	
+		$ret ={ action=>'sendbymail', label=>'sendbymail', path=>$$params{path}, type=>'li'};
+	} elsif ($hook eq 'filelistaction') {	
+		$ret ={ listaction=>'sendbymail', label=>'&nbsp;', title=>$self->tl('sendbymail'), path=>$$params{path}, classes=>"uibutton"};
 	} elsif ($hook eq 'apps') {
 		$ret = $self->handleAppsHook($$self{cgi},'listaction sendbymail sel-multi disabled','sendbymail_short','sendbymail'); 
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'sendbymail') {

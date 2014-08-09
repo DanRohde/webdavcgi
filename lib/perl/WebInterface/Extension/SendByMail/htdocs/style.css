@@ -35,7 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 4px bottom;
 }
- 
+ .listaction.sendbymail {
+ 	background:url(sendbymail.png) no-repeat center center;
+ }
 .sendbymail.button {
 	text-align: right;
 }

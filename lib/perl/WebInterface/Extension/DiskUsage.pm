@@ -17,7 +17,7 @@
 #########################################################################
 #
 # SETUP:
-# disable_fileaction - disables fileaction entry
+# enable_fileaction - disables fileaction entry
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # disable_apps - disables sidebar menu entry
 # timeout - timeout in seconds (default: 60)
@@ -39,9 +39,9 @@ use POSIX qw(floor ceil);
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','javascript','locales','posthandler');
-	push @hooks,'fileaction' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileaction};
-	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_fileactionpopup};
-	push @hooks,'apps' unless $main::EXTENSION_CONFIG{DiskUsage}{disable_apps};
+	push @hooks,'fileaction' if $self->config('enable_fileaction',0);
+	push @hooks,'fileactionpopup' unless $self->config('disable_fileactionpopup',0);
+	push @hooks,'apps' unless $self->config('disable_apps',0);
 	$hookreg->register(\@hooks, $self);
 }
 
