@@ -117,17 +117,17 @@ sub addSearchResult {
 sub filterFiles {
 	my ($self, $base, $file, $counter) = @_;
 	my $ret = 0;
-	my $query = $$self{cgi}->param('query');
+	my $query = $$self{query};
 	my $size = $$self{cgi}->param('size');
 	my $searchin = $$self{cgi}->param('searchin') || 'filename';
 	my $full = $base.$file;
-	 
-	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /\Q$query\E/i;
+
+	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /$query/;
 	
 	$ret = 1 if  $query && $self->config('allow_contentsearch',0) && $searchin eq 'content' 
 			&& (	!$$self{backend}->isReadable($full)  
 				|| !$$self{backend}->isFile($full)
-				|| $$self{backend}->getFileContent($full,$self->config('sizelimit', 2097152) ) !~/\Q$query\E/i
+				|| $$self{backend}->getFileContent($full,$self->config('sizelimit', 2097152) ) !~ /$query/igs
 			);
 		
 	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full);
@@ -274,6 +274,15 @@ sub handleSearch {
 	my @results = ();
 	unlink $self->getTempFilename('result');
 	my %counter = ( started => time(), results => 0, files => 0, folders => 0);
+
+	if ($$self{query} = $$self{cgi}->param('query')) {
+		$$self{query} = join('.*?', map {quotemeta($_)} split(/\s+/,$$self{query})); ## replace all
+		$$self{query} =~s/\\\*//g; ## remove * because a regex search don't need it
+		$$self{query} = '('.join('|', split(/\.\*\?or\.\*\?/i, $$self{query})).')' if $$self{query}=~/\.\*\?or\.\*\?/;
+		$$self{query} =~s/(\.\*\?){2,}/$1/g; ## replace .*? sequence with one .*?
+		#print STDERR "$$self{query}\n";
+	}
+	
 	foreach my $file (@files) {
 		last if $self->limitsReached(\%counter);
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);
