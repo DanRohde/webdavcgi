@@ -275,7 +275,6 @@ tr.isreadable-no:hover {
 .islocked-yes .listaction.delete
 {
 	display: none;
-	visibility: hidden;
 }
 .islink-yes .filename {
 	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQMAAAC3/F3+AAAABlBMVEWAgID////n1o2sAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggIDCkHwhxH/QAAACBJREFUCNdjYGBgqG9gcGxgcAaTDg0MEQ0MFQ0gQQYGAGPrBtSJLPp/AAAAAElFTkSuQmCC) no-repeat 20px top;

@@ -1312,7 +1312,7 @@ function handleFileRename(row) {
 			preventDefault(event);
 			if (cookie("settings.confirm.rename")!="no") {
 				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,file).replace(/%s/,newname), {
-					confirm: doRename(row,file,newname),
+					confirm: function() { doRename(row,file,newname)},
 					setting: "settings.confirm.rename"
 				});
 			} else {
