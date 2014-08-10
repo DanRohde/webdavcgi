@@ -76,7 +76,11 @@ $(document).ready(function() {
 		$("div.overlay").remove();
 		//if (jqxhr.status = 404) window.history.back();
 	});
-	
+	$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+		  if ( options.dataType == 'script' || originalOptions.dataType == 'script' ) {
+		      options.cache = true;
+		  }
+		});
 	updateFileList($("#flt").attr("data-uri"));
 	
 

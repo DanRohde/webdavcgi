@@ -286,7 +286,7 @@ sub handleSearch {
 		$$self{query} =~s/(\.\*\?){2,}/$1/g; ## replace .*? sequence with one .*?
 		eval { /$$self{query}/ };
 		$$self{query} = quotemeta($$self{cgi}->param('query')) if $@;
-		#print STDERR "$$self{query}\n";
+		print STDERR "$$self{query}\n";
 	}
 	
 	foreach my $file (@files) {

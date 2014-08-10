@@ -397,6 +397,25 @@ sub renderTemplate {
 	
 	$content=~s/\${?ENV{([^}]+?)}}?/$ENV{$1}/egs;
 	$content=~s/\${?TL{([^}]+)}}?/$self->tl($1)/egs;
+	
+	my $vbase = $ru=~/^($main::VIRTUAL_BASE)/ ? $1 : $ru;
+	
+	# replace standard variables:
+	$vars = { uri => $ru, 
+			baseuri=>$$self{cgi}->escapeHTML($vbase),
+			maxuploadsize=>$main::POST_MAX_SIZE,
+			maxuploadsizehr=>($self->renderByteValue($main::POST_MAX_SIZE,2,2))[0],
+			view => $main::VIEW,
+			viewname => $self->tl("${main::VIEW}view"),
+			USER=>$main::REMOTE_USER,
+			REQUEST_URI=>$main::REQUEST_URI,
+			PATH_TRANSLATED=>$main::PATH_TRANSLATED,
+			LANG=>$main::LANG,
+			VBASE=>$$self{cgi}->escapeHTML($vbase),
+			VHTDOCS=>$vbase.$main::VHTDOCS,
+			%$vars 
+	};
+	
 	$content=~s/\$\[(\w+)\]/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
 	$content=~s/\$\{?(\w+)\}?/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
 	$content=~s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/egs;

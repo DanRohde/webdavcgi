@@ -49,13 +49,6 @@ sub handle {
 	my ($self, $hook, $config, $params) = @_;
 
 	my $suret = $self->SUPER::handle($hook, $config, $params);
-	
-	if ($hook eq 'javascript') {
-		#$suret .= q@<script src="@.$self->getExtensionUri('DiskUsage', 'htdocs/contrib/contrib.js').q@"></script>@;
-		$suret .= $self->handleJavascriptHook('DiskUsage', 'htdocs/contrib/contrib.js');	
-	} elsif ($hook eq 'css') {
-		$suret .= $self->handleCssHook('DiskUsage','htdocs/contrib/contrib.css');
-	}
 	return $suret if $suret;
 	
 	if ($hook eq 'fileaction') {
