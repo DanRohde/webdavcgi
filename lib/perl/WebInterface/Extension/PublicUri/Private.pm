@@ -126,6 +126,10 @@ sub handle {
 	return 0;                                         #not handled
 }
 
+sub getSharedMessage {
+	my ($self, $file, $url) = @_;
+	return $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate('shared'), { file=>$$self{cgi}->escapeHTML($file),puri=>$$self{cgi}->escapeHTML($url) });
+}
 #Publish URI and show message
 sub enablePuri () {
 	my ($self) = @_;
@@ -142,14 +146,11 @@ sub enablePuri () {
 			$self->unsetPublicUri($file);
 			$self->setPublicUri( $file, $digest, $seed );
 		}
-		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
-		$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
-		
+		$jsondata{message} = $self->getSharedMessage($$self{cgi}->param('file'),$$self{uribase}.$digest);
 	}
 	else {
 		$jsondata{error}= $self->tl('foldernothingerr');
 	}
-	
 	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	
 	return 1;
@@ -165,7 +166,7 @@ sub showPuri () {
 		main::debug( "Showing public URI: " . $digest );
 		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
 		if ($digest && $seed && $self->isPublicUri($file, $digest, $seed)) {
-			$jsondata{message} = sprintf($self->tl('msg_enabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')), $url, $url);
+			$jsondata{message} = $self->getSharedMessage($$self{cgi}->param('file'),$url);
 		} else {
 			$self->disablePuri();
 		}
