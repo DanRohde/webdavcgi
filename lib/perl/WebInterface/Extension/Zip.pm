@@ -58,7 +58,7 @@ sub handle {
 	} elsif ($hook eq 'filelistaction') {
 		$ret = { listaction=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, classes=>'sel-multi uibutton'};
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { title=>$self->tl('zip.menu'), subpopupmenu=> 
+		$ret = { title=>$self->tl('zip.menu'), classes=>'zip-popup', subpopupmenu=> 
 			[ 
 				{ action=>'zipup', label=>'zipup', title=>'zipup', path=>$$params{path}, type=>'li', classes=>'access-writeable sep'},
 				{ action=>'zipdwnload', label=>'zipdwnload', title=>'zipdwnloadtext', path=>$$params{path}, type=>'li', classes=>'listaction'},

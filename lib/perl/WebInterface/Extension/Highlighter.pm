@@ -36,8 +36,8 @@ sub init {
 	
 	$$self{namespace} = $self->config('namespace','{http://webdavcgi.sf.net/extension/Highlighter/'.$main::REMOTE_USER.'}');
 	$$self{attributes} = $self->config('attributes', 
-			{ 'color' =>{ values=>'Red,Green,Blue,Orange,Purple', label=>'', labelstyle=>'background-color', colorpicker=>1,order=>1}, 
-			  'background-color'=>{ values=>'LightCoral,GreenYellow,LightBlue,Yellow,Plum', label=>'', labelstyle=>'background-color', colorpicker=>1, order=>2},
+			{ 'color' =>{ values=>'Red,Green,Blue,Orange,Purple', label=>'', labelstyle=>'background-color', colorpicker=>1,order=>2}, 
+			  'background-color'=>{ values=>'LightCoral,GreenYellow,LightBlue,Yellow,Plum', label=>'', labelstyle=>'background-color', colorpicker=>1, order=>1},
 			  #'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 }, 
 			});
 	$$self{json} = new JSON();	
@@ -58,7 +58,7 @@ sub handle {
 			push @subpopup, { action=>'markcolorpicker', data=>{ value=>$_, style=>$attribute }, label=>$self->tl('highlighter.colorpicker'), classes=>'sep', type=>'li' } if $$self{attributes}{$attribute}{colorpicker};
 			push @subpopup, { action=>'removemark', data=>{ style=>$attribute }, label=>$self->tl("highlighter.remove.$attribute"), type=>'li', classes=>'sep' }; 
 			
-			push @popups, { title=>$self->tl("highlighter.$attribute"), subpopupmenu => \@subpopup };
+			push @popups, { title=>$self->tl("highlighter.$attribute"), subpopupmenu => \@subpopup, classes=>"highlighter" };
 		}
 		
 		$ret = { title=>$self->tl('highlighter'), subpopupmenu=> \@popups, classes=>'highlighter-popup'};

@@ -1037,7 +1037,7 @@ img {
 #popupmenu li {
 	height: 1.2em;
 	padding: 0.4em;
-	width: 150px;
+	min-width: 150px;
 	border: 1px solid white;
 	color: black;
 }
@@ -1097,7 +1097,7 @@ img {
 	display: block;
 }
 #popupmenu li.subpopupmenu {
-	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right center;
+	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat  right 2px center;
 	cursor: pointer;
 }
 #popupmenu li.subpopupmenu:hover {
