@@ -213,7 +213,8 @@ sub renderExtensionElement {
 }
 sub renderExtension {
 	my ($self,$fn,$ru,$hook) = @_;
-	return join("",map { $self->renderExtensionElement($fn,$ru,$_) } @{$$self{config}{extensions}->handle($hook, { path=>$fn })});
+	return q@<script>$(document).ready(function() {var l=new Array(@.join(',',map { "'".$$self{cgi}->escape($_)."'"} @{$$self{config}{extensions}->handle($hook, { path=>$fn })} ).q@);$("<div/>").html($.map(l,function(v,i){return decodeURIComponent(v);}).join("")).appendTo($("body"));});</script>@ if $hook eq 'javascript';
+	return join('',map { $self->renderExtensionElement($fn,$ru,$_) } @{$$self{config}{extensions}->handle($hook, { path=>$fn })});
 }
 sub renderLanguageList {
 	my($self, $fn, $ru, $tmplfile) = @_;
