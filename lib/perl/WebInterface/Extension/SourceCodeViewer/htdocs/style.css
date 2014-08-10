@@ -27,3 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .scv.prettyprint {
 	overflow: auto;	
 }
+.prettyprint li:hover {
+	background-color: #ddd;
+}

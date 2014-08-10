@@ -102,13 +102,14 @@ sub readExtensionsTL {
 sub tl {
         my $self = shift;
         my $key = shift;
+        my $default = shift;
         $self->readTL('default') if !exists $main::TRANSLATION{default}{x__READ__x};
-	$self->readViewTL('default') if !exists $main::TRANSLATION{default}{x__VIEWREAD__x};
+		$self->readViewTL('default') if !exists $main::TRANSLATION{default}{x__VIEWREAD__x};
         $self->readTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__READ__x};
-	$self->readViewTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__VIEWREAD__x};
-	$self->readExtensionsTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__EXTENSIONSREAD__x};
+		$self->readViewTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__VIEWREAD__x};
+		$self->readExtensionsTL($main::LANG) if !exists $main::TRANSLATION{$main::LANG}{x__EXTENSIONSREAD__x};
 
-        my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $key;
+        my $val = $main::TRANSLATION{$main::LANG}{$key} || $main::TRANSLATION{default}{$key} || $default || $key;
         return $#_>-1 ? sprintf( $val, @_) : $val;
 }
 

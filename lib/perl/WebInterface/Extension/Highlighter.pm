@@ -36,8 +36,8 @@ sub init {
 	
 	$$self{namespace} = $self->config('namespace','{http://webdavcgi.sf.net/extension/Highlighter/'.$main::REMOTE_USER.'}');
 	$$self{attributes} = $self->config('attributes', 
-			{ 'color' =>{ values=>'Red,Green,Blue,Orange,Purple', label=>'', labelstyle=>'background-color', colorpicker=>1,order=>2}, 
-			  'background-color'=>{ values=>'LightCoral,GreenYellow,LightBlue,Yellow,Plum', label=>'', labelstyle=>'background-color', colorpicker=>1, order=>1},
+			{ 'color' =>{ values=>'#FF0000,#008000,#0000FF,#FFA500,#800080', labelstyle=>'background-color', colorpicker=>1,order=>2}, 
+			  'background-color'=>{ values=>'#F08080,#ADFF2f,#ADD8E6,#FFFF00,#DDA0DD', labelstyle=>'background-color', colorpicker=>1, order=>1},
 			  #'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 }, 
 			});
 	$$self{json} = new JSON();	
@@ -52,7 +52,7 @@ sub handle {
 		my @popups = ();
 		foreach my $attribute (sort {$$self{attributes}{$a}{order} <=> $$self{attributes}{$b}{order} } keys %{$$self{attributes}}) {
 			my @subpopup =
-				 map { {  action=>'mark', attr=>{ style=> "$$self{attributes}{$attribute}{labelstyle}: $_;" }, data=>{ value=>$_, style=>$attribute }, label=>sprintf($self->tl($$self{attributes}{$attribute}{label}),$_), title=>$self->tl("highlighter.$attribute.$_"), type=>'li'} }
+				 map { {  action=>'mark', attr=>{ style=> "$$self{attributes}{$attribute}{labelstyle}: $_;" }, data=>{ value=>$_, style=>$attribute }, label=>sprintf($self->tl($$self{attributes}{$attribute}{label}),$_), title=>$self->tl("highlighter.$attribute.$_",$_), type=>'li'} }
 				 	split(/,/, $$self{attributes}{$attribute}{values});
 			
 			push @subpopup, { action=>'markcolorpicker', data=>{ value=>$_, style=>$attribute }, label=>$self->tl('highlighter.colorpicker'), classes=>'sep', type=>'li' } if $$self{attributes}{$attribute}{colorpicker};

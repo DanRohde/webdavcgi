@@ -1722,7 +1722,7 @@ function renderByteSize(size) {
 }
 function initClipboard() {
 	handleClipboard();
-	$('#flt').on('fileListChanged', handleClipboard);
+	$('#flt').on('fileListChanged', handleClipboard).on('popupmenu', handleClipboard);
 }
 function handleClipboard() {
 	var action = cookie("clpaction");
@@ -1945,12 +1945,12 @@ function initPopupMenu() {
 					preventDefault(event);
 					if ($("#popupmenu").is(":visible")) {
 						hidePopupMenu();
-						return;
-					}  else {
+					} else {
 						$("#popupmenu").appendTo($(this)).css({position: "absolute", opacity: 1}).show();
 						adjustPopupPosition(event.pageX,event.pageY);
-						handleClipboard();
+						$("#flt").trigger('popupmenu',$(this).closest('tr'));
 					}
+					return false;
 				}
 			});
 		});
