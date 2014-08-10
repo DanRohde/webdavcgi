@@ -401,10 +401,11 @@ function handleWindowResize() {
 }
 
 function initChangeUriAction() {
-	$(".action.changeuri").click(handleChangeUriAction);
-	$(".action.refresh").click(function(event) {
+	$(".action.changeuri").on("click.changeuri",handleChangeUriAction);
+	$(".action.refresh").on("click.refresh",function(event) {
 		preventDefault(event);
 		updateFileList();
+		return false;
 	});
 	$("#flt").on("fileListChanged", function() {
 		$("#fileList tr.is-dir .action.changeuri").click(handleChangeUriAction);

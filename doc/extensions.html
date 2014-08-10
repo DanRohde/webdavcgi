@@ -46,6 +46,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <li><a href="#Redirect">Redirect</a> - redirects folders to any web page</li>
 <li><a href="#Search">Search</a> - searches file/folders by name or content including duplicate file search</li>
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
+<li><a href="#SourceCodeViewer">SourceCodeViewer</a> - show syntax highlighted source code</li>
 <li><a href="#Zip">Zip</a> - (un)compresses files/folders</li>
 </ul>
 
@@ -241,6 +242,16 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 #      ldap.sslversion - sets SSL version (default: 'tlsv1')
 #      ldap.binddn - sets DN for LDAP login (default: 0 (off))
 #      ldap.password - sets password for LDAP login 
+</pre></td>
+</tr>
+</table>
+<h2 id="SourceCodeViewer">SourceCodeViewer</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-scv.png"><img alt="Web interface Source Code Viewer dialog" class="screenshot" src="images/webdavcgi-webinterface-scv.png"/></a></td>
+<td><pre>
+# SETUP:
+# supportedsuffixes - list of supported file suffixes (without a dot)
 </pre></td>
 </tr>
 </table>

@@ -71,8 +71,9 @@
 	<ol>
 	<li> create a user 'public' and a group 'public' with user 'public' in this group</li>
 	<li> change group for all files and folders: <code>chgrp public /mydatadir</code></li>
-	<li> add read access to all files: <code>find /mydatadir -type f -exec chmod g+r {} \;</code>
-	<li> add read, execute, and setuid flag for the group to all folders: <code>find /mydatadir -type d -exec chmod g+rxs {} \;</code>
+	<li> add read access to all files: <code>find /mydatadir -type f -exec chmod g+r {} \;</code></li>
+	<li> add read, execute, and setuid flag for the group to all folders: <code>find /mydatadir -type d -exec chmod g+rxs {} \;</code></li>
+	<li> add <code>$UMASK=0027;</code> to your webdav.conf</li>
 	</ol>
 </li>
 
