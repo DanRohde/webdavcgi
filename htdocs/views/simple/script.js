@@ -673,12 +673,14 @@ function initFilterBox() {
 		.on("fileListChanged", function() {
 			var files = $.map($("#fileList tr"),function(val,i) { return $(val).attr("data-file");});
 			$("form#filterbox input")
-				.autocomplete("option", "source", function(request, response) {
-					try {
-						var matcher = new RegExp(request.term);
-						response($.grep(files, function(item){ return matcher.test(item)}));
-					} catch (e) {
-						return files;
+				.autocomplete({ 
+					source: function(request, response) {
+						try {
+							var matcher = new RegExp(request.term);
+							response($.grep(files, function(item){ return matcher.test(item)}));
+						} catch (e) {
+							response($.grep(files, function(item){ return item.indexOf(request.term)>-1 }));
+						}
 					}
 				});
 		});
