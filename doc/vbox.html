@@ -42,7 +42,7 @@
 <ul>
 	<li>1 CPU</li>
 	<li>4 GB RAM</li>
-	<li>2 harddrives: sda: root (ext3) and swap, sdb: data (ext3) with POSIX ACL support</li>
+	<li>2 harddrives: sda: root (ext4, quota) and swap, sdb: data (ext4) with POSIX ACL support and group quotas</li>
 	<li>Port forwarding: 4443 to 443 for https and 2222 to 22 for ssh</li>
 </ul></li>
 <li>OS: Ubuntu 12.04 LTS 64bit:
@@ -53,15 +53,21 @@
 		<ul> 
 			<li>Base DN: <code>dc=webdavcgi,dc=sf,dc=net</code></li>
 			<li>Admin password: <code>adminuser</code></li>
-			<li>Entries: 3 users (testuser1, testuser2, public) and 3 groups (testuser1, testuser2, public) in 2 organizational units</li>
+			<li>Entries: 4 users (testuser1, testuser2, public, quotatemplate) and 4 groups (testuser1, testuser2, public) in 2 organizational units</li>
 		</ul></li>
 </ul></li>
 <li>SSH access through port 2222: Login <code>adminuser</code> (password: <code>adminuser</code>); <code>ssh -l adminuser localhost -p 2222</code></li>
 <li>root access via adminuser: <code>sudo -i</code></li>
 <li>installation scripts: <code>/root/install/</code></li>
 <li>update scripts: <code>/root/update.*</code>
+<li>helper scripts (LDAP users/groups): <code>/home/adminuser/scripts</code></li>
 </ul>
-
+<h2>Troubleshooting Guide</h2>
+<h3>No connection to https://localhost:4443/</h3>
+<ul>
+<li>check WebDAV CGI Virtual Box machine is started: look into text console of the machine</li>
+<li>sometimes the port 4443 in use: look for a free port and change the port forwarding rules of the WebDAV CGI Virtual Box </li>
+</ul>
 
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2014 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>

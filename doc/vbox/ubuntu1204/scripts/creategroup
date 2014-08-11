@@ -1,0 +1,42 @@
+#!/bin/bash
+##########################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin
+# Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+# creates: 
+#   LDAP group 
+
+if [ $# = 0 ] ; then
+	echo "Usage: $0 group [group2 [group3 ...]]"
+	exit 1
+fi
+
+. $(dirname $0)/config
+
+gid=$GIDBASE
+while [ "$(getent group $gid)" != "" ] ; do
+	gid=$(( $gid + 1))
+done
+
+while (( "$#" )) ; do 
+	group=$1
+	if [ "$(getent group $group)" != "" ] ; then
+		echo $group exists!
+		shift
+		continue
+	fi
+	
+
+	echo -n Create ldap group $group with gid $gid ...
+	
+ldapadd -x -h $LDAP_HOST -D $LDAP_ADMIN -w $LDAP_ADMINPW >/dev/null <<EOF
+dn: cn=$group,$LDAP_GROUPS
+objectClass: posixGroup
+cn: $group
+gidNumber: $gid
+
+EOF
+	echo done
+	gid=$(( $gid + 1))
+	shift
+done

@@ -13,3 +13,5 @@ for p in $(find . -type d -name htdocs) ; do
 	done
 
 done
+
+exit 0

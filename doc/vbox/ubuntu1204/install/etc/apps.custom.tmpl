@@ -1,1 +1,5 @@
+<!--IF("$USER" ne "public")-->
 <li><a class="home-button" href="/" accesskey="1">Home</a></li>
+<!--ELSE-->
+<li><a class="home-button" href="$config(VIRTUAL_BASE)" accesskey="1">Home</a></li>
+<!--ENDIF-->

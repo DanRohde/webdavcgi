@@ -1222,7 +1222,7 @@ Notes:
 <li>If you do not use a setuid/setgid wrapper you have to use a single database for all users.</li>
 <li>You can increase the performance if you enable persistent database connections in your <code>/etc/webdav.conf</code>: <code>$DBI_PERSISTENT = 1;</code></li> 
 <li>If you run multiple WebDAV CGI instances on a single server with different setups and databases you have to separate the Speedy instances. This can be done with a additional rewrite option: 
-<code>E=SPEEDY_TMPBASE:myprojecttmpbase</code> (replace <code>myprojecttmpbase</code> with a unique name for a WebDAV CGI instances) </li>
+<code>E=SPEEDY_TMPBASE:myprojecttmpbase</code> (replace <code>myprojecttmpbase</code> with a unique name for a WebDAV CGI instances, e.g. <code>/tmp/project2</code>) </li>
 </ul>
 
 </div>
