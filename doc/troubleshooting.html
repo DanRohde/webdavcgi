@@ -244,7 +244,7 @@ see <a href="https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2">https://bugz
 </div>
 <h3>Speedy problems with different WebDAV CGI instances on a single server</h3>
 If you run multiple WebDAV CGI instances on a single server with different setups and databases you have to separate the Speedy instances. This can be done with a additional rewrite option: 
-<code>E=SPEEDY_TMPBASE:myprojecttmpbase</code> (replace <code>myprojecttmpbase</code> with a unique name for a WebDAV CGI instances)
+<code>E=SPEEDY_TMPBASE:myprojecttmpbase</code> (replace <code>myprojecttmpbase</code> with a unique name for a WebDAV CGI instances, e.g. <code>E=SPEEDY_TMPBASE:/tmp/project2</code>)
 <hr/>
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2014 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a>  
