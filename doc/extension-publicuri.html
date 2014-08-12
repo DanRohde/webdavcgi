@@ -99,6 +99,7 @@ $DOCUMENT_ROOT='/';
 $VIRTUAL_BASE='/public/?';
 
 @EXTENSIONS=('PublicUri','Download','Zip','Search','Diff','DiskUsage');
+@EVENTLISTENER = ('WebInterface::Extension::PublicUri::EventListener');
 $EXTENSION_CONFIG{PublicUri}={
 		uribase=>"https://$ENV{HTTP_HOST}/public/",
 		virtualbase=>$VIRTUAL_BASE
