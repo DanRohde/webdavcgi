@@ -60,8 +60,10 @@
 	<li>add a default ACL to all files/folders to permit read access to files/folders: 
 <pre>
 # POSIX:
-	setfacl -m -R default:group:public:r /mydatadir
-	find /mydatadir -type d -exec setfacl -m default:group:public:rx {} \;
+	setfacl -m -R group:public:r /mydatadir
+	find /mydatadir -type d -exec setfacl -d -m group:public:rx {} \;
+	find /mydatadir -type d -exec setfacl -m group:public:rx {} \;
+    
 # AFS:
 	find /mydatadir -type d -exec fs setacl -dir {} -acl public:public lr \;
 </pre> </li> 
@@ -70,7 +72,7 @@
 <li> POSIX permissions:
 	<ol>
 	<li> create a user 'public' and a group 'public' with user 'public' in this group</li>
-	<li> change group for all files and folders: <code>chgrp public /mydatadir</code></li>
+	<li> change group for all files and folders: <code>chgrp -R public /mydatadir</code></li>
 	<li> add read access to all files: <code>find /mydatadir -type f -exec chmod g+r {} \;</code></li>
 	<li> add read, execute, and setuid flag for the group to all folders: <code>find /mydatadir -type d -exec chmod g+rxs {} \;</code></li>
 	<li> add <code>$UMASK=0027;</code> to your webdav.conf</li>
