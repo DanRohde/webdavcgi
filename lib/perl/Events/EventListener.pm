@@ -17,9 +17,18 @@
 #########################################################################
 package Events::EventListener;
 
+sub new {
+	my $class = shift;
+	my $self  = {};
+	return bless $self, $class;
+}
+sub registerChannel {
+	# my ($self, $channel) = @_;
+	warn("overwrite me!");
+}
 sub receiveEvent {
 	# my ($self, $event, $data) = @_;
-	warn("Events::EventListener::receiveEvent: overwrite me!");
+	warn("overwrite me!");
 }
 
 1;

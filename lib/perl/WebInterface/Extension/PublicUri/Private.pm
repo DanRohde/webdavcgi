@@ -21,9 +21,8 @@ package WebInterface::Extension::PublicUri::Private;
 use strict;
 
 use WebInterface::Extension::PublicUri::Common;
-use Events::EventListener;
 
-our @ISA = qw( WebInterface::Extension::PublicUri::Common Events::EventListener );
+our @ISA = qw( WebInterface::Extension::PublicUri::Common );
 
 
 use JSON;
@@ -32,8 +31,9 @@ use JSON;
 
 sub setPublicUri {
 	my ( $self, $fn, $code, $seed ) = @_;
-	$$self{db}->db_insertProperty($fn, $self->getPropertyName(), $code );
+	$$self{db}->db_insertProperty($fn, $self->getPropertyName(), $code);
 	$$self{db}->db_insertProperty($fn, $self->getSeedName(), $seed);
+	$$self{db}->db_insertProperty($fn, $self->getOrigName(), $fn);
 }
 
 sub getPublicUri {
@@ -42,7 +42,7 @@ sub getPublicUri {
 }
 sub unsetPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_removeProperty($fn, $self->getPropertyName()) && $$self{db}->db_removeProperty($fn, $self->getSeedName());
+	return $$self{db}->db_removeProperty($fn, $self->getPropertyName()) && $$self{db}->db_removeProperty($fn, $self->getSeedName()) && $$self{db}->db_removeProperty($fn, $self->getOrigName());
 }
 
 sub resolveFile {
@@ -52,8 +52,6 @@ sub resolveFile {
 
 sub init {
 	my ( $self, $hookreg ) = @_;
-
-	main::getEventChannel()->addEventListener('FILECOPIED', $self);
 		
 	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction','fileactionpopupnew'], $self);
 
@@ -61,14 +59,7 @@ sub init {
 	
 	$$self{json} = new JSON();  
 }
-sub receiveEvent {
-	my ( $self, $event, $data ) = @_;
-	my $dst = $$data{destination};
-	my $db  = $$self{db} || main::getDBDriver();
-	$dst=~s/\/$//;
-	$db->db_deletePropertiesRecursiveByName($dst, $self->getPropertyName());
-	$db->db_deletePropertiesRecursiveByName($dst, $self->getSeedName());
-}
+
 #Show icons and handle actions
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;

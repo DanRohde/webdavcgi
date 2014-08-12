@@ -43,12 +43,16 @@ sub finalize {
 }
 sub db_handleUpdates {
 	my ($self, $dbh, $sth) = @_;
+	my $ret = 0;
 	if ($sth->err) {
 		warn($sth->errstr);
-		$dbh->rollback();
+		my $rc = $dbh->rollback();
+		warn ("rollback failed (rc=$rc)") unless $rc;
 	} else {
-		$dbh->commit();
+		$ret = $dbh->commit();
+		warn("commit faild (rc=$ret)") unless $ret;
 	}
+	return $ret;
 }
 sub db_isRootFolder {
         my ($self, $fn, $token) = @_;

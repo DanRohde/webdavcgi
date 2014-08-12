@@ -1,6 +1,6 @@
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-package Events::TestEventListener;
+
+package WebInterface::Extension::PublicUri::EventListener;
 
 use strict;
 
@@ -24,12 +25,23 @@ our @ISA = qw( Events::EventListener );
 
 sub registerChannel {
 	my ($self, $channel) = @_;
-	$channel->addEventListener('ALL', $self);
-}
-sub receiveEvent {
-	my ($self, $event, $data) = @_;
-	use Data::Dumper;
-	print STDERR "Events::TestEventListener: received event $event with data: ".Dumper($data).".\n";	
+	
+	$$self{namespace} = $main::EXTENSION{PublicUri}{namepsace} || '{http://webdavcgi.sf.net/extension/PublicUri/}';
+	$$self{propname} =  $main::EXTENSION{PublicUri}{propname} || 'public_prop';
+	$$self{seed} = $main::EXTENSION{PublicUri}{seed} || 'seed';
+	$$self{orig} = $main::EXTENSION{PublicUri}{orig} || 'orig';
+	
+	$channel->addEventListener('FILECOPIED', $self);
 }
 
+sub receiveEvent {
+	my ( $self, $event, $data ) = @_;
+	my $dst = $$data{destination};
+	my $db  = $$self{db} || main::getDBDriver();
+	warn($event);
+	$dst=~s/\/$//;
+	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{propname});
+	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{seed});
+	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{orig});
+}
 1;

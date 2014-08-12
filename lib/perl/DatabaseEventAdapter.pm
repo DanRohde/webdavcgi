@@ -18,14 +18,19 @@
 
 package DatabaseEventAdapter;
 
+use strict;
+
 use Events::EventListener;
-@ISA = ('Events::EventListener');
-use vars qw( %CHACHE );
+our @ISA = qw ( Events::EventListener );
 
 sub stripTrailingSlash {
 	my ($self, $file) = @_;
 	$file=~s/\/$//;
 	return $file;
+}
+sub registerChannel {
+	my ($self, $channel) = @_;
+	$channel->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED'], $self);
 }
 sub receiveEvent {
 	my ( $self, $event, $data ) = @_;

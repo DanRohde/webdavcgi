@@ -83,7 +83,9 @@
 
 <ol>
 <li> Enable 'PublicUri' extension: add 'PublicUri' to your <code>@EXTENSIONS</code> list:
-<pre>@EXTENSIONS{'PublicUri', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );</pre>
+	<pre>@EXTENSIONS{'PublicUri', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );</pre>
+<li> and enable event listener:
+	<pre>@EVENTLISTENER = ('WebInterface::Extension::PublicUri::EventListener');</pre>
 <li> Make a copy of your webdav.conf: <code>cp /etc/webdav.conf /etc/webdav-public.conf</code></li>
 <li> <b>Append</b> some parameters to your copy:
 <pre>

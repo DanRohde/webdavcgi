@@ -31,6 +31,7 @@ sub initDefaults {
 	$$self{namespace} = $self->config('namespace', '{http://webdavcgi.sf.net/extension/PublicUri/}');
 	$$self{propname} = $self->config('propname', 'public_prop');
 	$$self{seed} = $self->config('seed', 'seed');
+	$$self{orig} = $self->config('orig', 'orig');
 	$$self{prefix} = $self->config('prefix','');
 		
 	$$self{uribase} = $self->config('uribase', 'https://'.$ENV{HTTP_HOST}.'/public/');
@@ -48,6 +49,10 @@ sub getSeedName {
 	my ($self) = @_;
 	return $$self{namespace}.$$self{seed};
 }
+sub getOrigName {
+	my ($self) = @_;
+	return $$self{namespace}.$$self{orig};
+}
 sub getFileFromCode {
 	my ( $self, $digest ) = @_;
 	my $fna = $$self{db}->db_getPropertyFnByValue($self->getPropertyName(), $digest);
@@ -57,19 +62,23 @@ sub getSeed {
 	my ( $self, $fn) = @_;
 	return $$self{db}->db_getProperty($fn, $self->getSeedName());
 }
+sub getOrig {
+	my ( $self, $fn) = @_;
+	return $$self{db}->db_getProperty($fn, $self->getOrigName());
+}
 sub getDigest {
 	my ($self, $fn, $seed) = @_;
 	return $$self{prefix}.substr(md5_hex($fn.$seed), 0, 16);
 }
 sub genUrlHash {
 	my ($self, $fn) = @_;
-	my $seed   = time().int(rand(time())) . md5_hex($main::REMOTE_USER);
+	my $seed   = time().int(rand(time())) . md5_hex($main::REMOTE_USER) . $fn;
 	my $digest = $self->getDigest($fn, $seed);
 	return $digest, $seed;
 }
 sub isPublicUri {
 	my ($self, $fn, $code, $seed) = @_;
-	return $code eq $self->getDigest($fn, $seed);
+	return $code eq $self->getDigest($self->getOrig($fn), $seed);
 }
 
 1;

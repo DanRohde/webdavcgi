@@ -58,15 +58,16 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $DBI_PERSISTENT
             $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR 
             $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
-	    	$ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
-	    	$LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
+	    $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
+	    $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
             $AFS_PTSCMD  
             $WEB_ID $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER 
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
             $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
-	    	@UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
-	    	@VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-	    	%SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
+	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
+	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
+	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
+	    @EVENTLISTENER
 ); 
 #########################################################################
 ############  S E T U P #################################################
@@ -701,10 +702,15 @@ $DEBUG = 0;
 ## EXAMPLE: %EXTENSION_CONFIG = ( 'SysInfo' => { showall=>1 }); 
 #%EXTENSION_CONFIG = ( 'SysInfo' => { showall=>1 });
 
+## -- EVENTLISTENER
+## a list of event listener (module names) 
+@EVENTLISTENER = ();
+
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
 use CGI;
+use Module::Load;
 
 ## flush immediately:
 $|=1;
@@ -726,7 +732,8 @@ if (defined $CONFIGFILE) {
 	}
 }
 
-$eventChannel->broadcastEvent('INIT') if $eventChannel;
+unshift(@EVENTLISTENER, 'DatabaseEventAdapter');
+getEventChannel()->broadcastEvent('INIT');
 
 use POSIX qw(strftime);
 
@@ -1018,8 +1025,6 @@ map { $known_file_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_FILE_PR
 map { $unsupported_props{$_} = 1; } @UNSUPPORTED_PROPS;
 
 # register event handler:
-require DatabaseEventAdapter;
-getEventChannel()->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED'],'DatabaseEventAdapter');
 
 # method handling:
 if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/) { 
@@ -1047,7 +1052,7 @@ sub _GET {
 		} else {
 			printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 		}
-	} elsif ($FANCYINDEXING && getWebInterface()->handleGetRequest()) {
+	} elsif ($FANCYINDEXING && ($backend->isDir($PATH_TRANSLATED) || $ENV{QUERY_STRING} ne "" || !$backend->exists($PATH_TRANSLATED)) && getWebInterface()->handleGetRequest()) {
 		debug("_GET: WebInterface called");
 	} elsif ($backend->exists($PATH_TRANSLATED) && !$backend->isReadable($PATH_TRANSLATED)) {
 		printHeaderAndContent(getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
@@ -2673,6 +2678,10 @@ sub getEventChannel {
 	if (!$eventChannel) {
 		require Events::EventChannel;
 		$eventChannel = new Events::EventChannel();
+		foreach  my $listener (@EVENTLISTENER) {
+			load $listener;
+			$listener->new($listener)->registerChannel($eventChannel);
+		}
 	}
 	return $eventChannel;
 }

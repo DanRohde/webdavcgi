@@ -135,7 +135,7 @@ sub handleZipUpload {
 sub getZipFilename {
 	my ($self, $files) = @_;
 	my $time = strftime('%Y-%m-%d-%H:%M:%S',localtime);
-	my $zipfilename = $$self{backend}->basename(scalar(@$files) > 1 ? $main::REQUEST_URI : $$files[0],'.zip') . "-$time.zip";
+	my $zipfilename = $$self{backend}->basename(scalar(@$files) > 1 || $$files[0] eq '.' ? $main::REQUEST_URI : $$files[0],'.zip') . "-$time.zip";
 	$zipfilename =~ s/[\/ ]/_/g;
 	return $zipfilename;
 }
