@@ -1,0 +1,8 @@
+canceledit                     "Sei sicuro? I cambiamenti non saranno salvati"
+confirmsavetextdata            "Vuoi veramente salvare %s?"
+editbutton                     "Modifica"
+msg_savetexterr                "Spiacente, impossibile salvare %s (permissi errati?)."
+msg_textsaved                  "File %s salvato."
+savebutton                     "Salva"
+savecontbutton                 "Salva & Continua"
+settings.confirm.save          "Confermare Salvare"

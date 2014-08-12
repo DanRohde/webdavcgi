@@ -298,7 +298,6 @@ sub renderFileListEntry {
 				'realsize'=>$size ? $size : 0,
 				'isreadable'=>$file eq '..' || $$self{backend}->isReadable($full)?'yes':'no',
 				'iswriteable'=>$$self{backend}->isWriteable($full) || $$self{"backend"}->isLink($full)?'yes':'no',
-				'iseditable'=>$self->isEditable($full) ? 'yes' : 'no',
 				'isviewable'=>$$self{backend}->isReadable($full) && $self->canCreateThumbnail($full) ? 'yes' : 'no',
 				'islocked'=> $isLocked ? 'yes' : 'no',
 				'islink' => $$self{backend}->isLink($full) ? 'yes' : 'no',
@@ -414,12 +413,6 @@ sub renderFilterInfo {
 	
 		return $#filter > -1 ? join(", ",@filter) : "";
 	
-}
-sub isEditable {
-	my ($self,$fn) = @_;
-	my $ef = $CACHE{$self}{editablefilesregex} ? $CACHE{$self}{editablefilesregex} : $CACHE{$self}{editablefilesregex}='('.join('|',@main::EDITABLEFILES).')';
-        return $main::ALLOW_EDIT && $$self{backend}->basename($fn) =~/$ef/i
-         && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn) && $$self{backend}->isWriteable($fn);
 }
 sub readTemplate {
 	my ($self,$filename) = @_;

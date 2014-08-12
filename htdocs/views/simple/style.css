@@ -261,17 +261,14 @@ tr.isreadable-no:hover {
 	color: #999999;
 	background-color: #ffaaaa;
 }
-.iseditable-no .action.edit,
+
 .iswriteable-no .action.delete,
 .iswriteable-no .action.rename,
-.isreadable-no .action.props,
-.isreadable-no .action.edit,
-.iswriteable-no .action.edit, 
+.isreadable-no .action.props, 
 .unselectable-yes .listaction.delete,
 .unselectable-yes .action.rename,
 .islocked-yes .action.delete,
 .islocked-yes .action.rename,
-.islocked-yes .action.edit,
 .islocked-yes .listaction.delete
 {
 	display: none;
@@ -328,9 +325,6 @@ tr.isreadable-no:hover {
 }
 #selstats { 
 	padding-right: 1em;
-}
-.action.edit {
-	background: url(images/sprite.png) no-repeat left -301px;
 }
 .action.rename {
 	background: url(images/sprite.png) no-repeat left -501px;
@@ -563,8 +557,6 @@ input.file-upload {
 	white-space: normal;
 	height: auto;
 }
-#edittextdata .action.savetextdata { display: block; width: 40%; float: right;}
-#edittextdata .action.cancel-edit { display: block; width: 40%;  float: left; }
 .ajax-loader {
 	z-index: 10000;
 	background: white url(images/ajax-loader.gif) no-repeat 2em 5em;

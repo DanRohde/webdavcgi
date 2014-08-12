@@ -1,0 +1,1 @@
+settings.confirm.save          "Confirmez Sauver"

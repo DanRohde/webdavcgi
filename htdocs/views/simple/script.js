@@ -908,8 +908,6 @@ function handleFileActionEvent(event) {
 		handleFileRename(row);
 	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
-	} else if (self.hasClass("edit")) {
-		handleFileEdit(row);
 	} else { // extension support:
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: getSelectedFiles(this), row: row });
 	}
@@ -963,22 +961,13 @@ function initFileList() {
 	$('#flt').disableSelection();
 	
 	// init fancybox:
-	$("#fileList tr.isviewable-yes.iseditable-no:not([data-file$='.pdf'])[data-size!='0']:visible td.filename a")
+	$("#fileList tr.isviewable-yes:not([data-file$='.pdf'])[data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","imggallery")
 		.fancybox({
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
 		});
-/*	
-	$("#fileList tr.isviewable-yes.iseditable-yes[data-size!='0']:visible td.filename a,#fileList tr.isviewable-yes[data-file$='.pdf'] td.filename a")
-		.attr("data-fancybox-group","txtgallery")
-		.fancybox({
-			afterShow: function() { $(".fancybox-close").focus();},
-			type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(this.element).html(); }, 
-			helpers: { thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
-		});
-*/
 	$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","wtimggallery")
 		.fancybox({ 
@@ -986,14 +975,6 @@ function initFileList() {
 			beforeLoad: function() { this.title = $(".nametext", this.element).html(); },
 			helpers: { buttons: {} }
 		});
-/*	
-	$("#fileList tr.isviewable-no[data-mime^='text/']:visible td.filename a, #fileList tr.isviewable-no[data-type!='dir'][data-file$='.pdf'] td.filename a")
-			.attr("data-fancybox-group","wttxtgallery")
-			.fancybox({
-				afterShow: function() { $(".fancybox-close").focus();},
-				type: 'iframe', arrows: false, beforeLoad: function() { this.title = $(".nametext",$(this.element)).html();}
-			});
-*/	
 	// init drag & drop:
 	$("#fileList:not(.dnd-false) tr.iswriteable-yes[data-type='dir']")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
@@ -1174,61 +1155,7 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 		
 	});
 }
-function doSaveTextData(row,text) {
-	text.trigger("editsubmit");
-	block = blockPage();
-	var xhr = $.post(addMissingSlash($('#fileList').attr('data-uri')), { savetextdata: 'yes', filename: row.attr('data-file'), textdata: text.val() }, function(response) {
-		if (!response.error && response.message) {
-			text.data("response", text.val());
-			//updateFileList();
-			var xhr = $.get(addMissingSlash($('#fileList').attr('data-uri')), { ajax: 'getFileListEntry', template: $('#fileList').attr("data-entrytemplate"), file: row.attr('data-file')}, function(r) {
-				var newrow = $(r);
-				row.replaceWith(newrow);
-				row = newrow;
-				initFileList();
-				block.remove();
-			});
-			renderAbortDialog(xhr);
-		}
-		handleJSONResponse(response);
-	});	
-	renderAbortDialog(xhr);
-}
-function handleFileEdit(row) {
-	$.get(concatUri($('#fileList').attr('data-uri'), encodeURIComponent(row.attr('data-file'))), function(response) {
-		if (response.message || response.error) {
-			handleJSONResponse(response);
-		} else {
-			var dialog = $('#edittextdata');
-			var text = $("textarea[name=textdata]", dialog);
-			dialog.attr('title',row.attr('data-file'));
-			text.attr("data-file",row.attr("data-file"));
-			text.val(response);
-			text.data("response", text.val());
-			dialog.find('.action.savetextdata').button().off('click').click(function(event) {
-				preventDefault(event);
-				if (cookie("settings.confirm.save") != "no") 
-					confirmDialog($('#confirmsavetextdata').html().replace(/%s/,row.attr('data-file')), { confirm: function() { doSaveTextData(row,text);}, setting: "settings.confirm.save" });
-				else
-					doSaveTextData(row,text);
-			});
-			dialog.find('.action.cancel-edit').button().off('click').click(function(event) {
-				preventDefault(event);
-				text.trigger("editsubmit");
-				dialog.dialog('close');
-			});
-			
-			dialog.dialog({ 
-				modal: true, width: "auto", height: "auto",
-				title: row.attr('data-file'),
-				open: function() { text.trigger("editstart");},
-				close: function(event) { text.trigger("editdone");},
-				beforeClose: function(event,ui) { return text.val() == text.data("response") || window.confirm($('#canceledit').html());}
-			});
 
-		}
-	});
-}
 function concatUri(base,file) {
 	return (addMissingSlash(base) + file).replace(/\/\//g,"/").replace(/\/[^\/]+\/\.\.\//g,"/");
 }
@@ -1958,7 +1885,8 @@ function initPopupMenu() {
 	$("#filler").on("contextmenu", function() { hidePopupMenu() });
 }
 function initToolBox() {
-	ToolBox = { postAction: postAction,
+	ToolBox = { 
+			addMissingSlash: addMissingSlash,
 			blockPage: blockPage,
 			changeUri: changeUri,
 			concatUri: concatUri,
@@ -1968,8 +1896,10 @@ function initToolBox() {
 			getSelectedRows : getSelectedRows,
 			handleJSONResponse : handleJSONResponse,
 			hidePopupMenu : hidePopupMenu,
+			initFileList: initFileList,
 			initUpload : initUpload,
 			preventDefault : preventDefault,
+			postAction: postAction,
 			renderAbortDialog: renderAbortDialog,
 			renderByteSize: renderByteSize,
 			renderByteSizes: renderByteSizes,

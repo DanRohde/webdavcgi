@@ -46,6 +46,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <li><a href="#Redirect">Redirect</a> - redirects folders to any web page</li>
 <li><a href="#Search">Search</a> - searches file/folders by name or content including duplicate file search</li>
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
+<li><a href="#TextEditor">TextEditor</a> - offers a simple text editor with integrated CKEditor&trade; for HTML editing</li>
 <li><a href="#SourceCodeViewer">SourceCodeViewer</a> - show syntax highlighted source code</li>
 <li><a href="#Zip">Zip</a> - (un)compresses files/folders</li>
 </ul>
@@ -252,6 +253,20 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <td><pre>
 # SETUP:
 # supportedsuffixes - list of supported file suffixes (without a dot)
+# sizelimit - file size limit (deafult:  2097152 (=2MB))
+</pre></td>
+</tr>
+</table>
+<h2 id="TextEditor">TextEditor</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-editor.png"><img alt="Web interface text editor dialog" class="screenshot" src="images/webdavcgi-webinterface-editor.png"/></a></td>
+<td><pre>
+# SETUP:
+# editablefiles - list of regular expressions to identify text files
+# disableckeditor - disables CKEditor for HTML editing
+# sizelimit - size limit for text files in bytes (default: 2097152 (=2MB))
+# template - template file (default: editform)
 </pre></td>
 </tr>
 </table>

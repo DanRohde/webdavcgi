@@ -1,7 +1,8 @@
 <div id="settings">
 <form id="settingsform">
 <table>
-$each#(confirm.upload,confirm.dnd,confirm.paste,confirm.save,confirm.rename,messages.warning,show.fileactions)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
+$each#(confirm.upload,confirm.dnd,confirm.paste,confirm.rename,messages.warning,show.fileactions)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
+$extension(settings)
 <!--IF($#main::SUPPORTED_VIEWS>0)-->
 <tr><td>$tl(settings.view)</td>
 <td>
@@ -21,7 +22,7 @@ $each#(confirm.upload,confirm.dnd,confirm.paste,confirm.save,confirm.rename,mess
 </td>
 </tr>
 <!--ENDIF-->
-$extension(settings)
+
 </table>
 </form>
 </div>

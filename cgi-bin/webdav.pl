@@ -63,7 +63,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
             $AFS_PTSCMD  
             $WEB_ID $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER 
             $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
-            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT @EDITABLEFILES $ALLOW_EDIT $VHTDOCS $ENABLE_COMPRESSION
+            $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
@@ -167,14 +167,14 @@ $MAXNAVPATHSIZE = 50;
 ## -- UI_ICONS -- obsolete, use stylesheets instead 
 ## user interface icons
 
-## -- ALLOW_EDIT
+## -- ALLOW_EDIT -- obsolete, use or not use TextEditor extension
 ## allow changing text files (@EDITABLEFILES) with the Web interface
-$ALLOW_EDIT = 1;
+#$ALLOW_EDIT = 1;
 
-## -- EDITABLEFILES
+## -- EDITABLEFILES -- obsolete, configure TextEditor extension: $EXTENSION_CONFIG{TextEditor}{editablefiles} =\@EDITABLEFIELS;
 ## text file names (regex; case insensitive)
-@EDITABLEFILES = ( '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$', 
-		'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' );
+#@EDITABLEFILES = ( '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$', 
+#		'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' );
 
 ## -- ICON_WIDTH
 ## specifies the icon width for the folder listings of the Web interface
@@ -693,9 +693,11 @@ $DEBUG = 0;
 
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
-## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'Highlighter', 'Permissions','PosixAclManager', 'PropertiesViewer','Search','SendByMail', 'SysInfo', 'Zip'
-## EXAMPLE: @EXTENSIONS = ( 'Search', 'SysInfo' , 'PropertiesViewer', 'DiskUsage', 'Zip','Download','PosixAclManager','Diff');
-@EXTENSIONS = ( 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
+## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 
+##            'Highlighter', 'Permissions','PosixAclManager', 'PropertiesViewer', 'PublicUri',
+##            'Redirect', 'Search','SendByMail', 'SourceCodeViewer', 'SysInfo', 'TextEditor', 'Zip'
+## EXAMPLE: @EXTENSIONS = ( 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
+@EXTENSIONS = ( 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)

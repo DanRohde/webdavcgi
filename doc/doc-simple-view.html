@@ -21,7 +21,6 @@ Content of this topic:
 	<li><a href="#overlay">Template Overlay: Modify Templates</a></li>
 	<li><a href="#templates">Templates: The Features</a></li>
 	<li><a href="#css">Styles: Modify CSS Styles</a></li>	
-	<li><a href="#editor">WYSIWYG: Integrate a HTML editor</a></li>
 	<li><a href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 <a href="doc.html"><br/>Back to the WebDAV Documentation page.</a>
@@ -35,8 +34,6 @@ This is the new default view for the WebDAV CGI web interface. The Simple view u
 <li>Fast client site file list sorting.</li>
 <li><a href="extensions.html">Extension</a> support</li>
 </ul>
-
-<p>The HTML editor integration was also modified (see <a href="#editor">WYSIWYG: Integrate a HTML editor</a>)</p>
 
 <h2 id="hooks">Template Hooks: Add Your Own Sidebar Entries</h2>
 You can add your own menu entries in the sidebar menu if you create some custom template files. 
@@ -110,51 +107,6 @@ Take a look at the Simple view templates for examples (<code>templates/simple/*.
 </ul></li>
 <li>IF statement: <code>&lt;!--IF([Perl expression])--&gt; [HTML] &lt;!--ELSE--&gt; [HTML] &lt;!--ENDIF--&gt;</code></li>
 <li>IF statements inside IF statements:<code>&lt;!--IF#[level]([Perl expression])--&gt; [HTML] &lt;--ELSE#[level]--&gt; [HTML] &lt;--ENDIF#[level]--&gt;</code>  (replace <code>[level]</code> by a unique number)</li>
-</ul>
-<h2 id="editor">WYSIWYG: Integrate a HTML editor</h2>
-Here is an example for <a href="http://ckeditor.com/">CKEditor</a>&trade;:
-<ol>
-<li> <a href="http://ckeditor.com/">Download</a> and install CKEditor&trade; (e.g. into the <code>/srv</code> folder - or use another server)</li>
-<li> Configure the web server to access all CKEditor&trade; files, e.g. <code>RewriteRule /ckeditor /srv/ckeditor [PT,L]</code></li>
-<li> Configure WebDAV CGI:
-<pre>
-my $_view = $cgi->param('view') || $cgi->cookie('view') || $VIEW;
-my $_lang = $cgi->param('lang') || $cgi->cookie('lang') || $LANG;
-if ($_view eq 'simple') {
-        $HTMLHEAD = q@
-          &lt;script type="text/javascript" src="/ckeditor/ckeditor.js"&gt;&lt;/script&gt;
-          &lt;script type="text/javascript"&gt;
-                $(document).ready(function() {
-                        $("textarea[name=textdata]").on("editstart", function() {
-                                if ($(this).attr("data-file").match(/\.html?$/))
-                                        CKEDITOR.replace('textdata',
-                                                { fullPage : true, 
-						  language: '@.$_lang.q@', 
-						  removePlugins: 'save',
-                                                  baseFloatZIndex: 10000
-                                        });
-                        }).on("editsubmit", function() {
-                                for (var name in CKEDITOR.instances) 
-					CKEDITOR.instances[name].updateElement();
-                        }).on("editdone", function() {
-                                for (var name in CKEDITOR.instances) 
-					CKEDITOR.instances[name].destroy();
-                        });
-                });
-         &lt;/script&gt;
-        @;
-}
-</pre>
-</li>
-</ol>
-Consider this if you integrate a WYSIWYG editor:
-<ul>
-    <li>Allow only HTML files to edit with a WYSIWYG editor.</li>
-    <li>Read the WYSIWIG editor API documentation because some editors like CKEditor&trade; do not update the textdata input element automatically. WebDAV CGI triggers two events: editsubmit and editdone to trigger textdata updates or to destroy the editor.</li>
-    <li>Disable editor's 'save' button.</li>
-    <li>Use the id 'textdata' for the editor replacement.</li>
-    <li>Enable full page editing to allow changing complete HTML pages.</li>
-    <li>Setup z-index style for your editor to a large value.</li>
 </ul>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ol>

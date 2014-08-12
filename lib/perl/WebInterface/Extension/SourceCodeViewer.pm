@@ -18,6 +18,7 @@
 #
 # SETUP:
 # supportedsuffixes - list of supported file suffixes (without a dot)
+# sizelimit - file size limit (deafult:  2097152 (=2MB))
 
 
 package WebInterface::Extension::SourceCodeViewer;
@@ -35,7 +36,8 @@ sub init {
 	$hookreg->register(\@hooks, $self);
 	
 	my %sf = map { $_ => 1 } ( "bsh", "c", "cc", "cpp", "cs", "csh", "css", "cyc", "cv", "htm", "html", "java", "js", "m", "mxml", "perl", "pl", "pm", "py", "rb", "sh","xhtml", "xml", "xsl" );
-	$$self{supportedsuffixes}=\%sf;
+	$$self{supportedsuffixes} = \%sf;
+	$$self{sizelimit} = $self->config('sizelimit', 2097152);
 	$$self{json} = new JSON();
 }
 sub getFileSuffix {
@@ -55,15 +57,16 @@ sub handle {
 		$ret = {ext_classes=> $$self{supportedsuffixes}{$self->getFileSuffix($$params{path})} ? 'scv-source' : 'scv-nosource'} ;
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'scv') {
 		my $file = $$self{cgi}->param('files');
-		if ($$self{supportedsuffixes}{$self->getFileSuffix($file)}) {
+		if ( ($$self{backend}->stat("$main::PATH_TRANSLATED$file"))[7] > $$self{sizelimit}) {
+			main::printHeaderAndContent('200 OK', 'application/json', $$self{json}->encode({ error=>sprintf($self->tl('scvsizelimitexceeded'), $$self{cgi}->escapeHTML($file), $self->renderByteValue($$self{sizelimit}))}));
+		} elsif ($$self{supportedsuffixes}{$self->getFileSuffix($file)}) {
 			main::printHeaderAndContent('200 OK', 'text/html',$self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, 
 							$self->readTemplate('sourcecodeviewer'), { suffix=>$self->getFileSuffix($file), content=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent("$main::PATH_TRANSLATED$file")) }));
-			$ret = 1;
 		} else {
 			main::printHeaderAndContent('200 OK', 'application/json', $$self{json}->encode({ error=>$self->tl('scvunsupportedfiletype') }));
 		}
+		$ret = 1;
 	}
-	 
 	return $ret;
 }
 

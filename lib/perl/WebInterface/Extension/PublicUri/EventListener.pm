@@ -38,7 +38,6 @@ sub receiveEvent {
 	my ( $self, $event, $data ) = @_;
 	my $dst = $$data{destination};
 	my $db  = $$self{db} || main::getDBDriver();
-	warn($event);
 	$dst=~s/\/$//;
 	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{propname});
 	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{seed});

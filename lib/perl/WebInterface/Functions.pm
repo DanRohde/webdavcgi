@@ -249,41 +249,6 @@ sub handleFileActions {
 			$errmsg = 'createsymlinknolinknameerr';
 		}
 	}
-	elsif ( $$self{cgi}->param('edit') ) {
-		my $file  = $$self{cgi}->param('file');
-		my $full  = $main::PATH_TRANSLATED . $file;
-		my $regex = '(' . join( '|', @main::EDITABLEFILES ) . ')';
-		if (   $file !~ /\//
-			&& !main::isLocked($full)
-			&& $file =~ /$regex/
-			&& $$self{backend}->isFile($full)
-			&& $$self{backend}->isWriteable($full) )
-		{
-			$msgparam = [ $file ];
-		}
-		else {
-			$errmsg   = main::isLocked($full) ? 'locked': 'editerr';
-			$msgparam =  [ $file ];
-		}
-	}
-	elsif ($$self{cgi}->param('savetextdata')
-		|| $$self{cgi}->param('savetextdatacont') )
-	{
-		my $file = $main::PATH_TRANSLATED . $$self{cgi}->param('filename');
-		if (main::isLocked($file)) {
-			$errmsg = 'locked';	
-		} 
-		elsif (   $$self{backend}->isFile($file)
-			&& $$self{backend}->isWriteable($file)
-			&& $$self{backend}->saveData( $file, $$self{cgi}->param('textdata') ) )
-		{
-			$msg = 'textsaved';
-		}
-		else {
-			$errmsg = 'savetexterr';
-		}
-		$msgparam = [ ''.$$self{cgi}->param('filename') ];
-	}
 	elsif ( $$self{cgi}->param('createnewfile') ) {
 		my $fn   = $$self{cgi}->param('cnfname');
 		my $full = $main::PATH_TRANSLATED . $fn;

@@ -246,11 +246,13 @@ DROP TABLE webdav_props_old;
 
 </pre>
 </li>
-<li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...)</code></li>
+<li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...);</code></li>
 <li> The AFS Group Manager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
 <li> The AFS ACL Manager is an extension now. Add 'AFSACLManager' to your extensions list to use it.</li>
-<li> Search support was moved to a new extension (Search). Expand your extension list to enable search <code>@EXTENSIONS=('Search',...)</code></li>
-<li> A lot of new <a href="extensions.html">extensions</a> were added (activation: <code>@EXTENSIONS= ('ExtensionName1', 'ExtensionName2', ...  )</code>):
+<li> Search support was moved to a new extension (Search). Expand your extension list to enable search <code>@EXTENSIONS=('Search',...);</code></li>
+<li> The option '$ALLOW_EDIT' was removed, instead use or not use 'TextEditor' extension: <code>@EXTENSION=('TextEditor',....);</code>
+<li> The option '@EDITABLEFILES' was removed, instead configure 'TextEditor' extension: <code>$EXTENSION_CONFIG{TextEditor}{editablefiles}=\@EDITABLEFILES;</code>  
+<li> A lot of new <a href="extensions.html">extensions</a> were added (activation: <code>@EXTENSIONS= ('ExtensionName1', 'ExtensionName2', ...  );</code>):
 	<ul>
 	<li> AFSACLManager - enables AFS ACL management</li>
 	<li> AFSGroupManager - enables AFS Group management</li>
@@ -264,6 +266,7 @@ DROP TABLE webdav_props_old;
 	<li> Search - enables file/content search support</li>
 	<li> SendByMail - sends files/folders by e-mail ( Perl module MIME::Entity from MIME tools required; Debian/Ubuntu: <code>apt-get install libmime-tools-perl</code>)</li>
 	<li> SourceCodeViewer - shows syntax highlighted source code</li>
+	<li> TextEditor - allows text file modifcations</li>
 	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
 	</ul>
 </li>

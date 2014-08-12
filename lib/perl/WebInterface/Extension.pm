@@ -63,6 +63,21 @@ sub handleAppsHook {
 	my($self, $cgi, $action, $label, $title, $href) = @_;
 	return $cgi->li({-title=>$self->tl($title || $label)},$cgi->a({-class=>"action $action", -href=> $href ? $href : '#'},$self->tl($label)));
 }
+sub handleSettingsHook {
+	my($self, $settings) = @_;
+	my $ret = "";
+	if (ref($settings) eq 'ARRAY') {
+		foreach my $setting (@$settings) {
+			$ret.= $self->handleSettingsHook($setting);
+		}	
+	} else {
+		$ret.= $$self{cgi}->Tr(
+			$$self{cgi}->td($self->tl("settings.$settings"))
+			.$$self{cgi}->td($$self{cgi}->checkbox(-name=>"settings.$settings", -label=>''))
+		);
+	}
+	return $ret;
+}
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
 	$$self{cgi} = $$config{cgi};
