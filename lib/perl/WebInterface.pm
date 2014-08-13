@@ -176,10 +176,11 @@ sub optimizer_writeContent2Zip {
 }
 sub optimizer_encodeImage {
 	my($self,$basepath, $url) = @_;
-	return $url if $url=~/^data:image/;
+	return "url($url)" if $url=~/^data:image/;
 	my $ifn = "$basepath/$url";
 	my $mime = main::getMIMEType($ifn);
 	if (open(my $ih, '<', $ifn)) {
+		main::debug("encode image $ifn");
 		my $buffer;
 		binmode $ih;
 		read($ih, $buffer, (stat($ih))[7]);
@@ -195,6 +196,7 @@ sub optimizer_Collect {
 	if ($filename) {
 		my $full=$filename;
 		$full=~s@^.*${main::VHTDOCS}_EXTENSION\((.*?)\)_(.*)@${main::INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2@g;
+		main::debug("collect $type from $full");
 		my $fc = (main::getLocalFileContentAndType($full))[1];
 		if ($type eq 'css') {
 			my $basepath = main::getParentURI($full);
