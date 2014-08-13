@@ -54,6 +54,8 @@ sub printStylesAndVHTOCSFiles {
         my $file = $fn =~ /\Q$main::VHTDOCS\E(.*)/ ? $main::INSTALL_BASE.'htdocs/'.$1 : $main::INSTALL_BASE.'lib/'.$$self{backend}->basename($fn);
         if ($fn =~ /\Q$main::VHTDOCS\E\_EXTENSION\(([^\)]+)\)_(.*)/) {
         	$file = $main::INSTALL_BASE.'lib/perl/WebInterface/Extension/'.$1.$2;
+        } elsif ($fn =~ /\Q$main::VHTDOCS\E\_OPTIMIZED\((js|css)\)_/) {
+        	$file = main::getWebInterface()->optimizer_getFilepath($1);
         } 
         $file=~s/\/\.\.\///g;
         my $compression = !-e $file && -e "$file.gz";

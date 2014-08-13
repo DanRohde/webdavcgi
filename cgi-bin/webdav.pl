@@ -923,9 +923,10 @@ push @KNOWN_FILE_PROPS, @KNOWN_CARDDAV_FILE_PROPS if $ENABLE_CARDDAV;
 
 push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
 
-@UNSUPPORTED_PROPS = ( 'checked-in', 'checked-out', 'xmpp-uri', 'dropbox-home-URL' ,'parent-set', 'appledoubleheader', 'directory-gateway' ); 
+@UNSUPPORTED_PROPS = ( 'checked-in', 'checked-out', 'xmpp-uri', 'dropbox-home-URL' ,'parent-set', 'directory-gateway' ); 
 
 @PROTECTED_PROPS = ( @UNSUPPORTED_PROPS, 
+			'appledoubleheader', 
 			'getcontentlength', 'getcontenttype', 'getetag', 'lockdiscovery', 
 			'source', 'supportedlock',
 			'supported-report-set',

@@ -430,6 +430,8 @@ sub canCreateThumbnail {
 		&& $$self{backend}->isReadable($fn) 
 		&& !$$self{backend}->isEmpty($fn);
 }
-
+sub getVBase() {
+	return $main::REQUEST_URI=~/^($main::VIRTUAL_BASE)/ ? $1 : $main::REQUEST_URI;
+}
 
 1;

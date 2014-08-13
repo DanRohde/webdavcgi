@@ -24,6 +24,11 @@ use strict;
 
 use WebInterface::Extension::Manager;
 
+# for optimizing css/js:
+use Fcntl qw (:flock);
+use IO::Compress::Gzip;
+use MIME::Base64;
+	
 sub new {
        my $this = shift;
        my $class = ref($this) || $this;
@@ -35,6 +40,7 @@ sub new {
        $$self{cgi} = $$self{config}->getProperty('cgi');
        $$self{backend} = $$self{config}->getProperty('backend');
        $$self{config}{extensions} = new WebInterface::Extension::Manager($$self{config}, $$self{db});
+       $self->optimizeCssAndJs();
        return $self;
 }
 sub handleGetRequest {
@@ -111,6 +117,109 @@ sub getRenderer {
 	my $self = shift;
         require WebInterface::Renderer;
         return new WebInterface::Renderer($$self{config},$$self{db});
+}
+
+sub optimizer_isOptimized {
+	my ($self) = @_;
+	return $$self{isoptimized};
+}
+
+sub optimizer_getFilepath {
+	my ($self, $ft) = @_;
+	my $tmp = $main::OPTIMIZERTMP || $main::THUMBNAIL_CACHEDIR || '/var/tmp';
+	my $optimizerbasefn = "${main::CONFIGFILE}_${main::REMOTE_USER}";
+	$optimizerbasefn=~s/[\/\.]/_/g;
+	my $optimizerbase =$tmp.'/'.$optimizerbasefn;
+	return "${optimizerbase}.$ft";
+}
+sub optimizeCssAndJs {
+	my ($self) = @_;
+	return if $$self{isoptimized} || $$self{notoptimized};
+	$$self{isoptimized} = 0; 
+	
+	my $csstargetfile = $self->optimizer_getFilepath('css').'.gz';
+	my $jstargetfile =  $self->optimizer_getFilepath('js').'.gz';
+	if ((-e $csstargetfile && !-w $csstargetfile) || (-e $jstargetfile && !-w $jstargetfile)) {
+		 $$self{notoptimized}=1;
+		 warn("Cannot write optimized CSS and JavaScript to $csstargetfile and/or $jstargetfile");
+		 return;
+	}
+	if (-r $jstargetfile && -r $csstargetfile && (stat($jstargetfile))[10] > (stat($main::CONFIGFILE))[10]) {
+		$$self{isoptimized} = 1;
+		return;
+	}
+	
+	## collect CSS:
+	my $tags = join("\n", @{$$self{config}{extensions}->handle('css') || []});
+	my $content = $self->optimizer_ExtractContentFromTagsAndAttributes($tags,'css');
+	$self->optimizer_writeContent2Zip($csstargetfile, \$content) if $content;
+	
+	## collect JS:	
+	$tags=join("\n",@{$$self{config}{extensions}->handle('javascript') || []});
+	$content = $self->optimizer_ExtractContentFromTagsAndAttributes($tags,'js');
+	$self->optimizer_writeContent2Zip($jstargetfile, \$content) if $content;
+	
+	$$self{isoptimized} = 1;
+}
+sub optimizer_writeContent2Zip {
+	my ($self, $file, $contentref) = @_;
+	if (open(my $fh, ">", $file )) {
+		flock($fh, LOCK_EX);
+		my $z = new IO::Compress::Gzip($fh);
+		$z->print($$contentref);
+		$z->close();
+		flock($fh, LOCK_UN);
+		close($fh);
+		return 1;
+	}  
+	return 0;
+}
+sub optimizer_encodeImage {
+	my($self,$basepath, $url) = @_;
+	return $url if $url=~/^data:image/;
+	my $ifn = "$basepath/$url";
+	my $mime = main::getMIMEType($ifn);
+	if (open(my $ih, '<', $ifn)) {
+		my $buffer;
+		binmode $ih;
+		read($ih, $buffer, (stat($ih))[7]);
+		close($ih);
+		return 'url(data:'.$mime.';base64,'. encode_base64($buffer,'') .')';
+	} else {
+		warn("Cannot read $ifn.");
+	}
+}
+
+sub optimizer_Collect {
+	my ($self, $contentref, $filename, $data, $type) = @_;
+	if ($filename) {
+		my $full=$filename;
+		$full=~s@^.*${main::VHTDOCS}_EXTENSION\((.*?)\)_(.*)@${main::INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2@g;
+		my $fc = (main::getLocalFileContentAndType($full))[1];
+		if ($type eq 'css') {
+			my $basepath = main::getParentURI($full);
+			$fc =~ s/url\((.*?)\)/$self->optimizer_encodeImage($basepath, $1)/iegs;
+		}
+		$$contentref.= $fc;
+		main::debug("optimizer_Collect: $full collected.");
+	}
+	$$contentref .= $data if $data;
+}
+sub optimizer_ExtractContentFromTagsAndAttributes {
+	my ($self,$data,$type) = @_;
+	my $content = "";	
+	if ($type eq 'css') {
+		$data=~s@<style[^>]*>(.*?)</style>@$self->optimizer_Collect(\$content, undef, $1, $type)@iegs;
+		$data=~s@<link .*?href="(.*?)"@$self->optimizer_Collect(\$content, $1, undef, $type)@iegs;
+	} else {
+		$data=~s@<script .*?src="([^>"]+)".*?>(.*?)</script>@$self->optimizer_Collect(\$content, $1, $2, $type)@iegs;
+	}
+	
+	return $content;
+}
+sub isOptimized {
+	my ($self) = @_;
+	return $$self{isoptimized};
 }
 
 1;

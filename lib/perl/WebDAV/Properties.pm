@@ -187,6 +187,12 @@ sub getProperty {
 
         $$resp_200{prop}{'current-user-principal'}{href}=$main::CURRENT_USER_PRINCIPAL if $prop eq 'current-user-principal';
 
+
+## appledoubleheader: Magic(4) Version(4) Filler(16) EntryCout(2)  EntryDescriptor(id:4(2:resource fork),offset:4,length:4) EntryDescriptor(id:9 finder)... Finder Info(16+16)
+## namespace: http://www.apple.com/webdav_fs/props/
+## content: MIME::Base64(pack('H*', '00051607'. '00020000' . ( '00' x 16 ) . '0002'. '00000002'. '00000026' . '0000002C'.'00000009'. '00000032' . '00000020' . ('00' x 32) ))
+	$$resp_200{prop}{'{http://www.apple.com/webdav_fs/props/}appledoubleheader'} = 'AAUWBwACAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAAAJgAAACwAAAAJAAAAMgAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==' if $prop eq 'appledoubleheader';
+
         if ($main::ENABLE_ACL  || $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE || $main::ENABLE_CARDDAV) {
                 $$resp_200{prop}{owner} = { href=>$uri } if $prop eq 'owner';
                 $$resp_200{prop}{group} = { href=>$uri } if $prop eq 'group';
