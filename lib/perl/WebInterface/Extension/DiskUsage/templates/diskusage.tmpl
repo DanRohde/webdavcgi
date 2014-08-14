@@ -51,13 +51,16 @@
 		<div id="chart2-$time" class="diskusage statistics piechart size" data-json="$json(suffixesbysize)"></div>
 		
 	</div>
-	<!-- 
-	<div>
-		<div class="diskusage statistics barchart histobyfilesize" title="$tl(du_histobyfilesize)" data-json="$json(histobyfilesize)"></div>
-		<div class="diskusage statistics barchart histobyfoldersize" title="$tl(du_histobyfoldersize)" data-json="$json(histobyfoldersize)"></div>
-	</div>
-	 -->
 	</div>
 </div>
+<!-- 
+<div class="diskusage histograms accordion">
+	<h3>$tl(du_histograms)</h3>
+	<div>
+		<div id="hist1-$time" class="diskusage statistics barchart histobyfilesize" title="$tl(du_histobyfilesize)" data-xlabel="$tl(du_filesize)" data-ylabel="$tl(du_count)" data-json="$json(histobyfilesize)"></div>
+		<div id="hist2-$time" class="diskusage statistics barchart histobyfoldersize" title="$tl(du_histobyfoldersize)" data-ylabel="$tl(du_foldersize)" data-ylabel="$tl(du_count)" data-json="$json(histobyfoldersize)"></div>
+	</div>
+</div>	
+-->
 <!--ENDIF-->
 </div>

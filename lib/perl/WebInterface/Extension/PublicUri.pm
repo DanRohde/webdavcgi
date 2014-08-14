@@ -24,6 +24,7 @@
 # namespace - XML namespace for propname and seed (default: {http://webdavcgi.sf.net/extension/PublicUri/})
 # prefix - a prefix for URI digest (default: empty string)
 # allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
+# mode - public or private (default: "public" if $BACKEND is 'RO' else "private" )
 
 package WebInterface::Extension::PublicUri;
 

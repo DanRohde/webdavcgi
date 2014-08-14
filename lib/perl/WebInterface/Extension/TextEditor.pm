@@ -54,9 +54,9 @@ sub handle {
 	if ($hook eq 'settings') {
 		$ret = $self->handleSettingsHook('confirm.save');
 	} elsif ($hook eq 'fileaction') {
-		$ret = { action=>'edit', classes=>'access-readable access-writeable', label=>'editbutton' };
+		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton' };
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { action=>'edit', classes=>'access-readable access-writeable', label=>'editbutton', type=>'li'};
+		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton', type=>'li'};
 	} elsif ($hook eq 'fileattr') {
 		$ret = { ext_classes=>'iseditable-'. ($self->isEditable($$params{path}) ? 'yes' : 'no') };
 	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') eq 'edit') {

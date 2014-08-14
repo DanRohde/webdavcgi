@@ -1055,7 +1055,7 @@ sub _GET {
 		} else {
 			printHeaderAndContent(getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 		}
-	} elsif ($FANCYINDEXING && ($backend->isDir($PATH_TRANSLATED) || $ENV{QUERY_STRING} ne "" || !$backend->exists($PATH_TRANSLATED)) && getWebInterface()->handleGetRequest()) {
+	} elsif ($FANCYINDEXING && ($DOCUMENT_ROOT eq '/' || $backend->isDir($PATH_TRANSLATED) || $ENV{QUERY_STRING} ne "" || !$backend->exists($PATH_TRANSLATED)) && getWebInterface()->handleGetRequest()) {
 		debug("_GET: WebInterface called");
 	} elsif ($backend->exists($PATH_TRANSLATED) && !$backend->isReadable($PATH_TRANSLATED)) {
 		printHeaderAndContent(getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));

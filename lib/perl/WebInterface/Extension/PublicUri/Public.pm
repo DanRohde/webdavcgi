@@ -34,7 +34,6 @@ sub init {
 	$hookreg->register(['posthandler','gethandler'], $self);
 	
 	$self->initDefaults();
-	
 }
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
@@ -53,8 +52,7 @@ sub handlePublicUriAccess {
 	if ($main::PATH_TRANSLATED =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/) {
 		my ($code, $path) = ($1,$2);
 		my $fn = $self->getFileFromCode($code);
-		$fn = undef unless $self->isPublicUri($fn, $code, $self->getSeed($fn));
-		if (! defined $fn) {
+		if (!$fn || !$self->isPublicUri($fn, $code, $self->getSeed($fn))) {
 			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 			return 1;
 		} 	

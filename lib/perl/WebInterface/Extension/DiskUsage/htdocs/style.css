@@ -81,6 +81,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	height: 1.5ex;
 	font-size: small;
 }
+.diskusage.statistics.barchart {
+	width: 800px;
+	height: 300px;
+}
 .diskusage.treemap.switch {
 	margin-top: 2px;
 	margin-bottom: 2px; 	

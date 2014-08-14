@@ -177,25 +177,21 @@ sub collectHistoByFileSizeData() {
 	my ($self) = @_;
 	my $counter = $$self{counter};
 	my @data = ();
-	
 	my @sizes = keys %{$$counter{size}{histo}{sizes}};
 	
 	my @buckets = ();
 	my $bucketcount = 10;
 	my $filemax = $$counter{size}{histo}{filemax};
-	my $deccount = floor(log($filemax) / log(10));
-	my $byteexp = floor($deccount*log(10)/log(1024));
-	my $bval = 1024 ** $byteexp;
-	my $bucketmax = ceil( $filemax / (10**$deccount) + 1) * $bval;
+	my $bcount = floor(log($filemax) / log(1024));
+	my $bfac = 1024**$bcount;
+	my $bucketmax = ceil($filemax / $bfac) *$bfac;
 	my $bucketsize = $bucketmax / $bucketcount;
 	$bucketsize=1 if $bucketsize == 0;
-	#print STDERR "filemax=$filemax,  deccount=$deccount, byteexp=$byteexp, bval=$bval, bucketmax=$bucketmax, bucketsize=$bucketsize\n";
-
+	
 	foreach my $size (@sizes) {
 		$buckets[ floor($size/$bucketsize) ] ++;
 	}
-	
-	@data = map {  [  ($self->renderByteValue($_ * $bucketsize,1))[0], $buckets[$_] || 0  ] } 0 .. $bucketcount-1;
+	@data = map { [ ($self->renderByteValue($_ * $bucketsize,1))[0],$buckets[$_] || 0] } 0 .. $bucketcount;	
 	
 	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
 }
@@ -210,22 +206,22 @@ sub collectHistoByFolderSizeData() {
 	my ($self) = @_;
 	my $counter = $$self{counter};
 	my @data = ();
-	
 	my @pathes = keys %{$$counter{size}{path}};
 	
 	my %buckets = ();
 	my $bucketcount = _min(scalar(@pathes),20);
 	my $pathmax = $$counter{size}{histo}{pathmax};
-	my $logval = floor(log($pathmax)/log(10));
-	my $bval = $logval > 3 ? 1024 ** ($logval-4) : 1;
-	my $bucketmax = ceil( $pathmax / $bval + 1 ) * $bval ;
-	my $bucketsize =  $bucketmax / $bucketcount;
+	my $bcount = floor(log($pathmax) / log(1024));
+	my $bfac = 1024**$bcount;
+	my $bucketmax = ceil($pathmax / $bfac) *$bfac;
+	my $bucketsize = $bucketmax / $bucketcount;
+	$bucketsize=1 if $bucketsize == 0;
 	
-	$bucketsize = 1 if $bucketsize == 0 ;
 	foreach my $path (@pathes) {
 		$buckets{  floor($$counter{size}{path}{$path} / $bucketsize) }+=$$counter{count}{files}{$path};		
 	}
-	@data = map { [ ($self->renderByteValue($_ *$bucketsize,1))[0], $buckets{$_} || 0 ] }  sort { $a <=> $b } keys %buckets;
+	@data = map { [ ($self->renderByteValue($_ * $bucketsize,1))[0], $buckets{$_} || 0  ] } 0 .. $bucketcount;
+	
 	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
 }
 sub collectSuffixData {

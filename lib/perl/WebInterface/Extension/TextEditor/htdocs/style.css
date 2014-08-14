@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 .iseditable-no .action.edit,
 .isreadable-no .action.edit,
-.iswriteable-no .action.edit,
+tr.iswriteable-no .action.edit,
 .islocked-yes .action.edit {
 	display: none;
 }
