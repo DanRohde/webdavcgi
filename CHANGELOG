@@ -1,4 +1,4 @@
-0.9.1: BETA
+1.0.0: BETA
      - fixed minor AFS Group Manager bug
      - added disk usage web interface extension 'DiskUsage'
      - added POSIX ACL web interface extension 'PosixAclManager'

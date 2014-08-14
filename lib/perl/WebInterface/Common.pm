@@ -414,6 +414,7 @@ sub renderTemplate {
 			LANG=>$main::LANG,
 			VBASE=>$$self{cgi}->escapeHTML($vbase),
 			VHTDOCS=>$vbase.$main::VHTDOCS,
+			VERSION=>$main::VERSION,
 			%$vars 
 	};
 	

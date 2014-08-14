@@ -24,7 +24,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-# VERSION 0.9.1BETA
 # REQUIREMENTS:
 #    - see http://webdavcgi.sf.net/doc.html#requirements
 # INSTALLATION:
@@ -67,8 +66,9 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-	    @EVENTLISTENER
+	    @EVENTLISTENER $VERSION
 ); 
+$VERSION="1.0.0BETA";
 #########################################################################
 ############  S E T U P #################################################
 
