@@ -410,7 +410,6 @@ function handleWindowResize() {
 	var width = $(window).width()-$("#nav").width();
 	$("#content").width(width);
 	$("#controls").width(width);
-	console.log("nav width="+$("#nav").width()+"; content/control width="+width);
 }
 
 function initChangeUriAction() {
