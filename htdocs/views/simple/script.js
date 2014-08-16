@@ -1886,6 +1886,19 @@ function initPopupMenu() {
 	$("body").click(function() { hidePopupMenu(); }).on("keydown", function(e) { if (e.which == 27) hidePopupMenu(); });
 	$("#filler").on("contextmenu", function() { hidePopupMenu() });
 }
+function refreshFileListEntry(filename) {
+	var fl = $("#fileList");
+	return $.get(ToolBox.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
+		var newrow = $(r);
+		row = $("tr[data-file='"+simpleEscape(filename)+"']", fl);
+		if (row.length > 0) {
+			row.replaceWith(newrow);
+		} else {
+			newrow.appendTo(fl);
+		}
+		ToolBox.initFileList();
+	});
+}
 function initToolBox() {
 	ToolBox = { 
 			addMissingSlash: addMissingSlash,
@@ -1902,6 +1915,7 @@ function initToolBox() {
 			initUpload : initUpload,
 			preventDefault : preventDefault,
 			postAction: postAction,
+			refreshFileListEntry : refreshFileListEntry,
 			renderAbortDialog: renderAbortDialog,
 			renderByteSize: renderByteSize,
 			renderByteSizes: renderByteSizes,

@@ -52,7 +52,7 @@ sub handle {
 	return $ret if $ret;
 	
 	if ($hook eq 'settings') {
-		$ret = $self->handleSettingsHook('confirm.save');
+		$ret = $self->handleSettingsHook('confirm.save') . $self->handleSettingsHook('texteditor.backup');
 	} elsif ($hook eq 'fileaction') {
 		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton' };
 	} elsif ($hook eq 'fileactionpopup') {
@@ -75,10 +75,14 @@ sub getEditForm {
 		$content = $$self{json}-encode({ error=>sprintf($self->tl('msg_sizelimitexceeded'), $$self{cgi}->escapeHTML($filename), ($self->renderByteValue($$self{sizelimit}))[0])});
 		$contenttype='application/json';
 	} else {
-		$content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->readTemplate($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{backend}->getFileContent($full), mime=>main::getMIMEType($full)});
+		$content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->readTemplate($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::getMIMEType($full)});
 	}
 	main::printHeaderAndContent('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
 	return 1;
+}
+sub makeBackupCopy {
+	my ($self, $full) = @_;
+	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || main::rcopy($full, "$full.backup");
 }
 sub saveTextData {
 	my ($self) = @_;
@@ -88,7 +92,7 @@ sub saveTextData {
 	my %jsondata = ();
 	if (main::isLocked($full)) {
 		$jsondata{error} = sprintf($self->tl('msg_locked'), $efilename);	
-	} elsif ( $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full) && $$self{backend}->saveData($full, $$self{cgi}->param('textdata') ) ) {
+	} elsif ( $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full) && $self->makeBackupCopy($full) && $$self{backend}->saveData($full, $$self{cgi}->param('textdata') ) ) {
 		$jsondata{message} = sprintf($self->tl('msg_textsaved'), $efilename);
 	} else {
 		$jsondata{error} = sprintf($self->tl('msg_savetexterr'), $efilename);
