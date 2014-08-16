@@ -97,7 +97,7 @@ $INCLUDE(htmlhead)</head>
 						$each@%main::AUTOREFRESH@'<li class="action setautorefresh" data-value="$k">$v</li>'@
 						<li class="sep autorefreshrunning action autorefreshtoggle">$tl(autorefresh.toggle)</li>
 						<li class="autorefreshrunning action autorefreshclear">$tl(autorefresh.clear)</li>
-						<li class="sep action autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
+						<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
 					</ul>
 				</div>
 			<!--ENDIF-->
@@ -161,7 +161,7 @@ $INCLUDE(htmlhead)</head>
 </div>
 <!--IF(%main::AUTOREFRESH)-->
 	<div id="autorefreshtimer" title="$tl(autorefresh.select.title)">
-		<span class="action autorefreshtimer" data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
+		<span class="autorefreshtimer" data-template="$tl(autorefresh.format)"></span> 
 		<a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
 		<a href="#" class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
 	</div>

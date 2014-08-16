@@ -293,14 +293,14 @@ function initAutoRefresh() {
 	});
 	$("body").click(function(){ $("#autorefresh ul:visible").hide()});
 	$(".action.autorefreshrunning").addClass("disabled");
-	$(".action.autorefreshtimer").addClass("disabled");
+	$(".autorefreshtimer").addClass("disabled");
 	$("#autorefresh").on("started", function() {
-		$(".action.autorefreshtimer").removeClass("disabled");
+		$(".autorefreshtimer").removeClass("disabled");
 		$(".action.autorefreshrunning").removeClass("disabled");
 		$("#autorefreshtimer").show();
 		$(".action.autorefreshtoggle").addClass("running");
 	}).on("stopped", function() {
-		$(".action.autorefreshtimer").addClass("disabled");
+		$(".autorefreshtimer").addClass("disabled");
 		$(".action.autorefreshrunning").addClass("disabled");
 		$("#autorefreshtimer").hide();
 		$(".action.autorefreshtoggle").removeClass("running");
@@ -341,9 +341,21 @@ function initAutoRefresh() {
 		}
 		$("#autorefresh ul").addClass("hidden");
 	});
+	
+	$("#autorefreshtimer").draggable({ stop: function(e,ui) { cookie("autorefreshtimerpos", JSON.stringify(fixElementPosition("#autorefreshtimer",ui.offset))); }});	
+	if (cookie("autorefreshtimerpos")) fixElementPosition("#autorefreshtimer",$.parseJSON(cookie("autorefreshtimerpos")));
+}
+function fixElementPosition(id, position) {
+	var e = $(id);
+	var w = $(window);
+	var newposition = { 
+			left: Math.min(Math.max(position.left, 0), w.width() - e.outerWidth() + w.scrollLeft() ), 
+			 top: Math.min(Math.max(position.top, 0), w.height() - e.outerHeight() + w.scrollTop() ) };
+	e.offset(newposition);
+	return newposition;
 }
 function renderAutoRefreshTimer(aftimeout) {
-	var t = $(".action.autorefreshtimer");
+	var t = $(".autorefreshtimer");
 	var f = t.attr("data-template") || "%sm %ss";
 	var minutes = Math.floor(aftimeout / 60);
 	var seconds = aftimeout % 60;
@@ -1907,6 +1919,7 @@ function initToolBox() {
 			concatUri: concatUri,
 			confirmDialog : confirmDialog,
 			cookie : cookie,
+			fixElementPosition: fixElementPosition,
 			getSelectedFiles : getSelectedFiles,
 			getSelectedRows : getSelectedRows,
 			handleJSONResponse : handleJSONResponse,
