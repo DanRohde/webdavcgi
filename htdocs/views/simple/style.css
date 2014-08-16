@@ -217,7 +217,7 @@ table,th,td {
 }
 #fileactions {
 	float: right;
-	margin: 2px 0 0 0;
+	margin: 0;
 	border: 0;
 	padding: 0 1em 0 0;
 }
