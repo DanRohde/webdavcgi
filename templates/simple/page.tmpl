@@ -93,11 +93,11 @@ $INCLUDE(htmlhead)</head>
 				<div id="autorefresh" title="$tl(autorefresh.select.title)">
 					<a href="#" class="action autorefreshmenu" data-action="autorefreshmenu">&nbsp;</a>
 					<ul id="autorefreshmenulist" class="hidden">
-						<li><a href="#" class="action setautorefresh" data-action="setautorefresh" data-value="now">$tl(autorefresh.now)</a></li>
-						$each@%main::AUTOREFRESH@'<li><a href="#" class="action setautorefresh" data-action="setautorefresh" data-value="$k">$v</a></li>'@
-						<li class="sep"><a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle">$tl(autorefresh.toggle)</a></li>
-						<li><a href="#" class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear">$tl(autorefresh.clear)</a></li>
-						<li class="sep"><span class="action autorefreshtimer" data-action="autorefreshtimer" data-template="$tl(autorefresh.format)"></span></li> 
+						<li class="action setautorefresh" data-value="now">$tl(autorefresh.now)</li>
+						$each@%main::AUTOREFRESH@'<li class="action setautorefresh" data-value="$k">$v</li>'@
+						<li class="sep autorefreshrunning action autorefreshtoggle">$tl(autorefresh.toggle)</li>
+						<li class="autorefreshrunning action autorefreshclear">$tl(autorefresh.clear)</li>
+						<li class="sep action autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
 					</ul>
 				</div>
 			<!--ENDIF-->

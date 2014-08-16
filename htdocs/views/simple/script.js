@@ -292,16 +292,16 @@ function initAutoRefresh() {
 		updateFileList();
 	});
 	$("body").click(function(){ $("#autorefresh ul:visible").hide()});
-	$("a.autorefreshrunning").addClass("disabled");
+	$(".action.autorefreshrunning").addClass("disabled");
 	$(".action.autorefreshtimer").addClass("disabled");
 	$("#autorefresh").on("started", function() {
 		$(".action.autorefreshtimer").removeClass("disabled");
-		$("a.autorefreshrunning").removeClass("disabled");
+		$(".action.autorefreshrunning").removeClass("disabled");
 		$("#autorefreshtimer").show();
 		$(".action.autorefreshtoggle").addClass("running");
 	}).on("stopped", function() {
 		$(".action.autorefreshtimer").addClass("disabled");
-		$("a.autorefreshrunning").addClass("disabled");
+		$(".action.autorefreshrunning").addClass("disabled");
 		$("#autorefreshtimer").hide();
 		$(".action.autorefreshtoggle").removeClass("running");
 	});
@@ -309,7 +309,7 @@ function initAutoRefresh() {
 	$("#flt").on("fileListChanged", function() {
 		if (cookie("autorefresh") != "" && parseInt(cookie("autorefresh"))>0) startAutoRefreshTimer(parseInt(cookie("autorefresh")));
 	});
-	$("a[data-action='setautorefresh']").click(function(event){
+	$(".action.setautorefresh").click(function(event){
 		preventDefault(event);
 		$("#autorefresh ul").addClass("hidden");
 		if ($(this).attr("data-value") == "now") {
