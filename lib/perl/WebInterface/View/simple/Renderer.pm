@@ -174,7 +174,7 @@ sub renderExtensionElement {
 	my $content = "";
 	if (ref($a) eq 'HASH') {
 		if ($$a{subpopupmenu}) {
-			return $$self{cgi}->li({-title=>$$a{title} ||'', -class=>'subpopupmenu extension '. ($$a{classes} || '')},($$a{title} || '').$$self{cgi}->ul({-class=>'subpopupmenu extension'},$self->renderExtensionElement($fn,$ru,$$a{subpopupmenu}))) ;
+			return $$self{cgi}->li({-title=>$$a{title} || $$a{label} || '', -class=>'subpopupmenu extension '. ($$a{classes} || '')},($$a{title} || '').$$self{cgi}->ul({-class=>'subpopupmenu extension'},$self->renderExtensionElement($fn,$ru,$$a{subpopupmenu}))) ;
 		}
 		my %params = (-class=>'');
 		$params{-class}.=' action '.$$a{action} if $$a{action};
@@ -182,7 +182,7 @@ sub renderExtensionElement {
 		$params{-class}.= ' '.$$a{classes} if $$a{classes};
 		$params{-class}.=' hidden' if $$a{disabled};
 		$params{-accesskey}=$$a{accesskey} if $$a{accesskey};
-		$params{-title}=$self->tl($$a{title}) if $$a{title};
+		$params{-title}=$self->tl($$a{title} || $$a{label}) if $$a{title} || $$a{label};
 		$params{-data_template} = $$a{template} if $$a{template};
 		$content.=$$a{prehtml} if $$a{prehtml};
 		if ($$a{data}) {
@@ -196,11 +196,11 @@ sub renderExtensionElement {
 			}
 		}
 		if ($$a{type} && $$a{type} eq 'li') {	
-			$content.=$$self{cgi}->li(\%params, $self->tl($$a{label}));
+			$content.=$$self{cgi}->li(\%params, $$self{cgi}->span({-class=>'label'},$self->tl($$a{label})));
 		} else {
 			$params{-href}='#';
 			$params{-data_action} = $$a{action} || $$a{listaction}; 
-			$content.=$$self{cgi}->a(\%params, $self->tl($$a{label}));
+			$content.=$$self{cgi}->a(\%params, $$self{cgi}->span({-class=>'label'},$self->tl($$a{label})));
 			$content=$$self{cgi}->li({-class=>$$a{liclasses} || ''},$content) if $$a{type} && $$a{type} eq 'li-a'; 
 		}
 		$content.=$$a{posthtml} if $$a{posthtml};

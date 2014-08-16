@@ -30,35 +30,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: left center;
 }
+#popupmenu .action.puri, #popupmenu .action.spuri, #popupmenu .action.depuri {
+	background-position: 2px 7px;
+}
 .action.puri {
-	background-image: url(images/puri.png);
+	background-image: url(images/share.png);
 }
 .action.spuri {
-	background-image: url(images/puri.png);
+	background-image: url(images/share.png);
 }
 .action.depuri {
-	background-image: url(images/depuri.png);
+	background-image: url(images/unshare.png);
 }
 input[readonly="readonly"].publicuri {
 	opacity: 1;
 }
 .shared .filename {
-	background: url(images/puri.png) no-repeat 10px center;
+	background: url(images/share.png) no-repeat right center;
 }
 .shared.islink-yes .filename {
 	background: 
-		url(images/puri.png) no-repeat left bottom,
+		url(images/share.png) no-repeat right center,
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQMAAAC3/F3+AAAABlBMVEWAgID////n1o2sAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggIDCkHwhxH/QAAACBJREFUCNdjYGBgqG9gcGxgcAaTDg0MEQ0MFQ0gQQYGAGPrBtSJLPp/AAAAAElFTkSuQmCC) no-repeat 20px top;
 }
 
 .shared.islocked-yes .filename {
 	background: 
-		url(images/puri.png) no-repeat left bottom,
+		url(images/share.png) no-repeat right center,
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAG7AAABuwE67OPiAAAAB3RJTUUH3QobCDgZ0jso7QAAAQtJREFUGNNtTzFLw2AUvJc0aSNEBOlQqUYozg4ZhOCQQQUhgqC/IP0Rzsnokt0xu24KgqsQccqQwUJaFSxtHQKiItS8z0E+Sak33b073nGECqIo2rMs64SI1KIoTn3fv5KeIkkYhgee512nafqYJEnPtu3LOI6PpF+TxHGc/SzLXoIg6AKApmlbruvuAjif+ViWbOR5fyS1rtcHo/HYkJokub/ovn29DzF57t8JFtRcX91UFzuN7cMzc6ba0J7MzsoNjE/smAtAc62HIS1jbgxAYAZYAKUASAEg8F/wF2oNUOeulWqAwEIBM6FkAWauTvgL0kMujm9fN/R88FEXQlC73fheahVTADqA6Q/1RVs9dDRP/wAAAABJRU5ErkJggg==) no-repeat 20px top; 
 }
 .shared.islink-yes.islocked-yes .filename {
 	background: 
-		url(images/puri.png) no-repeat left bottom,
+		url(images/share.png) no-repeat right center,
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKAQMAAAC3/F3+AAAABlBMVEWAgID////n1o2sAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggIDCkHwhxH/QAAACBJREFUCNdjYGBgqG9gcGxgcAaTDg0MEQ0MFQ0gQQYGAGPrBtSJLPp/AAAAAElFTkSuQmCC) no-repeat 20px top,
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAG7AAABuwE67OPiAAAAB3RJTUUH3QobCDgZ0jso7QAAAQtJREFUGNNtTzFLw2AUvJc0aSNEBOlQqUYozg4ZhOCQQQUhgqC/IP0Rzsnokt0xu24KgqsQccqQwUJaFSxtHQKiItS8z0E+Sak33b073nGECqIo2rMs64SI1KIoTn3fv5KeIkkYhgee512nafqYJEnPtu3LOI6PpF+TxHGc/SzLXoIg6AKApmlbruvuAjif+ViWbOR5fyS1rtcHo/HYkJokub/ovn29DzF57t8JFtRcX91UFzuN7cMzc6ba0J7MzsoNjE/smAtAc62HIS1jbgxAYAZYAKUASAEg8F/wF2oNUOeulWqAwEIBM6FkAWauTvgL0kMujm9fN/R88FEXQlC73fheahVTADqA6Q/1RVs9dDRP/wAAAABJRU5ErkJggg==) no-repeat 20px bottom;
 }

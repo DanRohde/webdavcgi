@@ -14,12 +14,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#nav .action.permissions {
+.action.permissions {
 	background-image: url(permissions.png);
 	background-repeat: no-repeat;
+}
+#nav .action.permissions {
 	background-position: 4px center;
 }
 #popupmenu .action.permissions {
-	background-image: url(permissions.png);
-	background-position: 2px center;
+	background-position: 2px 7px;
 }

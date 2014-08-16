@@ -16,7 +16,7 @@ $extension(css)
 $extension(javascript)	
 $config(HTMLHEAD)
 $INCLUDE(htmlhead)</head>
-<body>
+<body class="collapse-sidebar-listener">
 <div id="filler"></div>
 <div id="main">
 	<div class="langswitch collapse-head-collapsible">$config(LANGSWITCH)</div> 
@@ -26,7 +26,7 @@ $INCLUDE(htmlhead)</head>
 	</div>
 	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible">
 		<ul id="apps">
-			<li><a href="$uri" class="action refresh" title="$tl(files.title)" data-action="refresh">$tl(files)</a></li>
+			<li title="$tl(files)"><a href="$uri" class="action refresh" title="$tl(files.title)" data-action="refresh"><span class="label">$tl(files)</span></a></li>
 			$INCLUDE(apps)
 			$extension(apps)
 		</ul>
@@ -34,22 +34,22 @@ $INCLUDE(htmlhead)</head>
 		<ul id="prefs">
 			$INCLUDE(pref)
 			<!--IF($#main::SUPPORTED_VIEWS>0)-->
-			<li><div class="accordion">
+			<li title="$tl(viewoptions)"><div class="accordion">
 					<h3>$tl(viewoptions)</h3> 
 					<div>
-						<ul>$each#@main::SUPPORTED_VIEWS#'<li><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
-							<li><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
+						<ul>$each#@main::SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
+							<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o"><span class="label">$tl(filter.title)</span></a></li>
 						</ul>
 					</div>
 				</div>
 			</li>
 			<!--ENDIF-->
 			<!--IF($#main::SUPPORTED_VIEWS<1)-->
-				<li><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o">$tl(filter.title)</a></li>
+				<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o"><span class="label">$tl(filter.title)</span></a></li>
 			<!--ENDIF-->
-			<li><a href="#" data-action="settings" class="dialog action settings">$tl(settings)</a></li>
+			<li title="$tl(settings)"><a href="#" data-action="settings" class="dialog action settings"><span class="label">$tl(settings)</span></a></li>
 			$INCLUDE(help)
-			<li><a href="#" data-action="about" class="dialog action about" accesskey="8">$tl(about)</a></li>
+			<li title="$tl(about)"><a href="#" data-action="about" class="dialog action about" accesskey="8"><span class="label">$tl(about)</span></a></li>
 		</ul>
 	</div>
 <div id="content" class="collapse-head-listener collapse-sidebar-listener">
@@ -131,9 +131,9 @@ $INCLUDE(htmlhead)</head>
 	<div id="confirmdialog" data-title="$tl(confirm)"></div>
 	<div id="fileactions">
 	     <span class="fileactions">
-		 <a class="action rename access-writeable" href="#" data-action="rename" accesskey="m">$tl(movefilesbutton)</a>
+		 <a class="action rename access-writeable" href="#" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></a>
 		 $extension(fileaction)
-		 <a class="action delete" href="#" data-action="delete" accesskey="d">$tl(deletefilesbutton)</a>
+		 <a class="action delete" href="#" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></a>
 	     </span>
 	</div>
 	<div id="renamefield">

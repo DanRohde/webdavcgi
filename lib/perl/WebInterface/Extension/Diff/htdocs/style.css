@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.diff {
 	background-image: url(diff.png);
 	background-repeat: no-repeat;
-	background-position: 2px 6px;
+	background-position: 2px 7px;
 }
 #nav .listaction.diff {
 	background-image: url(diff.png);

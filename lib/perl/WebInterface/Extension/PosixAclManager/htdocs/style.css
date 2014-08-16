@@ -14,12 +14,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
+.action.pacl {
+	background-image: url(aclmanager.png);
+	background-repeat: no-repeat;
+}
 #popupmenu .action.pacl {
-	background-image: url(user-edit.png);
-	background-position: 2px 4px;
+	background-position: 2px 7px;
 }
 #nav .action.pacl {
-	background: url(user-edit.png) no-repeat 4px center;
+	background-position: 4px center;
 }
 ul.ui-autocomplete {
 	z-index: 1100;

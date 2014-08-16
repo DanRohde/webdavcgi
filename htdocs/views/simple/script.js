@@ -41,8 +41,6 @@ $(document).ready(function() {
 
 	initDialogActions()
 
-	initTooltips();
-	
 	initViewFilterDialog();
 
 	initClock();
@@ -247,18 +245,31 @@ function setupTableConfigDialog(dialog) {
 	dialog.dialog({ modal: true, width: "auto", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
 	
 }
-function initCollapsible() {
-	$(".action.collapse-sidebar").click(function(event) {
-		preventDefault(event);
-		$(".action.collapse-sidebar").toggleClass("collapsed");
-		var collapsed = $(this).hasClass("collapsed");
-		$(".collapse-sidebar-collapsible").toggle(!collapsed).toggleClass("collapsed", collapsed);
-		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed);
-		handleWindowResize();
-		togglecookie("sidebar", "false", collapsed,1);
-	});
+function handleSidebarCollapsible(event) {
+	if (event) preventDefault(event);
+	var collapsed = $(this).hasClass("collapsed");
+	var iconsonly = $(this).hasClass("iconsonly");
+	if (!collapsed && !iconsonly) iconsonly = true;
+	else if (iconsonly) {
+		iconsonly=false;
+		collapsed=true;
+	}
+	else collapsed = false;
 	
-	if (cookie("sidebar") == "false") $(".action.collapse-sidebar").first().trigger("click");
+	$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed).toggleClass("sidebar-iconsonly", iconsonly);
+	$(".action.collapse-sidebar").toggleClass("collapsed",collapsed).toggleClass("iconsonly",iconsonly);
+	
+	handleWindowResize();
+	if (!iconsonly&&!collapsed) rmcookie("sidebar");
+	else cookie("sidebar", iconsonly?"iconsonly":collapsed?"false":"true");
+}
+function initCollapsible() {
+	$(".action.collapse-sidebar").click(handleSidebarCollapsible);
+	if (cookie("sidebar") && cookie("sidebar") != "true") {
+		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", cookie("sidebar") == "false").toggleClass("sidebar-iconsonly", cookie("sidebar") == "iconsonly");
+		$(".action.collapse-sidebar").toggleClass("collapsed", cookie("sidebar") == "false").toggleClass("iconsonly", cookie("sidebar") == "iconsonly");
+		handleWindowResize();
+	}
 	
 	$(".action.collapse-head").click(function(event) {
 		preventDefault(event);
@@ -271,6 +282,7 @@ function initCollapsible() {
 	});
 	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
+
 function initAutoRefresh() {
 	$(".action.autorefreshmenu").button().click(function(event) {
 		preventDefault(event);
@@ -398,6 +410,7 @@ function handleWindowResize() {
 	var width = $(window).width()-$("#nav").width();
 	$("#content").width(width);
 	$("#controls").width(width);
+	console.log("nav width="+$("#nav").width()+"; content/control width="+width);
 }
 
 function initChangeUriAction() {
@@ -459,17 +472,6 @@ function initClock() {
              .replace(/\%S/, addzero(d.getSeconds()));
         clock.html(s);	
     }, fmt.match(/%S/) ? 1000 : 60000);
-}
-function initTooltips() {
-/*
- * $("[title]").powerTip({smartPlacement: true}); $("#flt")
- * .on("fileListChanged", function() { $("#content
- * [title]").powerTip({smartPlacement: true}); }) .on("fileListViewChanged",
- * function() { $("#content [title]").powerTip({smartPlacement: true}); })
- * .on("fileListSelChanged", function() { $("#content
- * [title]").powerTip({smartPlacement: true}); }) .on("bookmarksChanged",
- * function() { $("#bookmarks [title]").powerTip({smartPlacement: true}); });
- */
 }
 function initBookmarks() {
 	var bookmarks = $("#bookmarks");
@@ -915,6 +917,7 @@ function handleFileActionEvent(event) {
 function handleFileListRowFocusIn(event) {
 	if (cookie("settings.show.fileactions")=="no") return;
 	// if (event.type == 'mouseenter') $(this).focus();
+	$("#fileactions").toggleClass("hidelabels", cookie("settings.show.fileactionlabels") =="no");
 	if ($("#fileactions").length==1) $("#flt").data("#fileactions",$("#fileactions").html());
 	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>');
 	if ($("#fileactions",$(this)).length==0) {
@@ -1319,7 +1322,7 @@ function handleDialogActionEvent(event) {
 	var self = this;
 	$(this).addClass("disabled");
 	var action = $("#"+$(this).attr('data-action'));
-	action.dialog({modal:true, title: $(this).html(), width: 'auto', 
+	action.dialog({modal:true, width: 'auto', 
 					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); },
 					close: function() { $(self).removeClass("disabled"); },
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();

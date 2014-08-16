@@ -61,7 +61,7 @@ sub handleLocalesHook {
 }
 sub handleAppsHook {
 	my($self, $cgi, $action, $label, $title, $href) = @_;
-	return $cgi->li({-title=>$self->tl($title || $label)},$cgi->a({-class=>"action $action", -href=> $href ? $href : '#'},$self->tl($label)));
+	return $cgi->li({-title=>$self->tl($title || $label)},$cgi->a({-class=>"action $action", -href=> $href ? $href : '#'},$cgi->span({-class=>'label'},$self->tl($label))));
 }
 sub handleSettingsHook {
 	my($self, $settings) = @_;

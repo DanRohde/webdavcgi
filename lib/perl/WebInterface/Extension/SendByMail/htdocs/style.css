@@ -20,24 +20,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: none;
 	visibility: hidden;
 }
-#popupmenu .action.sendbymail {
-	background-image: url(sendbymail.png);
-	background-repeat: no-repeat; 
-	background-position: 2px 6px;
-}
-#nav .listaction.sendbymail {
-	background-image: url(sendbymail.png);
-	background-repeat: no-repeat;
-	background-position: 4px center;
-}
-.action.sendbymail {
+.action.sendbymail, .listaction.sendbymail {
 	background-image: url(sendbymail.png);
 	background-repeat: no-repeat;
 	background-position: 4px bottom;
 }
- .listaction.sendbymail {
- 	background:url(sendbymail.png) no-repeat center center;
+.listaction.sendbymail {
+ 	background-position: center center;
  }
+
+#popupmenu .action.sendbymail {
+	background-position: 2px 7px;
+}
+#nav .listaction.sendbymail {
+	background-position: 4px center;
+}
 .sendbymail.button {
 	text-align: right;
 }
