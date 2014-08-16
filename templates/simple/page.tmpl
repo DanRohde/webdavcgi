@@ -130,11 +130,9 @@ $INCLUDE(htmlhead)</head>
 <div class="template">
 	<div id="confirmdialog" data-title="$tl(confirm)"></div>
 	<div id="fileactions">
-	     <span class="fileactions">
-		 <a class="action rename access-writeable" href="#" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></a>
-		 $extension(fileaction)
-		 <a class="action delete" href="#" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></a>
-	     </span>
+		<a class="action rename access-writeable" href="#" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></a>
+		$extension(fileaction)
+		<a class="action delete" href="#" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></a>
 	</div>
 	<div id="renamefield">
 		<div class="renamefield"> <input type="text" size="50" name="newfilename" value="$filename"/> </div>

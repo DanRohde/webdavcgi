@@ -227,7 +227,7 @@ table,th,td {
 }
 #fileactions a {
 	min-width: 22px;
-	padding: 4px 4px 4px 22px;
+	padding: 3px 4px 3px 22px;
 }
 #fileactions a:hover {
 	background-color: #dddddd;
@@ -345,20 +345,16 @@ tr.isreadable-no:hover {
 	padding-left: 1em;
 	padding-right: 0em;
 }
-.fileactions .action {
-	padding-left: 22px;
-	padding-right: 0em;
-}
 #selstats { 
 	padding-right: 1em;
 }
 .action.rename {
-	background: url(images/sprite.png) no-repeat left -498px;
+	background: url(images/sprite.png) no-repeat left -499px;
 }
 .action.delete, .listaction.delete {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: left -218px;
+	background-position: left -219px;
 }
 .action.props {
 	background: url(images/sprite.png) no-repeat 2px -21px;
