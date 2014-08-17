@@ -17,4 +17,6 @@ for p in $(find . -type d -name htdocs) ; do
 
 done
 
+touch /etc/webdav*conf
+
 exit 0

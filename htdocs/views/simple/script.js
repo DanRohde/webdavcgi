@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 var ToolBox = new Object();
 $(document).ready(function() {
+	initPlugins();
 	
 	initUIEffects();
 	
@@ -63,6 +64,8 @@ $(document).ready(function() {
 	
 	initToolBox();
 	
+	initTooltips();
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -79,7 +82,14 @@ $(document).ready(function() {
 	
 	updateFileList($("#flt").attr("data-uri"));
 	
-
+function initTooltips() {
+	$("#flt").on("fileListChanged", function() {
+		$("#flt,#bookmarks,#filelistactions").MyTooltip(500);
+	}).on("bookmarksChanged",function() {
+		$("#bookmarks").MyTooltip(500);
+	});
+	$("#nav:not(.action.dialog),#controls,#autorefreshtimer,#popupmenu").MyTooltip(500);
+}
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
 		// keyboard events for filename links
@@ -260,11 +270,11 @@ function handleSidebarCollapsible(event) {
 	$(".action.collapse-sidebar").toggleClass("collapsed",collapsed).toggleClass("iconsonly",iconsonly);
 	
 	handleWindowResize();
-	if (!iconsonly&&!collapsed) rmcookie("sidebar");
+	if (!iconsonly&&!collapsed) rmcookies("sidebar");
 	else cookie("sidebar", iconsonly?"iconsonly":collapsed?"false":"true");
 }
 function initCollapsible() {
-	$(".action.collapse-sidebar").click(handleSidebarCollapsible);
+	$(".action.collapse-sidebar").click(handleSidebarCollapsible).MyTooltip(500);
 	if (cookie("sidebar") && cookie("sidebar") != "true") {
 		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", cookie("sidebar") == "false").toggleClass("sidebar-iconsonly", cookie("sidebar") == "iconsonly");
 		$(".action.collapse-sidebar").toggleClass("collapsed", cookie("sidebar") == "false").toggleClass("iconsonly", cookie("sidebar") == "iconsonly");
@@ -279,7 +289,7 @@ function initCollapsible() {
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
 		handleWindowResize();
 		togglecookie("head","false",collapsed, 1);
-	});
+	}).MyTooltip(500);
 	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
 
@@ -928,9 +938,9 @@ function handleFileActionEvent(event) {
 function handleFileListRowFocusIn(event) {
 	if (cookie("settings.show.fileactions")=="no") return;
 	// if (event.type == 'mouseenter') $(this).focus();
-	$("#fileactions").toggleClass("hidelabels", cookie("settings.show.fileactionlabels") =="no");
+	$("#fileactions").toggleClass("hidelabels", cookie("settings.show.fileactionlabels") =="no").MyTooltip();
 	if ($("#fileactions").length==1) $("#flt").data("#fileactions",$("#fileactions").html());
-	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>');
+	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>').MyTooltip();
 	if ($("#fileactions",$(this)).length==0) {
 		$("div.filename",$(this)).after($("#fileactions"));
 		$("#fileactions .action").click(handleFileActionEvent);
@@ -1058,7 +1068,6 @@ function initFileList() {
 	// fix annyoing text selection after a double click on text in the file
 	// list:
 	removeTextSelections();
-	
 	$("#flt").trigger("fileListChanged");
 }
 function removeTextSelections() {
@@ -1900,7 +1909,7 @@ function initPopupMenu() {
 }
 function refreshFileListEntry(filename) {
 	var fl = $("#fileList");
-	return $.get(ToolBox.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
+	return $.get(addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
 		var newrow = $(r);
 		row = $("tr[data-file='"+simpleEscape(filename)+"']", fl);
 		if (row.length > 0) {
@@ -1908,8 +1917,81 @@ function refreshFileListEntry(filename) {
 		} else {
 			newrow.appendTo(fl);
 		}
-		ToolBox.initFileList();
+		initFileList();
 	});
+}
+function initPlugins() {
+	$.fn.MyTooltip = function(delay, timeout) {
+		var toel = $("body");
+		var w = $(window);
+		var tooltip = toel.data("tooltip") ? toel.data("tooltip"): 
+				$("<div/>")
+						.attr("class","tooltip")
+						.css({"word-wrap": "break-word","overflow":"hidden","z-index":"2147483647","padding":"2px","box-shadow":"0px 0px 0px 4px rgba(144,144,144,0.3)", "border-radius":"1px", "background-color":"white", "font-size":"smaller", "position":"absolute"})
+						.appendTo($("body")).hide();
+		toel.data("tooltip", tooltip);
+		tooltip.off("mouseover.tooltip").on("mouseover.tooltip",function(e) { 
+				preventDefault(e); 
+				clearTimeout(); 
+				tooltip.hide(); 
+		});
+		function clearTimeout() {
+			if (toel.data("timeout")) window.clearTimeout(toel.data("timeout"));
+		}
+		function setDelayTimeout(e,el) {
+			clearTimeout();
+			tooltip.hide();
+			toel.data("timeout", window.setTimeout(function(){
+				setTooltipPosition(e,el);
+			},delay));
+		}
+		function setTooltipPosition(e,el) {
+			clearTimeout();
+			var left = e.pageX - Math.floor(tooltip.outerWidth()/2); 
+			var top = el.offset().top - tooltip.outerHeight()-4;
+			var maxWidth = Math.max(Math.floor(w.width()/2),50);
+			var maxHeight = Math.max(Math.floor(w.height()/2),10);
+			if (left-w.scrollLeft()<0) left = 0;
+			if (left + tooltip.outerWidth() > w.width()) left = w.width() - tooltip.outerWidth();
+			if (top-w.scrollTop()<0) top = Math.floor(el.offset().top + el.outerHeight() + 4);
+			if (Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
+			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
+			tooltip.show();
+		}
+		function handleMouseOver(e,u) {
+			var el = $(this);
+			handleTitleAttribute(el);
+			tooltip.html(el.attr("data-tooltip"));
+			if (delay) {
+				setDelayTimeout(e,el);
+			} else {
+				setTooltipPosition(e,el);
+			}
+		}
+		function handleMouseMove(e,u) {
+			if (tooltip.is(":visible") && !delay) setTooltipPosition(e,$(this));
+			else setDelayTimeout(e,$(this));
+		}
+		function handleMouseOut(e,u) {
+			clearTimeout();
+			toel.data("timeout", window.setTimeout(function() {tooltip.hide(200)}, timeout || 1500));
+		}
+		function handleTitleAttribute(el) {
+			if (el.attr("title") && el.attr("title").trim() !="") {
+				el.attr("data-tooltip", el.attr("title"));
+				el.removeAttr("title");
+			}
+		}
+		function initElement(el) {
+			el.off("mouseover.tooltip").off("mouseout.tooltip").off("mousemove.tooltip")
+			.on("mouseover.tooltip",handleMouseOver).on("mouseout.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
+			handleTitleAttribute(el);
+		}
+		this.find("[title]").each(function(i,v) { initElement($(v)); });
+		if (this.attr("title")) initElement(this);
+		
+		return this;	
+	};
 }
 function initToolBox() {
 	ToolBox = { 

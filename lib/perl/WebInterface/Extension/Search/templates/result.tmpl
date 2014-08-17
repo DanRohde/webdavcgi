@@ -1,8 +1,8 @@
-<div class="search result entry $type" title="$tl(search.open) $parentfolder$filename">
+<div class="search result entry $type" >
 	<!--IF( q@$filename@ ne ".")-->
-		<a class="search result entry parent folder" title="$tl(search.openparentfolder) $parentfolder" href="$dirname" target="_blank"></a>
+		<a class="search result entry parent folder" title="$tl(search.openparentfolder)" href="$dirname" target="_blank"></a>
 	<!--ENDIF-->
-	<a href="$fileuri" target="_blank" class="search result entry $type"><img src="$iconurl" class="search $iconclass" alt="icon" title="$mime"/> $filename</a>
+	<a href="$fileuri" target="_blank" class="search result entry $type" title="$tl(search.open) $filename"><img src="$iconurl" class="search $iconclass" alt="icon" title="$mime"/> $filename</a>
 	<div class="search result fileuri">$parentfolder</div>
 	
 </div>

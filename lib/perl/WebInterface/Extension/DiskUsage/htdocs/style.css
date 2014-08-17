@@ -46,6 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .diskusage.size, .diskusage.lastmodified {
 	text-align: right;	
+	padding-left: 1em;
 }
 .diskusage.entry:hover {
 	background-color: #ededed;
@@ -60,8 +61,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .diskusage.treemap.tooltip {
 	color: black;
 	background-color: white;
-	border: 1px solid black;
 	width: 20em;
+	overflow:hidden;
 }
 .diskusage.filetype.piechart {
 	width: 500px;
