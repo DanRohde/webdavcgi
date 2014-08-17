@@ -1924,12 +1924,22 @@ function initPlugins() {
 	$.fn.MyTooltip = function(delay, timeout) {
 		var toel = $("body");
 		var w = $(window);
-		var tooltip = toel.data("tooltip") ? toel.data("tooltip"): 
-				$("<div/>")
-						.attr("class","tooltip")
-						.css({"word-wrap": "break-word","overflow":"hidden","z-index":"2147483647","padding":"2px","box-shadow":"0px 0px 0px 4px rgba(144,144,144,0.3)", "border-radius":"1px", "background-color":"white", "font-size":"smaller", "position":"absolute"})
+		var tooltip;
+		if (!toel.data("tooltip")) { 
+				tooltip = $("<div/>")
+						.addClass("tooltip")
+						.css({
+							//"word-wrap": "break-word","overflow":"hidden","z-index":"2147483647","padding":"2px",
+							 // "box-shadow":"0px 0px 0px 4px rgba(144,144,144,0.3)", "border-radius":"1px", 
+							 // "background-color":"white", "font-size":"smaller",
+							 // "position":"absolute"
+								  })
 						.appendTo($("body")).hide();
-		toel.data("tooltip", tooltip);
+				toel.data("tooltip", tooltip);
+		} else {
+			tooltip = toel.data("tooltip");
+		}
+		
 		tooltip.off("mouseover.tooltip").on("mouseover.tooltip",function(e) { 
 				preventDefault(e); 
 				clearTimeout(); 
@@ -1951,8 +1961,8 @@ function initPlugins() {
 			var top = el.offset().top - tooltip.outerHeight()-4;
 			var maxWidth = Math.max(Math.floor(w.width()/2),50);
 			var maxHeight = Math.max(Math.floor(w.height()/2),10);
-			if (left-w.scrollLeft()<0) left = 0;
-			if (left + tooltip.outerWidth() > w.width()) left = w.width() - tooltip.outerWidth();
+			if (left-w.scrollLeft()<0) left = 4;
+			if (left + tooltip.outerWidth() > w.width()) left = w.width() - tooltip.outerWidth()-4;
 			if (top-w.scrollTop()<0) top = Math.floor(el.offset().top + el.outerHeight() + 4);
 			if (Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
 			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
@@ -1974,7 +1984,7 @@ function initPlugins() {
 		}
 		function handleMouseOut(e,u) {
 			clearTimeout();
-			toel.data("timeout", window.setTimeout(function() {tooltip.hide(200)}, timeout || 1500));
+			toel.data("timeout", window.setTimeout(function() {tooltip.hide()}, timeout || 500));
 		}
 		function handleTitleAttribute(el) {
 			if (el.attr("title") && el.attr("title").trim() !="") {

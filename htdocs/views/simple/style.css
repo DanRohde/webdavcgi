@@ -1168,3 +1168,15 @@ img {
 	left: 0;
 	z-index: -1;
 }
+.tooltip {
+	color: black;
+	background-color: white;
+	font-size: smaller;
+	box-shadow: 0px 0px 0px 4px rgba(144,144,144,0.5);
+	border-radius: 1px;
+	position: absolute;
+	padding: 2px;
+	z-index:2147483646;
+	overflow: hidden;
+	word-wrap: break-word;
+}
