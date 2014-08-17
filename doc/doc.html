@@ -239,8 +239,8 @@ CREATE INDEX webdav_locks_idx3 ON webdav_locks (fn,basefn);
 CREATE INDEX webdav_locks_idx4 ON webdav_locks (fn,basefn,token);
 CREATE INDEX webdav_props_idx1 ON webdav_props (fn);
 CREATE INDEX webdav_props_idx2 ON webdav_props (fn,propname);
-INSERT INTO webdav_locks SELECT * FROM webdav_locks;
-INSERT INTO webdav_props SELECT * FROM webdav_props;
+INSERT INTO webdav_locks SELECT * FROM webdav_locks_old;
+INSERT INTO webdav_props SELECT * FROM webdav_props_old;
 DROP TABLE webdav_locks_old;
 DROP TABLE webdav_props_old;
 
