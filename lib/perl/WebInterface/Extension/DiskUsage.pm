@@ -168,74 +168,18 @@ sub execTemplateFunction {
 	$content = $self->collectTreemapData() if $func eq 'json' && $param eq 'treemapdata';
 	$content = $self->collectSuffixData('count') if $func eq 'json' && $param eq 'suffixesbycount';
 	$content = $self->collectSuffixData('size') if $func eq 'json' && $param eq 'suffixesbysize';
-	#$content = $self->collectHistoByFileSizeData() if $func eq 'json' && $param eq 'histobyfilesize';
-	#$content = $self->collectHistoByFolderSizeData() if $func eq 'json' && $param eq 'histobyfoldersize';
 	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
 	return $content;
-}
-sub collectHistoByFileSizeData() {
-	my ($self) = @_;
-	my $counter = $$self{counter};
-	my @data = ();
-	my @sizes = keys %{$$counter{size}{histo}{sizes}};
-	
-	my @buckets = ();
-	my $bucketcount = 10;
-	my $filemax = $$counter{size}{histo}{filemax};
-	my $bcount = floor(log($filemax) / log(1024));
-	my $bfac = 1024**$bcount;
-	my $bucketmax = ceil($filemax / $bfac) *$bfac;
-	my $bucketsize = $bucketmax / $bucketcount;
-	$bucketsize=1 if $bucketsize == 0;
-	
-	foreach my $size (@sizes) {
-		$buckets[ floor($size/$bucketsize) ] ++;
-	}
-	@data = map { [ ($self->renderByteValue($_ * $bucketsize,1))[0],$buckets[$_] || 0] } 0 .. $bucketcount;	
-	
-	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
-}
-sub _min {
-	return $_[0] < $_[1] ? $_[0] : $_[1]; 
-}
-sub _max {
-	return $_[0] > $_[1] ? $_[0] : $_[1];
-} 
-
-sub collectHistoByFolderSizeData() {
-	my ($self) = @_;
-	my $counter = $$self{counter};
-	my @data = ();
-	my @pathes = keys %{$$counter{size}{path}};
-	
-	my %buckets = ();
-	my $bucketcount = _min(scalar(@pathes),20);
-	my $pathmax = $$counter{size}{histo}{pathmax};
-	my $bcount = floor(log($pathmax) / log(1024));
-	my $bfac = 1024**$bcount;
-	my $bucketmax = ceil($pathmax / $bfac) *$bfac;
-	my $bucketsize = $bucketmax / $bucketcount;
-	$bucketsize=1 if $bucketsize == 0;
-	
-	foreach my $path (@pathes) {
-		$buckets{  floor($$counter{size}{path}{$path} / $bucketsize) }+=$$counter{count}{files}{$path};		
-	}
-	@data = map { [ ($self->renderByteValue($_ * $bucketsize,1))[0], $buckets{$_} || 0  ] } 0 .. $bucketcount;
-	
-	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
 }
 sub collectSuffixData {
 	my ($self, $key) = @_;
 	my $counter = $$self{counter};
-	my @data;
-	
-	## suffixes by file size:
-	@data = map {[ $_, $$counter{suffixes}{$key}{$_} ] } sort { $$counter{suffixes}{$key}{$b} <=> $$counter{suffixes}{$key}{$a} || $a cmp $b } keys %{$$counter{suffixes}{$key}};
+	my @data = map { { x=>$_, y=> $$counter{suffixes}{$key}{$_},l=>$key eq 'size'? ($self->renderByteValue($$counter{suffixes}{$key}{$_}))[0] : sprintf("%s",$$counter{suffixes}{$key}{$_})   }   } sort { $$counter{suffixes}{$key}{$b} <=> $$counter{suffixes}{$key}{$a} || $a cmp $b } keys %{$$counter{suffixes}{$key}};
 	if (scalar(@data)>10) {
 		my @deleted = splice @data, 10;
 		my $others = 0;
-		foreach my $s (@deleted) { $others+= $$s[1]; };
-		push @data , [ 'others', $others ];	
+		foreach my $s (@deleted) { $others+= $$s{y} };
+		push @data, { x=>$self->tl('du_others'), y=>$others,l=>$key eq 'size'? ($self->renderByteValue($others))[0] : sprintf("%s",$others)};
 	}
 	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
 }

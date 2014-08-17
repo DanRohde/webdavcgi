@@ -63,28 +63,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	border: 1px solid black;
 	width: 20em;
 }
-.diskusage.statistics.piechart {
-	width: 400px;
+.diskusage.filetype.piechart {
+	width: 500px;
 	height: 300px;
 }
-.diskusage.statistics.chart {
+.diskusage.filetype.chart {
 	display: inline-block;
 	float: right;
 }
-.diskusage.statistics.charttitle {
+.diskusage.filetype.charttitle {
 	text-align: center;
 	font-weight: bold;
-	border: 2px outset #eeeeee;
+	border-bottom: 1px solid #eeeeee;
 	margin-left: auto;
 	margin-right: auto;
-	background-color: #dadada;
 }
-.diskusage.statistics.info {
-	text-align: center;
-	height: 1.5ex;
-	font-size: small;
-}
-.diskusage.statistics.barchart {
+.diskusage.histogram.barchart {
 	width: 800px;
 	height: 300px;
 }
