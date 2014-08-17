@@ -46,7 +46,7 @@ input[readonly="readonly"].publicuri {
 	opacity: 1;
 }
 .shared .filename {
-	background: url(images/share.png) no-repeat right center;
+	background: url(images/share-dark.png) no-repeat right center;
 }
 .shared.islink-yes .filename {
 	background: 

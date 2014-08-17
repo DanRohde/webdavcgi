@@ -219,24 +219,29 @@ table,th,td {
 	float: right;
 	margin: 0;
 	border: 0;
-	padding: 0 1em 0 0;
+	padding: 0 18px 0 0;
 }
 
 #fileactions.hidelabels .label  {
 	display: none;
 }
+
 #fileactions a {
 	min-width: 22px;
-	padding: 3px 4px 3px 22px;
+	padding: 2px 4px 2px 22px;
+	border: 1px solid transparent;
+	margin-top: 2px;
 }
 #fileactions a:hover {
-	background-color: #dddddd;
+	border: 1px dotted #808080;
 }
 #fileactions.hidelabels a {
-	padding: 4px 12px 4px 12px;
+	padding: 2px 20px 2px 2px;
 	margin-left: 4px;
 	margin-right: 4px;
 }
+
+
 #fileList tr td{
 	height: 2em;
 }
