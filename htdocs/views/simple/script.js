@@ -755,7 +755,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				$("<div></div>").click(function(event) {
 					preventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
-				}).appendTo(up).attr("title",$("#cancel").html()).addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
+				}).appendTo(up).attr("title",$("#cancel").html()).MyTooltip().addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
 				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0]["name"]+" ("+renderByteSize(data.files[0]["size"])+"): 0%");;
 				// $("#progress .info").scrollTop($("#progress
 				// .info")[0].scrollHeight);
