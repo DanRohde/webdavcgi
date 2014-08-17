@@ -20,16 +20,7 @@
 <tr><th class="diskusage filename">$tl(du_newestfile):</th><td class="diskusage filename"><a href="$newestfilepathuri">$newestfilename</a></td><td class="diskusage size" title="$newestfilesizetitle">$newestfilesize</td><td class="diskusage lastmodified" title="$newestfileage">$newestfileage</td></tr>
 </tbody>
 </table>
-
-		<table class="diskusage details">
-			<thead>
-				<tr><th class="diskusage filename">$tl(name)</th><th class="diskusage size" title="$sizetitle">$tl(size)</th></tr>
-			</thead>
-			<tbody>
-				$details(detailsentry)
-			</tbody>
-		</table>
-	</div>
+</div>
 </div>
 <div class="diskusage treemap accordion">
 	<h3>$tl(du_treemap)</h3>
@@ -65,5 +56,20 @@
 	</div>
 	</div>
 </div>
+<div class="diskusage folderlist accordion">
+	<h3>$tl(du_folderlist)</h3>
+	<div>
+
+		<table class="diskusage details">
+			<thead>
+				<tr><th class="diskusage filename">$tl(name)</th><th class="diskusage size" title="$sizetitle">$tl(size)</th></tr>
+			</thead>
+			<tbody>
+				$details(detailsentry)
+			</tbody>
+		</table>
+	</div>
+</div>
+
 <!--ENDIF-->
 </div>
