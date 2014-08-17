@@ -34,7 +34,9 @@ use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
-use POSIX qw(floor ceil);
+use POSIX qw(strftime);
+use DateTime;
+use DateTime::Format::Human::Duration;
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -107,8 +109,9 @@ sub renderDiskUsageTemplate {
 	$$self{filecountall} = $filecountall;
 	$$self{maxfilesizesum} = $maxfilesizesum;
 	
-	
-	
+	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;
+	my $hdr = DateTime::Format::Human::Duration->new();
+		
 	my @pbvsum = $self->renderByteValue($$counter{size}{all});
 	my $filenamelist = join(', ',$cgi->param('file'));
 	$filenamelist='.' if $filenamelist eq "";
@@ -121,6 +124,51 @@ sub renderDiskUsageTemplate {
 		size=>$pbvsum[0],
 		sizetitle=>$pbvsum[1],
 		bytesize => $$counter{size}{all},
+		biggestfoldername => $cgi->escapeHTML($self->_getFolderName($$counter{size}{biggestfolder}{path})),
+		biggestfolderuri =>$cgi->escapeHTML($self->_getFolderName($$counter{size}{biggestfolder}{path})),
+		biggestfoldersize => ($self->renderByteValue($$counter{size}{biggestfolder}{size}))[0],
+		biggestfoldersizetitle => ($self->renderByteValue($$counter{size}{biggestfolder}{size}))[1],
+		biggestfolderage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{size}{biggestfolder}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
+		biggestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{size}{biggestfolder}{age} || 0)),
+			
+		biggestfilename => $cgi->escapeHTML($$counter{size}{biggestfile}{file}),
+		biggestfilepathuri => $cgi->escapeHTML($self->_getFolderName($$counter{size}{biggestfile}{path})),
+		biggestfilesize => ($self->renderByteValue($$counter{size}{biggestfile}{size}))[0],
+		biggestfilesizetitle => ($self->renderByteValue($$counter{size}{biggestfile}{size}))[1],
+		biggestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{size}{biggestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
+		biggestfileagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{size}{biggestfile}{age} || 0)),
+		
+		
+		oldestfoldername => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfolder}{path})),
+		oldestfolderuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfolder}{path})),
+		oldestfoldersize => ($self->renderByteValue($$counter{age}{oldestfolder}{size}))[0],
+		oldestfoldersizetitle => ($self->renderByteValue($$counter{age}{oldestfolder}{size}))[1],
+		oldestfolderage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{oldestfolder}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
+		oldestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{oldestfolder}{age} || 0)),
+		
+		newestfoldername => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfolder}{path})),
+		newestfolderuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfolder}{path})),
+		newestfoldersize => ($self->renderByteValue($$counter{age}{newestfolder}{size}))[0],
+		newestfoldersizetitle => ($self->renderByteValue($$counter{age}{newestfolder}{size}))[1],
+		newestfolderage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{newestfolder}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
+		newestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{newestfolder}{age} || 0)),
+		
+		
+		oldestfilename => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{file})),
+		oldestfilepathuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{path})),
+		oldestfilesize => ($self->renderByteValue($$counter{age}{oldestfile}{size}))[0],
+		oldestfilesizetitle => ($self->renderByteValue($$counter{age}{oldestfile}{size}))[1],
+		oldestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{oldestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
+		oldestfileagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{oldestfile}{age} || 0)),
+		
+		
+		newestfilename => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{file})),
+		newestfilepathuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{path})),
+		newestfilesize => ($self->renderByteValue($$counter{age}{newestfile}{size}))[0],
+		newestfilesizetitle => ($self->renderByteValue($$counter{age}{newestfile}{size}))[1],
+		newestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{newestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
+		newestfileagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{newestfile}{age} || 0)),
+		
 		time=>time(),
 	};
 	
@@ -278,22 +326,35 @@ sub getDiskUsage {
 			$self->getDiskUsage($full,$f,$counter);
 		}
 	} else {
-		my $fs  = ($$self{backend}->stat($path.$file))[7];		
+		my @stat = $$self{backend}->stat($path.$file);
+		my $age = $stat[9];
+		my $fs  = $stat[7];		
 		$$counter{count}{all}{files}++;
 		$$counter{count}{files}{$path}++;
 		
 		$$counter{size}{all}+=$fs; 
-		$$counter{size}{path}{$path}+=$fs; 
-	
+		$$counter{size}{path}{$path}+=$fs;
+
 		if (!$$counter{size}{pathmax}{$path} || $fs > $$counter{size}{pathmax}{$path} ) {
 			$$counter{size}{allmaxsum}-=$$counter{size}{pathmax}{$path} if $$counter{size}{pathmax}{$path};
 			$$counter{size}{allmaxsum}+=$fs;
 			$$counter{size}{pathmax}{$path} = $fs;		
 		}
 		
-		$$counter{size}{histo}{filemax} = $fs if !$$counter{size}{histo}{filemax} || $fs > $$counter{size}{histo}{filemax};
-	  	$$counter{size}{histo}{sizes}{$fs}++;
-	  	
+		
+		
+		$$counter{age}{oldestfile} = { age=> $age, path=>$path, file=>$file, size=>$fs } if !$$counter{age}{oldestfile}{age} || $age < $$counter{age}{oldestfile}{age};
+		$$counter{age}{newestfile} = { age=> $age, path=>$path, file=>$file, size=>$fs } if !$$counter{age}{newestfile}{age} || $age > $$counter{age}{newestfile}{age};
+		$$counter{age}{oldestfolder} = { age=>$age, path=>$path, size=>$$counter{size}{path}{$path} } if !$$counter{age}{oldestfolder}{age} || $age < $$counter{age}{oldestfolder}{age};
+		$$counter{age}{newestfolder} = { age=>$age, path=>$path, size=>$$counter{size}{path}{$path} } if !$$counter{age}{newestfolder}{age} || $age > $$counter{age}{newestfolder}{age};
+		
+		$$counter{age}{lastmodified}{$path} = $age if !$$counter{age}{lastmodified} || $age > $$counter{age}{lastmodified}{$path};
+		
+		$$counter{size}{biggestfile} = { age=>$age, path=>$path, file=>$file, size=>$fs } if !$$counter{size}{biggestfile}{age} || $fs > $$counter{size}{biggestfile}{size};
+		$$counter{size}{biggestfolder} = { age=>$$counter{age}{lastmodified}{$path}, path=>$path, size=>$$counter{size}{path}{$path} } 
+			if !$$counter{size}{biggestfolder}{age} || $$counter{size}{path}{$path} > $$counter{size}{biggestfolder}{size};
+		
+		
 		$$counter{size}{files}{$path}{$file eq "" ? '.' : $file} = $fs;
 		
 		if ($file=~/(\.[^.]+)$/ && length($1)<5) {
@@ -301,6 +362,5 @@ sub getDiskUsage {
 			$$counter{suffixes}{count}{lc($1)}++;
 		}
 	}
-	$$counter{size}{histo}{pathmax} = $$counter{size}{path}{$path} if !$$counter{size}{histo}{pathmax} || $$counter{size}{path}{$path} > $$counter{size}{histo}{pathmax};
 }
 1;

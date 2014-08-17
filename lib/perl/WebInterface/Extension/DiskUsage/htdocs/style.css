@@ -37,14 +37,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	border-collapse: collapse;
 	width: 100%;
 }
-.diskusage.size, .diskusage.filename {
+.diskusage.size, .diskusage.filename, .diskusage.lastmodified {
 	margin: 0;
 	padding: 1px;
 	vertical-align: top;
 	border-bottom: 1px solid gray;
 	
 }
-.diskusage.size {
+.diskusage.size, .diskusage.lastmodified {
 	text-align: right;	
 }
 .diskusage.entry:hover {
