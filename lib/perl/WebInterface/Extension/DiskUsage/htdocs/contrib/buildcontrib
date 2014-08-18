@@ -1,0 +1,1 @@
+cat jquery.ui.treemap.min.js amcharts/amcharts.js amcharts/pie.js amcharts/themes/light.js | gzip -c > contrib.js.gz 

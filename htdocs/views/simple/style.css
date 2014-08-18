@@ -360,6 +360,8 @@ tr.isreadable-no:hover {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: left -219px;
+	background-color: transparent;
+	color: black;
 }
 .action.props {
 	background: url(images/sprite.png) no-repeat 2px -21px;

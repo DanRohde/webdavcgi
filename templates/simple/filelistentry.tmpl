@@ -5,10 +5,14 @@ $filelistentrycolumns
 <td class="option"></td>
 <!--TEMPLATE(name)[
 <td class="filename -hidden"> 
-     <div class="filename" title="$name$linkinfo <!--IF($config(ALLOW_CHANGEPERM))-->($mode $modestr)<!--ENDIF-->">
-	     <a href="$fileuri" class="action changeuri" title="$name$linkinfo">
+     <!--IF("$linkinfo" eq "" && "$name" eq "$displayname")-->
+       <div class="filename">
+     <!--ELSE-->
+       <div class="filename" title="$name$linkinfo">
+     <!--ENDIF-->
+	     <a href="$fileuri" class="action changeuri">
 	     	<img src="$iconurl" class="$iconclass" alt="icon" title="$mime"/>
-	     	<span class="nametext"><!--IF($cgi->param('ajax') eq 'search')-->$name<!--ELSE-->$displayname<!--ENDIF--></span>
+	     	<span class="nametext">$displayname</span>
 	     </a>
      </div>
 </td>

@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(sendbymail.png);
 	background-repeat: no-repeat;
 	background-position: 4px bottom;
+	background-color: transparent;
+	color: #666;
 }
 .listaction.sendbymail {
  	background-position: center center;
