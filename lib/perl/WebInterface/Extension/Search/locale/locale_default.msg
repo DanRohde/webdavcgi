@@ -26,7 +26,7 @@ search.dupsearch.limitexceeded.result	"Perhaps duplicates found (size limit exce
 search.sizelimit			"Limit"
 search.savings				"Savings"
 search.summary				"Summary"
-search.time					"Modification time"
+search.time					"File is"
 search.olderthan			"older than"
 search.newerthan			"newer than"
 search.seconds				"seconds"

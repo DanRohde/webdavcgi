@@ -26,7 +26,7 @@ search.dupsearch.limitexceeded.result	"Vielleicht Dubletten gefunden (Größen-L
 search.sizelimit			"Limit"
 search.savings				"Ersparniss"
 search.summary				"Zusammenfassung"
-search.time					"Änderungsdatum"
+search.time					"Datei ist"
 search.olderthan			"älter als"
 search.newerthan			"neuer als"
 search.seconds				"Sekunden"
