@@ -28,15 +28,31 @@
 		</div>
 		<div class="search size">$tl(search.size):
 			<select name="sizecomparator">
-				<option value="<">&lt;</option>
-				<option value="<=">&le;</option>
+				<option value="&lt;">&lt;</option>
+				<option value="&lt;=">&le;</option>
 				<option value="==" selected="selected">=</option>
-				<option value=">=">&ge;</option>
-				<option value=">">&gt;</option>
+				<option value="&gt;=">&ge;</option>
+				<option value="&gt;">&gt;</option>
 			</select>
-			<input type="text" name="size"/>
+			<input type="text" name="size" size="5"/>
 			<select name="sizeunits">
 				$each#@BYTEUNITORDER#'<option value="$v">$v</option>'#'$view'#
+			</select>,
+		$tl(search.time): 
+			<select name="timecomparator">
+			<option value="&gt;=">$tl(search.olderthan)</option>
+			<option value="&lt;=">$tl(search.newerthan)</option>
+			</select>
+			<input type="text" name="time" size="5"/>
+			
+			<select name="timeunits">
+				<option value="seconds">$tl(search.seconds)</option>
+				<option value="minutes">$tl(search.minutes)</option>
+				<option value="hours">$tl(search.hours)</option>
+				<option value="days" selected="selected">$tl(search.days)</option>
+				<option value="weeks">$tl(search.weeks)</option>
+				<option value="months">$tl(search.months)</option>
+				<option value="years">$tl(search.years)</option>
 			</select>
 		</div>
 		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->

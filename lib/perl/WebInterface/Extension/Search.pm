@@ -35,10 +35,10 @@ our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
 use Time::HiRes qw(time);
-
 use Digest::MD5 qw(md5_hex);
 
-use vars qw( %CACHE );
+use vars qw( %CACHE %TIMEUNITS);
+%TIMEUNITS = ( 'seconds' => 1, 'minutes' => 60, 'hours'=>3600, 'days'=>86400, 'weeks'=> 604800, 'months'=>18144000, 'years'=>31557600);
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript', 'gethandler','posthandler');
@@ -120,8 +120,10 @@ sub filterFiles {
 	my $query = $$self{query};
 	my $size = $$self{cgi}->param('size');
 	my $searchin = $$self{cgi}->param('searchin') || 'filename';
+	my $time = $$self{cgi}->param('time');
 	my $full = $base.$file;
-
+	my @stat = $$self{backend}->stat($full);
+	
 	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /$query/;
 	
 	$ret = 1 if  $query && $self->config('allow_contentsearch',0) && $searchin eq 'content' 
@@ -138,14 +140,23 @@ sub filterFiles {
 		my $sizecomparator = $$self{cgi}->param('sizecomparator');
 		$sizecomparator = '==' if $sizecomparator eq '=';
 		if ($sizecomparator =~ /^[<>=]{1,2}$/) { 
-			my $filesize = ($$self{backend}->stat($full))[7];
+			my $filesize = $stat[7];
 			my $realsize = $size * ( $$self{BYTEUNITS}{$$self{cgi}->param('sizeunits')} || 1);
 			$ret |= ! eval "$filesize $sizecomparator $realsize";
 		}
 	}
+	if (defined $time && $time=~/^[\d\.\,]+$/) {
+		my $timecomparator = $$self{cgi}->param('timecomparator');
+		my $timeunits = $$self{cgi}->param('timeunits');
+		if ($timecomparator =~ /^[<>=]{1,2}$/ && exists $TIMEUNITS{$timeunits}) {
+			my $expr = "(time()-$stat[9]) $timecomparator ($time * $TIMEUNITS{$timeunits})";
+			$expr=~s/\,/\./g;	
+			$ret |= $$self{backend}->isDir($full) || !eval $expr;
+		}
+	}
 	if (!$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch')) {
 		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)&& !$$self{backend}->isDir($full)) {  ## && ($$self{backend}->stat($full))[7] <= $self->config('sizelimit',2097152)) {
-			push @{$$counter{dupsearch}{sizes}{($$self{backend}->stat($full))[7]}}, { base=>$base, file=>$file };
+			push @{$$counter{dupsearch}{sizes}{$stat[7]}}, { base=>$base, file=>$file };
 		}
 		$ret = 1;
 	}
