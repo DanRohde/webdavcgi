@@ -67,7 +67,10 @@ sub handle {
 	}
 	return 0; 
 }
-
+sub getAbsURI {
+	my ($self, $path) = @_;
+	return $main::REQUEST_URI.$self->getURI($self->_getFolderName($path));
+}
 sub renderDiskUsageTemplate {
 	my ($self) = @_;
 	
@@ -125,7 +128,7 @@ sub renderDiskUsageTemplate {
 		sizetitle=>$pbvsum[1],
 		bytesize => $$counter{size}{all},
 		biggestfoldername => $cgi->escapeHTML($self->_getFolderName($$counter{size}{biggestfolder}{path})),
-		biggestfolderuri =>$cgi->escapeHTML($self->_getFolderName($$counter{size}{biggestfolder}{path})),
+		biggestfolderuri =>$self->getAbsURI($$counter{size}{biggestfolder}{path}),
 		biggestfolderfilecount => $$counter{count}{files}{$$counter{size}{biggestfolder}{path}},
 		biggestfolderfoldercount => $$counter{count}{folders}{$$counter{size}{biggestfolder}{path}},
 		biggestfoldersum => $$counter{count}{sum}{$$counter{size}{biggestfolder}{path}}, 
@@ -135,7 +138,8 @@ sub renderDiskUsageTemplate {
 		biggestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{size}{biggestfolder}{age} || 0)),
 			
 		biggestfilename => $cgi->escapeHTML($$counter{size}{biggestfile}{file}),
-		biggestfilepathuri => $cgi->escapeHTML($self->_getFolderName($$counter{size}{biggestfile}{path})),
+		biggestfilepathuri => $self->getAbsURI($$counter{size}{biggestfile}{path}),
+		biggestfilepathname => $$self{cgi}->escapeHTML($self->_getFolderName($$counter{size}{biggestfile}{path})),
 		biggestfilesize => ($self->renderByteValue($$counter{size}{biggestfile}{size}))[0],
 		biggestfilesizetitle => ($self->renderByteValue($$counter{size}{biggestfile}{size}))[1],
 		biggestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{size}{biggestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
@@ -143,7 +147,7 @@ sub renderDiskUsageTemplate {
 		
 		
 		oldestfoldername => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfolder}{path})),
-		oldestfolderuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfolder}{path})),
+		oldestfolderuri => $self->getAbsURI($$counter{age}{oldestfolder}{path}),
 		oldestfolderfilecount => $$counter{count}{files}{$$counter{age}{oldestfolder}{path}},
 		oldestfolderfoldercount => $$counter{count}{folders}{$$counter{age}{oldestfolder}{path}},
 		oldestfoldersum => $$counter{count}{sum}{$$counter{age}{oldestfolder}{path}}, 
@@ -153,7 +157,7 @@ sub renderDiskUsageTemplate {
 		oldestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{oldestfolder}{age} || 0)),
 		
 		newestfoldername => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfolder}{path})),
-		newestfolderuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfolder}{path})),
+		newestfolderuri => $self->getAbsURI($$counter{age}{newestfolder}{path}),
 		newestfolderfilecount => $$counter{count}{files}{$$counter{age}{newestfolder}{path}},
 		newestfolderfoldercount => $$counter{count}{folders}{$$counter{age}{newestfolder}{path}},
 		newestfoldersum => $$counter{count}{sum}{$$counter{age}{newestfolder}{path}}, 
@@ -164,7 +168,8 @@ sub renderDiskUsageTemplate {
 		
 		
 		oldestfilename => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{file})),
-		oldestfilepathuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{path})),
+		oldestfilepathuri => $self->getAbsURI($$counter{age}{oldestfile}{path}),
+		oldestfilepathname => $$self{cgi}->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{path})),
 		oldestfilesize => ($self->renderByteValue($$counter{age}{oldestfile}{size}))[0],
 		oldestfilesizetitle => ($self->renderByteValue($$counter{age}{oldestfile}{size}))[1],
 		oldestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{oldestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
@@ -172,7 +177,8 @@ sub renderDiskUsageTemplate {
 		
 		
 		newestfilename => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{file})),
-		newestfilepathuri => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{path})),
+		newestfilepathuri => $self->getAbsURI($$counter{age}{newestfile}{path}),
+		newestfilepathname => $$self{cgi}->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{path})),
 		newestfilesize => ($self->renderByteValue($$counter{age}{newestfile}{size}))[0],
 		newestfilesizetitle => ($self->renderByteValue($$counter{age}{newestfile}{size}))[1],
 		newestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{newestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
