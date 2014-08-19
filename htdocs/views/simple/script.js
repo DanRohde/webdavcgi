@@ -1856,7 +1856,7 @@ function renderAccessKeyDetails() {
 		return aa < bb ? -1 : aa > bb ? 1 : 0; 
 	});
 	$.each(refs, function(i,v) {
-		text += "<li>"+$(v).attr("accesskey")+": "+($(v).attr("title")? $(v).attr("title") : $(v).html())+"</li>";
+		text += "<li>"+$(v).attr("accesskey")+": "+( $(v).attr("title") || $(v).attr("data-tooltip") || $(v).html())+"</li>";
 	});
 	$('<div id="accesskeydetails"/>')
 		.html('<ul class="accesskeydetails">'+text+"</ul>")
