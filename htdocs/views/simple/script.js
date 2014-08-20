@@ -1824,25 +1824,31 @@ function initViewFilterDialog() {
 	});
 }
 function renderAbortDialog(xhr, timeout, handler) {
-	window.setTimeout(function() {
+	$("#abortdialog").remove();
+	var dialog = $("<div/>").html($("#cancel").html()).attr("id","abortdialog");
+	$(".action.cancel",dialog).button().click(function(event){
+		if (xhr.readyState !=4) xhr.abort();
+		dialog.hide().remove();
+		if (handler) handler.call(this);
+	});
+	$("body").data("abortdialogtimeout",window.setTimeout(function() {
 		if (xhr.readyState > 2) return;
-		
-		var dialog = $("<div/>").html($("#cancel").html()).button();
-		dialog.css({ "z-index": 100000, "position":"fixed", 
-				top:'50%',left:'50%',margin:'-'+(dialog.height() / 2)+'px 0 0 -'+(dialog.width() / 2)+'px' })
-		dialog.click(function(event){
-			if (xhr.readyState !=4) xhr.abort();
-			dialog.hide().remove();
-			if (handler) handler.call(this);
-		}).appendTo("body").show();
+		dialog.appendTo($("body")).show();
 		var interval = window.setInterval(function() {
 			if (xhr.readyState == 4) {
 				dialog.hide().remove();
 				window.clearInterval(interval);
 			}
 		}, 200);
+		$("body").data("abortdialoginterval",interval);
 		
-	}, timeout || 5000);
+	}, timeout || 2500));
+	return dialog;
+}
+function removeAbortDialog() {
+	window.clearTimeout($("body").data("abortdialogtimeout"));
+	window.clearInterval($("body").data("abortdialoginterval"));
+	$("#abortdialog").hide().remove();
 }
 function renderAccessKeyDetails() {
 	if ($("#accesskeydetails").length>0) {
@@ -2021,6 +2027,7 @@ function initToolBox() {
 			preventDefault : preventDefault,
 			postAction: postAction,
 			refreshFileListEntry : refreshFileListEntry,
+			removeAbortDialog: removeAbortDialog,
 			renderAbortDialog: renderAbortDialog,
 			renderByteSize: renderByteSize,
 			renderByteSizes: renderByteSizes,

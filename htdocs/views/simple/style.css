@@ -1182,3 +1182,18 @@ img {
 	overflow: hidden;
 	word-wrap: break-word;
 }
+#abortdialog {
+	position: fixed;
+	top: 51%;
+	left:51%;
+	z-index: 100000;
+	border: 1px solid #aaa;
+	border-radius: 4px;
+	background-color: white;
+	padding: 10px;
+	text-align: center;
+	cursor: wait;
+}
+#abortdialog div {
+	padding: 5px;
+}
