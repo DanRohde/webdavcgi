@@ -1172,7 +1172,7 @@ img {
 }
 .tooltip {
 	color: black;
-	background-color: white;
+	background-color: #feffef;
 	font-size: smaller;
 	box-shadow: 0px 0px 0px 4px rgba(144,144,144,0.5);
 	border-radius: 1px;

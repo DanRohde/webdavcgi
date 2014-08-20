@@ -873,6 +873,7 @@ function confirmDialog(text, data) {
 		width: 500,
 		height: "auto",
 		title: $("#confirmdialog").attr('data-title'),
+		closeText: $("#close").html(),
 		buttons: [ 
 			{ 
 				text: $("#cancel").html(), 
@@ -1825,7 +1826,7 @@ function initViewFilterDialog() {
 }
 function renderAbortDialog(xhr, timeout, handler) {
 	$("#abortdialog").remove();
-	var dialog = $("<div/>").html($("#cancel").html()).attr("id","abortdialog");
+	var dialog = $("<div/>").html($("#abortdialogtemplate").html()).attr("id","abortdialog");
 	$(".action.cancel",dialog).button().click(function(event){
 		if (xhr.readyState !=4) xhr.abort();
 		dialog.hide().remove();
@@ -1927,20 +1928,12 @@ function refreshFileListEntry(filename) {
 	});
 }
 function initPlugins() {
-	$.fn.MyTooltip = function(delay, timeout) {
+	$.fn.MyTooltip = function(delay, hidetimeout, showtimeout) {
 		var toel = $("body");
 		var w = $(window);
 		var tooltip;
 		if (!toel.data("tooltip")) { 
-				tooltip = $("<div/>")
-						.addClass("tooltip")
-						.css({
-							//"word-wrap": "break-word","overflow":"hidden","z-index":"2147483647","padding":"2px",
-							 // "box-shadow":"0px 0px 0px 4px rgba(144,144,144,0.3)", "border-radius":"1px", 
-							 // "background-color":"white", "font-size":"smaller",
-							 // "position":"absolute"
-								  })
-						.appendTo($("body")).hide();
+				tooltip = $("<div/>").addClass("tooltip").appendTo($("body")).hide();
 				toel.data("tooltip", tooltip);
 		} else {
 			tooltip = toel.data("tooltip");
@@ -1952,14 +1945,17 @@ function initPlugins() {
 				tooltip.hide(); 
 		});
 		function clearTimeout() {
-			if (toel.data("timeout")) window.clearTimeout(toel.data("timeout"));
+			if (toel.data("tttimeout")) window.clearTimeout(toel.data("tttimeout"));
 		}
 		function setDelayTimeout(e,el) {
 			clearTimeout();
 			tooltip.hide();
-			toel.data("timeout", window.setTimeout(function(){
+			toel.data("tttimeout", window.setTimeout(function(){
 				setTooltipPosition(e,el);
 			},delay));
+		}
+		function hideTooltip(t) {
+			toel.data("tttimeout", window.setTimeout(function() {tooltip.hide()}, t));
 		}
 		function setTooltipPosition(e,el) {
 			clearTimeout();
@@ -1973,6 +1969,7 @@ function initPlugins() {
 			if (Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
 			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
 			tooltip.show();
+			hideTooltip(showtimeout || 7000);
 		}
 		function handleMouseOver(e,u) {
 			var el = $(this);
@@ -1990,7 +1987,7 @@ function initPlugins() {
 		}
 		function handleMouseOut(e,u) {
 			clearTimeout();
-			toel.data("timeout", window.setTimeout(function() {tooltip.hide()}, timeout || 500));
+			hideTooltip(hidetimeout || 500);
 		}
 		function handleTitleAttribute(el) {
 			if (el.attr("title") && el.attr("title").trim() !="") {
