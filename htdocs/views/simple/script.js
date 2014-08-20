@@ -1974,7 +1974,7 @@ function initPlugins() {
 		function handleMouseOver(e,u) {
 			var el = $(this);
 			handleTitleAttribute(el);
-			tooltip.html(el.attr("data-tooltip"));
+			tooltip.text(el.attr("data-tooltip"));
 			if (delay) {
 				setDelayTimeout(e,el);
 			} else {
