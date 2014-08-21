@@ -32,19 +32,25 @@ use vars qw( %CACHE );
 
 sub new {
 	my $class = my $self = shift;
-	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git', 
+	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git',
+		     EMPTYDIRFN=>'.__empty__', 
 		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{LOCKFILE} || '/tmp/webdav-git.lock'
 	};
-	return bless $self, $class;
+	bless $self, $class;
+	$self->execGit('init') if !$self->isDir($main::DOCUMENT_ROOT.'.git');
+	return $self;
 }
-
+sub mkCol {
+	my ($self, $fn) = @_;
+	return $self->SUPER::mkcol($fn) && $self->saveData("$fn/$$self{EMPTYDIRFN}", "");
+}
 sub unlinkFile {
 	my $self = shift @_;
 	return $self->execGit('rm',shift @_);
 }
 sub unlinkDir {
-	my $self = shift @_;
-	return $self->execGit('rm','-r', shift @_);
+	my($self,$fn) = @_;
+	return $self->execGit('rm','-r', $fn) && (!$self->exists($fn) || $self->SUPER::unlinkDir($fn));
 }
 sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
@@ -56,11 +62,11 @@ sub readDir {
 }
 sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	return $file eq '.git' || $self->filter(undef, $dirname, $file);
+	return $file eq '.git' || $file eq $$self{EMPTYDIRFN} || $self->filter(undef, $dirname, $file);
 }
 sub deltree {
-	my $self = shift @_;
-	return $self->execGit('rm','-r', shift @_);
+	my ($self, $fn, $errRef) =  @_;
+	return $self->execGit('rm','-r', $fn) && (!$self->exists($fn) || $self->SUPER::deltree($fn,$errRef));
 }
 sub saveData {
 	my $self = shift @_;
@@ -96,8 +102,15 @@ sub uncompressArchive {
 	my $zip = Archive::Zip->new();
 	my $status = $zip->read($self->resolveVirt($zipfile));
 	$ret = $status eq $zip->AZ_OK;
-	$zip->extractTree(undef, $self->resolveVirt($destination)) if $ret;
-	## TODO: find .git directory and rename it
+	if ($ret) {
+		foreach my $member ($zip->members()) {
+			my $fn = $self->resolveVirt($destination).$member->fileName();
+			if (!$self->gitFilter($self->dirname($fn), $self->basename($fn))) {
+				$zip->extractMember($member, $fn);
+				$self->saveData("$fn/$$self{EMPTYDIRFN}") if $member->isDirectory(); 
+			}
+		}
+	}
 	return $self->autoAdd() && $ret;
 }
 
@@ -122,6 +135,7 @@ sub _execGit {
 	my $self = shift @_;
 	my @params = map { $_=~s/^\Q$main::DOCUMENT_ROOT\E//r; } @_;
 	my $ret = 1;
+	#warn(join(" ",@_));
 	if (open(my $fd, ">", $$self{LOCKFILE})) {
 		chdir $main::DOCUMENT_ROOT;
 		if (($main::ENABLE_FLOCK || flock($fd, LOCK_EX)) && open(my $git, '-|',$$self{GIT}, @params)) {
