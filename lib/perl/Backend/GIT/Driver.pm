@@ -25,10 +25,7 @@ use strict;
 use Backend::FS::Driver;
 our @ISA = qw( Backend::FS::Driver );
 
-
 use Fcntl qw(:flock);
-
-use vars qw( %CACHE );
 
 sub new {
 	my $class = my $self = shift;
@@ -46,21 +43,21 @@ sub new {
 }
 sub mkcolhier {
 	my ($self, $dir) = @_;
-	$self->mkcolhier($self->dirname($dir)) if !$self->exists($self->dirname($dir));
+	$self->mkcolhier($self->dirname($dir)) unless -d $self->dirname($dir);
 	$self->mkcol($dir);
 }
 sub unlinkFile {
 	my ($self, $fn) = @_;
-	return 0 unless $self->exists($fn);
+	my $ret=$self->SUPER::unlinkFile($fn);
 	$self->execGit('rm',$fn);
-	$self->mkcolhier($self->dirname($fn)) if !$self->exists($self->dirname($fn));
-	return !$self->exists($fn);
+	$self->mkcolhier($self->dirname($fn));
+	return $ret;
 }
 sub unlinkDir {
 	my($self,$fn) = @_;
+	my $ret = $self->SUPER::unlinkDir($fn);
 	$self->execGit('rm','-r',$fn);
-	$self->SUPER::unlinkDir($fn);
-	return !$self->exists($fn);
+	return $ret;
 }
 sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
@@ -77,19 +74,22 @@ sub gitFilter {
 
 sub deltree {
 	my ($self, $fn, $errRef) =  @_;
-	return $self->unlinkFile($fn) if $self->isFile($fn);
-	$self->SUPER::deltree($fn);
+	my $ret = $self->SUPER::deltree($fn,$errRef);
 	$self->execGit('rm','-r', $fn);
-	return !$self->exists($fn);
+	return $ret;
 }
 sub saveData {
 	my $self = shift @_;
-	return $self->SUPER::saveData(@_) && $self->autoAdd();
+	my $ret = $self->SUPER::saveData(@_);
+	$self->autoAdd();
+	return $ret;
 }
 
 sub saveStream {
 	my $self = shift @_;
-	return $self->SUPER::saveStream(@_) && $self->autoAdd();
+	my $ret = $self->SUPER::saveStream(@_);
+	$self->autoAdd();
+	return $ret;
 }
 
 sub compressFiles {
@@ -124,19 +124,27 @@ sub uncompressArchive {
 			}
 		}
 	}
-	return $self->autoAdd() && $ret;
+	$self->autoAdd();
+	return $ret;
 }
 sub createSymLink {
 	my $self = shift @_;
-	return $self->SUPER::createSymLink(@_) && $self->autoAdd();
+	my $ret = $self->SUPER::createSymLink(@_);
+	$self->autoAdd();
+	return $ret;
 }
 sub rename {
-	my $self = shift @_;
-	return $self->execGit('mv',@_);
+	my($self,$src,$dst) = @_;
+	$self->execGit('mv',$src, $dst);
+	delete $SUPER::CACHE{$src};
+	delete $SUPER::CACHE{$dst};
+	return !-e $src && -e $dst;
 }
 sub copy {
 	my $self = shift @_;
-	return $self->SUPER::copy(@_) && $self->autoAdd();
+	my $ret = $self->SUPER::copy(@_);
+	$self->autoAdd();
+	return $ret;
 }
 
 sub execGit {
@@ -182,7 +190,7 @@ sub autoAdd {
 	} else {
 		$ret = 0;
 	}
-	return $ret && ( scalar(@add)==0 || $self->execGit('add',@add));
+	return $ret && ( (scalar(@add)> 0 && $self->execGit('add',@add)) || $self->commit() );
 }
 sub commit {
 	my $self = shift @_;

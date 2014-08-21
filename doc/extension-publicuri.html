@@ -142,7 +142,7 @@ ScriptAlias /_pfs /etc/webdavcgi/cgi-bin/webdavwrapper
  
 RewriteRule ^/public /_pfs	[E=WEBDAVCONF:/etc/webdav-public.conf,E=REMOTE_USER:public,E=PERLLIB:/etc/webdavcgi/lib/perl,L,PT]
 
-## AFS and SMB users need a AUTHHEADER parameter with a base64 encoded username:password string (cmd: <code>echo 'username:password'|base64</code>) for kinit:
+## AFS and SMB users need a AUTHHEADER parameter with a base64 encoded username:password string (<code>echo -n 'username:password'|base64</code>) for kinit:
 ## E=AUTHHEADER:dXNlcm5hbWU6cGFzc3dvcmQK
 
 # ... WebDAV CGI Rewrite Rules 
