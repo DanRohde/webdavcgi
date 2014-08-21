@@ -22,8 +22,8 @@ package Backend::GIT::Driver;
 use strict;
 #use warnings;
 
-use Backend::Helper;
-our @ISA = qw( Backend::Helper );
+use Backend::FS::Driver;
+our @ISA = qw( Backend::FS::Driver );
 
 
 use Fcntl qw(:flock);
@@ -32,76 +32,16 @@ use vars qw( %CACHE );
 
 sub new {
 	my $class = my $self = shift;
-	my $self = { BACKEND=> $main::backendmanager->getBackend($main::BACKEND_CONFIG{GIT}{backend} || 'FS'), 
-		     GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git', 
+	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git', 
 		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{LOCKFILE} || '/tmp/webdav-git.lock',
 		     EMPTYDIRFN => $main::BACKEND_CONFIG{GIT}{EMPTYDIRFN} || '.__empty__'
 	};
 	return bless $self, $class;
 }
-sub finalize {
-	my ($self) = @_;
-	%CACHE = ();
-	$$self{BACKEND}->finalize();
-}
-
-sub basename {
-	my $self = shift @_;
-	return $$self{BACKEND}->basename(@_);
-}
-sub dirname {
-	my $self = shift @_;
-	return $$self{BACKEND}->dirname(@_);
-}
-
-sub exists {
-	my $self = shift @_;
-	return $$self{BACKEND}->exists(@_);
-}
-sub isDir {
-	my $self = shift @_;
-	return $$self{BACKEND}->isDir(@_);
-}
-sub isFile {
-	my $self = shift @_;
-	return $$self{BACKEND}->isFile(@_);
-}
-sub isLink {
-	my $self = shift @_;
-	return $$self{BACKEND}->isLink(@_);
-}
-sub isBlockDevice {
-	my $self = shift @_;
-	return $$self{BACKEND}->isBlockDevice(@_);
-}
-sub isCharDevice {
-	my $self = shift @_;
-	return $$self{BACKEND}->isCharDevice(@_);
-}
-sub isEmpty {
-	my $self = shift @_;
-	return $$self{BACKEND}->isEmpty(@_);
-}
-sub isReadable {
-	my $self = shift @_;
-	return $$self{BACKEND}->isReadable(@_);
-}
-sub isWriteable {
-	my $self = shift @_;
-	return $$self{BACKEND}->isWriteable(@_);
-}
-sub isExecutable {
-	my $self = shift @_;
-	return $$self{BACKEND}->isExecutable(@_);
-}
-sub getParent {
-	my $self = shift @_;
-	return $$self{BACKEND}->getParent(@_);
-}
 
 sub mkcol {
 	my $self = shift @_;
-	return $$self{BACKEND}->mkcol(@_) && $$self{BACKEND}->saveData($_[0].'/'.$$self{EMPTYDIRFN},"") && $self->autoAdd();
+	return $self->SUPER::mkcol(@_) && $self->SUPER::saveData($_[0].'/'.$$self{EMPTYDIRFN},"") && $self->autoAdd();
 }
 sub unlinkFile {
 	my $self = shift @_;
@@ -115,40 +55,26 @@ sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
 	my $gitfilter = sub {
 		my ($d, $f) = @_;
-		return $self->filter($d,$f) ||  !defined $filter || ((ref($filter) eq 'CODE' && $filter->($d,$f))||(ref($filter) ne 'CODE' && $filter->filter($d,$f)));
+		return $self->gitFilter($d,$f) ||  !defined $filter || ((ref($filter) eq 'CODE' && $filter->($d,$f))||(ref($filter) ne 'CODE' && $filter->filter($d,$f)));
 	};
-	return $$self{BACKEND}->readDir($dirname, $limit, $gitfilter);
+	return $self->SUPER::readDir($dirname, $limit, $gitfilter);
 }
-sub filter {
+sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	return $file eq $$self{EMPTYDIRFN} || $file eq '.git';
+	return $file eq $$self{EMPTYDIRFN} || $file eq '.git' || $self->filter(undef, $dirname, $file);
 }
-sub stat {
-	my ($self, $fn) = @_;
-	return $$self{BACKEND}->stat($fn);
-}
-sub lstat {
-	my $self = shift @_;
-	return $$self{BACKEND}->lstat(@_);
-}
-
 sub deltree {
 	my $self = shift @_;
 	return $self->execGit('rm','-r', shift @_);
 }
-sub changeFilePermissions {
-	my $self = shift @_;
-	return $$self{BACKEND}->changeFilePermissions(@_);
-}
-
 sub saveData {
 	my $self = shift @_;
-	return $$self{BACKEND}->saveData(@_) && $self->autoAdd();
+	return $self->SUPER::saveData(@_) && $self->autoAdd();
 }
 
 sub saveStream {
 	my $self = shift @_;
-	return $$self{BACKEND}->saveStream(@_) && $self->autoAdd();
+	return $self->SUPER::saveStream(@_) && $self->autoAdd();
 }
 
 sub compressFiles {
@@ -157,13 +83,13 @@ sub compressFiles {
 	require Archive::Zip;
 	my $zip =  Archive::Zip->new();
 	my $gitfilter = sub {
-		return !$self->filter($self->dirname($_),$self->basename($_));
+		return !$self->gitFilter($self->dirname($_),$self->basename($_));
 	};
 	foreach my $file (@files) {	
 		if ($self->isDir($basepath.$file)) {
 			$zip->addTree($self->resolveVirt($basepath.$file), $file, $gitfilter);
 		} elsif ($self->isReadable($basepath.$file) && $self->exists($basepath.$file)) {
-			$zip->addFile($self->resolveVirt($basepath.$file), $file) unless $self->filter($basepath, $file);
+			$zip->addFile($self->resolveVirt($basepath.$file), $file) unless $self->gitFilter($basepath, $file);
 		}
 	}
 	$zip->writeToFileHandle($desthandle,0);
@@ -179,63 +105,17 @@ sub uncompressArchive {
 	return $ret;
 }
 
-sub changeMod {
-	my $self = shift @_;
-	return $$self{BACKEND}->changeMod(@_);
-}
 sub createSymLink {
 	my $self = shift @_;
-	return $$self{BACKEND}->createSymLink(@_) && $self->autoAdd();
-}
-sub getLinkSrc {
-	my $self = shift @_;
-	return $$self{BACKEND}->getLinkSrc(@_);
-}
-sub resolve {
-	my $self = shift @_;
-	return $$self{BACKEND}->resolve(@_);
-}
-
-sub getFileContent {
-	my $self = shift @_;
-	return $$self{BACKEND}->getFileContent(@_);
-}
-sub hasSetUidBit {
-	my $self = shift @_;
-	return $$self{BACKEND}->hasSetUidBit(@_);
-}
-sub hasSetGidBit {
-	my $self = shift @_;
-	return $$self{BACKEND}->hasSetGidBit(@_);
-}
-sub hasStickyBit {
-	my $self = shift @_;
-	return $$self{BACKEND}->hasStickyBit(@_);
-}
-sub getLocalFilename {
-	my $self = shift @_;
-	return $$self{BACKEND}->getLocalFilename(@_);
-}
-
-sub printFile {
-	my $self = shift @_;
-	return $$self{BACKEND}->printFile(@_);
-}
-sub getDisplayName {
-	my $self = shift @_;
-	return $$self{BACKEND}->getDisplayName(@_);
+	return $self->SUPER::createSymLink(@_) && $self->autoAdd();
 }
 sub rename {
 	my $self = shift @_;
 	return $self->execGit('mv',@_);
 }
-sub getQuota {
-	my $self = shift @_;
-	return $$self{BACKEND}->getQuota(@_);
-}
 sub copy {
 	my $self = shift @_;
-	return $$self{BACKEND}->copy(@_) && $self->autoAdd();
+	return $self->SUPER::copy(@_) && $self->autoAdd();
 }
 
 sub execGit {
