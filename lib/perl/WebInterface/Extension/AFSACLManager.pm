@@ -22,7 +22,6 @@
 # disable_fileactionpopup - disables popup menu entry
 # disable_apps - disables apps entry
 # ptscmd - path to the pts command (default: /usr/bin/pts)
-# TODO: describe extension setup
 
 
 package WebInterface::Extension::AFSACLManager;

@@ -2584,7 +2584,8 @@ sub rcopy {
                 $dst.='/' if $dst !~ /\/$/;
                 $src.='/' if $src !~ /\/$/;
 
-                if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {
+                #if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
+                if (!$move || !$backend->rename($src,$dst)) {
                         $backend->mkcol($dst) unless $backend->exists($dst);
 
 						return 0 unless $backend->isReadable($src);
