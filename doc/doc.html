@@ -30,6 +30,7 @@ Content of this topic:
 	<li><a href="#gfs">GFS Support</a></li>
 	<li><a href="#smb">SMB/CIFS Support</a></li>
 	<li><a href="#dbb">DBB database backend</a></li>
+	<li><a href="#git">GIT backend</a></li>
 	<li><a href="#rcs">RCS backend</a></li>
 	<li><a href="#ro">Read-only backend RO</a></li>
 	<li><a href="#performance">Performance</a></li>
@@ -1070,6 +1071,39 @@ $BACKEND_CONFIG{DBB} = {
 	username => '',
 	password => '',
 };
+
+</pre>
+<h2 id="git">GIT backend</h2>
+<p>
+The GIT backend is a showcase for a revision controlled backend. It is derived from the FS backend and so it works only with local file systems.
+</p>
+Requirements:
+<ul>
+<li>a git binary (Debian/Ubuntu package: git)</li>
+</ul> 
+How it works:
+<ul>
+<li>It initialize the document root with <code>git init</code> if neccessary.</li>
+<li>Empty folders cannot be empty so it puts a file into an empty folder if a file/folder was deleted.</li>
+<li>The git directory <code>.git</code> and empty directory files are hidden for all users.</li>
+</ul>
+<code>/etc/webdav.conf</code> example:
+<pre>
+...
+$BACKEND = 'GIT';
+
+$BACKEND_CONFIG{GIT} = {
+	## path to git command  (default: /usr/bin/git):
+	gitcmd => '/usr/bin/git',
+	
+	## an filename (without slashes) to fill empty folders (default: .__empty__):
+	emptydirfilename => '.__empty__',
+	
+	## path to a lockfile (default: /tmp/webdav-git.lock) 
+	## it have to be writeable by all users using the git repo:
+	lockfile => '/tmp/webdav-git.lock',
+};
+...
 
 </pre>
 <h2 id="rcs">RCS backend</h2>

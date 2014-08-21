@@ -33,8 +33,8 @@ use vars qw( %CACHE );
 sub new {
 	my $class = my $self = shift;
 	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git',
-		     EMPTYDIRFN=>'.__empty__', 
-		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{LOCKFILE} || '/tmp/webdav-git.lock'
+		     EMPTYDIRFN=> $main::BACKEND_CONFIG{GIT}{emptydirfilename} || '.__empty__', 
+		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock'
 	};
 	bless $self, $class;
 	$self->execGit('init') if !$self->isDir($main::DOCUMENT_ROOT.'.git');
