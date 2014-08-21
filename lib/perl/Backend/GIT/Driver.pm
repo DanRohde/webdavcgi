@@ -46,7 +46,7 @@ sub new {
 }
 sub unlinkFile {
 	my ($self, $fn) = @_;
-	createEmptyDirFile($fn);
+	$self->createEmptyDirFile($fn);
 	return $self->execGit('rm',$fn);
 }
 sub unlinkDir {
@@ -177,7 +177,7 @@ sub commit {
 }
 sub createEmptyDirFile {
 	my ($self, $path) = @_;
-	$path = $self->dirname($path) unless $self->isDir();
+	$path = $self->dirname($path) unless $self->isDir($path);
 	my $edfn = "$path/$$self{EMPTYDIRFN}";
 	$self->saveData($edfn,"") unless $self->exists($edfn);
 	return 1;
