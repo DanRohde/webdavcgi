@@ -123,7 +123,7 @@ sub handle {
 		return q@<!--TEMPLATE(publicuri)[<th id="headerPUBLICURI" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->@;
 	}
 	elsif ($hook eq 'column') {
-		return q@<!--TEMPLATE(publicuri)[<td class="publicuri -hidden" title="$publicurititle"><a href="$publicuri">$publicuridigest</a></td>]-->@;
+		return q@<!--TEMPLATE(publicuri)[<td class="publicuri -hidden"><a href="$publicuri" title="$publicurititle">$publicuridigest</a></td>]-->@;
 	}
 	return 0;                                         #not handled
 }
