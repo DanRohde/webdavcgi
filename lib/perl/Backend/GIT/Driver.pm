@@ -44,6 +44,10 @@ sub new {
 	
 	return $self;
 }
+sub mkcol {
+	my ($self, $fn) = @_;
+	return $self->SUPER::mkcol($fn) && $self->createEmptyDirFile($fn);
+}
 sub unlinkFile {
 	my ($self, $fn) = @_;
 	$self->createEmptyDirFile($fn);
@@ -51,7 +55,9 @@ sub unlinkFile {
 }
 sub unlinkDir {
 	my($self,$fn) = @_;
-	return $self->execGit('rm','-r', $fn) && (!$self->exists($fn) || $self->SUPER::unlinkDir($fn));
+	$self->execGit('rm','-r',$fn);
+	$self->SUPER::unlinkFile("$fn/$$self{EMPTYDIRFN}");
+	return $self->SUPER::unlinkDir($fn);
 }
 sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
@@ -67,7 +73,7 @@ sub gitFilter {
 }
 sub deltree {
 	my ($self, $fn, $errRef) =  @_;
-	$self->createEmptyDirFile($fn);
+	$self->createEmptyDirFile($fn) if !$self->isDir($fn);
 	return $self->execGit('rm','-r', $fn) && (!$self->exists($fn) || $self->SUPER::deltree($fn,$errRef));
 }
 sub saveData {
