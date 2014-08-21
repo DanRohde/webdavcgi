@@ -33,16 +33,11 @@ use vars qw( %CACHE );
 sub new {
 	my $class = my $self = shift;
 	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git', 
-		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{LOCKFILE} || '/tmp/webdav-git.lock',
-		     EMPTYDIRFN => $main::BACKEND_CONFIG{GIT}{EMPTYDIRFN} || '.__empty__'
+		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{LOCKFILE} || '/tmp/webdav-git.lock'
 	};
 	return bless $self, $class;
 }
 
-sub mkcol {
-	my $self = shift @_;
-	return $self->SUPER::mkcol(@_) && $self->SUPER::saveData($_[0].'/'.$$self{EMPTYDIRFN},"") && $self->autoAdd();
-}
 sub unlinkFile {
 	my $self = shift @_;
 	return $self->execGit('rm',shift @_);
@@ -61,7 +56,7 @@ sub readDir {
 }
 sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	return $file eq $$self{EMPTYDIRFN} || $file eq '.git' || $self->filter(undef, $dirname, $file);
+	return $file eq '.git' || $self->filter(undef, $dirname, $file);
 }
 sub deltree {
 	my $self = shift @_;
