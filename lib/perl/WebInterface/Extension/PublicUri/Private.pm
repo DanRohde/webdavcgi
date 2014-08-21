@@ -52,8 +52,8 @@ sub resolveFile {
 
 sub init {
 	my ( $self, $hookreg ) = @_;
-		
-	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction','fileactionpopupnew'], $self);
+	
+	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction','fileactionpopupnew','fileprop','column','columnhead'], $self);
 
 	$self->initDefaults();
 	
@@ -109,10 +109,21 @@ sub handle {
 		else {
 			($classes, $attr) = ('shared', $prop);
 		}
-		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) }
+		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) };
+	}
+	elsif ($hook eq 'fileprop') {
+		my $publicuridigest = $self->getPublicUri( $$self{backend}->resolve($$self{backend}->resolveVirt($$params{path}))) || '';
+		my $publicuri = $$self{cgi}->escapeHTML($$self{uribase}.$publicuridigest) ;
+		return { publicuridigest=> $publicuridigest ,publicurititle=>$publicuri, publicuri=>$publicuri };
 	}
 	elsif ( $hook eq 'templates' ) {
 		return q@<div id="purifileconfirm">$tl(purifileconfirm)</div><div id="depurifileconfirm">$tl(depurifileconfirm)</div>@;
+	}
+	elsif ($hook eq 'columnhead') {
+		return q@<!--TEMPLATE(publicuri)[<th id="headerPUBLICURI" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->@;
+	}
+	elsif ($hook eq 'column') {
+		return q@<!--TEMPLATE(publicuri)[<td class="publicuri -hidden" title="$publicurititle"><a href="$publicuri">$publicuridigest</a></td>]-->@;
 	}
 	return 0;                                         #not handled
 }

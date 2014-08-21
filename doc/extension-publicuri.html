@@ -115,6 +115,10 @@ $EXTENSION_CONFIG{PublicUri}={
 # prefix - a prefix for URI digest (default: empty string)
 # allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
 
+# [optional] add a table column with the digest to the file list table:
+#  @ALLOWED_TABLE_COLUMNS = ('name','size','lastmodified','created','mode','mime','uid','gid', 'publicuri');
+#  @VISIBLE_TABLE_COLUMNS = ('name', 'size', 'lastmodified', 'publicuri');
+
 EOF
 
 </pre>

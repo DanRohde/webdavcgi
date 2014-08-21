@@ -230,6 +230,11 @@ sub renderExtension {
 	
 	return join('',map { $self->renderExtensionElement($fn,$ru,$_) } @{$$self{config}{extensions}->handle($hook, { path=>$fn }) || []} );
 }
+sub renderExtensionFunction {
+	my ($self, $content) = @_;
+	$content=~s/\$extension\((.*?)\)/$self->renderExtension($main::PATH_TRANSLATED,$main::REQUEST_URI,$1)/egs;
+	return $content;
+}
 sub renderLanguageList {
 	my($self, $fn, $ru, $tmplfile) = @_;
 	my $tmpl = $tmplfile=~/^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
@@ -254,7 +259,7 @@ sub isUnselectable {
 }
 sub renderFileListTable {
 	my ($self, $fn, $ru, $template) = @_;
-	my $filelisttabletemplate = $self->readTemplate($template);
+	my $filelisttabletemplate = $self->renderExtensionFunction($self->readTemplate($template));
 	my $columns = $self->renderVisibleTableColumns($filelisttabletemplate).$self->renderInvisibleAllowedTableColumns($filelisttabletemplate);
 	my %stdvars = 
 		( 
@@ -375,7 +380,7 @@ sub renderInvisibleAllowedTableColumns {
 }
 sub renderFileList {
 	my ($self, $fn, $ru, $template) = @_;
-	my $entrytemplate=$self->readTemplate($template);
+	my $entrytemplate=$self->renderExtensionFunction($self->readTemplate($template));
 	my $fl="";	
 
 	my @files = $$self{backend}->isReadable($fn) ? sort { $self->cmp_files($a,$b) } @{$$self{backend}->readDir($fn,main::getFileLimit($fn),$self)} : ();
