@@ -384,7 +384,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 <pre>cp /etc/webdavcgi/cgi-bin/webdav.pl /usr/lib/cgi-bin 
 chmod a+x /usr/lib/cgi-bin/webdav.pl </pre></li>
 	<li>add the <code>$INSTALL_BASE</code> variable to your existing <code>/etc/webdav.conf</code>, e.g. 
-		<pre>echo "\$INSTALL_BASE='/etc/webdavcgi/';" >> /etc/webdav.conf</pre></li>
+		<pre>echo "\$INSTALL_BASE='/etc/webdavcgi/';" &gt;&gt; /etc/webdav.conf</pre></li>
 	<li>check your config file and modules, e.g.
 <pre>#&gt; perl -c /etc/webdav.conf
 webdav.conf syntax OK
@@ -677,7 +677,7 @@ EOF
 Here are some examples to do that in the WebDAV CGI configuration file:
 <ul>
 <li><code>$ICONS{'mymime/type'}='/uripath/to/my/icons/test.gif';</code></li>
-<li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=>'/uripath/to/my/icons/test1.gif', 'mymime/type2'=>'/uripath/to/my/icons/test2.gif',   ) );</code></li>
+<li><code>%ICONS = ( %ICONS, ( 'mymime/type1'=&gt;'/uripath/to/my/icons/test1.gif', 'mymime/type2'=&gt;'/uripath/to/my/icons/test2.gif',   ) );</code></li>
 </ul>
 
 <h3>How to customize error messages/documents</h3>
@@ -798,8 +798,8 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota $FS';
 
 @EXTENSIONS = ('AFSACLManager', 'AFSGroupManager');
-$EXTENSION_CONFIG{AFSACLManager} = { allow_afsaclchanges =>1 };
-$EXTENSION_CONFIG{AFSGroupManager} = { disallow_groupchanges=>0 };
+$EXTENSION_CONFIG{AFSACLManager} = { allow_afsaclchanges =&gt;1 };
+$EXTENSION_CONFIG{AFSGroupManager} = { disallow_groupchanges=&gt;0 };
 
 $ALLOW_SEARCH = 0;
 $ALLOW_CHANGEPERM = 0;
@@ -943,65 +943,65 @@ $ALLOW_SYMLINK = 0;
 ### required entries: defaultdomain, domains, fileserver
 ### optional entries: sharefilter, usersharefilter, shares, sharealiases
 $BACKEND_CONFIG{SMB} = {
-  defaultdomain => 'MY.EXAMPLE.DOMAIN.ORG',	#required
+  defaultdomain =&gt; 'MY.EXAMPLE.DOMAIN.ORG',	#required
 
   ## allow only configured server names and shares (default: 0)
-  secure => 1, # optional
+  secure =&gt; 1, # optional
 
   ## a global share filter (filter out admin shares with trailing $):
-  sharefilter => [ qr/\$$/, ],  #optional
+  sharefilter =&gt; [ qr/\$$/, ],  #optional
 
-  usersharefilter => {  #optional
+  usersharefilter =&gt; {  #optional
     ## admin has no matching filter so he can see all shares (overwrites sharefilter):
-    myadminexample => [ qr/__NEVER_MATCH/, ],
+    myadminexample =&gt; [ qr/__NEVER_MATCH/, ],
   }, 
 
-  sharesep => '~', #optional - servername-share separator symbol (default: '~')
+  sharesep =&gt; '~', #optional - servername-share separator symbol (default: '~')
   ## don't use a separator symbol like '$', '-', '_', '#', '%', '?', '&amp;', '/', '\', or letters/numbers
   ## good alternative separators are '!', ':', '=', '\'', '"', '`', '+', '*', or '@'
 
   ## enables/disables quota support for all domains and shares:
-  quota => 1, # optional
+  quota =&gt; 1, # optional
 
-  domains => { #required
-    'MY.EXAMPLE.DOMAIN.ORG' => {	#required (multiple domain entries allowed for forrests)
+  domains =&gt; { #required
+    'MY.EXAMPLE.DOMAIN.ORG' =&gt; {	#required (multiple domain entries allowed for forrests)
       ## a domain based filter (overwrites sharefilter and userfilter above):
-      sharefilter => [ qr/\$$/, ],	#optional
-      usersharefilter => {		#optional
+      sharefilter =&gt; [ qr/\$$/, ],	#optional
+      usersharefilter =&gt; {		#optional
         ## a domain based user filter (overwrites all sharefilter and global filter):
-        myadminexample => [ qr/__NEVER_MATCH/, ], 
+        myadminexample =&gt; [ qr/__NEVER_MATCH/, ], 
       }, 
-      fileserver => {			#required
-        'mywindowsfileserver1.my.example.domain.org' => {	#required
+      fileserver =&gt; {			#required
+        'mywindowsfileserver1.my.example.domain.org' =&gt; {	#required
 
           ## a fileserver based share filter (overwrites all domain based filter):
-          sharefilter => [ qr/\$/, ],	#optional
+          sharefilter =&gt; [ qr/\$/, ],	#optional
 
-          usersharefilter => {		#optional
+          usersharefilter =&gt; {		#optional
             ## overwrites all sharefilter and domain based filter
-            myadminexample => [ qr/__NEVER_MATCH/ ] 
+            myadminexample =&gt; [ qr/__NEVER_MATCH/ ] 
           }, 
 
           ## disables all filter and (slow) automatic share detection:
-          shares => [ 'MyFirstShare', 'MySecondShare', 'MyThirdShare/start/here' ],	#optional
+          shares =&gt; [ 'MyFirstShare', 'MySecondShare', 'MyThirdShare/start/here' ],	#optional
           
           ## enables/disables quota support for given shares:
-          quota => { 'MyFirstShare' => 0 }, # optional
+          quota =&gt; { 'MyFirstShare' =&gt; 0 }, # optional
 
 	  ## defines a initial directory for a share (don't forget the initial '/'):
-	  initdir => { 			#optional
-	  	'MyFirstShare' => '/starthere', 
-		'MySecondShare'=> '/start/here' 
+	  initdir =&gt; { 			#optional
+	  	'MyFirstShare' =&gt; '/starthere', 
+		'MySecondShare'=&gt; '/start/here' 
 	  },
 
-          sharealiases => {		#optional
+          sharealiases =&gt; {		#optional
             ## shows 'H: (Home)' instead of 
             ## 'mywindowsfileserver1.my.example.domain.org~MyFirstShare' in the Web interface
-            'MyFirstShare' => 'H: (Home)/',
+            'MyFirstShare' =&gt; 'H: (Home)/',
             ## shows 'S: (Scratch)' instead of 
             ## 'mywindowsfileserver1.my.example.domain.org~MySecondShare' in the Web interface
-            'MySecondShare' => 'S: (Scratch)/',
-	    'MyThirdShare/start/here' => 'T: Temp (/start/here/)',
+            'MySecondShare' =&gt; 'S: (Scratch)/',
+	    'MyThirdShare/start/here' =&gt; 'T: Temp (/start/here/)',
           },
         },
       },
@@ -1067,9 +1067,9 @@ $ALLOW_SYMLINK = 0;
 $BACKEND = 'DBB';
 
 $BACKEND_CONFIG{DBB} = {
-	dsn => 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db',
-	username => '',
-	password => '',
+	dsn =&gt; 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db',
+	username =&gt; '',
+	password =&gt; '',
 };
 
 </pre>
@@ -1084,8 +1084,7 @@ Requirements:
 How it works:
 <ul>
 <li>It initializes the document root with <code>git init</code> and adds existing files if neccessary.</li>
-<li>Empty folders cannot be empty so it puts a file into an empty folder if a file/folder was deleted.</li>
-<li>The git directory <code>.git</code> and empty directory files are hidden for all users.</li>
+<li>The git directory <code>.git</code> is hidden for all users.</li>
 </ul>
 <code>/etc/webdav.conf</code> example:
 <pre>
@@ -1094,14 +1093,12 @@ $BACKEND = 'GIT';
 
 $BACKEND_CONFIG{GIT} = {
 	## path to git command  (default: /usr/bin/git):
-	gitcmd => '/usr/bin/git',
-	
-	## an filename (without slashes) to fill empty folders (default: .__empty__):
-	emptydirfilename => '.__empty__',
+	gitcmd =&gt; '/usr/bin/git',
+
 	
 	## path to a lockfile (default: /tmp/webdav-git.lock) 
 	## it have to be writeable by all users using the git repo:
-	lockfile => '/tmp/webdav-git.lock',
+	lockfile =&gt; '/tmp/webdav-git.lock',
 };
 ...
 
@@ -1141,33 +1138,33 @@ $BACKEND = 'RCS';
 
 $BACKEND_CONFIG{RCS} = {
         ## backend used for versioning:
-        backend=>'FS',                  # required 
+        backend=&gt;'FS',                  # required 
 
         ## relative path in a directory for revision files 
 	## (slashes are not allowed):
-        rcsdirname=>'.rcs',             # required
+        rcsdirname=&gt;'.rcs',             # required
 
         ## RCS binary path:
-        bindir=>'/usr/bin',             # required
+        bindir=&gt;'/usr/bin',             # required
 
         ## a relative virtual path in 'rcsdirname' to access 
 	## all revisions, logs and diffs of a file 
 	## (slashes are not allowed):
-        virtualrcsdir=>'REVISIONS',     # required
+        virtualrcsdir=&gt;'REVISIONS',     # required
 
 	## limits the number of revisions for a file:
 	## note: maxrevisions includes the current revision that means:
 	## you have to set maxrevisions to 4 if you need access to 3 old revisions
-	# maxrevision=>31,              # optional
+	# maxrevision=&gt;31,              # optional
 
         ## ignore suffixes (check is case insensitive):
-        # ignoresuffixes => [ 'jpg', 'gif', 'png', ],  # optional
+        # ignoresuffixes =&gt; [ 'jpg', 'gif', 'png', ],  # optional
 
         ## allowed suffixes (check is case insensitive):
-        # allowedsuffixes => [ 'txt', 'html' ],        # optional
+        # allowedsuffixes =&gt; [ 'txt', 'html' ],        # optional
 
         ## ignore filenames (check is case insensitive):
-        # ignorefilenames=> [ '.*~'],   # optional
+        # ignorefilenames=&gt; [ '.*~'],   # optional
 
 };
 ...

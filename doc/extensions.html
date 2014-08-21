@@ -29,7 +29,7 @@
 </pre></li>
 <li>Extensions are configured with the <code>%EXTENSION_CONFIG</code> variable in <code>webdav.conf</code>:
 <pre>
-$EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
+$EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 </pre>
 </ul>
 <h2>Supported Extensions</h2>
@@ -54,7 +54,6 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=>'smtp.example.org' };
 <h2 id="AFSACLManager">AFSACLManager</h2>
 <table style="width:100%">
 <tr>
-</td>
 	<td><a class="screenshot float-right" href="images/webdavcgi-webinterface-afsaclmanager.png"><img alt="Web interface AFS ACL manager" class="screenshot" src="images/webdavcgi-webinterface-afsaclmanager.png"/></a></td>
 	<td>
 <pre>
@@ -200,7 +199,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <td><pre>
 # SETUP:
 # redirect - sets folder/files for a redirect
-#             format: { '/full/file/path' => 'url' , ... }
+#             format: { '/full/file/path' =&gt; 'url' , ... }
 </pre></td>
 
 </tr>
@@ -287,8 +286,6 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 </table>
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2014 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
-</div>
-
 </div>
 </body>
 </html>

@@ -32,32 +32,35 @@ use vars qw( %CACHE );
 
 sub new {
 	my $class = my $self = shift;
-	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git',
-		     EMPTYDIRFN=> $main::BACKEND_CONFIG{GIT}{emptydirfilename} || '.__empty__', 
+	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git', 
 		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock'
 	};
 	bless $self, $class;
 	if (!$self->isDir($main::DOCUMENT_ROOT.'.git')) {
 		$self->execGit('init');
+		$self->execGit('config','user.email',$ENV{REMOTE_USER});
 		$self->autoAdd(); 
 	}
 	
 	return $self;
 }
-sub mkcol {
-	my ($self, $fn) = @_;
-	return $self->SUPER::mkcol($fn) && $self->createEmptyDirFile($fn);
+sub mkcolhier {
+	my ($self, $dir) = @_;
+	$self->mkcolhier($self->dirname($dir)) if !$self->exists($self->dirname($dir));
+	$self->mkcol($dir);
 }
 sub unlinkFile {
 	my ($self, $fn) = @_;
-	$self->createEmptyDirFile($fn);
-	return $self->execGit('rm',$fn);
+	return 0 unless $self->exists($fn);
+	$self->execGit('rm',$fn);
+	$self->mkcolhier($self->dirname($fn)) if !$self->exists($self->dirname($fn));
+	return !$self->exists($fn);
 }
 sub unlinkDir {
 	my($self,$fn) = @_;
 	$self->execGit('rm','-r',$fn);
-	$self->SUPER::unlinkFile("$fn/$$self{EMPTYDIRFN}");
-	return $self->SUPER::unlinkDir($fn);
+	$self->SUPER::unlinkDir($fn);
+	return !$self->exists($fn);
 }
 sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
@@ -69,12 +72,15 @@ sub readDir {
 }
 sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	return $file eq '.git' || $file eq $$self{EMPTYDIRFN} || $self->filter(undef, $dirname, $file);
+	return $file eq '.git' || $self->filter(undef, $dirname, $file);
 }
+
 sub deltree {
 	my ($self, $fn, $errRef) =  @_;
-	$self->createEmptyDirFile($fn) if !$self->isDir($fn);
-	return $self->execGit('rm','-r', $fn) && (!$self->exists($fn) || $self->SUPER::deltree($fn,$errRef));
+	return $self->unlinkFile($fn) if $self->isFile($fn);
+	$self->SUPER::deltree($fn);
+	$self->execGit('rm','-r', $fn);
+	return !$self->exists($fn);
 }
 sub saveData {
 	my $self = shift @_;
@@ -156,6 +162,7 @@ sub _execGit {
 	
 	return $ret;
 }
+
 sub autoAdd {
 	my ($self) = @_;
 	my $ret = 1;
@@ -179,14 +186,7 @@ sub autoAdd {
 }
 sub commit {
 	my $self = shift @_;
-	return $self->_execGit('commit','--allow-empty' ,'-m',$ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER});
-}
-sub createEmptyDirFile {
-	my ($self, $path) = @_;
-	$path = $self->dirname($path) unless $self->isDir($path);
-	my $edfn = "$path/$$self{EMPTYDIRFN}";
-	$self->saveData($edfn,"") unless $self->exists($edfn);
-	return 1;
+	return $self->_execGit('commit','--allow-empty','-a','-m',$ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER});
 }
 
 1;

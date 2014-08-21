@@ -103,8 +103,8 @@ $VIRTUAL_BASE='/public/?';
 @EXTENSIONS=('PublicUri','Download','Zip','Search','Diff','DiskUsage');
 @EVENTLISTENER = ('WebInterface::Extension::PublicUri::EventListener');
 $EXTENSION_CONFIG{PublicUri}={
-		uribase=>"https://$ENV{HTTP_HOST}/public/",
-		virtualbase=>$VIRTUAL_BASE
+		uribase=&gt;"https://$ENV{HTTP_HOST}/public/",
+		virtualbase=&gt;$VIRTUAL_BASE
 };
 # PublicUri extension parameters:
 # virtualbase - virtual base URI for the public link (default: /public/)
@@ -130,10 +130,10 @@ The following must be in the Apache configuration above your WebDAV CGI rewrite 
 ScriptAlias /_pfs /etc/webdavcgi/cgi-bin/webdavwrapper
 
 &lt;Location /_pfs&gt;
-	# Apache >=2.4:
+	# Apache &gt;=2.4:
 	Require All Granted
 	
-	# Apache <2.4:
+	# Apache &lt;2.4:
 	# Order Allow,Deny
 	# Allow From All
 &lt;/Location&gt;
@@ -142,15 +142,13 @@ ScriptAlias /_pfs /etc/webdavcgi/cgi-bin/webdavwrapper
  
 RewriteRule ^/public /_pfs	[E=WEBDAVCONF:/etc/webdav-public.conf,E=REMOTE_USER:public,E=PERLLIB:/etc/webdavcgi/lib/perl,L,PT]
 
-## AFS and SMB users need a AUTHHEADER parameter with a base64 encoded username:password string (cmd: <code>base64 <<<'username:password'</code>) for kinit:
+## AFS and SMB users need a AUTHHEADER parameter with a base64 encoded username:password string (cmd: <code>echo 'username:password'|base64</code>) for kinit:
 ## E=AUTHHEADER:dXNlcm5hbWU6cGFzc3dvcmQK
 
 # ... WebDAV CGI Rewrite Rules 
 </pre>
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2014 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
-</div>
-
 </div>
 </body>
 </html>
