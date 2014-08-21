@@ -57,7 +57,7 @@ sub render {
 		} elsif ($ajax eq 'getTableConfigDialog') {
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
 		} elsif ($ajax eq 'getFileListEntry') {
-			my $entrytemplate=$self->readTemplate($$self{cgi}->param('template'));
+			my $entrytemplate=$self->renderExtensionFunction($self->readTemplate($$self{cgi}->param('template')));
 			my $columns = $self->renderVisibleTableColumns($entrytemplate).$self->renderInvisibleAllowedTableColumns($entrytemplate);
 			$entrytemplate=~s/\$filelistentrycolumns/$columns/esg;
 			$content = $self->renderFileListEntry($fn, $ru, $$self{cgi}->param('file'), $entrytemplate);
