@@ -102,7 +102,8 @@ sub uncompressArchive {
 	my $status = $zip->read($self->resolveVirt($zipfile));
 	$ret = $status eq $zip->AZ_OK;
 	$zip->extractTree(undef, $self->resolveVirt($destination)) if $ret;
-	return $ret;
+	## TODO: find .git directory and rename it
+	return $self->autoAdd() && $ret;
 }
 
 sub createSymLink {
