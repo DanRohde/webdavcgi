@@ -37,7 +37,11 @@ sub new {
 		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock'
 	};
 	bless $self, $class;
-	$self->execGit('init') if !$self->isDir($main::DOCUMENT_ROOT.'.git');
+	if (!$self->isDir($main::DOCUMENT_ROOT.'.git')) {
+		$self->execGit('init');
+		$self->autoAdd(); 
+	}
+	
 	return $self;
 }
 sub unlinkFile {
