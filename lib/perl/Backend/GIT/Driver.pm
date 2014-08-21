@@ -40,13 +40,10 @@ sub new {
 	$self->execGit('init') if !$self->isDir($main::DOCUMENT_ROOT.'.git');
 	return $self;
 }
-sub mkCol {
-	my ($self, $fn) = @_;
-	return $self->SUPER::mkcol($fn) && $self->saveData("$fn/$$self{EMPTYDIRFN}", "");
-}
 sub unlinkFile {
-	my $self = shift @_;
-	return $self->execGit('rm',shift @_);
+	my ($self, $fn) = @_;
+	createEmptyDirFile($fn);
+	return $self->execGit('rm',$fn);
 }
 sub unlinkDir {
 	my($self,$fn) = @_;
@@ -66,6 +63,7 @@ sub gitFilter {
 }
 sub deltree {
 	my ($self, $fn, $errRef) =  @_;
+	$self->createEmptyDirFile($fn);
 	return $self->execGit('rm','-r', $fn) && (!$self->exists($fn) || $self->SUPER::deltree($fn,$errRef));
 }
 sub saveData {
@@ -106,14 +104,12 @@ sub uncompressArchive {
 		foreach my $member ($zip->members()) {
 			my $fn = $self->resolveVirt($destination).$member->fileName();
 			if (!$self->gitFilter($self->dirname($fn), $self->basename($fn))) {
-				$zip->extractMember($member, $fn);
-				$self->saveData("$fn/$$self{EMPTYDIRFN}") if $member->isDirectory(); 
+				$zip->extractMember($member, $fn); 
 			}
 		}
 	}
 	return $self->autoAdd() && $ret;
 }
-
 sub createSymLink {
 	my $self = shift @_;
 	return $self->SUPER::createSymLink(@_) && $self->autoAdd();
@@ -175,4 +171,12 @@ sub commit {
 	my $self = shift @_;
 	return $self->_execGit('commit','--allow-empty' ,'-m',$ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER});
 }
+sub createEmptyDirFile {
+	my ($self, $path) = @_;
+	$path = $self->dirname($path) unless $self->isDir();
+	my $edfn = "$path/$$self{EMPTYDIRFN}";
+	$self->saveData($edfn,"") unless $self->exists($edfn);
+	return 1;
+}
+
 1;
