@@ -1,0 +1,26 @@
+
+Font: Ubuntu
+Font Size: 7-8
+
+Colors:
+
+Text: #0000ff - #006bff
+
+Office: #005066 - #0078a1 
+
+Video: #000 - #6b6b6b
+
+Audio: #009e00 - #006b00
+
+Image: #808000  #cccc00
+
+Markup: #8c3b00 - #ff6b00  
+
+Archive: #710073 #c500c7
+
+Source: #006769 - #00b6b8
+
+Binary: #730000 - #b80000
+
+
+Folder: #666600 - #d5d500
