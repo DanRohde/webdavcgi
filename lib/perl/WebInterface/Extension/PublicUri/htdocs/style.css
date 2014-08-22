@@ -70,3 +70,6 @@ a.blue {
 	color: blue;
 	font-weight: bold;
 }
+#headerPublicUri {
+	width: 130px;
+}

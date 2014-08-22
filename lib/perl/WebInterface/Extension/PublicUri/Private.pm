@@ -120,7 +120,7 @@ sub handle {
 		return q@<div id="purifileconfirm">$tl(purifileconfirm)</div><div id="depurifileconfirm">$tl(depurifileconfirm)</div>@;
 	}
 	elsif ($hook eq 'columnhead') {
-		return q@<!--TEMPLATE(publicuri)[<th id="headerPUBLICURI" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->@;
+		return q@<!--TEMPLATE(publicuri)[<th id="headerPublicUri" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->@;
 	}
 	elsif ($hook eq 'column') {
 		return q@<!--TEMPLATE(publicuri)[<td class="publicuri -hidden"><a href="$publicuri" title="$publicurititle">$publicuridigest</a></td>]-->@;

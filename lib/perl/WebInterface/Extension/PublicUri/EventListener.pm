@@ -47,7 +47,8 @@ sub handleWebDAVRequest {
 		my ($code, $path) = ($1,$2);
 		my $fn = $self->getFileFromCode($code);
 		return if (!$fn || !$self->isPublicUri($fn, $code, $self->getSeed($fn)));
-					$main::DOCUMENT_ROOT = $fn;
+		
+		$main::DOCUMENT_ROOT = $fn;
 		$main::DOCUMENT_ROOT.='/' if $main::DOCUMENT_ROOT !~ /\/$/;
 		$main::PATH_TRANSLATED = $fn . $path;		
 		$main::VIRTUAL_BASE = $$self{virtualbase}.$code.'/?';
