@@ -20,9 +20,6 @@ package WebInterface::Extension::PublicUri::Common;
 
 use strict;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
-
 use Digest::MD5 qw(md5_hex);
 
 sub initDefaults {
@@ -37,10 +34,15 @@ sub initDefaults {
 	$$self{uribase} = $self->config('uribase', 'https://'.$ENV{HTTP_HOST}.'/public/');
 
 	$$self{virtualbase} = $self->config('basepath', '/public/');
-	$$self{allowedpostactions} = $self->config('allowedpostactions','^(zipdwnload|diskusage|search|diff)$')
+	$$self{allowedpostactions} = $self->config('allowedpostactions','^(zipdwnload|diskusage|search|diff)$');
+	 
+	$$self{db} = main::getDBDriver(); 
 	  
 }
-
+sub config {
+	my ($self, $attr, $default) = @_;
+	return exists $main::EXTENSION_CONFIG{PublicUri}{$attr} ? $main::EXTENSION_CONFIG{PublicUri} : $default;
+}
 sub getPropertyName {
 	my ($self) = @_;
 	return $$self{namespace}.$$self{propname};

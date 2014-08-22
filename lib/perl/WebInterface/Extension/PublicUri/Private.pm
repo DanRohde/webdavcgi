@@ -20,9 +20,9 @@
 package WebInterface::Extension::PublicUri::Private;
 use strict;
 
+use WebInterface::Extension;
 use WebInterface::Extension::PublicUri::Common;
-
-our @ISA = qw( WebInterface::Extension::PublicUri::Common );
+our @ISA = qw( WebInterface::Extension WebInterface::Extension::PublicUri::Common );
 
 
 use JSON;

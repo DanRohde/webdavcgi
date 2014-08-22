@@ -22,8 +22,9 @@ package WebInterface::Extension::PublicUri::Public;
 
 use strict;
 
+use WebInterface::Extension;
 use WebInterface::Extension::PublicUri::Common;
-our @ISA = qw( WebInterface::Extension::PublicUri::Common );
+our @ISA = qw( WebInterface::Extension WebInterface::Extension::PublicUri::Common );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 

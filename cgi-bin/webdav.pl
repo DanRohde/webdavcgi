@@ -1123,6 +1123,7 @@ sub _OPTIONS {
 	my $methods;
 	my $status = '200 OK';
 	my $type;
+	getEventChannel()->broadcastEvent('OPTIONS', {file=>$PATH_TRANSLATED});
 	if ($backend->exists($PATH_TRANSLATED)) {
 		$type = $backend->isDir($PATH_TRANSLATED) ? 'httpd/unix-directory' : getMIMEType($PATH_TRANSLATED);
 		$methods = join(', ', @{getSupportedMethods($PATH_TRANSLATED)});
@@ -1164,6 +1165,7 @@ sub _GETLIB {
 }
 
 sub _PROPFIND {
+	getEventChannel()->broadcastEvent('OPTIONS', {file=>$PATH_TRANSLATED});
 	my $fn = $PATH_TRANSLATED;
 	my $status='207 Multi-Status';
 	my $type ='text/xml';
