@@ -140,29 +140,7 @@ $MAXNAVPATHSIZE = 50;
 ## -- ICONS
 ## MIME icons for fancy indexing 
 ## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")
-%ICONS = (
-	'< .. >' => '${VHTDOCS}icons/back.gif',
-	'<folder>' => '${VHTDOCS}icons/folder.gif',
-	'text/plain' => '${VHTDOCS}icons/text.gif', 'text/html' => '${VHTDOCS}icons/text.gif',
-	'application/zip'=> '${VHTDOCS}icons/compressed.gif', 'application/x-gzip'=>'${VHTDOCS}icons/compressed.gif',
-	'image/gif'=>'${VHTDOCS}icons/image2.gif', 'image/jpg'=>'${VHTDOCS}icons/image2.gif', 
-	'image/png'=>'${VHTDOCS}icons/image2.gif', 'image/jpeg'=>'${VHTDOCS}icons/image2.gif',
-	'application/pdf'=>'${VHTDOCS}icons/pdf.gif', 'application/ps' =>'${VHTDOCS}icons/ps.gif',
-	'application/msword' => '${VHTDOCS}icons/text.gif',
-	'application/vnd.ms-powerpoint' => '${VHTDOCS}icons/world2.gif',
-	'application/vnd.ms-excel' => '${VHTDOCS}icons/quill.gif',
-	'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => '${VHTDOCS}icons/text.gif',
-	'application/vnd.openxmlformats-officedocument.wordprocessingml.template' => '${VHTDOCS}icons/text.gif',
-	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => '${VHTDOCS}icons/quill.gif',
-	'application/vnd.openxmlformats-officedocument.spreadsheetml.template'=> '${VHTDOCS}icons/quill.gif',
-	'application/x-dvi'=>'${VHTDOCS}icons/dvi.gif', 'text/x-chdr' =>'${VHTDOCS}icons/c.gif', 'text/x-csrc'=>'${VHTDOCS}icons/c.gif',
-	'video/x-msvideo'=>'${VHTDOCS}icons/movie.gif', 'video/x-ms-wmv'=>'${VHTDOCS}icons/movie.gif', 'video/ogg'=>'${VHTDOCS}icons/movie.gif',
-	'video/mpeg'=>'${VHTDOCS}icons/movie.gif', 'video/quicktime'=>'${VHTDOCS}icons/movie.gif',
-	'audio/mpeg'=>'${VHTDOCS}icons/sound2.gif',
-	'application/x-msdos-program'=>'${VHTDOCS}icons/binary.gif',
-	'text/x-sh'=> '${VHTDOCS}icons/script.gif', 'text/x-csh'=> '${VHTDOCS}icons/script.gif',
-	default => '${VHTDOCS}icons/unknown.gif',
-);
+%ICONS = ( default => '${VHTDOCS}views/simple/icons/blank.png');
 
 ## -- UI_ICONS -- obsolete, use stylesheets instead 
 ## user interface icons

@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-FILES='style.css script.js'
+FILES='style.css suffix.css script.js'
 
 for file in $FILES ; do
 	bn=${file%.*}

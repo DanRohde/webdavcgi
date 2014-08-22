@@ -100,12 +100,14 @@ sub addSearchResult {
 		my $uri = $main::REQUEST_URI.$$self{cgi}->escape($file);
 		$uri=~s/\%2f/\//gi; 
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
+		my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w{3,4})$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
+		
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
 				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
-				iconclass=>$self->canCreateThumbnail($full) ? 'icon thumbnail' : 'icon',
+				iconclass=>$self->canCreateThumbnail($full) ? 'icon thumbnail suffix-'.$suffix : 'icon suffix-'.$suffix,
 				mime => $$self{cgi}->escapeHTML($mime),
 				type=> $mime eq '<folder>' ? 'folder' : 'file',
 				parentfolder => $$self{cgi}->escapeHTML($$self{backend}->dirname($base.$file)), 
@@ -297,9 +299,8 @@ sub handleSearch {
 		$$self{query} =~s/(\.\*\?){2,}/$1/g; ## replace .*? sequence with one .*?
 		eval { /$$self{query}/ };
 		$$self{query} = quotemeta($$self{cgi}->param('query')) if $@;
-		print STDERR "$$self{query}\n";
 	}
-	
+	warn("query=$$self{query}");
 	foreach my $file (@files) {
 		last if $self->limitsReached(\%counter);
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);

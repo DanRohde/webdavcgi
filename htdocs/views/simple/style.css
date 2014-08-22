@@ -382,11 +382,17 @@ tr.isreadable-no:hover {
 .icon {
 	width: 20px;
 	max-height: 80px;
+	min-height: 22px;
 	float: left;
 	margin-left: 0.2em;
 	transition: width 1s;
 	-webkit-transition: width 1s;
 	-ms-transition: width 1s;
+	color: transparent;
+}
+.icon.thumbnail {
+	background-color: rgb(255,255,255) !important;
+	background-color: rgba(255,255,255,0.6) !important;
 }
 .icon.thumbnail:hover {
 	width: 120px;
