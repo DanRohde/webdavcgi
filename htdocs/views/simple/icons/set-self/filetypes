@@ -1,9 +1,9 @@
 audio	aac aif aiff aifc au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
-video	3gp avi flv mkv mov mpeg mp4 mpg mpe mpv mng ogv qt wmv
+video	3gp avi flv mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
 image	bmp gif jpg jpeg png raw
-source	c cpp css h java js php phps pl py
-text	asc txt
-office	doc docx odt ppt pptx xls xlsx
+source	c cpp css h java js php phps pl py tex
+text	asc txt 
+office	doc docx odt pdf ppt pptx xls xlsx
 markup	dtd htm html sgml xml xsl xslt
 archive	7z bz2 gz lzma tar tgz zip
-binary	com exe img iso
+binary	com db exe img iso
