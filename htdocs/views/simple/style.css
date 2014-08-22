@@ -241,11 +241,6 @@ table,th,td {
 	margin-right: 4px;
 }
 
-
-#fileList tr td{
-	height: 2em;
-}
-
 #fileList .selectbutton {
 	opacity: 0;
 	filter: Alpha(opacity=0); 
