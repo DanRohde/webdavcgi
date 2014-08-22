@@ -2,11 +2,12 @@ audio	aac aif aiff aifc au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wa
 video	3gp avi flv mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
 image	bmp gif jpg jpeg png raw
 source	c cpp css h java js php phps pl py tex
-text	asc txt 
+text	asc ldif log mf txt 
 officew	doc docx odt ott stw sxw
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
 offices	csv ods ots sxc stc xls xlsx xlt
 adobe   ai eps flv ind indt pdf prn ps psd swf
 markup	dtd htm html sgml xml xsl xslt
-archive	7z bz2 gz lzma tar tgz zip
-binary	com db exe img iso
+archive	7z bz2 gz jar lzma rar tar tgz zip
+binary	class com db exe img iso o so 
+shell	bat bash cmd csh ksh ps1 sh tcsh
