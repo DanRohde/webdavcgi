@@ -3,7 +3,10 @@ video	3gp avi flv mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
 image	bmp gif jpg jpeg png raw
 source	c cpp css h java js php phps pl py tex
 text	asc txt 
-office	doc docx odf odp ods odt pdf ppt pptx xls xlsx
+officew	doc docx odt ott stw sxw
+officep pot potm pps ppsx ppt pptx odp otp sxi sti
+offices	csv ods ots sxc stc xls xlsx xlt
+adobe   ai eps flv ind indt pdf prn ps psd swf
 markup	dtd htm html sgml xml xsl xslt
 archive	7z bz2 gz lzma tar tgz zip
 binary	com db exe img iso
