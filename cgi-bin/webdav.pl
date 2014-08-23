@@ -126,8 +126,8 @@ $ENABLE_COMPRESSION = 1;
 ## e.g. access to ${VHTDOCS}icons/test.png delivers ${INSTALL_BASE}htdocs${VHTDOCS}icons/test.png
 ## note: all delivered data from htdocs expires in one week
 ## (don't forget the trailing slash)
-## EXAMPLE: $VHTDOCS='/_webdavcgi_/';
-$VHTDOCS='_webdavcgi_/';
+## EXAMPLE: $VHTDOCS="/_webdavcgi_/$VERSION./";
+$VHTDOCS="_webdavcgi_/$VERSION/";
 
 ## -- MAXFILENAMESIZE 
 ## Web interface: width of filename column
