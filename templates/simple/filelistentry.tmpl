@@ -11,7 +11,7 @@ $filelistentrycolumns
        <div class="filename" title="$name$linkinfo">
      <!--ENDIF-->
 	     <a href="$fileuri" class="action changeuri">
-	     	<img src="$iconurl" class="$iconclass" alt="icon" title="$mime"/>
+	     	<img src="$iconurl" class="$iconclass" alt="icon"<!--IF("$type" ne "dir")--> title="$mime"<!--ENDIF-->/>
 	     	<span class="nametext">$displayname</span>
 	     </a>
      </div>
