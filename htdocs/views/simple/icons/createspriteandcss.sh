@@ -10,7 +10,7 @@ CSSFN=../suffix.css
 
 FILESWITHNULL="null: $(echo $FILES| sed -e 's@ @ null: @g')"
 
-montage $FILESWITHNULL -tile 1x -background none -geometry 22x22 -quality 100 $SPRITEFN
+montage $FILESWITHNULL -tile 1x -background none -geometry 20x22 -quality 100 $SPRITEFN
 
 echo ".icon { background-image: url(icons/$SPRITEFN); background-repeat: no-repeat;}" > $CSSFN
 
