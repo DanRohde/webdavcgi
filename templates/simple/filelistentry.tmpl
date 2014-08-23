@@ -5,7 +5,7 @@ $filelistentrycolumns
 <td class="option"></td>
 <!--TEMPLATE(name)[
 <td class="filename -hidden"> 
-     <!--IF("$linkinfo" eq "" && "$name" eq "$displayname")-->
+     <!--IF("$linkinfo" eq "" && ("$name" eq "$displayname" || "$name" eq ".."))-->
        <div class="filename">
      <!--ELSE-->
        <div class="filename" title="$name$linkinfo">
