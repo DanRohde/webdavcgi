@@ -7,7 +7,7 @@
 while read tmpl exts ; do
 	for e in $exts; do 
 		pointsize=8
-		if [ ${#e} -gt 4  ]; then
+		if [ ${#e} -gt 5  ]; then
 			pointsize=7
 		fi
 		test ${e}.png -nt templates/${tmpl}.png && continue
