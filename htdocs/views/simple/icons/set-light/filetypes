@@ -2,7 +2,7 @@ audio	aac aif aiff aifc au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wa
 video	3gp avi flv mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
 image	bmp gif jpg jpeg png raw xcf
 source	c cpp css h java js php phps pl pm py sql
-text	1 2 3 4 5 6 7 8 9 asc conf diff eml ldif log ics info mf patch pub txt vcard vcs
+text	1 2 3 4 5 6 7 8 9 asc conf diff eml ldif log ics info out patch pub txt vcard vcs
 officew	doc docx odt ott stw sxw
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
 offices	csv ods ots sxc stc xls xlsx xlt
@@ -11,4 +11,4 @@ markup	dtd htm html sgml xml xsl xslt
 archive	7z bz2 deb gz jar lzma p12 rar rpm tar tgz xpi zip
 binary	class com db dump exe img iso o so vmdk
 shell	bat bash cmd csh cshrc env ksh login ps1 sh tcsh
-tex	aux bib cls dvi fmt ltx mf sty tex tfm
+tex	aux bib cls dvi fmt ltx mf sty tex tfm toc

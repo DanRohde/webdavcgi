@@ -1,8 +1,11 @@
 #!/bin/bash
 
 
-ICONSET=$1
+ICONSET=${1:-light}
 
+cd set-$ICONSET
+bash createicons.sh
+cd ..
 
 FILES=set-$ICONSET/*.png
 SPRITEFN=sprite.png
