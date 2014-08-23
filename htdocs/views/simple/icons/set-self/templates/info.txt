@@ -24,3 +24,4 @@ Binary: #730000 - #b80000
 
 
 Folder: #666600 - #d5d500
+Folder orange: #8d7155 - #ffd9b4
