@@ -66,9 +66,9 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-	    @EVENTLISTENER $VERSION $SHOWDOTFILES
+	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS
 ); 
-$VERSION="1.0.0BETA14082405";
+$VERSION="1.0.0BETA14082406";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -191,7 +191,11 @@ $CSS = '';
 
 ## -- SHOWDOTFILES
 ## show dot files
-$SHOWDOTFILES=1;
+$SHOWDOTFILES = 1;
+
+## -- SHOWDOTFOLDERS
+## show dot folders (AFS backend users should leave it enabled)
+$SHOWDOTFOLDERS = 1;
 
 ## -- @UNSELECTABLE_FOLDERS
 ## listed files/folders are unselectable in the Web interface to

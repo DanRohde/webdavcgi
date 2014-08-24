@@ -64,7 +64,7 @@ $(document).ready(function() {
 	
 	initToolBox();
 	
-	initDotFilesFilter();
+	initDotFilter();
 	
 	initTooltips();
 	
@@ -1933,16 +1933,19 @@ function refreshFileListEntry(filename) {
 		initFileList();
 	});
 }
-function initDotFilesFilter() {
+function initDotFilter() {
 
-	$("body").off("settingchanged.initDotFilesFilter").on("settingchanged.initDotFilesFilter",function(e,data) {
+	$("body").off("settingchanged.initDotFilter").on("settingchanged.initDotFilter",function(e,data) {
 		if (data.setting == "settings.show.dotfiles") {
-			$("body").toggleClass('hidedotfiles', !data.value);
+			$("body").toggleClass("hidedotfiles", !data.value);
+			$("#flt").trigger("fileListViewChanged");
+		} else if (data.setting == "settings.show.dotfolders") {
+			$("body").toggleClass("hidedotfolders", !data.value);
 			$("#flt").trigger("fileListViewChanged");
 		}
 	});
 	$("body").toggleClass("hidedotfiles", cookie("settings.show.dotfiles") == "no");
-	
+	$("body").toggleClass("hidedotfolders", cookie("settings.show.dotfolders") == "no");
 }
 function initPlugins() {
 	$.fn.MyTooltip = function(delay, hidetimeout, showtimeout) {

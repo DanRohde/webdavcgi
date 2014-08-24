@@ -141,6 +141,10 @@ sub getCookies {
         	push @cookies, $$self{cgi}->cookie(-name=>'settings.show.dotfiles', -value=>$$self{cgi}->cookie('settings.show.dotfiles') || 'no');
         	push @cookies, $$self{cgi}->cookie(-name=>'settings.show.dotfiles.keep', -value=>1);	
         }
+        if (!$main::SHOWDOTFOLDERS) {
+        	push @cookies, $$self{cgi}->cookie(-name=>'settings.show.dotfolders', -value=>$$self{cgi}->cookie('settings.show.dotfolders') || 'no');
+        	push @cookies, $$self{cgi}->cookie(-name=>'settings.show.dotfolders.keep', -value=>1);
+        }
          
         return \@cookies;
 }

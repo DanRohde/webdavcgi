@@ -1199,7 +1199,8 @@ img {
 #abortdialog div {
 	padding: 5px;
 }
-.hidedotfiles tr.isdotfile-yes {
+.hidedotfiles tr.is-file.isdotfile-yes, .hidedotfolders tr.is-dir.isdotfile-yes {
 	display: none !important;
 }
+ 
 
