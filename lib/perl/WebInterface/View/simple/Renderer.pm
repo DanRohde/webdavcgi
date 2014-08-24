@@ -299,7 +299,7 @@ sub renderFileListEntry {
 	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
 	my $mime = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-	my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w{1,5})$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
+	my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
 	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
