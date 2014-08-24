@@ -333,12 +333,13 @@ sub renderFileListEntry {
 				'ext_classes'=> '',
 				'ext_attributes'=>'',
 				'ext_styles' =>'',
+				'ext_iconclasses' =>'',
 				);
 	# fileattr hook: collect and concatenate attribute values 
 	my $fileattrExtensions = $$self{config}{extensions}->handle('fileattr', { path=>$full});
 	if ($fileattrExtensions ) {
 		foreach my $attrHashRef (@{$fileattrExtensions}) {
-			foreach my $supportedFileAttr ( ('ext_classes', 'ext_attributes','ext_styles')) {
+			foreach my $supportedFileAttr ( ('ext_classes', 'ext_attributes','ext_styles','ext_iconclasses')) {
 				$stdvars{$supportedFileAttr}.=' '.$$attrHashRef{$supportedFileAttr} if $$attrHashRef{$supportedFileAttr};	
 			}
 		}

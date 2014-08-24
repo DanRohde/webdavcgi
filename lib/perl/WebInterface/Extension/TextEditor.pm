@@ -39,7 +39,7 @@ sub init {
 	
 	$$self{editablefiles} = $self->config('editablefiles', 
 		[ '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$', 
- 		  '^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' ]
+ 		  '^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure)' ]
  	);
  	$$self{editablefilesregex} = '(' . join('|', @{$$self{editablefiles}}) .')';
 	$$self{template} = $self->config('template','editform');
@@ -58,7 +58,8 @@ sub handle {
 	} elsif ($hook eq 'fileactionpopup') {
 		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton', type=>'li'};
 	} elsif ($hook eq 'fileattr') {
-		$ret = { ext_classes=>'iseditable-'. ($self->isEditable($$params{path}) ? 'yes' : 'no') };
+		my $isEditable = $self->isEditable($$params{path});
+		$ret = { ext_classes=>'iseditable-'. ( $isEditable ? 'yes' : 'no'), ext_iconclasses=> $isEditable ?  'category-text' : '' };
 	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') eq 'edit') {
 		$ret = $self->getEditForm(); 
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'savetextdata') {
