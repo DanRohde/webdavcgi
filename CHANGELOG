@@ -1,5 +1,6 @@
 1.0.0: BETA
      - fixed minor AFS Group Manager bug
+     - added SHOWDOTFILES feature
      - added the GIT backend
      - added disk usage web interface extension 'DiskUsage'
      - added POSIX ACL web interface extension 'PosixAclManager'

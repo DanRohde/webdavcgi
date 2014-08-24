@@ -329,6 +329,7 @@ sub renderFileListEntry {
 				'modestr' => $self->mode2str($full, $mode),
 				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0) || $uid,
 				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0) || $gid,
+				'isdotfile'=> $file=~/^\./ && $file !~/^\.{1,2}$/ ? 'yes' : 'no',
 				'ext_classes'=> '',
 				'ext_attributes'=>'',
 				'ext_styles' =>'',

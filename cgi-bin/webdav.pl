@@ -66,9 +66,9 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-	    @EVENTLISTENER $VERSION
+	    @EVENTLISTENER $VERSION $SHOWDOTFILES
 ); 
-$VERSION="1.0.0BETA14082404";
+$VERSION="1.0.0BETA14082405";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -188,6 +188,10 @@ $CSS = '';
 ## hide some special files/folders (GET/PROPFIND) 
 ## EXAMPLES: @HIDDEN = ( '\.DAV/?$', '~$', '\.bak$', '/\.ht' );
 @HIDDEN = ();
+
+## -- SHOWDOTFILES
+## show dot files
+$SHOWDOTFILES=1;
 
 ## -- @UNSELECTABLE_FOLDERS
 ## listed files/folders are unselectable in the Web interface to

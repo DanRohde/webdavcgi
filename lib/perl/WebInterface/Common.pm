@@ -131,13 +131,18 @@ sub setLocale {
 }
 sub getCookies {
         my ($self) = @_;
-        return [
+        my @cookies = (
                  $$self{cgi}->cookie(-name=>'lang',-value=>$main::LANG,-expires=>'+10y'),
-                 $$self{cgi}->cookie(-name=>'showall',-value=>$$self{cgi}->param('showpage') ? 0 : ($$self{cgi}->param('showall') || $$self{cgi}->cookie('showall') || 0), -expires=>'+10y'),
                  $$self{cgi}->cookie(-name=>'order',-value=>$main::ORDER, -expires=>'+10y'),
-                 $$self{cgi}->cookie(-name=>'pagelimit',-value=>$main::PAGE_LIMIT, -expires=>'+10y'),
                  $$self{cgi}->cookie(-name=>'view',-value=>$main::VIEW, -expires=>'+10y'),
-        ];
+        );
+        
+        if (!$main::SHOWDOTFILES) {
+        	push @cookies, $$self{cgi}->cookie(-name=>'settings.show.dotfiles', -value=>$$self{cgi}->cookie('settings.show.dotfiles') || 'no');
+        	push @cookies, $$self{cgi}->cookie(-name=>'settings.show.dotfiles.keep', -value=>1);	
+        }
+         
+        return \@cookies;
 }
 sub replaceVars {
         my ($self,$t,$v) = @_;

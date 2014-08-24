@@ -64,6 +64,8 @@ $(document).ready(function() {
 	
 	initToolBox();
 	
+	initDotFilesFilter();
+	
 	initTooltips();
 	
 	$.ajaxSetup({ traditional: true });
@@ -396,7 +398,11 @@ function initSettingsDialog() {
 	settings.data("initHandler", { init: function() {
 		$("input[type=checkbox][name^='settings.']", settings).each(function(i,v) {
 			$(v).prop("checked", cookie($(v).prop("name")) != "no").click(function(event) {
-				togglecookie($(this).prop("name"),"no",!$(this).is(":checked"), 1);
+				if (cookie($(this).prop("name")+".keep")) 
+					cookie($(this).prop("name"),$(this).is(":checked")?'yes':'no',1);
+				else 
+					togglecookie($(this).prop("name"),"no",!$(this).is(":checked"), 1);
+				$("body").trigger("settingchanged", { setting: $(this).prop("name"), value: $(this).is(":checked") });
 			});
 		});
 		$("select[name^='settings.']", settings)
@@ -1926,6 +1932,17 @@ function refreshFileListEntry(filename) {
 		}
 		initFileList();
 	});
+}
+function initDotFilesFilter() {
+
+	$("body").off("settingchanged.initDotFilesFilter").on("settingchanged.initDotFilesFilter",function(e,data) {
+		if (data.setting == "settings.show.dotfiles") {
+			$("body").toggleClass('hidedotfiles', !data.value);
+			$("#flt").trigger("fileListViewChanged");
+		}
+	});
+	$("body").toggleClass("hidedotfiles", cookie("settings.show.dotfiles") == "no");
+	
 }
 function initPlugins() {
 	$.fn.MyTooltip = function(delay, hidetimeout, showtimeout) {
