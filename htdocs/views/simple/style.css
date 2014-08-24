@@ -262,6 +262,7 @@ table,th,td {
 }
 #fileList .filename .nametext {
 	padding-left: 10px; 
+	padding-top: 2px;
 	float: left;
 }
 div.filename a:focus {
@@ -349,12 +350,12 @@ tr.isreadable-no:hover {
 	padding-right: 1em;
 }
 .action.rename {
-	background: url(images/sprite.png) no-repeat left -499px;
+	background: url(images/sprite.png) no-repeat left -500px;
 }
 .action.delete, .listaction.delete {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: left -219px;
+	background-position: left -220px;
 	background-color: transparent;
 	color: black;
 }

@@ -42,11 +42,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .action.zipcompress {
 	background-image: url(compress.png);
-	background-position: left center;
+	background-position: 2px center;
 }
 .action.zipuncompress {
 	background-image: url(uncompress.png);
-	background-position: left center;
+	background-position: 2px center;
 }
 #popupmenu li.subpopupmenu.zip-popup {
 	background: url(zipup.png) no-repeat 2px 7px,
