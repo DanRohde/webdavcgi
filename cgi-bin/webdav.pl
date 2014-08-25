@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14082501";
+$VERSION="1.0.0BETA14082502";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -152,7 +152,8 @@ video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
 image   arw bmp cr2 crw dcr dia fff gif jpg jpeg k25 kdc nef nrw png raw rwl sr2 srf xcf
 source  am c cpp css h in java js m4 php phps pl pm py sql
 text    1 2 3 4 5 6 7 8 9 asc conf diff eml ldif list log ics info out patch properties pub txt vcard vcs
-officew doc docx odt ott rtf stw sxw
+oofficew odt ott stw sxw
+officew doc docx rtf 
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
 offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx 
 adobe   ai eps flv ind indt pdf prn ps psd swf
