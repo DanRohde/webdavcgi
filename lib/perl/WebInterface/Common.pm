@@ -298,7 +298,7 @@ sub getIcon {
         return $self->replaceVars(exists $main::ICONS{$type} ? $main::ICONS{$type} : $main::ICONS{default});
 }
 sub hasThumbSupport {
-        my ($self,$mime) = @_;
+	my ($self,$mime) = @_;
 	return 1 if $mime =~ /^image\// || $mime =~ /^text\/plain/ || ($main::ENABLE_THUMBNAIL_PDFPS && $mime =~ /^application\/(pdf|ps)$/);
 	return 0;
 }
@@ -437,6 +437,7 @@ sub canCreateThumbnail {
 	my ($self,$fn) = @_;
 	return $main::ENABLE_THUMBNAIL 
 		&& $self->hasThumbSupport(main::getMIMEType($fn)) 
+		&& $$self{backend}->isFile($fn)
 		&& $$self{backend}->isReadable($fn) 
 		&& !$$self{backend}->isEmpty($fn);
 }

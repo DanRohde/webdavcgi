@@ -300,6 +300,7 @@ sub renderFileListEntry {
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
 	my $mime = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 	my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
+	my $category = $main::FILETYPES=~/^(\w+).*\b\Q$suffix\E\b/m && $suffix ne 'unknown' ? 'category-'.$1 : '';
 	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
@@ -313,7 +314,7 @@ sub renderFileListEntry {
 			 	'createdhr'=>$$self{backend}->isReadable($full) && $ctime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$ctime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
 			 	'createdtime' => $ctime,
 				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mime),
-				'iconclass'=>$self->canCreateThumbnail($full) ? 'icon thumbnail suffix-'.$suffix : 'icon suffix-'.$suffix,
+				'iconclass'=> "icon $category suffix-$suffix".($self->canCreateThumbnail($full) ? ' thumbnail':''),
 				'mime'=>$$self{cgi}->escapeHTML($mime),
 				'realsize'=>$size ? $size : 0,
 				'isreadable'=>$file eq '..' || $$self{backend}->isReadable($full)?'yes':'no',
