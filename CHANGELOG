@@ -16,6 +16,7 @@
      - added web interface extension 'PublicUri'
      - added web interface extension 'Redirect'
      - added web interface extension 'SourceCodeViewer'
+     - added web interface extension 'HexDump'
      - removed ALLOW_ZIP_(UP|DOWN)LOAD support (replaced by 'Zip' extension)
      - removed ENABLE_AFSGROUPMANAGER (replaced by 'AFSGroupManager' extension)
      - removed ENABLE_AFSACLMANAGER (replaced by 'AFSACLManager' extension)

@@ -1966,7 +1966,10 @@ function initPlugins() {
 		} else {
 			tooltip = toel.data("tooltip");
 		}
-		
+		toel.off("click.MyTooltip").on("click.MyTooltip", function() { 
+			clearTimeout();
+			tooltip.hide();
+		});
 		tooltip.off("mouseover.tooltip").on("mouseover.tooltip",function(e) { 
 				preventDefault(e); 
 				clearTimeout(); 
