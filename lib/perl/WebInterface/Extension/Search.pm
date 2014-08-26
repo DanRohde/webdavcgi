@@ -36,6 +36,8 @@ our @ISA = qw( WebInterface::Extension  );
 use JSON;
 use Time::HiRes qw(time);
 use Digest::MD5 qw(md5_hex);
+use POSIX qw(strftime);
+
 
 use vars qw( %CACHE %TIMEUNITS);
 %TIMEUNITS = ( 'seconds' => 1, 'minutes' => 60, 'hours'=>3600, 'days'=>86400, 'weeks'=> 604800, 'months'=>18144000, 'years'=>31557600);
@@ -97,20 +99,23 @@ sub addSearchResult {
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
 		my $filename = $file eq "" ? "." : $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($base.$file));
 		my $full = $base.$file;
+		my @stat = $$self{backend}->stat($full);
 		my $uri = $main::REQUEST_URI.$$self{cgi}->escape($file);
 		$uri=~s/\%2f/\//gi; 
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
 		my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
-		
+		my $category = $main::FILETYPES =~ /^(\w+).*\b\Q$suffix\E\b/m ? "category-$1" : '';
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
 				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
-				iconclass=>$self->canCreateThumbnail($full) ? 'icon thumbnail suffix-'.$suffix : 'icon suffix-'.$suffix,
+				iconclass=>"icon $category suffix-$suffix ".($self->canCreateThumbnail($full) ? 'thumbnail': ''),
 				mime => $$self{cgi}->escapeHTML($mime),
 				type=> $mime eq '<folder>' ? 'folder' : 'file',
-				parentfolder => $$self{cgi}->escapeHTML($$self{backend}->dirname($base.$file)), 
+				parentfolder => $$self{cgi}->escapeHTML($$self{backend}->dirname($base.$file)),
+				lastmodified => $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($stat[9])) : '-', 
+				size=> ($self->renderByteValue($stat[7]))[0]
 			});
 		$$counter{results}++;
 		close($fh);
