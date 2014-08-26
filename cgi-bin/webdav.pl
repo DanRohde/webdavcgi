@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14082503";
+$VERSION="1.0.0BETA14082504";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -147,11 +147,11 @@ $FILETYPES = <<EOF
 unknown unknown
 folder  folder
 folderup folderup
-audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd vsd wav wma
+audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
-image   arw bmp cr2 crw dcr dia fff gif jpg jpeg k25 kdc nef nrw png raw rwl sr2 srf xcf
+image   arw bmp cr2 crw dcr dia fff gif jpg jpeg k25 kdc nef nrw png raw rwl sr2 srf vsd xcf
 source  am bas c cpp css h in java js m4 pas php phps pl pm py sql
-text    1 2 3 4 5 6 7 8 9 asc conf diff eml ldif list log ics info out patch properties pub txt vcard vcs
+text    1 2 3 4 5 6 7 8 9 asc conf diff eml ldif list log ics info ini out patch properties pub text txt vcard vcs
 oofficew odt ott stw sxw
 officew doc docx dot dotx rtf
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
@@ -160,7 +160,7 @@ adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml sgml xml xsl xslt
 archive 7z arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
 binary  a class dump img iso la lai lib lo o obj so vmdk 
-shell   bat bash bashrc bash_login bsh bshrc cmd com csh cshrc env exe ksh login profile ps1 sh tcsh tcshrc
+shell   bat bash bashrc bash_login bsh bshrc cmd com csh cshrc env exe ksh login profile ps1 sh tcl tcsh tcshrc tk
 tex     aux bib cls dvi fmt ltx sty tex toc
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps

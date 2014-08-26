@@ -42,6 +42,7 @@ sub init {
  		  '^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure)' ]
  	);
  	$$self{editablefilesregex} = '(' . join('|', @{$$self{editablefiles}}) .')';
+ 	$$self{editablecategories} = $self->config('editablecategories','(text|source)');
 	$$self{template} = $self->config('template','editform');
 	$$self{sizelimit} = $self->config('sizelimit',2097152 );
 	$$self{json} = new JSON();
@@ -83,7 +84,7 @@ sub getEditForm {
 }
 sub makeBackupCopy {
 	my ($self, $full) = @_;
-	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || main::rcopy($full, "$full.backup");
+	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || ($$self{backend}->stat($full))[7] == 0 || main::rcopy($full, "$full.backup");
 }
 sub saveTextData {
 	my ($self) = @_;
@@ -103,7 +104,9 @@ sub saveTextData {
 }
 sub isEditable {
 	my ($self,$fn) = @_;
-	return $$self{backend}->basename($fn) =~/$$self{editablefilesregex}/i && $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn) && $$self{backend}->isWriteable($fn);
+	my $suffix = $fn=~/\.(\w+)$/ ? lc($1) : '___unknown___';
+	return ($$self{backend}->basename($fn) =~/$$self{editablefilesregex}/i || $main::FILETYPES =~/^$$self{editablecategories}\s+.*\b\Q$suffix\E\b/m) 
+		&& $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn) && $$self{backend}->isWriteable($fn);
 }
 
 1;

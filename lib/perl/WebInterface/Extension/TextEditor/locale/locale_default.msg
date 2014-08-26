@@ -1,3 +1,4 @@
+beforeunload                   "%s is unsaved. Do you really want to leave now?"
 canceledit                     "Really? Changes will be lost."
 confirmsavetextdata            "Do you really want to save %s?"
 editbutton                     "Edit"

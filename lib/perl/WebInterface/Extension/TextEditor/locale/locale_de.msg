@@ -1,3 +1,4 @@
+beforeunload                   "%s ist nicht gespeichert. Wollen sie wirklich die Seite verlassen?"
 canceledit                     "Wirklich? Alle Änderungen gehen verloren."
 confirmsavetextdata            "Wollen Sie %s wirklich speichern?"
 editbutton                     "Editieren"

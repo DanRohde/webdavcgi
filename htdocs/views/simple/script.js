@@ -1751,17 +1751,25 @@ function initNewActions() {
 		if (event.keyCode == 27) $(this).hide();
 	});
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
-		$(this).closest(".popup.hidden").hide();
-		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : $(this).data('value') }, function(response) {
-			if (!response.error && response.message) updateFileList();
+		var self = $(this);
+		self.closest(".popup.hidden").hide();
+		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : self.data('value') }, function(response) {
+			if (!response.error && response.message) {
+				//updateFileList();
+				refreshFileListEntry(self.data('value'));
+			}
 			handleJSONResponse(response);
 		});
 	});
 
 	handleInplaceInput($('.action.create-file')).on('changed', function(event) {
-		$(this).closest(".popup.hidden").hide();
-		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : $(this).data('value') }, function(response) {
-			if (!response.error && response.message) updateFileList();
+		var self = $(this);
+		self.closest(".popup.hidden").hide();
+		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : self.data('value') }, function(response) {
+			if (!response.error && response.message) {
+				//updateFileList();
+				refreshFileListEntry(self.data('value'));
+			}
 			handleJSONResponse(response);
 		});
 	});
