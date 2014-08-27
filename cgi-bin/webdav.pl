@@ -147,11 +147,11 @@ $FILETYPES = <<EOF
 unknown unknown
 folder  folder
 folderup folderup
-text    1 2 3 4 5 6 7 8 9 asc conf diff eml ldif list log ics info ini out patch properties pub text txt vcard vcs
+text    1 2 3 4 5 6 7 8 9 asc conf eml ldif list log ics info ini out properties pub text txt vcard vcs
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
-video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
-image   arw bmp cr2 crw dcr dia fff gif jpg jpeg k25 kdc nef nrw png raw rwl sr2 srf vsd xcf
-source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f90 for fs h has hpp hrl hs in inl jav java js l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod py pyw r rb sed src sql t tcl tk xql yml
+video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt wmv
+image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
+source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f90 for fs h has hpp hrl hs in inl jav java js l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
 oofficew odt ott stw sxw
 officew doc docx dot dotx rtf
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
