@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14082701";
+$VERSION="1.0.0BETA14082702";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -147,11 +147,11 @@ $FILETYPES = <<EOF
 unknown unknown
 folder  folder
 folderup folderup
+text    1 2 3 4 5 6 7 8 9 asc conf diff eml ldif list log ics info ini out patch properties pub text txt vcard vcs
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mng mts ogv qt wmv
 image   arw bmp cr2 crw dcr dia fff gif jpg jpeg k25 kdc nef nrw png raw rwl sr2 srf vsd xcf
-source  am bas c cpp css h in java js m4 pas php phps pl pm py sql
-text    1 2 3 4 5 6 7 8 9 asc conf diff eml ldif list log ics info ini out patch properties pub text txt vcard vcs
+source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f90 for fs h has hpp hrl hs in inl jav java js l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod py pyw r rb sed src sql t tcl tk xql yml
 oofficew odt ott stw sxw
 officew doc docx dot dotx rtf
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
@@ -159,14 +159,15 @@ offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xl
 adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rss sgml xml xsl xslt
 archive 7z arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
-binary  a class dump img iso la lai lib lo o obj so vmdk 
-shell   bat bash bashrc bash_login bsh bshrc cmd com csh cshrc env exe ksh login profile ps1 sh tcl tcsh tcshrc tk
-tex     aux bbl bib brf blg bst cls ctx def dtx dvi fmt ins lof lot ltx nav snm sty tex toc vrb
+binary  a class ds_store dump img iso la lai lib lo o obj so vmdk 
+shell   bat bash bashrc bash_login bsh bshrc cmd com csh cshrc env exe jsh ksh login profile ps1 sh  tcsh tcshrc 
+tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
 db      accdb accdr accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf tmd usr wmdb xld
 EOF
 ;
+
 ## -- UI_ICONS -- obsolete, use stylesheets instead 
 ## user interface icons
 
@@ -2546,7 +2547,7 @@ sub getMIMEType {
 sub rcopy {
         my ($src,$dst,$move,$depth) = @_;
 
-        $depth=0 unless defined $depth;
+	$depth=0 unless defined $depth;
 
         return 0 if defined $LIMIT_FOLDER_DEPTH && $LIMIT_FOLDER_DEPTH > 0 && $depth > $LIMIT_FOLDER_DEPTH;
 
@@ -2599,10 +2600,9 @@ sub rcopy {
 
                 #if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
                 if (!$move || !$backend->rename($src,$dst)) {
-                        $backend->mkcol($dst) unless $backend->exists($dst);
-
-						return 0 unless $backend->isReadable($src);
-                        my $rret = 1;
+                	$backend->mkcol($dst) unless $backend->exists($dst);
+			return 0 unless $backend->isReadable($src);
+			my $rret = 1;
                         foreach my $filename (@{$backend->readDir($src)}) {
                                 $rret = $rret && rcopy($src.$filename, $dst.$filename, $move, $depth+1);
                         }

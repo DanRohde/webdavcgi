@@ -59,11 +59,17 @@ sub unlinkDir {
 	$self->execGit('rm','-r',$fn);
 	return $ret;
 }
+sub exists {
+	my ($self,$fn) = @_;
+	return 0 if $self->gitFilter($self->dirname($fn), $self->basename($fn));
+	return $self->SUPER::exists($fn);
+}
 sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
 	my $gitfilter = sub {
 		my ($d, $f) = @_;
-		return $self->gitFilter($d,$f) ||  !defined $filter || ((ref($filter) eq 'CODE' && $filter->($d,$f))||(ref($filter) ne 'CODE' && $filter->filter($d,$f)));
+		my $ret = $self->gitFilter($d,$f) ||  (defined $filter && ((ref($filter) eq 'CODE' && $filter->($d,$f))||(ref($filter) ne 'CODE' && $filter->filter($d,$f))));
+		return $ret;
 	};
 	return $self->SUPER::readDir($dirname, $limit, $gitfilter);
 }
@@ -141,8 +147,8 @@ sub rename {
 	return !-e $src && -e $dst;
 }
 sub copy {
-	my $self = shift @_;
-	my $ret = $self->SUPER::copy(@_);
+	my ($self, $src, $dst) = @_;
+	my $ret = $self->SUPER::copy($src,$dst);
 	$self->autoAdd();
 	return $ret;
 }
