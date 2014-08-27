@@ -81,7 +81,6 @@ sub readDir {
 }
 sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	print STDERR "gitFilter($dirname, $file)\n";
 	return $file eq '.git' || $dirname =~/^\Q$main::DOCUMENT_ROOT\E.git(\/.*)?$/ || $self->filter(undef, $dirname, $file);
 }
 
