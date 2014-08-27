@@ -333,7 +333,7 @@ tr.isreadable-no:hover {
 	z-index: 80;
 }
 .filterbox .action.clearfilter {
-		background: url(images/sprite.png) no-repeat left -698px;
+		background: url(images/sprite.png) no-repeat left -694px;
 		width: 22px;
 }
 .filterbox input:focus {

@@ -61,21 +61,28 @@ sub unlinkDir {
 }
 sub exists {
 	my ($self,$fn) = @_;
-	return 0 if $self->gitFilter($self->dirname($fn), $self->basename($fn));
-	return $self->SUPER::exists($fn);
+	return !$self->gitFilter($self->dirname($fn), $self->basename($fn)) && $self->SUPER::exists($fn);
+}
+sub isDir {
+	my ($self,$fn)= @_;
+	return !$self->gitFilter($self->dirname($fn), $self->basename($fn)) && $self->SUPER::isDir($fn);
+}
+sub isFile {
+	my ($self, $fn) = @_;
+	return !$self->gitFilter($self->dirname($fn), $self->basename($fn)) && $self->SUPER::isFile($fn);
 }
 sub readDir {
 	my($self, $dirname, $limit, $filter) = @_;
 	my $gitfilter = sub {
 		my ($d, $f) = @_;
-		my $ret = $self->gitFilter($d,$f) ||  (defined $filter && ((ref($filter) eq 'CODE' && $filter->($d,$f))||(ref($filter) ne 'CODE' && $filter->filter($d,$f))));
-		return $ret;
+		return $self->gitFilter($d,$f) ||  (defined $filter && ((ref($filter) eq 'CODE' && $filter->($d,$f))||(ref($filter) ne 'CODE' && $filter->filter($d,$f))));
 	};
 	return $self->SUPER::readDir($dirname, $limit, $gitfilter);
 }
 sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	return $file eq '.git' || $self->filter(undef, $dirname, $file);
+	print STDERR "gitFilter($dirname, $file)\n";
+	return $file eq '.git' || $dirname =~/^\Q$main::DOCUMENT_ROOT\E.git(\/.*)?$/ || $self->filter(undef, $dirname, $file);
 }
 
 sub deltree {
