@@ -103,8 +103,8 @@ sub addSearchResult {
 		my $uri = $main::REQUEST_URI.$$self{cgi}->escape($file);
 		$uri=~s/\%2f/\//gi; 
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-		my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
-		my $category = $main::FILETYPES =~ /^(\w+).*\b\Q$suffix\E\b/m ? "category-$1" : '';
+		my $suffix = $file eq '..' ? 'folderup' : ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown')) ;
+		my $category = $CACHE{categories}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES =~ /^(\w+).*\b\Q$suffix\E\b/m ? "category-$1" : '';
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,

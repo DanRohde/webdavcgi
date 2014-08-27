@@ -299,8 +299,8 @@ sub renderFileListEntry {
 	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
 	my $mime = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-	my $suffix = (!$$self{backend}->isDir($full) ? ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown') : ( $file eq '..' ? 'folderup' : 'folder')) ;
-	my $category = $main::FILETYPES=~/^(\w+).*\b\Q$suffix\E\b/m && $suffix ne 'unknown' ? 'category-'.$1 : '';
+	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown')) ;
+	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*\b\Q$suffix\E\b/m ? 'category-'.$1 : '';
 	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 

@@ -81,7 +81,7 @@ sub readDir {
 }
 sub gitFilter {
 	my ($self, $dirname, $file) = @_;
-	return $file eq '.git' || $dirname =~/^\Q$main::DOCUMENT_ROOT\E.git(\/.*)?$/ || $self->filter(undef, $dirname, $file);
+	return ($file eq '.git' && $main::DOCUMENT_ROOT =~/^\Q$dirname\E\/?$/) || $dirname =~/^\Q$main::DOCUMENT_ROOT\E\.git(\/.*)?$/ || $self->filter(undef, $dirname, $file);
 }
 
 sub deltree {

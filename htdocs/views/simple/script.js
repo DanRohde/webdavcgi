@@ -1921,7 +1921,6 @@ function initPopupMenu() {
 						adjustPopupPosition(event.pageX,event.pageY);
 						$("#flt").trigger('popupmenu',$(this).closest('tr'));
 					}
-					return false;
 				}
 			});
 		});
