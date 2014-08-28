@@ -473,13 +473,22 @@ tr.isreadable-no:hover {
 	padding: 0.2em 0.5em 0.2em 22px ;
 }
 .action.create-folder {
-	background: url(images/sprite.png) no-repeat left -738px;
+	background: url(images/sprite.png) no-repeat left -740px;
 }
 .action.create-file {
-	background: url(images/sprite.png) no-repeat left -778px;
+	background: url(images/sprite.png) no-repeat left -780px;
 }
 .action.create-symlink {
-	background: url(images/sprite.png) no-repeat left -818px;
+	background: url(images/sprite.png) no-repeat left -820px;
+}
+#popupmenu .action.create-folder {
+	background-position: left -736px;
+}
+#popupmenu .action.create-file {
+	background-position: left -776px;
+}
+#popupmenu .action.create-symlink {
+	background-position: left -816px;
 }
 .renamefield {
 	background-color: inherit;

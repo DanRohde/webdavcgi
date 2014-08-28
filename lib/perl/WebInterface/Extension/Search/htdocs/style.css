@@ -116,3 +116,7 @@ input.search.start, input.search.cancel {
 	font-style: italic;
 	background-color: #dadada;
 }
+.search.disabled {
+	opacity: 0.5;
+	filter: Alpha(opacity=50);
+}

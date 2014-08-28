@@ -14,10 +14,13 @@
 			<input type="radio" name="searchin" value="filename" checked="checked"/>$tl(search.filenameoption)
 			<!--IF("$extconfig(allow_contentsearch)" eq "1")-->
 				<input type="radio" name="searchin" value="content"/>
+				<span>
 			<!--ELSE-->
 				<input type="radio" name="searchin" value="content" disabled="disabled"/>
+				<span class="search disabled">
 			<!--ENDIF-->
-			$tl(search.contentoption)
+			$tl(search.contentoption)</span>
+			
 	</div>
 	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">
