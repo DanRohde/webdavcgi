@@ -185,13 +185,13 @@ sub doSearch {
 	my $backend = $$self{backend};
 	my $full = $$self{backend}->resolveVirt($base.$file);
 	my $fullresolved = $$self{backend}->resolve($full);
-	return if exists $$counter{visited}{$fullresolved};
-	$$counter{visited}{$fullresolved}=1;
 	$$counter{level}++;
 	return if $self->limitsReached($counter);
 	$self->addSearchResult($base, $file, $counter) unless $self->filterFiles($base,$file,$counter);
 	if ($backend->isDir($full)) {
 		$$counter{folders}++;
+		return if exists $$counter{visited}{$fullresolved};
+		$$counter{visited}{$fullresolved}=1;
 		foreach my $f ( sort @{ $backend->readDir($full, main::getFileLimit($full)) } ) {
 			$f.='/' if $backend->isDir($full.$f);
 			$self->doSearch($base, "$file$f", $counter);
