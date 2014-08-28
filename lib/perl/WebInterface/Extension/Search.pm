@@ -24,7 +24,8 @@
 # searchtimeout - sets a timeout in seconds (default: 30 seconds) 
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))
 # disable_dupseaerch - disables duplicate file search
-
+# maxdepth - maximum search level (default: 100)
+# duplicate_sample_size - sample size for doublet search (default: 1024 (=1KB))
 
 package WebInterface::Extension::Search;
 
@@ -47,6 +48,12 @@ sub init {
 	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{Search}{disable_fileactionpopup};
 	push @hooks,'apps' unless $main::EXTENSION_CONFIG{Search}{disable_apps};	
 	$hookreg->register(\@hooks, $self);
+	
+	$$self{resultlimit} = $self->config('resultlimit', 1000);
+	$$self{searchtimeout} = $self->config('searchtimeout', 30);
+	$$self{sizelimit} = $self->config('sizelimit', 2097152);
+	$$self{maxdepth} = $self->config('maxdepth',100);
+	$$self{duplicate_sample_size} = $self->config('duplicate_sample_size', 1024);
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
@@ -136,7 +143,7 @@ sub filterFiles {
 	$ret = 1 if  $query && $self->config('allow_contentsearch',0) && $searchin eq 'content' 
 			&& (	!$$self{backend}->isReadable($full)  
 				|| !$$self{backend}->isFile($full)
-				|| $$self{backend}->getFileContent($full,$self->config('sizelimit', 2097152) ) !~ /$query/igs
+				|| $$self{backend}->getFileContent($full,$$self{sizelimit} ) !~ /$query/igs
 			);
 		
 	$ret |= 1 if !$$self{cgi}->param('filetype') && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full);
@@ -162,7 +169,7 @@ sub filterFiles {
 		}
 	}
 	if (!$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch')) {
-		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)&& !$$self{backend}->isDir($full)) {  ## && ($$self{backend}->stat($full))[7] <= $self->config('sizelimit',2097152)) {
+		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)&& !$$self{backend}->isDir($full)) {  ## && ($$self{backend}->stat($full))[7] <= $$self{sizelimit}) {
 			push @{$$counter{dupsearch}{sizes}{$stat[7]}}, { base=>$base, file=>$file };
 		}
 		$ret = 1;
@@ -171,34 +178,37 @@ sub filterFiles {
 }
 sub limitsReached {
 	my ($self, $counter) = @_;
-	return $$counter{results} >= $self->config('resultlimit', 1000) || (time() - $$counter{started}) >  $self->config('searchtimeout', 30);
+	return $$counter{results} >= $$self{resultlimit} || (time() - $$counter{started}) >  $$self{searchtimeout} || $$counter{level} > $$self{maxdepth};
 }
 sub doSearch {
 	my ($self, $base, $file, $counter) = @_;
 	my $backend = $$self{backend};
 	my $full = $$self{backend}->resolveVirt($base.$file);
-	
+	my $fullresolved = $$self{backend}->resolve($full);
+	return if exists $$counter{visited}{$fullresolved};
+	$$counter{visited}{$fullresolved}=1;
+	$$counter{level}++;
 	return if $self->limitsReached($counter);
-	
 	$self->addSearchResult($base, $file, $counter) unless $self->filterFiles($base,$file,$counter);
-	
-	if ($backend->isDir($full) && !$backend->isLink($full)) {
+	if ($backend->isDir($full)) {
 		$$counter{folders}++;
 		foreach my $f ( sort @{ $backend->readDir($full, main::getFileLimit($full)) } ) {
 			$f.='/' if $backend->isDir($full.$f);
 			$self->doSearch($base, "$file$f", $counter);
+			
 		}
 	} else {
 		$$counter{files}++;
-	}	
+	}
+	$$counter{maxlevel} = $$counter{level} if $$counter{level} > $$counter{maxlevel};
+	$$counter{level}--;	
 }
 sub getSampleData {
 	my ($self, $data, $size) = @_;
-	
 	foreach my $fileinfo (@{$$data{dupsearch}{sizes}{$size}}) {
 		if ($size>0) {
 			my $full = $$fileinfo{base}.$$fileinfo{file};
-			my $md5 = md5_hex($$self{backend}->getFileContent($full, $self->config('duplicate_sample_size', 1024)));
+			my $md5 = md5_hex($$self{backend}->getFileContent($full, $$self{duplicate_sample_size}));
 			push @{$$data{dupsearch}{md5sample}{$size}{$md5}}, $fileinfo;
 		} else {
 			push @{$$data{dupsearch}{md5sample}{$size}{0}}, $fileinfo; 
@@ -208,11 +218,11 @@ sub getSampleData {
 sub getFullData {
 	my ($self, $data, $size, $md5sample) = @_;
 	foreach my $fileinfo (@{$$data{dupsearch}{md5sample}{$size}{$md5sample},}) {
-		if ($size <= $self->config('duplicate_sample_size',1024)) {
+		if ($size <= $$self{duplicate_sample_size}) {
 			push @{$$data{dupsearch}{md5}{$size}{$md5sample}}, $fileinfo;
 			next;
 		}
-		my $md5 = md5_hex($$self{backend}->getFileContent($$fileinfo{base}.$$fileinfo{file}, $self->config('sizelimit',2097152)));
+		my $md5 = md5_hex($$self{backend}->getFileContent($$fileinfo{base}.$$fileinfo{file}, $$self{sizelimit}));
 		push @{$$data{dupsearch}{md5}{$size}{$md5}}, $fileinfo;		
 	}
 }
@@ -220,11 +230,10 @@ sub addDuplicateClusterResult {
 	my ($self, $data, $size, $md5) = @_;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
 		my ($s,$st) = $self->renderByteValue($size);
-		my $sizelimit = $self->config('sizelimit',2097152);
 		my $bytesavings = (scalar(@{$$data{dupsearch}{md5}{$size}{$md5}})-1) * $size;
 		my @savings = $self->renderByteValue($bytesavings);
 		
-		my ($sl, $slt) = $self->renderByteValue($sizelimit);
+		my ($sl, $slt) = $self->renderByteValue($$self{sizelimit});
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchtemplate', 'dupsearch')), 
 			{
 				filecount => scalar(@{$$data{dupsearch}{md5}{$size}{$md5}}),
@@ -232,7 +241,7 @@ sub addDuplicateClusterResult {
 				size => $s,
 				sizetitle=> $st,
 				bytesize=>$size,
-				sizelimit => $sizelimit,
+				sizelimit => $$self{sizelimit},
 				sizelimittext => $sl,
 				sizelimittitle=> $slt,
 				savings => $savings[0],
@@ -305,7 +314,7 @@ sub handleSearch {
 		eval { /$$self{query}/ };
 		$$self{query} = quotemeta($$self{cgi}->param('query')) if $@;
 	}
-	warn("query=$$self{query}");
+	#warn("query=$$self{query}");
 	foreach my $file (@files) {
 		last if $self->limitsReached(\%counter);
 		$self->doSearch($main::PATH_TRANSLATED, $file,\%counter);
@@ -321,7 +330,7 @@ sub handleSearch {
 	my $status = sprintf($self->tl('search.completed'),$counter{results} || '0', $duration, $counter{files} || '0' ,$counter{folders} || '0');
 	my $data = !$counter{results} ? $$self{cgi}->div($self->tl('search.noresult')) : undef; 
 	my %messages = ();
-	$messages{warn} = $$self{cgi}->escapeHTML(sprintf($self->tl('search.limitsreached'), $self->config('resultlimit', 1000), $self->config('searchtimeout',30))) if $self->limitsReached(\%counter);
+	$messages{warn} = $$self{cgi}->escapeHTML(sprintf($self->tl('search.limitsreached'), $$self{resultlimit}, $$self{searchtimeout}, $$self{maxdepth})) if $self->limitsReached(\%counter) || $counter{maxlevel} >= $$self{maxdepth};
 	$self->getSearchResult($status, $data, \%messages);
 	unlink $self->getTempFilename('result');
 	return 1;
