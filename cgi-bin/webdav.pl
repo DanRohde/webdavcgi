@@ -147,7 +147,7 @@ $FILETYPES = <<EOF
 unknown unknown
 folder  folder
 folderup folderup
-text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out properties pub text txt vcard vcs
+text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt wmv
 image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
@@ -165,7 +165,7 @@ tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav s
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
 db      accdb accdr accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf tmd usr wmdb xld
-config	conf ini pif pinerc viminfo vimrc xauthority 
+config	cf cnf conf exrc gvimrc gxt inf ini muttrc pif pinerc pref preferences props properties set viminfo vimrc vmc vmx wfc xauthority 
 EOF
 ;
 
