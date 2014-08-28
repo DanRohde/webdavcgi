@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14082704";
+$VERSION="1.0.0BETA14082801";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -147,7 +147,7 @@ $FILETYPES = <<EOF
 unknown unknown
 folder  folder
 folderup folderup
-text    1 2 3 4 5 6 7 8 9 asc conf eml ldif list log ics info ini out properties pub text txt vcard vcs
+text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out properties pub text txt vcard vcs
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt wmv
 image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
@@ -159,12 +159,13 @@ offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xl
 adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rss sgml xml xsl xslt
 archive 7z arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
-binary  a class ds_store dump img iso la lai lib lo o obj so vmdk 
-shell   bat bash bashrc bash_login bsh bshrc cmd com csh cshrc env exe jsh ksh login profile ps1 sh  tcsh tcshrc 
+binary  a class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
+shell   alias bat bash bash_history bashrc bash_login logout bsh bshrc csh cshrc env history jsh ksh kshrc login profile ps1 sh  tcsh tcshrc 
 tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
 db      accdb accdr accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf tmd usr wmdb xld
+config	conf ini pif pinerc viminfo vimrc xauthority 
 EOF
 ;
 
