@@ -49,6 +49,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
 <li><a href="#TextEditor">TextEditor</a> - offers a simple text editor with integrated CKEditor&trade; for HTML editing</li>
 <li><a href="#SourceCodeViewer">SourceCodeViewer</a> - show syntax highlighted source code</li>
+<li><a href="#ViewerJS">ViewJS - shows OpenDocument and PDF files (odt,odp,ods)</a>
 <li><a href="#Zip">Zip</a> - (un)compresses files/folders</li>
 </ul>
 
@@ -284,6 +285,17 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # disableckeditor - disables CKEditor for HTML editing
 # sizelimit - size limit for text files in bytes (default: 2097152 (=2MB))
 # template - template file (default: editform)
+</pre></td>
+</tr>
+</table>
+<h2 id="ViewerJS">ViewerJS</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-viewerjs.png"><img alt="Web interface ViewerJS dialog" class="screenshot" src="images/webdavcgi-webinterface-viewerjs.png"/></a></td>
+<td><pre>
+# SETUP:
+# disable_fileactionpopup - disables file action entry in popup menu
+# disable_fileaction - disables file action 
 </pre></td>
 </tr>
 </table>

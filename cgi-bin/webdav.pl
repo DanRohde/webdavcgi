@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14082802";
+$VERSION="1.0.0BETA14082901";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -706,11 +706,11 @@ $DEBUG = 0;
 
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
-## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 
+## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'HexDump',
 ##            'Highlighter', 'Permissions','PosixAclManager', 'PropertiesViewer', 'PublicUri',
-##            'Redirect', 'Search','SendByMail', 'SourceCodeViewer', 'SysInfo', 'TextEditor', 'Zip'
+##            'Redirect', 'Search','SendByMail', 'SourceCodeViewer', 'SysInfo', 'TextEditor', 'ViewerJS', 'Zip'
 ## EXAMPLE: @EXTENSIONS = ( 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
-@EXTENSIONS = ( 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
+@EXTENSIONS = ( 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)

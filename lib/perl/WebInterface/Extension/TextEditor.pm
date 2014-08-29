@@ -80,7 +80,7 @@ sub getEditForm {
 	} else {
 		$content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->readTemplate($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::getMIMEType($full)});
 	}
-	main::printHeaderAndContent('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
+	main::printCompressedHeaderAndContent('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub makeBackupCopy {
@@ -100,7 +100,7 @@ sub saveTextData {
 	} else {
 		$jsondata{error} = sprintf($self->tl('msg_savetexterr'), $efilename);
 	}
-	main::printHeaderAndContent('200 OK', 'application/json', $$self{json}->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
+	main::printCompressedHeaderAndContent('200 OK', 'application/json', $$self{json}->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub isEditable {
