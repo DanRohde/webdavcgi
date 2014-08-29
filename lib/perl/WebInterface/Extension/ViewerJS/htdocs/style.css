@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .viewerjs.content {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	right: 0;
 	left: 0;
