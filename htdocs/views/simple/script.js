@@ -68,6 +68,8 @@ $(document).ready(function() {
 	
 	initTooltips();
 	
+	initNav();
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -1455,6 +1457,12 @@ function simpleEscape(text) {
 	// return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
 	return $('<div/>').text(text).html();
 }
+function initNav() {
+	$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
+		var loc = history.location || document.location;
+		updateFileList(loc.pathname);
+	});	
+}
 function changeUri(uri, leaveUnblocked) {
 	// try browser history manipulations:
 	try {
@@ -1462,10 +1470,6 @@ function changeUri(uri, leaveUnblocked) {
 			if (window.history.pushState) {
 				window.history.pushState({path: uri},"",uri);
 				updateFileList(uri);
-				$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
-					var loc = history.location || document.location;
-					updateFileList(loc.pathname);
-				});
 			} else {
 				updateFileList(uri);
 			}
