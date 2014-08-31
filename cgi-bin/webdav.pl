@@ -68,7 +68,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14083001";
+$VERSION="1.0.0BETA14083101";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -150,9 +150,9 @@ folderup folderup
 text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt wmv
-image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
+image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
 source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f90 for fs h has hpp hrl hs in inl jav java js l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
-oofficew odt ott stw sxw
+oofficew odt ott odm stw sxw
 officew doc docx dot dotx rtf
 officep pot potm pps ppsx ppt pptx odp otp sxi sti
 offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx 
@@ -707,10 +707,10 @@ $DEBUG = 0;
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
 ## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'HexDump',
-##            'Highlighter', 'Permissions','PosixAclManager', 'PropertiesViewer', 'PublicUri',
+##            'Highlighter', 'ODFConverter', 'Permissions','PosixAclManager', 'PropertiesViewer', 'PublicUri',
 ##            'Redirect', 'Search','SendByMail', 'SourceCodeViewer', 'SysInfo', 'TextEditor', 'ViewerJS', 'Zip'
-## EXAMPLE: @EXTENSIONS = ( 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
-@EXTENSIONS = ( 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );
+## EXAMPLE: @EXTENSIONS = ( 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' );
+@EXTENSIONS = ( 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' );
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)

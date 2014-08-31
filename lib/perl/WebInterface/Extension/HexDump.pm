@@ -65,7 +65,7 @@ sub renderHexDump {
                 my $buffer;
                 my $counter= 0;
                 while (my $bytesread = read($fh, $buffer, $chunksize)) {
-                        my @unpacked = unpack('W' x $bytesread, $buffer);
+                        my @unpacked = unpack("W[$bytesread]", $buffer);
                         my $hexmap = join("", map { sprintf('%02x',$_) } @unpacked);
                         $content.=sprintf("\%07x: \%-${hexstrlen}s  \%s\n",
                         		$counter++ *$chunksize,

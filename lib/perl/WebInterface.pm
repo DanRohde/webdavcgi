@@ -204,7 +204,7 @@ sub optimizer_Collect {
 		}
 		$$contentref.= $fc;
 		main::debug("optimizer_Collect: $full collected.");
-	}
+	} 
 	$$contentref .= $data if $data;
 }
 sub optimizer_ExtractContentFromTagsAndAttributes {
