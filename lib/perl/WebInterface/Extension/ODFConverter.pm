@@ -43,7 +43,7 @@ sub init {
 	$$self{types} = ['odt','odp','ods','doc','docx','ppt','pptx','xls','xlsx','csv','html','pdf','swf'];
 	$$self{typesregex} = '('.join('|',@{$$self{types}}).')';
 	$$self{groups} = {  t=> ['odt','doc','docx','pdf','html'], p=>['odp','ppt','pptx','pdf','swf'],s=>['ods','xls','xlsx','csv','pdf','html'] };
-	$$self{unconvertible} = qq@(pdf|swf)@;
+	$$self{unconvertible} = qq@(pdf|swf|html)@;
 	
 	$$self{popupcss}='<style>';
 	foreach my $group ( keys  %{$$self{groups}}) {
@@ -97,7 +97,7 @@ sub convertFile {
 		my @output = <$fh>;
 		close($fh);
 		my $targetfile=($file=~/(^.*)\.\w+$/ ? $1 : $file).".$targetformat"; 
-		if ($self->saveAllLocal($tmpdir)) {
+		if ($self->saveAllLocal($tmpdir,$full,$targetfile)) {
 			$jsondata{message} = sprintf($self->tl('odfconverter.success'), $cgi->escapeHTML($file), $cgi->escapeHTML($targetfile));
 		} else {
 			$jsondata{error} = sprintf($self->tl('odfconverter.savefailed'), $targetfile);
@@ -112,15 +112,19 @@ sub convertFile {
 	return 1;
 }
 sub saveAllLocal {
-	my ($self, $tmpdir) = @_;
+	my ($self, $tmpdir, $localfile, $targetfilename) = @_;
 	my $ret = 1;
 	my $count = 0;
+	my $localtargetfilename = $$self{backend}->basename($localfile);
+	$localtargetfilename=~s/\.\w+$//;
+	$localtargetfilename.='.'.$$self{cgi}->param('ct');
 	if (opendir(my $dir, $tmpdir)) {
 		while (my $file = readdir($dir) ) {
 			next if $file=~/^\.{1,2}$/;
-			my $targetfull = $main::PATH_TRANSLATED.$file;
 			my $targetlocal = $tmpdir.$file;
-			$ret = main::rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);	
+			my $targetfull = $main::PATH_TRANSLATED. ($file eq $localtargetfilename ? $targetfilename : $file);
+			$ret = main::rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
+			
 			if ($ret && open(my $fh,"<",$targetlocal)) {
 				$ret = $$self{backend}->saveStream($targetfull, $fh);
 				$count++ if $ret;
