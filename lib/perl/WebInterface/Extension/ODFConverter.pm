@@ -43,7 +43,7 @@ sub init {
 	$$self{types} = ['odt','odp','ods','doc','docx','ppt','pptx','xls','xlsx','csv','html','pdf','swf'];
 	$$self{typesregex} = '('.join('|',@{$$self{types}}).')';
 	$$self{groups} = {  t=> ['odt','doc','docx','pdf','html'], p=>['odp','ppt','pptx','pdf','swf'],s=>['ods','xls','xlsx','csv','pdf','html'] };
-	$$self{unconvertable} = qq@(pdf|swf)@;
+	$$self{unconvertible} = qq@(pdf|swf)@;
 	
 	$$self{popupcss}='<style>';
 	foreach my $group ( keys  %{$$self{groups}}) {
@@ -64,9 +64,9 @@ sub handle {
 	
 	if ($hook eq 'fileattr') {
 		my $suffix = $$params{path} =~ /\.(\w+)$/ ? $1 : 'unknown';
-		$ret = { ext_classes=> ($suffix =~ /$$self{typesregex}/ ? 'c' : '')." $$self{memberof}{$suffix} cs-$suffix"} unless $suffix=~/$$self{unconvertable}/;
+		$ret = { ext_classes=> ($suffix =~ /$$self{typesregex}/ ? 'c' : '')." $$self{memberof}{$suffix} cs-$suffix"} unless $suffix=~/$$self{unconvertible}/;
 	} elsif ($hook eq 'fileactionpopup') {
-		my @subpopup = map { { action=>'odfconvert',  label=>$_, type=>'li', classes=>"$$self{memberof}{$_} cs-$_", data=>{ ct=>$_ }  } } @{$$self{types} };
+		my @subpopup = map { { action=>'odfconvert',  label=>$_, type=>'li', classes=>"access-writeable $$self{memberof}{$_} cs-$_", data=>{ ct=>$_ }  } } @{$$self{types} };
 		$ret = { title=>$self->tl('odfconverter'), classes=>'odfconverter',type=>'li', subpopupmenu =>\@subpopup };
 		
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'odfconvert') {

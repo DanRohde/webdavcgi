@@ -35,12 +35,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	left: 0;
 	bottom: 0;
 	z-index: 2000;
-	background-color: white;
+	background-color: #454545;
 	overflow: hidden;
 	padding: 0;
 	margin: 0;
 }
 
-#viewer, .close.button {
+#viewer {
 	width: 100%;
+}
+
+.close.button {
+	position: absolute;
+	right:5px;
+	
 }
