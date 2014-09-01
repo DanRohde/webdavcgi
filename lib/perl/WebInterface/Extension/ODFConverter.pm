@@ -38,7 +38,7 @@ sub init {
 	$hookreg->register(\@hooks, $self) if -x $$self{ooffice};
 	
 	
-	$$self{oofficeparams} = $self->config('oofficeparams', ['--invisible','--convert-to','%targetformat','--outdir','%targetdir','%sourcefile']);
+	$$self{oofficeparams} = $self->config('oofficeparams', ['--headless', '--invisible','--convert-to','%targetformat','--outdir','%targetdir','%sourcefile']);
 	
 	$$self{types} = ['odt','odp','ods','doc','docx','ppt','pptx','xls','xlsx','csv','html','pdf','swf'];
 	$$self{typesregex} = '('.join('|',@{$$self{types}}).')';
@@ -114,6 +114,7 @@ sub convertFile {
 sub saveAllLocal {
 	my ($self, $tmpdir) = @_;
 	my $ret = 1;
+	my $count = 0;
 	if (opendir(my $dir, $tmpdir)) {
 		while (my $file = readdir($dir) ) {
 			next if $file=~/^\.{1,2}$/;
@@ -122,6 +123,7 @@ sub saveAllLocal {
 			$ret = main::rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);	
 			if ($ret && open(my $fh,"<",$targetlocal)) {
 				$ret = $$self{backend}->saveStream($targetfull, $fh);
+				$count++ if $ret;
 				close($fh);
 			} else {
 				$ret = 0;
@@ -131,6 +133,6 @@ sub saveAllLocal {
 		}
 		closedir($dir);
 	}	
-	return $ret;
+	return $count > 0;
 }
 1;
