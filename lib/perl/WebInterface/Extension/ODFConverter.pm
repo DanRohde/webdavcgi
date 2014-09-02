@@ -85,6 +85,11 @@ sub convertFile {
 	my $tmpdirn = tempdir(CLEANUP=>1);
 	my $tmpdir = $tmpdirn.'/';
 	mkdir $tmpdir;
+	
+	my $tmphomedir = "/tmp/_webdavcgi_odfconverter_$main::REMOTE_USER";
+	mkdir $tmphomedir unless -d $tmphomedir;
+	$ENV{HOME}=$tmphomedir;
+	
 	my @params = @{$$self{oofficeparams}};
 	for (my $i=0; $i<=$#params; $i++) {
 		$params[$i]=~s/\%targetformat/$targetformat/g;
@@ -120,8 +125,8 @@ sub saveAllLocal {
 	$localtargetfilename.='.'.$$self{cgi}->param('ct');
 	if (opendir(my $dir, $tmpdir)) {
 		while (my $file = readdir($dir) ) {
-			next if $file=~/^\.{1,2}$/;
 			my $targetlocal = $tmpdir.$file;
+			next if $file=~/^\.{1,2}$/ || -d $targetlocal;
 			my $targetfull = $main::PATH_TRANSLATED. ($file eq $localtargetfilename ? $targetfilename : $file);
 			$ret = main::rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
 			

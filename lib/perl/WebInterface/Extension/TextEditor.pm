@@ -18,7 +18,7 @@
 #
 # SETUP:
 # editablefiles - list of regular expressions to identify text files
-# editablecategories - regular expression of categories (default: (text|soruce|shell|config))
+# editablecategories - regular expression of categories (default: (text|soruce|shell|config|markup))
 # disableckeditor - disables CKEditor for HTML editing
 # sizelimit - size limit for text files in bytes (default: 2097152 (=2MB))
 # template - template file (default: editform)
@@ -43,7 +43,7 @@ sub init {
  		  '^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)' ]
  	);
  	$$self{editablefilesregex} = '(' . join('|', @{$$self{editablefiles}}) .')';
- 	$$self{editablecategories} = $self->config('editablecategories','(text|source|shell|config)');
+ 	$$self{editablecategories} = $self->config('editablecategories','(text|source|shell|config|markup)');
 	$$self{template} = $self->config('template','editform');
 	$$self{sizelimit} = $self->config('sizelimit',2097152 );
 	$$self{json} = new JSON();
