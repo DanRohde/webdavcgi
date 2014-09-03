@@ -33,6 +33,7 @@
 # KNOWN PROBLEMS:
 #    - see http://webdavcgi.sf.net/
 #########################################################################
+package main;
 use strict;
 #use warnings;
 use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
@@ -724,7 +725,9 @@ $DEBUG = 0;
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
+
 use CGI;
+
 use Module::Load;
 
 ## flush immediately:
@@ -1078,7 +1081,7 @@ sub _GET {
 		my $enc = $cgi->http('Accept-Encoding');
 		my $mime = getMIMEType($PATH_TRANSLATED);
 		my @stat = $backend->stat($PATH_TRANSLATED);
-		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, "<".$backend->getLocalFilename($PATH_TRANSLATED))) {
+		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, '<',$backend->getLocalFilename($PATH_TRANSLATED))) {
 				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($PATH_TRANSLATED), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'no-cache');
 				my $c;
 				if ($enc =~ /gzip/i) {
@@ -1137,19 +1140,22 @@ sub _OPTIONS {
 	my $status = '200 OK';
 	my $type;
 	getEventChannel()->broadcastEvent('OPTIONS', {file=>$PATH_TRANSLATED});
+	
 	if ($backend->exists($PATH_TRANSLATED)) {
 		$type = $backend->isDir($PATH_TRANSLATED) ? 'httpd/unix-directory' : getMIMEType($PATH_TRANSLATED);
 		$methods = join(', ', @{getSupportedMethods($PATH_TRANSLATED)});
+		
 	} else {
 		$status = '404 Not Found';
 		$type = 'text/plain';
 	}
+	my %params;
+	if ($methods) {
+		#$params{'DASL'} = '<DAV:basicsearch>' if $ENABLE_SEARCH;
+		%params = ( %params, 'DAV'=>$DAV, 'MS-Author-Via'=>'DAV','Allow'=>$methods,'Public'=>$methods, 'DocumentManagementServer'=> 'Properties Schema', 'DASL' => $ENABLE_SEARCH ? '<DAV:basicsearch>' : undef);
 		
-	my $header =$cgi->header(-status=>$status ,-type=>$type, -Content_length=>0);
-	$header="DASL: <DAV:basicsearch>\r\n$header" if $ENABLE_SEARCH;
-	$header="MS-Author-Via: DAV\r\nDAV: $DAV\r\nAllow: $methods\r\nPublic: $methods\r\nDocumentManagementServer: Properties Schema\r\n$header" if (defined $methods); 
-
-	print $header;
+	}
+	main::printHeaderAndContent($status, $type, '', \%params);
 }
 sub _TRACE {
 	my $status = '200 OK';
@@ -2206,6 +2212,18 @@ sub getETag {
 	$digest->add($mtime || 0);
 	return '"'.$digest->hexdigest().'"';
 }
+sub getAddHeaderHashRef {
+	my ($header) = @_;	
+	return {} unless defined $header;
+	return $header if ref($header) eq 'HASH';
+
+	my %params = ();
+	foreach my $line (split(/\r?\n/,$header)) {
+		my ($h,$v) = split(/: /, $line);
+		$params{$h} = $v;	
+	}
+	return \%params;
+}
 sub printHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
 
@@ -2213,59 +2231,48 @@ sub printHeaderAndContent {
 	$type='text/plain' unless defined $type;
 	$content="" unless defined $content;
 
-	my $header = $cgi->header(-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies );
-
-	$header = "MS-Author-Via: DAV\r\n$header";
-	$header = "DAV: $DAV\r\n$header";
-	$header="$addHeader\r\n$header" if defined $addHeader;
-	$header="Translate: f\r\n$header" if defined $cgi->http('Translate');
-
-	print $header;
+	my %header = (-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies, 'MS-Author-Via'=>'DAV', 'DAV' => $DAV);
+	$header{'Translate'} = 'f' if defined $cgi->http('Translate');
+	%header=(%header, %{getAddHeaderHashRef($addHeader)});
+	print $cgi->header(\%header);
 	binmode(STDOUT);
 	print $content;
 }
 sub printCompressedHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
+	my $header =  getAddHeaderHashRef($addHeader);
 	if ($ENABLE_COMPRESSION && (my $enc = $cgi->http('Accept-Encoding'))) {
 		my $orig = $content;
-		$addHeader ="" unless defined $addHeader;
 		if ($enc =~ /gzip/i) {
 			require IO::Compress::Gzip;
 			my $g = new IO::Compress::Gzip(\$content);
 			$g->write($orig);
-			$addHeader.="\r\nContent-Encoding: gzip";
+			$$header{'Content-Encoding'}='gzip';
 		} elsif ($enc =~ /deflate/i) {
 			require IO::Compress::Deflate;
 			my $d = new IO::Compress::Deflate(\$content);
 			$d->write($orig);
-			$addHeader.="\r\nContent-Encoding: deflate";
+			$$header{'Content-Encoding'}='deflate';
 		}
 	}
-	printHeaderAndContent($status, $type, $content, $addHeader, $cookies);
+	printHeaderAndContent($status, $type, $content, $header, $cookies);
 }
 sub printLocalFileHeader {
 	my ($fn,$addheader) = @_;
-	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($fn);
-	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime || 0)), -charset=>$CHARSET);
-	%ha = (%ha, %{$addheader}) if $addheader;
-	my $header = $cgi->header(\%ha);
-
-	$header = "MS-Author-Via: DAV\r\n$header";
-	$header = "DAV: $DAV\r\n$header";
-	$header = "Translate: f\r\n$header" if defined $cgi->http('Translate');
-	print $header;
+	my @stat = stat($fn);
+	my %header = ( -status=>'200 OK',-type=>getMIMEType($fn), -Content_Length=>$stat[7], -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9] || 0)), -charset=>$CHARSET, 'DAV'=>$DAV, 'MS-Author-Via'=>'DAV');
+	$header{'Translate'}='f' if defined $cgi->http('Translate');
+	%header = (%header, %{getAddHeaderHashRef($addheader)});
+	print $cgi->header(\%header);
 }
 sub printFileHeader {
 	my ($fn,$addheader) = @_;
-	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $backend->stat($fn);
-	my %ha = ( -status=>'200 OK',-type=>getMIMEType($fn),  -Content_Length=>$size, -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($mtime)), -charset=>$CHARSET, -Cache_Control=>'no-cache');
-	%ha = (%ha, %{$addheader}) if $addheader;
-	my $header = $cgi->header(\%ha);
-
-	$header = "MS-Author-Via: DAV\r\n$header";
-	$header = "DAV: $DAV\r\n$header";
-	$header = "Translate: f\r\n$header" if defined $cgi->http('Translate');
-	print $header;
+	my @stat = $backend->stat($fn);
+	my %header = ( -status=>'200 OK',-type=>getMIMEType($fn), -Content_Length=>$stat[7], -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Cache_Control=>'no-cache, no-store', 
+			'MS-Author-Via' => 'DAV', 'DAV'=>$DAV);
+	$header{Translate}='f' if defined $cgi->http('Translate');
+	%header = (%header, %{getAddHeaderHashRef($addheader)});
+	print $cgi->header(\%header);
 }
 sub is_hidden {
 	my ($fn) = @_;
@@ -2662,7 +2669,7 @@ sub getParentURI {
 sub getLocalFileContentAndType {
         my ($fn,$default,$defaulttype) = @_;
         my $content="";
-        if (-e $fn && ! -d $fn && open(F,"<$fn")) {
+        if (-e $fn && ! -d $fn && open(F,'<',$fn)) {
                 $content = join("",<F>);
                 close(F);
 		$defaulttype=getMIMEType($fn);

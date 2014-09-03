@@ -43,7 +43,7 @@ sub init {
 	$$self{types} = ['odt','odp','ods','doc','docx','ppt','pptx','xls','xlsx','csv','html','pdf','swf'];
 	$$self{typesregex} = '('.join('|',@{$$self{types}}).')';
 	$$self{groups} = {  t=> ['odt','doc','docx','pdf','html'], p=>['odp','ppt','pptx','pdf','swf'],s=>['ods','xls','xlsx','csv','pdf','html'] };
-	$$self{unconvertible} = qq@(pdf|swf|html)@;
+	$$self{unconvertible} = qq@(swf)@;
 	
 	$$self{popupcss}='<style>';
 	foreach my $group ( keys  %{$$self{groups}}) {
