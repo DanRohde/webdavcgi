@@ -110,17 +110,17 @@ apt-get install librcs-perl
 ## only for AFS users:
 apt-get install openafs-client krb5-user openafs-krb5
 
-## for ODFConverter extension:
-apt-get install libreoffice
 
    </pre>   
 </li>
 <li>install additional binaries/packages for a better WebDAV CGI experience:
 <ul>
 <li> Speedy - increases the performance of WebDAV CGI (Debian/Ubuntu package: speedy-cgi-perl) </li>
-<li> Ghostscript - allowes the web interface of WebDAV CGI to generate thumbnails for PDF/PS files (Debian/Ubuntu package: ghostscript) </li>
+<li> Ghostscript - allows the web interface of WebDAV CGI to generate thumbnails for PDF/PS files (Debian/Ubuntu package: ghostscript) </li>
 <li> smbclient (only for SMB backend users) - allowes the web interface to show quota information (Debian/Ubuntu package: smbclient) </li>
 <li> kinit (only for SMB and AFS backend users) - allowes you to omit mod_auth_kerberos (Debian/Ubuntu package: krb5-user) </li>
+<li> libreoffice - allows file conversions</li>
+<li> Env::C - needed for Kerberos helpers in conjunction with mod_perl</li>
 </ul>
 <pre>
 ## Debian/Ubuntu quick install:
@@ -131,6 +131,13 @@ apt-get install smbclient
 
 ## only for SMB and AFS backend users:
 apt-get install krb5-user
+
+## for ODFConverter extension:
+apt-get install libreoffice
+
+## for mod_perl users with Kerberos authentication:
+perl -MCPAN -e "install Env::C"
+
 </pre>
 <pre>
 ## Gentoo quick install:
@@ -250,6 +257,7 @@ DROP TABLE webdav_props_old;
 
 </pre>
 </li>
+<li> mod_perl is now supported for AFS and SMB backends</li>
 <li> ZIP download and upload moved to new extension Zip. Expand your extension list to activate it <code>@EXTENSIONS = ( 'Zip', ...);</code></li>
 <li> The AFS Group Manager is an extension now. Add 'AFSGroupManger' to your extensions list to activate it. </li>
 <li> The AFS ACL Manager is an extension now. Add 'AFSACLManager' to your extensions list to use it.</li>
@@ -450,7 +458,7 @@ The WebDAV CGI can be easier upgraded if you use a configuration file instead of
 ## (don't forget the trailing slash):
 $INSTALL_BASE = '/etc/webdavcgi/';
 
-## the backend module (supported: FS, AFS, GFS, SMB, DBB, RCS):
+## the backend module (supported: FS, AFS, GFS, SMB, DBB, RCS, GIT):
 $BACKEND = 'FS';
 
 ## this is an example if a user starts with home dir (http://mywebdavserver/ -&gt; user home):
@@ -467,7 +475,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 </pre>
 </li>
-<li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a></li>
+<li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a>, <a href="#git">GIT</a></li>
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
 <li> There are a lot of <a href="extensions.html">extensions</a> to activate. </li> 
 <li> Don't forget to check the config file syntax: <code>perl -c /etc/webdav.conf</code></li>
@@ -721,9 +729,18 @@ Following variables are substituted:
 </table>
 
 <h2 id="afs">AFS Support</h2>
+<p>
 WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It's a complete replacement for <a href="http://filedrawers.org/">filedrawers</a>.
+</p>
+Please choose your installation variant:
+<ol>
+<li> <a href="mod_perl.html#afs">with mod_perl and without mod_auth_kerberos</a> (recommended if Speedy CGI is not available)</li>
+<li> <a href="#afswithoutkrb">without mod_perl (maybe with Speedy CGI) and without mod_auth_kerberos</a> (recommended)</li>
+<li> <a href="#afswithkrb">without mod_perl (maybe with Speedy CGI) and with mod_auth_kerberos</a></li>
+</ol>
 
-<h3>... without mod_auth_kerberos (recommended) </h3>
+
+<h3 id="afswithoutkrb">... without mod_auth_kerberos (recommended) </h3>
 Requirements:
 
 <ol>
@@ -757,7 +774,7 @@ RewriteRule ^/ /webdavcgi \
 </pre>
 <code>/etc/webdav.conf</code> example: <a href="#afsconf">see next section</a>
 
-<h3>... with mod_auth_kerberos</h3>
+<h3 id="afswithkrb">... with mod_auth_kerberos</h3>
 Requirements:
 <ol>
 <li><a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu package: libapache2-mod-auth-kerb)</li>
@@ -830,7 +847,7 @@ $BACKEND='GFS';
 
 $DOCUMENT_ROOT = '/mygfsmountpoint/';
 $VIRTUAL_BASE = '/';
-
+ 
 $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $DBI_USER='';
 $DBI_PASS=''; 
@@ -840,11 +857,20 @@ $BACKEND_CONFIG{GFS}{quota}='/usr/sbin/gfs_quota -f';
 </pre>
 
 <h2 id="smb">SMB/CIFS Support</h2>
+<p>
 The SMB backend supports Kerberos and username/password/workgroup authenticated file share access.
-<h3>... with mod_auth_kerberos</h3>
+</p>
+Please choose your installation variant:
+<ol>
+<li><a href="mod_perl.html">with mod_perl without mod_auth_kerberos but with Kerberos authentication</a> (recommended if Speedy CGI is not available)</li>
+<li><a href="#smbwithkrb">with mod_auth_kerberos and Kerberos authentication</a> (recommended for Kerberos authentication and Speedy CGI)</li>
+<li><a href="#smbwithoutkrb">without mod_auth_kerberos but with Kerberos authentication</a></li>
+<li><a href="#smbwithpw">with username/password/workgroup authentication</a></li>
+</ol>
+<h3 id="smbwithkrb">... with mod_auth_kerberos</h3>
 Requirements:
 <ol>
-<li> a Active Directory integrated Windows or Samba file server</li>
+<li> maybe a Active Directory integrated Windows or Samba file server</li>
 <li> <a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu: libapache2-mod-auth-kerb)</li>
 <li> a keytab file for the kerberos module:
 	<ol>
@@ -886,7 +912,7 @@ RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/we
 </pre>
 <code>/etc/webdav.conf</code> example: <a href="#smbconf">see next section</a>
 
-<h3>... without mod_auth_kerberos but with Kerberos authentication</h3>
+<h3 id="smbwithoutkrb">... without mod_auth_kerberos but with Kerberos authentication</h3>
 Requirements:
 <ol>
 <li> a Active Directory integrated Windows or Samba file server</li>
@@ -1016,7 +1042,7 @@ $BACKEND_CONFIG{SMB} = {
 };
 </pre>
 
-<h3>... with username/password/workgroup authentication</h3>
+<h3 id="smbwithpw">... with username/password/workgroup authentication</h3>
 Requirements:
 <ol>
 <li> a Windows or Samba file server </li>
@@ -1206,6 +1232,7 @@ $BACKEND_CONFIG{RO}{backend} = 'FS';
   <li> Limit folder depth for copy/move operations (<code>$LIMIT_FOLDER_DEPTH</code>)</li>
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
   <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance. Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
+  <li> Since WebDAV CGI v1.0.0 mod_perl is supported for backends without setuid/setgid wrapping (e.g. SMB, AFS)</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
   <li> Slow response working with WebDAV resources on Windows Vista or Windows 7: <a href="http://support.microsoft.com/kb/2445570">KB2445570</a></li>
   <li> For AFS backend users: 

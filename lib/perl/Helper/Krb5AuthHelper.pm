@@ -40,6 +40,7 @@ sub init {
 	my $ticketfn = $ENV{KRB5CCNAME} =~ /^FILE:(.*)$/ ? $1 : "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
 	$ENV{KRB5CCNAME} = "FILE:$ticketfn";
 	Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
+	Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG}) if $ENV{KRB5_CONFIG};
 
 	$ENV{WEBDAVISWRAPPED} = 1;
 

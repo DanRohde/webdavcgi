@@ -26,8 +26,9 @@ our @ISA = qw( Helper::Krb5AuthHelper );
 sub init {
 	my ($self) = @_;
 	my $ret = 1;
+	
 	if ($ret = $self->SUPER::init()) {
-		system('aklog') || die("aklog failed for $ENV{REMOTE_USER}");
+		die("aklog failed for $ENV{REMOTE_USER}") if system('aklog') > 0;
 	}
 	return $ret;
 }

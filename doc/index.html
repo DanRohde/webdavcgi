@@ -57,7 +57,9 @@ WebDAV CGI ...
 <li>offers a simple <a href="#screenshots" title="screenshots">Web interface</a> for file/folder management: clipboard; file/Zip upload/download; rename, move, create and delete folders; file/folder name search; property viewer; file/folder statistics; change file/folder permissions; shows quota; image thumbnails</li>
 <li>has a server-side trash can.</li>
 <li>implements <a target="_blank" href="https://secure.wikimedia.org/wikipedia/en/wiki/Common_Gateway_Interface">CGI</a> interface.</li>
-<li>supports setuid/setgid changes to preserve file permissions.</li>
+<li>supports Speedy CGI for a better performance</li>
+<li>supports mod_perl for a better performance (restriction: setuid/setgid is not available)</li>
+<li>supports setuid/setgid changes to preserve file permissions (not available in conjunction with mod_perl).</li>
 </ul>
 Supported RFC's, drafts and M$ specs:
 <ul>
