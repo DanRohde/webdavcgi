@@ -1157,7 +1157,7 @@ sub _OPTIONS {
 }
 sub _TRACE {
 	my $status = '200 OK';
-	my $content = join("",<>);
+	my $content = readRequestBody();
 	my $type = 'message/http';
 	my $via = $cgi->http('Via') ;
 	my $addheader = "Via: $ENV{SERVER_NAME}:$ENV{SERVER_PORT}".(defined $via?", $via":"");
@@ -1193,7 +1193,7 @@ sub _PROPFIND {
 	$depth = 0 if $depth == -1 && !$ALLOW_INFINITE_PROPFIND;
 
 
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	$xml=qq@<?xml version="1.0" encoding="$CHARSET" ?>\n<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>@ 
 		if !defined $xml || $xml=~/^\s*$/;
 
@@ -1250,7 +1250,7 @@ sub _PROPPATCH {
 	if ($backend->exists($fn) && !isAllowed($fn)) {
 		$status = '423 Locked';
 	} elsif ($backend->exists($fn)) {
-		my $xml = join("",<>);
+		my $xml = readRequestBody();
 
 
 		debug("_PROPPATCH: REQUEST: $xml");
@@ -1443,10 +1443,9 @@ sub _MKCOL {
 	my $status='201 Created';
 	my ($type,$content);
 	debug("_MKCOL: $PATH_TRANSLATED");
-	my $body = join("",<>);
+	my $body = readRequestBody();
 	my $dataRef;
 	if ($body ne "") {
-		debug("_MKCOL: yepp #1".$cgi->content_type());
 		# maybe extended mkcol (RFC5689)
 		if ($cgi->content_type() =~/\/xml/) {
 			eval { $dataRef = simpleXMLParser($body) };	
@@ -1510,7 +1509,7 @@ sub _LOCK {
 	my $content = "";
 	my $addheader = undef;
 
-	my $xml = join('',<>);
+	my $xml = readRequestBody();
 	my $xmldata = $xml ne "" ? simpleXMLParser($xml) : { };
 
 	my $token ="opaquelocktoken:".getuuid($fn);
@@ -1583,7 +1582,7 @@ sub _ACL {
 	my $type;
 	my %error;
 	debug("_ACL($fn)");
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	my $xmldata = "";
 	eval { $xmldata = simpleXMLParser($xml,1); };
 	if ($@) {
@@ -1682,7 +1681,7 @@ sub _REPORT {
 	my $content = "";
 	my $type;
 	my %error;
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	my $xmldata = "";
 	eval { $xmldata = simpleXMLParser($xml,1); };
 	if ($@) {
@@ -1820,7 +1819,7 @@ sub _SEARCH {
 	my $type='application/xml';
 	my @errors;
 
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	my $xmldata = "";
 	eval { $xmldata = simpleXMLParser($xml,1); };
 	if ($@) {
@@ -1855,7 +1854,7 @@ sub _SEARCH {
 sub _BIND {
 	my ($status,$type,$content) = ('200 OK', undef, undef);
 	my $overwrite = defined $cgi->http('Overwrite')?$cgi->http('Overwrite') : "T";
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	my $xmldata = "";
 	my $host = $cgi->http('Host');
 	eval { $xmldata = simpleXMLParser($xml,0); };
@@ -1895,7 +1894,7 @@ sub _BIND {
 }
 sub _UNBIND {
 	my ($status,$type,$content) = ('204 No Content', undef, undef);
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	my $xmldata = "";
 	eval { $xmldata = simpleXMLParser($xml,0); };
 	if ($@) {
@@ -1921,7 +1920,7 @@ sub _UNBIND {
 sub _REBIND {
 	my ($status,$type,$content) = ('200 OK', undef, undef);
 	my $overwrite = defined $cgi->http('Overwrite')?$cgi->http('Overwrite') : "T";
-	my $xml = join("",<>);
+	my $xml = readRequestBody();
 	my $xmldata = "";
 	my $host = $cgi->http('Host');
 	eval { $xmldata = simpleXMLParser($xml,0); };
@@ -2233,7 +2232,9 @@ sub printHeaderAndContent {
 
 	binmode(STDOUT);
 	print $cgi->header(\%header) . $content;
-	$cgi->r->status(200) if $ENV{MOD_PERL} && $status=~/^(20[789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/;
+	
+	$cgi->r->status("${1}00") if $ENV{MOD_PERL} && $status=~/^(20[1789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/ && $status=~/^(\d)/ && length($content)>0;	
+	
 }
 sub printCompressedHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
@@ -2706,4 +2707,11 @@ sub getEventChannel {
 		}
 	}
 	return $eventChannel;
+}
+sub readRequestBody {
+	my $body = '';
+	while (read(STDIN, my $buffer, $BUFSIZE || 1048576)) {
+		$body.=$buffer;
+	}	
+	return $body;
 }
