@@ -731,7 +731,8 @@ use CGI;
 use Module::Load;
 
 ## flush immediately:
-$|=1;
+select STDERR; $|=1;
+select STDOUT; $|=1;
 
 ## before 'new CGI' to read POST requests:
 $ENV{REQUEST_METHOD}=$ENV{REDIRECT_REQUEST_METHOD} if (defined $ENV{REDIRECT_REQUEST_METHOD}) ;
@@ -1043,11 +1044,8 @@ map { $known_coll_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_COLL_PR
 map { $known_file_props{$_} = 1; $known_filecoll_props{$_} = 1; } @KNOWN_FILE_PROPS;
 map { $unsupported_props{$_} = 1; } @UNSUPPORTED_PROPS;
 
-# register event handler:
-
 # method handling:
 if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/) { 
-
 	### performance is much better than eval:
 	gotomethod($method);
 	$backend->finalize() if $backend;
@@ -1055,12 +1053,12 @@ if ($method=~/^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DEL
 } else {
 	printHeaderAndContent('405 Method Not Allowed');
 }
+
 sub gotomethod {
 	my ($method) = @_;
 	$method="_$method";
 	goto &$method; ## I use 'goto' so I don't need 'no strict "refs"' and 'goto' works only in a subroutine
 }
-
 sub _GET {
 	debug("_GET: $PATH_TRANSLATED");
 	if (is_hidden($PATH_TRANSLATED)) {
@@ -1184,7 +1182,7 @@ sub _GETLIB {
 }
 
 sub _PROPFIND {
-	getEventChannel()->broadcastEvent('OPTIONS', {file=>$PATH_TRANSLATED});
+	getEventChannel()->broadcastEvent('PROPFIND', {file=>$PATH_TRANSLATED});
 	my $fn = $PATH_TRANSLATED;
 	my $status='207 Multi-Status';
 	my $type ='text/xml';
@@ -1238,12 +1236,10 @@ sub _PROPFIND {
 		$type='text/plain';
 	}
 	my $content = ($#resps>-1) ? createXML({ 'multistatus' => { 'response'=>\@resps} }) : "" ;
-	
-	debug("_PROPFIND: status=$status, type=$type");
+	 debug("_PROPFIND: status=$status, type=$type, size=".length($content));
 	debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
 	debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
 	printHeaderAndContent($status,$type,$content);
-	
 }
 sub _PROPPATCH {
 	debug("_PROPPATCH: $PATH_TRANSLATED");
@@ -2226,7 +2222,7 @@ sub getAddHeaderHashRef {
 }
 sub printHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
-
+	
 	$status='403 Forbidden' unless defined $status;
 	$type='text/plain' unless defined $type;
 	$content="" unless defined $content;
@@ -2236,7 +2232,7 @@ sub printHeaderAndContent {
 	%header=(%header, %{getAddHeaderHashRef($addHeader)});
 	print $cgi->header(\%header);
 	binmode(STDOUT);
-	print $content;
+	print $content;	
 }
 sub printCompressedHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
@@ -2710,3 +2706,4 @@ sub getEventChannel {
 	}
 	return $eventChannel;
 }
+1;
