@@ -1236,7 +1236,7 @@ sub _PROPFIND {
 		$type='text/plain';
 	}
 	my $content = ($#resps>-1) ? createXML({ 'multistatus' => { 'response'=>\@resps} }) : "" ;
-	 debug("_PROPFIND: status=$status, type=$type, size=".length($content));
+	debug("_PROPFIND: status=$status, type=$type, size=".length($content));
 	debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
 	debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
 	printHeaderAndContent($status,$type,$content);
@@ -2225,14 +2225,15 @@ sub printHeaderAndContent {
 	
 	$status='403 Forbidden' unless defined $status;
 	$type='text/plain' unless defined $type;
-	$content="" unless defined $content;
+	$content='' unless defined $content;
 
 	my %header = (-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies, 'MS-Author-Via'=>'DAV', 'DAV' => $DAV);
 	$header{'Translate'} = 'f' if defined $cgi->http('Translate');
 	%header=(%header, %{getAddHeaderHashRef($addHeader)});
-	print $cgi->header(\%header);
+
 	binmode(STDOUT);
-	print $content;	
+	print $cgi->header(\%header) . $content;
+	$cgi->r->status(200) if $ENV{MOD_PERL} && $status=~/^(20[789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/;
 }
 sub printCompressedHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
@@ -2706,4 +2707,3 @@ sub getEventChannel {
 	}
 	return $eventChannel;
 }
-1;
