@@ -37,6 +37,9 @@ sub initialize() {
 	$$self{backend} = $$self{config}->getProperty('backend');
 	$$self{utils} = $$self{config}->getProperty('utils');
 }
-
+sub resolve {
+	my ($self, $fn) = @_;
+	return $$self{backend}->resolveVirt($fn);
+}
 
 1;

@@ -56,7 +56,7 @@ sub renderPropertiesViewer {
         $content .= $$self{cgi}->br().$$self{cgi}->a({href=>$ru,title=>$self->tl('clickforfullsize')},$$self{cgi}->img({-src=>$ru.($main::ENABLE_THUMBNAIL?'?action=thumb':''), -alt=>'image', -class=>'thumb', -style=>'width:'.($main::ENABLE_THUMBNAIL?$main::THUMBNAIL_WIDTH:200)})) if $self->hasThumbSupport(main::getMIMEType($fn));
         my $table.= $$self{cgi}->start_table({-class=>'props'});
         local(%main::NAMESPACEELEMENTS);
-        my $dbprops = $$self{db}->db_getProperties($fn);
+        my $dbprops = $$self{db}->db_getProperties($$self{backend}->resolveVirt($fn));
         my @bgstyleclasses = ( 'tr_odd', 'tr_even');
         my (%visited);
         $table.=$$self{cgi}->Tr({-class=>'trhead'}, $$self{cgi}->th({-class=>'thname'},$self->tl('propertyname')), $$self{cgi}->th({-class=>'thvalue'},$self->tl('propertyvalue')));

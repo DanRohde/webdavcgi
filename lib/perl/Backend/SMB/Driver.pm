@@ -337,6 +337,10 @@ sub resolve {
         $fn=~s/\/\//\//g;
         return $fn;
 }
+sub resolveVirt {
+	my ($self, $fn) = @_;
+	return $self->SUPER::resolveVirt($self->_getSmbURL($fn));
+}
 sub getParent {
 	my ($self, $file) = @_;
 	return $self->dirname($file);

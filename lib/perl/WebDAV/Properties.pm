@@ -41,7 +41,7 @@ sub new {
 
 sub removeProperty {
         my ($self,$propname, $elementParentRef, $resp_200, $resp_403) = @_;
-        $$self{db}->db_removeProperty($main::PATH_TRANSLATED, $propname);
+        $$self{db}->db_removeProperty($self->resolve($main::PATH_TRANSLATED), $propname);
         $$resp_200{href}=$main::REQUEST_URI;
         $$resp_200{propstat}{status}='HTTP/1.1 200 OK';
         $$resp_200{propstat}{prop}{$propname} = undef;
@@ -49,6 +49,7 @@ sub removeProperty {
 sub setProperty {
         my ($self,$propname, $elementParentRef, $resp_200, $resp_403) = @_;
         my $fn = $main::PATH_TRANSLATED;
+        my $rfn = $self->resolve($fn);
         my $ru = $main::REQUEST_URI;
         $propname=~/^{([^}]+)}(.*)$/;
         my ($ns,$pn) = ($1,$2);
@@ -91,9 +92,9 @@ sub setProperty {
                 my $n = $propname;
 		my $parRef = $$elementParentRef{$propname};
                 $n='{}'.$n if ($parRef && ref($parRef) eq 'HASH' && (!$$parRef{xmlns} || $$parRef{xmlns} eq "") && $n!~/^{[^}]*}/);
-                my $dbval = $$self{db}->db_getProperty($fn, $n);
+                my $dbval = $$self{db}->db_getProperty($rfn, $n);
                 my $value = main::createXML($$elementParentRef{$propname},0);
-                my $ret = defined $dbval ? $$self{db}->db_updateProperty($fn, $n, $value) : $$self{db}->db_insertProperty($fn, $n, $value);
+                my $ret = defined $dbval ? $$self{db}->db_updateProperty($rfn, $n, $value) : $$self{db}->db_insertProperty($rfn, $n, $value);
                 if ($ret) {
                         $$resp_200{href}=$ru;
                         $$resp_200{propstat}{prop}{$propname}=undef;
@@ -113,6 +114,7 @@ sub getProperty {
 
         my $isReadable = $$self{backend}->isReadable($fn);
         my $isDir = $$self{backend}->isDir($fn);
+        my $rfn = $self->resolve($fn);
 
         my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = defined $statRef ? @{$statRef} : ($isReadable ? $$self{backend}->stat($fn) : ());
 

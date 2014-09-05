@@ -79,8 +79,9 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>JSON (libjson-perl) - (since v0.8.5)</li>
     <li>DateTime - (since v0.8.5)</li>
     <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
-    <li><span style="optinal">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
-    <li><span style="optinal">optional for LDAP addressbook of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
+    <li><span style="optional">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
+    <li><span style="optional">optional for LDAP addressbook of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
+    <li><span style="optional">optional for Kerberos helpers in conjunction with mod_perl (AFS, SMB):</span>Env::C - (since v1.0.0))</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -111,7 +112,10 @@ apt-get install librcs-perl
 apt-get install openafs-client krb5-user openafs-krb5
 
 
-   </pre>   
+## for mod_perl users with Kerberos (SMB, AFS) authentication:
+perl -MCPAN -e "install Env::C"
+
+</pre>   
 </li>
 <li>install additional binaries/packages for a better WebDAV CGI experience:
 <ul>
@@ -120,7 +124,7 @@ apt-get install openafs-client krb5-user openafs-krb5
 <li> smbclient (only for SMB backend users) - allowes the web interface to show quota information (Debian/Ubuntu package: smbclient) </li>
 <li> kinit (only for SMB and AFS backend users) - allowes you to omit mod_auth_kerberos (Debian/Ubuntu package: krb5-user) </li>
 <li> libreoffice - allows file conversions</li>
-<li> Env::C - needed for Kerberos helpers in conjunction with mod_perl</li>
+
 </ul>
 <pre>
 ## Debian/Ubuntu quick install:
@@ -134,9 +138,6 @@ apt-get install krb5-user
 
 ## for ODFConverter extension:
 apt-get install libreoffice
-
-## for mod_perl users with Kerberos authentication:
-perl -MCPAN -e "install Env::C"
 
 </pre>
 <pre>
@@ -476,6 +477,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 </pre>
 </li>
 <li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a>, <a href="#git">GIT</a></li>
+<li> <a href="#database">Set up your database</a> </li>
 <li> If you need to change other options simply copy the parameter from the <code>webdav.pl</code> setup section into your config file.</li>
 <li> There are a lot of <a href="extensions.html">extensions</a> to activate. </li> 
 <li> Don't forget to check the config file syntax: <code>perl -c /etc/webdav.conf</code></li>
@@ -734,9 +736,9 @@ WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It'
 </p>
 Please choose your installation variant:
 <ol>
-<li> <a href="mod_perl.html#afs">with mod_perl and without mod_auth_kerberos</a> (recommended if Speedy CGI is not available)</li>
 <li> <a href="#afswithoutkrb">without mod_perl (maybe with Speedy CGI) and without mod_auth_kerberos</a> (recommended)</li>
-<li> <a href="#afswithkrb">without mod_perl (maybe with Speedy CGI) and with mod_auth_kerberos</a></li>
+<li> <a href="#afswithkrb">without mod_perl (maybe with Speedy CGI) and with mod_auth_kerberos and mod_waklog</a></li>
+<li> <a href="mod_perl.html">with mod_perl and mod_auth_kerberos and mod_waklog</a> (recommended if Speedy CGI is not available)</li>
 </ol>
 
 
@@ -862,8 +864,8 @@ The SMB backend supports Kerberos and username/password/workgroup authenticated 
 </p>
 Please choose your installation variant:
 <ol>
-<li><a href="mod_perl.html">with mod_perl without mod_auth_kerberos but with Kerberos authentication</a> (recommended if Speedy CGI is not available)</li>
-<li><a href="#smbwithkrb">with mod_auth_kerberos and Kerberos authentication</a> (recommended for Kerberos authentication and Speedy CGI)</li>
+<li><a href="mod_perl.html">with mod_perl and without mod_auth_kerberos but with Kerberos authentication</a> (recommended)</li>
+<li><a href="#smbwithkrb">with mod_auth_kerberos and Kerberos authentication</a> </li>
 <li><a href="#smbwithoutkrb">without mod_auth_kerberos but with Kerberos authentication</a></li>
 <li><a href="#smbwithpw">with username/password/workgroup authentication</a></li>
 </ol>
@@ -940,7 +942,7 @@ Kerberos configuration example: <code>/etc/krb5.conf</code>:
 </pre>
 Apache example:
 <pre>
-ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/smbwrapper
+ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
 
 AuthType Basic
 AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
@@ -956,6 +958,9 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
 <code id="smbconf">/etc/webdav.conf</code> example:
 <pre>
 $INSTALL_BASE = '/etc/webdavcgi/';
+
+require Helper::Krb5AuthHelper;
+Helper::Krb5AuthHelper->new();
 
 $DOCUMENT_ROOT = '/';
 $VIRTUAL_BASE = '/';

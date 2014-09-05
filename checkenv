@@ -1,7 +1,7 @@
 #!/bin/bash
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ RCSBACKENDMODULES='Rcs'
 WEBINTERFACEMODULES='Graphics::Magick URI::Escape'
 
 
-OPTIONALBINARIES='smbclient pagsh kinit aklog'
+OPTIONALBINARIES='smbclient pagsh kinit aklog soffice'
 
 CHECKEDMODULES=""
 MISSINGMODULES=""

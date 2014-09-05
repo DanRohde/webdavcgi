@@ -2069,7 +2069,7 @@ sub getPropStat {
 			$resp_404{prop}{$prop}=undef;
 			next;
 		} elsif (( !defined $NAMESPACES{$xmlnsuri} || grep(/^\Q$propname\E$/,$isDir?@KNOWN_COLL_LIVE_PROPS:@KNOWN_FILE_LIVE_PROPS)>0 ) && grep(/^\Q$propname\E$/,@PROTECTED_PROPS)==0) { 
-			my $dbval = getDBDriver()->db_getProperty($fn, $prop=~/{[^}]*}/?$prop:'{'.getNameSpaceUri($prop)."}$prop");
+			my $dbval = getDBDriver()->db_getProperty(getPropertyModule()->resolve($fn), $prop=~/{[^}]*}/?$prop:'{'.getNameSpaceUri($prop)."}$prop");
 			if (defined $dbval) {
 				$resp_200{prop}{$prop}=$noval?undef:$dbval;
 				next;

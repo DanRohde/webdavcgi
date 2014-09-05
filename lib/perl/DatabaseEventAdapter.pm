@@ -28,6 +28,10 @@ sub stripTrailingSlash {
 	$file=~s/\/$//;
 	return $file;
 }
+sub normalize {
+	my ($self, $file) = @_;
+	return $self->stripTrailingSlash( main::getPropertyModule()->resolve($file) );
+}
 sub registerChannel {
 	my ($self, $channel) = @_;
 	$channel->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED'], $self);
@@ -39,18 +43,18 @@ sub receiveEvent {
 		$db->finalize();
 	}
 	elsif ( $event eq 'FILEMOVED' ) {
-		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
+		my ($src,$dst) = ($self->normalize($$data{file}), $self->normalize($$data{destination}));
 		$db->db_deleteProperties($dst);
 		$db->db_movePropertiesRecursive($src,$dst);
 		$db->db_delete($src);
 	}
 	elsif ( $event eq 'FILECOPIED' ) {
-		my ($src,$dst) = ($self->stripTrailingSlash($$data{file}), $self->stripTrailingSlash($$data{destination}));
+		my ($src,$dst) = ($self->normalize($$data{file}), $self->normalize($$data{destination}));
 		$db->db_deleteProperties($dst);
 		$db->db_copyProperties($src, $dst);
 	}
 	elsif ( $event eq 'DELETED' ) {
-		my ($dst) = ($self->stripTrailingSlash($$data{file}));
+		my ($dst) = ($self->normalize($$data{file}));
 		$db->db_deletePropertiesRecursive($dst);
 		$db->db_delete($dst);
 	}
