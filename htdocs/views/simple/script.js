@@ -994,7 +994,7 @@ function initFileList() {
 	$('#flt').disableSelection();
 	
 	// init fancybox:
-	$("#fileList tr.isviewable-yes:not([data-file$='.pdf'])[data-size!='0']:visible td.filename a")
+	$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","imggallery")
 		.fancybox({
 			afterShow: function() { $(".fancybox-close").focus();},
