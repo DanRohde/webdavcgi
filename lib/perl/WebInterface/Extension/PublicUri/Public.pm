@@ -69,7 +69,7 @@ sub handlePublicUriAccess {
 		} elsif ((!$path || $path eq '')&&($$self{backend}->isReadable($fn))) {
 			my $bfn = $$self{backend}->basename($fn);
 			$bfn=~s/"/_/g;
-			main::printFileHeader($fn, { 'Content-Disposition' => sprintf('attachmant; filename="%s"',$bfn)});
+			main::printFileHeader($fn, { 'Content-Disposition' => sprintf('attachment; filename="%s"',$bfn)});
 			$$self{backend}->printFile($fn, \*STDOUT);
 			return 1;
 		}
