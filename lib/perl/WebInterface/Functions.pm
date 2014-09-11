@@ -147,14 +147,15 @@ sub handleFileActions {
 		}
 	}
 	elsif ( $$self{cgi}->param('rename') ) {
-		if ( $$self{cgi}->param('file') ) {
+		if ( defined $$self{cgi}->param('file') ) {
 			if (main::isLocked($main::PATH_TRANSLATED.$$self{cgi}->param('file'))) {
 				$errmsg = 'locked';
 				$msgparam =  [ $$self{cgi}->param('file') ];
 			} elsif ($$self{cgi}->param('newname') && main::isLocked($main::PATH_TRANSLATED.$$self{cgi}->param('newname'))) {
 				$errmsg = 'locked';
 				$msgparam =  [ $$self{cgi}->param('newname') ];
-			} elsif ( my $newname = $$self{cgi}->param('newname') ) {
+			} elsif (defined $$self{cgi}->param('newname') ) {
+				my $newname = $$self{cgi}->param('newname');
 				$newname =~ s/\/$//;
 				my @files = $$self{cgi}->param('file');
 				if (( $#files > 0 ) && ( !$$self{backend}->isDir( $main::PATH_TRANSLATED . $newname ) ) )
@@ -190,8 +191,7 @@ sub handleFileActions {
 		}
 	}
 	elsif ( $$self{cgi}->param('mkcol') ) {
-		my $colname = $$self{cgi}->param('colname')
-		  || $$self{cgi}->param('colname1');
+		my $colname = $$self{cgi}->param('colname1') // $$self{cgi}->param('colname') ;
 		if ( $colname ne "" ) {
 			$msgparam =  [ $colname ];
 			if (   $colname !~ /\//

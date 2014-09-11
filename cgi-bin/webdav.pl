@@ -2661,7 +2661,7 @@ sub isLocked {
 	return $r ? getLockModule()->isLockedRecurse($fn) : getLockModule()->isLocked($fn);
 }
 sub getBaseURIFrag {
-        return $_[0]=~/([^\/]+)\/?$/ ? ( $1 || '/' ) : '/';
+        return $_[0]=~/([^\/]+)\/?$/ ? ( $1 // '/' ) : '/';
 }
 sub getParentURI {
 	return $_[0]=~/^(.*?)\/[^\/]+\/?$/ ? ( $1 || '/' ) : '/';
