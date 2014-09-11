@@ -370,8 +370,8 @@ sub getDisplayName {
 			$name.="/";
 		}
 	}
-	$name = $self->basename($file) . (!$self->_existsCacheEntry('readDir',$file) || $self->isDir($file) ? '/':'') unless $name || $self->basename($file) eq '/';
-	return $name ? $name :  $file;
+	$name = $self->basename($file) . (!$self->_existsCacheEntry('readDir',$file) || $self->isDir($file) ? '/':'') unless defined $name || $self->basename($file) eq '/';
+	return $name // $file;
 }
 
 sub _getAllShareAliases {
