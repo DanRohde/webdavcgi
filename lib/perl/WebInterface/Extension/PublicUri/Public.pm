@@ -66,7 +66,13 @@ sub handlePublicUriAccess {
 		if ($$self{backend}->isDir($main::PATH_TRANSLATED)) {
 			$main::PATH_TRANSLATED .= '/' if $main::PATH_TRANSLATED !~ /\/$/;
 			$main::REQUEST_URI .= '/' if $main::REQUEST_URI !~ /\/$/;	
-		} 
+		} elsif ((!$path || $path eq '')&&($$self{backend}->isReadable($fn))) {
+			my $bfn = $$self{backend}->basename($fn);
+			$bfn=~s/"/_/g;
+			main::printFileHeader($fn, { 'Content-Disposition' => sprintf('attachmant; filename="%s"',$bfn)});
+			$$self{backend}->printFile($fn, \*STDOUT);
+			return 1;
+		}
 		
 		return 0;
 	} else {

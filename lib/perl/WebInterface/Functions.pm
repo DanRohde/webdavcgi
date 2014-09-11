@@ -91,14 +91,7 @@ sub handleClipboardAction {
 		if (main::isLocked("$srcdir$file") || main::isLocked("$main::PATH_TRANSLATED$file")) {
 			$errmsg = 'locked';
 			push @failed, $file;
-		} elsif (
-			main::rcopy(
-				$$self{backend}->resolveVirt("$srcdir$file"),
-				$$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"),
-				$$self{cgi}->param('action') eq 'cut'
-			)
-		  )
-		{
+		} elsif (main::rcopy("$srcdir$file",$main::PATH_TRANSLATED.$file, $$self{cgi}->param('action') eq 'cut')) {
 			$msg = $$self{cgi}->param("action") . 'success';
 			push @success, $file;
 		}
@@ -129,7 +122,7 @@ sub handleFileActions {
 				} 
 				if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
 					my $eventChannel = main::getEventChannel();
-					my $full = $$self{backend}->resolveVirt($main::PATH_TRANSLATED.$file);
+					my $full = $main::PATH_TRANSLATED.$file;
 					$eventChannel->broadcastEvent('DELETE', {file => $full}) if $eventChannel;
 					if ($main::ENABLE_TRASH) {
 						$count += main::moveToTrash( $full );
@@ -177,12 +170,7 @@ sub handleFileActions {
 						my $target = $main::PATH_TRANSLATED . $newname;
 						$target .= '/' . $file
 						  if $$self{backend}->isDir($target);
-						if (
-							main::rmove(
-								$$self{backend}->resolveVirt($main::PATH_TRANSLATED . $file), $$self{backend}->resolveVirt($target)
-							)
-						  )
-						{
+						if (main::rmove($main::PATH_TRANSLATED . $file, $target ) ) {
 							$msg = 'rename';
 							main::logger("MOVE $main::PATH_TRANSLATED$file to $target via POST");
 						}

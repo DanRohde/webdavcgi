@@ -62,11 +62,11 @@ sub getFileFromCode {
 }
 sub getSeed {
 	my ( $self, $fn) = @_;
-	return $$self{db}->db_getProperty($fn, $self->getSeedName());
+	return $$self{db}->db_getProperty($$self{backend}->resolveVirt($fn), $self->getSeedName());
 }
 sub getOrig {
 	my ( $self, $fn) = @_;
-	return $$self{db}->db_getProperty($fn, $self->getOrigName());
+	return $$self{db}->db_getProperty($$self{backend}->resolveVirt($fn), $self->getOrigName());
 }
 sub getDigest {
 	my ($self, $fn, $seed) = @_;

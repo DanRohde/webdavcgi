@@ -322,7 +322,7 @@ sub getDiskUsage {
 	
 	return if time() - $$counter{start} > $self->config('timeout',60);
 	
-	my $fullresolved = $backend->resolve($backend->resolveVirt($full));
+	my $fullresolved = $backend->resolve($full);
 	return if $$counter{visited}{$fullresolved};
 	$$counter{visited}{$fullresolved} = 1;	
 	 

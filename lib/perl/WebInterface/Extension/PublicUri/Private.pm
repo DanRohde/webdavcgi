@@ -31,23 +31,24 @@ use JSON;
 
 sub setPublicUri {
 	my ( $self, $fn, $code, $seed ) = @_;
-	$$self{db}->db_insertProperty($fn, $self->getPropertyName(), $code);
-	$$self{db}->db_insertProperty($fn, $self->getSeedName(), $seed);
-	$$self{db}->db_insertProperty($fn, $self->getOrigName(), $fn);
+	my $rfn = $$self{backend}->resolveVirt($fn);
+	$$self{db}->db_insertProperty($rfn, $self->getPropertyName(), $code);
+	$$self{db}->db_insertProperty($rfn, $self->getSeedName(), $seed);
+	$$self{db}->db_insertProperty($rfn, $self->getOrigName(), $fn);
 }
 
 sub getPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_getProperty($fn, $self->getPropertyName());
+	return $$self{db}->db_getProperty($$self{backend}->resolveVirt($fn), $self->getPropertyName());
 }
 sub unsetPublicUri {
 	my ( $self, $fn ) = @_;
-	return $$self{db}->db_removeProperty($fn, $self->getPropertyName()) && $$self{db}->db_removeProperty($fn, $self->getSeedName()) && $$self{db}->db_removeProperty($fn, $self->getOrigName());
+	return $$self{db}->db_removeProperty($$self{backend}->resolveVirt($fn), $self->getPropertyName()) && $$self{db}->db_removeProperty($fn, $self->getSeedName()) && $$self{db}->db_removeProperty($fn, $self->getOrigName());
 }
 
 sub resolveFile {
 	my ( $self, $file ) = @_;
-	return $$self{backend}->resolve($$self{backend}->resolveVirt("$main::PATH_TRANSLATED$file"));
+	return $$self{backend}->resolve($main::PATH_TRANSLATED.$file);
 }
 
 sub init {
@@ -101,7 +102,7 @@ sub handle {
 		return { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' };
 	}
 	elsif ( $hook eq 'fileattr' ) {
-		my $prop = $self->getPublicUri( $$self{backend}->resolve($$self{backend}->resolveVirt($$params{path} ) ) );
+		my $prop = $self->getPublicUri($$params{path});
 		my ($attr,$classes);
 		if ( !defined($prop) ) {
 			($classes, $attr) = ('unshared','no');
@@ -112,7 +113,7 @@ sub handle {
 		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) };
 	}
 	elsif ($hook eq 'fileprop') {
-		my $publicuridigest = $self->getPublicUri( $$self{backend}->resolve($$self{backend}->resolveVirt($$params{path}))) || '';
+		my $publicuridigest = $self->getPublicUri($$params{path}) || '';
 		my $publicuri = $$self{cgi}->escapeHTML($$self{uribase}.$publicuridigest) ;
 		return { publicuridigest=> $publicuridigest ,publicurititle=>$publicuri, publicuri=>$publicuri };
 	}

@@ -183,7 +183,7 @@ sub limitsReached {
 sub doSearch {
 	my ($self, $base, $file, $counter) = @_;
 	my $backend = $$self{backend};
-	my $full = $$self{backend}->resolveVirt($base.$file);
+	my $full = $base.$file;
 	my $fullresolved = $$self{backend}->resolve($full);
 	$$counter{level}++;
 	return if $self->limitsReached($counter);

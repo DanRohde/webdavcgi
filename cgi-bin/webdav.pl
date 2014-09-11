@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14090401";
+$VERSION="1.0.0BETA14091101";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -2225,7 +2225,7 @@ sub printHeaderAndContent {
 	$status='403 Forbidden' unless defined $status;
 	$type='text/plain' unless defined $type;
 	$content='' unless defined $content;
-
+	
 	my %header = (-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies, 'MS-Author-Via'=>'DAV', 'DAV' => $DAV);
 	$header{'Translate'} = 'f' if defined $cgi->http('Translate');
 	%header=(%header, %{getAddHeaderHashRef($addHeader)});
@@ -2233,6 +2233,7 @@ sub printHeaderAndContent {
 	binmode(STDOUT);
 	print $cgi->header(\%header) . $content;
 	
+	## mod_perl fix for unknown status codes:
 	$cgi->r->status("${1}00") if $ENV{MOD_PERL} && $status=~/^(20[1789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/ && $status=~/^(\d)/ && length($content)>0;	
 	
 }
