@@ -109,7 +109,7 @@ sub handleFileActions {
 	my ( $self, $redirtarget ) = @_;
 	my ( $msg, $errmsg, $msgparam );
 	if ( $$self{cgi}->param('delete') ) {
-		if ( $$self{cgi}->param('file') ) {
+		if ( defined $$self{cgi}->param('file') ) {
 			my $count = 0;
 			foreach my $file ( $$self{cgi}->param('file') ) {
 				$file = "" if $file eq '.';
@@ -212,8 +212,8 @@ sub handleFileActions {
 	elsif ( $$self{cgi}->param('createsymlink') && $main::ALLOW_SYMLINK ) {
 		my $lndst = $$self{cgi}->param('lndst');
 		my $file  = $$self{cgi}->param('file');
-		if ( $lndst && $lndst ne "" ) {
-			if ( $file && $file ne "" ) {
+		if ( defined $lndst && $lndst ne "" ) {
+			if ( defined $file && $file ne "" ) {
 				$msgparam = [ $lndst, $file ];
 				$file = $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
 				$lndst =
