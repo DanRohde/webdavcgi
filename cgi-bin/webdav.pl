@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14091102";
+$VERSION="1.0.0BETA14092101";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1080,8 +1080,16 @@ sub _GET {
 		my $enc = $cgi->http('Accept-Encoding');
 		my $mime = getMIMEType($PATH_TRANSLATED);
 		my @stat = $backend->stat($PATH_TRANSLATED);
+		
+		my ($start, $end, $count) = getByteRanges();
 		if ($ENABLE_COMPRESSION && $enc && $enc=~/(gzip|deflate)/ && $stat[7] > 1023 && $mime=~/^(text\/(css|html)|application\/(x-)?javascript)$/i && open(my $F, '<',$backend->getLocalFilename($PATH_TRANSLATED))) {
-				print $cgi->header( -status=>'200 OK',-type=>$mime, -ETag=>getETag($PATH_TRANSLATED), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'no-cache');
+				my %header = ( -status=>'200 OK', -type=>$mime, -ETag=>getETag($PATH_TRANSLATED), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Content_Encoding=>$enc=~/gzip/?'gzip':'deflate', -Cache_Control=>'no-cache');
+				if (defined $start) {
+					$header{-status}='206 Partial Content';
+					$header{-Content_Range}=sprintf('bytes %s-%s/%s', $start, $end, $stat[7]);
+					$header{-Content_Length=>$count};
+				}
+				print $cgi->header(\%header);
 				my $c;
 				if ($enc =~ /gzip/i) {
 					require IO::Compress::Gzip;
@@ -1091,14 +1099,21 @@ sub _GET {
 					$c = new IO::Compress::Deflate(\*STDOUT);
 				}
 				if ($c) {
-					while (read($F,my $buffer, $BUFSIZE || 1048576)) {
+					my $bufsize = $BUFSIZE || 1048576;
+					$bufsize = $count if defined $count && $count < $bufsize;
+					my $bytecount = 0;
+					seek($F, $start, 0) if defined $start;
+					while (my $bytesread = read($F,my $buffer, $bufsize)) {
 						$c->write($buffer);
+						$bytecount+=$bytesread;
+						last if defined $count && $bytecount >= $count;
+						$bufsize = $count - $bytecount if defined $count && ($bytecount + $bufsize > $count);
 					}
 				}
 				close($F);
 		} else {
 			printFileHeader($PATH_TRANSLATED);
-			$backend->printFile($PATH_TRANSLATED, \*STDOUT);
+			$backend->printFile($PATH_TRANSLATED, \*STDOUT, $start, $count);
 		}
 	} else {
 		debug("GET: $PATH_TRANSLATED NOT FOUND!");
@@ -2269,8 +2284,14 @@ sub printFileHeader {
 	my ($fn,$addheader) = @_;
 	my @stat = $backend->stat($fn);
 	my %header = ( -status=>'200 OK',-type=>getMIMEType($fn), -Content_Length=>$stat[7], -ETag=>getETag($fn), -Last_Modified=>strftime("%a, %d %b %Y %T GMT" ,gmtime($stat[9])), -charset=>$CHARSET, -Cache_Control=>'no-cache, no-store', 
-			'MS-Author-Via' => 'DAV', 'DAV'=>$DAV);
+			'MS-Author-Via' => 'DAV', 'DAV'=>$DAV,'Accept-Ranges'=>'bytes');
 	$header{Translate}='f' if defined $cgi->http('Translate');
+	my ($start, $end, $count) = getByteRanges();
+	if (defined $start) {
+		$header{-status}='206 Partial Content';
+		$header{-Content_Range}=sprintf('bytes %s-%s/%s', $start, $end, $stat[7]);
+		$header{-Content_Length}=$count;
+	}
 	%header = (%header, %{getAddHeaderHashRef($addheader)});
 	print $cgi->header(\%header);
 }
@@ -2660,9 +2681,6 @@ sub isLocked {
 	my ($fn, $r) = @_;
 	return $r ? getLockModule()->isLockedRecurse($fn) : getLockModule()->isLocked($fn);
 }
-sub getBaseURIFrag {
-        return $_[0]=~/([^\/]+)\/?$/ ? ( $1 // '/' ) : '/';
-}
 sub getParentURI {
 	return $_[0]=~/^(.*?)\/[^\/]+\/?$/ ? ( $1 || '/' ) : '/';
 }
@@ -2716,4 +2734,18 @@ sub readRequestBody {
 		$body.=$buffer;
 	}	
 	return $body;
+}
+sub getByteRanges {
+	my $etag = getETag($PATH_TRANSLATED);
+	my $lm = strftime("%a, %d %b %Y %T GMT" ,gmtime(($backend->stat($PATH_TRANSLATED))[9]));
+	my $ifrange = $cgi->http('If-Range') || $etag;
+	return if $ifrange ne $etag && $ifrange ne $lm;
+	my $range = $cgi->http('Range');
+	if ($range=~/bytes=(\d+)\-(\d+)/) {
+		return ($1,$2,$2-$1+1) if $1 < $2;
+	}
+	return;
+}
+sub getBaseURIFrag {
+        return $_[0]=~/([^\/]+)\/?$/ ? ( $1 // '/' ) : '/';
 }

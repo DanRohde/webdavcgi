@@ -301,10 +301,10 @@ sub saveStream {
 }
 
 sub printFile {
-	my ($self, $fn, $fh) = @_;
+	my ($self, $fn, $fh, $pos, $count) = @_;
 	$fn=$self->resolve($fn);
 	my $v = $self->_getDBEntry($fn,1);
-	print $fh $$v{$self->basename($fn)}{data}
+	print $fh (defined $pos && defined $count ? substr($$v{$self->basename($fn)}{data}, $pos, $count) : $$v{$self->basename($fn)}{data});
 }
 sub getLocalFilename {
 	my ($self, $fn) = @_;

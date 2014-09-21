@@ -226,14 +226,21 @@ sub copy {
 	return 0;
 }
 sub printFile {
-	my ($self, $file, $fh) = @_;
-
+	my ($self, $file, $fh, $pos, $count) = @_;
+	my $bufsize = $main::BUFSIZE || 1048576;
+	$bufsize = $count if defined $count && $count < $bufsize;
+	my $smbclient = $self->getSmbClient();
 	$fh = \*STDOUT unless defined $fh;
-	if (my $rd = $self->getSmbClient()->open($self->_getSmbURL($file))) {
-		while (my $buffer = $self->getSmbClient()->read($rd, $main::BUFSIZE || 1048576)) {
+	if (my $rd = $smbclient->open($self->_getSmbURL($file))) {
+		my $bytecount = 0;
+		$smbclient->seek($rd, $pos) if defined $pos;
+		while (my $buffer = $smbclient->read($rd, $bufsize)) {
 			print $fh $buffer;
+			$bytecount+=length($buffer);
+			last if defined $count && $bytecount >= $count;
+			$bufsize = $count - $bytecount if defined $count && ( $bytecount + $bufsize > $count);
 		}
-		$self->getSmbClient()->close($rd);
+		$smbclient->close($rd);
 		return 1;
 	}
 	return 0;

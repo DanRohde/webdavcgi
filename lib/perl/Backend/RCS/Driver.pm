@@ -322,7 +322,7 @@ sub getLocalFilename {
 }
 
 sub printFile {
-	my($self,$fn,$fh) = @_;
+	my($self,$fn,$fh,$pos,$count) = @_;
 	if ($self->_isVirtualFile($fn)) {
 		$fh=\*STDOUT unless defined $fh;
 
@@ -335,11 +335,12 @@ sub printFile {
 		$rcs->file($self->basename($file));
 		if ($fn=~/log.txt$/) {
 			my $filebn = $self->basename($file);
-			my $rlog = join("",$rcs->rlog('-zLT'));
+			my $rlog = join('',$rcs->rlog('-zLT'));
 			$rlog=~s/\Q$rcsfile\E/$dn,v/mg;
 			$rlog=~s/\Q$filebn\E/$dn/mg;
-			print $fh $rlog;
+			print $fh ( defined $pos && defined $count ? substr($rlog,$pos,$count) : $rlog);
 		} elsif ($fn=~/diff.txt$/) {
+			my $buffer='';
 			my $firstrev;
 			foreach my $rev ($rcs->revisions()) {
 				if (!defined $firstrev) {
@@ -349,10 +350,12 @@ sub printFile {
 				eval { 
 					my $diff = join('',$rcs->rcsdiff('-kkv','-q','-u',"-r$rev", "-r$firstrev",'-zLT'));
 					$diff=~s/^(\+\+\+|\-\-\-) \Q$file\E/$1 $dn/mg;
-					print $fh $diff;
+					$buffer.=$diff;
 				};
 				$firstrev = $rev;
 			}
+			print $fh (defined $pos && defined $count ? substr($buffer,$pos,$count) : $buffer)
+			
 		} else {
 			$fn=~/\/(\d+\.\d+)\/[^\/]+$/;
 			my $rev = $1;
@@ -361,7 +364,17 @@ sub printFile {
 				$CACHE{$self}{$fn}{stat}=\@stat;
 				binmode($fh);
 				binmode($lfh);
-				print $fh $_ while (<$lfh>);
+				my $bufsize = $main::BUFSIZE || 1048576;
+				$bufsize = $count if defined $count && $count < $bufsize;
+				my $buffer;
+				my $bytecount = 0;
+				seek($fh, $pos, 0) if $pos;
+				while (my $bytesread = read($lfh,$buffer,$bufsize)) {
+					print $fh $buffer;
+					$bytecount+=$bytesread;
+					last if defined $count && $bytecount >= $count;
+					$bufsize=$count - $bytecount if defined $count && ($bytecount + $bufsize > $count);
+				}
 				close($lfh);
 			} else {
 				print $fh "NOT IMPLEMENTED\n";
@@ -370,7 +383,7 @@ sub printFile {
 		}
 		unlink($rcsfile);
 	} else {
-		$$self{BACKEND}->printFile($fn,$fh);
+		$$self{BACKEND}->printFile($fn,$fh,$pos,$count);
 	}
 }
 sub getDisplayName {
@@ -490,7 +503,7 @@ sub _isRevisionDir {
 sub _getRcs {
 	my ($self) = @_;
 	my $rcs = Rcs->new;
-	$rcs->bindir($main::BACKEND_CONFIG{RCS}{bindir});
+	$rcs->bindir($main::BACKEND_CONFIG{RCS}{bindir} || '/usr/bin');
 	return $rcs;
 }
 sub _isAllowed {

@@ -335,13 +335,20 @@ sub getLocalFilename {
 }
 
 sub printFile {
-	my ($self, $file, $to) =@_;
+	my ($self, $file, $to, $pos, $count) =@_;
 	$to = \*STDOUT unless defined $to;
+	my $bufsize = $main::BUFSIZE || 1048576;
+	$bufsize = $count if defined $count && $count < $bufsize;
 	if (open(my $fh, $self->resolveVirt($file))) {
 		binmode $fh;
 		binmode $to;
-		while (read($fh, my $buffer, $main::BUFSIZE || 1048576)>0) {
+		seek($fh, $pos, 0) if $pos;
+		my $bytecount = 0;
+		while (my $bytesread = read($fh, my $buffer, $bufsize)) {
 			print $to $buffer;
+			$bytecount+=$bytesread;
+			last if defined $count && $bytecount >= $count;
+			$bufsize = $count - $bytecount if defined $count && ($bytecount + $bufsize > $count);
 		}
 		close($fh);
 	}
