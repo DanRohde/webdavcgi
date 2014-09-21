@@ -50,7 +50,7 @@ sub db_handleUpdates {
 		warn ("rollback failed (rc=$rc)") unless $rc;
 	} else {
 		$ret = $dbh->commit();
-		warn("commit faild (rc=$ret)") unless $ret;
+		warn("commit failed (rc=$ret)") unless $ret;
 	}
 	return $ret;
 }

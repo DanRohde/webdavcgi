@@ -144,7 +144,7 @@ sub getLocalFilename {
 	return $_[0]{BACKEND}->getLocalFilename($_[1]);
 }
 sub printFile {
-	return $_[0]{BACKEND}->printFile($_[1]);
+	return $_[0]{BACKEND}->printFile($_[1],$_[2],$_[3],$_[4]);
 }
 sub getDisplayName {
 	return $_[0]{BACKEND}->getDisplayName($_[1]);

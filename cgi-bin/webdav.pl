@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
 ); 
-$VERSION="1.0.0BETA14092101";
+$VERSION="1.0.0BETA14092102";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1087,7 +1087,7 @@ sub _GET {
 				if (defined $start) {
 					$header{-status}='206 Partial Content';
 					$header{-Content_Range}=sprintf('bytes %s-%s/%s', $start, $end, $stat[7]);
-					$header{-Content_Length=>$count};
+					$header{-Content_Length}=$count;
 				}
 				print $cgi->header(\%header);
 				my $c;
