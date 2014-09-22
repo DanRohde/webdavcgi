@@ -233,7 +233,7 @@ sub printFile {
 	$fh = \*STDOUT unless defined $fh;
 	if (my $rd = $smbclient->open($self->_getSmbURL($file))) {
 		my $bytecount = 0;
-		$smbclient->seek($rd, $pos) if defined $pos;
+		$smbclient->seek($rd, $pos) if $pos;
 		while (my $buffer = $smbclient->read($rd, $bufsize)) {
 			print $fh $buffer;
 			$bytecount+=length($buffer);

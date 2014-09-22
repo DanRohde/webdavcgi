@@ -1112,8 +1112,9 @@ sub _GET {
 				}
 				close($F);
 		} else {
-			printFileHeader($PATH_TRANSLATED);
+			my $headerref = printFileHeader($PATH_TRANSLATED);
 			$backend->printFile($PATH_TRANSLATED, \*STDOUT, $start, $count);
+			fixModPerlResponse($headerref);
 		}
 	} else {
 		debug("GET: $PATH_TRANSLATED NOT FOUND!");
@@ -1126,7 +1127,7 @@ sub _HEAD {
 		debug("_HEAD: WebInterface called");
 	} elsif ($backend->exists($PATH_TRANSLATED)) {
 		debug("_HEAD: $PATH_TRANSLATED exists!");
-		printFileHeader($PATH_TRANSLATED);
+		fixModPerlResponse(printFileHeader($PATH_TRANSLATED));
 	} else {
 		debug("_HEAD: $PATH_TRANSLATED does not exists!");
 		printHeaderAndContent('404 Not Found');
@@ -2241,17 +2242,14 @@ sub printHeaderAndContent {
 	$status='403 Forbidden' unless defined $status;
 	$type='text/plain' unless defined $type;
 	$content='' unless defined $content;
-	
-	my %header = (-status=>$status, -type=>$type, -Content_length=>length($content), -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies, 'MS-Author-Via'=>'DAV', 'DAV' => $DAV);
+	my $contentlength = length($content);
+	my %header = (-status=>$status, -type=>$type, -Content_Length=>$contentlength, -ETag=>getETag(), -charset=>$CHARSET, -cookie=>$cookies, 'MS-Author-Via'=>'DAV', 'DAV' => $DAV);
 	$header{'Translate'} = 'f' if defined $cgi->http('Translate');
 	%header=(%header, %{getAddHeaderHashRef($addHeader)});
 
 	binmode(STDOUT);
 	print $cgi->header(\%header) . $content;
-	
-	## mod_perl fix for unknown status codes:
-	$cgi->r->status("${1}00") if $ENV{MOD_PERL} && $status=~/^(20[1789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/ && $status=~/^(\d)/ && length($content)>0;	
-	
+	fixModPerlResponse(\%header);
 }
 sub printCompressedHeaderAndContent {
 	my ($status, $type, $content, $addHeader, $cookies) = @_;
@@ -2294,6 +2292,7 @@ sub printFileHeader {
 	}
 	%header = (%header, %{getAddHeaderHashRef($addheader)});
 	print $cgi->header(\%header);
+	return \%header;
 }
 sub is_hidden {
 	my ($fn) = @_;
@@ -2745,6 +2744,11 @@ sub getByteRanges {
 		return ($1,$2,$2-$1+1) if $1 < $2;
 	}
 	return;
+}
+sub fixModPerlResponse {
+	my ($headerref) = @_;
+	## mod_perl fix for unknown status codes:
+	$cgi->r->status("${1}00") if $ENV{MOD_PERL} && $$headerref{-status}=~/^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/ && $$headerref{-status}=~/^(\d)/ && $$headerref{-Content_Length}>0;
 }
 sub getBaseURIFrag {
         return $_[0]=~/([^\/]+)\/?$/ ? ( $1 // '/' ) : '/';
