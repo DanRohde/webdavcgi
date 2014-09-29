@@ -50,20 +50,21 @@ sub init {
 			my $oldfilename = $1;
 			
 			
-			my ($in, $out);
-			if (open($in, '<', $oldfilename) && sysopen($out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT, 0600) && flock($out, LOCK_EX | LOCK_NB) ) {
-				binmode $in;
-				binmode $out;
-				while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
-					print $out $buffer;
+			my ($in, $out, $age);
+			if (open($in, '<', $oldfilename) && sysopen($out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT, 0600) && open($age, '>', $agefile)) {
+				if (flock($age, LOCK_EX | LOCK_NB) ) {
+					binmode $in;
+					binmode $out;
+					while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
+						print $out $buffer;
+					}
+					close($in);
+					close($out);
+					flock($age, LOCK_UN);
+					close($age);
+				} else {
+					warn("flock($agefile) failed!");
 				}
-				close($in);
-				if (open(my $age,'>', $agefile)) {
-					print $age time();
-					close($age);	
-				}  
-				flock($out, LOCK_UN);
-				close($out);
 				
 				
 			} else {
