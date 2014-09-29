@@ -24,6 +24,9 @@ use Fcntl qw(:flock);
 use MIME::Base64;
 use Env::C;
 
+use Events::EventListener;
+our @ISA = qw ( Events::EventListener );
+
 sub new {
 	my ($class) = @_;
 	my $self = {};
@@ -32,15 +35,19 @@ sub new {
 	return $self;
 }
 sub init {
+	my $self = shift;
 	return 0 unless $ENV{AUTHHEADER};
 	my $ret = 1;
 	my $REMOTE_USER = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
 	my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
 
-	my $ticketfn = $ENV{KRB5CCNAME} =~ /^FILE:(.*)$/ ? $1 : "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
+	Env::C::setenv('KRB5CCNAMEORIG',$ENV{KRB5CCNAME});
+	my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
 	$ENV{KRB5CCNAME} = "FILE:$ticketfn";
 	Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
 	Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG}) if $ENV{KRB5_CONFIG};
+
+	$self->registerChannel(main::getEventChannel());
 
 	$ENV{WEBDAVISWRAPPED} = 1;
 
@@ -67,5 +74,13 @@ sub init {
 		}
 	}
 	return $ret;
+}
+sub registerChannel {
+	my ($self, $channel) = @_;
+	$channel->addEventListener(['FINALIZE'], $self);
+}
+sub receiveEvent {
+	my ( $self, $event, $data ) = @_;
+	Env::C::setenv('KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG'));
 }
 1;

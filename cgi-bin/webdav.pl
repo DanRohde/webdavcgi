@@ -2753,3 +2753,4 @@ sub fixModPerlResponse {
 sub getBaseURIFrag {
         return $_[0]=~/([^\/]+)\/?$/ ? ( $1 // '/' ) : '/';
 }
+1;

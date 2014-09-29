@@ -73,7 +73,7 @@ sub init {
 		}
 	}
 	$ENV{KRB5CCNAME} = "FILE:$ticketfn";
-	Env::C::setenv( 'KRB5CCNAME', $ticketfn );
+	Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
 	Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG}) if $ENV{KRB5_CONFIG};
 }
 sub registerChannel {
@@ -83,6 +83,5 @@ sub registerChannel {
 sub receiveEvent {
 	my ( $self, $event, $data ) = @_;
 	Env::C::setenv('KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG'));
-	warn('Restore KRB5CCNAME to '.Env::C::getenv('KRB5CCNAMEORIG'));
 }
 1;
