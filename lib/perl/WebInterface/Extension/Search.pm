@@ -144,7 +144,7 @@ sub filterFiles {
 	my $full = $base.$file;
 	my @stat = $$self{backend}->stat($full);
 	
-	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /$query/;
+	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /$query/i;
 	
 	$ret = 1 if  $query && $self->config('allow_contentsearch',0) && $searchin eq 'content' 
 			&& (	!$$self{backend}->isReadable($full)  
