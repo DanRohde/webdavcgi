@@ -20,7 +20,11 @@ package Helper::Krb5EnvHelper;
 
 use strict;
 
+use POSIX qw(:flock);
 use Env::C;
+
+use Events::EventListener;
+our @ISA = qw ( Events::EventListener );
 
 sub new {
 	my ($class) = @_;
@@ -31,9 +35,50 @@ sub new {
 }
 sub init {
 	my $REMOTE_USER = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
-	my $ticketfn = $ENV{KRB5CCNAME} =~ /^FILE:(.*)$/ ? $1 : "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
+	my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
+	
+	my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
+	my $agefile = $ticketfn.'.age';
+	if ($ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn) {
+		Env::C::setenv('KRB5CCNAMEORIG',$ENV{KRB5CCNAME});
+		
+		unlink $ticketfn if -e $ticketfn && ( time() - ( stat($agefile) )[9] >= $TICKET_LIFETIME || !-s $ticketfn );
+		
+		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/ && !-e $ticketfn) {
+			my $oldfilename = $1;
+			
+			
+			my ($in, $out);
+			if (open($in, '<', $oldfilename) && open($out, '>',$ticketfn) && flock($out, LOCK_EX | LOCK_NB) ) {
+				binmode $in;
+				binmode $out;
+				while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
+					print $out $buffer;
+				}
+				close($in);
+				if (open(my $age,'>', $agefile)) {
+					print $age time();
+					close($age);	
+				}  
+				flock($out, LOCK_UN);
+				close($out);
+				
+				
+			} else {
+				warn("Cannot read ticket file (don't use a setuid/setgid wrapper):" . (-r $oldfilename));
+			}
+		}
+	}
 	$ENV{KRB5CCNAME} = "FILE:$ticketfn";
 	Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
 	Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG}) if $ENV{KRB5_CONFIG};
+}
+sub registerChannel {
+	my ($self, $channel) = @_;
+	$channel->addEventListener(['FINALIZE'], $self);
+}
+sub receiveEvent {
+	my ( $self, $event, $data ) = @_;
+	Env::C::setenv('KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG'));
 }
 1;

@@ -46,10 +46,8 @@ sub init {
 
 	my $agefile = "$ticketfn.age";
 
-	if ( -e $ticketfn ) {
-		unlink $ticketfn if time() - ( stat($agefile) )[9] >= $TICKET_LIFETIME || !-s $ticketfn;
-	}
-
+	unlink $ticketfn if -e $ticketfn && (time() - ( stat($agefile) )[9] >= $TICKET_LIFETIME || !-s $ticketfn);
+	
 	if ( !-f $ticketfn ) {
 		if ( open( my $lfh, '>', $agefile ) ) {
 			if ( flock( $lfh, LOCK_EX ) ) {
