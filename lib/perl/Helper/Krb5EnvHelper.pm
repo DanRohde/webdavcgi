@@ -20,7 +20,7 @@ package Helper::Krb5EnvHelper;
 
 use strict;
 
-use Fcntl qw(:flock);
+use Fcntl qw(:flock O_WRONLY O_TRUNC O_CREAT);
 use Env::C;
 
 use Events::EventListener;
@@ -52,7 +52,7 @@ sub init {
 			
 			
 			my ($in, $out);
-			if (open($in, '<', $oldfilename) && open($out, '>',$ticketfn) && flock($out, LOCK_EX | LOCK_NB) ) {
+			if (open($in, '<', $oldfilename) && sysopen($out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT, 0600) && flock($out, LOCK_EX | LOCK_NB) ) {
 				binmode $in;
 				binmode $out;
 				while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
