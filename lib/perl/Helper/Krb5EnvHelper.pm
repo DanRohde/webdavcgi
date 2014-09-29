@@ -40,11 +40,10 @@ sub init {
 	
 	my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
 	my $agefile = $ticketfn.'.age';
+	Env::C::setenv('KRB5CCNAMEORIG',$ENV{KRB5CCNAME}) if $ENV{KRB5CCNAME};
+	$self->registerChannel(main::getEventChannel());
 	if ($ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn) {
-		Env::C::setenv('KRB5CCNAMEORIG',$ENV{KRB5CCNAME});
-		
-		$self->registerChannel(main::getEventChannel());
-		
+
 		unlink $ticketfn if -e $ticketfn && ( time() - ( stat($agefile) )[9] >= $TICKET_LIFETIME || !-s $ticketfn );
 		
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/ && !-e $ticketfn) {
