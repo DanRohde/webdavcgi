@@ -20,7 +20,7 @@ package Helper::Krb5EnvHelper;
 
 use strict;
 
-use POSIX qw(:flock);
+use Fcntl qw(:flock);
 use Env::C;
 
 use Events::EventListener;
@@ -34,6 +34,7 @@ sub new {
 	return $self;
 }
 sub init {
+	my $self = shift;
 	my $REMOTE_USER = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
 	my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
 	
