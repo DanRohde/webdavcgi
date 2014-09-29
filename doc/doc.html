@@ -514,7 +514,7 @@ Graphics::Magick does not compile:
 <li> You can use the auto create feature (<code>$CREATE_DB=1;</code>) </li>
 <li> Example config:
 <pre>
-$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'$ENV{REMOTE_USER}.'.db';
+$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 $DBI_USER="";
 $DBI_PASS="";
 $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';

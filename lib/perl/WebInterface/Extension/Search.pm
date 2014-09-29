@@ -44,7 +44,7 @@ use vars qw( %CACHE %TIMEUNITS);
 %TIMEUNITS = ( 'seconds' => 1, 'minutes' => 60, 'hours'=>3600, 'days'=>86400, 'weeks'=> 604800, 'months'=>18144000, 'years'=>31557600);
 sub init { 
 	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'gethandler','posthandler');
+	my @hooks = ('link', 'css','locales','javascript', 'gethandler','posthandler');
 	push @hooks,'fileactionpopup' unless $main::EXTENSION_CONFIG{Search}{disable_fileactionpopup};
 	push @hooks,'apps' unless $main::EXTENSION_CONFIG{Search}{disable_apps};	
 	$hookreg->register(\@hooks, $self);
@@ -65,17 +65,23 @@ sub handle {
 	} elsif ($hook eq 'apps') {
 		$ret = $self->handleAppsHook($$self{cgi},'search access-readable ','search','search'); 
 	} elsif ($hook eq 'gethandler') {
-		my $ajax = $$self{cgi}->param('ajax');
-		if ($ajax eq 'getSearchForm') {
+		my $action = $$self{cgi}->param('action');
+		if ($action eq 'getSearchForm') {
 			$ret = $self->getSearchForm();
-		} elsif ($ajax eq 'getSearchResult') {
+		} elsif ($action eq 'getSearchResult') {
 			$ret = $self->getSearchResult();
+		} elsif ($action eq 'opensearch') {
+                	$ret = $self->printOpenSearch();
 		}
 	} elsif ($hook eq 'posthandler') {
 		if ($$self{cgi}->param('action') eq 'search') {
 			$ret = $self->handleSearch();
 		}
+	} elsif ($hook eq 'link') {
+		$ret='<link rel="search" href="?action=opensearch&amp;searchin=filename" type="application/opensearchdescription+xml" title="WebDAV CGI '. $self->tl('search.opensearch.filename') . ' '.$main::REQUEST_URI.'"/>';
+		$ret.='<link rel="search" href="?action=opensearch&amp;searchin=content" type="application/opensearchdescription+xml" title="WebDAV CGI '. $self->tl('search.opensearch.content').' '.$main::REQUEST_URI.'"/>' if $self->config('allow_contentsearch',0);
 	}
+	
 	return $ret;
 }
 sub cutLongString {
@@ -369,5 +375,20 @@ sub execTemplateFunction {
 	$content = time() if $func eq 'getSearchId';
 	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
 	return $content;
+}
+sub printOpenSearch {
+        my ($self) = @_;
+        my $type = $$self{cgi}->param('searchin') eq 'content' && $self->config('allow_contentsearch',0) ? 'content' : 'filename';
+        my $template = $type eq 'content' ? qq@$ENV{SCRIPT_URI}?action=search&amp;query={searchTerms}&amp;searchin=content@ : qq@$ENV{SCRIPT_URI}?action=search&amp;query={searchTerms}&amp;searchin=filename@;
+        my $content = qq@<?xml version="1.0" encoding="utf-8" ?><OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+        			<ShortName>WebDAV CGI $type search in $main::REQUEST_URI</ShortName>
+        			<Description>WebDAV CGI $type search in $main::REQUEST_URI</Description>
+        			<InputEncoding>utf-8</InputEncoding><Url type="text/html" template="$template" />
+        			<Image height="16" width="16" type="image/x-icon">https://$ENV{HTTP_HOST}@.$self->getExtensionUri('Search','htdocs/search.ico').qq@</Image>
+        			<Image height="64" width="64" type="image/png">https://$ENV{HTTP_HOST}@.$self->getExtensionUri('Search','htdocs/search64x64.png').qq@</Image>
+        		</OpenSearchDescription>@;
+        $content=~s/[\r]\n//sg;
+        main::printHeaderAndContent("200 OK", 'text/xml', $content);
+        return 1;
 }
 1;

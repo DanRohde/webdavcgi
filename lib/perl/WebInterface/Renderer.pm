@@ -148,12 +148,6 @@ sub printImage {
         print $$self{cgi}->header(-status=>'200 OK',-type=>'image/gif', -ETag=>main::getETag($fn));
         $x = $image->Write('gif:-'); warn "$x" if "$x";
 }
-sub printOpenSearch {
-        my ($self) = @_;
-        my $content = qq@<?xml version="1.0" encoding="utf-8" ?><OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"><ShortName>WebDAV CGI filename</ShortName><Description>WebDAV CGI filename search in $ENV{SCRIPT_URI}</Description><InputEncoding>utf-8</InputEncoding><Url type="text/html" template="$ENV{SCRIPT_URI}?search={searchTerms}" /></OpenSearchDescription>@;
-        main::printHeaderAndContent("200 OK", 'text/xml', $content);
-}
-
 sub printDAVMount {
         my ($self,$fn) = @_;
         my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};

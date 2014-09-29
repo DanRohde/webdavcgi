@@ -61,8 +61,6 @@ sub handleGetRequest {
                 $self->getRenderer()->printMediaRSS($main::PATH_TRANSLATED,$main::REQUEST_URI);
         } elsif ($main::ENABLE_THUMBNAIL && $action eq 'image' && $$self{backend}->isFile($main::PATH_TRANSLATED) && $$self{backend}->isReadable($main::PATH_TRANSLATED)) {
                 $self->getRenderer()->printImage($main::PATH_TRANSLATED);
-        } elsif ($action eq 'opensearch' && $$self{backend}->isDir($main::PATH_TRANSLATED)) {
-                $self->getRenderer()->printOpenSearch();
         } elsif ($main::ENABLE_THUMBNAIL && $action eq 'thumb' && $$self{backend}->isReadable($main::PATH_TRANSLATED) && $$self{backend}->isFile($main::PATH_TRANSLATED)) {
                 $self->getRenderer()->printThumbnail($main::PATH_TRANSLATED);
         } elsif ($$self{backend}->isDir($main::PATH_TRANSLATED)) {
