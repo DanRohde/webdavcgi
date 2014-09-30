@@ -252,11 +252,6 @@ sub isViewFiltered {
 	return 1 if $$self{cgi}->param('search.name') || $$self{cgi}->param('search.types') || $$self{cgi}->param('search.size');
 	return $$self{cgi}->cookie('filter.name') || $$self{cgi}->cookie('filter.types') || $$self{cgi}->cookie('filter.size') ? 1 : 0;
 }
-sub isUnselectable {
-	my ($self,$fn) = @_;
-	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
-	return $$self{backend}->basename($fn) eq '..' || $fn =~ /^$unselregex$/;	
-}
 sub renderFileListTable {
 	my ($self, $fn, $ru, $template) = @_;
 	my $filelisttabletemplate = $self->renderExtensionFunction($self->readTemplate($template));

@@ -444,5 +444,9 @@ sub canCreateThumbnail {
 sub getVBase() {
 	return $main::REQUEST_URI=~/^($main::VIRTUAL_BASE)/ ? $1 : $main::REQUEST_URI;
 }
-
+sub isUnselectable {
+	my ($self,$fn) = @_;
+	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
+	return $$self{backend}->basename($fn) eq '..' || $fn =~ /^$unselregex$/;	
+}
 1;

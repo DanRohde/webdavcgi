@@ -97,3 +97,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .smalltext {
 	font-size: small;
 }
+.diskusage.ui-dialog .ui-dialog-title {
+	background-image: url(diskusage.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}
