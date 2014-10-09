@@ -24,7 +24,7 @@
 <ul>
 <li>Extensions are activated by putting the extension name to the <code>@EXTENSIONS</code> list in <code>webdav.conf</code>:
 <pre>
-@EXTENSIONS = ('Highlighter','Diff','Download','Zip','DiskUsage',
+@EXTENSIONS = ('History', 'Highlighter','Diff','Download','Zip','DiskUsage',
                'Search','SendByMail','Permissions');
 </pre></li>
 <li>Extensions are configured with the <code>%EXTENSION_CONFIG</code> variable in <code>webdav.conf</code>:
@@ -41,6 +41,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#Download">Download</a> - offers a download button to force download instead of view</li>
 <li><a href="#HexDump">HexDump</a> - shows a hexdump of a file</li> 
 <li><a href="#Highlighter">Highlighter</a> - colorizes files/folders</li>
+<li><a href="#History">History</a> - shows a folder history</li> 
 <li><a href="#ODFConverter">ODFConverter</a> - converts between Open Document file formats and other Office file formats</li>
 <li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
 <li><a href="#PosixAclManager">PosixAclManager</a> - manages POSIX ACL</li>
@@ -150,7 +151,6 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 
 </tr>
 </table>
-
 <h2 id="Highlighter">Highlighter</h2>
 <table style="width:100%">
 <tr>
@@ -164,6 +164,18 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 
 </tr>
 </table>
+
+
+<h2 id="History">History</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+</pre></td>
+
+</tr>
+</table>
+
 <h2 id="ODFConverter">ODFConverter</h2>
 <table style="width:100%">
 <tr>

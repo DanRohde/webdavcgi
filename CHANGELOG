@@ -18,6 +18,7 @@
      - added web interface extension 'SourceCodeViewer'
      - added web interface extension 'HexDump'
      - added web interface extension 'ODFConverter'
+     - added web interface extension 'History'
      - added mod_perl support for AFS and SMB backends
      - removed ALLOW_ZIP_(UP|DOWN)LOAD support (replaced by 'Zip' extension)
      - removed ENABLE_AFSGROUPMANAGER (replaced by 'AFSGroupManager' extension)
