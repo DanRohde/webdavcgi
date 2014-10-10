@@ -1,5 +1,6 @@
-1.0.0: BETA
+1.0.0: 2014/10/10
      - fixed minor AFS Group Manager bug
+     - fixed a lot of bugs: fusedav doesn't work, ...
      - added SHOWDOTFILES and SHOWDOTFOLDERS feature
      - added the GIT backend
      - added disk usage web interface extension 'DiskUsage'
