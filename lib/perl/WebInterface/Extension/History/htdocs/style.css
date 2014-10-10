@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: left -61px;
 	padding-left: 26px;
 	width: 35ex;
+	overflow: hidden;
 }
 #popupmenu li.subpopupmenu.history-popup {
 	background: url(history.png) no-repeat 2px 6px,
