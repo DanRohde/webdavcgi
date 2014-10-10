@@ -39,6 +39,7 @@ sub handle {
 	return $ret if $ret;
 	
 	if ($hook eq 'fileactionpopup') {
+		#$ret = { title=>$self->tl('history'), subpopupmenu=>[ { label=>$self->tl('history.clear'), action=>'history-clear', classes=>'sep', type=>'li' } ], classes=>'history-popup', type=>'li' };
 		$ret = { title=>$self->tl('history'), subpopupmenu=>[], classes=>'history-popup', type=>'li' };
 	}
 	 
