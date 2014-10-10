@@ -125,7 +125,7 @@ sub optimizer_isOptimized {
 sub optimizer_getFilepath {
 	my ($self, $ft) = @_;
 	my $tmp = $main::OPTIMIZERTMP || $main::THUMBNAIL_CACHEDIR || '/var/tmp';
-	my $optimizerbasefn = "${main::CONFIGFILE}_${main::VERSION}_${main::REMOTE_USER}";
+	my $optimizerbasefn = "${main::CONFIGFILE}_${main::RELEASE}_${main::REMOTE_USER}";
 	$optimizerbasefn=~s/[\/\.]/_/g;
 	my $optimizerbase =$tmp.'/'.$optimizerbasefn;
 	return "${optimizerbase}.$ft";

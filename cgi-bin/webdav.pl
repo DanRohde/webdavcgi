@@ -67,9 +67,9 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-	    @EVENTLISTENER $VERSION $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES
+	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE
 ); 
-$VERSION="1.0.0BETA14100901";
+$RELEASE="1.0.0BETA14101001";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -127,8 +127,8 @@ $ENABLE_COMPRESSION = 1;
 ## e.g. access to ${VHTDOCS}icons/test.png delivers ${INSTALL_BASE}htdocs${VHTDOCS}icons/test.png
 ## note: all delivered data from htdocs expires in one week
 ## (don't forget the trailing slash)
-## EXAMPLE: $VHTDOCS="/_webdavcgi_/$VERSION./";
-$VHTDOCS="_webdavcgi_/$VERSION/";
+## EXAMPLE: $VHTDOCS="/_webdavcgi_/$RELEASE/";
+$VHTDOCS="_webdavcgi_/$RELEASE/";
 
 ## -- MAXFILENAMESIZE 
 ## Web interface: width of filename column
