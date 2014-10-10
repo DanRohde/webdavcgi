@@ -58,7 +58,7 @@ sub handle {
 			push @subpopup, { action=>'markcolorpicker', data=>{ value=>$_, style=>$attribute }, label=>$self->tl('highlighter.colorpicker'), classes=>'sep', type=>'li' } if $$self{attributes}{$attribute}{colorpicker};
 			push @subpopup, { action=>'removemark', data=>{ style=>$attribute }, label=>$self->tl("highlighter.remove.$attribute"), type=>'li', classes=>'sep' }; 
 			
-			push @popups, { title=>$self->tl("highlighter.$attribute"), subpopupmenu => \@subpopup, classes=>"highlighter" };
+			push @popups, { title=>$self->tl("highlighter.$attribute"), subpopupmenu => \@subpopup, classes=>"highlighter $attribute" };
 		}
 		
 		$ret = { title=>$self->tl('highlighter'), subpopupmenu=> \@popups, classes=>'highlighter-popup'};
