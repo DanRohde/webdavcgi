@@ -2,7 +2,7 @@
 	<!--IF( q@$filename@ ne ".")-->
 		<a class="search result entry parent folder icon category-folder suffix-folder" title="$tl(search.openparentfolder)" href="$dirname" target="_blank"></a>
 	<!--ENDIF-->
-	<a href="$fileuri" target="_blank" class="search result entry $type" ><img src="$iconurl" class="search $iconclass" alt="icon" title="$mime"/><span title="$tl(search.open) $filename ($tl(size): $size, $tl(lastmodified): $lastmodified)">$filename</span></a>
+	<a href="$fileuri" target="_blank" class="search result entry $type" ><img src="$iconurl" class="search $iconclass" alt="icon" title="$mime"/><span title="$tl(search.open) $filename ($tl(size): $size, $tl(lastmodified): $lastmodified)">$qfilename</span></a>
 	<div class="search result fileuri">$parentfolder</div>
 	
 </div>

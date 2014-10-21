@@ -585,7 +585,7 @@ function buildBookmarkList() {
 	var tmpl = $("#bookmarktemplate").html();
 	$.each(bookmarks, function(i,val) {
 		var epath = unescape(val["path"]);
-		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val["path"]).replace(/\$bookmarktext/,simpleEscape(trimString(epath,20))) + "</li>")
+		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val["path"]).replace(/\$bookmarktext/,quoteWhiteSpaces(simpleEscape(trimString(epath,20)))) + "</li>")
 			.insertAfter($("#bookmarktemplate"))
 			.click(handleBookmarkActions)
 			.addClass("link dyn-bookmark")
@@ -1958,6 +1958,9 @@ function initDotFilter() {
 	$("body").toggleClass("hidedotfiles", cookie("settings.show.dotfiles") == "no");
 	$("body").toggleClass("hidedotfolders", cookie("settings.show.dotfolders") == "no");
 }
+function quoteWhiteSpaces(filename) {
+	return filename.replace(/ /g, '<span class="ws"> </span>');
+}
 function initPlugins() {
 	(function($) {
 	    $.QueryString = (function(a) {
@@ -2074,6 +2077,7 @@ function initToolBox() {
 			notifyWarn : notifyWarn,
 			preventDefault : preventDefault,
 			postAction: postAction,
+			quoteWhiteSpaces: quoteWhiteSpaces,
 			refreshFileListEntry : refreshFileListEntry,
 			removeAbortDialog: removeAbortDialog,
 			renderAbortDialog: renderAbortDialog,

@@ -211,6 +211,7 @@ sub renderDiskUsageDetails {
 		
 		my $vars = {
 			foldername=>$cgi->escapeHTML($foldername),
+			qfoldername=>$self->quoteWhiteSpaces($cgi->escapeHTML($foldername)),
 			folderuri=> $main::REQUEST_URI.$uri,
 			foldersize=>$pbv[0],
 			foldersizetitle=>$pbv[1],

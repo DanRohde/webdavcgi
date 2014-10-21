@@ -93,7 +93,7 @@ sub cutLongString {
 sub getSearchForm {
 	my ($self) = @_;
 	my $searchinfolders = $$self{cgi}->param('files') ? join(", ", map{ $$self{backend}->getDisplayName($main::PATH_TRANSLATED.$_)} $$self{cgi}->param('files')) : $self->tl('search.currentfolder');
-	my $vars = { searchinfolders => $$self{cgi}->escapeHTML($self->cutLongString($searchinfolders)), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders)};
+	my $vars = { searchinfolders => $self->quoteWhiteSpaces($$self{cgi}->escapeHTML($self->cutLongString($searchinfolders))), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders)};
 	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')), $vars);
 	main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
 	return 1;
@@ -121,6 +121,7 @@ sub addSearchResult {
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,
+				qfilename=>$self->quoteWhiteSpaces($filename),
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
 				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
 				iconclass=>"icon $category suffix-$suffix ".($self->canCreateThumbnail($full) ? 'thumbnail': ''),

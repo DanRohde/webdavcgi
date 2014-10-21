@@ -449,4 +449,9 @@ sub isUnselectable {
 	my $unselregex = @main::UNSELECTABLE_FOLDERS ? '('.join('|',@main::UNSELECTABLE_FOLDERS).')' : '___cannot match___' ;
 	return $$self{backend}->basename($fn) eq '..' || $fn =~ /^$unselregex$/;	
 }
+sub quoteWhiteSpaces {
+	my ($self, $filename) = @_;
+	$filename=~s@ @<span class="ws"> </span>@msg;
+	return $filename;
+}
 1;

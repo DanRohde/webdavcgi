@@ -42,7 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	padding: 1px;
 	vertical-align: top;
 	border-bottom: 1px solid gray;
-	
+	white-space: pre-wrap;
 }
 .diskusage.size, .diskusage.lastmodified {
 	text-align: right;	

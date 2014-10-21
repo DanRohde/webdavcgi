@@ -87,7 +87,8 @@ sub minifyHTML {
 	my ($self, $content) = @_;
 	$content=~s/<!--.*?-->//sg;
 	$content=~s/[\r\n]/ /sg;
-	$content=~s/\s{2,}/ /sg;
+	#$content=~s/\s{2,}/ /sg; ## bug: filenames with multiple spaces are not managable
+	#$content=~s/>\s{2,}</> </sg; ## bug: same problem
 	return $content;
 }
 sub getQuotaData {
@@ -297,9 +298,11 @@ sub renderFileListEntry {
 	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown')) ;
 	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*\b\Q$suffix\E\b/m ? 'category-'.$1 : '';
 	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
+	my $displayname = $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full));
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
-				'displayname' => $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full)),
+				'displayname' => $displayname,
+				'qdisplayname' => $self->quoteWhiteSpaces($displayname),
 				'size' => $$self{backend}->isReadable($full) ? $sizetxt : '-', 
 				'sizetitle'=>$sizetitle,
 				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',

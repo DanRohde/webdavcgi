@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE
 ); 
-$RELEASE="1.0.0";
+$RELEASE="1.0.1BETA2014102101";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -159,7 +159,7 @@ officep pot potm pps ppsx ppt pptx odp otp sxi sti
 offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx 
 adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rss sgml xml xsl xslt
-archive 7z arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
+archive 7z apk arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
 binary  a class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
 shell   alias bat bash bash_history bashrc bash_login logout bsh bshrc csh cshrc env history jsh ksh kshrc login profile ps1 sh  tcsh tcshrc 
 tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb

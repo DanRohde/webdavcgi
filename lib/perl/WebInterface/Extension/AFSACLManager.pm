@@ -129,8 +129,8 @@ sub renderAFSACLManager {
                 $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
                 my $stdvars = {
                         afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
-                                                                                        $$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru))), 
-                                                                                        $$self{cgi}->escapeHTML(uridecode($ru))),
+                                                                                        $self->quoteWhiteSpaces($$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru)))), 
+                                                                                        $self->quoteWhiteSpaces($$self{cgi}->escapeHTML(uridecode($ru)))),
                 };
                 $content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
         }

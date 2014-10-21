@@ -264,6 +264,14 @@ table,th,td {
 	padding-left: 10px; 
 	padding-top: 2px;
 	float: left;
+	white-space: pre-wrap;
+}
+span.ws, div.ws {
+	background-color: #eaeaea;
+	white-space: pre-wrap;
+	opacity: 0.6;
+	filter: Alpha(opacity:60);
+	display: inline-block;
 }
 div.filename a:focus {
 	border: 1px dotted black;
@@ -1192,6 +1200,7 @@ img {
 	z-index:2147483646;
 	overflow: hidden;
 	word-wrap: break-word;
+	white-space: pre-wrap;
 }
 #abortdialog {
 	position: fixed;
