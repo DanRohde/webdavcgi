@@ -1959,7 +1959,7 @@ function initDotFilter() {
 	$("body").toggleClass("hidedotfolders", cookie("settings.show.dotfolders") == "no");
 }
 function quoteWhiteSpaces(filename) {
-	return filename.replace(/ /g, '<span class="ws"> </span>');
+	return filename.replace(/( {2,})/g, '<span class="ws">$1</span>');
 }
 function initPlugins() {
 	(function($) {

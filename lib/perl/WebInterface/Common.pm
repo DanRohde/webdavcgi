@@ -451,7 +451,7 @@ sub isUnselectable {
 }
 sub quoteWhiteSpaces {
 	my ($self, $filename) = @_;
-	$filename=~s@ @<span class="ws"> </span>@msg;
+	$filename=~s@( {2,})@<span class="ws">$1</span>@msg;
 	return $filename;
 }
 1;

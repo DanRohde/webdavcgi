@@ -120,7 +120,7 @@ sub renderDiskUsageTemplate {
 	$filenamelist='.' if $filenamelist eq "";
 	$filenamelist=substr($filenamelist,0,100).'...' if length($filenamelist)>100;
 	my $vars = {
-		diskusageof => $cgi->escapeHTML(sprintf($self->tl('du_diskusageof'),$filenamelist)),
+		diskusageof => sprintf($self->tl('du_diskusageof'),$self->quoteWhiteSpaces($cgi->escapeHTML($filenamelist))),
 		files=>$$counter{count}{all}{files} || 0,
 		folders=>$$counter{count}{all}{folders} || 0,
 		sum=>$$counter{count}{all}{sum} || 0,

@@ -267,10 +267,7 @@ table,th,td {
 	white-space: pre-wrap;
 }
 span.ws, div.ws {
-	background-color: #eaeaea;
 	white-space: pre-wrap;
-	opacity: 0.6;
-	filter: Alpha(opacity:60);
 	display: inline-block;
 }
 div.filename a:focus {
@@ -336,7 +333,6 @@ tr.isreadable-no:hover {
 	right: 2em;
 	color: #888888;
 	background-color: #F7F7F7;
-	height: 2.7em;
 	font-weight: bold;
 	z-index: 80;
 }
@@ -777,7 +773,8 @@ td.center {
 	padding-right: 10px;
 }
 .tablesorter-up, .tablesorter-down {
-	border: 1px inset #eeeeee;
+	/*border: 1px inset #eeeeee;*/
+	box-shadow: 1px 1px 1px #aaaaaa inset;
 }
 .tablesorter-up {
 	background: 
