@@ -1,0 +1,11 @@
+Makefile.PL
+MANIFEST
+INSTALL
+README
+smbclient.i
+smbclient.pm
+smbclient_wrap.c
+lib/Filesys/SmbClient.pm
+build.sh
+test.pl
+test2.pl

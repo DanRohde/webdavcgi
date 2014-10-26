@@ -1,0 +1,13 @@
+REQUIREMENTS: 
+	libsmbclient-dev (Debian/Ubuntu: apt-get install libsmbclient-dev)
+	Compiler and make (Debian/Ubuntu: apt-get install build-essential)
+	optional and if smbclient.i was changed: swig (Debian/Ubuntu: apt-get install swig)
+
+INSTALL:
+	## if smbclient.i was changed:
+	# swig -perl -I/usr/include smbclient.i
+
+	perl Makefile.PL
+	make
+	make install
+
