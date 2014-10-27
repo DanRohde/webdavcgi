@@ -18,6 +18,8 @@
 
 package Filesys::SmbClient;
 
+use strict;
+
 our $VERSION = '1.000';
 use smbclient;
 use POSIX qw(:fcntl_h);
@@ -43,14 +45,10 @@ use constant {
 sub new {
 	my $class = shift;
 	my $self = { };
-
 	bless $self, $class;
-
 	$self->_init(@_);
-
 	return $self;
 }
-
 
 sub _init {
 	my $self = shift;
@@ -123,7 +121,7 @@ sub readdir_struct {
 }
 sub mkdir {
 	my ($self, $url, $mode) = @_;
-	return $self->_hr(smbclient::smbc_mkdir($url, smbclient::w_int2mode($mode // 0666)));
+	return $self->_hr(smbclient::smbc_mkdir($url, $mode // 0666));
 }
 sub rmdir {
 	my ($self, $url) = @_;
@@ -170,7 +168,19 @@ sub unlink {
 }
 sub open {
 	my ($self, $url, $mode) = @_;
-	return smbclient::smbc_open($url, O_CREAT | O_RDWR, smbclient::w_int2mode($mode // 0666));
+	my $fn = $url;
+	my $flags = O_RDONLY;
+	if ($url=~/^>>(.*)$/) {
+		$fn=$1;
+		$flags = O_WRONLY | O_CREAT | O_APPEND;
+	} elsif ($url=~/^>(.*)$/) {
+		$fn=$1;
+		$flags = O_WRONLY | O_CREAT | O_TRUNC;
+	} elsif ($url=~/^<(.*)$/) {
+		$fn=$1;
+		$flags = O_RDONLY;
+	}
+	return smbclient::smbc_open($fn, $flags, $mode // '0666');
 }
 sub close {
 	my ($self, $fh) = @_;
@@ -183,11 +193,8 @@ sub read {
 sub write {
 	my $self = shift;
 	my $fh = shift;
-	my $count = 0;
-	while (my $buf = shift) {
-		$count+= smbclient::w_smbc_write($fh, $buf, length($buf));	
-	}
-	return $count;
+	my $buf = join("",@_);
+	return smbclient::w_smbc_write($fh, $buf, length($buf));	
 }
 sub seek {
 	my ($self, $fh, $pos) = @_;

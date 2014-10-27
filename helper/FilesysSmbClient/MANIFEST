@@ -9,3 +9,4 @@ lib/Filesys/SmbClient.pm
 build.sh
 test.pl
 test2.pl
+test.png

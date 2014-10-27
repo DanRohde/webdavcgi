@@ -18,12 +18,16 @@
 #########################################################################
 */
 %module smbclient
-/* %include "typemaps.i" */
 %{
         #include "libsmbclient.h"
 %}
 
+/* prevent type casts */
+typedef int mode_t;
+
 /* from libsmbclient.h without unused or deprecated API: */
+/* #include "libsmbclieht.h" is too much */
+
 #define SMB_CTX_FLAG_USE_KERBEROS (1 << 0)
 #define SMB_CTX_FLAG_FALLBACK_AFTER_KERBEROS (1 << 1)
 #define SMBCCTX_FLAG_NO_AUTO_ANONYMOUS_LOGON (1 << 2)
@@ -59,43 +63,28 @@ int smbc_free_context(SMBCCTX * context, int shutdown_ctx);
 
 int smbc_getDebug(SMBCCTX *c);
 void smbc_setDebug(SMBCCTX *c, int debug);
-char * smbc_getNetbiosName(SMBCCTX *c);
-void smbc_setNetbiosName(SMBCCTX *c, char * netbios_name);
-char * smbc_getWorkgroup(SMBCCTX *c);
-void smbc_setWorkgroup(SMBCCTX *c, char * workgroup);
-char * smbc_getUser(SMBCCTX *c);
-void smbc_setUser(SMBCCTX *c, char * user);
+
 int smbc_getTimeout(SMBCCTX *c);
 void smbc_setTimeout(SMBCCTX *c, int timeout);
 
 smbc_bool smbc_getOptionDebugToStderr(SMBCCTX *c);
 void smbc_setOptionDebugToStderr(SMBCCTX *c, smbc_bool b);
-smbc_bool smbc_getOptionFullTimeNames(SMBCCTX *c);
-void smbc_setOptionFullTimeNames(SMBCCTX *c, smbc_bool b);
-smbc_share_mode smbc_getOptionOpenShareMode(SMBCCTX *c);
-void smbc_setOptionOpenShareMode(SMBCCTX *c, smbc_share_mode share_mode);
+
 void * smbc_getOptionUserData(SMBCCTX *c);
 void smbc_setOptionUserData(SMBCCTX *c, void *user_data);
-smbc_smb_encrypt_level smbc_getOptionSmbEncryptionLevel(SMBCCTX *c);
-void smbc_setOptionSmbEncryptionLevel(SMBCCTX *c, smbc_smb_encrypt_level level);
-smbc_bool smbc_getOptionCaseSensitive(SMBCCTX *c);
-void smbc_setOptionCaseSensitive(SMBCCTX *c, smbc_bool b);
-int smbc_getOptionBrowseMaxLmbCount(SMBCCTX *c);
-void smbc_setOptionBrowseMaxLmbCount(SMBCCTX *c, int count);
-smbc_bool smbc_getOptionUrlEncodeReaddirEntries(SMBCCTX *c);
-void smbc_setOptionUrlEncodeReaddirEntries(SMBCCTX *c, smbc_bool b);
-void smbc_setOptionOneSharePerServer(SMBCCTX *c, smbc_bool b);
+
 smbc_bool smbc_getOptionUseKerberos(SMBCCTX *c);
 void smbc_setOptionUseKerberos(SMBCCTX *c, smbc_bool b);
-smbc_bool smbc_getOptionFallbackAfterKerberos(SMBCCTX *c);
+
 smbc_bool smbc_getOptionFallbackAfterKerberos(SMBCCTX *c);
 void smbc_setOptionFallbackAfterKerberos(SMBCCTX *c, smbc_bool b);
+
 smbc_bool smbc_getOptionNoAutoAnonymousLogin(SMBCCTX *c);
 void smbc_setOptionNoAutoAnonymousLogin(SMBCCTX *c, smbc_bool b);
+
 smbc_bool smbc_getOptionUseCCache(SMBCCTX *c);
 void smbc_setOptionUseCCache(SMBCCTX *c, smbc_bool b);
 
-void smbc_setFunctionAuthData(SMBCCTX *c, smbc_get_auth_data_fn fn);
 smbc_get_auth_data_with_context_fn smbc_getFunctionAuthDataWithContext(SMBCCTX *c);
 void smbc_setFunctionAuthDataWithContext(SMBCCTX *c, smbc_get_auth_data_with_context_fn fn);
 
@@ -103,71 +92,31 @@ SMBCCTX * smbc_init_context(SMBCCTX * context);
 SMBCCTX * smbc_set_context(SMBCCTX * new_context);
 
 int smbc_open(const char *furl, int flags, mode_t mode);
-int smbc_creat(const char *furl, mode_t mode);
-ssize_t smbc_read(int fd, void *OUTPUT, size_t bufsize);
-ssize_t smbc_write(int fd, const void *buf, size_t bufsize); /* use w_smbc_write  */
 off_t smbc_lseek(int fd, off_t offset, int whence);
 int smbc_close(int fd);
-
 int smbc_unlink(const char *furl);
 int smbc_rename(const char *ourl, const char *nurl);
 
 int smbc_opendir(const char *durl);
 int smbc_closedir(int dh);
-int smbc_getdents(unsigned int dh, struct smbc_dirent *OUTPUT, int count);
-
 struct smbc_dirent* smbc_readdir(unsigned int dh);
-off_t smbc_telldir(int dh);
-int smbc_lseekdir(int fd, off_t offset);
-
 int smbc_mkdir(const char *durl, mode_t mode);
 int smbc_rmdir(const char *durl);
 
 int smbc_stat(const char *url, struct stat *st);
 int smbc_fstat(int fd, struct stat *st);
-int smbc_statvfs(char *url, struct statvfs *OUTPUT);
-int smbc_fstatvfs(int fd, struct statvfs *OUTPUT);
-
-int smbc_ftruncate(int fd, off_t size);
-
-int smbc_chmod(const char *url, mode_t mode);
-int smbc_utimes(const char *url, struct timeval *tbuf);
-
-int smbc_setxattr(const char *url, const char *name, const void *value, size_t size, int flags);
-int smbc_lsetxattr(const char *url, const char *name, const void *value, size_t size, int flags);
-int smbc_fsetxattr(int fd, const char *name, const void *value, size_t size, int flags);
-int smbc_getxattr(const char *url, const char *name, const void *OUTPUT, size_t size);
-int smbc_lgetxattr(const char *url, const char *name, const void *OUTPUT, size_t size);
-int smbc_fgetxattr(int fd, const char *name, const void *OUTPUT, size_t size);
-int smbc_removexattr(const char *url, const char *name);
-int smbc_lremovexattr(const char *url, const char *name);
-int smbc_fremovexattr(int fd, const char *name);
-int smbc_listxattr(const char *url, char *OUTPUT, size_t size);
-int smbc_llistxattr(const char *url, char *OUTPUT, size_t size);
-int smbc_flistxattr(int fd, char *OUTPUT, size_t size);
-
-void smbc_set_credentials(const char *workgroup, const char *user, const char *password, smbc_bool use_kerberos, const char *signing_state);
-void smbc_set_credentials_with_fallback(SMBCCTX *ctx, const char *workgroup, const char *user, const char *password);
-
-
 
 /* additional wrapper interface definitions */
 
 %inline %{
 
-mode_t w_int2mode(int mode) { return (mode_t) mode; }
 off_t w_int2offt(int v) {  return (off_t) v; };
 int w_offt2int(off_t v) {  return (int) v; };
-char * w_offt2str(off_t v) { 
-        char *s = (char *) malloc(1025);
-        snprintf(s, 1024, "%lu", v);
-        return s;
-}
 
 char * w_stat2str(struct stat * buf) {
         if (buf == NULL) return NULL;
         char *s = (char *) malloc(1025);
-        snprintf(s, 1024, "%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu\0", buf->st_dev, buf->st_ino, buf->st_mode, buf->st_nlink, buf->st_uid, buf->st_gid,buf->st_rdev,buf->st_size,buf->st_atime,buf->st_mtime,buf->st_ctime,buf->st_blksize,buf->st_blocks);
+        snprintf(s, 1024, "%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li", buf->st_dev, buf->st_ino, (long int) buf->st_mode, buf->st_nlink, (long int)buf->st_uid, (long int) buf->st_gid,buf->st_rdev,buf->st_size, buf->st_blksize,buf->st_blocks, buf->st_atime,buf->st_mtime,buf->st_ctime);
         return s;
 }
 char * w_ssize2str(ssize_t val) {
@@ -182,6 +131,9 @@ struct w_userdata {
         char * password;
         char * workgroup;
 };
+void w_debug(SMBCCTX *ctx, char *str) {
+        if (smbc_getDebug(ctx)>0) fprintf(stderr, "%s\n", str);
+}
 smbc_get_auth_data_with_context_fn w_get_auth_data_with_context(SMBCCTX *ctx, const char *srv, const char *shr, char *wg, int wglen, char *un, int unlen, char *pw, int pwlen) {
         w_debug(ctx, "w_get_auth_data_with_context...");
         struct w_userdata *d = (struct w_userdata *) smbc_getOptionUserData(ctx);
@@ -211,26 +163,21 @@ int w_smbc_write(int fd, char *buf, int bufsize) {
         return (int)smbc_write(fd, buf, bufsize);
 }
 char * w_smbc_read(int fd, int bufsize) {
-        if (!bufsize) bufsize=4096;
-        char * buf = (char *)malloc(bufsize + 1);
-        ssize_t ret = smbc_read(fd, buf, (ssize_t) bufsize);
+        char * buf;
+        int ret;
+        buf = (char *)malloc(sizeof(char)*(bufsize + 1));
+        ret = smbc_read(fd, buf, bufsize);
         if (ret>0) {
-                char * copy = (char *)malloc(ret+1);
-                strncpy(copy,buf,ret);
-                free(buf);
-                return copy;
+                buf[ret]='\0';
+                return buf;
         }
         return NULL;
 }
 struct stat * w_create_struct_stat() {
-        struct stat * st = (struct stat *) malloc(sizeof(struct stat));
-        return st;
+        return (struct stat *) malloc(sizeof(struct stat));
 }
 void w_free_struct_stat(struct stat *st) {
         free(st);
-}
-void w_debug(SMBCCTX *ctx, char *str) {
-        if (smbc_getDebug(ctx)>0) fprintf(stderr, "%s\n", str);
 }
 
 %}

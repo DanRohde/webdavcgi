@@ -28,8 +28,8 @@ $r = $c->mkdir($BASEURI.'test2');
 print "mkdir(${BASEURI}test2): $r\n";
 
 ### write content + stat:
-$f = $c->open($BASEURI.'test2/super.txt');
-print "open(${BASEURI}test2/super.txt): $f\n";
+$f = $c->open(">${BASEURI}test2/super.txt");
+print "open(>${BASEURI}test2/super.txt): $f\n";
 $r = $c->write($f, "super duper\nnext line\n");
 print "write(${BASEURI}test2/super.txt): $r\n";
 @a = $c->fstat($f);
@@ -55,8 +55,10 @@ print "close($f): $r\n";
 
 ### stat:
 @a = $c->stat($BASEURI.'test2/super.txt');
-print "stat($BASEURI.'test2/super.txt'): ".join(', ',@a)."\n";
+print "stat(${BASEURI}test2/super.txt'): ".join(', ',@a)."\n";
+print "mtime($a[9])=".localtime($a[9]),"\n";
 
+### rename:
 $r = $c->rename($BASEURI.'test2/super.txt', $BASEURI.'test2/super-renamed.txt');
 print "rename(${BASEURI}test2/super.txt, ${BASEURI}test2/super-renamed.txt): $r\n";
 
@@ -64,9 +66,28 @@ print "rename(${BASEURI}test2/super.txt, ${BASEURI}test2/super-renamed.txt): $r\
 $r = $c->unlink($BASEURI.'test2/super-renamed.txt');
 print "unlink(${BASEURI}test2/super-renamed.txt: $r\n";
 
-### remove empty dir:
+### transfer binary:
+my $fh;
+my $buffer;
+my $size = (stat('test.png'))[7];
+print "try to write test.png with size=$size\n";
+open($fh,"<","test.png") || warn("Cannot open test.png");
+sysread($fh,$buffer,$size);
+$d = $c->open(">${BASEURI}test2/test.png") || warn("Cannot open >${BASEURI}test2/test.png");
+$r=$c->write($d, $buffer);
+print "write: r=$r\n";
+print "stat(test.png): ".join(",",$c->fstat($d))."\n";
+$c->close($d);
+close($fh);
+
+### remove dir:
 $r = $c->rmdir($BASEURI.'test2');
 print "rmdir(${BASEURI}test2: $r\n";
+$r = $c->unlink($BASEURI.'test2/test.png');
+print "unlink(${BASEURI}test2/test.png\n";
+$r = $c->rmdir($BASEURI.'test2');
+print "rmdir(${BASEURI}test2: $r\n";
+
 
 ## remove recurse and readdir:
 $c->mkdir("${BASEURI}test2r") || warn("cannot make dir test2r");
