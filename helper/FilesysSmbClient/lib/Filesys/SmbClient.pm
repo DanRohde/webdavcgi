@@ -198,7 +198,7 @@ sub write {
 }
 sub seek {
 	my ($self, $fh, $pos) = @_;
-	return $self->_hr(smbclient::w_offt2int(smbclient::smbc_lseek($fh, smbclient::w_int2offt($pos), &POSIX::SEEK_SET)));
+	return $self->_hr(smbclient::smbc_lseek($fh, $pos, &POSIX::SEEK_SET));
 }
 sub shutdown {
 	my ($self,$flag) = @_;

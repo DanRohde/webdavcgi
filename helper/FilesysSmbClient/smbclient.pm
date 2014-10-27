@@ -83,8 +83,6 @@ package smbclient;
 *smbc_rmdir = *smbclientc::smbc_rmdir;
 *smbc_stat = *smbclientc::smbc_stat;
 *smbc_fstat = *smbclientc::smbc_fstat;
-*w_int2offt = *smbclientc::w_int2offt;
-*w_offt2int = *smbclientc::w_offt2int;
 *w_stat2str = *smbclientc::w_stat2str;
 *w_ssize2str = *smbclientc::w_ssize2str;
 *w_debug = *smbclientc::w_debug;

@@ -1483,14 +1483,13 @@ SWIG_Perl_SetModule(swig_module_info *module) {
 #define SWIGTYPE_p_char swig_types[1]
 #define SWIGTYPE_p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void swig_types[2]
 #define SWIGTYPE_p_int swig_types[3]
-#define SWIGTYPE_p_off_t swig_types[4]
-#define SWIGTYPE_p_smbc_dirent swig_types[5]
-#define SWIGTYPE_p_ssize_t swig_types[6]
-#define SWIGTYPE_p_stat swig_types[7]
-#define SWIGTYPE_p_void swig_types[8]
-#define SWIGTYPE_p_w_userdata swig_types[9]
-static swig_type_info *swig_types[11];
-static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
+#define SWIGTYPE_p_smbc_dirent swig_types[4]
+#define SWIGTYPE_p_ssize_t swig_types[5]
+#define SWIGTYPE_p_stat swig_types[6]
+#define SWIGTYPE_p_void swig_types[7]
+#define SWIGTYPE_p_w_userdata swig_types[8]
+static swig_type_info *swig_types[10];
+static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -1869,9 +1868,6 @@ SWIG_AsVal_int SWIG_PERL_DECL_ARGS_2(SV * obj, int *val)
 }
 
 
-
-off_t w_int2offt(int v) {  return (off_t) v; };
-int w_offt2int(off_t v) {  return (int) v; };
 
 char * w_stat2str(struct stat * buf) {
         if (buf == NULL) return NULL;
@@ -3169,8 +3165,8 @@ XS(_wrap_smbc_lseek) {
     int arg3 ;
     int val1 ;
     int ecode1 = 0 ;
-    void *argp2 ;
-    int res2 = 0 ;
+    int val2 ;
+    int ecode2 = 0 ;
     int val3 ;
     int ecode3 = 0 ;
     int argvi = 0;
@@ -3185,28 +3181,24 @@ XS(_wrap_smbc_lseek) {
       SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "smbc_lseek" "', argument " "1"" of type '" "int""'");
     } 
     arg1 = (int)(val1);
-    {
-      res2 = SWIG_ConvertPtr(ST(1), &argp2, SWIGTYPE_p_off_t,  0 );
-      if (!SWIG_IsOK(res2)) {
-        SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "smbc_lseek" "', argument " "2"" of type '" "off_t""'"); 
-      }  
-      if (!argp2) {
-        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "smbc_lseek" "', argument " "2"" of type '" "off_t""'");
-      } else {
-        arg2 = *((off_t *)(argp2));
-      }
-    }
+    ecode2 = SWIG_AsVal_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "smbc_lseek" "', argument " "2"" of type '" "off_t""'");
+    } 
+    arg2 = (off_t)(val2);
     ecode3 = SWIG_AsVal_int SWIG_PERL_CALL_ARGS_2(ST(2), &val3);
     if (!SWIG_IsOK(ecode3)) {
       SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "smbc_lseek" "', argument " "3"" of type '" "int""'");
     } 
     arg3 = (int)(val3);
-    result = smbc_lseek(arg1,arg2,arg3);
-    ST(argvi) = SWIG_NewPointerObj((off_t *)memcpy((off_t *)malloc(sizeof(off_t)),&result,sizeof(off_t)), SWIGTYPE_p_off_t, SWIG_POINTER_OWN | 0); argvi++ ;
+    result = (off_t)smbc_lseek(arg1,arg2,arg3);
+    ST(argvi) = SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(result)); argvi++ ;
+    
     
     
     XSRETURN(argvi);
   fail:
+    
     
     
     SWIG_croak_null();
@@ -3536,66 +3528,6 @@ XS(_wrap_smbc_fstat) {
   fail:
     
     
-    SWIG_croak_null();
-  }
-}
-
-
-XS(_wrap_w_int2offt) {
-  {
-    int arg1 ;
-    int val1 ;
-    int ecode1 = 0 ;
-    int argvi = 0;
-    off_t result;
-    dXSARGS;
-    
-    if ((items < 1) || (items > 1)) {
-      SWIG_croak("Usage: w_int2offt(v);");
-    }
-    ecode1 = SWIG_AsVal_int SWIG_PERL_CALL_ARGS_2(ST(0), &val1);
-    if (!SWIG_IsOK(ecode1)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "w_int2offt" "', argument " "1"" of type '" "int""'");
-    } 
-    arg1 = (int)(val1);
-    result = w_int2offt(arg1);
-    ST(argvi) = SWIG_NewPointerObj((off_t *)memcpy((off_t *)malloc(sizeof(off_t)),&result,sizeof(off_t)), SWIGTYPE_p_off_t, SWIG_POINTER_OWN | 0); argvi++ ;
-    
-    XSRETURN(argvi);
-  fail:
-    
-    SWIG_croak_null();
-  }
-}
-
-
-XS(_wrap_w_offt2int) {
-  {
-    off_t arg1 ;
-    void *argp1 ;
-    int res1 = 0 ;
-    int argvi = 0;
-    int result;
-    dXSARGS;
-    
-    if ((items < 1) || (items > 1)) {
-      SWIG_croak("Usage: w_offt2int(v);");
-    }
-    {
-      res1 = SWIG_ConvertPtr(ST(0), &argp1, SWIGTYPE_p_off_t,  0 );
-      if (!SWIG_IsOK(res1)) {
-        SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "w_offt2int" "', argument " "1"" of type '" "off_t""'"); 
-      }  
-      if (!argp1) {
-        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "w_offt2int" "', argument " "1"" of type '" "off_t""'");
-      } else {
-        arg1 = *((off_t *)(argp1));
-      }
-    }
-    result = (int)w_offt2int(arg1);
-    ST(argvi) = SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(result)); argvi++ ;
-    XSRETURN(argvi);
-  fail:
     SWIG_croak_null();
   }
 }
@@ -4300,8 +4232,7 @@ XS(_wrap_w_free_struct_stat) {
 static swig_type_info _swigt__p_SMBCCTX = {"_p_SMBCCTX", "SMBCCTX *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void = {"_p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void", "void (*)(SMBCCTX *,char const *,char const *,char *,int,char *,int,char *,int)|smbc_get_auth_data_with_context_fn", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_int = {"_p_int", "smbc_bool *|int *|mode_t *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_off_t = {"_p_off_t", "off_t *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_int = {"_p_int", "off_t *|smbc_bool *|int *|mode_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_smbc_dirent = {"_p_smbc_dirent", "struct smbc_dirent *|smbc_dirent *", 0, 0, (void*)"smbclient::smbc_dirent", 0};
 static swig_type_info _swigt__p_ssize_t = {"_p_ssize_t", "ssize_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_stat = {"_p_stat", "struct stat *", 0, 0, (void*)0, 0};
@@ -4313,7 +4244,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_char,
   &_swigt__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void,
   &_swigt__p_int,
-  &_swigt__p_off_t,
   &_swigt__p_smbc_dirent,
   &_swigt__p_ssize_t,
   &_swigt__p_stat,
@@ -4325,7 +4255,6 @@ static swig_cast_info _swigc__p_SMBCCTX[] = {  {&_swigt__p_SMBCCTX, 0, 0, 0},{0,
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void[] = {  {&_swigt__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_off_t[] = {  {&_swigt__p_off_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_smbc_dirent[] = {  {&_swigt__p_smbc_dirent, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_ssize_t[] = {  {&_swigt__p_ssize_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_stat[] = {  {&_swigt__p_stat, 0, 0, 0},{0, 0, 0, 0}};
@@ -4337,7 +4266,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_char,
   _swigc__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void,
   _swigc__p_int,
-  _swigc__p_off_t,
   _swigc__p_smbc_dirent,
   _swigc__p_ssize_t,
   _swigc__p_stat,
@@ -4406,8 +4334,6 @@ static swig_command_info swig_commands[] = {
 {"smbclientc::smbc_rmdir", _wrap_smbc_rmdir},
 {"smbclientc::smbc_stat", _wrap_smbc_stat},
 {"smbclientc::smbc_fstat", _wrap_smbc_fstat},
-{"smbclientc::w_int2offt", _wrap_w_int2offt},
-{"smbclientc::w_offt2int", _wrap_w_offt2int},
 {"smbclientc::w_stat2str", _wrap_w_stat2str},
 {"smbclientc::w_ssize2str", _wrap_w_ssize2str},
 {"smbclientc::w_userdata_username_set", _wrap_w_userdata_username_set},

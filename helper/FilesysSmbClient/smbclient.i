@@ -24,6 +24,7 @@
 
 /* prevent type casts */
 typedef int mode_t;
+typedef int off_t;
 
 /* from libsmbclient.h without unused or deprecated API: */
 /* #include "libsmbclieht.h" is too much */
@@ -109,9 +110,6 @@ int smbc_fstat(int fd, struct stat *st);
 /* additional wrapper interface definitions */
 
 %inline %{
-
-off_t w_int2offt(int v) {  return (off_t) v; };
-int w_offt2int(off_t v) {  return (int) v; };
 
 char * w_stat2str(struct stat * buf) {
         if (buf == NULL) return NULL;
