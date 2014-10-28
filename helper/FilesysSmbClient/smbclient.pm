@@ -84,7 +84,6 @@ package smbclient;
 *smbc_stat = *smbclientc::smbc_stat;
 *smbc_fstat = *smbclientc::smbc_fstat;
 *w_stat2str = *smbclientc::w_stat2str;
-*w_ssize2str = *smbclientc::w_ssize2str;
 *w_debug = *smbclientc::w_debug;
 *w_get_auth_data_with_context = *smbclientc::w_get_auth_data_with_context;
 *w_initAuth = *smbclientc::w_initAuth;
@@ -169,6 +168,47 @@ sub DESTROY {
     delete $ITERATORS{$self};
     if (exists $OWNER{$self}) {
         smbclientc::delete_w_userdata($self);
+        delete $OWNER{$self};
+    }
+}
+
+sub DISOWN {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    delete $OWNER{$ptr};
+}
+
+sub ACQUIRE {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    $OWNER{$ptr} = 1;
+}
+
+
+############# Class : smbclient::w_smbc_read_result ##############
+
+package smbclient::w_smbc_read_result;
+use vars qw(@ISA %OWNER %ITERATORS %BLESSEDMEMBERS);
+@ISA = qw( smbclient );
+%OWNER = ();
+%ITERATORS = ();
+*swig_ret_get = *smbclientc::w_smbc_read_result_ret_get;
+*swig_ret_set = *smbclientc::w_smbc_read_result_ret_set;
+*swig_buf_get = *smbclientc::w_smbc_read_result_buf_get;
+*swig_buf_set = *smbclientc::w_smbc_read_result_buf_set;
+sub new {
+    my $pkg = shift;
+    my $self = smbclientc::new_w_smbc_read_result(@_);
+    bless $self, $pkg if defined($self);
+}
+
+sub DESTROY {
+    return unless $_[0]->isa('HASH');
+    my $self = tied(%{$_[0]});
+    return unless defined $self;
+    delete $ITERATORS{$self};
+    if (exists $OWNER{$self}) {
+        smbclientc::delete_w_smbc_read_result($self);
         delete $OWNER{$self};
     }
 }

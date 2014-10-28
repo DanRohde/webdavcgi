@@ -18,6 +18,7 @@
 #########################################################################
 */
 %module smbclient
+%include typemaps.i
 %{
         #include "libsmbclient.h"
 %}
@@ -25,6 +26,8 @@
 /* prevent type casts */
 typedef int mode_t;
 typedef int off_t;
+typedef unsigned int ssize_t;
+typedef int size_t;
 
 /* from libsmbclient.h without unused or deprecated API: */
 /* #include "libsmbclieht.h" is too much */
@@ -94,6 +97,7 @@ SMBCCTX * smbc_set_context(SMBCCTX * new_context);
 
 int smbc_open(const char *furl, int flags, mode_t mode);
 off_t smbc_lseek(int fd, off_t offset, int whence);
+
 int smbc_close(int fd);
 int smbc_unlink(const char *furl);
 int smbc_rename(const char *ourl, const char *nurl);
@@ -107,19 +111,28 @@ int smbc_rmdir(const char *durl);
 int smbc_stat(const char *url, struct stat *st);
 int smbc_fstat(int fd, struct stat *st);
 
-/* additional wrapper interface definitions */
 
+
+/* additional wrapper interface definitions */
+%typemap(out) struct w_smbc_read_result * {
+        if ($1->ret > 0) 
+                $result = SWIG_FromCharPtrAndSize((const char *)$1->buf,$1->ret); 
+        else 
+                $result = &PL_sv_undef; 
+        free($1->buf);
+        free($1);
+        argvi++;
+}
+%newobject w_stat2str;
+
+
+/* implemtations for wrapper interface */
 %inline %{
 
 char * w_stat2str(struct stat * buf) {
         if (buf == NULL) return NULL;
         char *s = (char *) malloc(1025);
         snprintf(s, 1024, "%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li", buf->st_dev, buf->st_ino, (long int) buf->st_mode, buf->st_nlink, (long int)buf->st_uid, (long int) buf->st_gid,buf->st_rdev,buf->st_size, buf->st_blksize,buf->st_blocks, buf->st_atime,buf->st_mtime,buf->st_ctime);
-        return s;
-}
-char * w_ssize2str(ssize_t val) {
-        char *s = (char *) malloc(1025);
-        snprintf(s, 1024, "%lu", val);
         return s;
 }
 
@@ -142,7 +155,7 @@ smbc_get_auth_data_with_context_fn w_get_auth_data_with_context(SMBCCTX *ctx, co
 }
 int w_initAuth(SMBCCTX *ctx, char *un, char *pw, char *wg) {
         w_debug(ctx,"w_initAuth ..."); 
-        struct w_userdata *d = (struct w_userdata *)malloc(sizeof(struct w_userdata)+1);
+        struct w_userdata *d = (struct w_userdata *)malloc(sizeof(struct w_userdata));
         d->username = (char * ) malloc(W_USERDATA_BUFLEN);
         d->password = (char * ) malloc(W_USERDATA_BUFLEN);
         d->workgroup = (char *) malloc(W_USERDATA_BUFLEN);
@@ -157,19 +170,20 @@ int w_initAuth(SMBCCTX *ctx, char *un, char *pw, char *wg) {
 char * w_smbc_dirent_name_get(struct smbc_dirent * e) {
         return e->name;
 }
-int w_smbc_write(int fd, char *buf, int bufsize) {
-        return (int)smbc_write(fd, buf, bufsize);
+int w_smbc_write(int fd, char* buf, size_t bufsize) {
+        return smbc_write(fd, buf, bufsize);
 }
-char * w_smbc_read(int fd, int bufsize) {
-        char * buf;
+struct w_smbc_read_result {
         int ret;
-        buf = (char *)malloc(sizeof(char)*(bufsize + 1));
-        ret = smbc_read(fd, buf, bufsize);
-        if (ret>0) {
-                buf[ret]='\0';
-                return buf;
-        }
-        return NULL;
+        char *buf;
+};
+struct w_smbc_read_result * w_smbc_read(int fd, size_t bufsize) {
+        int ret;
+        struct w_smbc_read_result * r = (struct w_smbc_read_result *)malloc(sizeof(struct w_smbc_read_result));
+        r->buf = (char *) malloc(sizeof(char)*(bufsize+1));
+        r->ret = smbc_read(fd, r->buf, bufsize);
+        r->buf[r->ret]='\0';
+        return r;
 }
 struct stat * w_create_struct_stat() {
         return (struct stat *) malloc(sizeof(struct stat));
@@ -177,5 +191,6 @@ struct stat * w_create_struct_stat() {
 void w_free_struct_stat(struct stat *st) {
         free(st);
 }
-
 %}
+
+

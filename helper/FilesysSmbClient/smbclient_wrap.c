@@ -1484,12 +1484,13 @@ SWIG_Perl_SetModule(swig_module_info *module) {
 #define SWIGTYPE_p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void swig_types[2]
 #define SWIGTYPE_p_int swig_types[3]
 #define SWIGTYPE_p_smbc_dirent swig_types[4]
-#define SWIGTYPE_p_ssize_t swig_types[5]
-#define SWIGTYPE_p_stat swig_types[6]
+#define SWIGTYPE_p_stat swig_types[5]
+#define SWIGTYPE_p_unsigned_int swig_types[6]
 #define SWIGTYPE_p_void swig_types[7]
-#define SWIGTYPE_p_w_userdata swig_types[8]
-static swig_type_info *swig_types[10];
-static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
+#define SWIGTYPE_p_w_smbc_read_result swig_types[8]
+#define SWIGTYPE_p_w_userdata swig_types[9]
+static swig_type_info *swig_types[11];
+static swig_module_info swig_module = {swig_types, 10, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -1875,11 +1876,6 @@ char * w_stat2str(struct stat * buf) {
         snprintf(s, 1024, "%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li,%li", buf->st_dev, buf->st_ino, (long int) buf->st_mode, buf->st_nlink, (long int)buf->st_uid, (long int) buf->st_gid,buf->st_rdev,buf->st_size, buf->st_blksize,buf->st_blocks, buf->st_atime,buf->st_mtime,buf->st_ctime);
         return s;
 }
-char * w_ssize2str(ssize_t val) {
-        char *s = (char *) malloc(1025);
-        snprintf(s, 1024, "%lu", val);
-        return s;
-}
 
 #define W_USERDATA_BUFLEN 256
 struct w_userdata {
@@ -1900,7 +1896,7 @@ smbc_get_auth_data_with_context_fn w_get_auth_data_with_context(SMBCCTX *ctx, co
 }
 int w_initAuth(SMBCCTX *ctx, char *un, char *pw, char *wg) {
         w_debug(ctx,"w_initAuth ..."); 
-        struct w_userdata *d = (struct w_userdata *)malloc(sizeof(struct w_userdata)+1);
+        struct w_userdata *d = (struct w_userdata *)malloc(sizeof(struct w_userdata));
         d->username = (char * ) malloc(W_USERDATA_BUFLEN);
         d->password = (char * ) malloc(W_USERDATA_BUFLEN);
         d->workgroup = (char *) malloc(W_USERDATA_BUFLEN);
@@ -1915,19 +1911,20 @@ int w_initAuth(SMBCCTX *ctx, char *un, char *pw, char *wg) {
 char * w_smbc_dirent_name_get(struct smbc_dirent * e) {
         return e->name;
 }
-int w_smbc_write(int fd, char *buf, int bufsize) {
-        return (int)smbc_write(fd, buf, bufsize);
+int w_smbc_write(int fd, char* buf, size_t bufsize) {
+        return smbc_write(fd, buf, bufsize);
 }
-char * w_smbc_read(int fd, int bufsize) {
-        char * buf;
+struct w_smbc_read_result {
         int ret;
-        buf = (char *)malloc(sizeof(char)*(bufsize + 1));
-        ret = smbc_read(fd, buf, bufsize);
-        if (ret>0) {
-                buf[ret]='\0';
-                return buf;
-        }
-        return NULL;
+        char *buf;
+};
+struct w_smbc_read_result * w_smbc_read(int fd, size_t bufsize) {
+        int ret;
+        struct w_smbc_read_result * r = (struct w_smbc_read_result *)malloc(sizeof(struct w_smbc_read_result));
+        r->buf = (char *) malloc(sizeof(char)*(bufsize+1));
+        r->ret = smbc_read(fd, r->buf, bufsize);
+        r->buf[r->ret]='\0';
+        return r;
 }
 struct stat * w_create_struct_stat() {
         return (struct stat *) malloc(sizeof(struct stat));
@@ -1936,6 +1933,15 @@ void w_free_struct_stat(struct stat *st) {
         free(st);
 }
 
+
+SWIGINTERNINLINE int
+SWIG_AsVal_size_t SWIG_PERL_DECL_ARGS_2(SV * obj, size_t *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long SWIG_PERL_CALL_ARGS_2(obj, val ? &v : 0);
+  if (SWIG_IsOK(res) && val) *val = (size_t)(v);
+  return res;
+}
 
 #ifdef __cplusplus
 extern "C" {
@@ -3553,41 +3559,10 @@ XS(_wrap_w_stat2str) {
     result = (char *)w_stat2str(arg1);
     ST(argvi) = SWIG_FromCharPtr((const char *)result); argvi++ ;
     
+    free((char*)result);
     XSRETURN(argvi);
   fail:
     
-    SWIG_croak_null();
-  }
-}
-
-
-XS(_wrap_w_ssize2str) {
-  {
-    ssize_t arg1 ;
-    void *argp1 ;
-    int res1 = 0 ;
-    int argvi = 0;
-    char *result = 0 ;
-    dXSARGS;
-    
-    if ((items < 1) || (items > 1)) {
-      SWIG_croak("Usage: w_ssize2str(val);");
-    }
-    {
-      res1 = SWIG_ConvertPtr(ST(0), &argp1, SWIGTYPE_p_ssize_t,  0 );
-      if (!SWIG_IsOK(res1)) {
-        SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "w_ssize2str" "', argument " "1"" of type '" "ssize_t""'"); 
-      }  
-      if (!argp1) {
-        SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "w_ssize2str" "', argument " "1"" of type '" "ssize_t""'");
-      } else {
-        arg1 = *((ssize_t *)(argp1));
-      }
-    }
-    result = (char *)w_ssize2str(arg1);
-    ST(argvi) = SWIG_FromCharPtr((const char *)result); argvi++ ;
-    XSRETURN(argvi);
-  fail:
     SWIG_croak_null();
   }
 }
@@ -4098,13 +4073,13 @@ XS(_wrap_w_smbc_write) {
   {
     int arg1 ;
     char *arg2 = (char *) 0 ;
-    int arg3 ;
+    size_t arg3 ;
     int val1 ;
     int ecode1 = 0 ;
     int res2 ;
     char *buf2 = 0 ;
     int alloc2 = 0 ;
-    int val3 ;
+    size_t val3 ;
     int ecode3 = 0 ;
     int argvi = 0;
     int result;
@@ -4123,11 +4098,11 @@ XS(_wrap_w_smbc_write) {
       SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "w_smbc_write" "', argument " "2"" of type '" "char *""'");
     }
     arg2 = (char *)(buf2);
-    ecode3 = SWIG_AsVal_int SWIG_PERL_CALL_ARGS_2(ST(2), &val3);
+    ecode3 = SWIG_AsVal_size_t SWIG_PERL_CALL_ARGS_2(ST(2), &val3);
     if (!SWIG_IsOK(ecode3)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "w_smbc_write" "', argument " "3"" of type '" "int""'");
+      SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "w_smbc_write" "', argument " "3"" of type '" "size_t""'");
     } 
-    arg3 = (int)(val3);
+    arg3 = (size_t)(val3);
     result = (int)w_smbc_write(arg1,arg2,arg3);
     ST(argvi) = SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(result)); argvi++ ;
     
@@ -4143,16 +4118,206 @@ XS(_wrap_w_smbc_write) {
 }
 
 
-XS(_wrap_w_smbc_read) {
+XS(_wrap_w_smbc_read_result_ret_set) {
   {
-    int arg1 ;
+    struct w_smbc_read_result *arg1 = (struct w_smbc_read_result *) 0 ;
     int arg2 ;
-    int val1 ;
-    int ecode1 = 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
     int val2 ;
     int ecode2 = 0 ;
     int argvi = 0;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: w_smbc_read_result_ret_set(self,ret);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_w_smbc_read_result, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "w_smbc_read_result_ret_set" "', argument " "1"" of type '" "struct w_smbc_read_result *""'"); 
+    }
+    arg1 = (struct w_smbc_read_result *)(argp1);
+    ecode2 = SWIG_AsVal_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    if (!SWIG_IsOK(ecode2)) {
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "w_smbc_read_result_ret_set" "', argument " "2"" of type '" "int""'");
+    } 
+    arg2 = (int)(val2);
+    if (arg1) (arg1)->ret = arg2;
+    ST(argvi) = sv_newmortal();
+    
+    
+    XSRETURN(argvi);
+  fail:
+    
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_w_smbc_read_result_ret_get) {
+  {
+    struct w_smbc_read_result *arg1 = (struct w_smbc_read_result *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    int result;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: w_smbc_read_result_ret_get(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_w_smbc_read_result, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "w_smbc_read_result_ret_get" "', argument " "1"" of type '" "struct w_smbc_read_result *""'"); 
+    }
+    arg1 = (struct w_smbc_read_result *)(argp1);
+    result = (int) ((arg1)->ret);
+    ST(argvi) = SWIG_From_int  SWIG_PERL_CALL_ARGS_1((int)(result)); argvi++ ;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_w_smbc_read_result_buf_set) {
+  {
+    struct w_smbc_read_result *arg1 = (struct w_smbc_read_result *) 0 ;
+    char *arg2 = (char *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int res2 ;
+    char *buf2 = 0 ;
+    int alloc2 = 0 ;
+    int argvi = 0;
+    dXSARGS;
+    
+    if ((items < 2) || (items > 2)) {
+      SWIG_croak("Usage: w_smbc_read_result_buf_set(self,buf);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_w_smbc_read_result, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "w_smbc_read_result_buf_set" "', argument " "1"" of type '" "struct w_smbc_read_result *""'"); 
+    }
+    arg1 = (struct w_smbc_read_result *)(argp1);
+    res2 = SWIG_AsCharPtrAndSize(ST(1), &buf2, NULL, &alloc2);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "w_smbc_read_result_buf_set" "', argument " "2"" of type '" "char *""'");
+    }
+    arg2 = (char *)(buf2);
+    if (arg1->buf) free((char*)arg1->buf);
+    if (arg2) {
+      size_t size = strlen((const char *)(arg2)) + 1;
+      arg1->buf = (char *)(char *)memcpy((char *)malloc((size)*sizeof(char)), (const char *)(arg2), sizeof(char)*(size));
+    } else {
+      arg1->buf = 0;
+    }
+    ST(argvi) = sv_newmortal();
+    
+    if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+    XSRETURN(argvi);
+  fail:
+    
+    if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_w_smbc_read_result_buf_get) {
+  {
+    struct w_smbc_read_result *arg1 = (struct w_smbc_read_result *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
     char *result = 0 ;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: w_smbc_read_result_buf_get(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_w_smbc_read_result, 0 |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "w_smbc_read_result_buf_get" "', argument " "1"" of type '" "struct w_smbc_read_result *""'"); 
+    }
+    arg1 = (struct w_smbc_read_result *)(argp1);
+    result = (char *) ((arg1)->buf);
+    ST(argvi) = SWIG_FromCharPtr((const char *)result); argvi++ ;
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_new_w_smbc_read_result) {
+  {
+    int argvi = 0;
+    struct w_smbc_read_result *result = 0 ;
+    dXSARGS;
+    
+    if ((items < 0) || (items > 0)) {
+      SWIG_croak("Usage: new_w_smbc_read_result();");
+    }
+    result = (struct w_smbc_read_result *)calloc(1, sizeof(struct w_smbc_read_result));
+    {
+      if (result->ret > 0) 
+      ST(argvi) = SWIG_FromCharPtrAndSize((const char *)result->buf,result->ret); 
+      else 
+      ST(argvi) = &PL_sv_undef; 
+      free(result->buf);
+      free(result);
+      argvi++;
+    }
+    XSRETURN(argvi);
+  fail:
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_delete_w_smbc_read_result) {
+  {
+    struct w_smbc_read_result *arg1 = (struct w_smbc_read_result *) 0 ;
+    void *argp1 = 0 ;
+    int res1 = 0 ;
+    int argvi = 0;
+    dXSARGS;
+    
+    if ((items < 1) || (items > 1)) {
+      SWIG_croak("Usage: delete_w_smbc_read_result(self);");
+    }
+    res1 = SWIG_ConvertPtr(ST(0), &argp1,SWIGTYPE_p_w_smbc_read_result, SWIG_POINTER_DISOWN |  0 );
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_w_smbc_read_result" "', argument " "1"" of type '" "struct w_smbc_read_result *""'"); 
+    }
+    arg1 = (struct w_smbc_read_result *)(argp1);
+    free((char *) arg1);
+    ST(argvi) = sv_newmortal();
+    
+    XSRETURN(argvi);
+  fail:
+    
+    SWIG_croak_null();
+  }
+}
+
+
+XS(_wrap_w_smbc_read) {
+  {
+    int arg1 ;
+    size_t arg2 ;
+    int val1 ;
+    int ecode1 = 0 ;
+    size_t val2 ;
+    int ecode2 = 0 ;
+    int argvi = 0;
+    struct w_smbc_read_result *result = 0 ;
     dXSARGS;
     
     if ((items < 2) || (items > 2)) {
@@ -4163,13 +4328,21 @@ XS(_wrap_w_smbc_read) {
       SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "w_smbc_read" "', argument " "1"" of type '" "int""'");
     } 
     arg1 = (int)(val1);
-    ecode2 = SWIG_AsVal_int SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
+    ecode2 = SWIG_AsVal_size_t SWIG_PERL_CALL_ARGS_2(ST(1), &val2);
     if (!SWIG_IsOK(ecode2)) {
-      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "w_smbc_read" "', argument " "2"" of type '" "int""'");
+      SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "w_smbc_read" "', argument " "2"" of type '" "size_t""'");
     } 
-    arg2 = (int)(val2);
-    result = (char *)w_smbc_read(arg1,arg2);
-    ST(argvi) = SWIG_FromCharPtr((const char *)result); argvi++ ;
+    arg2 = (size_t)(val2);
+    result = (struct w_smbc_read_result *)w_smbc_read(arg1,arg2);
+    {
+      if (result->ret > 0) 
+      ST(argvi) = SWIG_FromCharPtrAndSize((const char *)result->buf,result->ret); 
+      else 
+      ST(argvi) = &PL_sv_undef; 
+      free(result->buf);
+      free(result);
+      argvi++;
+    }
     
     
     XSRETURN(argvi);
@@ -4232,11 +4405,12 @@ XS(_wrap_w_free_struct_stat) {
 static swig_type_info _swigt__p_SMBCCTX = {"_p_SMBCCTX", "SMBCCTX *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void = {"_p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void", "void (*)(SMBCCTX *,char const *,char const *,char *,int,char *,int,char *,int)|smbc_get_auth_data_with_context_fn", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_int = {"_p_int", "off_t *|smbc_bool *|int *|mode_t *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_int = {"_p_int", "off_t *|smbc_bool *|int *|size_t *|mode_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_smbc_dirent = {"_p_smbc_dirent", "struct smbc_dirent *|smbc_dirent *", 0, 0, (void*)"smbclient::smbc_dirent", 0};
-static swig_type_info _swigt__p_ssize_t = {"_p_ssize_t", "ssize_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_stat = {"_p_stat", "struct stat *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_unsigned_int = {"_p_unsigned_int", "ssize_t *|unsigned int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_void = {"_p_void", "void *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_w_smbc_read_result = {"_p_w_smbc_read_result", "struct w_smbc_read_result *|w_smbc_read_result *", 0, 0, (void*)"smbclient::w_smbc_read_result", 0};
 static swig_type_info _swigt__p_w_userdata = {"_p_w_userdata", "struct w_userdata *|w_userdata *", 0, 0, (void*)"smbclient::w_userdata", 0};
 
 static swig_type_info *swig_type_initial[] = {
@@ -4245,9 +4419,10 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void,
   &_swigt__p_int,
   &_swigt__p_smbc_dirent,
-  &_swigt__p_ssize_t,
   &_swigt__p_stat,
+  &_swigt__p_unsigned_int,
   &_swigt__p_void,
+  &_swigt__p_w_smbc_read_result,
   &_swigt__p_w_userdata,
 };
 
@@ -4256,9 +4431,10 @@ static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0,
 static swig_cast_info _swigc__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void[] = {  {&_swigt__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_smbc_dirent[] = {  {&_swigt__p_smbc_dirent, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_ssize_t[] = {  {&_swigt__p_ssize_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_stat[] = {  {&_swigt__p_stat, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_unsigned_int[] = {  {&_swigt__p_unsigned_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_void[] = {  {&_swigt__p_void, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_w_smbc_read_result[] = {  {&_swigt__p_w_smbc_read_result, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_w_userdata[] = {  {&_swigt__p_w_userdata, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
@@ -4267,9 +4443,10 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_SMBCCTX_p_q_const__char_p_q_const__char_p_char_int_p_char_int_p_char_int__void,
   _swigc__p_int,
   _swigc__p_smbc_dirent,
-  _swigc__p_ssize_t,
   _swigc__p_stat,
+  _swigc__p_unsigned_int,
   _swigc__p_void,
+  _swigc__p_w_smbc_read_result,
   _swigc__p_w_userdata,
 };
 
@@ -4335,7 +4512,6 @@ static swig_command_info swig_commands[] = {
 {"smbclientc::smbc_stat", _wrap_smbc_stat},
 {"smbclientc::smbc_fstat", _wrap_smbc_fstat},
 {"smbclientc::w_stat2str", _wrap_w_stat2str},
-{"smbclientc::w_ssize2str", _wrap_w_ssize2str},
 {"smbclientc::w_userdata_username_set", _wrap_w_userdata_username_set},
 {"smbclientc::w_userdata_username_get", _wrap_w_userdata_username_get},
 {"smbclientc::w_userdata_password_set", _wrap_w_userdata_password_set},
@@ -4349,6 +4525,12 @@ static swig_command_info swig_commands[] = {
 {"smbclientc::w_initAuth", _wrap_w_initAuth},
 {"smbclientc::w_smbc_dirent_name_get", _wrap_w_smbc_dirent_name_get},
 {"smbclientc::w_smbc_write", _wrap_w_smbc_write},
+{"smbclientc::w_smbc_read_result_ret_set", _wrap_w_smbc_read_result_ret_set},
+{"smbclientc::w_smbc_read_result_ret_get", _wrap_w_smbc_read_result_ret_get},
+{"smbclientc::w_smbc_read_result_buf_set", _wrap_w_smbc_read_result_buf_set},
+{"smbclientc::w_smbc_read_result_buf_get", _wrap_w_smbc_read_result_buf_get},
+{"smbclientc::new_w_smbc_read_result", _wrap_new_w_smbc_read_result},
+{"smbclientc::delete_w_smbc_read_result", _wrap_delete_w_smbc_read_result},
 {"smbclientc::w_smbc_read", _wrap_w_smbc_read},
 {"smbclientc::w_create_struct_stat", _wrap_w_create_struct_stat},
 {"smbclientc::w_free_struct_stat", _wrap_w_free_struct_stat},
@@ -4721,6 +4903,7 @@ XS(SWIG_init) {
     SvREADONLY_on(sv);
   } while(0) /*@SWIG@*/;
   SWIG_TypeClientData(SWIGTYPE_p_w_userdata, (void*) "smbclient::w_userdata");
+  SWIG_TypeClientData(SWIGTYPE_p_w_smbc_read_result, (void*) "smbclient::w_smbc_read_result");
   ST(0) = &PL_sv_yes;
   XSRETURN(1);
 }

@@ -80,6 +80,13 @@ print "stat(test.png): ".join(",",$c->fstat($d))."\n";
 $c->close($d);
 close($fh);
 
+print "try to read test.png with size=$size\n";
+$f = $c->open("<${BASEURI}test2/test.png") || warn("Cannot open <${BASEURI}test2/test.pn");
+$buffer = $c->read($f, $size);
+$r=$c->close($f);
+print "hexdump(buffer)".join("",map {sprintf('%02x',$_)} unpack("W[$size]",$buffer))."\n";
+
+
 ### remove dir:
 $r = $c->rmdir($BASEURI.'test2');
 print "rmdir(${BASEURI}test2: $r\n";
@@ -95,12 +102,12 @@ $c->mkdir("${BASEURI}test2r/f1") || warn("cannot make dir test2r/f1");
 $f=$c->open("${BASEURI}test2r/f1/file1.txt") || warn("cannot open file test2r/f1/file1.txt");
 $c->write($f,"file");
 $c->close($f);
-$f=$c->opendir("${BASEURI}test2r/f1");
+$f=$c->opendir("${BASEURI}test2r/");
 @a = $c->readdir($f);
 print Dumper(\@a);
 $r=$c->rmdir_recurse("${BASEURI}test2r");
 print "rmdir_recurse(${BASEURI}test2r): $r\n";
 
 
-$c->shutdown(0);
+$c->shutdown(1);
 
