@@ -123,7 +123,7 @@ sub readdir_struct {
 }
 sub mkdir {
 	my ($self, $url, $mode) = @_;
-	return $self->_hr(smbclient::smbc_mkdir($url, $mode // 0666));
+	return $self->_hr(smbclient::smbc_mkdir($url, $mode // '0666'));
 }
 sub rmdir {
 	my ($self, $url) = @_;
@@ -200,7 +200,9 @@ sub write {
 }
 sub seek {
 	my ($self, $fh, $pos) = @_;
-	return $self->_hr(smbclient::smbc_lseek($fh, $pos, &POSIX::SEEK_SET));
+	my $r = smbclient::smbc_lseek($fh, $pos, &POSIX::SEEK_SET);
+	$!=$r unless $r>=0;
+	return $r;
 }
 sub shutdown {
 	my ($self,$flag) = @_;
@@ -209,6 +211,6 @@ sub shutdown {
 sub _hr {
 	my ($self, $ret) = @_;
 	$!= $ret unless $ret == 0;
-	return $ret == 0 ? 1 : $ret;
+	return $ret == 0 ? 1 : 0;
 }
 1;
