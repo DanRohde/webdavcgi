@@ -81,7 +81,9 @@ sub _init {
 
 sub opendir {
 	my ($self, $url) = @_;
-	return smbclient::smbc_opendir($url);
+	my $d = smbclient::smbc_opendir($url);
+	$!=$d unless $d > 0;
+	return $d > 0 ? $d : 0;
 }
 sub closedir {
 	my ($self, $dh) = @_;
