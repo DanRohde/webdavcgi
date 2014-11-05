@@ -53,7 +53,7 @@ sub getSmbConfig {
 	my $self = shift;
 	my $smb;
 	if ($$self{memcached}) {
-		my $cache =  new Cache::Memcached { 'servers' => [ $$self{memcached} ], 'debug' => $$self{debug} };
+		my $cache =  new Cache::Memcached { servers => [ $$self{memcached} ], debug => $$self{debug} };
 		my $key = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
 		$smb = $cache->get( $key );
 		if (!$smb) {
@@ -67,7 +67,7 @@ sub getSmbConfig {
 }
 sub debug {
 	my $self = shift;
-	print STDERR join(", ", @_)."\n" if $$self{debug};
+	print STDERR join(', ', @_)."\n" if $$self{debug};
 }
 sub _getSmbConfig {
 	my $self = shift;
@@ -100,10 +100,10 @@ sub _getSmbConfig {
 	#### Domain Controller finden
 	my $res = Net::DNS::Resolver->new();
 	$res->nameservers( @{$$self{nameservers}} );
-	my $query = $res->search( "_ldap._tcp.\L$domain\E", "SRV" );
+	my $query = $res->search( "_ldap._tcp.\L$domain\E", 'SRV' );
 	if ($query) {
 		foreach my $rr ( $query->answer ) {
-			next unless $rr->type eq "SRV";
+			next unless $rr->type eq 'SRV';
 			$dc = $rr->target;
 			last;
 		}
@@ -112,13 +112,13 @@ sub _getSmbConfig {
 	$self->debug("genConfig: domain controller: $dc");
 
 	#### homedirectory Eintrag auslesen
-	my $ldap = Net::LDAP->new("$dc") or confess $@;
-	my $sasl = Authen::SASL->new('mechanism' => 'GSSAPI', debug=>$$self{debug}) or confess $@;
-	my $result = $ldap->bind( 'sasl' => $sasl );
+	my $ldap = Net::LDAP->new($dc) or confess $@;
+	my $sasl = Authen::SASL->new(mechanism => 'GSSAPI', debug=>$$self{debug}) or confess $@;
+	my $result = $ldap->bind( sasl => $sasl );
 	confess $result->error if $result->code;
 	my $basename = 'dc=' . join( ',dc=', split(/\./, $domain) );
 
-	$result = $ldap->search( 'base' => $basename, filter => "(samaccountname=$user)" );
+	$result = $ldap->search( base => $basename, filter => "(samaccountname=$user)" );
 	foreach ( $result->entries ) {
 		$homeDirectory  = $_->get_value('homeDirectory');
 		$homeDrive      = uc( $_->get_value('homeDrive') );
@@ -139,7 +139,7 @@ sub _getSmbConfig {
 			$homeDir =~ s/\/$//g;
 		} 
 		$SMB{domains}->{$domain}->{fileserver}->{$homeServer}->{shares} = [$homeShare];
-		$SMB{domains}->{$domain}->{fileserver}->{$homeServer}->{sharealiases}->{$homeShare} = "$homeDrive Home/";
+		$SMB{domains}->{$domain}->{fileserver}->{$homeServer}->{sharealiases}->{$homeShare} = "$homeDrive \u$homeShare/";
 		$SMB{domains}->{$domain}->{fileserver}->{$homeServer}->{initdir}->{$homeShare} = $homeDir if $homeDir;
 	}
 	#### [DRIVE:] \\ SERVER \ SHARE \ DIRECTORY
@@ -161,9 +161,9 @@ sub _getSmbConfig {
 			$alias =~ s/.*\///;
 			push(@{$SMB{domains}->{$domain}->{fileserver}->{$server}->{shares}}, $share . $directory );
 			if ($alias) {
-				$SMB{domains}->{$domain}->{fileserver}->{$server}->{sharealiases}->{ $share . $directory } = "$drive $share: $alias/";
+				$SMB{domains}->{$domain}->{fileserver}->{$server}->{sharealiases}->{ $share . $directory } = "$drive \u$share: $alias/";
 			} else {
-				$SMB{domains}->{$domain}->{fileserver}->{$server}->{sharealiases}->{ $share . $directory } = "$drive $share/";
+				$SMB{domains}->{$domain}->{fileserver}->{$server}->{sharealiases}->{ $share . $directory } = "$drive \u$share/";
 			}
 		}
 	}
