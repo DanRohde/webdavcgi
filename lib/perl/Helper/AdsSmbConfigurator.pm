@@ -39,12 +39,12 @@ sub _init {
 	my $self   = shift;
 	my %config = @_;
 
-	$$self{memcached} = $config{memcached} || 0;    ###  127.0.0.1:11211
+	$$self{memcached} = $config{memcached};    ###  127.0.0.1:11211
 	$$self{memcachedexpire} = $config{memcachedexpire} || 600;
-	$$self{debug}     = $config{debug}     || 0;
+	$$self{debug}     = $config{debug};
 	$$self{separator} = $config{separator} || '~';
 	$$self{defaultdomain} = $config{defaultdomain} ? uc($config{defaultdomain}) : 'CMS.HU-BERLIN.DE';
-	$$self{nameservers} = $config{nameservers} || [ '127.0.0.1' ] ;
+	$$self{nameservers} = $config{nameservers};
 	$$self{allowflag} = $config{allowflag};
 	$$self{ldapattr} = $config{ldapattr} || 'info';
 }
@@ -99,7 +99,7 @@ sub _getSmbConfig {
 	#### DC Benutzerdaten auslesen
 	#### Domain Controller finden
 	my $res = Net::DNS::Resolver->new();
-	$res->nameservers( @{$$self{nameservers}} );
+	$res->nameservers( @{$$self{nameservers}} ) if $$self{nameservers};
 	my $query = $res->search( "_ldap._tcp.\L$domain\E", 'SRV' );
 	if ($query) {
 		foreach my $rr ( $query->answer ) {
