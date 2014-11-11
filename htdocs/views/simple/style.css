@@ -1158,10 +1158,10 @@ img {
 	height: auto;
 	color: black;
 }
-#popupmenu li:hover > ul {
+#popupmenu_unused li:hover > ul {
 	display: block;
 }
-#popupmenu li > ul:hover {
+#popupmenu_unused li > ul:hover {
 	display: block;
 }
 #popupmenu li.subpopupmenu {

@@ -1196,7 +1196,7 @@ function addMissingSlash(base) {
 }
 function handleFileDelete(row) {
 	row.fadeTo('slow',0.5);
-	confirmDialog($('#deletefileconfirm').html().replace(/%s/,simpleEscape(row.attr('data-file'))),{
+	confirmDialog($('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(row.attr('data-file')))),{
 		confirm: function() {
 			var file = row.attr('data-file');
 			removeFileListRow(row);
@@ -1270,7 +1270,7 @@ function handleFileRename(row) {
 		if (event.keyCode == 13 && file != newname) {
 			preventDefault(event);
 			if (cookie("settings.confirm.rename")!="no") {
-				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,file).replace(/%s/,newname), {
+				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,quoteWhiteSpaces(file)).replace(/%s/,quoteWhiteSpaces(newname)), {
 					confirm: function() { doRename(row,file,newname)},
 					setting: "settings.confirm.rename"
 				});
@@ -1570,7 +1570,7 @@ function handleFileListActionEventDelete(event) {
 	var self = $(this);
 	var selrows = $("#fileList tr.selected:visible");
 	if (selrows.length == 0 ) selrows = $(this).closest('tr');
-	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,simpleEscape(selrows.first().attr('data-file'))), {
+	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(selrows.first().attr('data-file')))), {
 		confirm: function() {
 			var block = blockPage();
 			
@@ -1895,6 +1895,20 @@ function initPopupMenu() {
 	$("#popupmenu .action").click(function(event) {
 		handleFileActionEvent.call(this,event);
 		//handleFileListActionEvent.call(this,event);
+	});
+	// CSS replacement for a delayed 
+	$("#popupmenu li ul").on("mouseenter", function() {
+		$(this).show();
+	});
+	$("#popupmenu li").on("mouseenter", function() {
+		var self = $(this);
+		self.siblings().find("ul:visible").hide();
+		$("ul",this).first().show();
+		window.clearTimeout(self.data("leavetimer"));
+	}).on("mouseleave", function(){
+		var self = $(this);
+		window.clearTimeout(self.data("leavetimer"));
+		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
 	});
 	$("#popupmenu .action, #popupmenu .listaction").dblclick(function(event) { preventDefault(event);});
 	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});	
