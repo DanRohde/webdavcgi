@@ -1889,6 +1889,7 @@ function renderAccessKeyDetails() {
 				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]});
 }
 function hidePopupMenu() {
+	$("#popupmenu ul:visible").hide();
 	$("#popupmenu:visible").hide().appendTo("body");
 }
 function initPopupMenu() {
@@ -1903,7 +1904,7 @@ function initPopupMenu() {
 	$("#popupmenu li").on("mouseenter", function() {
 		var self = $(this);
 		self.siblings().find("ul:visible").hide();
-		$("ul",this).first().show();
+		$("ul",self).first().show();
 		window.clearTimeout(self.data("leavetimer"));
 	}).on("mouseleave", function(){
 		var self = $(this);
