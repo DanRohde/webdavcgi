@@ -26,11 +26,10 @@
 /* prevent type casts */
 typedef int mode_t;
 typedef int off_t;
-typedef unsigned int ssize_t;
-typedef int size_t;
+typedef unsigned int size_t;
 
 /* from libsmbclient.h without unused or deprecated API: */
-/* #include "libsmbclieht.h" is too much */
+/* #include "libsmbclient.h" is too much */
 
 #define SMB_CTX_FLAG_USE_KERBEROS (1 << 0)
 #define SMB_CTX_FLAG_FALLBACK_AFTER_KERBEROS (1 << 1)
@@ -114,21 +113,22 @@ int smbc_fstat(int fd, struct stat *st);
 
 
 /* additional wrapper interface definitions */
+/* put binary data in a string with given length: */
 %typemap(out) struct w_smbc_read_result * {
         if ($1->ret > 0) 
-                $result = SWIG_FromCharPtrAndSize((const char *)$1->buf,$1->ret); 
+                $result = SWIG_FromCharPtrAndSize((const char *)$1->buf,$1->ret); /* fragment from perlstrings.swg */
         else 
-                $result = &PL_sv_undef; 
+                $result = &PL_sv_undef; /* macro from perlhead.swg */
         free($1->buf);
         free($1);
         argvi++;
 }
-%newobject w_stat2str;
+%newobject w_stat2str; /* free allocated memory */
 
-
-/* implemtations for wrapper interface */
+/* implementation for wrapper interface */
 %inline %{
 
+/* fast way to get struct stat data (maybe faster than defining struct stat and using get routines from swig wrapper): */
 char * w_stat2str(struct stat * buf) {
         if (buf == NULL) return NULL;
         char *s = (char *) malloc(1025);
@@ -136,6 +136,7 @@ char * w_stat2str(struct stat * buf) {
         return s;
 }
 
+/* implement a callback with necessary auth data*/
 #define W_USERDATA_BUFLEN 256
 struct w_userdata {
         char * username;
@@ -162,17 +163,21 @@ int w_initAuth(SMBCCTX *ctx, char *un, char *pw, char *wg) {
         strncpy(d->username, un, W_USERDATA_BUFLEN - 1);
         strncpy(d->password, pw, W_USERDATA_BUFLEN - 1);
         strncpy(d->workgroup, wg, W_USERDATA_BUFLEN - 1);
-        smbc_setOptionUserData(ctx, d);
-        smbc_setFunctionAuthDataWithContext(ctx, (smbc_get_auth_data_with_context_fn)w_get_auth_data_with_context);
+        smbc_setOptionUserData(ctx, d); /* put auth data to context */
+        smbc_setFunctionAuthDataWithContext(ctx, (smbc_get_auth_data_with_context_fn)w_get_auth_data_with_context); /* setup callback */
         w_debug(ctx,"w_initAuth done");
         return 1;
 }
+/* wrap name member of type char[1] to char*: */
 char * w_smbc_dirent_name_get(struct smbc_dirent * e) {
         return e->name;
 }
+/* simple type cast for void *buf: */
 int w_smbc_write(int fd, char* buf, size_t bufsize) {
         return smbc_write(fd, buf, bufsize);
 }
+
+/* a simple way to put binary data in a string (see typemap):*/
 struct w_smbc_read_result {
         int ret;
         char *buf;
@@ -182,9 +187,9 @@ struct w_smbc_read_result * w_smbc_read(int fd, size_t bufsize) {
         struct w_smbc_read_result * r = (struct w_smbc_read_result *)malloc(sizeof(struct w_smbc_read_result));
         r->buf = (char *) malloc(sizeof(char)*(bufsize+1));
         r->ret = smbc_read(fd, r->buf, bufsize);
-        r->buf[r->ret]='\0';
         return r;
 }
+/* a simple implementation for output arguments of smbc_(f)stat (a argout typemap to a string makes it more complicated) */
 struct stat * w_create_struct_stat() {
         return (struct stat *) malloc(sizeof(struct stat));
 }

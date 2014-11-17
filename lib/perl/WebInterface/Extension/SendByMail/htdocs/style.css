@@ -65,3 +65,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ul.ui-autocomplete {
 	z-index: 99999 !important;
 }
+.sendbymail.ui-dialog .ui-dialog-title {
+	background-image: url(sendbymail.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}

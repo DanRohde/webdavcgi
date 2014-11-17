@@ -27,3 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.afsaclmanager {
 	background-position: 2px 6px;
 }
+.afsaclmanager.ui-dialog .ui-dialog-title {
+	background-image: url(aclmanager.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}

@@ -145,7 +145,7 @@ sub renderPosixAclManager {
 	$content .= $c->hidden(-name=>'filename', -value=>$f).$c->hidden(-name=>'action',-value=>'pacl_update');
 	$content .= $c->start_table({-class=>'pacl table'});
 	
-	$content.= $c->Tr($c->th({-title=>$self->getStatInfo($fn),-colspan=>2},$c->escapeHTML($f)));
+	$content.= $c->Tr($c->th({-class=>'posixaclmngr title', -title=>$self->getStatInfo($fn),-colspan=>2},$c->escapeHTML($f)));
 	#$content.= $c->Tr($c->th($self->tl('pacl_entry')).$c->th($self->tl('pacl_rights')));
 	foreach my $e (@{$self->getAclEntries($fn)}) {
 		my $row = "";

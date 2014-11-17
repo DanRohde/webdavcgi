@@ -31,3 +31,11 @@ tr.iswriteable-no .action.edit,
 }
 #edittextdata .action.savetextdata { display: block; width: 40%; float: right;}
 #edittextdata .action.cancel-edit { display: block; width: 40%;  float: left; }
+
+.edittextdata.ui-dialog .ui-dialog-title {
+	background-image: url(edit.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+	white-space: pre;
+}

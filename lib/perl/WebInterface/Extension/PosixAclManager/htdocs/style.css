@@ -40,3 +40,12 @@ input.pacl.newacl.error {
 td.pacl.newaclpermissions.error {
 	border: 2px solid red;
 }
+.posixaclmngr.ui-dialog .ui-dialog-title {
+	background-image: url(aclmanager.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}
+.posixaclmngr.title {
+	white-space: pre-wrap;
+}

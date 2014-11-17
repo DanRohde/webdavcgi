@@ -24,3 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.permissions {
 	background-position: 2px 7px;
 }
+.permissions.ui-dialog .ui-dialog-title {
+	background-image: url(permissions.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}

@@ -30,3 +30,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .prettyprint li:hover {
 	background-color: #ddd;
 }
+.scv.ui-dialog .ui-dialog-title {
+	background-image: url(scv.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}

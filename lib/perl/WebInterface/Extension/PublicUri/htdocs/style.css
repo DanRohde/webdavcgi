@@ -73,3 +73,7 @@ a.blue {
 #headerPublicUri {
 	width: 130px;
 }
+.publicuri.title,.purifileconfirm, .depurifileconfirm {
+	white-space: pre-wrap;
+}
+

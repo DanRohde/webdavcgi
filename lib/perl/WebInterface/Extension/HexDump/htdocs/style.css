@@ -23,3 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.hexdump {
 	background: url(hexdump.png) no-repeat 2px center;
 }
+.hexdump.ui-dialog .ui-dialog-title {
+	background-image: url(hexdump.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}

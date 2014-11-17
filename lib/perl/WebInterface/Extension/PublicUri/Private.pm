@@ -118,7 +118,7 @@ sub handle {
 		return { publicuridigest=> $publicuridigest ,publicurititle=>$publicuri, publicuri=>$publicuri };
 	}
 	elsif ( $hook eq 'templates' ) {
-		return q@<div id="purifileconfirm">$tl(purifileconfirm)</div><div id="depurifileconfirm">$tl(depurifileconfirm)</div>@;
+		return q@<div id="purifileconfirm"><div class="purifileconfirm">$tl(purifileconfirm)</div></div><div id="depurifileconfirm"><div class="depurifileconfirm">$tl(depurifileconfirm)</div></div>@;
 	}
 	elsif ($hook eq 'columnhead') {
 		return q@<!--TEMPLATE(publicuri)[<th id="headerPublicUri" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->@;

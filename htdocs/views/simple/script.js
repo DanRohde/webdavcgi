@@ -256,7 +256,7 @@ function setupTableConfigDialog(dialog) {
 	
 	dialog.find("#tableconfigform").submit(function(event) { return false; });
 	
-	dialog.dialog({ modal: true, width: "auto", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
+	dialog.dialog({ modal: true, width: "auto", title: dialog.attr("title") || dialog.data("title"), dialogClass: "tableconfigdialog", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
 	
 }
 function handleSidebarCollapsible(event) {
@@ -1232,12 +1232,16 @@ function doRename(row, file, newname) {
 		row.find('td.filename div.hidden div.filename').unwrap();
 		if (response.message) {
 			var xhr = $.get($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
-				var d = $("tr[data-file='"+newname+"']");
-				if (d.length>0) d.remove();
-				var newrow = $(r);
-				row.replaceWith(newrow);
-				row = newrow;
-				initFileList();
+				try {
+					var newrow = $(r);
+					var d = $("tr[data-file='"+newname+"']");
+					if (d.length>0) d.remove();
+					row.replaceWith(newrow);
+					row = newrow;
+					initFileList();
+				} catch (e) {
+					updateFileList();
+				}
 				block.remove();
 			});
 			renderAbortDialog(xhr);
@@ -1354,6 +1358,8 @@ function handleDialogActionEvent(event) {
 	action.dialog({modal:true, width: 'auto', 
 					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); },
 					close: function() { $(self).removeClass("disabled"); },
+					title: $(this).attr("title") || $(this).data("title"),
+					dialogClass: $(this).attr("data-action")+"dialog",
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
@@ -1534,9 +1540,9 @@ function handleFileListDrop(event, ui) {
 				: new Array(dragfilerow.attr('data-file'));	
 	if (cookie("settings.confirm.dnd")!="no") {
 		var msg = $("#paste"+action+"confirm").html();
-		msg = msg.replace(/%files%/g, uri2html(files.join(', ')))
-				.replace(/%srcuri%/g, uri2html(srcuri))
-				.replace(/%dsturi%/g, uri2html(dsturi))
+		msg = msg.replace(/%files%/g, quoteWhiteSpaces(uri2html(files.join(', '))))
+				.replace(/%srcuri%/g, quoteWhiteSpaces(uri2html(srcuri)))
+				.replace(/%dsturi%/g, quoteWhiteSpaces(uri2html(dsturi)))
 				.replace(/\\n/g,"<br/>");
 		confirmDialog(msg, { confirm: function() { doFileListDrop(action,srcuri,dsturi,files)}, setting: "settings.confirm.dnd" });
 	} else {
@@ -1838,7 +1844,7 @@ function initViewFilterDialog() {
 			vfd.submit(function(){
 				return false;
 			});
-			vfd.dialog({modal:true,width:"auto",height:"auto", close: function(){$(".action.viewfilter").removeClass("disabled"); vfd.remove();}}).show();
+			vfd.dialog({modal:true,width:"auto",height:"auto", dialogClass: "viewfilterdialog", title: $(self).attr("title") || $(self).data("title"), close: function(){$(".action.viewfilter").removeClass("disabled"); vfd.remove();}}).show();
 		});
 	});
 }
@@ -1949,14 +1955,18 @@ function initPopupMenu() {
 function refreshFileListEntry(filename) {
 	var fl = $("#fileList");
 	return $.get(addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
-		var newrow = $(r);
-		row = $("tr[data-file='"+simpleEscape(filename)+"']", fl);
-		if (row.length > 0) {
-			row.replaceWith(newrow);
-		} else {
-			newrow.appendTo(fl);
+		try {
+			var newrow = $(r);
+			row = $("tr[data-file='"+simpleEscape(filename)+"']", fl);
+			if (row.length > 0) {
+				row.replaceWith(newrow);
+			} else {
+				newrow.appendTo(fl);
+			}
+			initFileList();
+		} catch (e) {
+			updateFileList();
 		}
-		initFileList();
 	});
 }
 function initDotFilter() {
