@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE
 ); 
-$RELEASE="1.0.1BETA2014112001";
+$RELEASE="1.0.1BETA2014112002";
 #########################################################################
 ############  S E T U P #################################################
 

@@ -1906,10 +1906,24 @@ function initPopupMenu() {
 		handleFileActionEvent.call(this,event);
 		//handleFileListActionEvent.call(this,event);
 	});
-	// CSS replacement for a delayed 
+	// CSS replacement for a delayed
+	$("#popupmenu li ul").hoverIntent(function() { $(this).show(); });
+	$("#popupmenu li").hoverIntent(function(){
+		var self = $(this);
+		self.siblings().find("ul:visible").hide();
+		$("ul",self).first().show();
+		window.clearTimeout(self.data("leavetimer"));
+	}, function() {
+		var self = $(this);
+		window.clearTimeout(self.data("leavetimer"));
+		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
+	});
+	/*
 	$("#popupmenu li ul").on("mouseenter", function() {
 		$(this).show();
 	});
+	
+	
 	$("#popupmenu li").on("mouseenter", function() {
 		var self = $(this);
 		self.siblings().find("ul:visible").hide();
@@ -1920,6 +1934,7 @@ function initPopupMenu() {
 		window.clearTimeout(self.data("leavetimer"));
 		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
 	});
+	*/
 	$("#popupmenu .action, #popupmenu .listaction").dblclick(function(event) { preventDefault(event);});
 	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});	
 	function adjustPopupPosition(pageX,pageY) {
