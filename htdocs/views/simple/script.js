@@ -92,7 +92,7 @@ function initTooltips() {
 	}).on("bookmarksChanged",function() {
 		$("#bookmarks").MyTooltip(500);
 	});
-	$("#nav:not(.action.dialog),#controls,#autorefreshtimer,#popupmenu").MyTooltip(500);
+	$("#nav,#controls,#autorefreshtimer,#popupmenu").MyTooltip(500);
 }
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
@@ -256,7 +256,7 @@ function setupTableConfigDialog(dialog) {
 	
 	dialog.find("#tableconfigform").submit(function(event) { return false; });
 	
-	dialog.dialog({ modal: true, width: "auto", title: dialog.attr("title") || dialog.data("title"), dialogClass: "tableconfigdialog", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
+	dialog.dialog({ modal: true, width: "auto", title: dialog.attr("data-title") || dialog.attr("title"), dialogClass: "tableconfigdialog", height: "auto", close: function() { $(".tableconfigbutton").removeClass("disabled"); dialog.dialog("destroy");}});
 	
 }
 function handleSidebarCollapsible(event) {
@@ -1352,14 +1352,17 @@ function initDialogActions() {
 function handleDialogActionEvent(event) {
 	preventDefault(event);
 	if ($(this).hasClass("disabled")) return;
-	var self = this;
-	$(this).addClass("disabled");
-	var action = $("#"+$(this).attr('data-action'));
+	var self = $(this);
+	self.addClass("disabled");
+	
+	var action = $("#"+self.attr('data-action'));
+	if (action.attr("title")) action.data("title", action.attr("title"));
+	action.attr("title", action.data("title"));
+	
 	action.dialog({modal:true, width: 'auto', 
 					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); },
-					close: function() { $(self).removeClass("disabled"); },
-					title: $(this).attr("title") || $(this).data("title"),
-					dialogClass: $(this).attr("data-action")+"dialog",
+					close: function() { self.removeClass("disabled"); },
+					dialogClass: self.attr("data-action")+"dialog",
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
@@ -1808,10 +1811,10 @@ function initViewFilterDialog() {
 	$(".action.viewfilter").click(function(event){
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
-		var self = this;
+		var self = $(this);
 		$(".action.viewfilter").addClass("disabled");
 		var target =$("#fileList").attr("data-uri");
-		var template = $(this).attr("data-template");
+		var template = self.attr("data-template");
 		$.get(target, {ajax: "getViewFilterDialog", template: template}, function(response){
 			var vfd = $(response);
 			$("input[name='filter.size.val']", vfd).spinner({min: 0, page: 10, numberFormat: "n", step: 1});
@@ -1844,7 +1847,7 @@ function initViewFilterDialog() {
 			vfd.submit(function(){
 				return false;
 			});
-			vfd.dialog({modal:true,width:"auto",height:"auto", dialogClass: "viewfilterdialog", title: $(self).attr("title") || $(self).data("title"), close: function(){$(".action.viewfilter").removeClass("disabled"); vfd.remove();}}).show();
+			vfd.dialog({modal:true,width:"auto",height:"auto", dialogClass: "viewfilterdialog", title: self.attr("title") || self.data("title"), close: function(){$(".action.viewfilter").removeClass("disabled"); vfd.remove();}}).show();
 		});
 	});
 }
