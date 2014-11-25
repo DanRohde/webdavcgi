@@ -74,7 +74,7 @@ sub _getSmbConfig {
 	my %SMB;
 	my $remote_user = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
 	#### Bentutzername und Domaine extrahieren
-	my @rurd = split(/ \@/, $remote_user );
+	my @rurd = split(/\@/, $remote_user );
 	my $user = $rurd[0];
 	my $domain = $rurd[1] ? uc($rurd[1]) : $$self{defaultdomain};
 
