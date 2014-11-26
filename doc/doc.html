@@ -221,6 +221,10 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 1.0.0 to 1.0.1</h3>
+<ul>
+<li> It's now possible to use AFS in conjunction with mod_perl and without mod_waklog, but it makes it necessary to install a new Perl module: AFS::PAG (Debian: <code>apt-get install libafs-pag-perl</code> or <code>perl -MCPAN -e "install AFS::APG"</code>).</li>
+</ul>
 <h3>Upgrading from 0.9.0 to 1.0.0</h3>
 <ul>
 <li> The database schema has some bugs so it needs a update (please kill all speedy processes before you start with the database schema changes):
