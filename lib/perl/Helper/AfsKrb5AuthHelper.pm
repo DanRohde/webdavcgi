@@ -22,14 +22,22 @@ use strict;
 
 use Helper::Krb5AuthHelper;
 our @ISA = qw( Helper::Krb5AuthHelper );
+use AFS::PAG qw( setpag unlog );
+use Carp;
 
 sub init {
 	my ($self) = @_;
 	my $ret = 1;
 	
 	if ($ret = $self->SUPER::init()) {
-		die("aklog failed for $ENV{REMOTE_USER}") if system('aklog') > 0;
+		setpag();
+		confess("aklog failed for $ENV{REMOTE_USER}") if system('aklog') > 0;
 	}
 	return $ret;
+}
+sub recieveEvent{
+	my $self = shift;
+	$self->SUPER::recieveEvent(@_);
+	unlog();
 }
 1;
