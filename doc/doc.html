@@ -81,7 +81,8 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
     <li><span style="optional">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
     <li><span style="optional">optional for LDAP addressbook of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
-    <li><span style="optional">optional for Kerberos helpers in conjunction with mod_perl (AFS, SMB):</span>Env::C - (since v1.0.0))</li>
+    <li><span style="optional">optional for Kerberos helpers in conjunction with mod_perl (AFS, SMB):</span>Env::C - (since v1.0.0)</li>
+    <li><span style="optional">optional for AFS Kerberos helpers in conjunction with mod_perl:</span>AFS::PAG - (since v1.0.1)</li>
   </ul>
    You can do that with '<code>perl -MCPAN -e "install &lt;ModuleName&gt;"</code>' or with '<code>apt-get install &lt;PackageName&gt;</code>'.
    <pre>
@@ -110,6 +111,10 @@ apt-get install librcs-perl
 
 ## only for AFS users:
 apt-get install openafs-client krb5-user openafs-krb5
+# only for Debian users:
+apt-get install libafs-pag-perl
+# for Ubuntu users and maybe Debian users:
+perl -MCPAN -e "install AFS::PAG"
 
 
 ## for mod_perl users with Kerberos (SMB, AFS) authentication:
@@ -739,7 +744,7 @@ Please choose your installation variant:
 <ol>
 <li> <a href="#afswithoutkrb">without mod_perl (maybe with Speedy CGI) and without mod_auth_kerberos</a> (recommended)</li>
 <li> <a href="#afswithkrb">without mod_perl (maybe with Speedy CGI) and with mod_auth_kerberos and mod_waklog</a></li>
-<li> <a href="mod_perl.html">with mod_perl and mod_auth_kerberos and mod_waklog</a> (recommended if Speedy CGI is not available)</li>
+<li> <a href="mod_perl.html">with mod_perl with or without mod_auth_kerberos/mod_waklog</a> (recommended if Speedy CGI is not available)</li>
 </ol>
 
 
@@ -865,7 +870,7 @@ The SMB backend supports Kerberos and username/password/workgroup authenticated 
 </p>
 Please choose your installation variant:
 <ol>
-<li><a href="mod_perl.html">with mod_perl and without mod_auth_kerberos but with Kerberos authentication</a> (recommended)</li>
+<li><a href="mod_perl.html">with mod_perl and with Kerberos authentication</a> (recommended)</li>
 <li><a href="#smbwithkrb">with mod_auth_kerberos and Kerberos authentication</a> </li>
 <li><a href="#smbwithoutkrb">without mod_auth_kerberos but with Kerberos authentication</a></li>
 <li><a href="#smbwithpw">with username/password/workgroup authentication</a></li>

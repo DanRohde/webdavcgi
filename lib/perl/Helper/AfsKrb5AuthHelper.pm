@@ -37,7 +37,7 @@ sub init {
 }
 sub receiveEvent {
 	my $self = shift;
-	$self->SUPER::recieveEvent(@_);
+	$self->SUPER::receiveEvent(@_);
 	unlog();
 }
 1;

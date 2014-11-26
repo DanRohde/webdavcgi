@@ -27,13 +27,18 @@ ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
 
 PerlRequire /etc/webdavcgi/helper/mod_perl_startup.pl
 
+# only for Kerberos auth:
 KrbMethodNegotiate off
 KrbMethodK5Passwd on
 KrbSaveCredentials on
 Krb5Keytab /etc/apache.keytab
+
+
 &lt;Location /webdavcgi&gt;
-	
+
+	# only for Kerberos auth:	
 	AuthType Kerberos
+	
 	AuthName "WebDAV CGI Account"
 	# AuthUserFile /etc/apache2/users	
 	Require valid-user
@@ -60,10 +65,10 @@ $BACKEND = 'AFS';
 $DOCUMENT_ROOT = '/afs/';
 $VIRTUAL_BASE='/';
 
-
+# simulates mod_auth_kerberos and mod_waklog: kinit; setpag; aklog; ...; unlog;:
+# and it makes sense for mod_auth_kerberos and mod_waklog users too:
 require Helper::AfsKrb5AuthHelper;
 Helper::AfsKrb5AuthHelper->new();
-
 
 
 $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
