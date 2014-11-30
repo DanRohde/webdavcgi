@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE
 ); 
-$RELEASE="1.0.1BETA2014112002";
+$RELEASE="1.0.1BETA2014113001";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -711,8 +711,8 @@ $DEBUG = 0;
 ## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'HexDump',
 ##            'Highlighter', 'History', 'ODFConverter', 'Permissions','PosixAclManager', 'PropertiesViewer', 'PublicUri',
 ##            'Redirect', 'Search','SendByMail', 'SourceCodeViewer', 'SysInfo', 'TextEditor', 'ViewerJS', 'Zip'
-## EXAMPLE: @EXTENSIONS = ( 'History', 'ViewJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' );
-@EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' );
+## EXAMPLE: @EXTENSIONS = ( 'History', 'ViewJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' , 'ImageInfo');
+@EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo' );
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)

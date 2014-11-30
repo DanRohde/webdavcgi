@@ -2,6 +2,7 @@
      - fixed multiple white-spaces in file/folder names bug
      - fixed Chrome related rename, create file/folder bug
      - added missing icons to dialogs
+     - added ImageInfo extension
      
 1.0.0: 2014/10/10
      - fixed minor AFS Group Manager bug

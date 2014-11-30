@@ -42,6 +42,7 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#HexDump">HexDump</a> - shows a hexdump of a file</li> 
 <li><a href="#Highlighter">Highlighter</a> - colorizes files/folders</li>
 <li><a href="#History">History</a> - shows a folder history</li> 
+<li><a href="#ImageInfo">ImageInfo</a> - shows image information (EXIF, ...)</li>
 <li><a href="#ODFConverter">ODFConverter</a> - converts between Open Document file formats and other Office file formats</li>
 <li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
 <li><a href="#PosixAclManager">PosixAclManager</a> - manages POSIX ACL</li>
@@ -161,10 +162,8 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 #  (default: {http://webdavcgi.sf.net/extension/Highlighter/$main::REMOTE_USER})
 # attributes - CSS attributes to change for a file list entry 
 </pre></td>
-
 </tr>
 </table>
-
 
 <h2 id="History">History</h2>
 <table style="width:100%">
@@ -172,7 +171,17 @@ $EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
 <td><pre>
 </pre></td>
+</tr>
+</table>
 
+<h2 id="ImageInfo">ImageInfo</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-imageinfo.png"><img alt="Web interface Image Information" class="screenshot" src="images/webdavcgi-webinterface-imageinfo.png"/></a></td>
+<td><pre>
+# SETUP:
+#   hidegroups - sets a list of groups to hide (default: ['ExifTool'])
+</pre></td>
 </tr>
 </table>
 

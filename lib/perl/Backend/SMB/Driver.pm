@@ -274,6 +274,9 @@ sub getLocalFilename {
 		my $suffix = $1;
 		my ($fh, $filename) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>$suffix);
 		$self->printFile($file, $fh);
+		close($fh);
+		my @stat = $self->stat($file);
+		utime($stat[8],$stat[9], $filename);
 		return $filename;
 	}
 	return $file;

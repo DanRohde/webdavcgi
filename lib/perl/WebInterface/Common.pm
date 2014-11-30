@@ -68,7 +68,7 @@ sub readTLFile {
                 while (my $line = <$i>) {
                         chomp($line);
                         next if $line=~/^#/;
-                        $$dataRef{$1}=$2 if $line=~/^(\S+)\s+"(.*)"\s*$/;
+                        $$dataRef{$1}=$2 if $line=~/^(\S.*?)\s+"(.*)"\s*$/;
                 }
                 close($i);
         } else { warn("Cannot read $fn!"); }
