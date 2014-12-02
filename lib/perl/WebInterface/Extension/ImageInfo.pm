@@ -45,7 +45,7 @@ sub handle {
 		$ret = { ext_classes => $$self{backend}->isReadable($$params{path}) && main::getMIMEType($$params{path}) =~ /^(image|video)\//i ? 'imageinfo-show' : 'imageinfo-hide' };
 	} elsif ($hook eq 'fileactionpopup') {
 		$ret = { action=>'imageinfo', disabled=>!$$self{backend}->isReadable($main::PATH_TRANSLATED), label=>'imageinfo', type=>'li'};
-	} elsif ($hook eq 'posthandler') {
+	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'imageinfo') {
 		my $file = $$self{cgi}->param('file');
 		main::printHeaderAndContent('200 OK','text/html', $self->renderImageInfo($file, $self->getImageInfo($$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$file))));
 		$ret=1;	
