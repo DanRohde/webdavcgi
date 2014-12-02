@@ -27,6 +27,7 @@ use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
 use Image::ExifTool;
+use MIME::Base64;
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -80,7 +81,8 @@ sub renderImageInfo {
 			my $val = $$ii{$gr}{$pr};
 			$val=~s/\Q$tmpfile\E/$file/g;
 			$val=~s/\Q$tmpdir\E/$main::REQUEST_URI/g;
-			$props.= $self->renderTemplate($pt, $ru, $proptmpl, { propname=>$c->escapeHTML($pr), propvalue=>$c->escapeHTML($val)});
+			my $img = $$ii{_binarydata_}{$gr}{$pr} ? '<br>'.$c->img({-alt=>$pr, -title=>$pr, -src=>'data:'.main::getMIMEType($file).';base64,'.$$ii{_binarydata_}{$gr}{$pr}}) : '';
+			$props.= $self->renderTemplate($pt, $ru, $proptmpl, { propname=>$c->escapeHTML($pr), propvalue=>$c->escapeHTML($val), img=>$img});
 		}
 		$groupcontent .= $self->renderTemplate($pt, $ru, $groupcontenttmpl, { group=>$gr, props => $props })
 	}
@@ -91,7 +93,7 @@ sub getImageInfo {
 	my ($self, $file) = @_;
 	my %ret = (_tmppath_ => $file);
 	my $et = new Image::ExifTool();
-	$et->Options(Unknown=>1, Charset=>'UTF8');
+	$et->Options(Unknown=>1, Charset=>'UTF8', Lang => $main::LANG);
 	my $info = $et->ImageInfo($file);
 	my $group = '';
 	foreach my $tag ($et->GetFoundTags('Group0')) {
@@ -100,15 +102,20 @@ sub getImageInfo {
 			push @{$ret{_groups_}}, $group;
 		} 
 		my $val = $$info{$tag};
+		my $descr = $et->GetDescription($tag);
 		if (ref $val eq 'SCALAR') {
 			if ($$val =~ /^Binary data/) {
 				$val = "($$val)";	
 			} else {
+				my $b64 = encode_base64($$val);
+				$b64=~s/\s//smg;
+				$ret{_binarydata_}{$group}{$descr} = $b64;
 				my $len = length($$val);
 				$val = "(Binary data $len bytes)";
+				
 			}
 		}
-		$ret{$group}{$et->GetDescription($tag)} = $val;
+		$ret{$group}{$descr} = $val;
 	}
 	return \%ret;
 }
