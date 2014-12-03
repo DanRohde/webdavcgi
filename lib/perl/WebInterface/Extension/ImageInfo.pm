@@ -97,7 +97,7 @@ sub getImageInfo {
 	my $et = new Image::ExifTool();
 	$et->Options(Unknown=>1, Charset=>'UTF8', Lang => $main::LANG, DateFormat => $self->tl('lastmodifiedformat'));
 	my $info = $et->ImageInfo($file);
-	$ret{_thumbnail_} = ${$$info{ThumbnailImage}} ? encode_base64(${$$info{ThumbnailImage}}) : undef;
+	$ret{_thumbnail_} = $$info{ThumbnailImage} ? encode_base64(${$$info{ThumbnailImage}}) : undef;
 	
 	my $group = '';
 	foreach my $tag ($et->GetFoundTags('Group0')) {
