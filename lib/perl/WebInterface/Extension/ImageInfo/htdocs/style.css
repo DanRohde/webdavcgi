@@ -40,7 +40,7 @@ table.imageinfo td {
 	background-color: #eaeaea;
 }
 .imageinfo .iigroups {
-	width: 10em;
+	width: 170px;
 }
 .imageinfo .iigroupcontent {
 	width: 30em;
@@ -83,4 +83,7 @@ table.imageinfo td {
 .imageinfo .iipropvalue {
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+.imageinfo .iithumbnail {
+	width: 160px;
 }

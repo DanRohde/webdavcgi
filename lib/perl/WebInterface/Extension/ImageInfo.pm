@@ -73,6 +73,8 @@ sub renderImageInfo {
 	my $groups ="";
 	my $groupcontent = "";
 	
+	my $mime = main::getMIMEType($file);
+	
 	foreach my $gr ( @{$$ii{_groups_}}) {
 		next if $$self{hidegroups}{$gr};
 		$groups.= $self->renderTemplate($pt, $ru, $grouptmpl, { group=>$gr});
@@ -81,20 +83,22 @@ sub renderImageInfo {
 			my $val = $$ii{$gr}{$pr};
 			$val=~s/\Q$tmpfile\E/$file/g;
 			$val=~s/\Q$tmpdir\E/$main::REQUEST_URI/g;
-			my $img = $$ii{_binarydata_}{$gr}{$pr} ? '<br>'.$c->img({-alt=>$pr, -title=>$pr, -src=>'data:'.main::getMIMEType($file).';base64,'.$$ii{_binarydata_}{$gr}{$pr}}) : '';
+			my $img = $$ii{_binarydata_}{$gr}{$pr} ? '<br>'.$c->img({-alt=>$pr, -title=>$pr, -src=>'data:'.$mime.';base64,'.$$ii{_binarydata_}{$gr}{$pr}}) : '';
 			$props.= $self->renderTemplate($pt, $ru, $proptmpl, { propname=>$c->escapeHTML($pr), propvalue=>$c->escapeHTML($val), img=>$img});
 		}
 		$groupcontent .= $self->renderTemplate($pt, $ru, $groupcontenttmpl, { group=>$gr, props => $props })
 	}
-	
-	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl('imageinfo.dialogtitle'), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent});
+	my $img = $$ii{_thumbnail_} ? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) : '';
+	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl('imageinfo.dialogtitle'), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img});
 }
 sub getImageInfo {
 	my ($self, $file) = @_;
 	my %ret = (_tmppath_ => $file);
 	my $et = new Image::ExifTool();
-	$et->Options(Unknown=>1, Charset=>'UTF8', Lang => $main::LANG);
+	$et->Options(Unknown=>1, Charset=>'UTF8', Lang => $main::LANG, DateFormat => $self->tl('lastmodifiedformat'));
 	my $info = $et->ImageInfo($file);
+	$ret{_thumbnail_} = ${$$info{ThumbnailImage}} ? encode_base64(${$$info{ThumbnailImage}}) : undef;
+	
 	my $group = '';
 	foreach my $tag ($et->GetFoundTags('Group0')) {
 		if ($et->GetGroup($tag) ne $group) {
@@ -111,7 +115,7 @@ sub getImageInfo {
 				$b64=~s/\s//smg;
 				$ret{_binarydata_}{$group}{$descr} = $b64;
 				my $len = length($$val);
-				$val = "(Binary data $len bytes)";
+				$val = sprintf($self->tl('imageinfo.binarydata','(Binary data: %d bytes)'), $len); 
 				
 			}
 		}
