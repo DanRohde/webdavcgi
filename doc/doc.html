@@ -79,6 +79,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>JSON (libjson-perl) - (since v0.8.5)</li>
     <li>DateTime - (since v0.8.5)</li>
     <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
+    <li>Image::ExifTool (libimage-exiftool-perl)- (since v1.0.1)</li>
     <li><span style="optional">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
     <li><span style="optional">optional for LDAP addressbook of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
     <li><span style="optional">optional for Kerberos helpers in conjunction with mod_perl (AFS, SMB):</span>Env::C - (since v1.0.0)</li>
@@ -91,7 +92,7 @@ apt-get install libdbi-perl libdbd-sqlite3-perl sqlite3 libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
                 libfile-copy-link-perl libjson-perl libdatetime-perl \
-                libmime-tools-perl libnet-ldap-perl
+                libmime-tools-perl libnet-ldap-perl libimage-exiftool-perl
 
 perl -MCPAN -e "install DateTime::Format::Human::Duration"
 
@@ -223,6 +224,7 @@ Require valid-user
 <h2 id="upgrade">Upgrade</h2>
 <h3>Upgrading from 1.0.0 to 1.0.1</h3>
 <ul>
+<li> The ImageInfo extensions needs the additional Perl module Image::ExifTool<br> (Debian/Ubuntu: <code>apt-get install libimage-exiftool-perl</code>, CPAN: <code>perl -MCPAN -e "install Image::ExifTool"</code>)</li>
 <li> It's now possible to use AFS in conjunction with mod_perl and without mod_waklog, but it makes it necessary to install a new Perl module: AFS::PAG (Debian: <code>apt-get install libafs-pag-perl</code> or <code>perl -MCPAN -e "install AFS::APG"</code>).</li>
 </ul>
 <h3>Upgrading from 0.9.0 to 1.0.0</h3>
