@@ -88,7 +88,9 @@ sub renderImageInfo {
 		}
 		$groupcontent .= $self->renderTemplate($pt, $ru, $groupcontenttmpl, { group=>$gr, props => $props })
 	}
-	my $img = $$ii{_thumbnail_} ? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) : '';
+	my $img = $$ii{_thumbnail_} 
+			? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) 
+			: $main::ENABLE_THUMBNAIL ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
 	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl('imageinfo.dialogtitle'), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img});
 }
 sub getImageInfo {
