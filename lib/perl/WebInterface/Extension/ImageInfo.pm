@@ -43,9 +43,19 @@ sub handle {
 	return $ret if $ret;
 	
 	if ($hook eq 'fileattr') {
-		$ret = { ext_classes => $$self{backend}->isReadable($$params{path}) && main::getMIMEType($$params{path}) =~ /^(image|video|audio)\//i ? 'imageinfo-show' : 'imageinfo-hide' };
+		my $mime = main::getMIMEType($$params{path});
+		my $isReadable = $$self{backend}->isReadable($$params{path});
+		my $classes = '';
+		foreach my $type (('image', 'audio', 'video')) {
+			$classes .= " imageinfo-$type-". ($isReadable && $mime =~ /^\Q$type\E\//i ? 'show' : 'hide'); 
+		}
+		$ret = { ext_classes => $classes };
 	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { action=>'imageinfo', disabled=>!$$self{backend}->isReadable($main::PATH_TRANSLATED), label=>'imageinfo', type=>'li'};
+		$ret= [];
+		my $isReadable = $$self{backend}->isReadable($main::PATH_TRANSLATED);
+		foreach my $type (('image','audio','video')) {
+			push @{$ret}, { action=>'imageinfo '.$type, disabled=>!$isReadable, label=>'imageinfo.'.$type, type=>'li'};	
+		}
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'imageinfo') {
 		my $file = $$self{cgi}->param('file');
 		main::printHeaderAndContent('200 OK','text/html', $self->renderImageInfo($file, $self->getImageInfo($$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$file))));
@@ -74,6 +84,7 @@ sub renderImageInfo {
 	my $groupcontent = "";
 	
 	my $mime = main::getMIMEType($file);
+	my $type = $mime=~/^([^\/]+)/?$1:'image';
 	
 	foreach my $gr ( @{$$ii{_groups_}}) {
 		next if $$self{hidegroups}{$gr};
@@ -91,7 +102,7 @@ sub renderImageInfo {
 	my $img = $$ii{_thumbnail_} 
 			? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) 
 			: $self->hasThumbSupport($mime) ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
-	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl('imageinfo.dialogtitle'), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file});
+	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl("imageinfo.$type.dialogtitle"), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file, type=>$type});
 }
 sub getImageInfo {
 	my ($self, $file) = @_;
