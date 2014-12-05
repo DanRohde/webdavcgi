@@ -43,7 +43,7 @@ sub handle {
 	return $ret if $ret;
 	
 	if ($hook eq 'fileattr') {
-		$ret = { ext_classes => $$self{backend}->isReadable($$params{path}) && main::getMIMEType($$params{path}) =~ /^(image|video)\//i ? 'imageinfo-show' : 'imageinfo-hide' };
+		$ret = { ext_classes => $$self{backend}->isReadable($$params{path}) && main::getMIMEType($$params{path}) =~ /^(image|video|audio)\//i ? 'imageinfo-show' : 'imageinfo-hide' };
 	} elsif ($hook eq 'fileactionpopup') {
 		$ret = { action=>'imageinfo', disabled=>!$$self{backend}->isReadable($main::PATH_TRANSLATED), label=>'imageinfo', type=>'li'};
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'imageinfo') {
@@ -90,7 +90,7 @@ sub renderImageInfo {
 	}
 	my $img = $$ii{_thumbnail_} 
 			? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) 
-			: $main::ENABLE_THUMBNAIL ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
+			: $self->hasThumbSupport($mime) ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
 	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl('imageinfo.dialogtitle'), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file});
 }
 sub getImageInfo {
