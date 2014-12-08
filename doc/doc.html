@@ -835,7 +835,7 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota $FS';
 
-@EXTENSIONS = ('AFSACLManager', 'AFSGroupManager');
+@EXTENSIONS = (@DEFAULT_EXTENSIONS,@AFS_EXTENSIONS,@EXTRA_EXTENSIONS);
 $EXTENSION_CONFIG{AFSACLManager} = { allow_afsaclchanges =&gt;1 };
 $EXTENSION_CONFIG{AFSGroupManager} = { disallow_groupchanges=&gt;0 };
 

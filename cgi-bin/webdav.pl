@@ -67,9 +67,9 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
 	    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE
+	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2014120402";
+$RELEASE="1.0.1BETA2014120801";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -706,13 +706,28 @@ $BACKEND =  'FS';
 ## you can find the debug output in your web server error log
 $DEBUG = 0;
 
+## -- DEFAULT_EXTENSIONS
+## don't change it - use @EXTENSIONS instead
+@DEFAULT_EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo' );
+## -- AFS_EXTENSIONS
+## don't change it - use @EXTENSIONS instead
+@AFS_EXTENSIONS = ('AFSACLManager','AFSGroupManager');
+## -- EXTRA_EXTENSIONS
+## don't change it - use @EXTENSIONS instead
+@EXTRA_EXTENSIONS = ('SourceCodeViewer','HexDump');
+## -- PUB_EXTENSIONS
+@PUB_EXTENSIONS = ('PublicUri','Redirect');
+## -- DEV_EXTENSIONS
+## don't change it - use @EXTENSIONS intead
+@DEV_EXTENSIONS = ('SysInfo','PropertiesViewer');
+
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
 ## supported: 'AFSACLManager', 'AFSGroupManager','Diff', 'DiskUsage', 'Download', 'HexDump',
 ##            'Highlighter', 'History', 'ODFConverter', 'Permissions','PosixAclManager', 'PropertiesViewer', 'PublicUri',
 ##            'Redirect', 'Search','SendByMail', 'SourceCodeViewer', 'SysInfo', 'TextEditor', 'ViewerJS', 'Zip'
 ## EXAMPLE: @EXTENSIONS = ( 'History', 'ViewJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' , 'ImageInfo');
-@EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo' );
+@EXTENSIONS = @DEFAULT_EXTENSIONS;
 
 ## -- EXTENSION_CONFIG
 ## allowes extension configurations supported by a activated extension (see @EXTENSIONS)
