@@ -1,0 +1,56 @@
+<div title="$tl(gpxviewer): $file" class="gpxviewer" id="gpxviewer">
+<div id="gpxviewerscript">
+<script type="text/javascript" src="${VHTDOCS}_EXTENSION(GPXViewer)_/htdocs/contrib/loadgpx.js"></script>
+</div>
+<script>
+window.gpxViewerMapCallback = function() {
+	$(window).trigger("gpxViewerMapLoaded");	
+}
+function loadGPXFileIntoGoogleMap(map, filename) {
+    $.ajax({url: filename,
+		dataType: "xml",
+		success: function(data) {
+			var parser = new GPXParser(data, map);
+			parser.setTrackColour("#ff0000");     // Set the track line colour
+			parser.setTrackWidth(5);          // Set the track line width
+			parser.setMinTrackPointDelta(0.001);      // Set the minimum distance between track points
+			parser.centerAndZoom(data);
+			parser.addTrackpointsToMap();         // Add the trackpoints
+			parser.addWaypointsToMap();           // Add the waypoints
+        }
+    });
+}
+
+function initGPXViewerMap() {
+	var mapOptions = {
+		zoom: 8,
+		mapTypeId: google.maps.MapTypeId.ROADMAP 
+	};
+	window.gpxViewerMap = new google.maps.Map(document.getElementById("gpxviewermap"), mapOptions);
+	loadGPXFileIntoGoogleMap(window.gpxViewerMap, "$uri/$file");
+}
+function loadGoogleMaps() {
+	if (typeof google != "undefined") {
+		initGPXViewerMap();
+		return;
+	}
+	var st = document.createElement("script");
+	st.setAttribute("type","text/javascript");
+	st.setAttribute("src","https://maps.google.com/maps/api/js?sensor=false&callback=gpxViewerMapCallback");
+	document.getElementById("gpxviewerscript").appendChild(st);
+}
+function initGPXViewer() {
+	$(window).bind("gpxViewerMapLoaded", initGPXViewerMap);
+	loadGoogleMaps();
+}
+function triggerGPXViewerResize() {
+	google.maps.event.trigger(window.gpxViewerMap, "resize");
+}
+function finalizeGPXViewer() {
+	google.maps.event.clearInstanceListeners(window);
+	google.maps.event.clearInstanceListeners(document);
+	delete window.gpxViewerMap;
+}
+</script>
+<div class="gpxviewermap" id="gpxviewermap"></div>
+</div>

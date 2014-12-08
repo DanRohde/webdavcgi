@@ -329,6 +329,7 @@ sub renderFileListEntry {
 				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0) || $uid,
 				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0) || $gid,
 				'isdotfile'=> $file=~/^\./ && $file !~/^\.{1,2}$/ ? 'yes' : 'no',
+				'suffix' => $file=~/\.([^\.]+)$/ ? $$self{cgi}->escapeHTML($1) : 'unknown',
 				'ext_classes'=> '',
 				'ext_attributes'=>'',
 				'ext_styles' =>'',

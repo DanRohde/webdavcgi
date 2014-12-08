@@ -17,20 +17,14 @@
 #########################################################################
 #
 # SETUP:
-# TODO: describe extension setup
 
-# TODO: change package name
-package WebInterface::Extension::Skeleton;
+package WebInterface::Extension::GPXViewer;
 
 use strict;
 
 use WebInterface::Extension;
 our @ISA = qw( WebInterface::Extension  );
 
-use vars qw( $ACTION );
-
-# TODO: define a ACTION name
-$ACTION='_REPLACE_ME_WITH_A_ACTION_NAME_';
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -41,13 +35,11 @@ sub handle {
 	my ($self, $hook, $config, $params) = @_;
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
-	
-	# TODO: handle hooks
-	
 	if ($hook eq 'fileactionpopup') {
-		$ret ={ action=>$ACTION, label=>$ACTION, path=>$$params{path}, type=>'li'};
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq $ACTION) {
-		$ret = 1;
+		$ret ={ action=>'gpxviewer', label=>'gpxviewer', path=>$$params{path}, type=>'li'};
+	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'gpxviewer') {
+		main::printHeaderAndContent('200 OK','text/html', $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->readTemplate('gpxviewer'), { file => $$self{cgi}->escapeHTML($$self{cgi}->param('file')) }), 'Cache-Control: no-cache, no-store');
+		$ret=1;	
 	} 
 	return $ret;
 }
