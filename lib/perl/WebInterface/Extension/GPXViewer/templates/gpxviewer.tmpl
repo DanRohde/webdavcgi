@@ -17,6 +17,8 @@ function loadGPXFileIntoGoogleMap(map, filename) {
 			parser.centerAndZoom(data);
 			parser.addTrackpointsToMap();         // Add the trackpoints
 			parser.addWaypointsToMap();           // Add the waypoints
+			
+			renderGPXFileInfo(data);
         }
     });
 }
@@ -51,6 +53,112 @@ function finalizeGPXViewer() {
 	google.maps.event.clearInstanceListeners(document);
 	delete window.gpxViewerMap;
 }
+function calcGPSDistance(lat1,lon1,lat2,lon2) {
+	var d2r = Math.PI / 180;
+	var dlon = (lon2-lon1) * d2r;
+	var dlat = (lat2-lat1) * d2r;
+	var a = Math.pow(Math.sin(dlat/2),2) + Math.pow(Math.sin(dlon/2),2) * Math.cos(lat1 * d2r) * Math.cos(lat2 * d2r);
+	return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) );
+}
+function getGPSDistanceInKm(distance) {
+	return distance * 6367;
+}
+function getGPSDistanceInMi(distance) {
+	return distance * 3956;
+}
+function calcGPSSpeed(trkpt1,trkpt2,distance) {
+	var t1 = Date.parse( $("time",trkpt1).text() );
+	var t2 = Date.parse( $("time",trkpt2).text() );
+	var td = (t2 - t1) / 3600000;
+	return distance / td;
+}
+function renderGPXDuration(ms) {
+	var date = new Date(null);
+	date.setSeconds(ms/1000);
+	return date.toISOString().substr(11,8);
+}
+function renderGPXFileInfo(gpx) {
+	var data = $(gpx);
+	var trkpt = $("trkpt",data);
+	
+	var datemin = Date.parse($("time",trkpt.first()).text());
+	var datemax = Date.parse($("time",trkpt.last()).text());
+	var ms = (datemax-datemin);
+	var h = ms / 3600000;
+	
+	var distance = 0;
+	var elemin = 100000000, elemax =0;
+	var maxSpeed = 0;
+	for (var i = 0; i< trkpt.length -1; i++) {
+		var a = $(trkpt[i]);
+		var b,d;
+		var j=1;
+		do {
+			b = $(trkpt[i+j]);
+			d = calcGPSDistance(a.attr('lat'), a.attr('lon'), b.attr('lat'), b.attr('lon'));
+			j++;	
+		} while (j<=5 && i+j < trkpt.length && d*6.367<100);
+		//if (j<6) console.log("i="+i+", j="+j+", d="+(d*6.367)+"m");
+		i+=j-2;
+		distance+=d;
+		var s = calcGPSSpeed(a,b,d);
+		maxSpeed = Math.max(maxSpeed, s);
+		
+		var ae = $("ele",a).text();
+		var be = $("ele",b).text();
+		
+		elemin = Math.min(elemin, ae);
+		elemin = Math.min(elemin, be);
+		elemax = Math.max(elemax, ae);
+		elemax = Math.max(elemax, be);
+	}
+	var km = getGPSDistanceInKm(distance);
+	var mi = getGPSDistanceInMi(distance);
+	
+	$("#gpxviewer-startdate").text((new Date(datemin)).toString());
+	$("#gpxviewer-enddate").text((new Date(datemax)).toString());
+	$("#gpxviewer-distancekm").text(Math.round(km*100)/100);
+	$("#gpxviewer-distancemi").text(Math.round(mi*100)/100);
+	$("#gpxviewer-duration").text(renderGPXDuration(ms));
+	$("#gpxviewer-avgspeedkm").text(Math.round(km/h*100)/100);
+	$("#gpxviewer-avgspeedmi").text(Math.round(mi/h*100)/100);
+	$("#gpxviewer-maxspeedkm").text(Math.round(getGPSDistanceInKm(maxSpeed)*100)/100);
+	$("#gpxviewer-maxspeedmi").text(Math.round(getGPSDistanceInMi(maxSpeed)*100)/100);
+	$("#gpxviewer-minaltitude").text(elemin);
+	$("#gpxviewer-maxaltitude").text(elemax);
+	
+	var spll = new google.maps.LatLng(trkpt.first().attr("lat"), trkpt.first().attr("lon"));
+	var epll = new google.maps.LatLng(trkpt.last().attr("lat"), trkpt.last().attr("lon"));
+	new google.maps.Marker({
+		position : spll,
+		map: window.gpxViewerMap,
+		title: "$tl(gpxviewer.startdate): "+(new Date(datemin)).toString()
+	});
+	new google.maps.Marker({
+		position: epll,
+		map: window.gpxViewerMap,
+		title: "$tl(gpxviewer.enddate): "+(new Date(datemax)).toString()
+	});
+	
+}
 </script>
 <div class="gpxviewermap" id="gpxviewermap"></div>
+<div class="gpxviewerstats" id="gpxviewerstats">
+	<div class="gpxviewer-title">$tl(gpxviewer.statistics)</div>
+	$tl(gpxviewer.startdate): <span class="gpxviewer-value" id="gpxviewer-startdate"></span>,
+	<br>
+	$tl(gpxviewer.enddate): <span class="gpxviewer-value" id="gpxviewer-enddate"></span>,
+	<br>
+	$tl(gpxviewer.duration): <span class="gpxviewer-value" id="gpxviewer-duration">HH:MM:SS</span>,
+	<br>
+	$tl(gpxviewer.distance): <span class="gpxviewer-value" id="gpxviewer-distancekm">xxx.xx</span> km  = <span class="gpxviewer-value" id="gpxviewer-distancemi">xxx.xx</span> mi,
+	<br>
+	$tl(gpxviewer.avgspeed): <span class="gpxviewer-value" id="gpxviewer-avgspeedkm">xx.xx</span> km/h = <span class="gpxviewer-value" id="gpxviewer-avgspeedmi">xx.xx</span> mi/h,
+	<br> 
+	$tl(gpxviewer.maxspeed): <span class="gpxviewer-value" id="gpxviewer-maxspeedkm">xxx.xx</span> km/h = <span class="gpxviewer-value" id="gpxviewer-maxspeedmi">xxx.xx</span> mi/h
+	<br>
+	$tl(gpxviewer.minaltitude): <span class="gpxviewer-value" id="gpxviewer-minaltitude">xx</span> m,
+	$tl(gpxviewer.maxaltitude): <span class="gpxviewer-value" id="gpxviewer-maxaltitude">xx</span> m
+
+</div>
 </div>
