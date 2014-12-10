@@ -53,7 +53,11 @@ function finalizeGPXViewer() {
 	google.maps.event.clearInstanceListeners(document);
 	delete window.gpxViewerMap;
 }
-function calcGPSDistance(lat1,lon1,lat2,lon2) {
+function calcGPSDistance(trkpt1,trkpt2) {
+	var lon1 = trkpt1.attr('lon');
+	var lat1 = trkpt1.attr('lat');
+	var lon2 = trkpt2.attr('lon');
+	var lat2 = trkpt2.attr('lat');
 	var d2r = Math.PI / 180;
 	var dlon = (lon2-lon1) * d2r;
 	var dlat = (lat2-lat1) * d2r;
@@ -81,24 +85,30 @@ function renderGPXFileInfo(gpx) {
 	var data = $(gpx);
 	var trkpt = $("trkpt",data);
 	
-	var datemin = Date.parse($("time",trkpt.first()).text());
-	var datemax = Date.parse($("time",trkpt.last()).text());
+	
+	var sp = trkpt.first(); // start point
+	var ep = trkpt.last();  // end point
+	var bl = calcGPSDistance(sp,ep); // beeline
+	var datemin = Date.parse($("time", sp).text());
+	var datemax = Date.parse($("time", ep).text());
 	var ms = (datemax-datemin);
 	var h = ms / 3600000;
 	
 	var distance = 0;
 	var elemin = 100000000, elemax =0;
 	var maxSpeed = 0;
+	
+	var ma = 0; // longest distance from start point (beeline)
+	
 	for (var i = 0; i< trkpt.length -1; i++) {
 		var a = $(trkpt[i]);
 		var b,d;
 		var j=1;
 		do {
 			b = $(trkpt[i+j]);
-			d = calcGPSDistance(a.attr('lat'), a.attr('lon'), b.attr('lat'), b.attr('lon'));
+			d = calcGPSDistance(a,b);
 			j++;	
-		} while (j<=5 && i+j < trkpt.length && d*6.367<100);
-		//if (j<6) console.log("i="+i+", j="+j+", d="+(d*6.367)+"m");
+		} while ( (j<=5 || (6367*d) <0.006) && i+j < trkpt.length);
 		i+=j-2;
 		distance+=d;
 		var s = calcGPSSpeed(a,b,d);
@@ -111,6 +121,9 @@ function renderGPXFileInfo(gpx) {
 		elemin = Math.min(elemin, be);
 		elemax = Math.max(elemax, ae);
 		elemax = Math.max(elemax, be);
+		
+		ma = Math.max(sp, calcGPSDistance(sp,b));
+		
 	}
 	var km = getGPSDistanceInKm(distance);
 	var mi = getGPSDistanceInMi(distance);
@@ -126,6 +139,9 @@ function renderGPXFileInfo(gpx) {
 	$("#gpxviewer-maxspeedmi").text(Math.round(getGPSDistanceInMi(maxSpeed)*100)/100);
 	$("#gpxviewer-minaltitude").text(elemin);
 	$("#gpxviewer-maxaltitude").text(elemax);
+	$("#gpxviewer-beelinekm").text(Math.round(getGPSDistanceInKm(bl)*100)/100);
+	$("#gpxviewer-beelinemi").text(Math.round(getGPSDistanceInMi(bl)*100)/100);
+	
 	
 	var spll = new google.maps.LatLng(trkpt.first().attr("lat"), trkpt.first().attr("lon"));
 	var epll = new google.maps.LatLng(trkpt.last().attr("lat"), trkpt.last().attr("lon"));
@@ -154,6 +170,7 @@ function renderGPXFileInfo(gpx) {
 	$tl(gpxviewer.duration): <span class="gpxviewer-value" id="gpxviewer-duration">HH:MM:SS</span>,
 	<br>
 	$tl(gpxviewer.distance): <span class="gpxviewer-value" id="gpxviewer-distancekm">xxx.xx</span> km  = <span class="gpxviewer-value" id="gpxviewer-distancemi">xxx.xx</span> mi,
+	$tl(gpxviewer.beeline): <span class="gpxviewer-value" id="gpxviewer-beelinekm">xxx.xx</span> km = <span class="gpxviewer-value" id="gpxviewer-beelinemi">xxx.xx</span> mi,
 	<br>
 	$tl(gpxviewer.avgspeed): <span class="gpxviewer-value" id="gpxviewer-avgspeedkm">xx.xx</span> km/h = <span class="gpxviewer-value" id="gpxviewer-avgspeedmi">xx.xx</span> mi/h,
 	<br> 
