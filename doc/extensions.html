@@ -29,7 +29,7 @@
 </pre></li>
 <li>Extensions are configured with the <code>%EXTENSION_CONFIG</code> variable in <code>webdav.conf</code>:
 <pre>
-$EXTENSIONS_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
+$EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 </pre>
 </ul>
 <h2>Supported Extensions</h2>
@@ -247,7 +247,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <td><pre>
 # disable_fileactionpopup - disables fileaction entry in popup menu
 # disable_apps - disables sidebar menu entry
-# allow_contentsearch - allowes search file content
+# allow_contentsearch - allows file content search
 # resultlimit - sets result limit (default: 1000)
 # searchtimeout - sets a timeout in seconds (default: 30 seconds) 
 # sizelimit - sets size limit for content search (default: 2097152 (=2MB))

@@ -132,12 +132,14 @@ function renderGPXFileInfo(gpx) {
 	new google.maps.Marker({
 		position : spll,
 		map: window.gpxViewerMap,
-		title: "$tl(gpxviewer.startdate): "+(new Date(datemin)).toString()
+		title: "$tl(gpxviewer.startdate): "+(new Date(datemin)).toString(),
+		icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
 	});
 	new google.maps.Marker({
 		position: epll,
 		map: window.gpxViewerMap,
-		title: "$tl(gpxviewer.enddate): "+(new Date(datemax)).toString()
+		title: "$tl(gpxviewer.enddate): "+(new Date(datemax)).toString(),
+		icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
 	});
 	
 }
