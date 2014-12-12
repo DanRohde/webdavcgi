@@ -47,7 +47,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .gpxviewer-value {
 	font-size: medium;
 	color: black;
+	font-weight: normal;
 }
 .gpxviewer-title {
 	font-weight: bold;
+}
+#gpxviewer-name {
+	width: 10em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

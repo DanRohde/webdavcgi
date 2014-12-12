@@ -7,7 +7,8 @@ window.gpxViewerMapCallback = function() {
 	$(window).trigger("gpxViewerMapLoaded");	
 }
 function loadGPXFileIntoGoogleMap(map, filename) {
-    $.ajax({url: filename,
+	var block = ToolBox.blockPage();
+    var xhr = $.ajax({url: filename,
 		dataType: "xml",
 		success: function(data) {
 			var parser = new GPXParser(data, map);
@@ -18,9 +19,12 @@ function loadGPXFileIntoGoogleMap(map, filename) {
 			parser.addTrackpointsToMap();         // Add the trackpoints
 			parser.addWaypointsToMap();           // Add the waypoints
 			
+			block.remove();
 			renderGPXFileInfo(data);
+			
         }
     });
+    ToolBox.renderAbortDialog(xhr);
 }
 
 function initGPXViewerMap() {
@@ -103,7 +107,6 @@ function renderGPXFileInfo(gpx) {
 	var elemin = 100000000, elemax =0;
 	var maxSpeed = 0;
 	
-	var ma = 0; // longest distance from start point (beeline)
 	var mt = 0; // moving time
 	var ele= 0; // elevation
 	
@@ -126,22 +129,16 @@ function renderGPXFileInfo(gpx) {
 	
 		var bb = $(trkpt[i]); // before b
 		
-		var st = calcGPSTimeDiff(a,bb);
+		var st = calcGPSTimeDiff(a,bb); // standing time
 		mt += calcGPSTimeDiff(a,b) - st; // moving time (time diff without standing time)
 		
 		distance+=rd;
 	
-		var s = calcGPSSpeed(a,b,rd,st);
-		if (st==0) maxSpeed = Math.max(maxSpeed, s);
+		if (st==0) maxSpeed = Math.max(maxSpeed, calcGPSSpeed(a,b,rd,st));
 		
 		if (be-ae >0) ele+=(be-ae);
-		elemin = Math.min(elemin, ae);
-		elemin = Math.min(elemin, be);
-		elemax = Math.max(elemax, ae);
-		elemax = Math.max(elemax, be);
-		
-		ma = Math.max(sp, calcGPSDistance(sp,b));
-		
+		elemin = Math.min(Math.min(elemin, ae), be);
+		elemax = Math.max(Math.max(elemax, ae), be);
 	}
 	var km = getGPSDistanceInKm(distance);
 	var mi = getGPSDistanceInMi(distance);
@@ -165,6 +162,9 @@ function renderGPXFileInfo(gpx) {
 	$("#gpxviewer-avgmovementspeedmi").text(Math.round(mi/mth*10)/10);
 	$("#gpxviewer-elevation").text(Math.round(ele*10)/10);
 	
+	$("#gpxviewer-trkpts").text(tp);
+	$("#gpxviewer-name").text($("name",data).first().text().trim()).attr("title",($("description",data).first().text().trim()));
+	
 	var spll = new google.maps.LatLng(trkpt.first().attr("lat"), trkpt.first().attr("lon"));
 	var epll = new google.maps.LatLng(trkpt.last().attr("lat"), trkpt.last().attr("lon"));
 	new google.maps.Marker({
@@ -184,10 +184,10 @@ function renderGPXFileInfo(gpx) {
 </script>
 <div class="gpxviewermap" id="gpxviewermap"></div>
 <div class="gpxviewerstats" id="gpxviewerstats">
-	<div class="gpxviewer-title">$tl(gpxviewer.statistics)</div>
-	$tl(gpxviewer.startdate): <span class="gpxviewer-value" id="gpxviewer-startdate"></span>,
+	<div class="gpxviewer-title">$tl(gpxviewer.statistics): <span id="gpxviewer-name">""</span>, <span class="gpxviewer-value" id="gpxviewer-trkpts">0</span> $tl(gpxviewer.trackpoints)</div>
+	$tl(gpxviewer.startdate): <span id="gpxviewer-startdate">?</span>,
 	<br>
-	$tl(gpxviewer.enddate): <span class="gpxviewer-value" id="gpxviewer-enddate"></span>,
+	$tl(gpxviewer.enddate): <span id="gpxviewer-enddate">?</span>,
 	<br>
 	$tl(gpxviewer.duration): <span class="gpxviewer-value" id="gpxviewer-duration">HH:MM:SS</span>,
 	$tl(gpxviewer.movingtime): <span class="gpxviewer-value" id="gpxviewer-movingtime">HH:MM:SS</span>
