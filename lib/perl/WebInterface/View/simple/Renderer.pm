@@ -40,7 +40,8 @@ sub render {
 	my $content ='';
 	my $contenttype= 'text/html';
 	$self->setLocale();
-	unless ('selector' ~~ @main::ALLOWED_TABLE_COLUMNS) {
+	my $atcregex = '^('.join('|',@main::ALLOWED_TABLE_COLUMNS).')$';
+	unless ('selector' =~ /$atcregex/) {
 		unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
 		unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';
 	}

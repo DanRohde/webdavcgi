@@ -159,11 +159,14 @@ sub _isAllowed {
 	return $self->_getCacheEntry('_isAllowed', $file) if $self->_existsCacheEntry('_isAllowed', $file);
 	my ($server, $share, $path, $shareidx) = _getPathInfo($file);
 	my ($userdomain) = _getUserDomain();
+	my $sregex = defined $server && defined $userdomain && ref($main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares}) eq 'ARRAY' 
+			? '^('.join('|',@{$main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares}}).')$' 
+			: '^$';
 	return $self->_setCacheEntry('_isAllowed', $file, 
 				!$main::BACKEND_CONFIG{$main::BACKEND}{secure}
 				|| _isRoot($file) 
 				|| (exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server} && !exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares})
-				|| $share ~~ @{$main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares}}
+				|| $share =~ /$sregex/i
 			);
 }
 sub isLink {

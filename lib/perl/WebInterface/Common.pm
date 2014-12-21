@@ -59,7 +59,8 @@ sub initialize() {
 	unshift @main::PAGE_LIMITS, $main::PAGE_LIMIT if defined $main::PAGE_LIMIT && $main::PAGE_LIMIT > 0 && grep(/\Q$main::PAGE_LIMIT\E/, @main::PAGE_LIMITS) <= 0 ;
 
 	my $view = $$self{cgi}->param('view') || $$self{cgi}->cookie('view') || $main::VIEW || $main::SUPPORTED_VIEWS[0];
-	$main::VIEW  = $view if $view ne $main::VIEW && $view ~~ @main::SUPPORTED_VIEWS;
+	my $svregex = '^('.join('|',@main::SUPPORTED_VIEWS).')$';
+	$main::VIEW  = $view if $view ne $main::VIEW && $view =~ /$svregex/;
 }
 
 sub readTLFile {
@@ -307,11 +308,12 @@ sub hasThumbSupport {
 sub getVisibleTableColumns {
 	my ($self) = @_;
 	my @vc;
+	my $avtcregex = '^('.join('|',@main::ALLOWED_TABLE_COLUMNS).')$';
 	if (my $vcs = $$self{cgi}->cookie('visibletablecolumns')) {
 		my @cvc = split(',', $vcs);
 		my ($allowed) = 1;
 		foreach my $c (@cvc) {
-			push @vc, $c if $c ~~ @main::ALLOWED_TABLE_COLUMNS;
+			push @vc, $c if $c =~ /$avtcregex/i;
 		}
 	} else {
 		@vc = @main::VISIBLE_TABLE_COLUMNS;

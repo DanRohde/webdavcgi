@@ -3,6 +3,9 @@
 <script type="text/javascript" src="${VHTDOCS}_EXTENSION(GPXViewer)_/htdocs/contrib/loadgpx.js"></script>
 </div>
 <script>
+var EARTHRADIUSKM = 6367.137;
+var EARTHRADIUSM = 63671370;
+var EARTHRADIUSMI = 3956.356;
 window.gpxViewerMapCallback = function() {
 	$(window).trigger("gpxViewerMapLoaded");	
 }
@@ -11,17 +14,25 @@ function loadGPXFileIntoGoogleMap(map, filename) {
     var xhr = $.ajax({url: filename,
 		dataType: "xml",
 		success: function(data) {
-			var parser = new GPXParser(data, map);
-			parser.setTrackColour("#ff0000");     // Set the track line colour
-			parser.setTrackWidth(5);          // Set the track line width
-			parser.setMinTrackPointDelta(0.001);      // Set the minimum distance between track points
-			parser.centerAndZoom(data);
-			parser.addTrackpointsToMap();         // Add the trackpoints
-			parser.addWaypointsToMap();           // Add the waypoints
-			
-			block.remove();
-			renderGPXFileInfo(data);
-			
+			try {
+				var parser = new GPXParser(data, map);
+				parser.setTrackColour("#ff0000");     // Set the track line colour
+				parser.setTrackWidth(5);          // Set the track line width
+				parser.setMinTrackPointDelta(0.001);      // Set the minimum distance between track points
+				parser.centerAndZoom(data);
+				parser.addTrackpointsToMap();         // Add the trackpoints
+				parser.addWaypointsToMap();           // Add the waypoints
+		
+				renderGPXFileInfo(data);
+			} catch (e) {
+				console.log(e);
+			}
+        },
+        error: function(xhr,status,error) {
+        	console.log(status);
+        },
+        complete: function() {
+        	block.remove();
         }
     });
     ToolBox.renderAbortDialog(xhr);
@@ -60,19 +71,24 @@ function finalizeGPXViewer() {
 function calcGPSDistance(trkpt1,trkpt2) {
 	var lon1 = trkpt1.attr('lon');
 	var lat1 = trkpt1.attr('lat');
+	var ele1 = $("ele",trkpt1).text();
 	var lon2 = trkpt2.attr('lon');
 	var lat2 = trkpt2.attr('lat');
+	var ele2 = $("ele",trkpt2).text();
+	
 	var d2r = Math.PI / 180;
 	var dlon = (lon2-lon1) * d2r;
 	var dlat = (lat2-lat1) * d2r;
 	var a = Math.pow(Math.sin(dlat/2),2) + Math.pow(Math.sin(dlon/2),2) * Math.cos(lat1 * d2r) * Math.cos(lat2 * d2r);
-	return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) );
+	return Math.sqrt( 
+			Math.pow(2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a) ),2)
+			+ Math.pow((ele2-ele1)/EARTHRADIUSM,2));
 }
 function getGPSDistanceInKm(distance) {
-	return distance * 6367;
+	return distance * EARTHRADIUSKM;
 }
 function getGPSDistanceInMi(distance) {
-	return distance * 3956;
+	return distance * EARTHRADIUSMI;
 }
 function calcGPSSpeed(trkpt1,trkpt2,distance,st) {
 	var t1 = Date.parse( $("time",trkpt1).text() );
@@ -88,6 +104,23 @@ function renderGPXDuration(ms) {
 	date.setSeconds(ms/1000);
 	return date.toISOString().substr(11,8);
 }
+function logLineInfo(trkpt1,trkpt2) {
+	var t1 = $("time",trkpt1).text();
+	var e1 = $("ele",trkpt1).text();
+	var lo1 = trkpt1.attr("lon");
+	var la1 = trkpt1.attr("lat");
+	var t2 = $("time",trkpt2).text();
+	var e2 = $("ele",trkpt2).text();
+	var lo2 = trkpt2.attr("lon");
+	var la2 = trkpt2.attr("lat");
+	var d = calcGPSDistance(trkpt1,trkpt2);
+	console.log("INFO");
+	console.log(t1+": "+lo1+" "+la1+", ele="+e1);
+	console.log(t2+": "+lo2+" "+la2+", ele="+e2);
+	
+	console.log("Distance(km)="+getGPSDistanceInKm(d)+", Speed(km/h): "+getGPSDistanceInKm(calcGPSSpeed(trkpt1,trkpt2,d,0))+", timediff="+calcGPSTimeDiff(trkpt1,trkpt2));
+	 
+}
 function renderGPXFileInfo(gpx) {
 	var data = $(gpx);
 	var trkpt = $("trkpt",data);
@@ -95,17 +128,19 @@ function renderGPXFileInfo(gpx) {
 	
 	var sp = trkpt.first(); // start point
 	var ep = trkpt.last();  // end point
-	var tp = trkpt.length;  // track point count
+	var tp = trkpt.length;  // track point count-1
 	var bl = calcGPSDistance(sp,ep); // beeline
 	var datemin = Date.parse($("time", sp).text());
 	var datemax = Date.parse($("time", ep).text());
 	var ms = (datemax-datemin);
 	var h = ms / 3600000;
 	
-	var mindistance = 0.0065 / 6365; // meters -> GPS 
+	var mindistance = 0.0065 / EARTHRADIUSKM; // meters -> GPS 
 	var distance = 0;
 	var elemin = 100000000, elemax =0;
 	var maxSpeed = 0;
+	var maxSpeedPoint;
+	var outlier = 0;
 	
 	var mt = 0; // moving time
 	var ele= 0; // elevation
@@ -114,27 +149,39 @@ function renderGPXFileInfo(gpx) {
 	for (var i = 0; i< tp -1; i++) {
 		var a = $(trkpt[i]);
 		var ae = $("ele",a).text();
-		var b,be,d;
+		var b,be,d,td,bb;
 		var j=1;
-		var lmt = 0;
-		var rd = 0; // real distance
-		do { // skip standing time
+		var st = 0;
+		do { // skip standing time and some outliers (LOF is better but slower)
 			b = $(trkpt[i+j]);
 			be = $("ele",b).text();
 			d = calcGPSDistance(a,b);
-			rd = Math.sqrt(Math.pow(d,2) + Math.pow((ae-be)/6365000,2));
+			bb = $(trkpt[i+j-1]);
+			td = calcGPSTimeDiff(bb,b);
+			if (be<-100 || be>8000 || td<1000 ) {
+				outlier++;
+			} else if ( d >= mindistance ) {
+				break;
+			} else {
+				st+=calcGPSTimeDiff(bb,b);
+			}
 			j++;	
-		} while ( (calcGPSTimeDiff(a,b)<1000 || rd < mindistance) && i+j < trkpt.length);  
-		i+=j-2;
-	
-		var bb = $(trkpt[i]); // before b
+		} while ( i+j < tp);  
 		
-		var st = calcGPSTimeDiff(a,bb); // standing time
+		i+=j-1;
+		
 		mt += calcGPSTimeDiff(a,b) - st; // moving time (time diff without standing time)
 		
-		distance+=rd;
+		distance+=d;
 	
-		if (st==0) maxSpeed = Math.max(maxSpeed, calcGPSSpeed(a,b,rd,st));
+		if (st==0 && calcGPSTimeDiff(a,b)>999) {
+			
+			var m = Math.max(maxSpeed, calcGPSSpeed(a,b,d,st));
+			if (m!=maxSpeed) {
+				maxSpeed = m;
+				maxSpeedPoint = b;
+			}
+		}
 		
 		if (be-ae >0) ele+=(be-ae);
 		elemin = Math.min(Math.min(elemin, ae), be);
@@ -144,6 +191,8 @@ function renderGPXFileInfo(gpx) {
 	var mi = getGPSDistanceInMi(distance);
 	var mth = mt / 3600000;
 	
+	var maxspeedkm = Math.round(getGPSDistanceInKm(maxSpeed)*10)/10;
+	var maxspeedmi = Math.round(getGPSDistanceInMi(maxSpeed)*10)/10;
 	$("#gpxviewer-startdate").text((new Date(datemin)).toString());
 	$("#gpxviewer-enddate").text((new Date(datemax)).toString());
 	$("#gpxviewer-distancekm").text(Math.round(km*10)/10);
@@ -151,8 +200,8 @@ function renderGPXFileInfo(gpx) {
 	$("#gpxviewer-duration").text(renderGPXDuration(ms));
 	$("#gpxviewer-avgspeedkm").text(Math.round(km/h*10)/10);
 	$("#gpxviewer-avgspeedmi").text(Math.round(mi/h*10)/10);
-	$("#gpxviewer-maxspeedkm").text(Math.round(getGPSDistanceInKm(maxSpeed)*10)/10);
-	$("#gpxviewer-maxspeedmi").text(Math.round(getGPSDistanceInMi(maxSpeed)*10)/10);
+	$("#gpxviewer-maxspeedkm").text(maxspeedkm);
+	$("#gpxviewer-maxspeedmi").text(maxspeedmi);
 	$("#gpxviewer-minaltitude").text(elemin);
 	$("#gpxviewer-maxaltitude").text(elemax);
 	$("#gpxviewer-beelinekm").text(Math.round(getGPSDistanceInKm(bl)*10)/10);
@@ -164,9 +213,11 @@ function renderGPXFileInfo(gpx) {
 	
 	$("#gpxviewer-trkpts").text(tp);
 	$("#gpxviewer-name").text($("name",data).first().text().trim()).attr("title",($("description",data).first().text().trim()));
+	$("#gpxviewer-outlier").text(outlier);
 	
 	var spll = new google.maps.LatLng(trkpt.first().attr("lat"), trkpt.first().attr("lon"));
 	var epll = new google.maps.LatLng(trkpt.last().attr("lat"), trkpt.last().attr("lon"));
+	var mpll = new google.maps.LatLng(maxSpeedPoint.attr("lat"), maxSpeedPoint.attr("lon"));
 	new google.maps.Marker({
 		position : spll,
 		map: window.gpxViewerMap,
@@ -179,12 +230,21 @@ function renderGPXFileInfo(gpx) {
 		title: "$tl(gpxviewer.enddate): "+(new Date(datemax)).toString(),
 		icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
 	});
+	new google.maps.Marker({
+		position: mpll,
+		map: window.gpxViewerMap,
+		title: "$tl(gpxviewer.maxspeed): "+maxspeedkm+"km/h = "+maxspeedmi+"mi/h",
+		icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+	});
 	
 }
 </script>
 <div class="gpxviewermap" id="gpxviewermap"></div>
 <div class="gpxviewerstats" id="gpxviewerstats">
-	<div class="gpxviewer-title">$tl(gpxviewer.statistics): <span id="gpxviewer-name">""</span>, <span class="gpxviewer-value" id="gpxviewer-trkpts">0</span> $tl(gpxviewer.trackpoints)</div>
+	<div class="gpxviewer-title">$tl(gpxviewer.statistics): <span id="gpxviewer-name">""</span>, 
+		<span class="gpxviewer-value" id="gpxviewer-trkpts">0</span> $tl(gpxviewer.trackpoints)
+		(<span class="gpxviewer-value" id="gpxviewer-outlier">0</span> $tl(gpxviewer.outlier))
+	</div>
 	$tl(gpxviewer.startdate): <span id="gpxviewer-startdate">?</span>,
 	<br>
 	$tl(gpxviewer.enddate): <span id="gpxviewer-enddate">?</span>,
