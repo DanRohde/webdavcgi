@@ -297,6 +297,46 @@ sub db_delete {
         
         return $ret;
 }
+sub db_modify {
+	my $self = shift;
+	my $prepstmt = shift;
+	my @params = @_;
+	my $ret = 0;
+	my $dbh = $self->db_init();
+	my $sth = $dbh->prepare($prepstmt);
+	if (defined $sth) {
+		$ret = $sth->execute(@params);
+		$self->db_handleUpdates($dbh, $sth);	
+	}
+	return $ret;
+}
+sub db_select {
+	my ($self, $prepstmt, $paramsref, $slice, $max_rows) = @_;
+	my $dbh = $self->db_init();
+	my $sth = $dbh->prepare($prepstmt);
+	return defined $sth && $sth->execute(@{$paramsref}) ? $sth->fetchall_arrayref($slice, $max_rows) : undef; 
+}
+sub db_selecth {
+	my ($self, $prepstmt, $paramsref, $key) = @_;
+	my $dbh = $self->db_init();
+	my $sth = $dbh->prepare($prepstmt);
+	return defined $sth && $sth->execute(@{$paramsref}) ? $sth->fetchall_hashref($key) : undef;
+}
+sub db_table_exists {
+	my $self = shift;
+	my $table = shift;
+	my $dbh = $self->db_init();
+	my @tables = $dbh->tables('','',$table,'TABLE');
+	if (@tables) {
+		foreach (@tables) {
+			next unless $_;
+			return 1 if $_ =~ /\Q${table}\E$/;
+		}
+	} else {
+		warn("db_table_exists: there is no table yet");
+	}
+	return 0;
+}
 sub db_init {
         my $self = shift;
         return $$self{DBI_INIT} if defined $$self{DBI_INIT};

@@ -64,6 +64,8 @@ sub handlePostUpload {
 		} elsif ( !$$self{backend}->saveStream( $destination, $filename ) ) {
 			$errmsg = 'uploadforbidden';
 			push @{$msgparam}, $rfn;
+		} else {
+			main::broadcastEvent('WEB-UPLOADED', { file=> $destination, size=>($$self{backend}->stat($destination))[7] })
 		}
 	}
 	if ( !defined $errmsg ) {
@@ -121,16 +123,15 @@ sub handleFileActions {
 					last;
 				} 
 				if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
-					my $eventChannel = main::getEventChannel();
 					my $full = $main::PATH_TRANSLATED.$file;
-					$eventChannel->broadcastEvent('DELETE', {file => $full}) if $eventChannel;
+					main::broadcastEvent('WEB-DELETE', {file => $full});
 					if ($main::ENABLE_TRASH) {
 						$count += main::moveToTrash( $full );
 					}
 					else {
 						$count += $$self{backend}->deltree( $full, \my @err );
 					}
-					$eventChannel->broadcastEvent('DELETED', {file => $full}) if $eventChannel;
+					main::broadcastEvent('WEB-DELETED', {file => $full});
 					main::logger("DELETE($main::PATH_TRANSLATED) via POST");
 				}
 			}
@@ -199,6 +200,7 @@ sub handleFileActions {
 			{
 				main::logger("MKCOL($main::PATH_TRANSLATED$colname via POST");
 				$msg = 'foldercreated';
+				main::broadcastEvent('WEB-FOLDERCREATED', { file=>$main::PATH_TRANSLATED.$colname});
 			}
 			else {
 				$errmsg = 'foldererr';
@@ -223,6 +225,7 @@ sub handleFileActions {
 					&& $$self{backend}->createSymLink( $file, $lndst ) )
 				{
 					$msg = 'symlinkcreated';
+					main::broadcastEvent('WEB-SYMLINKCREATED', {file=>$lndst, src=>$file});
 				}
 				else {
 					$errmsg = 'createsymlinkerr';
@@ -247,6 +250,7 @@ sub handleFileActions {
 		{
 			$msg      = 'newfilecreated';
 			$msgparam = [ $fn ];
+			main::broadcastEvent('WEB-FILECREATED',{file=>$full, size=>0});
 		}
 		else {
 			$msgparam = [ $fn , ( $$self{backend}->exists($full) ? $self->tl('fileexists') : $self->tl($!) ) ];

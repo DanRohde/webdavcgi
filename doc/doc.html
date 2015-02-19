@@ -33,6 +33,7 @@ Content of this topic:
 	<li><a href="#git">GIT backend</a></li>
 	<li><a href="#rcs">RCS backend</a></li>
 	<li><a href="#ro">Read-only backend RO</a></li>
+	<li><a href="#s3b">Amazon S3 browser backend S3B</a>
 	<li><a href="#performance">Performance</a></li>
 	<li><a href="#speedy">Speedy Support</a></li>
 	<li><a href="#modperl">Mod_Perl Support</a>
@@ -1229,6 +1230,33 @@ $BACKEND='RO';
 $BACKEND_CONFIG{RO}{backend} = 'FS';
 ...
 </pre>
+<h2 id="s3b">Amazon S3 browser backend S3B</h2>
+<p> The S3B backend is a simple Amazon S3 browser. It is tested only with Ceph Radows S3 gateway and supports:</p>
+  <ul>
+  <li>buckets: create, delete</li>
+  <li>files: upload, download, rename, delete, copy, move</li>
+  </ul> 
+Requirements:
+<ul>
+<li> the Amazon::S3 perl module (Debian/Ubuntu: <code>perl -MCPAN -e 'install Amazon::S3' </code></li>
+<li> a access id and secret key for S3 (compatible) storage like Ceph Rados gateway</li>  
+</ul>
+<code>/etc/webdav.conf</code> example:
+<pre>
+...
+$BACKEND='S3B';
+$BACKEND_CONFIG{S3B} = {
+        access_id => '[myaccessid]',   # required
+        secret_key => '[mysecretkey]', # required
+        host => '[myradosservername]', # optional, default: s3.amazonaws.com
+        bucketprefix => '[myaccessid][separator like "-"]', # optional, default: undefined (usefull for a Ceph Rados gateway with a required access id in a bucket name)
+        secure => 1, # optional, 1: https, 0: http, default: 0
+        retry => 1,  # optional, default: 0 
+        timeout=>2,  # optional, default: 0
+};
+...
+</pre>
+
 <h2 id="performance">Performance</h2>
 <ul>
   <li> Use a fast (local) database.</li>

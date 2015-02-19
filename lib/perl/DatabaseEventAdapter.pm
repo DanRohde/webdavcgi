@@ -34,7 +34,7 @@ sub normalize {
 }
 sub registerChannel {
 	my ($self, $channel) = @_;
-	$channel->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED'], $self);
+	$channel->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED','WEB-DELETED'], $self);
 }
 sub receiveEvent {
 	my ( $self, $event, $data ) = @_;
@@ -53,7 +53,7 @@ sub receiveEvent {
 		$db->db_deleteProperties($dst);
 		$db->db_copyProperties($src, $dst);
 	}
-	elsif ( $event eq 'DELETED' ) {
+	elsif ( $event eq 'DELETED' || $event eq 'WEB-DELETED' ) {
 		my ($dst) = ($self->normalize($$data{file}));
 		$db->db_deletePropertiesRecursive($dst);
 		$db->db_delete($dst);

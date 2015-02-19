@@ -3,6 +3,7 @@
      - fixed Chrome related rename, create file/folder bug
      - added missing icons to dialogs
      - added ImageInfo extension
+     - added Amazon S3 browser backend S3B (only tested with Ceph Rados gateway) 
      
 1.0.0: 2014/10/10
      - fixed minor AFS Group Manager bug
