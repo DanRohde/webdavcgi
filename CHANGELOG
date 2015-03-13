@@ -1,4 +1,5 @@
 1.0.1: BETA
+     - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug
      - fixed multiple white-spaces in file/folder names bug
      - fixed Chrome related rename, create file/folder bug
      - added missing icons to dialogs

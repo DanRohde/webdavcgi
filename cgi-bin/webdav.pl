@@ -767,10 +767,12 @@ if (defined $CONFIGFILE) {
 	}
 }
 
+use POSIX qw(strftime setlocale LC_TIME);
+setlocale(LC_TIME,'en_US.'.$CHARSET); ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
+
 unshift(@EVENTLISTENER, 'DatabaseEventAdapter');
 broadcastEvent('INIT');
 
-use POSIX qw(strftime);
 
 use XML::Simple;
 
