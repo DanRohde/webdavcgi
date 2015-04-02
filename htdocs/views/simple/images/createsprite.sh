@@ -11,7 +11,8 @@ FILESWITHNULL="null: $(echo $FILES | sed -e 's@ @ null: @g')"
 # with shadows:
 #montage $FILESWITHNULL -tile 1x -shadow -background none -geometry 16x16+0+0 sprite.png
 # without shadows:
-montage $FILESWITHNULL -tile 1x -background none -geometry 16x16+2+2 -quality 100 sprite.png
+echo montage $FILESWITHNULL -tile 1x -background none -geometry 16x16+2+2 -quality 100 sprite.png
+montage $FILESWITHNULL -tile 1x -background none -geometry 16x16+2+2 -quality 100  sprite.png
 
 i=1
 for f in $FILES ; do
@@ -19,4 +20,6 @@ for f in $FILES ; do
 	i=$(( $i + 1 ))
 done
 
-mv sprite.png ..
+convert sprite.png  -opaque "#808080" -fill "#000000" sprite-hover.png
+
+mv sprite.png sprite-hover.png ..

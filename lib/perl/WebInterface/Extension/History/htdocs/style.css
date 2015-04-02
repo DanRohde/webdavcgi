@@ -26,3 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right 2px center;
 	padding: 0.4em 0.4em 0.4em 22px;
 }
+#popupmenu li.subpopupmenu.history-popup:hover {
+	background: url(history-hover.png) no-repeat 2px 6px,
+			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right 2px center;
+}

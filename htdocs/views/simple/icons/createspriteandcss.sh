@@ -27,3 +27,5 @@ for i in $FILES ; do
 	pos=$(( $pos + $pad))
 	
 done
+
+

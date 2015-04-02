@@ -2,6 +2,9 @@
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug
      - fixed multiple white-spaces in file/folder names bug
      - fixed Chrome related rename, create file/folder bug
+     - fixed some DBB backend bugs (thx Varadi Gabor)
+     - fixed some AFS backend bugs (thx Varadi Gabor)
+     - added Hungarian translations (thx Varadi Gabor)
      - added missing icons to dialogs
      - added ImageInfo extension
      - added Amazon S3 browser backend S3B (only tested with Ceph Rados gateway) 

@@ -36,11 +36,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.puri {
 	background-image: url(images/share.png);
 }
+.action.puri:hover {
+	background-image: url(images/share-hover.png);
+}
 .action.spuri {
 	background-image: url(images/share.png);
 }
+.action.spuri:hover {
+	background-image: url(images/share-hover.png);
+}
 .action.depuri {
 	background-image: url(images/unshare.png);
+}
+.action.depuri:hover {
+	background-image: url(images/unshare-hover.png);
 }
 input[readonly="readonly"].publicuri {
 	opacity: 1;

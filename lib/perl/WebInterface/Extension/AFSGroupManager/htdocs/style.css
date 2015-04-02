@@ -19,12 +19,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
+#nav .action.afsgroupmngr:hover {
+	background-image: url(group-hover.png);
+}
 #popupmenu .action.afsgroupmngr {
 	background-image: url(group.png);
 	background-position: 2px center;
 	background-repeat: no-repeat;
 }
-
+#popupmenu .action.afsgroupmngr:hover {
+	background-image: url(group-hover.png);
+}
 #afsgroupactions {
 	display: inline;
 	float: right;

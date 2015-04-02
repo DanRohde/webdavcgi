@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(aclmanager.png);
 	background-repeat: no-repeat;
 }
+.action.afsaclmanager:hover {
+	background-image: url(aclmanager-hover.png);
+}
 #nav .action.afsaclmanager {
 	background-position: 4px center;
 }

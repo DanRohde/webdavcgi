@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(aclmanager.png);
 	background-repeat: no-repeat;
 }
+.action.pacl:hover {
+	background-image: url(aclmanager-hover.png);
+}
 #popupmenu .action.pacl {
 	background-position: 2px 7px;
 }

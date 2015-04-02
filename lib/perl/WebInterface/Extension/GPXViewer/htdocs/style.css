@@ -29,6 +29,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	
 }
+.action.gpxviewer:hover {
+	background-image: url(gpxviewer-hover.png);
+}
 .action.gpxviewer {
 	background-position: 2px center;
 }

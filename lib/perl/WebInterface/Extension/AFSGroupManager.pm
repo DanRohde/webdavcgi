@@ -133,8 +133,20 @@ sub renderAFSGroupManager {
 	$content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : "\$${1}"/egs;
 	return $content;
 }
-sub isValidAFSGroupName { return $_[1] =~ /^[a-z0-9\_\@\:]+$/i; }
-sub isValidAFSUserName  { return $_[1] =~ /^[a-z0-9\_\@]+$/i; }
+sub isValidAFSGroupName {
+	if ( defined $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} and $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} ) {
+		return $_[1] =~ /^[a-z0-9\_\@\:\.]+$/i;
+	} else {
+		return $_[1] =~ /^[a-z0-9\_\@\:]+$/i;
+	}
+}
+sub isValidAFSUserName {
+	if ( defined $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} and $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} ) {
+		return $_[1] =~ /^[a-z0-9\_\@\.]+$/i;
+	} else {
+		return $_[1] =~ /^[a-z0-9\_\@]+$/i;
+	}
+}
 
 sub doAFSGroupActions {
 	my ( $self ) = @_;
@@ -174,7 +186,7 @@ sub doAFSGroupActions {
 		$grp =~ s/^\s+//;
 		$grp =~ s/\s+$//;
 		if ( $self->isValidAFSGroupName($grp) ) {
-			$output = qx@$$self{ptscmd} creategroup $grp 2>&1@;
+			$output = qx@$$self{ptscmd} creategroup "$grp" 2>&1@;
 			if ( $output eq "" || $output =~ /^group \Q$grp\E has id/i ) {
 				$msg      = 'afsgrpcreated';
 				$msgparam = [ $grp ];
@@ -192,7 +204,7 @@ sub doAFSGroupActions {
 		my $ngrp = $$self{cgi}->param('afsnewgrpname') || '';
 		if ( $self->isValidAFSGroupName($grp) ) {
 			if ( $self->isValidAFSGroupName($ngrp) ) {
-				$output = qx@$$self{ptscmd} rename -oldname \"$grp\" -newname \"$ngrp\" 2>&1@;
+				$output = qx@$$self{ptscmd} rename -oldname "$grp" -newname "$ngrp" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsgrprenamed';
 					$msgparam = [ $grp, $ngrp ];
@@ -224,7 +236,7 @@ sub doAFSGroupActions {
 			}
 			if ( $#users > -1 ) {
 				my $userstxt = '"' . join( '" "', @users ) . '"';
-				$output = qx@$$self{ptscmd} removeuser -user $userstxt -group \"$grp\" 2>&1@;
+				$output = qx@$$self{ptscmd} removeuser -user $userstxt -group "$grp" 2>&1@;
 				if ( $output eq "" ) {
 					$msg      = 'afsuserremoved';
 					$msgparam =  [ join( ', ', @users ) , $grp ];

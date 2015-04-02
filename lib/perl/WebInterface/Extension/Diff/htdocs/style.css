@@ -24,6 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
+#nav .listaction.diff:hover {
+	background-image: url(diff-hover.png);
+}
 .isreadable-no .diff,
 .unselectable-yes .diff {
 	display: none;

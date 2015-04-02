@@ -1,0 +1,7 @@
+pacl                                    "Jogosultság (ACL) kezelő"
+pacl_update                             "Alkalmaz"
+pacl_msg_success                        "A '%s' POSIX jogai (ACL) sikeresen megváltoztatva."
+pacl_recursive                          "almappákra is"
+pacl_legend                             "Jogok: r - olvas, w - módosít, x - futtat, --- - jogok törlése"
+pacl_msg_err_usergroup                  "Egy új ACL bejegyzésnek 'user:', 'group:', vagy 'default:' előtaggal kell kezdődnie." 
+pacl_msg_err_perm                       "Legalább egy jogot meg kell adjon."

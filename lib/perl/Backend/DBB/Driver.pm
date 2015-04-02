@@ -56,8 +56,21 @@ sub initialize {
 	my ($self) = @_;
 
 	if (!defined $DB) {
+		my $dsn = $main::BACKEND_CONFIG{$main::BACKEND}{dsn} || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db';
+		my @parm = split(/:/, $dsn);
+		if (scalar(@parm) == 3 and ((uc($parm[0]) eq 'DBI') and ($parm[1] eq 'SQLite')) {
+			foreach my $tag (split(/;/, $parm[2])) {
+				if ($tag =~ /^dbname=/) {
+					$tag =~ s/dbname=//;
+					if ($tag ne '' and (! -e $tag)) {
+						open(FH, '>' . $tag) or die "Can't create $tag: $!";
+						close(FH);
+					}
+				}
+			}
+		}
 		$DB = DBI->connect(
-				$main::BACKEND_CONFIG{$main::BACKEND}{dsn} || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db', 
+				$dsn,
 				$main::BACKEND_CONFIG{$main::BACKEND}{user} || "", 
 				$main::BACKEND_CONFIG{$main::BACKEND}{password} || "", 
 				{ RaiseError=>0, AutoCommit=>0 }
@@ -66,7 +79,7 @@ sub initialize {
 			my $sth = $DB->prepare('SELECT name FROM objects');
 			if (!defined $sth) {
 				$DB->rollback();
-				$sth = $DB->prepare('CREATE TABLE objects (name varchar(255) NOT NULL, parent varchar(255) NOT NULL, type int NOT NULL, owner VARCHAR(255) NOT NULL, created timestamp NOT NULL, modified NOT NULL, size int NOT NULL, permissions int NOT NULL, data blob)'); 
+				$sth = $DB->prepare('CREATE TABLE objects (name varchar(255) NOT NULL, parent varchar(255) NOT NULL, type int NOT NULL, owner VARCHAR(255) NOT NULL, created timestamp NOT NULL, modified timestamp NOT NULL, size int NOT NULL, permissions int NOT NULL, data blob)'); 
 				$sth->execute();
 				$DB->commit();
 			}

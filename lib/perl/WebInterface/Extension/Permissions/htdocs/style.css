@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(permissions.png);
 	background-repeat: no-repeat;
 }
+.action.permissions:hover {
+	background-image: url(permissions-hover.png);
+}
 #nav .action.permissions {
 	background-position: 4px center;
 }

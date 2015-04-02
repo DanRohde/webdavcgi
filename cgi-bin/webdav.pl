@@ -380,7 +380,7 @@ $EXTENSION_CONFIG{Permissions}{others} = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a><a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
@@ -502,6 +502,10 @@ $BUFSIZE = 1048576;
 ## EXAMPLE: $AFSQUOTA='/usr/bin/fs listquota';
 #$AFSQUOTA='/usr/bin/fs listquota';
 $BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota';
+
+## allows AFS dotted principals (/usr/lib/openafs/fileserver -allow-dotted-principals ...)
+## EXAMLE: $BACKEND_CONFIG{AFS}{allowdottedprincipals} = 1;
+$BACKEND_CONFIG{AFS}{allowdottedprincipals} = 0;
 
 ## -- AFS_FSCMD -- obsolete, use $BACKEND_CONFIG{AFS}{fscmd}='/usr/bin/fs'; instead 
 ## file path for the fs command to change acls
@@ -714,7 +718,7 @@ $DEBUG = 0;
 @AFS_EXTENSIONS = ('AFSACLManager','AFSGroupManager');
 ## -- EXTRA_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@EXTRA_EXTENSIONS = ('GPXViewer','SourceCodeViewer','HexDump');
+@EXTRA_EXTENSIONS = ('ActivityLog', 'GPXViewer','SourceCodeViewer','HexDump');
 ## -- PUB_EXTENSIONS
 @PUB_EXTENSIONS = ('PublicUri','Redirect');
 ## -- DEV_EXTENSIONS

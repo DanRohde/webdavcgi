@@ -1,0 +1,1 @@
+viewerjs.view                           "Megtekintés"

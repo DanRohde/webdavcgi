@@ -21,11 +21,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.imageinfo.image, .imageinfo.image.ui-dialog .ui-dialog-title {
 	background-image: url(imageinfo-image.png);
 }
+.action.imageinfo.image:hover {
+	background-image: url(imageinfo-image-hover.png);
+}
 .action.imageinfo.video, .imageinfo.video.ui-dialog .ui-dialog-title {
 	background-image: url(imageinfo-video.png);
 }
+.action.imageinfo.video:hover {
+	background-image: url(imageinfo-video-hover.png);
+}
 .action.imageinfo.audio, .imageinfo.audio.ui-dialog .ui-dialog-title {
 	background-image: url(imageinfo-audio.png);
+}
+.action.imageinfo.audio:hover {
+	background-image: url(imageinfo-audio-hover.png);
 }
 .action.imageinfo.image, .action.imageinfo.video, .action.imageinfo.audio {
 	background-position: 2px center;

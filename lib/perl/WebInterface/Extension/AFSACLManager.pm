@@ -185,8 +185,20 @@ sub renderAFSACLList {
 	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile), !$$self{backend}->_checkCallerAccess($fn,"a")));
 }
 sub isValidAFSACL       { return $_[1] =~ /^[rlidwka]+$/; }
-sub isValidAFSGroupName { return $_[1] =~ /^[a-z0-9\_\@\:]+$/i; }
-sub isValidAFSUserName  { return $_[1] =~ /^[a-z0-9\_\@]+$/i; }
+sub isValidAFSGroupName {
+	if ( defined $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} and $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} ) {
+		return $_[1] =~ /^[a-z0-9\_\@\:\.]+$/i;
+	} else {
+		return $_[1] =~ /^[a-z0-9\_\@\:]+$/i;
+	}
+}
+sub isValidAFSUserName {
+	if ( defined $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} and $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} ) {
+		return $_[1] =~ /^[a-z0-9\_\@\.]+$/i;
+	} else {
+		return $_[1] =~ /^[a-z0-9\_\@]+$/i;
+	}
+}
 
 sub buildAFSFSSETACLParam {
 	my ($self) = @_;

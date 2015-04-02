@@ -8,6 +8,9 @@
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
+.action.dwnload:hover, .listaction.dwnload:hover {
+	background-image: url(download-hover.png);
+}
 #popupmenu .action.dwnload {
 	background-position: 2px 7px;
 }
