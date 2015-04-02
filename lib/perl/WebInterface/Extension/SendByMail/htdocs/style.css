@@ -27,6 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-color: transparent;
 	color: #666;
 }
+.action.sendbymail:hover,.listaction.sendbymail:hover {
+	background-image: url(sendbymail-hover.png);
+}
 .listaction.sendbymail {
  	background-position: center center;
  }

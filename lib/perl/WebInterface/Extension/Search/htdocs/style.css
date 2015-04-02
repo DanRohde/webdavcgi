@@ -23,7 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .action.search {
 	background-position: 4px center;
 }
-
+.action.search:hover {
+	background-image: url(search-hover.png);
+}
 .search.dialogpane {
 	min-width: 600px;
 }

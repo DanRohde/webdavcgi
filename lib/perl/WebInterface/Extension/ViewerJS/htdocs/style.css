@@ -27,7 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.viewerjs {
 	background-position: 2px center;
 }
-
+.action.viewerjs:hover {
+	background-image: url(view-hover.png);
+}
 .viewerjs.content {
 	position: fixed;
 	top: 0;

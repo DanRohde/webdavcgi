@@ -718,7 +718,7 @@ $DEBUG = 0;
 @AFS_EXTENSIONS = ('AFSACLManager','AFSGroupManager');
 ## -- EXTRA_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@EXTRA_EXTENSIONS = ('ActivityLog', 'GPXViewer','SourceCodeViewer','HexDump');
+@EXTRA_EXTENSIONS = ('GPXViewer','SourceCodeViewer','HexDump','SendByMail');
 ## -- PUB_EXTENSIONS
 @PUB_EXTENSIONS = ('PublicUri','Redirect');
 ## -- DEV_EXTENSIONS

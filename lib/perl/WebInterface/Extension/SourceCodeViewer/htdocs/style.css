@@ -24,6 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.scv {
 	background: url(scv.png) no-repeat 2px center;
 }
+.action.scv:hover {
+	background-image: url(scv-hover.png);
+}
 .scv.prettyprint {
 	overflow: auto;	
 }
