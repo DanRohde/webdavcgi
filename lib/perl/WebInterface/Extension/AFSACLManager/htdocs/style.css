@@ -36,3 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: left center;
 	padding-left: 20px;
 }
+#nav a.afsaclmanager {
+	white-space: normal;
+}

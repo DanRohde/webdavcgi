@@ -58,7 +58,7 @@ sub initialize {
 	if (!defined $DB) {
 		my $dsn = $main::BACKEND_CONFIG{$main::BACKEND}{dsn} || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db';
 		my @parm = split(/:/, $dsn);
-		if (scalar(@parm) == 3 and ((uc($parm[0]) eq 'DBI') and ($parm[1] eq 'SQLite')) {
+		if (scalar(@parm) == 3 && ((uc($parm[0]) eq 'DBI') && ($parm[1] eq 'SQLite'))) {
 			foreach my $tag (split(/;/, $parm[2])) {
 				if ($tag =~ /^dbname=/) {
 					$tag =~ s/dbname=//;
