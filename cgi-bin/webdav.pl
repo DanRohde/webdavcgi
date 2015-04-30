@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015042903";
+$RELEASE="1.0.1BETA2015043001";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -380,7 +380,7 @@ $EXTENSION_CONFIG{Permissions}{others} = [ 'r','w','x','t' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a><a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>';
+$LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>';
 
 ## -- HEADER
 ## content after body tag in the Web interface
@@ -404,6 +404,7 @@ $LANG = 'default';
 	'default' => 'English',
 	'de' => 'Deutsch',
 	'fr' => 'Français',
+	'hu' => 'Magyar',
 	'it' => 'Italiano',
 ); 
 
