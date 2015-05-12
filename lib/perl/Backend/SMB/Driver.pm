@@ -107,6 +107,8 @@ sub readDir {
 					push @files, $path;
 				}
 				#push @files, split(/, /, $fserver.$SHARESEP.join(", $fserver$SHARESEP",@{$$dom{fileserver}{$fserver}{shares}}) );
+			} elsif ($fserver eq '') {
+				## ignore empty entries
 			} elsif (my $dir = $self->getSmbClient()->opendir("smb://$fserver/")) {
 				my $sfilter = _getShareFilter($$dom{fileserver}{$fserver}, _getShareFilter($dom, _getShareFilter($main::BACKEND_CONFIG{$main::BACKEND})));
 				while (my $f = $self->getSmbClient()->readdir_struct($dir)) {
