@@ -47,6 +47,7 @@ sub _init {
 	$$self{nameservers} = $config{nameservers};
 	$$self{allowflag} = $config{allowflag};
 	$$self{ldapattr} = $config{ldapattr} || 'info';
+	$$self{retries} = $config{retries} || 3;
 }
 
 sub getSmbConfig {
@@ -85,7 +86,8 @@ sub _getSmbConfig {
 	%SMB = (
 		defaultdomain => $domain || $$self{defaultdomain},
 		sharesep      => $separator,
-		secure        => 1
+		secure        => 1,
+		retries	      => $$self{retries}
 	);
 	my $dc;
 	my $homeDirectory;
