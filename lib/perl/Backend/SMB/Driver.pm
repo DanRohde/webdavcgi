@@ -172,6 +172,7 @@ sub _isAllowed {
 				!$main::BACKEND_CONFIG{$main::BACKEND}{secure}
 				|| _isRoot($file) 
 				|| (exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server} && !exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares})
+				|| (exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server} && $shareidx && exists $main::BACKEND_CONFIG{$main::BACKEND}{domains}{$userdomain}{fileserver}{$server}{shares}[$shareidx])
 				|| $share =~ /$sregex/i
 			);
 }
@@ -423,7 +424,6 @@ sub _isRoot {
 }
 sub _isShare {
 	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E[^\/]+\/?$/;
-
 }
 sub S_ISLNK { return ($_[0] & 0120000) == 0120000; }
 sub S_ISDIR { return ($_[0] & 0040000) == 0040000; }
