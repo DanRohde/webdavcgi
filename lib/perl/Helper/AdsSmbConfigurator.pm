@@ -167,7 +167,10 @@ sub _getSmbConfig {
 			}
 		}
 	}
-		
+	if ($$self{debug}) {
+		use Data::Dumper;
+		$self->debug(Dumper(\%SMB));
+	}	
 	return $SMB{allowed} ? \%SMB : {};
 }
 

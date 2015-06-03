@@ -122,17 +122,21 @@ sub readDir {
 		}
 
 	} elsif ((my $url = $self->_getSmbURL($base)) ne $base) {
-		if (my $dir = $self->getSmbClient()->opendir($url)) {
-			while (my $f = $self->getSmbClient()->readdir_struct($dir)) {
-				last if defined $limit && $#files>=$limit;
-				next if $self->filter($filter, $base, $$f[1]); 
-				$self->_setCacheEntry('readDir',"$base$$f[1]", { type=>$$f[0], comment=>$$f[2] });
-				push @files, $$f[1]; 
+		my $trycounter = 0;
+		my $dir;
+		do {
+			if ($dir = $self->getSmbClient()->opendir($url)) {
+				while (my $f = $self->getSmbClient()->readdir_struct($dir)) {
+					last if defined $limit && $#files>=$limit;
+					next if $self->filter($filter, $base, $$f[1]); 
+					$self->_setCacheEntry('readDir',"$base$$f[1]", { type=>$$f[0], comment=>$$f[2] });
+					push @files, $$f[1]; 
+				}
+				$self->getSmbClient()->closedir($dir);
+			} else {
+				warn("Cannot open dir $url: $!\nKRB5CCNAME=$ENV{KRB5CCNAME}");
 			}
-			$self->getSmbClient()->closedir($dir);
-		} else {
-			warn("Cannot open dir $url: $!\nKRB5CCNAME=$ENV{KRB5CCNAME}");
-		}
+		} while (!$dir && ++$trycounter<$main::BACKEND_CONFIG{$main::BACKEND}{retries})
 	}
 	$self->_setCacheEntry('readDir:list',$base,\@files);
 	return \@files;
