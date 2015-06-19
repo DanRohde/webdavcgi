@@ -2,7 +2,10 @@
 <div title="$sizetitle">$diskusageof: $size</div>
 <div> $tl(statfiles) $files, $tl(statfolders) $folders, $tl(statsum) $sum</div>
 <!--IF($bytesize > 0)-->
-<script type="text/javascript" src="${VHTDOCS}_EXTENSION(DiskUsage)_/htdocs/contrib/contrib.js"></script>
+<script type="text/javascript" src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/jquery.ui.treemap.min.js"></script>
+<script type="text/javascript" src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/amcharts.js"></script>
+<script type="text/javascript" src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/pie.js"></script>
+<script type="text/javascript" src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/themes/light.js"></script>
 
 <div class="diskusage details accordion">
 	<h3>$tl(du_details)</h3>

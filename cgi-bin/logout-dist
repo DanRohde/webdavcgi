@@ -39,7 +39,7 @@ REALM="${REALM:=Change Me}"
 ### HOMEURL: the home URL
 HOMEURL="${HOMEURL:=/changemyhomeurl}"
 
-### TIMEOUT: the refresh timeout for the logut page
+### TIMEOUT: the refresh timeout for the logout page
 TIMEOUT=${TIMEOUT:=0}
 
 # SETUP END
