@@ -677,7 +677,7 @@ function initChangeDir() {
 		changeUri($("#pathinput input[name='uri']").val());
 	});
 	$("#flt").on("fileListChanged", function() {
-		$('#pathinput input[name=uri]').val(decodeURI($('#fileList').attr('data-uri')));	
+		$('#pathinput input[name=uri]').val(decodeURI($('#fileList').attr('data-uri')));
 	});
 	
 
@@ -1218,7 +1218,7 @@ function handleJSONResponse(response) {
 	if (response.warn) notifyWarn(response.warn);
 	if (response.message) notifyInfo(response.message);
 	if (response.quicknav) {
-		$("#quicknav").html(response.quicknav);
+		$("#quicknav").html(response.quicknav).MyTooltip(500);
 		$("#quicknav a").click(function(event) {
 			preventDefault(event);
 			changeUri($(this).attr("href"));
