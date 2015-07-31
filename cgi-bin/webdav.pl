@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015061901";
+$RELEASE="1.0.1BETA2015073101";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -155,7 +155,7 @@ image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25
 source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f90 for fs h has hpp hrl hs in inl jav java js l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
 oofficew odt ott odm stw sxw
 officew doc docx dot dotx rtf
-officep pot potm pps ppsx ppt pptx odp otp sxi sti
+officep pot potm potx pps ppsx ppt pptx odp otp sxi sti
 offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx 
 adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rss sgml xml xsl xslt
@@ -535,7 +535,7 @@ $EXTENSION_CONFIG{AFSACLManager}{prohibit_afs_acl_changes_for} = [ 'system:backu
 ## EXAMPLE: $ENABLE_AFSGROUPMANAGER = 1;
 #$ENABLE_AFSGROUPMANAGER = 0;
 
-## -- ALLOW_AFSGROUPCHANGES - obsolte, use $EXTENSION_CONFIG{AFSGroupManager}{disallow_afsgroupchanges} = 0; instead
+## -- ALLOW_AFSGROUPCHANGES - obsolete, use $EXTENSION_CONFIG{AFSGroupManager}{disallow_afsgroupchanges} = 0; instead
 ## enables AFS group change support
 ## EXAMPLE: $ALLOW_AFSGROUPCHANGES = 1;
 #$ALLOW_AFSGROUPCHANGES = 0;
@@ -713,7 +713,7 @@ $DEBUG = 0;
 
 ## -- DEFAULT_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@DEFAULT_EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo' );
+@DEFAULT_EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo','QuickToggle' );
 ## -- AFS_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
 @AFS_EXTENSIONS = ('AFSACLManager','AFSGroupManager');

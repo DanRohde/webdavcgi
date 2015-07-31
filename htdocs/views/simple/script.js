@@ -2099,6 +2099,22 @@ function initPlugins() {
 		return this;	
 	};
 }
+function toggleFullscreen(on) {
+	var e = document.body;
+	if (on) {
+		if (e.requestFullScreen) e.requestFullScreen();
+		else if (e.mozRequestFullScreen) e.mozRequestFullScreen();
+		else if (e.webkitRequestFullscreen) e.webkitRequestFullscreen();
+		else if (e.webkitRequestFullScreen) e.webkitRequestFullScreen();
+		else if (e.msRequestFullscreen) e.msRequestFullscreen();
+	} else {
+		if (e.cancelFullScreen) e.cancelFullScreen();
+		else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+		else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+		else if (document.webkitCancelFullscreen) document.webkitCancelfullScreen();
+		else if (document.msExitFullscreen) document.msExitFullscreen();
+	}
+}
 function initToolBox() {
 	ToolBox = { 
 			addMissingSlash: addMissingSlash,
@@ -2130,6 +2146,7 @@ function initToolBox() {
 			simpleEscape: simpleEscape,
 			stripSlash : stripSlash,
 			togglecookie : togglecookie,
+			toggleFullscreen : toggleFullscreen,
 			toggleRowSelection : toggleRowSelection,
 			uncheckSelectedRows : uncheckSelectedRows,
 			updateFileList : updateFileList

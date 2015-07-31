@@ -35,6 +35,8 @@ use JSON;
 use File::Temp qw(tempfile);
 use POSIX qw(strftime);
 
+use Archive::Zip; # for zipinfo + www.jstree.com
+
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript','posthandler','body','templates');
@@ -201,5 +203,10 @@ sub handleZipUncompress {
 	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
-
+sub handleZipInfo {
+	my ($self) = @_;
+	my @files = $$self{cgi}->param('files');
+	## common:comment, compressionMethod, chunkSize  tree: filename, lastmodified, fileattributes, comments, uncompressedISize
+	
+}
 1;

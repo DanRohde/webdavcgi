@@ -61,7 +61,7 @@ sub handle {
 			main::printHeaderAndContent('200 OK', 'application/json', $$self{json}->encode({ error=>sprintf($self->tl('scvsizelimitexceeded'), $$self{cgi}->escapeHTML($file), $self->renderByteValue($$self{sizelimit}))}));
 		} elsif ($$self{supportedsuffixes}{$self->getFileSuffix($file)}) {
 			main::printHeaderAndContent('200 OK', 'text/html',$self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, 
-							$self->readTemplate('sourcecodeviewer'), { suffix=>$self->getFileSuffix($file), content=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent("$main::PATH_TRANSLATED$file")) }));
+							$self->readTemplate('sourcecodeviewer'), { suffix=>$self->getFileSuffix($file),filename=>$$self{cgi}->escapeHTML($$self{backend}->getDisplayName($main::PATH_TRANSLATED.$file)), content=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent("$main::PATH_TRANSLATED$file")) }));
 		} else {
 			main::printHeaderAndContent('200 OK', 'application/json', $$self{json}->encode({ error=>$self->tl('scvunsupportedfiletype') }));
 		}

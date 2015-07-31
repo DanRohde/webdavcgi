@@ -18,6 +18,7 @@ body {
 	padding: 0;
 	margin:0;
 	font: 0.8em/1.5em Scala,Verdana,Helvetica;
+	background-color: white;
 }
 ul {
 	list-style: none outside none;

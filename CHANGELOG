@@ -4,10 +4,12 @@
      - fixed Chrome related rename, create file/folder bug
      - fixed some DBB backend bugs (thx Varadi Gabor)
      - fixed some AFS backend bugs (thx Varadi Gabor)
+     - fixed missing filename in SourceCodeViewer plugin bug
      - added Hungarian translations (thx Varadi Gabor)
      - added missing icons to dialogs
      - added ImageInfo extension
      - added Amazon S3 browser backend S3B (only tested with Ceph Rados gateway) 
+     - added QuickToggle plugin
      
 1.0.0: 2014/10/10
      - fixed minor AFS Group Manager bug

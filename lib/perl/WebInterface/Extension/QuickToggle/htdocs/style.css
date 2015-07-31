@@ -14,35 +14,40 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-.unselectable-yes .action.scv,
-.is-dir .action.scv,
-.isreadable-no .action.scv,
-.scv-nosource .action.scv  {
-	display: none;
-	visibility: hidden;
+
+.quicktoggles {
+	display: inline;
+	margin: 0px 1ex 0px 1ex;
 }
-.action.scv {
-	background: url(scv.png) no-repeat 2px center;
-}
-.action.scv:hover {
-	background-image: url(scv-hover.png);
-}
-.scv.prettyprint {
-	overflow: auto;	
-}
-.prettyprint li:hover {
-	background-color: #ddd;
-}
-.scv.ui-dialog .ui-dialog-title {
-	background-image: url(scv.png);
+.quicktoggle {
+	display: inline-block;
+	width: 21px;
+	height: 21px;
 	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
+	background-position: center center;
+	background-color: transparent;
 }
-.scv.filename {
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	witdh: 100%;
-	max-width: 800px;
-	overflow: hidden;
+.quicktoggle.fullscreen {
+	background-image: url(fullscreen-on.png);
+}
+.quicktoggle.fullscreen.off {
+	background-image: url(fullscreen-off.png);
+}
+.quicktoggle.dot {
+	background-image: url(dot-on.png);
+}
+.quicktoggle.dot.off {
+	background-image: url(dot-off.png);
+}
+.quicktoggle.thumbnails {
+	background-image: url(thumbnails-on.png);
+}
+.quicktoggle.thumbnails.off {
+	background-image: url(thumbnails-off.png);
+}
+.quicktoggle.bars {
+	background-image: url(bars-on.png);
+}
+.quicktoggle.bars.off {
+	background-image: url(bars-off.png);
 }

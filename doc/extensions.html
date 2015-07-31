@@ -48,6 +48,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
 <li><a href="#PosixAclManager">PosixAclManager</a> - manages POSIX ACL</li>
 <li><a href="extension-publicuri.html">PublicUri</a> - share files and folders with a public link (own page)</li>
+<li><a href="#QuickToggle">QuickToggle</a> - adds a toolbar for toggling some preferences</li>
 <li><a href="#Redirect">Redirect</a> - redirects folders to any web page</li>
 <li><a href="#Search">Search</a> - searches file/folders by name or content including duplicate file search</li>
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
@@ -239,6 +240,20 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 </table>
 <h2>PublicUri</h2>
 Go to <a href="extension-publicuri.html">the PublicUri page</a>.
+
+<h2 id="QuickToggle">QuickToggle</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+# toggles - template file
+# disable_filterbox - disables filterbox entry
+# enable_apps - enables sidebar menu entry 
+# enable_pref - enables sidebar menu entry (after preferences)
+</pre></td>
+
+</tr>
+</table>
 
 <h2 id="Search">Search</h2>
 <table style="width:100%">
