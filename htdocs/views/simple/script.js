@@ -273,9 +273,10 @@ function handleSidebarCollapsible(event) {
 	$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed).toggleClass("sidebar-iconsonly", iconsonly);
 	$(".action.collapse-sidebar").toggleClass("collapsed",collapsed).toggleClass("iconsonly",iconsonly);
 	
-	handleWindowResize();
 	if (!iconsonly&&!collapsed) rmcookies("sidebar");
 	else cookie("sidebar", iconsonly?"iconsonly":collapsed?"false":"true");
+	
+	handleWindowResize();
 }
 function initCollapsible() {
 	$(".action.collapse-sidebar").click(handleSidebarCollapsible).MyTooltip(500);
@@ -291,8 +292,8 @@ function initCollapsible() {
 		var collapsed = $(this).hasClass("collapsed");
 		$(".collapse-head-collapsible").toggle(!collapsed);
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
-		handleWindowResize();
 		togglecookie("head","false",collapsed, 1);
+		handleWindowResize();
 	}).MyTooltip(500);
 	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
@@ -440,6 +441,7 @@ function handleWindowResize() {
 	var width = $(window).width()-$("#nav").width();
 	$("#content").width(width);
 	$("#controls").width(width);
+	$("body").trigger("windowResized");
 }
 
 function initChangeUriAction() {
@@ -2134,6 +2136,7 @@ function initToolBox() {
 			getSelectedFiles : getSelectedFiles,
 			getSelectedRows : getSelectedRows,
 			handleJSONResponse : handleJSONResponse,
+			handleWindowResize : handleWindowResize,
 			hidePopupMenu : hidePopupMenu,
 			initFileList: initFileList,
 			initUpload : initUpload,
