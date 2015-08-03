@@ -2100,7 +2100,7 @@ function initPlugins() {
 	};
 }
 function toggleFullscreen(on) {
-	var e = document.body;
+	var e = document.documentElement;
 	if (on) {
 		if (e.requestFullScreen) e.requestFullScreen();
 		else if (e.mozRequestFullScreen) e.mozRequestFullScreen();
@@ -2115,8 +2115,15 @@ function toggleFullscreen(on) {
 		else if (document.msExitFullscreen) document.msExitFullscreen();
 	}
 }
+function addFullscreenChangeListener(fn) {
+	$(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange", fn);
+}
+function isFullscreen() {
+	return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement ? true : false;
+}
 function initToolBox() {
 	ToolBox = { 
+			addFullscreenChangeListener : addFullscreenChangeListener,
 			addMissingSlash: addMissingSlash,
 			blockPage: blockPage,
 			changeUri: changeUri,
@@ -2130,6 +2137,7 @@ function initToolBox() {
 			hidePopupMenu : hidePopupMenu,
 			initFileList: initFileList,
 			initUpload : initUpload,
+			isFullscreen : isFullscreen,
 			notify : notify,
 			notifyError : notifyError,
 			notifyInfo : notifyInfo,
