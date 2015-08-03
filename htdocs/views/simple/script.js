@@ -2108,7 +2108,7 @@ function toggleFullscreen(on) {
 		else if (e.webkitRequestFullScreen) e.webkitRequestFullScreen();
 		else if (e.msRequestFullscreen) e.msRequestFullscreen();
 	} else {
-		if (e.cancelFullScreen) e.cancelFullScreen();
+		if (document.cancelFullScreen) document.cancelFullScreen();
 		else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
 		else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
 		else if (document.webkitCancelFullscreen) document.webkitCancelfullScreen();
