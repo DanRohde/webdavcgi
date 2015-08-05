@@ -34,9 +34,11 @@ use vars qw( $ACTION );
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript');
-	push @hooks,'filterbox' unless $main::EXTENSION_CONFIG{QickToggle}{'disable_filterbox'};
-	push @hooks,'apps' if $$main::EXTENSION_CONFIG{QickToggle}{'enable_apps'};
-	push @hooks,'pref' if $$main::EXTENSION_CONFIG{QickToggle}{'enable_pref'};
+	use Data::Dumper;
+	print STDERR Dumper(\%main::EXTENSION_CONFIG);
+	push @hooks, 'filterbox' unless $main::EXTENSION_CONFIG{QuickToggle}{disable_filterbox};
+	push @hooks, 'apps' if $main::EXTENSION_CONFIG{QuickToggle}{enable_apps};
+	push @hooks, 'pref' if $main::EXTENSION_CONFIG{QuickToggle}{enable_pref};
 	$hookreg->register(\@hooks, $self);
 }
 sub handle { 
