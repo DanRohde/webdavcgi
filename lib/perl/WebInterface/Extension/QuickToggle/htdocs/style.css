@@ -75,3 +75,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .quicktoggle.bars.off:hover {
 	background-image: url(bars-off-hover.png);
 }
+
+#nav .action.quicktoggle-button {
+	background-image: url(quicktoggle.png);
+	background-repeat: no-repeat;
+	background-position: +2px center;
+}
+#nav .action.quicktoggle-button:hover {
+	background-image: url(quicktoggle-hover.png);
+}
+.sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover {
+	z-index: 2000;
+	width: 116px;
+	position:fixed;
+	display: block;
+	overflow: visible;
+	background-color: #ddd;
+	left: 15px;
+	text-align: center;
+	box-shadow: -3px 0 7px #000;
+}
+

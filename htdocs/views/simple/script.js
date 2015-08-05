@@ -66,6 +66,8 @@ $(document).ready(function() {
 	
 	initDotFilter();
 	
+	initThumbnailSwitch();
+	
 	initTooltips();
 	
 	initNav();
@@ -2002,6 +2004,24 @@ function initDotFilter() {
 	});
 	$("body").toggleClass("hidedotfiles", cookie("settings.show.dotfiles") == "no");
 	$("body").toggleClass("hidedotfolders", cookie("settings.show.dotfolders") == "no");
+}
+function updateThumbnails() {
+	var enabled = cookie("settings.enable.thumbnails") != "no";
+	$("#flt .icon").each(function(i,v) {
+		var self = $(this);
+		if (self.data("thumb")!=self.data("icon")) {
+			self.attr("src", enabled ? self.data("thumb") : self.data("icon"));
+			self.toggleClass("thumbnail", enabled);
+		}
+	});
+	
+}
+function initThumbnailSwitch() {
+	$("body").off("settingchanged.initThumbnailSwitch").on("settingchanged.initThumbnailSwitch", function(e,data) {
+		if (data.setting == "settings.enable.thumbnails") {
+			updateThumbnails();
+		}
+	});
 }
 function quoteWhiteSpaces(filename) {
 	return filename.replace(/( {2,})/g, '<span class="ws">$1</span>');

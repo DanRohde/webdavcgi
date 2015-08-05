@@ -1,4 +1,5 @@
+quicktoggles				"Schnell-Schalter"
 quicktoggles.bars			"Zeige/Verstecke Sidebar/Kopfzeile"
 quicktoggles.fullscreen		"Vollbild umschalten"
 quicktoggles.dot			"Zeige/Verstecke Punkt-Dateien/Ordner"
-quicktoggles.thumbnails		"Zeige/Verstacke Thumbnails"
+quicktoggles.thumbnails		"Zeige/Verstecke Thumbnails"

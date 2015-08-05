@@ -22,8 +22,6 @@
 # enable_apps - enables sidebar menu entry 
 # enable_pref - enables sidebar menu entry (after preferences)
 
-
-
 package WebInterface::Extension::QuickToggle;
 
 use strict;
@@ -36,9 +34,9 @@ use vars qw( $ACTION );
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript');
-	push @hooks,'filterbox' unless $self->config('disable_filterbox',0);
-	push @hooks,'apps' if $self->config('enable_apps', 0);
-	push @hooks,'pref' if $self->config('enable_pref', 0);
+	push @hooks,'filterbox' unless $main::EXTENSION_CONFIG{QickToggle}{'disable_filterbox'};
+	push @hooks,'apps' if $$main::EXTENSION_CONFIG{QickToggle}{'enable_apps'};
+	push @hooks,'pref' if $$main::EXTENSION_CONFIG{QickToggle}{'enable_pref'};
 	$hookreg->register(\@hooks, $self);
 }
 sub handle { 
@@ -48,7 +46,7 @@ sub handle {
 	
 	if ($hook eq 'filterbox' || $hook eq 'apps' || $hook eq 'pref') {
 		$ret = $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->readTemplate($self->config('toggles','toggles')));
-		$ret = $$self{cgi}->li($$self{cgi}->a({-href=>'#'}, $ret)) unless $hook eq 'filterbox';
+		$ret = $$self{cgi}->li({-title=>$self->tl('quicktoggles')},$$self{cgi}->a({-href=>'#',-class=>'action quicktoggle-button'}, $ret)) unless $hook eq 'filterbox';
 	
 	} 
 	return $ret;

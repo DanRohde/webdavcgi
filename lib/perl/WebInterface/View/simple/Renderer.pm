@@ -49,7 +49,7 @@ sub render {
 	if ($$self{cgi}->param('ajax')) {
 		my $ajax = $$self{cgi}->param('ajax');
 		if ($ajax eq 'getFileListTable') { 
-			$content = $self->renderFileListTable($fn,$ru, $$self{cgi}->param('template')); 
+			$content = $self->renderFileListTable($fn,$ru, scalar $$self{cgi}->param('template')); 
 			$contenttype='application/json';
 		} elsif ($ajax eq 'getViewFilterDialog') {
 			$content = $self->renderViewFilterDialog($fn, $ru, $$self{cgi}->param('template'));
@@ -312,8 +312,10 @@ sub renderFileListEntry {
 			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
 			 	'createdhr'=>$$self{backend}->isReadable($full) && $ctime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$ctime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
 			 	'createdtime' => $ctime,
-				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $fulle.'?action=thumb' : $self->getIcon($mime),
-				'iconclass'=> "icon $category suffix-$suffix".($self->canCreateThumbnail($full) ? ' thumbnail':''),
+				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no'? $fulle.'?action=thumb' : $self->getIcon($mime),
+				'thumbiconurl' => $self->canCreateThumbnail($full) ? $fulle.'?action=thumb' : $self->getIcon($mime),
+				'mimeiconurl' => $self->getIcon($mime),
+				'iconclass'=> "icon $category suffix-$suffix".($self->canCreateThumbnail($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no' ? ' thumbnail':''),
 				'mime'=>$$self{cgi}->escapeHTML($mime),
 				'realsize'=>$size ? $size : 0,
 				'isreadable'=>$file eq '..' || $$self{backend}->isReadable($full)?'yes':'no',
