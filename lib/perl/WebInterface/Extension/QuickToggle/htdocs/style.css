@@ -79,20 +79,44 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .action.quicktoggle-button {
 	background-image: url(quicktoggle.png);
 	background-repeat: no-repeat;
-	background-position: +2px center;
+	background-position: 2px center;
 }
 #nav .action.quicktoggle-button:hover {
 	background-image: url(quicktoggle-hover.png);
 }
+
 .sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover {
-	z-index: 2000;
-	width: 116px;
+	width: auto;
 	position:fixed;
 	display: block;
 	overflow: visible;
 	background-color: #ddd;
 	left: 15px;
 	text-align: center;
-	box-shadow: -3px 0 7px #000;
+	box-shadow: 0 -3px 7px #000;
 }
-
+.filterbox .quicktoggles {
+	width: 24px;
+	height: 18px;
+	top: 7px;
+	left: -30px;
+	position: absolute;
+	display: inline-block;
+	overflow: hidden;
+}
+.quicktoggles-spacer {
+	display: none;
+}
+.filterbox .quicktoggles-spacer {
+	background-image: url(quicktoggle.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	display: inline-block;
+	width: 24px;
+}
+.filterbox .quicktoggles:hover {
+	height: auto;
+	background-color: inherit;
+	box-shadow: 3px  0 7px #ddd;
+	padding: 1px 1px 1px 4px;
+}
