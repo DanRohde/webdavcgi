@@ -2069,7 +2069,8 @@ function initPlugins() {
 				setTooltipPosition(e,el);
 			},delay));
 		}
-		function hideTooltip(t) {
+		function hideTooltip(t,el) {
+			$(el).parents("[data-tooltip-block]").removeAttr("data-tooltip-block");
 			toel.data("tttimeout", window.setTimeout(function() {tooltip.hide()}, t));
 		}
 		function setTooltipPosition(e,el) {
@@ -2084,12 +2085,16 @@ function initPlugins() {
 			if (Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
 			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
 			tooltip.show();
-			hideTooltip(showtimeout || 7000);
+			hideTooltip(showtimeout || 7000, el);
 		}
 		function handleMouseOver(e,u) {
 			var el = $(this);
 			handleTitleAttribute(el);
+			if (el.is("[data-tooltip-block]")) return;
+			el.parents("[data-tooltip], [title]").each(function(i,el) { $(el).attr("data-tooltip-block", "true"); } );
+			
 			tooltip.text(el.attr("data-tooltip"));
+			
 			if (delay) {
 				setDelayTimeout(e,el);
 			} else {
@@ -2097,12 +2102,13 @@ function initPlugins() {
 			}
 		}
 		function handleMouseMove(e,u) {
+			if ($(this).is("[data-tooltip-block]")) return;
 			if (tooltip.is(":visible") && !delay) setTooltipPosition(e,$(this));
 			else setDelayTimeout(e,$(this));
 		}
 		function handleMouseOut(e,u) {
 			clearTimeout();
-			hideTooltip(hidetimeout || 500);
+			hideTooltip(hidetimeout || 500, u);
 		}
 		function handleTitleAttribute(el) {
 			if (el.attr("title") && el.attr("title").trim() !="") {
