@@ -114,6 +114,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 	width: 24px;
 }
+.filterbox .quicktoggles-spacer:hover {
+	background-image: url(quicktoggle-hover.png);
+}
 .filterbox .quicktoggles:hover {
 	height: auto;
 	background-color: inherit;

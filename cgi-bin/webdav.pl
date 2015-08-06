@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015080601";
+$RELEASE="1.0.1BETA2015080602";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -161,7 +161,7 @@ adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rss sgml xml xsl xslt
 archive 7z apk arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
 binary  a class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
-shell   alias bat bash bash_history bashrc bash_login logout bsh bshrc csh cshrc env history jsh ksh kshrc login profile ps1 sh  tcsh tcshrc 
+shell   alias bat bash bash_history bashrc bash_login logout bsh bshrc csh cshrc env history jsh ksh kshrc lesshst login mysql_history profile ps1 selected_editor sqlite_history sh tcsh tcshrc 
 tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
