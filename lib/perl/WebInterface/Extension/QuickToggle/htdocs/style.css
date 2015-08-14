@@ -25,6 +25,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-color: transparent;
+	outline: none;
+}
+.quicktoggle:focus {
+	outline: none;
 }
 .quicktoggle.fullscreen {
 	background-image: url(fullscreen-on.png);
