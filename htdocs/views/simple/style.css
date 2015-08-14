@@ -64,7 +64,7 @@ a {
 	z-index: 75;
 	overflow:hidden;
 }
-#nav a {
+#nav a, #nav li > div {
 	border-bottom: 1px solid #dddddd;
 	border-top: 1px solid #ffffff;
 	color: #666666;

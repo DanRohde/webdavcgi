@@ -122,6 +122,10 @@ sub getQuotaData {
 
 	return $ret;
 }
+sub stat_matchcount {
+	my @m = $_[1] =~ /$_[2]/gm;
+	return $#m + 1;
+}
 sub renderTemplate {
 	my ($self,$fn,$ru,$content) = @_;
 	my $vbase = $ru=~/^($main::VIRTUAL_BASE)/ ? $1 : $ru;
@@ -144,6 +148,11 @@ sub renderTemplate {
 			quotalevel=> $quota{quotalevel},
 			quotausedperc => $quota{quotausedperc},
 			quotaavailableperc => $quota{quotaavailableperc},
+			stat_filetypes => $self->stat_matchcount($main::FILETYPES,'^\S+'),
+			stat_suffixes => $self->stat_matchcount($main::FILETYPES, '\S+') - $self->stat_matchcount($main::FILETYPES,'^\S+') ,
+			stat_extensions => $#main::EXTENSIONS +1,
+			stat_filetypeicons => join('',map({ $$self{cgi}->img({-class=>"icon category-$_",-src=>'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', -style=>'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',-alt=>"Category \u$_",-title=>"\u$_"})} $main::FILETYPES=~/^\S+/gm)),
+			stat_extensionlist => join(', ', sort @main::EXTENSIONS),	
 			view => $main::VIEW,
 			viewname => $self->tl("${main::VIEW}view"),
 			USER=>$main::REMOTE_USER,

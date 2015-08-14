@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 .quicktoggles {
 	display: inline;
-	margin: 0px 1ex 0px 1ex;
 }
 .quicktoggle {
 	display: inline-block;
@@ -84,16 +83,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .action.quicktoggle-button:hover {
 	background-image: url(quicktoggle-hover.png);
 }
-
 .sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover {
 	width: auto;
 	position:fixed;
 	display: block;
 	overflow: visible;
 	background-color: #ddd;
-	left: 15px;
+	left: 24px;
 	text-align: center;
 	box-shadow: 0 -3px 7px #000;
+	padding-left: 1px;
 }
 .filterbox .quicktoggles {
 	width: 24px;

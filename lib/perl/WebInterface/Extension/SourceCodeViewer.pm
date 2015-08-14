@@ -35,7 +35,7 @@ sub init {
 	my @hooks = ('css','locales','javascript','fileactionpopup','posthandler','fileattr');
 	$hookreg->register(\@hooks, $self);
 	
-	my %sf = map { $_ => 1 } ( "bsh", "c", "cc", "cpp", "cs", "csh", "css", "cyc", "cv", "htm", "html", "java", "js", "m", "mxml", "perl", "pl", "pm", "py", "rb", "sh","xhtml", "xml", "xsl" );
+	my %sf = map { $_ => 1 } ( "bsh", "c", "cc", "cpp", "cs", "csh", "css", "cyc", "cv", "htm", "html", "java", "js", "json", "m", "mxml", "perl", "pl", "pm", "py", "rb", "sh","xhtml", "xml", "xsl" );
 	$$self{supportedsuffixes} = \%sf;
 	$$self{sizelimit} = $self->config('sizelimit', 2097152);
 	$$self{json} = new JSON();

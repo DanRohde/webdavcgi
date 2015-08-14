@@ -48,7 +48,7 @@ sub handle {
 	
 	if ($hook eq 'filterbox' || $hook eq 'apps' || $hook eq 'pref') {
 		$ret = $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->readTemplate($self->config('toggles','toggles')));
-		$ret = $$self{cgi}->li({-title=>$self->tl('quicktoggles')},$$self{cgi}->a({-href=>'#',-class=>'action quicktoggle-button'}, $ret)) unless $hook eq 'filterbox';
+		$ret = $$self{cgi}->li({-title=>$self->tl('quicktoggles')},$$self{cgi}->div({-class=>'action quicktoggle-button'}, $ret)) unless $hook eq 'filterbox';
 	
 	} 
 	return $ret;

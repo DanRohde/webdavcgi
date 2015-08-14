@@ -1001,6 +1001,7 @@ function initFileList() {
 	$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","imggallery")
 		.fancybox({
+			padding: 0,
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(this.element).html(); }, 
 			helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
@@ -1008,6 +1009,7 @@ function initFileList() {
 	$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible td.filename a")
 		.attr("data-fancybox-group","wtimggallery")
 		.fancybox({ 
+			padding: 0,
 			afterShow: function() { $(".fancybox-close").focus();},
 			beforeLoad: function() { this.title = $(".nametext", this.element).html(); },
 			helpers: { buttons: {} }
