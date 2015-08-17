@@ -123,7 +123,7 @@ sub addSearchResult {
 				filename=>$filename,
 				qfilename=>$self->quoteWhiteSpaces($filename),
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
-				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full)? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
+				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no' ? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
 				iconclass=>"icon $category suffix-$suffix ".($self->canCreateThumbnail($full) ? 'thumbnail': ''),
 				mime => $$self{cgi}->escapeHTML($mime),
 				type=> $mime eq '<folder>' ? 'folder' : 'file',
