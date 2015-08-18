@@ -46,8 +46,22 @@ sub db_handleUpdates {
 	my $ret = 0;
 	if ($sth->err) {
 		warn($sth->errstr);
+		$sth->finish();
 		my $rc = $dbh->rollback();
 		warn ("rollback failed (rc=$rc)") unless $rc;
+	} else {
+		$ret = $dbh->commit();
+		warn("commit failed (rc=$ret)") unless $ret;
+	}
+	return $ret;
+}
+sub db_handleSelect {
+	my ($self, $dbh, $sth ) = @_;
+	my $ret = 0;
+	if ($sth->err) {
+		warn ($sth->errstr);
+		$sth->finish(); # sqlite needs it
+		$dbh->rollback();
 	} else {
 		$ret = $dbh->commit();
 		warn("commit failed (rc=$ret)") unless $ret;
@@ -62,6 +76,7 @@ sub db_isRootFolder {
         if (defined $sth) {
                 $sth->execute($fn, $fn, $token);
                 $rows = $sth->fetchall_arrayref();
+                $self->db_handleSelect($dbh,$sth);
         }
         return $#{$rows}>-1;
 }
@@ -74,6 +89,7 @@ sub db_getLike {
         if (defined $sth) {
                 $sth->execute($fn);
                 $rows = $sth->fetchall_arrayref();
+                $self->db_handleSelect($dbh,$sth);
         }
         return $rows;
 }
@@ -93,6 +109,7 @@ sub db_get {
         if (defined $sth) {
                 $sth->execute(@params);
                 $rows = $sth->fetchall_arrayref();
+                $self->db_handleSelect($dbh,$sth);
         }
         return $rows;
 }
@@ -212,12 +229,13 @@ sub db_getProperties {
                 $sth->execute($PREFIX,'',"$fn\%","$PREFIX$fn\%");
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
+                        $self->db_handleSelect($dbh, $sth);
                         foreach my $row (@{$rows}) {
                                 $CACHE{Properties}{$$row[0]}{$$row[1]}=$$row[2];
                         }
                         $CACHE{Properties_flag}{$fn}=1;
                 } else {
-                	$dbh->rollback();
+                	$self->db_handleSelect($dbh,$sth);
                 }
         }
         return $CACHE{Properties}{$fn};
@@ -248,9 +266,10 @@ sub db_getPropertyFnByValue {
                 $sth->execute($PREFIX, '',$propname,$value);
                 if (!$sth->err) {
                         my $rows = $sth->fetchall_arrayref();
+                        $self->db_handleSelect($dbh, $sth);
                         return $$rows[0] if $rows;
                 }
-                $self->db_handleUpdates($dbh,$sth);
+                $self->db_handleSelect($dbh,$sth);
         }
         return undef;
 }
@@ -332,8 +351,6 @@ sub db_table_exists {
 			next unless $_;
 			return 1 if $_ =~ /\Q${table}\E$/;
 		}
-	} else {
-		warn("db_table_exists: there is no table yet");
 	}
 	return 0;
 }
@@ -348,6 +365,7 @@ sub db_init {
                         if (defined $sth) {
                                 $sth->execute();
                                 if ($sth->err) {
+                                	$sth->finish();
                                 	$dbh->rollback();
                                         $dbh=undef;
                                 } else {
