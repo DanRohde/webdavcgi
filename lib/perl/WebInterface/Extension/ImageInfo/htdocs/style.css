@@ -59,13 +59,13 @@ table.imageinfo td {
 	background-color: #eaeaea;
 }
 .imageinfo .iigroups {
-	width: 170px;
+	width: 175px;
 }
 .imageinfo .iigroupcontent {
 	width: 30em;
 }
 .imageinfo .iigroups, .imageinfo .iigroupcontent {
-	height: 300px;
+	height: 320px;
 	overflow: auto;
 }
 .imageinfo .iipropstitle, .imageinfo .iigroupstitle {
@@ -79,13 +79,20 @@ table.imageinfo td {
 	text-overflow: ellipsis;
 }
 .imageinfo .iigroupsel a {
-	width: 100%;
-}
-.imageinfo .iigroupsel a:hover {
-	background-color: #eaeaea;	
+	border-radius: 4px;
+	border: 1px solid #aaa; 
+	width: 90%;
+	display: inline-block;
+	font-size: 0.9em;
+	text-align: center;
 }
 .imageinfo .iigroupsel a.active {
-	font-weight: bold;
+	background-color: #eaeaea;
+	font-weight: bold;	
+
+}
+.imageinfo .iigroupsel a:hover, .imageinfo .iigroupsel a:focus {
+	border-color: black;
 }
 .imageinfo .iigroup {
 	display: none;
