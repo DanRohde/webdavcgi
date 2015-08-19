@@ -58,10 +58,10 @@ sub render {
 		} elsif ($ajax eq 'getTableConfigDialog') {
 			$content = $self->renderTemplate($fn,$ru,$self->readTemplate($$self{cgi}->param('template')));
 		} elsif ($ajax eq 'getFileListEntry') {
-			my $entrytemplate=$self->renderExtensionFunction($self->readTemplate($$self{cgi}->param('template')));
+			my $entrytemplate=$self->renderExtensionFunction($self->readTemplate(scalar $$self{cgi}->param('template')));
 			my $columns = $self->renderVisibleTableColumns($entrytemplate).$self->renderInvisibleAllowedTableColumns($entrytemplate);
 			$entrytemplate=~s/\$filelistentrycolumns/$columns/esg;
-			$content = $self->renderFileListEntry($fn, $ru, $$self{cgi}->param('file'), $entrytemplate);
+			$content = $self->renderFileListEntry($fn, $ru, scalar $$self{cgi}->param('file'), $entrytemplate);
 		}
 	} elsif ($$self{cgi}->param('msg') || $$self{cgi}->param('errmsg') 
 			|| $$self{cgi}->param('aclmsg') || $$self{cgi}->param('aclerrmsg')
@@ -305,8 +305,8 @@ sub renderFileListEntry {
 	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
 	my $mime = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
-	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.(\w+)$/ ?  lc($1) : 'unknown')) ;
-	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*\b\Q$suffix\E\b/m ? 'category-'.$1 : '';
+	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.([\w?]+)$/ ?  lc($1) : 'unknown')) ;
+	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/m ? 'category-'.$1 : '';
 	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
 	my $displayname = $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full));
 	my %stdvars = ( 
