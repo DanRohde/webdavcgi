@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015081904";
+$RELEASE="1.0.1BETA2015081905";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -159,7 +159,7 @@ officep pot potm potx pps ppsx ppt pptx odp otp sxi sti
 offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xlr xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx 
 adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rss sgml xml xsl xslt
-archive 7z apk arc arj bz2 deb egg gz jar lzma p12 rar rpm sfx tar tgz tlz war xpi z zip 
+archive 7z apk arc arj bz2 deb egg gz jar lzma rar rpm sfx tar tgz tlz war xpi z zip 
 binary  a class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
 shell   alias bat bash bash_history bashrc bash_login logout bsh bshrc csh cshrc env history jsh ksh kshrc lesshst login mysql_history profile ps1 selected_editor sqlite_history sh tcsh tcshrc 
 tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
@@ -168,6 +168,7 @@ ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx 
 db      accdb accdr accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 tmd usr wmdb xld
 config	cf cnf conf exrc gvimrc gxt inf ini muttrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
 gis	axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
+crypt	cer cert crl crt csr der gpg p12 p7b p7r pem pfx pgp spc sst stl
 EOF
 ;
 
