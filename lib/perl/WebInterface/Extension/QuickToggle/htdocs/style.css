@@ -125,4 +125,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-color: inherit;
 	box-shadow: 3px  0 7px #ddd;
 	padding: 1px 1px 1px 4px;
+	left: -34px;
+	top: 6px;
 }

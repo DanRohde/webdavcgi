@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015081402";
+$RELEASE="1.0.1BETA2015081901";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -166,7 +166,7 @@ tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav s
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
 db      accdb accdr accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 tmd usr wmdb xld
-config	cf cnf conf exrc gvimrc gxt inf ini muttrc pif pinerc pref preferences props properties set viminfo vimrc vmc vmx wfc xauthority
+config	cf cnf conf exrc gvimrc gxt inf ini muttrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
 gis	axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
 EOF
 ;
