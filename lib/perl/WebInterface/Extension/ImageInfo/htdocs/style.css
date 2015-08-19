@@ -93,6 +93,7 @@ table.imageinfo td {
 }
 .imageinfo .iigroupsel a:hover, .imageinfo .iigroupsel a:focus {
 	border-color: black;
+	outline: none;
 }
 .imageinfo .iigroup {
 	display: none;
