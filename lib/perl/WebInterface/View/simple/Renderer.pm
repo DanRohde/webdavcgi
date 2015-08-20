@@ -151,8 +151,8 @@ sub renderTemplate {
 			stat_filetypes => $CACHE{renderTemplate}{stat_filetypes} //= $self->stat_matchcount($main::FILETYPES,'^\S+'),
 			stat_suffixes => $CACHE{renderTemplate}{stat_suffixes} //=  $self->stat_matchcount($main::FILETYPES, '\S+') - $self->stat_matchcount($main::FILETYPES,'^\S+'), ## //
 			stat_extensions => $#main::EXTENSIONS +1,
-			stat_filetypeicons => $CACHE{renderTemplate}{stat_filetypeicons} //= join('',map({ $$self{cgi}->img({-class=>"icon category-$_",-src=>'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', -style=>'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',-alt=>"Category \u$_",-title=>"\u$_"})} $main::FILETYPES=~/^\S+/gm)), ##  / //
-			stat_extensionlist => $CACHE{renderTemplate}{stat_extensionlist} //= join(', ', sort @main::EXTENSIONS), ## //	
+			stat_filetypeicons => $CACHE{renderTemplate}{stat_filetypeicons} //= join('',map({ $$self{cgi}->img({-class=>"icon category-$_",-src=>'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', -style=>'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',-alt=>"Category \u$_",-title=>"\u$_"})} $main::FILETYPES=~/^\S+/gm)), 
+			stat_extensionlist => $CACHE{renderTemplate}{stat_extensionlist} //= join(', ', sort @main::EXTENSIONS), 	
 			view => $main::VIEW,
 			viewname => $self->tl("${main::VIEW}view"),
 			USER=>$main::REMOTE_USER,
@@ -343,7 +343,6 @@ sub renderFileListEntry {
 				'type'=>$file =~ /^\.\.?$/ || $id ?'dir':($il?'link':'file'),
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $self->isUnselectable($full) ? 'yes' : 'no',
-				'linkinfo'=> $il ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : '',
 				'mode' => sprintf('%04o', $mode & 07777),
 				'modestr' => $self->mode2str($full, $mode),
 				'uidNumber' => $uid || 0,'uid'=> $u,
@@ -354,7 +353,8 @@ sub renderFileListEntry {
 				'ext_attributes'=>'',
 				'ext_styles' =>'',
 				'ext_iconclasses' =>'',
-				'thumbtitle'=> $mime,
+				'thumbtitle'=> $id ? '' : $mime,
+				'filenametitle'=> $il ? $$self{cgi}->escapeHTML($file).' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : ''
 				);
 	# fileattr hook: collect and concatenate attribute values 
 	my $fileattrExtensions = $$self{config}{extensions}->handle('fileattr', { path=>$full});

@@ -2072,7 +2072,6 @@ function initPlugins() {
 			},delay));
 		}
 		function hideTooltip(t,el) {
-			$(el).parents("[data-tooltip-block]").removeAttr("data-tooltip-block");
 			toel.data("tttimeout", window.setTimeout(function() {tooltip.hide()}, t));
 		}
 		function setTooltipPosition(e,el) {
@@ -2104,24 +2103,29 @@ function initPlugins() {
 			}
 		}
 		function handleMouseMove(e,u) {
-			if ($(this).is("[data-tooltip-block]")) return;
-			if (tooltip.is(":visible") && !delay) setTooltipPosition(e,$(this));
-			else setDelayTimeout(e,$(this));
+			var el = $(this);
+			handleTitleAttribute(el);
+			if (el.is("[data-tooltip-block]")) return;
+			if (tooltip.is(":visible") && !delay) setTooltipPosition(e,el);
+			else setDelayTimeout(e,el);
 		}
 		function handleMouseOut(e,u) {
 			clearTimeout();
 			hideTooltip(hidetimeout || 500, u);
+			$(this).parents("[data-tooltip-block]").removeAttr("data-tooltip-block");
 		}
 		function handleTitleAttribute(el) {
-			if (el.attr("title") && el.attr("title").trim() !="") {
-				el.attr("data-tooltip", el.attr("title"));
+			if (el.attr("title")) {
+				if (el.attr("title").trim()!="") el.attr("data-tooltip", el.attr("title"));
+				else cleanupMouseHandler(el).removeAttr("data-tooltip");
 				el.removeAttr("title");
 			}
 		}
+		function cleanupMouseHandler(el) {
+			return el.off("mouseover.tooltip").off("mouseout.tooltip").off("mousemove.tooltip");
+		}
 		function initElement(el) {
-			el.off("mouseover.tooltip").off("mouseout.tooltip").off("mousemove.tooltip")
-			.on("mouseover.tooltip",handleMouseOver).on("mouseout.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
-			handleTitleAttribute(el);
+			if (el.attr("title").trim()!="") cleanupMouseHandler(el).on("mouseover.tooltip",handleMouseOver).on("mouseout.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
 		}
 		this.find("[title]").each(function(i,v) { initElement($(v)); });
 		if (this.attr("title")) initElement(this);
