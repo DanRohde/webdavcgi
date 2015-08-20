@@ -64,7 +64,22 @@ sub init {
 #Show icons and handle actions
 sub handle {
 	my ( $self, $hook, $config, $params ) = @_;
-
+	if ( $hook eq 'fileattr' ) {
+		my $prop = $self->getPublicUri($$params{path});
+		my ($attr,$classes);
+		if ( !defined($prop) ) {
+			($classes, $attr) = ('unshared','no');
+		}
+		else {
+			($classes, $attr) = ('shared', $prop);
+		}
+		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) };
+	}
+	elsif ($hook eq 'fileprop') {
+		my $publicuridigest = $self->getPublicUri($$params{path}) || '';
+		my $publicuri = $$self{cgi}->escapeHTML($$self{uribase}.$publicuridigest) ;
+		return { publicuridigest=> $publicuridigest ,publicurititle=>$publicuri, publicuri=>$publicuri };
+	}
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 
@@ -100,22 +115,6 @@ sub handle {
 	}
 	elsif ( $hook eq 'fileactionpopupnew') {
 		return { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' };
-	}
-	elsif ( $hook eq 'fileattr' ) {
-		my $prop = $self->getPublicUri($$params{path});
-		my ($attr,$classes);
-		if ( !defined($prop) ) {
-			($classes, $attr) = ('unshared','no');
-		}
-		else {
-			($classes, $attr) = ('shared', $prop);
-		}
-		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) };
-	}
-	elsif ($hook eq 'fileprop') {
-		my $publicuridigest = $self->getPublicUri($$params{path}) || '';
-		my $publicuri = $$self{cgi}->escapeHTML($$self{uribase}.$publicuridigest) ;
-		return { publicuridigest=> $publicuridigest ,publicurititle=>$publicuri, publicuri=>$publicuri };
 	}
 	elsif ( $hook eq 'templates' ) {
 		return q@<div id="purifileconfirm"><div class="purifileconfirm">$tl(purifileconfirm)</div></div><div id="depurifileconfirm"><div class="depurifileconfirm">$tl(depurifileconfirm)</div></div>@;

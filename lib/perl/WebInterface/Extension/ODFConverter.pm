@@ -58,14 +58,14 @@ sub init {
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
+	if ($hook eq 'fileattr') {
+		my $suffix = $$params{path} =~ /\.(\w+)$/ ? $1 : 'unknown';
+		return { ext_classes=> ($suffix =~ /$$self{typesregex}/ ? 'c' : '')." $$self{memberof}{$suffix} cs-$suffix"} unless $suffix=~/$$self{unconvertible}/;
+	}
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	$ret.=$$self{popupcss} if ($hook eq 'css'); 
 	return $ret if $ret;
-	
-	if ($hook eq 'fileattr') {
-		my $suffix = $$params{path} =~ /\.(\w+)$/ ? $1 : 'unknown';
-		$ret = { ext_classes=> ($suffix =~ /$$self{typesregex}/ ? 'c' : '')." $$self{memberof}{$suffix} cs-$suffix"} unless $suffix=~/$$self{unconvertible}/;
-	} elsif ($hook eq 'fileactionpopup') {
+	if ($hook eq 'fileactionpopup') {
 		my @subpopup = map { { action=>'odfconvert',  label=>$_, type=>'li', classes=>"access-writeable $$self{memberof}{$_} cs-$_", data=>{ ct=>$_ }  } } @{$$self{types} };
 		$ret = { title=>$self->tl('odfconverter'), classes=>'odfconverter',type=>'li', subpopupmenu =>\@subpopup };
 		

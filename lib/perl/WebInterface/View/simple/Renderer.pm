@@ -134,25 +134,25 @@ sub renderTemplate {
 	# replace standard variables:
 	my %stdvars = ( uri => $ru, 
 			baseuri=>$$self{cgi}->escapeHTML($vbase),
-			quicknavpath=>$self->renderQuickNavPath($fn,$ru),
+			quicknavpath=> $CACHE{$self}{renderTemplate}{quicknavpath} //= $self->renderQuickNavPath($fn,$ru), ## // 
 			maxuploadsize=>$main::POST_MAX_SIZE,
-			maxuploadsizehr=>($self->renderByteValue($main::POST_MAX_SIZE,2,2))[0],
-			quotalimit => ($self->renderByteValue($quota{quotalimit},2,))[0],
+			maxuploadsizehr=> $CACHE{$self}{renderTemplate}{maxuploadsizehr} //= ($self->renderByteValue($main::POST_MAX_SIZE,2,2))[0], ## //
+			quotalimit => $CACHE{$self}{renderTemplate}{quotalimit} //= ($self->renderByteValue($quota{quotalimit},2,))[0], ## //
 			quotalimitbytes => $quota{quotalimit},
-			quotalimittitle => ($self->renderByteValue($quota{quotalimit},2,))[1],
-			quotaused => ($self->renderByteValue($quota{quotaused},2,2))[0],
-			quotausedtitle => ($self->renderByteValue($quota{quotaused},2,2))[1],
-			quotaavailable => ($self->renderByteValue($quota{quotaavailable},2,2))[0],
-			quotaavailabletitle => ($self->renderByteValue($quota{quotaavailable},2,2))[1],
+			quotalimittitle => $CACHE{$self}{renderTemplate}{quotalimittitle} //= ($self->renderByteValue($quota{quotalimit},2,))[1], ## //
+			quotaused => $CACHE{$self}{renderTemplate}{quotaused} //= ($self->renderByteValue($quota{quotaused},2,2))[0], ## //
+			quotausedtitle => $CACHE{$self}{renderTemplate}{quotausedtitle} //= ($self->renderByteValue($quota{quotaused},2,2))[1], ## //
+			quotaavailable => $CACHE{$self}{renderTemplate}{quotaavailable} //= ($self->renderByteValue($quota{quotaavailable},2,2))[0], ## //
+			quotaavailabletitle => $CACHE{$self}{renderTemplate}{quotaavailabletitle} //= ($self->renderByteValue($quota{quotaavailable},2,2))[1], ## //
 			quotastyle=> $quota{quotastyle},
 			quotalevel=> $quota{quotalevel},
 			quotausedperc => $quota{quotausedperc},
 			quotaavailableperc => $quota{quotaavailableperc},
-			stat_filetypes => $self->stat_matchcount($main::FILETYPES,'^\S+'),
-			stat_suffixes => $self->stat_matchcount($main::FILETYPES, '\S+') - $self->stat_matchcount($main::FILETYPES,'^\S+') ,
+			stat_filetypes => $CACHE{renderTemplate}{stat_filetypes} //= $self->stat_matchcount($main::FILETYPES,'^\S+'),
+			stat_suffixes => $CACHE{renderTemplate}{stat_suffixes} //=  $self->stat_matchcount($main::FILETYPES, '\S+') - $self->stat_matchcount($main::FILETYPES,'^\S+'), ## //
 			stat_extensions => $#main::EXTENSIONS +1,
-			stat_filetypeicons => join('',map({ $$self{cgi}->img({-class=>"icon category-$_",-src=>'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', -style=>'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',-alt=>"Category \u$_",-title=>"\u$_"})} $main::FILETYPES=~/^\S+/gm)),
-			stat_extensionlist => join(', ', sort @main::EXTENSIONS),	
+			stat_filetypeicons => $CACHE{renderTemplate}{stat_filetypeicons} //= join('',map({ $$self{cgi}->img({-class=>"icon category-$_",-src=>'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', -style=>'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',-alt=>"Category \u$_",-title=>"\u$_"})} $main::FILETYPES=~/^\S+/gm)), ##  / //
+			stat_extensionlist => $CACHE{renderTemplate}{stat_extensionlist} //= join(', ', sort @main::EXTENSIONS), ## //	
 			view => $main::VIEW,
 			viewname => $self->tl("${main::VIEW}view"),
 			USER=>$main::REMOTE_USER,
@@ -291,61 +291,70 @@ sub renderFileListEntry {
 	my ($self, $fn, $ru, $file, $entrytemplate) = @_;
 	$ru .= ($ru=~/\//?'':'/');
 	
-	my $hdr = $CACHE{renderFileListEntry}{hdr} ? $CACHE{renderFileListEntry}{hdr} : $CACHE{renderFileListEntry}{hdr} = DateTime::Format::Human::Duration->new();
-	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;
-	
+	my $hdr = $CACHE{renderFileListEntry}{hdr} //=  DateTime::Format::Human::Duration->new(); ## //
+	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;	
 	my $full = "$fn$file";
 	my $fulle = $ru.$$self{cgi}->escape($file);
 	$fulle=~s/\%2f/\//gi; ## fix for search
-	$file.='/' if $file !~ /^\.\.?$/ && $$self{backend}->isDir($full);
+	my $ir = $$self{backend}->isReadable($full) || 0; 
+	my $il = $$self{backend}->isLink($full) || 0;
+	my $id = $$self{backend}->isDir($full) || 0;
+	$file.='/' if $file !~ /^\.\.?$/ && $id;
 	my $e = $entrytemplate;
 	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($full);
 	$mtime = 0 unless defined $mtime;
 	$ctime = 0 unless defined $ctime;
 	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
-	my $mime = $file eq '..' ? '< .. >' : $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
+	my $mime = $file eq '..' ? '< .. >' : $id ?'<folder>':main::getMIMEType($full);
 	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.([\w?]+)$/ ?  lc($1) : 'unknown')) ;
 	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/m ? 'category-'.$1 : '';
 	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
 	my $displayname = $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full));
+	my $now = $CACHE{$self}{renderFileListEntry}{now}{$lang} //= DateTime->now(locale=>$lang); ## //
+	my $cct = $self->canCreateThumbnail($full) || 0;
+	my $u = $CACHE{$self}{renderFileListEntry}{uid}{$uid} //= scalar getpwuid($uid || 0) || $uid; ## //
+	my $g = $CACHE{$self}{renderFileListEntry}{gid}{$gid} //= scalar getgrgid($gid || 0) || $gid; ## //
+	my $icon = $CACHE{$self}{renderFileListEntry}{icon}{$mime} //= $self->getIcon($mime); ## //
+	my $enthumb = $CACHE{$self}{renderFileListEntry}{cookie}{thumbnails} //= $$self{cgi}->cookie('settings.enable.thumbnails') // 'yes'; ## //  
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
 				'displayname' => $displayname,
 				'qdisplayname' => $self->quoteWhiteSpaces($displayname),
-				'size' => $$self{backend}->isReadable($full) ? $sizetxt : '-', 
+				'size' => $ir ? $sizetxt : '-', 
 				'sizetitle'=>$sizetitle,
-				'lastmodified' =>  $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
+				'lastmodified' =>  $ir ? strftime($self->tl('lastmodifiedformat'), localtime($mtime)) : '-',
 				'lastmodifiedtime' => $mtime,
-				'lastmodifiedhr' => $$self{backend}->isReadable($full) && $mtime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
-			 	'created'=> $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
-			 	'createdhr'=>$$self{backend}->isReadable($full) && $ctime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$ctime,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ) : '-',
+				'lastmodifiedhr' => $ir && $mtime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$mtime,locale=>$lang), $now, precision=>'seconds', significant_units=>2 ) : '-',
+			 	'created'=> $ir ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
+			 	'createdhr'=> $ir && $ctime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$ctime,locale=>$lang), $now, precision=>'seconds', significant_units=>2 ) : '-',
 			 	'createdtime' => $ctime,
-				'iconurl'=> $$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no'? $fulle.'?action=thumb' : $self->getIcon($mime),
-				'thumbiconurl' => $self->canCreateThumbnail($full) ? $fulle.'?action=thumb' : $self->getIcon($mime),
-				'mimeiconurl' => $self->getIcon($mime),
-				'iconclass'=> "icon $category suffix-$suffix".($self->canCreateThumbnail($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no' ? ' thumbnail':''),
+				'iconurl'=> $id ? $icon : $cct && $enthumb ne 'no'? $fulle.'?action=thumb' : $icon,
+				'thumbiconurl' => $cct ? $fulle.'?action=thumb' : $icon,
+				'mimeiconurl' => $icon,
+				'iconclass'=> "icon $category suffix-$suffix".($cct && $enthumb ne 'no' ? ' thumbnail':''),
 				'mime'=>$$self{cgi}->escapeHTML($mime),
 				'realsize'=>$size ? $size : 0,
-				'isreadable'=>$file eq '..' || $$self{backend}->isReadable($full)?'yes':'no',
-				'iswriteable'=>$$self{backend}->isWriteable($full) || $$self{"backend"}->isLink($full)?'yes':'no',
-				'isviewable'=>$$self{backend}->isReadable($full) && $self->canCreateThumbnail($full) ? 'yes' : 'no',
+				'isreadable'=>$file eq '..' || $ir?'yes':'no',
+				'iswriteable'=>$$self{backend}->isWriteable($full) || $il ?'yes':'no',
+				'isviewable'=>$ir && $cct ? 'yes' : 'no',
 				'islocked'=> $isLocked ? 'yes' : 'no',
-				'islink' => $$self{backend}->isLink($full) ? 'yes' : 'no',
-				'type'=>$file =~ /^\.\.?$/ || $$self{backend}->isDir($full)?'dir':($$self{backend}->isLink($full)?'link':'file'),
+				'islink' =>$il ? 'yes' : 'no',
+				'type'=>$file =~ /^\.\.?$/ || $id ?'dir':($il?'link':'file'),
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $self->isUnselectable($full) ? 'yes' : 'no',
-				'linkinfo'=> $$self{backend}->isLink($full) ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : "",
+				'linkinfo'=> $il ? ' &rarr; '.$$self{cgi}->escapeHTML($$self{backend}->getLinkSrc($full)) : '',
 				'mode' => sprintf('%04o', $mode & 07777),
 				'modestr' => $self->mode2str($full, $mode),
-				'uidNumber' => $uid || 0,'uid'=> scalar getpwuid($uid || 0) || $uid,
-				'gidNumber'=> $gid || 0, 'gid'=> scalar getgrgid($gid || 0) || $gid,
+				'uidNumber' => $uid || 0,'uid'=> $u,
+				'gidNumber'=> $gid || 0, 'gid'=> $g,
 				'isdotfile'=> $file=~/^\./ && $file !~/^\.{1,2}$/ ? 'yes' : 'no',
 				'suffix' => $file=~/\.([^\.]+)$/ ? $$self{cgi}->escapeHTML($1) : 'unknown',
 				'ext_classes'=> '',
 				'ext_attributes'=>'',
 				'ext_styles' =>'',
 				'ext_iconclasses' =>'',
+				'thumbtitle'=> $mime,
 				);
 	# fileattr hook: collect and concatenate attribute values 
 	my $fileattrExtensions = $$self{config}{extensions}->handle('fileattr', { path=>$full});
@@ -364,7 +373,8 @@ sub renderFileListEntry {
 			@stdvars{keys %$ret} = values %$ret;
 		}
 	}
-	$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
+	##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
+	$e=~s@\$\{?(\w+)\}?@  $stdvars{$1}//= "\$$1" @egs;
 	return $self->renderTemplate($fn,$ru,$e);
 }
 sub renderVisibleTableColumns {

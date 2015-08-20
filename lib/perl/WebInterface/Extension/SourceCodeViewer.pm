@@ -49,12 +49,15 @@ sub getFileSuffix {
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
+	my $ret = 0;
+	if ($hook eq 'fileattr' && $$self{backend}->isFile($$params{path})) {
+		$ret = {ext_classes=> $$self{supportedsuffixes}{$self->getFileSuffix($$params{path})} ? 'scv-source' : 'scv-nosource'} ;
+	} else {
+		$ret = $self->SUPER::handle($hook, $config, $params);
+	}
 	return $ret if $ret;
 	if ($hook eq 'fileactionpopup') {
 		return { action=>'scv', disabled=>!$$self{backend}->isReadable($main::PATH_TRANSLATED), label=>'scv', type=>'li'};
-	} elsif ($hook eq 'fileattr' && $$self{backend}->isFile($$params{path})) {
-		$ret = {ext_classes=> $$self{supportedsuffixes}{$self->getFileSuffix($$params{path})} ? 'scv-source' : 'scv-nosource'} ;
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'scv') {
 		my $file = $$self{cgi}->param('files');
 		if ( ($$self{backend}->stat("$main::PATH_TRANSLATED$file"))[7] > $$self{sizelimit}) {

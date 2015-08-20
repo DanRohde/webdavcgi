@@ -62,9 +62,9 @@ sub db_handleSelect {
 		warn ($sth->errstr);
 		$sth->finish(); # sqlite needs it
 		$dbh->rollback();
-	} else {
-		$ret = $dbh->commit();
-		warn("commit failed (rc=$ret)") unless $ret;
+#	} else {
+#		$ret = $dbh->commit();
+#		warn("commit failed (rc=$ret)") unless $ret;
 	}
 	return $ret;
 }

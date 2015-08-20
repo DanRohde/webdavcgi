@@ -44,6 +44,7 @@ sub init {
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
+	return $self->getFileAttributes($params) if ($hook eq 'fileattr');		
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	$ret.=$self->handleJavascriptHook('Highlighter', 'htdocs/contrib/iris.min.js') if $hook eq 'javascript';
 	return $ret if $ret;
@@ -68,10 +69,7 @@ sub handle {
 			$ret = $self->saveProperty();	
 		} elsif ($action eq 'removemark') {
 			$ret = $self->removeProperty();
-		}
-		
-	} elsif ($hook eq 'fileattr') {
-		return $self->getFileAttributes($params);		
+		}	
 	}
 	return $ret;
 }

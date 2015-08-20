@@ -50,6 +50,10 @@ sub init {
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
+	if ($hook eq 'fileattr') {
+		my $isEditable = $self->isEditable($$params{path});
+		return { ext_classes=>'iseditable-'. ( $isEditable ? 'yes' : 'no'), ext_iconclasses=> $isEditable ?  'category-text' : '' };
+	} 
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	
@@ -59,9 +63,6 @@ sub handle {
 		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton' };
 	} elsif ($hook eq 'fileactionpopup') {
 		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton', type=>'li'};
-	} elsif ($hook eq 'fileattr') {
-		my $isEditable = $self->isEditable($$params{path});
-		$ret = { ext_classes=>'iseditable-'. ( $isEditable ? 'yes' : 'no'), ext_iconclasses=> $isEditable ?  'category-text' : '' };
 	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') eq 'edit') {
 		$ret = $self->getEditForm(); 
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'savetextdata') {

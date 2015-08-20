@@ -5,13 +5,9 @@ $filelistentrycolumns
 <td class="option"></td>
 <!--TEMPLATE(name)[
 <td class="filename -hidden"> 
-     <!--IF("$linkinfo" eq "" && ("$name" eq "$displayname" || "$name" eq ".."))-->
-       <div class="filename">
-     <!--ELSE-->
        <div class="filename" title="$name$linkinfo">
-     <!--ENDIF-->
-	     <a href="$fileuri" class="action changeuri">
-	     	<img src="$iconurl"<!--IF($main::ENABLE_THUMBNAIL)--> data-thumb="$thumbiconurl" data-icon="$mimeiconurl"<!--ENDIF--> class="$iconclass $ext_iconclasses" alt="icon"<!--IF("$type" ne "dir")--> title="$mime"<!--ENDIF-->/>
+         <a href="$fileuri" class="action changeuri">
+	     	<img src="$iconurl" data-thumb="$thumbiconurl" data-icon="$mimeiconurl" class="$iconclass $ext_iconclasses" alt="icon" title="$thumbtitle"/>
 	     	<span class="nametext">$qdisplayname</span>
 	     </a>
      </div>

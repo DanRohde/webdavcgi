@@ -37,6 +37,9 @@ sub init {
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
+	if ($hook eq 'fileattr') {
+		return { ext_classes=>'viewerjs-'.($$params{path}=~/\.(odt|odp|ods|pdf)$/i ? 'yes' : 'no')  };
+	} 
 	my $ret = $self->SUPER::handle($hook, $config, $params);
 	return $ret if $ret;
 	
@@ -44,8 +47,6 @@ sub handle {
 		$ret =   { action=>'viewerjs', label=>'viewerjs.view', type=>'li'};
 	} elsif ($hook eq 'fileaction') {
 		$ret =   { action=>'viewerjs', label=>'viewerjs.view'};
-	} elsif ($hook eq 'fileattr') {
-		$ret = { ext_classes=>'viewerjs-'.($$params{path}=~/\.(odt|odp|ods|pdf)$/i ? 'yes' : 'no')  };
 	} elsif ($hook eq 'gethandler') {
 		$ret = $self->handleGetRequest('view') if $$self{cgi}->param('action') eq 'viewerjs';
 	}

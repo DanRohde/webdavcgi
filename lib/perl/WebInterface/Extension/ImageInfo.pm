@@ -39,9 +39,7 @@ sub init {
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	
+	my $ret = 0;
 	if ($hook eq 'fileattr') {
 		my $mime = main::getMIMEType($$params{path});
 		my $isReadable = $$self{backend}->isReadable($$params{path});
@@ -50,7 +48,12 @@ sub handle {
 			$classes .= " imageinfo-$type-". ($isReadable && $mime =~ /^\Q$type\E\//i ? 'show' : 'hide'); 
 		}
 		$ret = { ext_classes => $classes };
-	} elsif ($hook eq 'fileactionpopup') {
+	} else {
+		$ret = $self->SUPER::handle($hook, $config, $params);
+	}
+	return $ret if $ret;
+	
+	if ($hook eq 'fileactionpopup') {
 		$ret= [];
 		my $isReadable = $$self{backend}->isReadable($main::PATH_TRANSLATED);
 		foreach my $type (('image','audio','video')) {
