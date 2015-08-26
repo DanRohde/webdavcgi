@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .unselectable-yes .action.scv,
 .is-dir .action.scv,
 .isreadable-no .action.scv,
-.scv-nosource .action.scv  {
+.scv-nosource .action.scv,
+.isempty-yes .action.scv  {
 	display: none;
 	visibility: hidden;
 }

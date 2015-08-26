@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 .isreadable-no li.extension.odfconverter,
 .isreadable-no .action.odfconvert,
-.odfconverter, .odfconvert {
+.odfconverter, .odfconvert,
+.isempty-yes li.extension.odfconverter {
 	display: none;
 }
 .c .odfconverter {

@@ -16,7 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
 .viewerjs-no .action.viewerjs,
-.isreadable-no .action.viewerjs
+.isreadable-no .action.viewerjs,
+.isempty-yes .action.viewerjs
 {
 	display: none;
 }

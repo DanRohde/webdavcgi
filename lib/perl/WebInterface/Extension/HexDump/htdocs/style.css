@@ -16,7 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
 .is-dir .hexdump,
-.isreadable-no .hexdump {
+.isreadable-no .hexdump,
+.isempty-yes .hexdump {
 	display: none;
 }
 

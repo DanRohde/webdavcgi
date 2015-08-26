@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
+.isreadable-no .action.imageinfo,
+.isselectable-no .action.imageinfo,
+.isempty-yes .action.imageinfo {
+	display: none;
+}
 .action.imageinfo, .imageinfo.ui-dialog .ui-dialog-title {
 	background-repeat: no-repeat;
 }
