@@ -2145,7 +2145,7 @@ function toggleFullscreen(on) {
 		if (document.cancelFullScreen) document.cancelFullScreen();
 		else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
 		else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-		else if (document.webkitCancelFullscreen) document.webkitCancelfullScreen();
+		else if (document.webkitCancelFullscreen) document.webkitCancelFullscreen();
 		else if (document.msExitFullscreen) document.msExitFullscreen();
 	}
 }
