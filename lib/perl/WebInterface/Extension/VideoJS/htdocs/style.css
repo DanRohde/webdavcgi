@@ -18,6 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.videojs {
 	display: none;
 }
+.suffix-mp4.isreadable-yes.isempty-no.is-file #popupmenu .action.videojs,
+.suffix-ogv.isreadable-yes.isempty-no.is-file #popupmenu .action.videojs,
+.suffix-webm.isreadable-yes.isempty-no.is-file #popupmenu .action.videojs {
+	display: list-item;
+}
 .suffix-mp4.isreadable-yes.isempty-no.is-file .action.videojs,
 .suffix-ogv.isreadable-yes.isempty-no.is-file .action.videojs,
 .suffix-webm.isreadable-yes.isempty-no.is-file .action.videojs {
@@ -25,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .action.videojs {
 	background-image: url(videojs.png);
-	background-position: left center;
+	background-position: 3px center;
 	background-repeat: no-repeat;
 }
 .action.videojs:hover {
