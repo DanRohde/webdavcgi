@@ -1,0 +1,15 @@
+<div id="videojs">
+<div id="videojs-overlay"></div>
+<link href="${VHTDOCS}_EXTENSION(VideoJS)_/htdocs/contrib/video-js/video-js.css" rel="stylesheet">
+<script src="${VHTDOCS}_EXTENSION(VideoJS)_/htdocs/contrib/video-js/video.js"></script>
+<script>
+	videojs.options.flash.swf = "${VHTDOCS}_EXTENSION(SourceCodeViewer)_/htdocs/contrib/video-js/video-js.swf";
+	videojs("videojsvideo",{}, function(){}).autoplay(true);
+</script>
+<div id="videojs-player">
+<div id="videojs-closebutton" title="$tl(close)">&times;</div>
+<video id="videojsvideo" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" width="80%" height="80%" data-setup='{"language":"$lang"}'>
+<source src="$filename" type="$mime"/>
+</video>
+</div>
+</div>

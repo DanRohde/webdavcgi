@@ -54,6 +54,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
 <li><a href="#TextEditor">TextEditor</a> - offers a simple text editor with integrated CKEditor&trade; for HTML editing</li>
 <li><a href="#SourceCodeViewer">SourceCodeViewer</a> - show syntax highlighted source code</li>
+<li><a href="#VideoJS">VideoJS</a> - plays mp3/ogv/webm videos with VideoJS player</li>
 <li><a href="#ViewerJS">ViewerJS</a> - shows OpenDocument and PDF files (odt,odp,ods)</li>
 <li><a href="#Zip">Zip</a> - (un)compresses files/folders</li>
 </ul>
@@ -351,6 +352,19 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 </pre></td>
 </tr>
 </table>
+<h2 id="VideoJS">VideoJS</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-videojs.png"><img alt="Web interface VideoJS dialog" class="screenshot" src="images/webdavcgi-webinterface-videojs.png"/></a></td>
+<td><pre>
+# SETUP:
+# disable_fileactionpopup - disables file action entry in popup menu
+# disable_fileaction - disables file action
+# template - viewerjs template filename 
+</pre></td>
+</tr>
+</table>
+
 <h2 id="ViewerJS">ViewerJS</h2>
 <table style="width:100%">
 <tr>

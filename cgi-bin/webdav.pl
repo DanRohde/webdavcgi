@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015082801";
+$RELEASE="1.0.1BETA2015090101";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -150,7 +150,7 @@ folder  folder
 folderup folderup
 text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
-video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt wmv
+video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv
 image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
 source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f77 f90 for fs h has hpp hrl hs in inl jav java js json l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
 oofficew odt ott odm stw sxw
@@ -714,7 +714,7 @@ $DEBUG = 0;
 
 ## -- DEFAULT_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@DEFAULT_EXTENSIONS = ('History', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo','QuickToggle' );
+@DEFAULT_EXTENSIONS = ('History', 'VideoJS', 'ViewerJS', 'TextEditor', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage', 'ODFConverter' ,'ImageInfo','QuickToggle' );
 ## -- AFS_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
 @AFS_EXTENSIONS = ('AFSACLManager','AFSGroupManager');
