@@ -1,9 +1,8 @@
 #!/bin/bash
 #set -e
-JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.pack.js jquery.fancybox-thumbs.js jquery.fancybox-buttons.js js.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js jquery.hoverIntent.js"
+JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.js jquery.fancybox-thumbs.js jquery.fancybox-buttons.js js.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js jquery.hoverIntent.js"
 
-CSS="jquery-ui.min.css jquery.fancybox.min.css jquery.fancybox-thumbs.min.css jquery.fancybox-buttons.min.css"
-#jquery.powertip.min.css
+CSS="jquery-ui.css jquery.fancybox.css jquery.fancybox-thumbs.css jquery.fancybox-buttons.css"
 
 concat() {
 	src=$1
@@ -12,15 +11,26 @@ concat() {
 	test -f "$src.gz" && zcat "$src" >> "$dst"
 }
 
+test -f contrib.js && rm contrib.js
 for js in $JS ; do
 	concat $js contrib.js
 done
-bash minify.sh contrib.js
-rm contrib.js
+if [ "$1" = "-d" ] ; then
+	gzip contrib.js
+	mv contrib.js.gz contrib.min.js.gz
+else
+	bash minify.sh contrib.js
+	rm contrib.js
+fi
 
 test -f contrib.css && rm contrib.css
 for css in $CSS ; do
 	concat $css contrib.css
 done
-bash minify.sh contrib.css
-rm contrib.css
+if [ "$1" = "-d" ] ; then
+	gzip contrib.css
+	mv contrib.css.gz contrib.min.css.gz
+else 
+	bash minify.sh contrib.css
+	rm contrib.css
+fi
