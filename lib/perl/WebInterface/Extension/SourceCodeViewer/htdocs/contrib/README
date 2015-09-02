@@ -1,0 +1,10 @@
+google code prettify - https://raw.githubusercontent.com/google/code-prettify/master/distrib/prettify-small.tgz - updated 2015-09-02 
+	wget https://raw.githubusercontent.com/google/code-prettify/master/distrib/prettify-small.tgz
+	tar axf prettify-small.tgz
+	gzip -c < google-code-prettify/prettify.css > contrib.css.gz
+	gzip -c < google-code-prettify/prettify.js > contrib.js.gz
+	rm -r google-code-prettify prettify-small.tgz
+
+
+
+
