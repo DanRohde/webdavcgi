@@ -5,7 +5,7 @@ JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.js jquery.fancyb
 #jquery.fileupload-ui.js
 #jquery.powertip.min.js
 
-CSS="jquery-ui.min.css jquery.fancybox.min.css jquery.fancybox-thumbs.min.css"
+CSS="jquery-ui.css query.fancybox.css jquery.fancybox-thumbs.css"
 #jquery.powertip.min.css
 
 concat() {

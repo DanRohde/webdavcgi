@@ -1,9 +1,6 @@
 #!/bin/bash
 #set -e
-JS="jquery.min.js jquery-ui.min.js jquery.fileupload.js jquery.fancybox.pack.js jquery.fancybox-thumbs.min.js jquery.fancybox-buttons.min.js js.cookie.js multidraggable.min.js jquery.noty.min.js jquery.noty.layout.topCenter.min.js jquery.noty.themes.default.min.js jquery.hoverIntent.js"
-#jquery.fileupload-fp.js
-#jquery.fileupload-ui.js
-#jquery.powertip.min.js
+JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.pack.js jquery.fancybox-thumbs.js jquery.fancybox-buttons.js js.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js jquery.hoverIntent.js"
 
 CSS="jquery-ui.min.css jquery.fancybox.min.css jquery.fancybox-thumbs.min.css jquery.fancybox-buttons.min.css"
 #jquery.powertip.min.css
