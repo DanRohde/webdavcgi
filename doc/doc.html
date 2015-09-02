@@ -174,7 +174,7 @@ emerge -va app-crypt/heimdal
     <li> or with a handler action (unsupported)</li>
     </ul>
     Examples for Apache 2.x: (you need the Apache rewrite module: <code>a2enmod rewrite</code>) 
-    - and don't forget to take a look at the backend specific configurations <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, or <a href="#rcs">RCS</a>
+    - and don't forget to take a look at the backend specific configuration: <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, or <a href="#rcs">RCS</a>
     <pre>
 ### EXAMPLE 1: a complete (virtual) server root handled by WebDAV CGI:
 ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
@@ -201,7 +201,7 @@ ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
         Require valid-user
 &lt;/Location&gt;
 # if you want to map this to a real path, do that:
-# (end setup $VIRTUAL_BASE='/webdav/?' and $DOCUMENT_ROOT in your WebDAV CGI config)
+# (and setup $VIRTUAL_BASE='/webdav/?' and $DOCUMENT_ROOT in your WebDAV CGI config)
 RewriteEngine On
 # RewriteRule ^/webdav/logout - [L]
 RewriteRule ^/webdav /webdavcgi  [PT,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,L]
@@ -226,10 +226,21 @@ Require valid-user
 <h2 id="upgrade">Upgrade</h2>
 <h3>Upgrading from 1.0.0 to 1.0.1</h3>
 <ul>
-<li> The ImageInfo extensions needs the additional Perl module Image::ExifTool<br> (Debian/Ubuntu: <code>apt-get install libimage-exiftool-perl</code>, CPAN: <code>perl -MCPAN -e "install Image::ExifTool"</code>)</li>
+<li> The new ImageInfo extensions needs the additional Perl module Image::ExifTool<br> (Debian/Ubuntu: <code>apt-get install libimage-exiftool-perl</code>, CPAN: <code>perl -MCPAN -e "install Image::ExifTool"</code>)</li>
 <li> It's now possible to use AFS in conjunction with mod_perl and without mod_waklog, but it makes it necessary to install a new Perl module: AFS::PAG (Debian: <code>apt-get install libafs-pag-perl</code> or <code>perl -MCPAN -e "install AFS::APG"</code>).</li>
-<li> GPX Viewer extension was added (GPXViewer) </li>
-<li> Hungarian language was added. Don't forget to generate the necessary locale <code>hu_HU.UTF-8 UTF-8</code></li>
+<li> GPX Viewer extension was added (GPXViewer).</li>
+<li> QuickToggle extension was added.</li>
+<li> VideoJS extension was added.</li>
+<li> Hungarian language was added. Don't forget to add the necessary locale <code>hu_HU.UTF-8 UTF-8</code></li>
+<li> New config variables were added and can be used for an easier upgrade (don't change this variables) if you use it for your <code>@EXTENSIONS</code> list in your <code>webdav.conf</code>, e.g. <code>@EXTENSIONS = (@DEFAULT_EXTENSIONS, @EXTRA_EXTENSIONS);</code>:
+	<ul>
+	<li><code>@DEFAULT_EXTENSIONS</code> - contains a list of useful extensions</li>
+	<li><code>@AFS_EXTENSIONS</code> - contains a list of AFS backend related extensions</li>
+	<li><code>@EXTRA_EXTENSIONS</code> - contains a list of special extensions (e.g. GPXViewer, SourceCodeViewer, HexDump, SendByMail)</li>
+	<li><code>@PUB_EXTENSIONS</code> - contains a list of public URI extensions</li>
+	<li><code>@DEV_EXTENSIONS</code> - contains a list for WebDAV CGI developers (e.g. PropertiesViewer, SysInfo)</li>
+	</ul>
+</li> 
 </ul>
 <h3>Upgrading from 0.9.0 to 1.0.0</h3>
 <ul>
