@@ -16,8 +16,7 @@ for js in $JS ; do
 	concat $js contrib.js
 done
 if [ "$1" = "-d" ] ; then
-	gzip contrib.js
-	mv contrib.js.gz contrib.min.js.gz
+	gzip -c < contrib.js >contrib.min.js.gz
 else
 	bash minify.sh contrib.js
 	rm contrib.js
@@ -28,8 +27,7 @@ for css in $CSS ; do
 	concat $css contrib.css
 done
 if [ "$1" = "-d" ] ; then
-	gzip contrib.css
-	mv contrib.css.gz contrib.min.css.gz
+	gzip -c < contrib.css >contrib.min.css.gz
 else 
 	bash minify.sh contrib.css
 	rm contrib.css

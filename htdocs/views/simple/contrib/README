@@ -1,0 +1,28 @@
+## common: 
+- need the unminfied version of JS/CSS for debug and production
+- use contrib.sh to build contrib.css.gz, contrib.js.gz
+- contrib.sh uses minify.sh uses YUI Compressor: http://yui.github.io/yuicompressor/ - updated 2015-09-02 (v2.4.8)
+
+## main contrib:
+jquery: http://www.jquery.com/ - updated 2015-09-02 (v1.11.3)
+	jquery.js 
+jquery-ui: http://www.jqueryui.com/ - updated 2015-09-02 (v1.11.4)
+	jquery-ui.js jquery-ui.css 
+	# theme: Smoothness and don't forget to copy ui images to images/
+js-cookie: https://github.com/js-cookie/js-cookie - updated 2015-09-02 (v2.0.3)
+	js.cookie.js 
+hoverIntent: http://cherne.net/brian/resources/jquery.hoverIntent.html - updated 2015-09-02 (v1.8.0)
+	jquery.hoverIntent.js
+noty: https://github.com/needim/noty/releases - updated 2015-09-02 (v2.3.6)
+	jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js
+fileupload: http://blueimp.github.io/jQuery-File-Upload/ - updated 2015-09-02 (v9.11.2)
+	jquery.fileupload.js
+fancybox2: http://fancyapps.com/fancybox/ - updated 2015-09-02 (v2.1.5)
+	jquery.fancybox.js		jquery.fancybox.css
+	jquery.fancybox-buttons.js	jquery.fancybox-buttons.css
+	jquery.fancybox-thumbs.js	jquery.fancybox-thumbs.css
+	# don't forget images (egrep '(gif|png)' jquery.fancy*css)
+multidraggable: https://github.com/someshwara/MultiDraggable - updated 2015-09-02 (13 Nov 2012)
+	multidraggable.js
+	#is a patched version (don't upgrade without the patch) 
+
