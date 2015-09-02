@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.js jquery.fancybox-thumbs.js jquery.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js"
+JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.js jquery.fancybox-thumbs.js js.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js"
 #jquery.fileupload-fp.js
 #jquery.fileupload-ui.js
 #jquery.powertip.min.js

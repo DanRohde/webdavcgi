@@ -1661,11 +1661,11 @@ function uri2html(uri) {
 function cookie(name,val,expires) {
 	var date = new Date();
        	date.setTime(date.getTime() + 315360000000);
-	if (val) return $.cookie(name, val, { path:$("#flt").attr("data-baseuri"), secure: true, expires: expires ? date : undefined});
-	return $.cookie(name);
+	if (val) return Cookies.set(name, val, { path:$("#flt").attr("data-baseuri"), secure: true, expires: expires ? date : undefined});
+	return Cookies.get(name);
 }
 function rmcookies() {
-	for (var i=0; i < arguments.length; i++) $.removeCookie(arguments[i], { path:$("#flt").attr("data-baseuri"), secure: true});
+	for (var i=0; i < arguments.length; i++) Cookies.remove(arguments[i], { path:$("#flt").attr("data-baseuri"), secure: true});
 }
 function togglecookie(name,val,toggle,expires) {
 	if (toggle) cookie(name,val,expires);
