@@ -316,8 +316,8 @@ sub renderFileListEntry {
 	my $displayname = $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full));
 	my $now = $CACHE{$self}{renderFileListEntry}{now}{$lang} //= DateTime->now(locale=>$lang); ## //
 	my $cct = $self->canCreateThumbnail($full) || 0;
-	my $u = $CACHE{$self}{renderFileListEntry}{uid}{$uid} //= scalar getpwuid($uid || 0) || $uid; ## //
-	my $g = $CACHE{$self}{renderFileListEntry}{gid}{$gid} //= scalar getgrgid($gid || 0) || $gid; ## //
+	my $u = $uid ? $CACHE{$self}{renderFileListEntry}{uid}{$uid} //= scalar getpwuid($uid || 0) || $uid : 'unknown'; ## //
+	my $g = $gid ? $CACHE{$self}{renderFileListEntry}{gid}{$gid} //= scalar getgrgid($gid || 0) || $gid : 'unknown'; ## //
 	my $icon = $CACHE{$self}{renderFileListEntry}{icon}{$mime} //= $self->getIcon($mime); ## //
 	my $enthumb = $CACHE{$self}{renderFileListEntry}{cookie}{thumbnails} //= $$self{cgi}->cookie('settings.enable.thumbnails') // 'yes'; ## //  
 	my %stdvars = ( 
@@ -343,7 +343,7 @@ sub renderFileListEntry {
 				'isviewable'=>$ir && $cct ? 'yes' : 'no',
 				'islocked'=> $isLocked ? 'yes' : 'no',
 				'islink' =>$il ? 'yes' : 'no',
-				'isempty'=> $id ? 'unknown' : $size == 0 ? 'yes' : 'no',
+				'isempty'=> $id ? 'unknown' : $size && $size == 0 ? 'yes' : 'no',
 				'type'=>$file =~ /^\.\.?$/ || $id ?'dir':($il?'link':'file'),
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $self->isUnselectable($full) ? 'yes' : 'no',
