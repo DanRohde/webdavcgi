@@ -427,6 +427,7 @@ tr.isreadable-no:hover {
 .icon.thumbnail {
 	background-color: rgb(255,255,255) !important;
 	background-color: rgba(255,255,255,0.6) !important;
+	background-image: none;
 }
 .icon.thumbnail:hover {
 	width: 120px;
