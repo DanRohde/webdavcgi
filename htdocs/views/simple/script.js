@@ -2024,6 +2024,14 @@ function initThumbnailSwitch() {
 			updateThumbnails();
 		}
 	});
+	$("#flt").on("fileListChanged", function() {
+		// fix broken thumbnails bug
+		$("#flt img.icon.thumbnail").error(function(){ 
+			var self=$(this);
+			self.removeClass("thumbnail").attr("src", self.data("icon"));
+		});
+				
+	});
 }
 function quoteWhiteSpaces(filename) {
 	return filename.replace(/( {2,})/g, '<span class="ws">$1</span>');
