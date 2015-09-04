@@ -72,6 +72,8 @@ $(document).ready(function() {
 	
 	initNav();
 	
+	initStatusbar();
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -88,6 +90,38 @@ $(document).ready(function() {
 	
 	updateFileList($("#flt").attr("data-uri"));
 	
+function initStatusbar() {
+	if (!cookie("settings.show.statusbar")) {
+		cookie("settings.show.statusbar","no");
+		cookie("settings.show.statusbar.keep","yes");
+	}
+	$("#statusbar").toggleClass("enabled", cookie("settings.show.statusbar") == "yes");
+	$("#statusbar .unselectable").off("change").on("change", function(e) {$(this).prop("checked",true); preventDefault(e); });
+	function renderStatusbarTemplate(){ 
+		var flt = $("#fileListTable");
+		var sb = $("#statusbar");
+		$(".filecount",sb).html(flt.attr("data-filecounter"));
+		$(".dircount",sb).html(flt.attr("data-dircounter"));
+		$(".sum",sb).html(flt.attr("data-sumcounter"));
+		$(".foldersize",sb).attr("title",renderByteSizes(flt.data("foldersize"))).html(renderByteSize(flt.data("foldersize")));
+		$(".selfilecount",sb).html(flt.attr("data-fileselcounter"));
+		$(".seldircount",sb).html(flt.attr("data-dirselcounter"));
+		$(".selsum",sb).html(flt.attr("data-sumselcounter"));
+		$(".selfoldersize",sb).attr("title", renderByteSizes(flt.attr("data-folderselsize"))).html(renderByteSize(flt.attr("data-folderselsize")));
+		sb.MyTooltip(500);
+	}
+	renderStatusbarTemplate();
+	$("#flt").on("counterUpdated", renderStatusbarTemplate).on("fileListChanged", renderStatusbarTemplate).on("selectionCounterUpdated", renderStatusbarTemplate);
+	$("body").on("notify",function(ev,data) {
+		$("#statusbar .notify").attr("title",simpleEscape(data.msg)).removeClass("error message warning").addClass(data.type);
+	});
+	$("body").on("settingchanged",function(ev,data) {
+		if (data.setting == "settings.show.statusbar") {
+			$("#statusbar").toggleClass("enabled", data.value);
+		}
+	});
+	
+}
 function initTooltips() {
 	$("#flt").on("fileListChanged", function() {
 		$("#flt,#bookmarks,#filelistactions").MyTooltip(500);
@@ -648,7 +682,8 @@ function handleSelectionStatistics() {
 	var tmpl = selstats.data('selstats');
 
 	var s = getFolderStatistics();
-
+	$("#fileListTable").attr('data-fileselcounter',s["fileselcounter"]).attr('data-dirselcounter',s["dirselcounter"]).attr('data-folderselsize',s["folderselsize"]).attr("data-sumselcounter", s["sumselcounter"]);
+	$("#flt").trigger("selectionCounterUpdated");
 	selstats.html(tmpl.replace(/\$filecount/,s["fileselcounter"]).replace(/\$dircount/,s["dirselcounter"]).replace(/\$sum/,s["sumselcounter"])).attr('title',renderByteSizes(s["folderselsize"]));
 }
 
@@ -1305,6 +1340,7 @@ function notify(type,msg) {
 	console.log("notify["+type+"]: "+msg);
 	if (cookie("settings.messages."+type)=="no") return;
 	noty({text: msg, type: type, layout: 'topCenter', timeout: 30000 });
+	$("body").trigger("notify",{type:type,msg:msg});
 // var notification = $("#notification");
 // notification.removeClass().hide();
 // notification.unbind('click').click(function() { $(this).hide().removeClass();
@@ -1412,8 +1448,8 @@ function initFolderStatistics() {
 function resetFileListCounters(flt) {
 	if (!flt) flt=$('#fileListTable');
 	if (flt && flt.attr) 
-		flt.attr('data-filecounter',0).attr('data-dircounter',0).attr('data-foldersize',0)
-			.attr('data-fileselcounter',0).attr('data-dirselcounter',0).attr('data-folderselsize',0);
+		flt.attr('data-filecounter',0).attr('data-dircounter',0).attr('data-foldersize',0).attr('data-sumcounter',0)
+			.attr('data-fileselcounter',0).attr('data-dirselcounter',0).attr('data-folderselsize',0).attr('data-sumselcounter',0);
 }
 function updateFileListCounters() {
 	var flt = $("#fileListTable");
@@ -1425,6 +1461,9 @@ function updateFileListCounters() {
 	flt.attr('data-dircounter', s["dircounter"]);
 	flt.attr('data-filecounter', s["filecounter"]);
 	flt.attr('data-foldersize', s["foldersize"]);
+	flt.attr('data-sumcounter', s["sumcounter"]);
+	
+	$("#flt").trigger("counterUpdated");
 }
 function getFolderStatistics() {
 	var stats = new Array();
@@ -2030,7 +2069,6 @@ function initThumbnailSwitch() {
 			var self=$(this);
 			self.removeClass("thumbnail").attr("src", self.data("icon"));
 		});
-				
 	});
 }
 function quoteWhiteSpaces(filename) {

@@ -11,6 +11,7 @@
      - added Amazon S3 browser backend S3B (only tested with Ceph Rados gateway) 
      - added QuickToggle extension
      - added VideoJS extension
+     - added statusbar
      
 1.0.0: 2014/10/10
      - fixed minor AFS Group Manager bug

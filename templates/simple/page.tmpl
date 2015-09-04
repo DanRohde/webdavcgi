@@ -127,6 +127,12 @@ $INCLUDE(htmlhead)</head>
 	<div id="notification"></div>
 	<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
 	<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri"></div>
+	<div id="statusbar">
+		$tl(statfiles) <span class="filecount"></span>, $tl(statfolders) <span class="dircount"></span>, $tl(statsum) <span class="sum"></span>, $tl(size): <span class="foldersize"></span>
+		<input type="checkbox" checked class="unselectable" name="dummy"> <span class="selfilecount" title="$tl(statfiles)">0</span>/<span class="seldircount" title="$tl(statfolders)">0</span>/<span class="selsum" title="$tl(statsum)">0</span>/<span class="selfoldersize" title="0">0</span> 
+		<div class="notify" title="."></div>
+		$extension(statusbar)
+	</div>
 	$config(FOOTER)
 </div>
 </div>

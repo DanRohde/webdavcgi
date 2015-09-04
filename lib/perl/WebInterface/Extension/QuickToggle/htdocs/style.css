@@ -128,3 +128,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	left: -34px;
 	top: 6px;
 }
+#statusbar .quicktoggles {
+	float: left;
+	padding-right:10px;
+}

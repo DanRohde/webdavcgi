@@ -1358,4 +1358,45 @@ img {
 .noty_text {
 	white-space: pre-wrap;
 }
-
+#statusbar {
+	display: none;
+	position: fixed;
+	bottom: 0px;
+	left: 160px;
+	height: 1.8em;
+	background-color: #f7f7f7;
+	width: 100%;
+	padding: 1px 10px 1px 10px;
+	box-shadow: -3px 0 3px #000;
+	z-index: 50;
+}
+#statusbar.enabled {
+	display: block;
+}
+.sidebar-iconsonly #statusbar {
+	left: 24px;
+} 
+.sidebar-collapsed #statusbar {
+	left: 0px;
+}
+#statusbar .notify {;
+	display: inline-block;
+	width: 2ex;
+	height: 2ex;
+	background-color: white;
+	margin: 2px 0 0;
+	border: 0;
+}
+#statusbar .unselectable {
+	outline: none;
+	cursor: default;
+}
+#statusbar .notify.error {
+	background-color: red;
+}
+#statusbar .notify.mesesage {
+	background-color: white;
+}
+#statusbar .notify.warning {
+	background-color: yellow;
+}
