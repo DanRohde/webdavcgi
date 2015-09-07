@@ -1385,7 +1385,7 @@ img {
 	height: 1.4em;
 	font-size: small;
 	background-color: white;
-	margin: 2px 0 0;
+	margin: 2px 1ex;
 	border: 0;
 	padding: 0;
 	vertical-align: top;
@@ -1407,12 +1407,15 @@ img {
 #statusbar .notify.warning {
 	background-color: #ffd700;
 }
-#statusbar .selected-files-stats {
-	background-color: #dadada;
+#statusbar .files-stats, #statusbar .selected-files-stats  {
 	display: inline-block;
-	margin: 0 1ex;
+	margin: 1px 0 1px 1ex;
 	padding: 0 10px;
 	vertical-align: top;
+}
+#statusbar .selected-files-stats 
+{
+	background-color: #dadada;
 }
 .file-icon {
 	background: url(images/sprite.png) no-repeat left -780px;
