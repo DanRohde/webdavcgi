@@ -108,18 +108,20 @@ function initStatusbar() {
 		$(".seldircount",sb).html(flt.attr("data-dirselcounter"));
 		$(".selsum",sb).html(flt.attr("data-sumselcounter"));
 		$(".selfoldersize",sb).attr("title", renderByteSizes(flt.attr("data-folderselsize"))).html(renderByteSize(flt.attr("data-folderselsize")));
-		sb.MyTooltip(500);
+		$(".selected-files-stats",sb).toggle(flt.attr("data-fileselcounter") != 0 || flt.attr("data-dirselcounter") != 0);
+		
 	}
 	renderStatusbarTemplate();
 	$("#flt").on("counterUpdated", renderStatusbarTemplate).on("fileListChanged", renderStatusbarTemplate).on("selectionCounterUpdated", renderStatusbarTemplate);
 	$("body").on("notify",function(ev,data) {
-		$("#statusbar .notify").attr("title",simpleEscape(data.msg)).removeClass("error message warning").addClass(data.type);
+		$("#statusbar .notify").attr("title",simpleEscape(data.msg)).removeClass("error message warning").addClass(data.type).html(simpleEscape(data.msg)).MyTooltip();
 	});
 	$("body").on("settingchanged",function(ev,data) {
 		if (data.setting == "settings.show.statusbar") {
 			$("#statusbar").toggleClass("enabled", data.value);
 		}
 	});
+	$("#statusbar").MyTooltip(500);
 	
 }
 function initTooltips() {

@@ -1381,22 +1381,70 @@ img {
 }
 #statusbar .notify {;
 	display: inline-block;
-	width: 2ex;
-	height: 2ex;
+	width: 20ex;
+	height: 1.4em;
+	font-size: small;
 	background-color: white;
 	margin: 2px 0 0;
 	border: 0;
+	padding: 0;
+	vertical-align: top;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 #statusbar .unselectable {
 	outline: none;
 	cursor: default;
 }
 #statusbar .notify.error {
+	color: white;
 	background-color: red;
 }
 #statusbar .notify.mesesage {
 	background-color: white;
 }
 #statusbar .notify.warning {
-	background-color: yellow;
+	background-color: #ffd700;
+}
+#statusbar .selected-files-stats {
+	background-color: #dadada;
+	display: inline-block;
+	margin: 0 1ex;
+	padding: 0 10px;
+	vertical-align: top;
+}
+.file-icon {
+	background: url(images/sprite.png) no-repeat left -780px;
+	padding-left: 15px;
+	display: inline-block;
+	vertical-align: top;
+}
+.folder-icon {
+	background: url(images/sprite.png) no-repeat left -740px;
+	padding-left: 17px;
+	display: inline-block;
+	vertical-align: top;
+}
+.plus-icon {
+	background: url(images/sprite.png) no-repeat left -1060px;
+	padding-left: 18px;
+	display: inline-block;
+	vertical-align: top;
+}
+.sum-icon {
+	background: url(images/sprite.png) no-repeat left -1460px;
+	padding-left: 15px;
+	display: inline-block;
+	vertical-align: top;
+}
+.size-icon {
+	background: url(images/sprite.png) no-repeat left -1420px;
+	padding-left: 16px;
+	display: inline-block;
+	vertical-align: top;
+}
+.inline-block {
+	display: inline-block;
+	vertical-align: top;
 }
