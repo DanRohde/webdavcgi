@@ -343,7 +343,7 @@ sub renderFileListEntry {
 				'isviewable'=>$ir && $cct ? 'yes' : 'no',
 				'islocked'=> $isLocked ? 'yes' : 'no',
 				'islink' =>$il ? 'yes' : 'no',
-				'isempty'=> $id ? 'unknown' : $size && $size == 0 ? 'yes' : 'no',
+				'isempty'=> $id ? 'unknown' : (defined $size) && $size == 0 ? 'yes' : 'no',
 				'type'=>$file =~ /^\.\.?$/ || $id ?'dir':($il?'link':'file'),
 				'fileuri'=>$fulle,
 				'unselectable'=> $file eq '..' || $self->isUnselectable($full) ? 'yes' : 'no',
