@@ -1,4 +1,4 @@
-1.0.1: BETA
+1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug
      - fixed multiple white-spaces in file/folder names bug
      - fixed Chrome related rename, create file/folder bug

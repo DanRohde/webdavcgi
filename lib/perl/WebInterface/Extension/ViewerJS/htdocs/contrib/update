@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+if test "$#" -ne 1; then
+	read -p "Version-Number (0.x.y):" version
+else
+	version=$1
+fi
+
+
+
+
+wget http://viewerjs.org/releases/viewerjs-${version}.zip
+unzip viewerjs-${version}.zip
+
+cp  ../../templates/view.tmpl  ../../templates/view.tmpl.$(date +'%Y%m%d%H%M%S')
+sed -i -r -e 's@contrib/viewerjs-[0-9]+\.[0-9]+\.[0-9]+/@contrib/viewerjs-'${version}'/@g' ../../templates/view.tmpl
+rm viewerjs-${version}.zip

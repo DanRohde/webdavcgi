@@ -3,7 +3,7 @@ apt-get install libdbi-perl libdbd-sqlite3-perl libtimedate-perl \
                 libuuid-tiny-perl libxml-simple-perl libquota-perl \
                 libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
                 libfile-copy-link-perl libjson-perl libdatetime-perl \
-                libmime-tools-perl libnet-ldap-perl sqlite3
+                libmime-tools-perl libnet-ldap-perl sqlite3 libimage-exiftool-perl
 
 perl -MCPAN -e "install DateTime::Format::Human::Duration"
 

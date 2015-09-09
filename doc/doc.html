@@ -224,13 +224,14 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
-<h3>Upgrading from 1.0.0 to 1.0.1</h3>
+<h3>Upgrading from 1.0.0 to 1.1.0</h3>
 <ul>
 <li> The new ImageInfo extensions needs the additional Perl module Image::ExifTool<br> (Debian/Ubuntu: <code>apt-get install libimage-exiftool-perl</code>, CPAN: <code>perl -MCPAN -e "install Image::ExifTool"</code>)</li>
 <li> It's now possible to use AFS in conjunction with mod_perl and without mod_waklog, but it makes it necessary to install a new Perl module: AFS::PAG (Debian: <code>apt-get install libafs-pag-perl</code> or <code>perl -MCPAN -e "install AFS::APG"</code>).</li>
-<li> GPX Viewer extension was added (GPXViewer).</li>
+<li> GPXViewer extension was added.</li>
 <li> QuickToggle extension was added.</li>
 <li> VideoJS extension was added.</li>
+<li> A statusbar was added (see settings dialog).</li>
 <li> Hungarian language was added. Don't forget to add the necessary locale <code>hu_HU.UTF-8 UTF-8</code></li>
 <li> New config variables were added and can be used for an easier upgrade (don't change this variables) if you use it for your <code>@EXTENSIONS</code> list in your <code>webdav.conf</code>, e.g. <code>@EXTENSIONS = (@DEFAULT_EXTENSIONS, @EXTRA_EXTENSIONS);</code>:
 	<ul>
@@ -1369,7 +1370,7 @@ See <a href="mod_perl.html">mod_perl</a> topic.
 ]-->
 
 <div id="contact">
-&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2014 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2015 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
 </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 ##!/usr/bin/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2015 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.0.1BETA2015090703";
+$RELEASE="1.1.0";
 #########################################################################
 ############  S E T U P #################################################
 

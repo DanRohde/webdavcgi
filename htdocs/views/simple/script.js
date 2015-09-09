@@ -109,7 +109,6 @@ function initStatusbar() {
 		$(".selsum",sb).html(flt.attr("data-sumselcounter"));
 		$(".selfoldersize",sb).attr("title", renderByteSizes(flt.attr("data-folderselsize"))).html(renderByteSize(flt.attr("data-folderselsize")));
 		$(".selected-files-stats",sb).toggle(flt.attr("data-fileselcounter") != 0 || flt.attr("data-dirselcounter") != 0);
-		
 	}
 	renderStatusbarTemplate();
 	$("#flt").on("counterUpdated", renderStatusbarTemplate).on("fileListChanged", renderStatusbarTemplate).on("selectionCounterUpdated", renderStatusbarTemplate);
