@@ -2,6 +2,7 @@
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension
      - fixed highlighting on unselectable folders is not possible bug
+     - fixed search dialog with wrong input types and formatting problem bugs
      
 1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug

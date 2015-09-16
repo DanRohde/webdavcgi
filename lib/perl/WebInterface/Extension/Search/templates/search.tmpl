@@ -9,46 +9,44 @@
 	<div class="search query">
 		$tl(search.query): <input class="search query" type="text" name="query" value=""/> 
 	</div>
-	<div class="search filenamesearch">
-		
-			<input type="radio" name="searchin" value="filename" checked="checked"/>$tl(search.filenameoption)
+	<div class="search filenamesearch">		
+			<input type="radio" name="searchin" value="filename" checked="checked" id="search-searchin-filename-$."/><label for="search-searchin-filename-$.">$tl(search.filenameoption)</label>
 			<!--IF("$extconfig(allow_contentsearch)" eq "1")-->
-				<input type="radio" name="searchin" value="content"/>
+				<input type="radio" name="searchin" value="content" id="search-searchin-content-$."/>
 				<span>
 			<!--ELSE-->
-				<input type="radio" name="searchin" value="content" disabled="disabled"/>
+				<input type="radio" name="searchin" value="content" id="search-searchin-content-$." disabled="disabled"/>
 				<span class="search disabled">
 			<!--ENDIF-->
-			$tl(search.contentoption)</span>
-			
+			<label for="search-searchin-content-$.">$tl(search.contentoption)</label></span>
 	</div>
 	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">
 		<div class="search typeonly">$tl(search.typeonly): 
-				<input type="checkbox" name="filetype" checked="checked"/> $tl(search.filetype)  
-				<input type="checkbox" name="foldertype" checked="checked"/> $tl(search.foldertype)
-				<input type="checkbox" name="linktype" checked="checked"/> $tl(search.linktype) 
+				<input type="checkbox" name="filetype" checked="checked" id="search-typeonly-filetype-$."><label for="search-typeonly-filetype-$.">$tl(search.filetype)</label>   
+				<input type="checkbox" name="foldertype" checked="checked" id="search-typeonly-foldertype-$."/><label for="search-typeonly-foldertype-$.">$tl(search.foldertype)</label>
+				<input type="checkbox" name="linktype" checked="checked" id="search-typeonly-linktype-$."/><label for="search-typeonly-linktype-$.">$tl(search.linktype)</label> 
 		</div>
-		<div class="search size">$tl(search.size):
-			<select name="sizecomparator">
+		<div class="search size">
+			$tl(search.size):
+			<select name="sizecomparator" class="search-select">
 				<option value="&lt;">&lt;</option>
 				<option value="&lt;=">&le;</option>
 				<option value="==" selected="selected">=</option>
 				<option value="&gt;=">&ge;</option>
 				<option value="&gt;">&gt;</option>
 			</select>
-			<input type="text" name="size" size="5"/>
-			<select name="sizeunits">
+			<input class="search-size" type="number" name="size" min="0" step="1"/>
+			<select name="sizeunits" class="search-select">
 				$each#@BYTEUNITORDER#'<option value="$v">$v</option>'#'$view'#
-			</select>,
-		$tl(search.time): 
-			<select name="timecomparator">
-			<option value="&gt;=">$tl(search.olderthan)</option>
-			<option value="&lt;=">$tl(search.newerthan)</option>
 			</select>
-			<input type="text" name="time" size="5"/>
-			
-			<select name="timeunits">
+			$tl(search.time): 
+			<select name="timecomparator" class="search-select">
+				<option value="&gt;=">$tl(search.olderthan)</option>
+				<option value="&lt;=">$tl(search.newerthan)</option>
+			</select>
+			<input class="search-timecomparator" type="number" name="time" min="0" step="1"/>
+			<select name="timeunits" class="search-select search-time-units" id="search-time-units-$.">
 				<option value="seconds">$tl(search.seconds)</option>
 				<option value="minutes">$tl(search.minutes)</option>
 				<option value="hours">$tl(search.hours)</option>
@@ -59,7 +57,7 @@
 			</select>
 		</div>
 		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->
-			<div class="search duplicate"><input type="checkbox" name="dupsearch">$tl(search.duplicatefiles)</div>
+			<div class="search duplicate"><input type="checkbox" name="dupsearch" id="search-dupsearch-$."><label for="search-dupsearch-$.">$tl(search.duplicatefiles)</label></div>
 		<!--ENDIF-->
 	</div>
 </div>

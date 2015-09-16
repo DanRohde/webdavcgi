@@ -152,8 +152,9 @@ sub getCookies {
 }
 sub replaceVars {
         my ($self,$t,$v) = @_;
-        $t=~s/\${?NOW}?/strftime($self->tl('varnowformat'), localtime())/eg;
-        $t=~s/\${?TIME}?/strftime($self->tl('vartimeformat'), localtime())/eg;
+        my $lt = localtime();
+        $t=~s/\${?NOW}?/strftime($self->tl('varnowformat'),$lt)/eg;
+        $t=~s/\${?TIME}?/strftime($self->tl('vartimeformat'), $lt)/eg;
         $t=~s/\${?USER}?/$main::REMOTE_USER/g;
         $t=~s/\${?REQUEST_URI}?/$main::REQUEST_URI/g;
         $t=~s/\${?PATH_TRANSLATED}?/$main::PATH_TRANSLATED/g;
@@ -427,11 +428,12 @@ sub renderTemplate {
 			VBASE=>$$self{cgi}->escapeHTML($vbase),
 			VHTDOCS=>$vbase.$main::VHTDOCS,
 			RELEASE=>$main::RELEASE,
+			'.'=>scalar time(),
 			%$vars 
 	};
 	
-	$content=~s/\$\[(\w+)\]/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
-	$content=~s/\$\{?(\w+)\}?/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
+	$content=~s/\$\[([\w\.]+)\]/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
+	$content=~s/\$\{?([\w\.]+)\}?/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
 	$content=~s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/egs;
 	$content=~s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/egs;
 	return $content;
