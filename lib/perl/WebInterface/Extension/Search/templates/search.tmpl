@@ -1,4 +1,8 @@
 <div title="$tl(search.dialogtitle)" class="search dialogpane">
+<script>
+$(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNAMES], monthNamesShort : [$MONTHNAMESABBR], dayNames : [$DAYNAMES], dayNamesShort : [$DAYNAMESABBR], dayNamesMin : [$DAYNAMESMIN], dateFormat : "$DATEFORMAT" });
+
+</script>
 <form method="post" action="#">
 	<input type="hidden" name="action" value="search"/>
 	<input type="hidden" class="search id" name="searchid" value="$getSearchId()"/>
@@ -7,7 +11,7 @@
 <div class="search infolders" title="$searchinfolderstitle">$tl(search.searchinfolders): $searchinfolders</div>
 <div class="search formpanel">
 	<div class="search query">
-		$tl(search.query): <input class="search query" type="text" name="query" value=""/> 
+		$tl(search.query): <input class="search query" type="search" name="query" value=""/> 
 	</div>
 	<div class="search filenamesearch">		
 			<input type="radio" name="searchin" value="filename" checked="checked" id="search-searchin-filename-$."/><label for="search-searchin-filename-$.">$tl(search.filenameoption)</label>
@@ -55,6 +59,19 @@
 				<option value="months">$tl(search.months)</option>
 				<option value="years">$tl(search.years)</option>
 			</select>
+		</div>
+		<div class="search daterange">
+			$tl(lastmodified):
+			<label for="search-mstartdate-$.">&ge;</label>
+			<input id="search-mstartdate-$." type="text" size="10" name="mstartdate" class="search-datepicker">
+			<label for="search-menddate-$.">&le;</label>
+			<input id="search-menddate-$." type="text" size="10" name="menddate" class="search-datepicker">
+			
+			$tl(created):
+			<label for="search-cstartdate-$.">&ge;</label>
+			<input id="search-cstartdate-$." type="text" size="10" name="cstartdate" class="search-datepicker">
+			<label for="search-cenddate-$.">&le;</label>
+			<input id="search-cenddate-$." type="text" size="10" name="cenddate" class="search-datepicker">
 		</div>
 		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->
 			<div class="search duplicate"><input type="checkbox" name="dupsearch" id="search-dupsearch-$."><label for="search-dupsearch-$.">$tl(search.duplicatefiles)</label></div>

@@ -41,7 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	padding-left: 20px;
 }
 .scv.filename {
-	white-space: nowrap;
+	white-space: pre;
 	text-overflow: ellipsis;
 	witdh: 100%;
 	max-width: 800px;

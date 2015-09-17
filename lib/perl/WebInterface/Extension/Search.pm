@@ -38,8 +38,9 @@ use JSON;
 use Time::HiRes qw(time);
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(strftime);
-
-
+use I18N::Langinfo qw (langinfo MON_1 MON_2 MON_3 MON_4 MON_5 MON_6 MON_7 MON_8 MON_9 MON_10 MON_11 MON_12 ABMON_1  ABMON_2 ABMON_3 ABMON_4 ABMON_5 ABMON_6 ABMON_7 ABMON_8 ABMON_9 ABMON_10 ABMON_11 ABMON_12
+			DAY_1 DAY_2 DAY_3 DAY_4 DAY_5 DAY_6 DAY_7 ABDAY_1 ABDAY_2 ABDAY_3 ABDAY_4 ABDAY_5 ABDAY_6 ABDAY_7 D_FMT); 
+use Time::Piece;
 use vars qw( %CACHE %TIMEUNITS);
 %TIMEUNITS = ( 'seconds' => 1, 'minutes' => 60, 'hours'=>3600, 'days'=>86400, 'weeks'=> 604800, 'months'=>18144000, 'years'=>31557600);
 sub init { 
@@ -93,7 +94,16 @@ sub cutLongString {
 sub getSearchForm {
 	my ($self) = @_;
 	my $searchinfolders = $$self{cgi}->param('files') ? join(", ", map{ $$self{backend}->getDisplayName($main::PATH_TRANSLATED.$_)} $$self{cgi}->param('files')) : $self->tl('search.currentfolder');
-	my $vars = { searchinfolders => $self->quoteWhiteSpaces($$self{cgi}->escapeHTML($self->cutLongString($searchinfolders))), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders)};
+	my $dfmt = langinfo(D_FMT);
+	$dfmt=~s/\%(.)/\L$1$1\E/g;
+	my $vars = { searchinfolders => $self->quoteWhiteSpaces($$self{cgi}->escapeHTML($self->cutLongString($searchinfolders))), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders),
+			MONTHNAMES => '"'.join('","', map { langinfo($_)} ( MON_1, MON_2, MON_3, MON_4, MON_5, MON_6, MON_7, MON_8, MON_9, MON_10, MON_11, MON_12 )).'"',
+			MONTHNAMESABBR => '"'.join('","', map { langinfo($_)} ( ABMON_1, ABMON_2, ABMON_3, ABMON_4, ABMON_5, ABMON_6, ABMON_7, ABMON_8, ABMON_9, ABMON_10, ABMON_11, ABMON_12 )).'"',
+			DAYNAMES => '"'.join('","', map { langinfo($_)} ( DAY_1, DAY_2, DAY_3, DAY_4, DAY_5, DAY_6, DAY_7)).'"',
+			DAYNAMESABBR => '"'.join('","', map { langinfo($_)} ( ABDAY_1, ABDAY_2, ABDAY_3, ABDAY_4, ABDAY_5, ABDAY_6, ABDAY_7)).'"',
+			DAYNAMESMIN => '"'.join('","', map { substr(langinfo($_), 0, 2)} ( ABDAY_1, ABDAY_2, ABDAY_3, ABDAY_4, ABDAY_5, ABDAY_6, ABDAY_7)).'"',
+			DATEFORMAT => $dfmt, FIRSTDAY => $main::LANG eq 'de' ? 1 : 0
+	};
 	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')), $vars);
 	main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
 	return 1;
@@ -139,11 +149,16 @@ sub filterFiles {
 	my ($self, $base, $file, $counter) = @_;
 	my $ret = 0;
 	my $query = $$self{query};
-	my $size = $$self{cgi}->param('size');
-	my $searchin = $$self{cgi}->param('searchin') || 'filename';
-	my $time = $$self{cgi}->param('time');
+	my $size = $CACHE{$self}{search}{size} //= $$self{cgi}->param('size');
+	my $searchin = $CACHE{$self}{search}{searchin} //=  $$self{cgi}->param('searchin') || 'filename';
+	my $time = $CACHE{$self}{search}{time} //= $$self{cgi}->param('time');
+	my $mstartdate = $CACHE{$self}{search}{mstartdate} //= $$self{cgi}->param('mstartdate') ? eval { Time::Piece->strptime(scalar $$self{cgi}->param('mstartdate'), langinfo(D_FMT)) }: undef;
+	my $menddate = $CACHE{$self}{search}{menddate} //= $$self{cgi}->param('menddate') ? eval { Time::Piece->strptime(scalar $$self{cgi}->param('menddate'), langinfo(D_FMT)) + 86399999 } : undef;
+	my $cstartdate = $CACHE{$self}{search}{cstartdate} //= $$self{cgi}->param('cstartdate') ? eval { Time::Piece->strptime(scalar $$self{cgi}->param('cstartdate'), langinfo(D_FMT)) }: undef;
+	my $cenddate = $CACHE{$self}{search}{cenddate} //= $$self{cgi}->param('cenddate') ? eval { Time::Piece->strptime(scalar $$self{cgi}->param('cenddate'), langinfo(D_FMT)) + 86399999 } : undef;
 	my $full = $base.$file;
 	my @stat = $$self{backend}->stat($full);
+	my $now = time();
 	
 	$ret = 1 if  $query && $searchin eq 'filename' && $$self{backend}->basename($file) !~ /$query/i;
 	
@@ -170,11 +185,16 @@ sub filterFiles {
 		my $timecomparator = $$self{cgi}->param('timecomparator');
 		my $timeunits = $$self{cgi}->param('timeunits');
 		if ($timecomparator =~ /^[<>=]{1,2}$/ && exists $TIMEUNITS{$timeunits}) {
-			my $expr = "(time()-$stat[9]) $timecomparator ($time * $TIMEUNITS{$timeunits})";
+			my $expr = "($now-$stat[9]) $timecomparator ($time * $TIMEUNITS{$timeunits})";
 			$expr=~s/\,/\./g;	
 			$ret |= $$self{backend}->isDir($full) || !eval $expr;
 		}
 	}
+	$ret |= $stat[9] <= $mstartdate if defined $mstartdate;
+	$ret |= $stat[9] >= $menddate if defined $menddate;
+	$ret |= $stat[10] <= $cstartdate if defined $cstartdate;
+	$ret |= $stat[10] >= $cenddate if defined $cenddate;
+	
 	if (!$self->config('disable_dupsearch',0) && $$self{cgi}->param('dupsearch')) {
 		if (!$ret && $$self{backend}->isFile($full) && !$$self{backend}->isLink($full)&& !$$self{backend}->isDir($full)) {  ## && ($$self{backend}->stat($full))[7] <= $$self{sizelimit}) {
 			push @{$$counter{dupsearch}{sizes}{$stat[7]}}, { base=>$base, file=>$file };
