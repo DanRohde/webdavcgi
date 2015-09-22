@@ -42,6 +42,7 @@ sub init {
 	push @hooks, 'apps' unless $self->config('disable_apps',0);
 	
 	$$self{ptscmd} = $self->config('ptscmd', '/usr/bin/pts');
+	$main::EXTENSION_CONFIG{AFSACLManager}{allow_afsaclchanges} = $main::EXTENSION_CONFIG{AFSACLManager}{allow_afsaclchanges} // 1; # default is 1 (allowed)
 	
 	$hookreg->register(\@hooks, $self);
 }

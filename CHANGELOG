@@ -4,6 +4,7 @@
      - fixed highlighting on unselectable folders is not possible bug
      - fixed search dialog with wrong input types and formatting problem bugs
      - fixed missing date range search and broken thumbnail bugs
+     - fixed unable to disable AFS ACL changes bug (thx Stephen Joyce)
      
 1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug
