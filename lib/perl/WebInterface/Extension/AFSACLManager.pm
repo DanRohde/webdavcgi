@@ -187,17 +187,19 @@ sub renderAFSACLList {
 }
 sub isValidAFSACL       { return $_[1] =~ /^[rlidwka]+$/; }
 sub isValidAFSGroupName {
+	return 0 if $_[1] =~ /^\-/;
 	if ( defined $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} and $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} ) {
-		return $_[1] =~ /^[a-z0-9\_\@\:\.]+$/i;
+		return $_[1] =~ /^[a-z0-9\_\@\:\-\.]+$/i;
 	} else {
-		return $_[1] =~ /^[a-z0-9\_\@\:]+$/i;
+		return $_[1] =~ /^[a-z0-9\_\@\:\-]+$/i;
 	}
 }
 sub isValidAFSUserName {
+	return 0 if $_[1] =~ /^\-/;
 	if ( defined $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} and $main::BACKEND_CONFIG{$main::BACKEND}{allowdottedprincipals} ) {
-		return $_[1] =~ /^[a-z0-9\_\@\.]+$/i;
+		return $_[1] =~ /^[a-z0-9\_\@\-\.]+$/i;
 	} else {
-		return $_[1] =~ /^[a-z0-9\_\@]+$/i;
+		return $_[1] =~ /^[a-z0-9\_\@\-]+$/i;
 	}
 }
 

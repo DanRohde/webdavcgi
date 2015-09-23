@@ -2202,6 +2202,24 @@ function addFullscreenChangeListener(fn) {
 function isFullscreen() {
 	return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement ? true : false;
 }
+function getDialog(data, initfunc) {
+	var block = blockPage();
+	var xhr = $.get(window.location.pathname, data, function(response) {
+		block.remove();
+		handleJSONResponse(response);
+		initfunc(response);
+	});
+	renderAbortDialog(xhr);
+}
+function getDialogByPost(data, initfunc) {
+	var block = blockPage();
+	var xhr = $.post(window.location.pathname, data, function(response) {
+		block.remove();
+		handleJSONResponse(response);
+		initfunc(response);
+	});
+	renderAbortDialog(xhr);
+}
 function initToolBox() {
 	ToolBox = { 
 			addFullscreenChangeListener : addFullscreenChangeListener,
@@ -2212,6 +2230,8 @@ function initToolBox() {
 			confirmDialog : confirmDialog,
 			cookie : cookie,
 			fixElementPosition: fixElementPosition,
+			getDialog : getDialog,
+			getDialogByPost: getDialogByPost,
 			getSelectedFiles : getSelectedFiles,
 			getSelectedRows : getSelectedRows,
 			handleJSONResponse : handleJSONResponse,
