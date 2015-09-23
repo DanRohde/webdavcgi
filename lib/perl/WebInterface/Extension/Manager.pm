@@ -40,10 +40,9 @@ sub init {
 	foreach my $extname (@main::EXTENSIONS) {
 		eval { 
 			load "WebInterface::Extension::$extname";
-			my $extension = "WebInterface::Extension::$extname"->new($self);
-			$extension->setExtension($extname);
+			my $extension = "WebInterface::Extension::$extname"->new($self, $extname);
 		};
-		warn("Can't load extensions $extname: $@") if $@;
+		warn("Can't load extension $extname: $@") if $@;
 	}
 }
 

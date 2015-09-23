@@ -44,7 +44,7 @@ sub init {
 	$$self{ptscmd} = $self->config('ptscmd', '/usr/bin/pts');
 	$main::EXTENSION_CONFIG{AFSACLManager}{allow_afsaclchanges} = $main::EXTENSION_CONFIG{AFSACLManager}{allow_afsaclchanges} // 1; # default is 1 (allowed)
 	
-	$hookreg->register(\@hooks, $self);
+	$hookreg->register(\@hooks, $self) if $hookreg;
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;

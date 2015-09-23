@@ -25,7 +25,7 @@ our @ISA = ( 'WebInterface::Renderer');
 sub new {
         my $this = shift;
         my $class = ref($this) || $this;
-        my $self = { };
+        my $self = { EXTENSION => $_[1] };
         bless $self, $class;
         $self->init(shift);
         return $self;

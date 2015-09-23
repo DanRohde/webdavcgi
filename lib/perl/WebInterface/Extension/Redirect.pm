@@ -19,6 +19,7 @@
 # SETUP:
 # redirect - sets folder/files for a redirect
 #             format: { '/full/file/path' => 'url' , ... }
+# enable_directredirect - enables redirects of direct calls to redirected pathes (default: off)
 
 package WebInterface::Extension::Redirect;
 
@@ -30,23 +31,36 @@ our @ISA = qw( WebInterface::Extension  );
 
 sub init { 
 	my($self, $hookreg) = @_; 
-	my @hooks = ('css','javascript', 'fileprop');
-	$hookreg->register(\@hooks, $self);
 	
+	$$self{redirect} = $self->config('redirect', undef); 
+	
+	my @hooks = ('css','javascript', 'fileprop');
+	push @hooks, 'gethandler' if $self->config('enable_directredirect', 0); 
+	$hookreg->register(\@hooks, $self) if defined $$self{redirect};
+}
+sub stripSlash {
+	my ($self, $path) = @_;
+	return $path=~/^(.*?)\/+$/ ? $1 : $path;
 }
 sub handle { 
 	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-
+	my $ret = 0;
 	if ($hook eq 'fileprop') {
-		my $c = $$self{redirect} ||= $self->config('redirect', {});
-		return 0 if !$c || !exists $$c{$$params{path}};
-		my $redirecturi = $$c{$$params{path}};
-		return { 'fileuri'=>$redirecturi, ext_classes=>'redirect ', ext_attributes=>'', ext_styles=>'', isreadable=>'yes', unselectable=>'yes', iseditable=>'no', isviewable=>'no', writeable=>'no' };
-	} 
-	 
-	return 0;
+		my $c = $$self{redirect};
+		my $p = $self->stripSlash($$params{path});
+		$ret = { 'fileuri'=>$$c{$p}, ext_classes=>'redirect ', ext_attributes=>'', ext_styles=>'', isreadable=>'yes', unselectable=>'yes', iseditable=>'no', isviewable=>'no', writeable=>'no' } 
+			if $c && exists $$c{$p};
+	} elsif ($hook eq 'gethandler') {
+		my $c = $$self{redirect};
+		my $p = $self->stripSlash($main::PATH_TRANSLATED);
+		if ($c && exists $$c{$p}) {
+			print $$config{cgi}->redirect($$c{$p});
+			$ret = 1;
+		}
+	} else {
+		$ret = $self->SUPER::handle($hook, $config, $params);	
+	}
+	return $ret;
 }
 
 1;
