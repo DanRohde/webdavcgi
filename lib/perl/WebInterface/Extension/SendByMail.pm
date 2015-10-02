@@ -87,7 +87,7 @@ sub searchAddress {
 	if ($self->config('addressbook')) {
 		my $addressbook = $self->config('addressbook');
 		load $addressbook;
- 		$jsondata{result} =$addressbook->getMailAddresses($self, $$self{cgi}->param('query'));	
+ 		$jsondata{result} =$addressbook->getMailAddresses($self, scalar $$self{cgi}->param('query'));	
 	}
 	my $json = new JSON();
 	main::printHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
@@ -143,14 +143,17 @@ sub sendMail {
 	my %jsondata = ();
 	my $cgi = $$self{cgi};
 	my $limit = $self->config("sizelimit",20971520);
-	my ($from) = $self->sanitizeParam($cgi->param('from'));
-	my @to = $self->sanitizeParam(split(/\s*,\s*/,$cgi->param('to')));
-	my ($strto) = $self->sanitizeParam($cgi->param('to'));
+	my ($from) = $self->sanitizeParam(scalar $cgi->param('from'));
+	my @to = $self->sanitizeParam(split(/\s*,\s*/,scalar $cgi->param('to')));
+	my ($strto) = $self->sanitizeParam(scalar $cgi->param('to'));
+	my @cc =  $self->sanitizeParam(split(/\s*,\s+/, scalar $cgi->param('cc')));
+	my ($strcc) =  $self->sanitizeParam(scalar $cgi->param('cc'));
+	my @bcc = $self->sanitizeParam(scalar $cgi->param('bcc'));
 	my ($subject) = $self->sanitizeParam($cgi->param('subject') || $self->config('defaultsubject',''));
 	
 	if ($cgi->param('download') eq "yes") {
 		my ($mailfh,$mailfn) = tempfile(TEMPLATE=>'/tmp/webdavcgi-SendByMail-XXXXX', CLEANUP=>1, SUFFIX=>".eml");
-		print $mailfh "To: $strto\nFrom: $from\nSubject: $subject\nX-Mailer: WebDAV CGI\n";
+		print $mailfh "To: $strto\n".(@cc ? "Cc: $strcc\n" : '')."From: $from\nSubject: $subject\nX-Mailer: WebDAV CGI\n";
 		my ($tmpfh, $zipfile) = $self->buildMailFile(0,$mailfh);
 		close($mailfh);
 		
@@ -168,7 +171,8 @@ sub sendMail {
 		unlink $zipfile if $zipfile;
 		return;
 	} 
-	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from)) {	
+
+	if ($self->checkMailAddresses(@to) && $self->checkMailAddresses($from) && (!@cc || $self->checkMailAddresses(@cc)) && (!@bcc || $self->checkMailAddresses(@bcc))) {	
 		my ($mailfile,$zipfile) = $self->buildMailFile($limit);
 		if (!$mailfile || (stat($mailfile))[7]>$limit) {
 			$jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
@@ -177,8 +181,10 @@ sub sendMail {
 			$smtp->auth($self->config('login'), $self->config('password')) if $self->config('login',0);
 			$smtp->mail($from);
 			$smtp->to(@to);
+			$smtp->cc(@cc) if @cc;
+			$smtp->bcc(@bcc) if @bcc;
 			$smtp->data();
-			$smtp->datasend("To: $strto\nFrom: $from\nSubject: $subject\n");
+			$smtp->datasend("To: $strto\n".(@cc ? "Cc: $strcc\n" : '')."From: $from\nSubject: $subject\n");
 			if (open(my $fh, "<", $mailfile)) {
 				while (read($fh, my $buffer, 1048576)>0) {
 					$smtp->datasend($buffer);
@@ -193,7 +199,12 @@ sub sendMail {
 		unlink $zipfile if $zipfile;
 	} else {
 		$jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
-		$jsondata{field} = ! $self->checkMailAddresses(@to) ? 'to' : 'from';
+		my @fields = ();
+		push @fields, 'to' if ! $self->checkMailAddresses(@to);
+		push @fields, 'from' if ! $self->checkMailAddresses($from);
+		push @fields, 'cc' if @cc && ! $self->checkMailAddresses(@cc);
+		push @fields, 'bcc' if @bcc && ! $self->checkMailAddresses(@bcc);
+		$jsondata{field} = join(',',@fields);
 	}
 	my $json = new JSON();
 	main::printHeaderAndContent($status, $mime, $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');

@@ -43,7 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .sendbymail.button {
 	text-align: right;
 }
-.sendbymail input.error {
+.sendbymail input.error, .sendbymail textarea.error {
 	border: 2px solid red;
 }
 .sendbymail.remove {
@@ -73,4 +73,13 @@ ul.ui-autocomplete {
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
+}
+.sendbymail.cc, .sendbymail.bcc {
+	display: none;
+}
+.sendbymail.showcc .sendbymail.cc, .sendbymail.showbcc .sendbymail.bcc {
+	display: table-row;
+}
+.sendbymail.showcc .addcc, .sendbymail.showbcc .addbcc {
+	display: none;
 }

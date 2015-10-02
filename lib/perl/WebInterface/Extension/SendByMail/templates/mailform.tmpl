@@ -5,7 +5,10 @@
 <table class="sendbymail">
 <tr class="sendbymail error hidden" id="inputfailure"><th colspan="2" class="sendbymail error">$TL{sendbymail_msg_inputfailure}</th></tr>
 <tr class="sendbymail from"><th>$TL{sendbymail_from}</th><td><input type="text" size="50" name="from" value="$defaultfrom"/></td></tr>
-<tr class="sendbymail to" title="$TL{sendbymail_to_tooltip}"><th>$TL{sendbymail_to}</th><td><textarea cols="49" rows="2" name="to">$defaultto</textarea> </td></tr>
+<tr class="sendbymail to" title="$TL{sendbymail_to_tooltip}"><th>$TL{sendbymail_to}</th><td><textarea cols="49" rows="2" name="to">$defaultto</textarea> 
+<div><span class="sendbymail addcc">$TL{sendbymail_addcc}</span> <span class="sendbymail addbcc">$TL{sendbymail_addbcc}</span></div></td></tr>
+<tr class="sendbymail cc" title="$TL{sendbymail_cc_tooltip}"><th>$TL{sendbymail_cc}</th><td><textarea cols="49" rows="2" name="cc">$defaultcc</textarea> </td></tr>
+<tr class="sendbymail bcc" title="$TL{sendbymail_bcc_tooltip}"><th>$TL{sendbymail_bcc}</th><td><textarea cols="49" rows="2" name="bcc">$defaultbcc</textarea> </td></tr>
 <tr class="sendbymail subject"><th>$TL{sendbymail_subject}</th><td><input type="text" size="50" name="subject" value="$defaultsubject"/></td></tr>
 <tr class="sendbymail message"><th>$TL{sendbymail_message}</th><td><textarea cols="48" rows="4" name="message">$defaultmessage</textarea></td></tr>
 <tr class="sendbymail attachments"><th>$TL{sendbymail_attachments} 
