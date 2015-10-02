@@ -203,7 +203,7 @@ function renderGPXFileInfo(gpx) {
 		medspeed = speeds[speeds.length/2];
 	}
 	var medspeedkm = Math.round(getGPSDistanceInKm(medspeed)*10)/10;
-	var medspeedmi = Math.round(getGPSDistanceInKm(medspeed)*10)/10;
+	var medspeedmi = Math.round(getGPSDistanceInMi(medspeed)*10)/10;
 	$("#gpxviewer-startdate").text((new Date(datemin)).toString());
 	$("#gpxviewer-enddate").text((new Date(datemax)).toString());
 	$("#gpxviewer-distancekm").text(Math.round(km*10)/10);
