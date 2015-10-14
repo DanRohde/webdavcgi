@@ -7,14 +7,30 @@
 </div>
 <script>
 
-$("#gpxviewertabs").tabs({heightStyle: "auto", activate: renderProfile});
+$("#gpxviewertabs").tabs({heightStyle: "auto", activate: tabActivated});
 
+$("#gpxviewer").on("init.gpxviewer", function(event,data) {
+	initGPXViewer(); 
+}).on("resized.gpxviewer", function(event,data) {
+	var dialog = data.dialog;
+	var width = dialog.width()-70;
+	var height = dialog.height()-$("#gpxviewerstats",dialog).height()-80;
+	$("#gpxviewermap").css({width:width,height:height});
+	$("#gpxviewerprofile").css({width:width,height:height});
+	triggerGPXViewerResize();
+}).on("closed.gpxviewer", function(event,data) {
+	finalizeGPXViewer(); 
+});
 
 var EARTHRADIUSKM = 6367.137;
 var EARTHRADIUSM = 63671370;
 var EARTHRADIUSMI = 3956.356;
 window.gpxViewerMapCallback = function() {
 	$(window).trigger("gpxViewerMapLoaded");	
+}
+function tabActivated(event,ui) {
+	if (ui.newPanel.selector == "#gpxviewerprofile") renderProfile(event,ui);
+	else triggerGPXViewerResize();
 }
 function renderProfile(event,ui) {
 	var chart = AmCharts.makeChart("gpxviewerprofile", {
@@ -32,7 +48,7 @@ function renderProfile(event,ui) {
 			"parseDates" : true,
 			"axisColor" : "#dadada",
 			"minorGridEnabled": true,
-			"minPeriod" : "mm"
+			"minPeriod" : "ss"
 		},
 		"chartCursor" : {"cursorPosition": "mouse", "categoryBalloonDateFormat" :"$tl(gpxviewer.dateformat)" },
 		"chartScrollbar" : {},
