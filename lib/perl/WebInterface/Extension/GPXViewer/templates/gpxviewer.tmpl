@@ -37,12 +37,19 @@ function renderProfile(event,ui) {
 		"type" : "serial", "theme" : "light",
 		"dataProvider" : $("#gpxviewerprofile").data("json"),
 		"legend" : { "useGraphSettings": true},
-		"valueAxes" : [{ "id" : "speedkm", "position": "left", "title":"$tl(gpxviewer.speed)"},{"id":"ele", "position":"right","title":"$tl(gpxviewer.altitude)"}],
+		"valueAxes" : [
+		               {"id": "speed", "position": "left", "title": "$tl(gpxviewer.speed)"},
+		               {"id": "ele", "position": "right", "title": "$tl(gpxviewer.altitude)"}//,
+		               //{"id": "distance", "position": "right", "title": "$tl(gpxviewer.distance)", "offset":70}
+		               ],
 		"graphs": [
-		              {"valueField": "speedkm", "valueAxis": "speedkm",	"title" : "$tl(gpxviewer.kph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.kph)","lineColor" :"#FF0000" },
-		              {"valueField": "speedmi","valueAxis": "speedmi", "title" : "$tl(gpxviewer.mph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.mph)","lineColor" :"#00FF00" }, 
-		              {"valueField": "ele","valueAxis": "ele", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111"}
+		              {"valueField": "speedkm", "valueAxis": "speed",	"title" : "$tl(gpxviewer.kph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.kph)","lineColor" :"#FF0000","hidden":("$LANG"!="de") },
+		              {"valueField": "speedmi", "valueAxis": "speed", "title" : "$tl(gpxviewer.mph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.mph)","lineColor" :"#00FF00","hidden":("$LANG"=="de") }, 
+		              {"valueField": "ele","valueAxis": "ele", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111"},
+		              {"valueField": "distancekm", "valueAxis":"distance", "title":"km","fillAlphas":0.2,"balloonText":"[[value]] km", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"!="de")},
+		              {"valueField": "distancemi", "valueAxis":"distance", "title":"mi","fillAlphas":0.2,"balloonText":"[[value]] mi", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"=="de")}
 		              ],
+		"precision":1,
 		"categoryField" : "date",
 		"categoryAxis" : {
 			"parseDates" : true,
@@ -50,7 +57,7 @@ function renderProfile(event,ui) {
 			"minorGridEnabled": true,
 			"minPeriod" : "ss"
 		},
-		"chartCursor" : {"cursorPosition": "mouse", "categoryBalloonDateFormat" :"$tl(gpxviewer.dateformat)" },
+		"chartCursor" : {"cursorPosition": "mouse", "categoryBalloonDateFormat" :"$tl(gpxviewer.dateformat)"},
 		"chartScrollbar" : {},
 		"export" : { "enabled":true}
 	});
@@ -226,7 +233,12 @@ function renderGPXFileInfo(gpx) {
 		if (st==0 && calcGPSTimeDiff(a,b)>999) {
 			var _speed = calcGPSSpeed(a,b,d,st);
 			speeds.push(_speed);
-			profdata.push({ "date":Date.parse($("time",a).text()), "speedkm" : Math.round(getGPSDistanceInKm(_speed)*10)/10, "speedmi": Math.round(getGPSDistanceInMi(_speed)*10)/10, "ele" : Math.round(ae*10)/10 });
+			profdata.push({ "date":Date.parse($("time",a).text()), 
+				"speedkm" : getGPSDistanceInKm(_speed), 
+				"speedmi": getGPSDistanceInMi(_speed), 
+				"ele" : ae,
+				"distancekm" : getGPSDistanceInKm(distance),
+				"distancemi" : getGPSDistanceInMi(distance)});
 			var m = Math.max(maxSpeed, _speed);
 			if (m!=maxSpeed) {
 				maxSpeed = m;
