@@ -1,13 +1,44 @@
 <div title="$tl(gpxviewer): $file" class="gpxviewer" id="gpxviewer">
 <div id="gpxviewerscript">
 <script type="text/javascript" src="${VHTDOCS}_EXTENSION(GPXViewer)_/htdocs/contrib/loadgpx.js"></script>
+<script src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/amcharts.js"></script>
+<script src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/serial.js"></script>
+<script src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/themes/light.js"></script>
 </div>
 <script>
+
+$("#gpxviewertabs").tabs({heightStyle: "auto", activate: renderProfile});
+
+
 var EARTHRADIUSKM = 6367.137;
 var EARTHRADIUSM = 63671370;
 var EARTHRADIUSMI = 3956.356;
 window.gpxViewerMapCallback = function() {
 	$(window).trigger("gpxViewerMapLoaded");	
+}
+function renderProfile(event,ui) {
+	var chart = AmCharts.makeChart("gpxviewerprofile", {
+		"type" : "serial", "theme" : "light",
+		"dataProvider" : $("#gpxviewerprofile").data("json"),
+		"legend" : { "useGraphSettings": true},
+		"valueAxes" : [{ "id" : "speedkm", "position": "left", "title":"$tl(gpxviewer.speed)"},{"id":"ele", "position":"right","title":"$tl(gpxviewer.altitude)"}],
+		"graphs": [
+		              {"valueField": "speedkm", "valueAxis": "speedkm",	"title" : "$tl(gpxviewer.kph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.kph)","lineColor" :"#FF0000" },
+		              {"valueField": "speedmi","valueAxis": "speedmi", "title" : "$tl(gpxviewer.mph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.mph)","lineColor" :"#00FF00" }, 
+		              {"valueField": "ele","valueAxis": "ele", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111"}
+		              ],
+		"categoryField" : "date",
+		"categoryAxis" : {
+			"parseDates" : true,
+			"axisColor" : "#dadada",
+			"minorGridEnabled": true,
+			"minPeriod" : "mm"
+		},
+		"chartCursor" : {"cursorPosition": "mouse", "categoryBalloonDateFormat" :"$tl(gpxviewer.dateformat)" },
+		"chartScrollbar" : {},
+		"export" : { "enabled":true}
+	});
+	chart.write("gpxviewerprofile")
 }
 function loadGPXFileIntoGoogleMap(map, filename) {
 	var block = ToolBox.blockPage();
@@ -118,7 +149,7 @@ function logLineInfo(trkpt1,trkpt2) {
 	console.log(t1+": "+lo1+" "+la1+", ele="+e1);
 	console.log(t2+": "+lo2+" "+la2+", ele="+e2);
 	
-	console.log("Distance(km)="+getGPSDistanceInKm(d)+", Speed(km/h): "+getGPSDistanceInKm(calcGPSSpeed(trkpt1,trkpt2,d,0))+", timediff="+calcGPSTimeDiff(trkpt1,trkpt2));
+	console.log("Distance(km)="+getGPSDistanceInKm(d)+", Speed($tl(gpxviewer.kph)): "+getGPSDistanceInKm(calcGPSSpeed(trkpt1,trkpt2,d,0))+", timediff="+calcGPSTimeDiff(trkpt1,trkpt2));
 	 
 }
 function renderGPXFileInfo(gpx) {
@@ -135,6 +166,7 @@ function renderGPXFileInfo(gpx) {
 	var ms = (datemax-datemin);
 	var h = ms / 3600000;
 	var speeds = new Array();
+	var profdata = new Array();
 	
 	var mindistance = 0.0065 / EARTHRADIUSKM; // meters -> GPS 
 	var distance = 0;
@@ -178,6 +210,7 @@ function renderGPXFileInfo(gpx) {
 		if (st==0 && calcGPSTimeDiff(a,b)>999) {
 			var _speed = calcGPSSpeed(a,b,d,st);
 			speeds.push(_speed);
+			profdata.push({ "date":Date.parse($("time",a).text()), "speedkm" : Math.round(getGPSDistanceInKm(_speed)*10)/10, "speedmi": Math.round(getGPSDistanceInMi(_speed)*10)/10, "ele" : Math.round(ae*10)/10 });
 			var m = Math.max(maxSpeed, _speed);
 			if (m!=maxSpeed) {
 				maxSpeed = m;
@@ -246,13 +279,24 @@ function renderGPXFileInfo(gpx) {
 	new google.maps.Marker({
 		position: mpll,
 		map: window.gpxViewerMap,
-		title: "$tl(gpxviewer.maxspeed): "+maxspeedkm+"km/h = "+maxspeedmi+"mi/h",
+		title: "$tl(gpxviewer.maxspeed): "+maxspeedkm+"$tl(gpxviewer.kph) = "+maxspeedmi+"$tl(gpxviewer.mph)",
 		icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
 	});
 	
+	$("#gpxviewerprofile").data("json",profdata);
+	
+	
 }
 </script>
+<div class="gpxviewertabs" id="gpxviewertabs">
+<ul>
+<li><a href="#gpxviewermap">$tl(gpxviewer.map)</a></li>
+<li><a href="#gpxviewerprofile">$tl(gpxviewer.profile)</a></li>
+</ul>
+
 <div class="gpxviewermap" id="gpxviewermap"></div>
+<div class="gpxviewerprofile" id="gpxviewerprofile"></div>
+</div>
 <div class="gpxviewerstats" id="gpxviewerstats">
 	<div class="gpxviewer-title">$tl(gpxviewer.statistics): <span id="gpxviewer-name">""</span>, 
 		<span class="gpxviewer-value" id="gpxviewer-trkpts">0</span> $tl(gpxviewer.trackpoints)
@@ -268,13 +312,13 @@ function renderGPXFileInfo(gpx) {
 	$tl(gpxviewer.distance): <span class="gpxviewer-value" id="gpxviewer-distancekm">xxx.xx</span> km  = <span class="gpxviewer-value" id="gpxviewer-distancemi">xxx.xx</span> mi,
 	$tl(gpxviewer.beeline): <span class="gpxviewer-value" id="gpxviewer-beelinekm">xxx.xx</span> km = <span class="gpxviewer-value" id="gpxviewer-beelinemi">xxx.xx</span> mi,
 	<br>
-	$tl(gpxviewer.avgspeed): <span class="gpxviewer-value" id="gpxviewer-avgspeedkm">xxx.xx</span> km/h = <span class="gpxviewer-value" id="gpxviewer-avgspeedmi">xxx.xx</span> mi/h,
+	$tl(gpxviewer.avgspeed): <span class="gpxviewer-value" id="gpxviewer-avgspeedkm">xxx.xx</span> $tl(gpxviewer.kph) = <span class="gpxviewer-value" id="gpxviewer-avgspeedmi">xxx.xx</span> $tl(gpxviewer.mph),
 	<br>
-	$tl(gpxviewer.medianspeed):  <span class="gpxviewer-value" id="gpxviewer-medspeedkm">xxx.xx</span>  km/h = <span class="gpxviewer-value" id="gpxviewer-medspeedmi">xxxx.xx</span> mi/h,
+	$tl(gpxviewer.medianspeed):  <span class="gpxviewer-value" id="gpxviewer-medspeedkm">xxx.xx</span>  $tl(gpxviewer.kph) = <span class="gpxviewer-value" id="gpxviewer-medspeedmi">xxxx.xx</span> $tl(gpxviewer.mph),
 	<br> 
-	$tl(gpxviewer.avgmovementspeed): <span class="gpxviewer-value" id="gpxviewer-avgmovementspeedkm">xxx.xx</span> km/h = <span class="gpxviewer-value" id="gpxviewer-avgmovementspeedmi">xxx.xx</span> mi/h,
+	$tl(gpxviewer.avgmovementspeed): <span class="gpxviewer-value" id="gpxviewer-avgmovementspeedkm">xxx.xx</span> $tl(gpxviewer.kph) = <span class="gpxviewer-value" id="gpxviewer-avgmovementspeedmi">xxx.xx</span> $tl(gpxviewer.mph),
 	<br> 
-	$tl(gpxviewer.maxspeed): <span class="gpxviewer-value" id="gpxviewer-maxspeedkm">xxx.xx</span> km/h = <span class="gpxviewer-value" id="gpxviewer-maxspeedmi">xxx.xx</span> mi/h,
+	$tl(gpxviewer.maxspeed): <span class="gpxviewer-value" id="gpxviewer-maxspeedkm">xxx.xx</span> $tl(gpxviewer.kph) = <span class="gpxviewer-value" id="gpxviewer-maxspeedmi">xxx.xx</span> $tl(gpxviewer.mph),
 	<br>
 	$tl(gpxviewer.minaltitude): <span class="gpxviewer-value" id="gpxviewer-minaltitude">xx</span> m,
 	$tl(gpxviewer.maxaltitude): <span class="gpxviewer-value" id="gpxviewer-maxaltitude">xx</span> m,

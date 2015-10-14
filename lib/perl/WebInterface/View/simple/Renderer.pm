@@ -320,6 +320,7 @@ sub renderFileListEntry {
 	my $g = $gid ? $CACHE{$self}{renderFileListEntry}{gid}{$gid} //= scalar getgrgid($gid || 0) || $gid : 'unknown'; ## //
 	my $icon = $CACHE{$self}{renderFileListEntry}{icon}{$mime} //= $self->getIcon($mime); ## //
 	my $enthumb = $CACHE{$self}{renderFileListEntry}{cookie}{thumbnails} //= $$self{cgi}->cookie('settings.enable.thumbnails') // 'yes'; ## //  
+	my $iconurl = $id ? $icon : $cct && $enthumb ne 'no'? $fulle.'?action=thumb' : $icon;
 	my %stdvars = ( 
 				'name' => $$self{cgi}->escapeHTML($file), 
 				'displayname' => $displayname,
@@ -332,9 +333,9 @@ sub renderFileListEntry {
 			 	'created'=> $ir ? strftime($self->tl('lastmodifiedformat'), localtime($ctime)) : '-',
 			 	'createdhr'=> $ir && $ctime ? $hdr->format_duration_between(DateTime->from_epoch(epoch=>$ctime,locale=>$lang), $now, precision=>'seconds', significant_units=>2 ) : '-',
 			 	'createdtime' => $ctime,
-				'iconurl'=> $id ? $icon : $cct && $enthumb ne 'no'? $fulle.'?action=thumb' : $icon,
-				'thumbiconurl' => $cct ? $fulle.'?action=thumb' : $icon,
-				'mimeiconurl' => $icon,
+				'iconurl'=> $iconurl,
+				'thumbiconurl' => $cct ? $fulle.'?action=thumb' : '',
+				'mimeiconurl' => $iconurl eq $icon ? '' : $icon,
 				'iconclass'=> "icon $category suffix-$suffix".($cct && $enthumb ne 'no' ? ' thumbnail':''),
 				'mime'=>$$self{cgi}->escapeHTML($mime),
 				'realsize'=>$size ? $size : 0,

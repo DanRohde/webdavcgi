@@ -2052,7 +2052,10 @@ function updateThumbnails() {
 	$("#flt .icon").each(function(i,v) {
 		var self = $(this);
 		if (self.data("thumb")!=self.data("icon")) {
-			self.attr("src", enabled ? self.data("thumb") : self.data("icon"));
+			var thumb = self.data("thumb");
+			var icon = self.data("icon");
+			var empty = $("#emptyimage").attr("src");
+			self.attr("src", enabled ? ( thumb == "" ? empty : thumb ) : ( icon == "" ? empty : icon));
 			self.toggleClass("thumbnail", enabled);
 		}
 	});
@@ -2068,7 +2071,8 @@ function initThumbnailSwitch() {
 		// fix broken thumbnails bug
 		$("#flt img.icon.thumbnail").error(function(){ 
 			var self=$(this);
-			self.removeClass("thumbnail").attr("src", self.data("icon"));
+			var icon = self.data("icon");
+			self.removeClass("thumbnail").attr("src", icon !='' ? icon : $("#emptyimage").attr("src"));
 		});
 	});
 }
