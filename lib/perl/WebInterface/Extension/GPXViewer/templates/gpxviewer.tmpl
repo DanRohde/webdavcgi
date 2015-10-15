@@ -82,7 +82,12 @@ function renderProfile(event,ui) {
 							+"<div>$tl(gpxviewer.distance): "+Math.round(d.distancekm)+ " km = "+Math.round(d.distancemi)+" mi</div>"
 							+"<div>"+d.lat+","+d.lon+"</div>"
 							+"</div>";
-				addMapMarker(d.lat,d.lon,"$tl(gpxviewer.clickme)",info,"yellow"); 
+				var color = "ylw-pushpin";
+				if (e.graph.valueField == "speedkm") color = "red-pushpin";
+				else if (e.graph.valueField == "speedmi") color ="grn-pushpin";
+				else if (e.graph.valueField == "ele") color = "purple-pushpin";
+				
+				addMapMarker(d.lat,d.lon,"$tl(gpxviewer.clickme)",info,color); 
 			}}
 		]
 	});
@@ -202,16 +207,19 @@ function logLineInfo(trkpt1,trkpt2) {
 	 
 }
 function addMapMarker(lat,lon, title, info, color) {
-	var ll = new google.maps.LatLng(lat, lon);
 	var marker = new google.maps.Marker({
-		position : ll,
+		position : new google.maps.LatLng(lat, lon),
 		map: window.gpxViewerMap,
 		title: title,
-		icon: "https://maps.google.com/mapfiles/ms/icons/"+color+"-dot.png"
+		icon: "https://maps.google.com/mapfiles/ms/icons/"+color+".png",
+		draggable: true,
+		
 	});
 	if (!info) info = title;
 	var iw = new google.maps.InfoWindow({ content: info});
 	marker.addListener("click", function() { iw.open(window.gpxViewerMap, marker); });
+	marker.addListener("dragstart", function(m) { window.gpxViewerMapMarkerDrag = m.latLng; });
+	marker.addListener("dragend", function(m) {  if (window.confirm("$tl(gpxviewer.deletemarker)")) this.setMap(null); else this.setPosition(window.gpxViewerMapMarkerDrag); });
 }
 function renderGPXFileInfo(gpx) {
 	var data = $(gpx);
@@ -331,7 +339,7 @@ function renderGPXFileInfo(gpx) {
 	$("#gpxviewer-outlier").text(outlier);
 	
 	addMapMarker(trkpt.first().attr("lat"), trkpt.first().attr("lon"), "$tl(gpxviewer.startdate): "+(new Date(datemin)).toString(),false,"green");
-	addMapMarker(trkpt.last().attr("lat"), trkpt.last().attr("lon"),"$tl(gpxviewer.enddate): "+(new Date(datemax)).toString(),false,"red");
+	addMapMarker(trkpt.last().attr("lat"), trkpt.last().attr("lon"),"$tl(gpxviewer.enddate): "+(new Date(datemax)).toString(),false,"red-dot");
 	addMapMarker(maxSpeedPoint.attr("lat"), maxSpeedPoint.attr("lon"),"$tl(gpxviewer.maxspeed): "+maxspeedkm+"$tl(gpxviewer.kph) = "+maxspeedmi+"$tl(gpxviewer.mph)",false,"blue");
 	
 	$("#gpxviewerprofile").data("json",profdata);
