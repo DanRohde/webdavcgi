@@ -81,7 +81,9 @@ function renderProfile(event,ui) {
 			"export" : { "enabled":true},
 			"listeners" : [ { "event" : "clickGraphItem", "method" : function(e) { 
 					var d = dataProvider[e.index];
-					var info = "<div><div>$tl(gpxviewer.speed): "+Math.round(d.speedkm)+" $tl(gpxviewer.kph) = "+Math.round(d.speedmi)+" $tl(gpxviewer.mph)</div>"
+					var info = "<div>"
+								+"<div>"+new Date(d.date).toString()+"</div>"
+								+"<div>$tl(gpxviewer.speed): "+Math.round(d.speedkm)+" $tl(gpxviewer.kph) = "+Math.round(d.speedmi)+" $tl(gpxviewer.mph)</div>"
 								+"<div>$tl(gpxviewer.altitude): "+Math.round(d.ele)+" m</div>"
 								+"<div>$tl(gpxviewer.distance): "+Math.round(d.distancekm)+ " km = "+Math.round(d.distancemi)+" mi</div>"
 								+"<div>"+d.lat+","+d.lon+"</div>"
