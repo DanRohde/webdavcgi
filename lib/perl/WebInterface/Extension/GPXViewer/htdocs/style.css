@@ -69,3 +69,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	cursor: wait; 
 	text-align:center;
 }
+.gpxviewer-markerinfo-title {
+	font-weight: bold;
+}
