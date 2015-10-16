@@ -237,7 +237,7 @@ function renderTrkptData(d,t) {
 	return "<div>"
 				+ (t ? "<div class=\"gpxviewer-markerinfo-title\">"+t+"</div>" : "")
 				+"<div>"+new Date(d.date).toString()+"</div>"
-				+"<div title=\""+myRound(d.duration/1000)+"s"+" \">$tl(gpxviewer.duration): "+renderGPXDuration(d.duration)
+				+"<div title=\""+myRound(d.duration/1000)+"s"+" \">$tl(gpxviewer.duration): "+renderGPXDuration(d.duration)+"</div>"
 				+"<div>"+renderDistanceData(d)+"</div>"
 				+"<div>"+renderSpeedData(d)+"</div>"
 				+"<div>"+renderAltitudeData(d)+"</div>"
