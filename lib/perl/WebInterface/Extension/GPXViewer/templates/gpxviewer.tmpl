@@ -44,13 +44,13 @@ function renderProfile(event,ui) {
 			"creditsPosition":"bottom-right",
 			"valueAxes" : [
 			               {"id": "vspeed", "position": "left", "title": "$tl(gpxviewer.speed)"},
-			               {"id": "vele", "position": "right", "title": "$tl(gpxviewer.altitude)"}//,
+			               {"id": "valt", "position": "right", "title": "$tl(gpxviewer.altitude)"}//,
 			               //{"id": "vdistance", "position": "right", "title": "$tl(gpxviewer.distance)", "offset":70}
 			               ],
 			"graphs": [
 			              {"id":"gkph","valueField": "speedkm", "valueAxis": "vspeed",	"title" : "$tl(gpxviewer.kph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.kph)","lineColor" :"#FF0000","hidden":("$LANG"!="de"), "bullet" : "round", "bulletAlpha" : 0 },
 			              {"id":"gmph","valueField": "speedmi", "valueAxis": "vspeed", "title" : "$tl(gpxviewer.mph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.mph)","lineColor" :"#00FF00","hidden":("$LANG"=="de"), "bullet" : "round", "bulletAlpha" : 0 }, 
-			              {"id":"gele","valueField": "ele","valueAxis": "vele", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111", "bullet" : "round", "bulletAlpha" : 0},
+			              {"id":"galt","valueField": "alt","valueAxis": "valt", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111", "bullet" : "round", "bulletAlpha" : 0},
 			              {"id":"gkm", "valueField": "distancekm", "valueAxis":"vdistance", "title":"km","fillAlphas_":0.2,"balloonText":"[[value]] km", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"!="de"), "bullet" : "round", "bulletAlpha" : 0},
 			              {"id":"gmi", "valueField": "distancemi", "valueAxis":"vdistance", "title":"mi","fillAlphas_":0.2,"balloonText":"[[value]] mi", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"=="de"), "bullet" : "round", "bulletAlpha" : 0}
 			              ],
@@ -85,7 +85,7 @@ function renderProfile(event,ui) {
 					var title = renderDistanceData(d);
 					if (e.graph.valueField == "speedkm") { color = "red-pushpin"; title=renderSpeedData(d); }
 					else if (e.graph.valueField == "speedmi") { color ="grn-pushpin"; title=renderSpeedData(d); }
-					else if (e.graph.valueField == "ele") { color = "purple-pushpin"; title=renderAltitudeData(d); }
+					else if (e.graph.valueField == "alt") { color = "purple-pushpin"; title=renderAltitudeData(d); }
 					var info = renderTrkptData(d,title);
 					addMapMarker(d.lat,d.lon,title,info,color); 
 				}}
