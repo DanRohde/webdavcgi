@@ -205,8 +205,8 @@ function addMapMarker(lat,lon, title, info, color) {
 	marker.addListener("dragstart", function(m) { window.gpxViewerMapMarkerDrag = m.latLng; });
 	marker.addListener("dragend", function(m) {  if (window.confirm("$tl(gpxviewer.deletemarker)")) this.setMap(null); else this.setPosition(window.gpxViewerMapMarkerDrag); });
 }
-function myRound(v,d=1) {
-	var p = Math.pow(10,d);
+function myRound(v,d) {
+	var p = Math.pow(10,d ? d : 1);
 	return Math.round(v*p)/p;
 }
 function collectTrkptData(trkpt, speed, distance) {
