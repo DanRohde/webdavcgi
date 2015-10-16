@@ -33,66 +33,71 @@ function tabActivated(event,ui) {
 	else triggerGPXViewerResize();
 }
 function renderProfile(event,ui) {
-	var dataProvider = $("#gpxviewerprofile").data("json");
-	var chart = AmCharts.makeChart("gpxviewerprofile", {
-		"type" : "serial", "theme" : "light",
-		"dataProvider" : dataProvider,
-		"legend" : { "useGraphSettings": true},
-		"valueAxes" : [
-		               {"id": "vspeed", "position": "left", "title": "$tl(gpxviewer.speed)"},
-		               {"id": "vele", "position": "right", "title": "$tl(gpxviewer.altitude)"}//,
-		               //{"id": "vdistance", "position": "right", "title": "$tl(gpxviewer.distance)", "offset":70}
-		               ],
-		"graphs": [
-		              {"id":"gkph","valueField": "speedkm", "valueAxis": "vspeed",	"title" : "$tl(gpxviewer.kph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.kph)","lineColor" :"#FF0000","hidden":("$LANG"!="de"), "bullet" : "round", "bulletAlpha" : 0 },
-		              {"id":"gmph","valueField": "speedmi", "valueAxis": "vspeed", "title" : "$tl(gpxviewer.mph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.mph)","lineColor" :"#00FF00","hidden":("$LANG"=="de"), "bullet" : "round", "bulletAlpha" : 0 }, 
-		              {"id":"gele","valueField": "ele","valueAxis": "vele", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111", "bullet" : "round", "bulletAlpha" : 0},
-		              {"id":"gkm", "valueField": "distancekm", "valueAxis":"vdistance", "title":"km","fillAlphas_":0.2,"balloonText":"[[value]] km", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"!="de"), "bullet" : "round", "bulletAlpha" : 0},
-		              {"id":"gmi", "valueField": "distancemi", "valueAxis":"vdistance", "title":"mi","fillAlphas_":0.2,"balloonText":"[[value]] mi", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"=="de"), "bullet" : "round", "bulletAlpha" : 0}
-		              ],
-		"precision":1,
-		"categoryField" : "date",
-		"categoryAxis" : {
-			"parseDates" : true,
-			"axisColor" : "#dadada",
-			"minorGridEnabled": true,
-			"minPeriod" : "ss"
-		},
-		"chartCursor" : {"cursorPosition": "mouse", "categoryBalloonDateFormat" :"$tl(gpxviewer.dateformat)", "valueLineEnabled" : true, "valueLineBalloonEnabled" : false, "bulletSize" : 0},
-		"chartScrollbar" : {
-			"graph" : "gele",
-			"oppositeAxis": true,
-			"offset" : 30,
-			"scrollbarHeight" : 30,
-		    "backgroundAlpha": 0,
-			"selectedBackgroundAlpha": 0.1,
-			"selectedBackgroundColor": "#888888",
-			"graphFillAlpha": 0,
-			"graphLineAlpha": 0.5,
-			"selectedGraphFillAlpha": 0,
-			"selectedGraphLineAlpha": 1,
-			"autoGridCount": true,
-			"color" : "#000000"
-		},
-		"export" : { "enabled":true},
-		"listeners" : [ { "event" : "clickGraphItem", "method" : function(e) { 
-				var d = dataProvider[e.index];
-				var info = "<div><div>$tl(gpxviewer.speed): "+Math.round(d.speedkm)+" $tl(gpxviewer.kph) = "+Math.round(d.speedmi)+" $tl(gpxviewer.mph)</div>"
-							+"<div>$tl(gpxviewer.altitude): "+Math.round(d.ele)+" m</div>"
-							+"<div>$tl(gpxviewer.distance): "+Math.round(d.distancekm)+ " km = "+Math.round(d.distancemi)+" mi</div>"
-							+"<div>"+d.lat+","+d.lon+"</div>"
-							+"</div>";
-				var color = "ylw-pushpin";
-				if (e.graph.valueField == "speedkm") color = "red-pushpin";
-				else if (e.graph.valueField == "speedmi") color ="grn-pushpin";
-				else if (e.graph.valueField == "ele") color = "purple-pushpin";
-				
-				addMapMarker(d.lat,d.lon,"$tl(gpxviewer.clickme)",info,color); 
-			}}
-		]
-	});
-	chart.balloon.showBullet = false;
-	chart.write("gpxviewerprofile");
+	var flagele = $("#gpxviewer");
+	if (!flagele.data("gpxviewerprofilerendered")) flagele.data("gpxviewerprofilerendered",true); else return;
+	window.setTimeout(function(){
+		var dataProvider = $("#gpxviewerprofile").data("json");
+		var chart = AmCharts.makeChart("gpxviewerprofile", {
+			"type" : "serial", "theme" : "light",
+			"dataProvider" : dataProvider,
+			"legend" : { "useGraphSettings": true},
+			"creditsPosition":"bottom-right",
+			"valueAxes" : [
+			               {"id": "vspeed", "position": "left", "title": "$tl(gpxviewer.speed)"},
+			               {"id": "vele", "position": "right", "title": "$tl(gpxviewer.altitude)"}//,
+			               //{"id": "vdistance", "position": "right", "title": "$tl(gpxviewer.distance)", "offset":70}
+			               ],
+			"graphs": [
+			              {"id":"gkph","valueField": "speedkm", "valueAxis": "vspeed",	"title" : "$tl(gpxviewer.kph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.kph)","lineColor" :"#FF0000","hidden":("$LANG"!="de"), "bullet" : "round", "bulletAlpha" : 0 },
+			              {"id":"gmph","valueField": "speedmi", "valueAxis": "vspeed", "title" : "$tl(gpxviewer.mph)", "fillAlphas":0.4,"balloonText":"[[value]] $tl(gpxviewer.mph)","lineColor" :"#00FF00","hidden":("$LANG"=="de"), "bullet" : "round", "bulletAlpha" : 0 }, 
+			              {"id":"gele","valueField": "ele","valueAxis": "vele", "title" : "$tl(gpxviewer.altitude) (m)", "fillAlphas":0.4, "balloonText":"[[value]] m","lineColor":"#111111", "bullet" : "round", "bulletAlpha" : 0},
+			              {"id":"gkm", "valueField": "distancekm", "valueAxis":"vdistance", "title":"km","fillAlphas_":0.2,"balloonText":"[[value]] km", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"!="de"), "bullet" : "round", "bulletAlpha" : 0},
+			              {"id":"gmi", "valueField": "distancemi", "valueAxis":"vdistance", "title":"mi","fillAlphas_":0.2,"balloonText":"[[value]] mi", "lineColor" :"#EEEEEE", "hidden" : ("$LANG"=="de"), "bullet" : "round", "bulletAlpha" : 0}
+			              ],
+			"precision":1,
+			"categoryField" : "date",
+			"categoryAxis" : {
+				"parseDates" : true,
+				"axisColor" : "#dadada",
+				"minorGridEnabled": true,
+				"minPeriod" : "ss"
+			},
+			"chartCursor" : {"cursorPosition": "mouse", "categoryBalloonDateFormat" :"$tl(gpxviewer.dateformat)", "valueLineEnabled" : true, "valueLineBalloonEnabled" : false, "bulletSize" : 0},
+			"chartScrollbar" : {
+				"graph" : "gele",
+				"oppositeAxis": true,
+				"offset" : 30,
+				"scrollbarHeight" : 30,
+			    "backgroundAlpha": 0,
+				"selectedBackgroundAlpha": 0.1,
+				"selectedBackgroundColor": "#888888",
+				"graphFillAlpha": 0,
+				"graphLineAlpha": 0.5,
+				"selectedGraphFillAlpha": 0,
+				"selectedGraphLineAlpha": 1,
+				"autoGridCount": true,
+				"color" : "#000000"
+			},
+			"export" : { "enabled":true},
+			"listeners" : [ { "event" : "clickGraphItem", "method" : function(e) { 
+					var d = dataProvider[e.index];
+					var info = "<div><div>$tl(gpxviewer.speed): "+Math.round(d.speedkm)+" $tl(gpxviewer.kph) = "+Math.round(d.speedmi)+" $tl(gpxviewer.mph)</div>"
+								+"<div>$tl(gpxviewer.altitude): "+Math.round(d.ele)+" m</div>"
+								+"<div>$tl(gpxviewer.distance): "+Math.round(d.distancekm)+ " km = "+Math.round(d.distancemi)+" mi</div>"
+								+"<div>"+d.lat+","+d.lon+"</div>"
+								+"</div>";
+					var color = "ylw-pushpin";
+					if (e.graph.valueField == "speedkm") color = "red-pushpin";
+					else if (e.graph.valueField == "speedmi") color ="grn-pushpin";
+					else if (e.graph.valueField == "ele") color = "purple-pushpin";
+					
+					addMapMarker(d.lat,d.lon,"$tl(gpxviewer.clickme)",info,color); 
+				}}
+			]
+		});
+		chart.balloon.showBullet = false;
+		chart.write("gpxviewerprofile");
+	},100);
 }
 function loadGPXFileIntoGoogleMap(map, filename) {
 	var block = ToolBox.blockPage();
@@ -343,7 +348,6 @@ function renderGPXFileInfo(gpx) {
 	addMapMarker(maxSpeedPoint.attr("lat"), maxSpeedPoint.attr("lon"),"$tl(gpxviewer.maxspeed): "+maxspeedkm+"$tl(gpxviewer.kph) = "+maxspeedmi+"$tl(gpxviewer.mph)",false,"blue");
 	
 	$("#gpxviewerprofile").data("json",profdata);
-	
 }
 </script>
 <div class="gpxviewertabs" id="gpxviewertabs">
@@ -353,7 +357,7 @@ function renderGPXFileInfo(gpx) {
 </ul>
 
 <div class="gpxviewermap" id="gpxviewermap"></div>
-<div class="gpxviewerprofile" id="gpxviewerprofile"></div>
+<div class="gpxviewerprofile" id="gpxviewerprofile"><div class="gpxviewer-pleasewait">$tl(pleasewait)</div></div>
 </div>
 <div class="gpxviewerstats" id="gpxviewerstats">
 	<div class="gpxviewer-title">$tl(gpxviewer.statistics): <span id="gpxviewer-name">""</span>, 
