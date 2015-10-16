@@ -82,12 +82,12 @@ function renderProfile(event,ui) {
 			"listeners" : [ { "event" : "clickGraphItem", "method" : function(e) { 
 					var d = dataProvider[e.index];
 					var color = "ylw-pushpin";
-					var title = "$tl(gpxviewer.distance)";
-					if (e.graph.valueField == "speedkm") { color = "red-pushpin"; title="$tl(gpxviewer.speed)"; }
-					else if (e.graph.valueField == "speedmi") { color ="grn-pushpin"; title="$tl(gpxviewer.speed)"; }
-					else if (e.graph.valueField == "ele") { color = "purple-pushpin"; title="$tl(gpxviewer.altitude)"; }
+					var title = renderDistanceData(d);
+					if (e.graph.valueField == "speedkm") { color = "red-pushpin"; title=renderSpeedData(d); }
+					else if (e.graph.valueField == "speedmi") { color ="grn-pushpin"; title=renderSpeedData(d); }
+					else if (e.graph.valueField == "ele") { color = "purple-pushpin"; title=renderAltitudeData(d); }
 					var info = renderTrkptData(d,title);
-					addMapMarker(d.lat,d.lon,"$tl(gpxviewer.clickme)",info,color); 
+					addMapMarker(d.lat,d.lon,title,info,color); 
 				}}
 			]
 		});
@@ -194,7 +194,7 @@ function addMapMarker(lat,lon, title, info, color) {
 	var marker = new google.maps.Marker({
 		position : new google.maps.LatLng(lat, lon),
 		map: window.gpxViewerMap,
-		title: title,
+		title: title+" ($tl(gpxviewer.clickme))",
 		icon: "https://maps.google.com/mapfiles/ms/icons/"+color+".png",
 		draggable: true,
 		
@@ -209,25 +209,40 @@ function myRound(v,d) {
 	var p = Math.pow(10,d ? d : 1);
 	return Math.round(v*p)/p;
 }
-function collectTrkptData(trkpt, speed, distance) {
-	return { "date":Date.parse($("time",trkpt).text()), 
+function collectTrkptData(trkpt, speed, distance, firsttrkpt, ele) {
+	var date = Date.parse($("time",trkpt).text());
+	var fdate = firsttrkpt.date ? firsttrkpt.date : Date.parse($("time",firsttrkpt).text());
+	return { "date": date, 
 		"speedkm" : getGPSDistanceInKm(speed), 
 		"speedmi": getGPSDistanceInMi(speed), 
-		"ele" : $("ele",trkpt).text(),
+		"alt" : $("ele",trkpt).text(),
 		"distancekm" : getGPSDistanceInKm(distance),
 		"distancemi" : getGPSDistanceInMi(distance),
 		"lon" : trkpt.attr("lon"),
-		"lat" : trkpt.attr("lat")
+		"lat" : trkpt.attr("lat"),
+		"duration" : Math.abs(fdate-date),
+		"ele" : ele
 	};
+}
+function renderSpeedData(d,t) {
+	return (t ? t : "$tl(gpxviewer.speed)")+": "+myRound(d.speedkm)+" $tl(gpxviewer.kph) = "+myRound(d.speedmi)+" $tl(gpxviewer.mph)";
+}
+function renderAltitudeData(d) {
+	return "$tl(gpxviewer.altitude): "+myRound(d.alt)+" m, $tl(gpxviewer.elevation): "+myRound(d.ele)+"m";
+}
+function renderDistanceData(d) {
+	return "$tl(gpxviewer.distance): "+myRound(d.distancekm)+ " km = "+myRound(d.distancemi)+" mi";
 }
 function renderTrkptData(d,t) {
 	return "<div>"
 				+ (t ? "<div class=\"gpxviewer-markerinfo-title\">"+t+"</div>" : "")
 				+"<div>"+new Date(d.date).toString()+"</div>"
-				+"<div>$tl(gpxviewer.speed): "+myRound(d.speedkm)+" $tl(gpxviewer.kph) = "+myRound(d.speedmi)+" $tl(gpxviewer.mph)</div>"
-				+"<div>$tl(gpxviewer.altitude): "+myRound(d.ele)+" m</div>"
-				+"<div>$tl(gpxviewer.distance): "+myRound(d.distancekm)+ " km = "+myRound(d.distancemi)+" mi</div>"
+				+"<div title=\""+myRound(d.duration/1000)+"s"+" \">$tl(gpxviewer.duration): "+renderGPXDuration(d.duration)
+				+"<div>"+renderDistanceData(d)+"</div>"
+				+"<div>"+renderSpeedData(d)+"</div>"
+				+"<div>"+renderAltitudeData(d)+"</div>"
 				+"<div>"+d.lat+","+d.lon+"</div>"
+				+"<div class=\"gpxviewer-markerinfo-help\">$tl(gpxviewer.markerinfohelp)</div>"
 				+"</div>";
 }
 function renderGPXFileInfo(gpx) {
@@ -236,6 +251,7 @@ function renderGPXFileInfo(gpx) {
 	
 	
 	var sp = trkpt.first(); // start point
+	var spd = collectTrkptData(sp,0,0,sp,0);
 	var ep = trkpt.last();  // end point
 	var tp = trkpt.length;  // track point count-1
 	var bl = calcGPSDistance(sp,ep); // beeline
@@ -284,11 +300,15 @@ function renderGPXFileInfo(gpx) {
 		mt += calcGPSTimeDiff(a,b) - st; // moving time (time diff without standing time)
 		
 		distance+=d;
-	
+		
+		if (be-ae >0) ele+=(be-ae);
+		elemin = Math.min(Math.min(elemin, ae), be);
+		elemax = Math.max(Math.max(elemax, ae), be);
+		
 		if (st==0 && calcGPSTimeDiff(a,b)>999) {
 			var _speed = calcGPSSpeed(a,b,d,st);
 			speeds.push(_speed);
-			var trkptData = collectTrkptData(b, _speed, distance);
+			var trkptData = collectTrkptData(b, _speed, distance, spd, ele);
 			profdata.push(trkptData);
 			var m = Math.max(maxSpeed, _speed);
 			if (m!=maxSpeed) {
@@ -296,9 +316,7 @@ function renderGPXFileInfo(gpx) {
 				maxSpeedPoint = trkptData;
 			}
 		}
-		if (be-ae >0) ele+=(be-ae);
-		elemin = Math.min(Math.min(elemin, ae), be);
-		elemax = Math.max(Math.max(elemax, ae), be);
+	
 	}
 	var km = getGPSDistanceInKm(distance);
 	var mi = getGPSDistanceInMi(distance);
@@ -340,9 +358,10 @@ function renderGPXFileInfo(gpx) {
 	$("#gpxviewer-name").text($("name",data).first().text().trim()).attr("title",($("description",data).first().text().trim()));
 	$("#gpxviewer-outlier").text(outlier);
 	
-	addMapMarker(trkpt.first().attr("lat"), trkpt.first().attr("lon"), "$tl(gpxviewer.startdate): "+(new Date(datemin)).toString(),renderTrkptData(collectTrkptData(trkpt.first(),0,0),"$tl(gpxviewer.startdate)"),"green");
-	addMapMarker(trkpt.last().attr("lat"), trkpt.last().attr("lon"),"$tl(gpxviewer.enddate): "+(new Date(datemax)).toString(),renderTrkptData(collectTrkptData(trkpt.last(),distance/h,distance),"$tl(gpxviewer.enddate)"),"red-dot");
-	addMapMarker(maxSpeedPoint.lat, maxSpeedPoint.lon,"$tl(gpxviewer.maxspeed): "+maxspeedkm+"$tl(gpxviewer.kph) = "+maxspeedmi+"$tl(gpxviewer.mph)", renderTrkptData(maxSpeedPoint,"$tl(gpxviewer.maxspeed)"),"blue");
+	addMapMarker(sp.attr("lat"), sp.attr("lon"), "$tl(gpxviewer.startdate): "+(new Date(datemin)).toString(),renderTrkptData(spd,"$tl(gpxviewer.startdate)"),"green");
+	addMapMarker(ep.attr("lat"), ep.attr("lon"), "$tl(gpxviewer.enddate): "+(new Date(datemax)).toString(),renderTrkptData(collectTrkptData(ep,distance/h,distance,spd,ele),"$tl(gpxviewer.enddate)"),"red-dot");
+	var tooltip = renderSpeedData(maxSpeedPoint,"$tl(gpxviewer.maxspeed)");
+	addMapMarker(maxSpeedPoint.lat, maxSpeedPoint.lon, tooltip, renderTrkptData(maxSpeedPoint,tooltip),"blue");
 	
 	$("#gpxviewerprofile").data("json",profdata);
 }

@@ -72,3 +72,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .gpxviewer-markerinfo-title {
 	font-weight: bold;
 }
+.gpxviewer-markerinfo-help {
+	border-top: 1px solid gray;
+	margin: 1ex 0 0 0;
+	font-style: italic;
+	font-size: xx-small;
+	width: 100%;
+	padding: 0;
+}
