@@ -203,7 +203,7 @@ function addMapMarker(lat,lon, title, info, color) {
 	var iw = new google.maps.InfoWindow({ content: info});
 	marker.addListener("click", function() { iw.open(window.gpxViewerMap, marker); });
 	marker.addListener("dragstart", function(m) { window.gpxViewerMapMarkerDrag = m.latLng; });
-	marker.addListener("dragend", function(m) {  if (window.confirm("$tl(gpxviewer.deletemarker)")) this.setMap(null); else this.setPosition(window.gpxViewerMapMarkerDrag); });
+	marker.addListener("dragend", function(m) {  ToolBox.confirmDialog("$tl(gpxviewer.deletemarker)",{ confirm:function(){marker.setMap(null);}, cancel:function(){marker.setPosition(window.gpxViewerMapMarkerDrag);}});  });
 }
 function myRound(v,d) {
 	var p = Math.pow(10,d ? d : 1);
