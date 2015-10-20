@@ -1,0 +1,33 @@
+<div class="diff dialog" title="$tl(diff): $file1 & $file2">
+	<div class="diff tabs">
+		<ul>
+			<li><a href="#showdifftab">$tl(diff_showdiff)</a></li>
+			<li><a href="#showrawtab">$tl(diff_showrawdiff)</a></li>
+		</ul>
+		<div class="diff tableoutput" id="showdifftab">
+			<table class="diff table">
+				<thead>
+					<tr class="diff filename">
+						<td class="diff line">#</td>
+						<td class="diff filename">$file1</td>
+						<td class="diff line">#</td>
+						<td class="diff filename">$file2</td>
+					</tr>
+				</thead>
+				<tbody>
+					$difflines
+					<tr>
+						<td class="diff comment" colspan="4">$diffcounter</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="diff rawoutput" id="showrawtab">
+			<pre>$rawdifflines</pre>
+		</div>
+	</div>
+	<div class="diff buttonbar">
+		<div class="diff swapfiles" data-file1="$file1" data-file2="$file2">$tl(diff_swapfiles)</div>
+		<div class="diff close">$tl(close)</div>
+	</div>
+</div>

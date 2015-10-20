@@ -92,21 +92,27 @@ sub renderDiffOutput {
 	my $cgi = $$self{cgi};
 	my ($f1,$f2) = @files;
 	my $raw = ""; 
+	my $difftmpl = $self->readTemplate('diff');
+	my $difflinetmpl = $self->readTemplate('diffline');
+	my $diffsinglelinetmpl = $self->readTemplate('diffsingleline');
+	my $difffilenamelinetmpl = $self->readTemplate('difffilenameline');
+	my @fnstack;
 	if (open(DIFF, '-|', $self->config('diff','/usr/bin/diff'), '-ru',$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f1),$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f2))) {
-		my $t = $cgi->start_table({-class=>'diff table'});
+		my $t = "";
 		my ($lr,$ll) = (0,0);
-		$t.=$cgi->Tr({-class=>'diff filename'},$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f1).$cgi->td({-class=>'diff line'},'#').$cgi->td({-class=>'diff filename'},$f2));
 		my $diffcounter = 0;		
 		while (<DIFF>) {
 			$raw.=$_;
 			chomp;
+			my($tmpl, $text1, $text2, $text, $type, $linenumber1, $linenumber2);
 			if (/^-{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
-				$t.='<tr class="diff filename">'.$cgi->td({-colspan=>2,-class=>'diff filename'},$f) unless $f =~/^\s*\Q$f1\E\s*$/ || $f=~/^\/tmp\//;
+				push @fnstack, $f unless $f =~/^\s*\Q$f1\E\s*$/ || $f=~/^\/tmp\//;
 				next;
 			} elsif (/^\+{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
-				my $f = $self->substBasepath($1);
-				$t.=$cgi->td({-colspan=>2,-class=>'diff filename'},$f).'</tr>'  unless $f=~/^\s*\Q$f2\E\s*$/ || $f =~/^\/tmp\//;
+				$text2 = $self->substBasepath($1);
+				$text1 = pop @fnstack;
+				$t.=$self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $difffilenamelinetmpl,{ file1=>$cgi->escapeHTML($text1), file2=>$cgi->escapeHTML($text2)}) unless $text2=~/^\s*\Q$f2\E\s*$/ || $text2 =~/^\/tmp\//;
 				next;
 			} elsif (/^diff /) {
 				next;
@@ -117,40 +123,34 @@ sub renderDiffOutput {
 			
 			my $o =$_;
 			$o=~s/^.//;
-			$o=$cgi->div({-class=>'diff pre'},$cgi->escapeHTML($o));
 			if (/^\+/) {
-				$t.=$cgi->Tr({-class=>'diff added'}, $cgi->td({-class=>'diff line'},"").$cgi->td({-class>='diff added'},"").$cgi->td({-class=>'diff line'},$lr).$cgi->td({-class=>'diff added'},$o));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('added', $difflinetmpl, '', '', $lr, $o);
 				$lr++; 
 				$diffcounter++;
 			} elsif (/^-/) {
-				$t.=$cgi->Tr({-class=>'diff removed'},$cgi->td({-class=>'diff line'},$ll).$cgi->td({-class=>'diff removed'},$o).$cgi->td({-class=>'diff line'},"").$cgi->td({-class=>'diff removed'},""));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('removed', $difflinetmpl, $ll, $o, '', '');
 				$ll++;
 				$diffcounter++;
 			} elsif (/^ /) {
-				$t.=$cgi->Tr({-class=>'diff unchanged'},$cgi->td({-class=>'diff line'},$ll).$cgi->td({-class=>'diff unchanged'},$o).$cgi->td({-class=>'diff line'},$lr).$cgi->td({-class=>'diff unchanged'},$o));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('unchanged', $difflinetmpl, $ll, $o, $lr, $o);
 				$ll++; $lr++;
 			} elsif (/^Binary files (.*?) and (.*?) differ/) {
 				my ($ff1,$ff2) = $self->config('files_only',0) ?($f1,$f2): ($1,$2);
-				$t.=$cgi->Tr({-class=>'diff binary'},$cgi->td({-class=>'diff binary',-colspan=>4}, sprintf($self->tl('diff_binary'),$self->substBasepath($ff1),$self->substBasepath($ff2))));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('binary', $diffsinglelinetmpl, '','','','', sprintf($self->tl('diff_binary'),$self->substBasepath($ff1),$self->substBasepath($ff2)));
 				$diffcounter++;
 			} elsif (/^Only in (.*?): (.*)$/) {
-				$t.=$cgi->Tr({-class=>'diff onlyin'},$cgi->td({-class=>'diff onlyin',-colspan=>4}, sprintf($self->tl('diff_onlyin'),$self->substBasepath($1),$self->substBasepath($2))));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('onlyin', $diffsinglelinetmpl, '','','','', sprintf($self->tl('diff_onlyin'),$self->substBasepath($1),$self->substBasepath($2)));
 				$diffcounter++;
 			} elsif (/^\\\s*No newline at end of file/i) {
-				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, $self->tl('diff_nonewline')));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('comment', $diffsinglelinetmpl, '','','','',$self->tl('diff_nonewline'));
 			} elsif (/^\\ (.*)/ || /^(\w+.*)/) {
-				$t.=$cgi->Tr({-class=>'diff comment'},$cgi->td({-class=>'diff comment',-colspan=>4}, $cgi->pre({-class=>'diff pre'},$1)));
+				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('comment', $diffsinglelinetmpl, '','','','',$1);
 			}
+			$t.= $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $tmpl, { type=>$type, text1=>$cgi->escapeHTML($text1), text2=>$cgi->escapeHTML($text2), linenumber1=>$linenumber1, linenumber2=>$linenumber2, text=>$cgi->escapeHTML($text)});
 		}
-		$t.=$cgi->Tr({-class=>'diff comment'}, $cgi->td({-class=>'diff comment',colspan=>4},sprintf($self->tl('diff_nomorediffs'),$diffcounter)));
-		$t.=$cgi->end_table();
-		$t.=$cgi->div({-class=>'diff raw'},$self->tl('diff_showrawdiff'));
-		my $swap =$cgi->div({-class=>'diff swapfiles', -data_file1=>$f1, -data_file2=>$f2},$self->tl('diff_swapfiles'));
-		$t.=$swap;
-		$ret = $cgi->div({-title=>$self->tl('diff'),-class=>'diff dialog'}, $t);
+		close(DIFF);		
+		$ret = $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $difftmpl, { difflines => $t, rawdifflines => $cgi->escapeHTML($raw), file1=> $cgi->escapeHTML($f1), file2=>$cgi->escapeHTML($f2), diffcounter=> sprintf($self->tl('diff_nomorediffs'),$diffcounter) });
 		
-		$raw = 	$$self{cgi}->pre($$self{cgi}->escapeHTML($raw)).$$self{cgi}->div({-class=>'diff formatted'},$self->tl('diff_showdiff')).$swap;
-		close(DIFF)
 	} 
 	return ($ret,$raw);
 }

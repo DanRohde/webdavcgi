@@ -83,12 +83,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	font-family: monospace;
 	overflow: auto;
 }
-.diff.raw,.diff.formatted, .diff.swapfiles {
+.diff.swapfiles,.diff.close {
 	display: inline-block;
 	margin-top: 4px;
 	padding: 2px;
 }
+#showdifftab,#showrawtab {
+	height: 400px;
+	overflow: auto;
+}
 .diff.swapfiles {
+	float: right;
+}
+.diff.close {
 	float: right;
 }
 .diff.ui-dialog .ui-dialog-title {
@@ -97,3 +104,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: left center;
 	padding-left: 20px;
 }
+
