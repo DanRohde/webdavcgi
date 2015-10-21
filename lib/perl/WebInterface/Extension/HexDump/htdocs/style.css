@@ -33,3 +33,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: left center;
 	padding-left: 20px;
 }
+.hexdump.filename {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
