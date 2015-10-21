@@ -58,8 +58,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .diff.filename {
 	font-weight: bold;
 	background-color: #f0f0f0;
-	border: 2px inset #999999;
-	white-space: pre-wrap;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 .diff.added {
 	background-color: #eeffee;

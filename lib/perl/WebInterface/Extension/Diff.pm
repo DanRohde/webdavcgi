@@ -52,7 +52,7 @@ sub handle {
 		my ($content, $raw);
 		my @files = $$self{cgi}->param('files');
 		if (scalar(@files)==2) { 
-			($content,$raw) = $self->renderDiffOutput(@files) if $self->checkFilesOnly(@files);
+			$content = $self->renderDiffOutput(@files) if $self->checkFilesOnly(@files);
 		}
 		if (!$content) {
 			if (scalar(@files)!= 2) {
@@ -63,7 +63,6 @@ sub handle {
 			
 		} else {
 			$jsondata{content} = $content;
-			$jsondata{raw} = $raw;
 		}
 		my $json = new JSON();
 		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
@@ -82,6 +81,7 @@ sub checkFilesOnly {
 }
 sub substBasepath {
 	my($self,$f) = @_;
+	$f=~s/\\"/"/g;
 	$f=$$self{backend}->resolveVirt($f);
 	$f=~s/^\Q$main::PATH_TRANSLATED\E//;
 	return $f;
@@ -105,11 +105,11 @@ sub renderDiffOutput {
 			$raw.=$_;
 			chomp;
 			my($tmpl, $text1, $text2, $text, $type, $linenumber1, $linenumber2);
-			if (/^-{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
+			if (/^-{3}\s+"?(.*?)"?\s+\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				my $f = $self->substBasepath($1);
 				push @fnstack, $f unless $f =~/^\s*\Q$f1\E\s*$/ || $f=~/^\/tmp\//;
 				next;
-			} elsif (/^\+{3}\s+(.*?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
+			} elsif (/^\+{3}\s+"?(.*?)"?\s+\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				$text2 = $self->substBasepath($1);
 				$text1 = pop @fnstack;
 				$t.=$self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $difffilenamelinetmpl,{ file1=>$cgi->escapeHTML($text1), file2=>$cgi->escapeHTML($text2)}) unless $text2=~/^\s*\Q$f2\E\s*$/ || $text2 =~/^\/tmp\//;
@@ -152,6 +152,6 @@ sub renderDiffOutput {
 		$ret = $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $difftmpl, { difflines => $t, rawdifflines => $cgi->escapeHTML($raw), file1=> $cgi->escapeHTML($f1), file2=>$cgi->escapeHTML($f2), diffcounter=> sprintf($self->tl('diff_nomorediffs'),$diffcounter) });
 		
 	} 
-	return ($ret,$raw);
+	return $ret;
 }
 1;
