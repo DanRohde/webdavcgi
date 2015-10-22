@@ -67,11 +67,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(uncompress-hover.png);
 }
 #popupmenu li.subpopupmenu.zip-popup {
-	background: url(zipup.png) no-repeat 2px 7px,
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right 2px center;
+	background: url(zipup.png),
+			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
+	background-position: 2px 7px, right 2px center;
+	background-repeat: no-repeat, no-repeat;
 	padding: 0.4em 0.4em 0.4em 22px ;
 }
 #popupmenu li.subpopupmenu.zip-popup:hover {
-	background: url(zipup-hover.png) no-repeat 2px 7px,
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat right 2px center;
+	background: url(zipup-hover.png), 
+			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
+	background-position: 2px 7px, right 2px center;
+	background-repeat: no-repeat, no-repeat;
+	background-color: #f9f9f9;
 }
