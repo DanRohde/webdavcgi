@@ -183,9 +183,22 @@ table,th,td {
 	margin-bottom: 3px; 
 	border: 0;
 	cursor: pointer;
+}
+#popupmenu .toggleselection, #popupmenu .selectall, #popupmenu .selectnone, #popupmenu .select {
+	padding-left: 22px;
+}
+#popupmenu .select.subpopupmenu {
+	background: 
+		url(images/sprite.png) no-repeat left -895px,
+	    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat  right 2px center;
+}
+#popupmenu .select.subpopupmenu:hover {
 	
-	opacity: 0.5;
-	filter: Alpha(opacity=50);
+	background:	url(images/sprite-hover.png),
+	    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
+	background-repeat: no-repeat, no-repeat;
+	background-position: left -895px, right center;
+	background-color: #f9f9f9;
 }
 .toggleselection {
 	background: white url(images/sprite.png) no-repeat -2px -895px;
