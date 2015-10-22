@@ -58,9 +58,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .diff.filename {
 	font-weight: bold;
 	background-color: #f0f0f0;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
+	white-space: pre-wrap;
 }
 .diff.added {
 	background-color: #eeffee;
@@ -82,7 +80,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	margin: 0;
 	border: 0;
 	font-family: monospace;
-	overflow: auto;
+	white-space: pre-wrap;
 }
 .diff.swapfiles,.diff.close {
 	display: inline-block;
