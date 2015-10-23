@@ -88,7 +88,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	padding: 2px;
 }
 #showdifftab,#showrawtab {
-	height: 400px;
 	overflow: auto;
 }
 .diff.swapfiles {
