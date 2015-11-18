@@ -737,6 +737,9 @@ li.sep {
 .action.rmsinglebookmark:hover {
 	background: url(images/sprite-hover.png) no-repeat left -220px;
 }
+.time.right, .time-desc.right, .path.right, .path-desc.right {
+	margin-right: 7px;
+}
 #bookmarksmenu ul {
 	padding: 0;
 	margin: 0;
