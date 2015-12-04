@@ -312,7 +312,7 @@ sub renderFileListEntry {
 	my $mime = $file eq '..' ? '< .. >' : $id ?'<folder>':main::getMIMEType($full);
 	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.([\w?]+)$/ ?  lc($1) : 'unknown')) ;
 	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/m ? 'category-'.$1 : '';
-	my $isLocked = $main::SHOW_LOCKS && main::isLocked($full);
+	my $isLocked = $main::SHOW_LOCKS && main::isLockedCached($full);
 	my $displayname = $$self{cgi}->escapeHTML($$self{backend}->getDisplayName($full));
 	my $now = $CACHE{$self}{renderFileListEntry}{now}{$lang} //= DateTime->now(locale=>$lang); ## //
 	my $cct = $self->canCreateThumbnail($full) || 0;

@@ -29,6 +29,7 @@ our @ISA = qw( WebInterface::Extension  );
 
 use JSON;
 
+use vars qw(%CACHE);
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript', 'posthandler', 'fileattr', 'fileactionpopup');
@@ -76,13 +77,14 @@ sub handle {
 sub getFileAttributes {
 	my ($self, $params) = @_;
 	
-	$$self{db}->db_getProperties($$self{backend}->resolveVirt($main::PATH_TRANSLATED)); ## fills the cache
 	my $path = $$self{backend}->resolveVirt($$params{path});
+	my $parent = $$self{backend}->getParent($path);
+	$$self{db}->db_getProperties($parent) unless exists $CACHE{$self}{$parent}; ## fills the cache 
+	$CACHE{$self}{$parent} = 1;
 	my %jsondata = ();
 	foreach my $prop (keys %{$$self{attributes}}) {
-		my $val = $$self{db}->db_getProperty($path, $$self{namespace}.$prop);
+		my $val = $$self{db}->db_getPropertyFromCache($path, $$self{namespace}.$prop);
 		$jsondata{$prop}=$val if $val;
-			
 	}
 	
 	return { 'ext_classes'=>'highlighter-highlighted', 'ext_attributes' => 'data-highlighter="'.$$self{cgi}->escapeHTML($$self{json}->encode(\%jsondata)).'"' } if scalar(keys %jsondata) >0;

@@ -139,6 +139,13 @@ sub isLocked {
         my $rows = $$self{db}->db_get($rfn);
         return (($#{$rows}>-1) && !$self->_checkTimedOut($rfn, $rows)) ? 1 : 0;
 }
+sub isLockedCached {
+	my ($self, $fn) = @_;
+	my $rfn = $self->resolve($fn);
+        $rfn.='/' if $$self{backend}->isDir($fn) && $rfn !~/\/$/;
+        my $rows = $$self{db}->db_getCached($rfn);
+        return (($#{$rows}>-1) && !$self->_checkTimedOut($rfn, $rows)) ? 1 : 0;
+}
 sub isLockable  { # check lock and exclusive
         my ($self, $fn,$xmldata) = @_;
         my $rfn = $self->resolve($fn);

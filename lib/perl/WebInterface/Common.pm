@@ -65,7 +65,7 @@ sub initialize() {
 
 sub readTLFile {
 	my ($self, $fn, $dataRef) = @_;
-        if (open(my $i, "<$fn")) {
+        if (open(my $i, '<', $fn)) {
                 while (my $line = <$i>) {
                         chomp($line);
                         next if $line=~/^#/;

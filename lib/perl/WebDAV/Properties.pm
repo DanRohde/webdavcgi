@@ -58,7 +58,7 @@ sub setProperty {
                 my $executable = $$elementParentRef{$propname}{'content'};
                 if (defined $executable) {
                         my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = $$self{backend}->stat($fn);
-                        chmod( ($executable=~/F/) ? $mode & 0666 : $mode | 0111, $fn);
+                        chmod( ($executable=~/F/) ? $mode & oct(666) : $mode | oct(111), $fn);
                         $$resp_200{href}=$ru;
                         $$resp_200{propstat}{prop}{executable}=$executable;
                         $$resp_200{propstat}{status}='HTTP/1.1 200 OK';

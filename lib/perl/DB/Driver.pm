@@ -93,6 +93,24 @@ sub db_getLike {
         }
         return $rows;
 }
+sub db_getCached {
+	my ($self, $fn, $token ) = @_;
+	return $CACHE{lockentry}{$fn}{row} if defined $token && exists $CACHE{lockentry}{$fn}{token}{$token};
+	return $CACHE{lockentry}{$fn}{row} if exists $CACHE{lockentry}{$fn}{row};
+	my $pfn = main::getParentURI($fn);
+	return [] if exists $CACHE{lockentry}{$pfn}{row};
+	$CACHE{lockentry}{$fn}{row} = [];
+	$CACHE{lockentry}{$fn}{token}{$token} = 0 if defined $token;
+	my $rows = $self->db_getLike($pfn);
+	$CACHE{lockentry}{$pfn}{row} = [];
+	$CACHE{lockentry}{$pfn}{token}{$token} = 0 if defined $token;
+	foreach my $row (@{$rows}) {
+		$CACHE{lockentry}{$$row[1]}{row} = $row;
+		$CACHE{lockentry}{$$row[1]}{token}{$$row[4]}=1;
+	}
+	return $CACHE{lockentry}{$fn}{row} if defined $fn && exists $CACHE{lockentry}{$fn}{row} && (!defined $token || $CACHE{lockentry}{$fn}{token}{$token}); 
+	return [];
+}
 sub db_get {
         my ($self,$fn,$token) = @_;
         my $rows;
@@ -233,12 +251,16 @@ sub db_getProperties {
                         foreach my $row (@{$rows}) {
                                 $CACHE{Properties}{$$row[0]}{$$row[1]}=$$row[2];
                         }
-                        $CACHE{Properties_flag}{$fn}=1;
                 } else {
                 	$self->db_handleSelect($dbh,$sth);
                 }
         }
+        $CACHE{Properties_flag}{$fn}=1;
         return $CACHE{Properties}{$fn};
+}
+sub db_getPropertyFromCache {
+	my ($self, $fn, $propname) = @_;
+	return exists $CACHE{Properties}{$fn} ? $CACHE{Properties}{$fn}{$propname} : $CACHE{Properties}{$fn};
 }
 sub db_getProperty {
         my ($self,$fn,$propname) = @_;

@@ -134,20 +134,20 @@ sub getACLProp {
         my $groupgrant;
         my $othergrant;
 
-        $mode = $mode & 07777;
+        $mode = $mode & oct(7777);
 
-        push @{$$ownergrant{privilege}},{read  => undef } if ($mode & 0400) == 0400;
-        push @{$$ownergrant{privilege}},{write => undef } if ($mode & 0200) == 0200;
-        push @{$$ownergrant{privilege}},{bind => undef } if ($mode & 0200) == 0200;
-        push @{$$ownergrant{privilege}},{unbind => undef } if ($mode & 0200) == 0200;
-        push @{$$groupgrant{privilege}},{read  => undef } if ($mode & 0040) == 0040;
-        push @{$$groupgrant{privilege}},{write => undef } if ($mode & 0020) == 0020;
-        push @{$$groupgrant{privilege}},{bind => undef } if ($mode & 0020) == 0020;
-        push @{$$groupgrant{privilege}},{unbind => undef } if ($mode & 0020) == 0020;
-        push @{$$othergrant{privilege}},{read  => undef } if ($mode & 0004) == 0004;
-        push @{$$othergrant{privilege}},{write => undef } if ($mode & 0002) == 0002;
-        push @{$$othergrant{privilege}},{bind => undef } if ($mode & 0002) == 0002;
-        push @{$$othergrant{privilege}},{unbind => undef } if ($mode & 0002) == 0002;
+        push @{$$ownergrant{privilege}},{read  => undef } if ($mode & oct(400)) == oct(400);
+        push @{$$ownergrant{privilege}},{write => undef } if ($mode & oct(200)) == oct(200);
+        push @{$$ownergrant{privilege}},{bind => undef } if ($mode & oct(200)) == oct(200);
+        push @{$$ownergrant{privilege}},{unbind => undef } if ($mode & oct(200)) == oct(200);
+        push @{$$groupgrant{privilege}},{read  => undef } if ($mode & oct(40)) == oct(40);
+        push @{$$groupgrant{privilege}},{write => undef } if ($mode & oct(20)) == oct(20);
+        push @{$$groupgrant{privilege}},{bind => undef } if ($mode & oct(20)) == oct(20);
+        push @{$$groupgrant{privilege}},{unbind => undef } if ($mode & oct(20)) == oct(20);
+        push @{$$othergrant{privilege}},{read  => undef } if ($mode & oct(4)) == oct(4);
+        push @{$$othergrant{privilege}},{write => undef } if ($mode & oct(2)) == oct(2);
+        push @{$$othergrant{privilege}},{bind => undef } if ($mode & oct(2)) == oct(2);
+        push @{$$othergrant{privilege}},{unbind => undef } if ($mode & oct(2)) == oct(2);
 
         push @ace, { principal => { property => { owner => undef } },
                      grant => $ownergrant

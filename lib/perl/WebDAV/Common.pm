@@ -31,7 +31,7 @@ sub new {
 	return $self;
 }
 
-sub initialize() {
+sub initialize {
 	my $self = shift;
 	$$self{cgi} = $$self{config}->getProperty('cgi');
 	$$self{backend} = $$self{config}->getProperty('backend');
