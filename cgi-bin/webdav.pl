@@ -2694,7 +2694,7 @@ sub getHiddenFilter {
 }
 sub getWebInterface {
 	require WebInterface;
-	return $CACHE{$ENV{REMOTE_USER}}{getWebInterface} //= WebInterface->new($config, getDBDriver());
+	return WebInterface->new($config, getDBDriver());
 }
 sub getDBDriver {
 	require DB::Driver;
