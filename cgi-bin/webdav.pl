@@ -1465,7 +1465,7 @@ sub _DELETE {
 	} else {
 		broadcastEvent('DELETE', {file => $PATH_TRANSLATED});
 		if ($ENABLE_TRASH) {
-			$status='404 Forbidden' unless moveToTrash($PATH_TRANSLATED) > 0;
+			$status='404 Forbidden' if moveToTrash($PATH_TRANSLATED) <= 0;
 		} else {
 			$backend->deltree($PATH_TRANSLATED, \my @err);
 			logger("DELETE($PATH_TRANSLATED)");
@@ -2225,7 +2225,7 @@ sub createXMLData {
         } elsif (ref($d) eq 'REF') {
                 createXMLData($w, $$d, $xmlns);
         } else {
-                $$w.=qq@$d@;
+                $$w.=qq@$d@ if defined $d;
         }
 	return;
 }
@@ -2718,7 +2718,7 @@ sub isLocked {
 }
 sub getParentURI {
 	my ($uri) = @_;
-	return $uri=~/^(.*?)\/[^\/]+\/?$/ ? ( $1 || '/' ) : '/';
+	return $uri && $uri=~/^(.*?)\/[^\/]+\/?$/ ? ( $1 || '/' ) : '/';
 }
 sub getLocalFileContentAndType {
 	my ($fn,$default,$defaulttype) = @_;
@@ -2779,7 +2779,7 @@ sub getByteRanges {
 	my $ifrange = $cgi->http('If-Range') || $etag;
 	return if $ifrange ne $etag && $ifrange ne $lm;
 	my $range = $cgi->http('Range');
-	if ($range=~/bytes=(\d+)\-(\d+)/) {
+	if ($range && $range=~/bytes=(\d+)\-(\d+)/) {
 		return ($1,$2,$2-$1+1) if $1 < $2;
 	}
 	return;
