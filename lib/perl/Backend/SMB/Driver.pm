@@ -44,7 +44,7 @@ sub new {
 	$self->initialize();
 	return $self;
 }
-sub initialize() {
+sub initialize {
 	my $self = shift;
 	## backup credential cache
 	if ($ENV{KRB5CCNAME} && !exists $ENV{WEBDAVISWRAPPED} ) {
@@ -52,7 +52,7 @@ sub initialize() {
 			my $oldfilename = $1;
 			my $newfilename = "/tmp/krb5cc_webdavcgi_$ENV{REMOTE_USER}";
 			my ($in, $out);
-			if ($oldfilename ne $newfilename && open($in, "<$oldfilename") && open($out, ">$newfilename") && flock($out, LOCK_EX | LOCK_NB) ) {
+			if ($oldfilename ne $newfilename && open($in, '<', $oldfilename) && open($out,'>', $newfilename) && flock($out, LOCK_EX | LOCK_NB) ) {
 				#print STDERR "Backend::SMB::initialize: copy $oldfilename to $newfilename\n";
 				binmode $in;
 				binmode $out;
@@ -67,15 +67,16 @@ sub initialize() {
 			}
 		}
 	}
+	return;
 }
 sub getSmbClient {
 	my ($self) = @_;
 	my $rmuser = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
 
-	$ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$rmuser" if -e "/tmp/krb5cc_webdavcgi_$rmuser";
+	local $ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$rmuser" if -e "/tmp/krb5cc_webdavcgi_$rmuser";
 	return $SMBCLIENT{$rmuser} if exists $SMBCLIENT{$rmuser};
-	return $SMBCLIENT{$rmuser} = new Filesys::SmbClient(username=> $ENV{SMBUSER}, password=> $ENV{SMBPASSWORD}, workgroup=> $ENV{SMBWORKGROUP}) if exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD} && exists $ENV{SMBWORKGROUP};
-	return $SMBCLIENT{$rmuser} = new Filesys::SmbClient(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
+	return $SMBCLIENT{$rmuser} = Filesys::SmbClient->new(username=> $ENV{SMBUSER}, password=> $ENV{SMBPASSWORD}, workgroup=> $ENV{SMBWORKGROUP}) if exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD} && exists $ENV{SMBWORKGROUP};
+	return $SMBCLIENT{$rmuser} = Filesys::SmbClient->new(username=> &_getFullUsername(), flags=>Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
 }
 sub finalize {
 	%CACHE = ();
@@ -199,7 +200,7 @@ sub stat {
 	my @stat;
 	my $time = time();
 	if (_isRoot($file) || _isShare($file)) {
-		@stat = (0,0,0755,0,0,0,0,0,$time,$time,$time,0,0);
+		@stat = (0,0,oct(755),0,0,0,0,0,$time,$time,$time,0,0);
 	} else {
 		if ($file=~/^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E.*$/) {
 			@stat = $self->getSmbClient()->stat($self->_getSmbURL($file));
@@ -224,7 +225,7 @@ sub lstat {
 
 sub copy {
 	my ($self, $src, $dst) = @_;
-	if ( (my $srcfh=$self->getSmbClient()->open('<'.$self->_getSmbURL($src))) && (my $dstfh=$self->getSmbClient()->open('>'.$self->_getSmbURL($dst), 07777 ^ $main::UMASK))) {
+	if ( (my $srcfh=$self->getSmbClient()->open('<'.$self->_getSmbURL($src))) && (my $dstfh=$self->getSmbClient()->open('>'.$self->_getSmbURL($dst), oct(7777) ^ $main::UMASK))) {
 		while (my $buffer = $self->getSmbClient()->read($srcfh, $main::BUFSIZE || 1048576)) {
 			$self->getSmbClient()->write($dstfh, $buffer);
 		}
@@ -425,9 +426,9 @@ sub _isRoot {
 sub _isShare {
 	return $_[0] =~ /^\Q$DOCUMENT_ROOT\E[^\Q$SHARESEP\E]+\Q$SHARESEP\E[^\/]+\/?$/;
 }
-sub S_ISLNK { return ($_[0] & 0120000) == 0120000; }
-sub S_ISDIR { return ($_[0] & 0040000) == 0040000; }
-sub S_ISFILE { return ($_[0] & 0100000) == 0100000; }
+sub S_ISLNK { return ($_[0] & oct(120000)) == oct(120000); }
+sub S_ISDIR { return ($_[0] & oct(40000) ) == oct(40000); }
+sub S_ISFILE { return ($_[0] & oct(100000)) == oct(100000); }
 sub _getType {
 	my ($self, $file) = @_;
 	if (!$self->_existsCacheEntry('readDir',$file)) {
@@ -488,7 +489,7 @@ sub changeMod { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice { return 0; }
 sub createSymLink { return 0; }
-sub getLinkSrc { $!='not supported'; return undef; }
+sub getLinkSrc { $!='not supported'; return; }
 sub hasStickyBit { return 0; }
 sub getQuota { 
 	my ($server,$share,$path,$shareidx) = _getPathInfo($_[1]);
@@ -505,7 +506,7 @@ sub getQuota {
 	return (0,0) if !$share || $share eq ''|| (defined $$fs{quota}{$share} && !$$fs{quota}{$share}) || (!defined $$fs{quota}{$share} && defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && !$main::BACKEND_CONFIG{$main::BACKEND}{quota});
 	my $smbclient =  "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du";
 	$smbclient = "/usr/bin/smbclient '//$server/$share' '$ENV{SMBPASSWORD}' -U '$ENV{SMBUSER}' -W '$ENV{SMBWORKGROUP}' -D '$path' -c du" if exists $ENV{SMBWORKGROUP} && exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD};
-	if ($server && open(my $c, "$smbclient 2>/dev/null |" )) {
+	if ($server && open(my $c,'-|', "$smbclient 2>/dev/null" )) {
 		my @l= <$c>;
 		close($c);
 		if (@l && $l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/) {

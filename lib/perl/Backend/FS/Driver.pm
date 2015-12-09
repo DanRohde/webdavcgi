@@ -42,6 +42,7 @@ sub finalize {
 	my ($self) = @_;
 	%CACHE = ();
 	$$self{cache}=\%CACHE;
+	return;
 }
 
 sub __basename {
@@ -208,6 +209,7 @@ sub changeFilePermissions {
                         closedir($dir);
                 }
         }
+        return;
 }
 
 sub saveData {
@@ -221,7 +223,7 @@ sub saveData {
 
 	my $mode = $append ? '>>' : '>';
 
-	if (($ret = open(my $f, ${mode}.$self->resolveVirt(${file})))) {
+	if (($ret = open(my $f, ${mode}, $self->resolveVirt(${file})))) {
 		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
 			$ret = 0;
 		} else {
@@ -241,7 +243,7 @@ sub saveStream {
 
 	my ($block_hard, $block_curr) = $self->getQuota($self->dirname($destination));
 
-	if (($ret=open(my $f,">".$self->resolveVirt($destination)))) {
+	if (($ret=open(my $f,'>', $self->resolveVirt($destination)))) {
 		if ($main::ENABLE_FLOCK && !flock($f, LOCK_EX | LOCK_NB)) {
 			close($f);
 			$ret = 0;
@@ -288,12 +290,12 @@ sub compressFiles {
 			$zip->addFile($self->resolveVirt($basepath.$file), $file);
 		}
 	}
-	$zip->writeToFileHandle($desthandle,0);
+	return $zip->writeToFileHandle($desthandle,0);
 }
 
 sub changeMod {
 	delete $CACHE{$_[1]}{$_[2]};
-	chmod($_[1], $_[0]->resolveVirt($_[2]));
+	return chmod($_[1], $_[0]->resolveVirt($_[2]));
 }
 sub createSymLink {
 	delete $CACHE{$_[1]}{$_[2]};
@@ -339,7 +341,7 @@ sub printFile {
 	$to = \*STDOUT unless defined $to;
 	my $bufsize = $main::BUFSIZE || 1048576;
 	$bufsize = $count if defined $count && $count < $bufsize;
-	if (open(my $fh, $self->resolveVirt($file))) {
+	if (open(my $fh, '<', $self->resolveVirt($file))) {
 		binmode $fh;
 		binmode $to;
 		seek($fh, $pos, 0) if $pos;
@@ -352,6 +354,7 @@ sub printFile {
 		}
 		close($fh);
 	}
+	return;
 }
 sub getDisplayName {
 	return $CACHE{$_[0]}{$_[1]}{getDisplayName}
@@ -374,7 +377,7 @@ sub copy {
 	my ($self, $src, $dst) = @_;
 	delete $CACHE{$self}{$dst};
 
-	if (open(my $srcfh,"<".$self->resolveVirt($src,1)) && open(my $dstfh, ">".$self->resolveVirt($dst,1))) {
+	if (open(my $srcfh,'<', $self->resolveVirt($src,1)) && open(my $dstfh, '>', $self->resolveVirt($dst,1))) {
 		while (read($srcfh, my $buffer, $main::BUFSIZE || 1048576)) {
 			syswrite($dstfh, $buffer);
 		}

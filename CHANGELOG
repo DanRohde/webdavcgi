@@ -12,6 +12,7 @@
      - fixed wrong content length in conjunction with wide UTF-8 characters bug
      - improved code for more PBP conformity  
      - improved performance
+     - fixed WebDAV quota bug
      
 1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug

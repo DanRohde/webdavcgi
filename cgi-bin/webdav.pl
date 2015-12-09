@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.1.1BETA20151204.01";
+$RELEASE="1.1.1BETA20151209.01";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -749,6 +749,7 @@ $DEBUG = 0;
 use vars qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
 
 use CGI;
+use CGI::Carp;
 
 use Module::Load;
 
@@ -769,9 +770,9 @@ $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? CGI->new({}) : CGI->new;
 
 if (defined $CONFIGFILE) {
 	unless (my $ret = do($CONFIGFILE)) {
-		warn "couldn't parse $CONFIGFILE: $@" if $@;
-		warn "couldn't do $CONFIGFILE: $!" unless defined $ret;
-		##warn "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
+		carp "couldn't parse $CONFIGFILE: $@" if $@;
+		carp "couldn't do $CONFIGFILE: $!" unless defined $ret;
+		##carp "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
 	}
 }
 
@@ -2589,7 +2590,7 @@ sub readMIMETypes {
 		}
 		close($f);
 	} else {
-		warn "Cannot open $mimefile";
+		carp "Cannot open $mimefile";
 	}
 	$MIMETYPES{default}='application/octet-stream';
 	return;

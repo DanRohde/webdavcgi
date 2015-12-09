@@ -40,6 +40,7 @@ sub finalize {
 		$$self{DBI_INIT}->disconnect();
 		delete $$self{DBI_INIT};
 	}
+	return;
 }
 sub db_handleUpdates {
 	my ($self, $dbh, $sth) = @_;
@@ -293,7 +294,7 @@ sub db_getPropertyFnByValue {
                 }
                 $self->db_handleSelect($dbh,$sth);
         }
-        return undef;
+        return;
 }
 sub db_insert {
         my ($self, $basefn, $fn, $type, $scope, $token, $depth, $timeout, $owner) = @_;
@@ -339,9 +340,7 @@ sub db_delete {
         return $ret;
 }
 sub db_modify {
-	my $self = shift;
-	my $prepstmt = shift;
-	my @params = @_;
+	my ($self,$prepstmt,@params) = @_;
 	my $ret = 0;
 	my $dbh = $self->db_init();
 	my $sth = $dbh->prepare($prepstmt);
@@ -401,12 +400,12 @@ sub db_init {
         $$self{DBI_INIT} = $dbh;
         return $dbh;
 }
-sub db_rollback($) {
+sub db_rollback {
         my ($self,$dbh) = @_;
-        $dbh->rollback();
+        return $dbh->rollback();
 }
-sub db_commit($) {
+sub db_commit {
         my ($self,$dbh) = @_;
-        $dbh->commit();
+        return $dbh->commit();
 }
 1;

@@ -49,7 +49,8 @@ sub new {
 }
 sub finalize {
 	$DB->disconnect() if $DB; 
-	$DB=undef; 
+	$DB=undef;
+	return; 
 }
 
 sub initialize {
@@ -63,8 +64,8 @@ sub initialize {
 				if ($tag =~ /^dbname=/) {
 					$tag =~ s/dbname=//;
 					if ($tag ne '' and (! -e $tag)) {
-						open(FH, '>' . $tag) or die "Can't create $tag: $!";
-						close(FH);
+						open(my $FH, '>', $tag) or die "Can't create $tag: $!";
+						close($FH);
 					}
 				}
 			}
@@ -85,6 +86,7 @@ sub initialize {
 			}
 		}
 	}
+	return;
 }
 
 sub readDir {
@@ -181,7 +183,7 @@ sub hasSetGidBit { return 0; }
 sub changeMod { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice { return 0; }
-sub getLinkSrc { $!='not supported'; return undef; }
+sub getLinkSrc { $!='not supported'; return; }
 sub createSymLink { return 0; }
 sub hasStickyBit { return 0; }
 
@@ -225,7 +227,7 @@ sub _addDBEntry {
 	$sth->bind_param(5,defined $_[3] ? length($_[3]) : 0);
 	$sth->bind_param(6,$created);
 	$sth->bind_param(7,$created);
-	$sth->bind_param(8,07777 ^ $main::UMASK);
+	$sth->bind_param(8,oct(7777) ^ $main::UMASK);
 	$sth->bind_param(9,$_[3],SQL_BLOB) if defined $_[3];
 	my $ret = $sth->execute();
 
@@ -318,6 +320,7 @@ sub printFile {
 	$fn=$self->resolve($fn);
 	my $v = $self->_getDBEntry($fn,1);
 	print $fh (defined $pos && defined $count ? substr($$v{$self->basename($fn)}{data}, $pos, $count) : $$v{$self->basename($fn)}{data});
+	return;
 }
 sub getLocalFilename {
 	my ($self, $fn) = @_;

@@ -45,6 +45,7 @@ sub mkcolhier {
 	my ($self, $dir) = @_;
 	$self->mkcolhier($self->dirname($dir)) unless -d $self->dirname($dir);
 	$self->mkcol($dir);
+	return;
 }
 sub unlinkFile {
 	my ($self, $fn) = @_;
@@ -119,7 +120,7 @@ sub compressFiles {
 			$zip->addFile($self->resolveVirt($basepath.$file), $file) unless $self->gitFilter($basepath, $file);
 		}
 	}
-	$zip->writeToFileHandle($desthandle,0);
+	return $zip->writeToFileHandle($desthandle,0);
 }
 sub uncompressArchive {
 	my ($self, $zipfile, $destination) = @_;

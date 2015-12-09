@@ -29,7 +29,7 @@ our @ISA = qw( Backend::FS::Driver );
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd,sprintf("%s \"%s\"|", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
+	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd,'-|', sprintf("%s \"%s\"", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/,$lines[0]);

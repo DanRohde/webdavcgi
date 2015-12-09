@@ -38,6 +38,7 @@ sub finalize {
 	my ($self) = @_;
 	%CACHE = ();
 	$$self{BACKEND}->finalize();
+	return;
 }
 
 sub basename {
@@ -129,7 +130,7 @@ sub readDir {
 	if (! ($ret = $self->_readVirtualDir($dirname, $limit, $filter))) {
 		$ret = $$self{BACKEND}->readDir($dirname, $limit, $filter);
 		push @{$ret} , $main::BACKEND_CONFIG{RCS}{virtualrcsdir} 
-			unless $self->basename($dirname) ne $main::BACKEND_CONFIG{RCS}{rcsdirname} || grep(/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E/,@{$ret});
+			unless $self->basename($dirname) ne $main::BACKEND_CONFIG{RCS}{rcsdirname} || grep({$_=~/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E/} @{$ret});
 	}
 	return $ret;
 }
@@ -139,7 +140,7 @@ sub filter {
 }
 sub stat {
 	my ($self, $fn) = @_;
-	return ( 0,0, 0555, 2, $<, $(, 0,0, time(),time(),time(), 4096,0 )  if ($self->_isVirtualDir($fn));
+	return ( 0,0, oct(555), 2, $<, $(, 0,0, time(),time(),time(), 4096,0 )  if ($self->_isVirtualDir($fn));
 	if ($self->_isVirtualFile($fn)) {
 		return @{$CACHE{$self}{$fn}{stat}} if exists $CACHE{$self}{$fn}{stat};
 		my $lf = $self->_saveToLocal($fn);
@@ -175,7 +176,7 @@ sub saveData {
 	print $tmpfh $data;
 	close($tmpfh);
 
-	if ($ret = open($tmpfh, "<$localfilename")) {
+	if ($ret = open($tmpfh,'<', $localfilename)) {
 		$ret = $self->saveStream($destination, $tmpfh);
 		close($tmpfh);
 	}
@@ -208,7 +209,7 @@ sub saveStream {
 	$rcs->arcfile($self->basename($arcfile));
 	if ($self->exists($destination)) {
 		if ($self->exists($remotercsfilename)) {
-			if ($ret = open(my $arcfilefh, ">$arcfile")) {
+			if ($ret = open(my $arcfilefh,'>', $arcfile)) {
 				$$self{BACKEND}->printFile($remotercsfilename, $arcfilefh);
 				close($arcfilefh);
 			} else {
@@ -216,7 +217,7 @@ sub saveStream {
 			}
 			unlink($localfilename);
 		} else {
-			if ($ret = open(my $lfh, ">$localfilename")) {
+			if ($ret = open(my $lfh,'>', $localfilename)) {
 				$$self{BACKEND}->printFile($destination, $lfh);
 				close($lfh);
 			}
@@ -225,7 +226,7 @@ sub saveStream {
 		$rcs->co("-l");
 	}
 
-	if ($ret = open(my $lfh, ">$localfilename")) {
+	if ($ret = open(my $lfh,'>',$localfilename)) {
 		binmode($lfh);
 		binmode($fh);
 		while (read($fh, my $buffer,$main::BUFSIZE || 1048576)>0) {
@@ -244,10 +245,10 @@ sub saveStream {
 		$rcs->co();
 
 
-		if (($ret = open($lfh,"<$localfilename")) && ($ret = $$self{BACKEND}->saveStream($destination, $lfh))) {
+		if (($ret = open($lfh,'<',$localfilename)) && ($ret = $$self{BACKEND}->saveStream($destination, $lfh))) {
 			close($lfh);
 			$ret = $$self{BACKEND}->mkcol($self->dirname($remotercsfilename)) if !$self->exists($self->dirname($remotercsfilename));
-			if ($ret = open($lfh, "<$arcfile")) {
+			if ($ret = open($lfh,'<',$arcfile)) {
 				$$self{BACKEND}->saveStream($remotercsfilename, $lfh);
 				close($lfh);
 			}
@@ -290,7 +291,7 @@ sub getFileContent {
 	my $self = shift @_;
 	if ($self->_isVirtualFile($_[0])) {
 		my $lf = $self->_saveToLocal($_[0]);
-		if (open(my $lfh, "<$lf")) {
+		if (open(my $lfh,'<',$lf)) {
 			my @content = <$lfh>;
 			close($lfh);
 			unlink $lf;
@@ -359,7 +360,7 @@ sub printFile {
 		} else {
 			$fn=~/\/(\d+\.\d+)\/[^\/]+$/;
 			my $rev = $1;
-			if ($rcs->co("-r$rev","-M$rev") && open(my $lfh, "<$file")) {
+			if ($rcs->co("-r$rev","-M$rev") && open(my $lfh,'<',$file)) {
 				my @stat = CORE::stat($lfh);
 				$CACHE{$self}{$fn}{stat}=\@stat;
 				binmode($fh);
@@ -385,6 +386,7 @@ sub printFile {
 	} else {
 		$$self{BACKEND}->printFile($fn,$fh,$pos,$count);
 	}
+	return;
 }
 sub getDisplayName {
 	my $self = shift @_;

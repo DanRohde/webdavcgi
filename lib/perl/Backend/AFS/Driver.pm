@@ -71,7 +71,7 @@ sub stat {
 sub getQuota {
 	my ($self, $fn) = @_;
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd, sprintf("%s \"%s\"|", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
+	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd, '-|', sprintf("%s \"%s\"", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
 		my @lines = <$cmd>;
 		close($cmd);
 		my @vals = split(/\s+/, $lines[1]);
@@ -89,12 +89,13 @@ sub _getCallerAccess {
 	my $access = "";
 
 	$fn=~s/(["\$\\])/\\$1/g;
-	if (open(my $cmd, sprintf("%s getcalleraccess \"%s\" 2>/dev/null|", $main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $fn))) {
-		my @lines = <$cmd>;
+	if (open(my $cmd, '-|', sprintf("%s getcalleraccess \"%s\" 2>/dev/null", $main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $fn))) {
+		local $/ = undef;
+		my $lines = <$cmd>;
 		close($cmd);
-		chomp @lines;
-		my @sl=split(/\s+/,$lines[$#lines]);
-		$access = $sl[$#sl] if $sl[$#sl]=~/^[rlidwka]{1,7}$/;
+		chomp $lines;
+		my @sl=split(/\s+/,$lines);
+		$access = $sl[-1] if $sl[-1]=~/^[rlidwka]{1,7}$/;
 	}
 	return $$self{cache}{$fn}{_getCallerAccess} = $access;
 }

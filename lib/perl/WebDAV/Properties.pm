@@ -141,7 +141,7 @@ sub getProperty {
         $$resp_200{prop}{source}={ 'link'=> { 'src'=>$uri, 'dst'=>$uri }} if $prop eq 'source';
 
         if ($prop eq 'quota-available-bytes' || $prop eq 'quota-used-bytes' || $prop eq 'quota' || $prop eq 'quotaused') {
-                my ($ql,$qu) = $$self{backend}->getQuota();
+                my ($ql,$qu) = $$self{backend}->getQuota($fn);
                 if (defined $ql && defined $qu) {
                         $$resp_200{prop}{'quota-available-bytes'} = $ql - $qu if $prop eq 'quota-available-bytes';
                         $$resp_200{prop}{'quota-used-bytes'} = $qu if $prop eq 'quota-used-bytes';

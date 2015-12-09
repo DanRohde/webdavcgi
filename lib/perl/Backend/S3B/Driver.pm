@@ -48,6 +48,7 @@ sub new {
 sub finalize {
 	$S3 = undef;
 	%CACHE = ();
+	return;
 }
 
 sub initialize {
@@ -63,6 +64,7 @@ sub initialize {
 		}
 	) unless defined $S3;
 	$$self{bucketprefix} = $main::BACKEND_CONFIG{$main::BACKEND}{bucketprefix};
+	return;
 }
 
 sub readDir {
@@ -171,7 +173,7 @@ sub hasSetGidBit { return 0; }
 sub changeMod { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice { return 0; }
-sub getLinkSrc { $!='not supported'; return undef; }
+sub getLinkSrc { $!='not supported'; return; }
 sub createSymLink { return 0; }
 sub hasStickyBit { return 0; }
 
@@ -218,6 +220,7 @@ sub _readBuckets {
 		$bn=~s/^\Q$$self{bucketprefix}\E// if $$self{bucketprefix};
 		$self->_fillStatCache($main::DOCUMENT_ROOT.$bn, $b);
 	}
+	return;
 }
 sub _fillStatCache {
 	my($self, $fn, $v) = @_;
@@ -226,6 +229,7 @@ sub _fillStatCache {
 			size => $$v{size} || $$v{content_length},
 			last_modified => str2time($$v{last_modified} || $$v{creation_date})
 	};
+	return;
 }
 sub _getBucketDirname {
 	my ($self, $fn) = @_;
@@ -238,7 +242,7 @@ sub _getBucketDirname {
 		return $self->dirname($fn).$$self{bucketprefix}.$self->basename($fn) if $$self{bucketprefix};
 		return $fn;
 	}
-	return undef;
+	return;
 }
 sub _getBucketName {
 	my ($self, $fn) = @_;
@@ -283,7 +287,8 @@ sub printFile {
 	$fn=$self->resolve($fn);
 	
 	print $fh substr($self->getFileContent($fn), $pos, $count) if $pos;
-	print $fh $self->getFileContent($fn);  
+	print $fh $self->getFileContent($fn);
+	return;  
 }
 sub getLocalFilename {
 	my ($self, $fn) = @_;
