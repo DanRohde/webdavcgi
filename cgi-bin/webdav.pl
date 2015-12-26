@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.1.1BETA20151209.01";
+$RELEASE="1.1.1BETA20151226.01";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -2725,8 +2725,10 @@ sub getLocalFileContentAndType {
 	my ($fn,$default,$defaulttype) = @_;
 	my $content="";
 	if (-e $fn && ! -d $fn && open(my $F,'<',$fn)) {
-		local $/=undef;
-		$content = <$F>;
+		{ 
+			local $/=undef;
+			$content = <$F>;
+		};
 		close($F);
 		$defaulttype=getMIMEType($fn);
 	} else {
