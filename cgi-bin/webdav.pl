@@ -69,7 +69,7 @@ use vars qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS
 	    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
 	    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 ); 
-$RELEASE="1.1.1BETA20151226.01";
+$RELEASE="1.1.1BETA20160128.01";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -385,7 +385,7 @@ $LANGSWITCH = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0
 
 ## -- HEADER
 ## content after body tag in the Web interface
-$HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as $USER.<div style="float:right;font-size:0.8em;">$NOW</div></div>';
+$HEADER = '<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>';
 
 ## -- SIGNATURE
 ## for fancy indexing
