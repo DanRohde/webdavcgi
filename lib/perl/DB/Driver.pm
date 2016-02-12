@@ -48,11 +48,11 @@ sub db_handleUpdates {
 	if ($sth->err) {
 		warn($sth->errstr);
 		$sth->finish();
-		my $rc = $dbh->rollback();
-		warn ("rollback failed (rc=$rc)") unless $rc;
-	} else {
-		$ret = $dbh->commit();
-		warn("commit failed (rc=$ret)") unless $ret;
+		# my $rc = $dbh->rollback();
+		# warn ("rollback failed (rc=$rc)") unless $rc;
+#	} else {
+#		$ret = $dbh->commit();
+#		warn("commit failed (rc=$ret)") unless $ret;
 	}
 	return $ret;
 }
@@ -379,7 +379,7 @@ sub db_init {
         my $self = shift;
         return $$self{DBI_INIT} if defined $$self{DBI_INIT};
 
-        my $dbh = DBI->connect($main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS, { RaiseError=>0, PrintError=>0, AutoCommit=>0 }) || die("You need a database (see \$DBI_SRC configuration)");
+        my $dbh = DBI->connect($main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS, { RaiseError=>0, PrintError=>0, AutoCommit=>1 }) || die("You need a database (see \$DBI_SRC configuration)");
         if (defined $dbh && $main::CREATE_DB) {
                 foreach my $query (@main::DB_SCHEMA) {
                         my $sth = $dbh->prepare($query);
