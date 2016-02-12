@@ -63,7 +63,7 @@ $INCLUDE(htmlhead)</head>
 				<a href="#" class="action upload uibutton access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction paste hideit sel-none uibutton" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
+				<a class="listaction paste uibutton" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
 			<!--ENDIF-->			
 			<ul class="new popup hidden">
 			<li><a href="#" class="action create-folder access-writeable" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>

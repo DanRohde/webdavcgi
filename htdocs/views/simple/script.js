@@ -567,7 +567,7 @@ function toggleButton(button, disabled) {
 		var self = $(v);
 		if (self.hasClass("hideit")) self.toggle(!disabled);
 		if (self.hasClass("button")) self.button("option","disabled",disabled);
-		self.attr("tabindex",disabled ? -1 : 0);
+		if (!self.hasClass("notab")) self.attr("tabindex",disabled ? -1 : 0);
 		self.toggleClass("disabled", disabled);
 	});
 }
@@ -1743,8 +1743,7 @@ function handleClipboard() {
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
 	var disabled = (!files || files=="" || srcuri  == datauri || $("#fileListTable").hasClass("iswriteable-no"));
-	$(".listaction.paste").toggleClass("disabled",disabled).attr("tabindex",disabled?-1:0);
-	$(".listaction.paste.uibutton").button().button("option","disabled",disabled);
+	toggleButton($(".listaction.paste"), disabled);
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
