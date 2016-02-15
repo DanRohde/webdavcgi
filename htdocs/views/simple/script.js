@@ -637,7 +637,7 @@ function buildBookmarkList() {
 			.attr("title",simpleEscape(epath)+" ("+(new Date(parseInt(val["time"])))+")")
 			.attr("tabindex", val["path"] == currentPath ? -1 : 0)
 			.toggleClass("disabled", val["path"] == currentPath)
-			.find(".action.rmsinglebookmark").click(handleBookmarkActions);
+			.find(".action.rmsinglebookmark").click(handleBookmarkActions).on("keyup", function(e) { if (e.keyCode == 13 || e.keyCode == 32) { $(this).trigger("click"); $("#bookmarksmenulist").hide(); } });
 	});
 }
 function removeBookmark(path) {
