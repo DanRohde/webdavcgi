@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .action.search {
 	background-position: 4px center;
 }
-.action.search:hover {
+.action.search:hover, .action.search:focus {
 	background-image: url(search-hover.png);
 }
 .search.dialogpane {
@@ -82,7 +82,7 @@ input.search.start, input.search.cancel {
 .search.result.entry {
 	clear:both;
 }
-.search.result.entry:hover  {
+.search.result.entry:hover, .search.result.entry:focus  {
 	background-color: #ededed;
 }
 .search.result.entry.parent.folder {
@@ -92,7 +92,7 @@ input.search.start, input.search.cancel {
 	padding-right: 1ex;
 	filter: Alpha(opacity=30);
 }
-.search.result.entry.parent.folder:hover {
+.search.result.entry.parent.folder:hover, .search.result.entry.parent.folder:focus {
 	opacity: 1;
 	filter: Alpha(opacity=100);
 }

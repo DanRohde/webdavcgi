@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
-#popupmenu .action.diff:hover, #nav .listaction.diff:hover {
+#popupmenu .action.diff:hover, #nav .listaction.diff:hover,
+#popupmenu .action.diff:focus, #nav .listaction.diff:focus {
 	background-image: url(diff-hover.png);
 }
 .isreadable-no .diff,

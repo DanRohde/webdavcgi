@@ -26,7 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #nav .listaction.diskusage {
 	background-position: 4px center;
 }
-.action.diskusage:hover, .listaction.diskusage:hover {
+.action.diskusage:hover, .listaction.diskusage:hover,
+.action.diskusage:focus, .listaction.diskusage:focus {
 	background-image: url(diskusage-hover.png);
 } 
 .is-file .action.diskusage,

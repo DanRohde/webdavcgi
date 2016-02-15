@@ -17,14 +17,14 @@
 <!--TEMPLATE(selector)[
 			<th id="headerSelector" class="sorter-false resizable-false dragaccept -hidden" data-name="selector">
 				<ul class="dropdown">
-				<li class="dropdown-hover">
-					<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" class="toggleselection" alt="OX" title="$tl(togglealltooltip)"/>&nbsp;
+				<li class="dropdown-hover" tabindex="0">
+					<img  tabindex="0" class="toggleselection" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="  alt="OX" title="$tl(togglealltooltip)"/>&nbsp;
 					<ul class="dropdown-menu">
 						<li>
-							<img alt="X" title="$tl(selectall)" class="selectall" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/>
+							<img tabindex="0" alt="X" title="$tl(selectall)" class="selectall" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/>
 						</li>
 						<li>
-							<img alt="O" title="$tl(selectnone)" class="selectnone" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/>
+							<img tabindex="0" alt="O" title="$tl(selectnone)" class="selectnone" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/>
 						</li>
 					</ul>
 				</li>
@@ -32,33 +32,33 @@
 			</th>
 ]-->
 			$filelistheadcolumns
-			<th id="headerOption" class="dropaccept resizable-false sorter-false"><div class="tableconfigbutton" title="$tl(tableconfig.button.title)" data-template="tableconfig"></div></th>
+			<th id="headerOption" class="dropaccept resizable-false sorter-false"><div tabindex="0" class="tableconfigbutton" title="$tl(tableconfig.button.title)" data-template="tableconfig"></div></th>
 			
 <!--TEMPLATE(name)[
-			<th id="headerName" class="dragaccept resizable-false -hidden" data-name="name" data-sort="data-displayname" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
+			<th id="headerName" tabindex="0" class="dragaccept resizable-false -hidden" data-name="name" data-sort="data-displayname" data-title="$tl(statfiles) $filecount, $tl(statfolders) $dircount, $tl(statsum) $sum">
 				$tl(name)
 			</th>
 ]-->
 <!--TEMPLATE(size)[
-			<th id="headerSize" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize" class="dragaccept -hidden">$tl(size)</th>
+			<th id="headerSize" tabindex="0" data-name="size" data-sort="data-size" data-sorttype="number" data-title="$foldersize" class="dragaccept -hidden">$tl(size)</th>
 ]-->
 <!--TEMPLATE(lastmodified)[
-			<th id="headerDate" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number" class="dragaccept -hidden">$tl(lastmodified)</th>
+			<th id="headerDate" tabindex="0" data-name="lastmodified" data-sort="data-lastmodified" data-sorttype="number" class="dragaccept -hidden">$tl(lastmodified)</th>
 ]-->
 <!--TEMPLATE(mime)[
-			<th id="headerMime" data-name="mime" data-sort="data-mime" class="dragaccept -hidden">$tl(mime)</th>
+			<th id="headerMime" tabindex="0" data-name="mime" data-sort="data-mime" class="dragaccept -hidden">$tl(mime)</th>
 ]-->
 <!--TEMPLATE(created)[
-			<th id="headerCreated" data-name="created" data-sort="data-created" data-sorttype="number" class="dragaccept -hidden">$tl(created)</th>
+			<th id="headerCreated" tabindex="0" data-name="created" data-sort="data-created" data-sorttype="number" class="dragaccept -hidden">$tl(created)</th>
 ]-->
 <!--TEMPLATE(mode)[
-			<th id="headerMode" data-name="mode" class="dragaccept sorter-false -hidden">$tl(mode)</th>
+			<th id="headerMode" tabindex="0" data-name="mode" class="dragaccept sorter-false -hidden">$tl(mode)</th>
 ]-->
 <!--TEMPLATE(uid)[
-			<th id="headerUID" data-name="uid" data-sort="data-uid" class="dragaccept -hidden">UID</th>
+			<th id="headerUID" tabindex="0" data-name="uid" data-sort="data-uid" class="dragaccept -hidden">UID</th>
 ]-->
 <!--TEMPLATE(gid)[
-			<th id="headerGID" data-name="gid" data-sort="data-gid" class="dragaccept -hidden">GID</th>
+			<th id="headerGID" tabindex="0" data-name="gid" data-sort="data-gid" class="dragaccept -hidden">GID</th>
 ]-->
 $extension(columnhead)
 		</tr>

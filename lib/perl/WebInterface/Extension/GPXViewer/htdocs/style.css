@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	
 }
-.action.gpxviewer:hover {
+.action.gpxviewer:hover, .action.gpxviewer:focus {
 	background-image: url(gpxviewer-hover.png);
 }
 .action.gpxviewer {

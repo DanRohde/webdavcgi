@@ -213,6 +213,8 @@ function initTableConfigDialog() {
 					setupTableConfigDialog($(response));
 				});
 			}
+		}).on("keyup",function(e) {
+			if (e.keyCode==13 || e.keyCode==32) $(this).trigger("click");
 		});
 	});
 }
@@ -344,16 +346,20 @@ function initAutoRefresh() {
 		updateFileList();
 	});
 	$("body").click(function(){ $("#autorefresh ul:visible").hide()});
-	$(".action.autorefreshrunning").addClass("disabled");
-	$(".autorefreshtimer").addClass("disabled");
+	/* $(".action.autorefreshrunning").addClass("disabled");
+	$(".autorefreshtimer").addClass("disabled"); */
+	toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), true);
 	$("#autorefresh").on("started", function() {
-		$(".autorefreshtimer").removeClass("disabled");
-		$(".action.autorefreshrunning").removeClass("disabled");
+		
+		/*$(".autorefreshtimer").removeClass("disabled");
+		$(".action.autorefreshrunning").removeClass("disabled");*/
+		toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), false);
 		$("#autorefreshtimer").show();
 		$(".action.autorefreshtoggle").addClass("running");
 	}).on("stopped", function() {
-		$(".autorefreshtimer").addClass("disabled");
-		$(".action.autorefreshrunning").addClass("disabled");
+		/*$(".autorefreshtimer").addClass("disabled");
+		$(".action.autorefreshrunning").addClass("disabled");*/
+		toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), true);
 		$("#autorefreshtimer").hide();
 		$(".action.autorefreshtoggle").removeClass("running");
 	});
@@ -370,7 +376,7 @@ function initAutoRefresh() {
 		}
 		cookie("autorefresh", $(this).attr("data-value"));
 		startAutoRefreshTimer(parseInt($(this).attr("data-value")));
-	});
+	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
 	$(".action.autorefreshclear").click(function(event) {
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
@@ -378,7 +384,7 @@ function initAutoRefresh() {
 		rmcookies("autorefresh");
 		$("#autorefresh").trigger("stopped");
 		$("#autorefresh ul").addClass("hidden");
-	});
+	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
 	$(".action.autorefreshtoggle").click(function(event) {
 		preventDefault(event);
 		if ($(this).hasClass("disabled")) return;
@@ -392,7 +398,7 @@ function initAutoRefresh() {
 			$(".action.autorefreshtoggle").addClass("running");
 		}
 		$("#autorefresh ul").addClass("hidden");
-	});
+	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
 	
 	$("#autorefreshtimer").draggable({ stop: function(e,ui) { cookie("autorefreshtimerpos", JSON.stringify(fixElementPosition("#autorefreshtimer",ui.offset))); }});	
 	if (cookie("autorefreshtimerpos")) fixElementPosition("#autorefreshtimer",$.parseJSON(cookie("autorefreshtimerpos")));
@@ -459,14 +465,15 @@ function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
 	
 	$("#flt").on("fileListChanged", function() {
-		$(".dropdown-hover").off("hover").hover(
+		$(".dropdown-hover").off("hover focus keyup").hover(
 			function() {
 				$(".dropdown-menu",$(this)).show();
 			},
 			function() {
 				$(".dropdown-menu",$(this)).hide();
 			}
-		)
+		).on("focus", function() { $(".dropdown-menu",$(this)).show(); } )
+		.on("keyup", function(e) { if (e.keyCode==13 || e.keyCode == 32) $(".dropdown-menu" , $(this)).hide(); } );
 	});
 }
 function initWindowResize() {
@@ -507,17 +514,17 @@ function initSelect() {
 				$(".selectbutton", $(this)).prop("checked", $(this).hasClass("selected"));
 			});
 			$("#flt").trigger("fileListSelChanged");
-		});	
+		}).off("keyup.select").on("keyup.select", function(e) { if (e.keyCode == 13 || e.keyCode == 32) $(this).trigger("click"); });
 		$(".selectnone").off("click.select").on("click.select",function(event) {
 			$("#fileList tr.selected:not(:hidden)").removeClass("selected");
 			$("#fileList tr:not(:hidden) .selectbutton:checked").prop("checked", false);
 			$("#flt").trigger("fileListSelChanged");
-		});
+		}).off("keyup.select").on("keyup.select", function(e) { if (e.keyCode == 13 || e.keyCode == 32) $(this).trigger("click"); });
 		$(".selectall").off("click.select").on("click.select",function(event) {
 			$("#fileList tr:not(.selected):not(:hidden).unselectable-no").addClass("selected");
 			$("#fileList tr:not(:hidden).unselectable-no .selectbutton:not(:checked)").prop("checked", true);
 			$("#flt").trigger("fileListSelChanged");
-		});
+		}).off("keyup.select").on("keyup.select", function(e) { if (e.keyCode == 13 || e.keyCode == 32) $(this).trigger("click"); });
 	});
 }
 function initClock() {
@@ -623,11 +630,12 @@ function buildBookmarkList() {
 		var epath = unescape(val["path"]);
 		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val["path"]).replace(/\$bookmarktext/,quoteWhiteSpaces(simpleEscape(trimString(epath,20)))) + "</li>")
 			.insertAfter($("#bookmarktemplate"))
-			.click(handleBookmarkActions)
+			.click(handleBookmarkActions).on("keyup", function(e) { if (e.keyCode == 13 || e.keyCode == 32) { $(this).trigger("click"); $("#bookmarksmenulist").hide(); } })
 			.addClass("link dyn-bookmark")
 			.attr('data-action','gotobookmark')
 			.attr('data-bookmark',val["path"])
 			.attr("title",simpleEscape(epath)+" ("+(new Date(parseInt(val["time"])))+")")
+			.attr("tabindex", val["path"] == currentPath ? -1 : 0)
 			.toggleClass("disabled", val["path"] == currentPath)
 			.find(".action.rmsinglebookmark").click(handleBookmarkActions);
 	});
@@ -1062,6 +1070,10 @@ function initFileList() {
 	$("#fileListTable th.dragaccept,#fileListTable th.dropaccept")
 		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover"});
 	
+	// init tabbing
+	$("#fileListTable th").on("keyup", function(e) {
+		if (e.keyCode == 32 || e.keyCode == 13 ) $(this).trigger("click");
+	});
 	// init column drag and dblclick resize
 	$("#fileListTable th:not(.resizable-false)")
 		.off("click.initFileList").off("click.tablesorter")

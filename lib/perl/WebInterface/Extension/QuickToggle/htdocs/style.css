@@ -54,28 +54,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .quicktoggle.bars.off {
 	background-image: url(bars-off.png);
 }
-.quicktoggle.fullscreen:hover {
+.quicktoggle.fullscreen:hover, .quicktoggle.fullscreen:focus {
 	background-image: url(fullscreen-on-hover.png);
 }
-.quicktoggle.fullscreen.off:hover {
+.quicktoggle.fullscreen.off:hover, .quicktoggle.fullscreen.off:focus {
 	background-image: url(fullscreen-off-hover.png);
 }
-.quicktoggle.dot:hover {
+.quicktoggle.dot:hover, .quicktoggle.dot:focus {
 	background-image: url(dot-on-hover.png);
 }
-.quicktoggle.dot.off:hover {
+.quicktoggle.dot.off:hover, .quicktoggle.dot.off:focus {
 	background-image: url(dot-off-hover.png);
 }
-.quicktoggle.thumbnails:hover {
+.quicktoggle.thumbnails:hover, .quicktoggle.thumbnails:focus {
 	background-image: url(thumbnails-on-hover.png);
 }
-.quicktoggle.thumbnails.off:hover {
+.quicktoggle.thumbnails.off:hover, .quicktoggle.thumbnails.off:focus {
 	background-image: url(thumbnails-off-hover.png);
 }
-.quicktoggle.bars:hover {
+.quicktoggle.bars:hover, .quicktoggle.bars:focus {
 	background-image: url(bars-on-hover.png);
 }
-.quicktoggle.bars.off:hover {
+.quicktoggle.bars.off:hover, .quicktoggle.bars.off:focus {
 	background-image: url(bars-off-hover.png);
 }
 
@@ -84,10 +84,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 2px center;
 }
-#nav .action.quicktoggle-button:hover {
+#nav .action.quicktoggle-button:hover, #nav .action.quicktoggle-button:focus {
 	background-image: url(quicktoggle-hover.png);
 }
-.sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover {
+.sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover,
+.sidebar-iconsonly #nav .action.quicktoggle-button:focus .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:focus
+ {
 	width: auto;
 	position:fixed;
 	display: block;
@@ -117,10 +119,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 	width: 24px;
 }
-.filterbox .quicktoggles-spacer:hover {
+.filterbox .quicktoggles-spacer:hover, .filterbox .quicktoggles-spacer:focus {
 	background-image: url(quicktoggle-hover.png);
 }
-.filterbox .quicktoggles:hover {
+.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus {
 	height: auto;
 	background-color: inherit;
 	box-shadow: 3px  0 7px #ddd;

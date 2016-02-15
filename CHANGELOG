@@ -13,6 +13,7 @@
      - improved code for more PBP conformity  
      - improved performance
      - fixed WebDAV quota bug
+     - fixed tabbing does not work with bookmarks, auto refresh, file list table header bug
      
 1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug

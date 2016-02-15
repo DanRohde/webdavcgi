@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 2px center;
 }
-.action.zipup:hover {
+.action.zipup:hover,.action.zipup:focus {
 	background-image: url(zipup-hover.png);
 }
 .action.zipdwnload {
@@ -33,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
-.action.zipdwnload:hover {
+.action.zipdwnload:hover, .action.zipdwnload:focus {
 	background-image: url(zipdwnload-hover.png);
 }
 .listaction.zipdwnload {
@@ -42,7 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: 4px center;
 	background-color: inherit;
 }
-.listaction.zipdwnload:hover {
+.listaction.zipdwnload:hover, .listaction.zipdwnload:focus {
 	background-image: url(zipdwnload-hover.png);
 }
 #popupmenu .listaction.zipdwnload {
@@ -56,14 +56,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(compress.png);
 	background-position: 2px center;
 }
-.action.zipcompress:hover {
+.action.zipcompress:hover,.action.zipcompress:focus {
 	background-image: url(compress-hover.png);
 }
 .action.zipuncompress {
 	background-image: url(uncompress.png);
 	background-position: 2px center;
 }
-.action.zipuncompress:hover {
+.action.zipuncompress:hover, .action.zipuncompress:focus {
 	background-image: url(uncompress-hover.png);
 }
 #popupmenu li.subpopupmenu.zip-popup {

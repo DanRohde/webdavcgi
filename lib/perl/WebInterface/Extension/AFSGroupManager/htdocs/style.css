@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: 4px center;
 }
-#nav .action.afsgroupmngr:hover {
+#nav .action.afsgroupmngr:hover, #nav .action.afsgroupmngr:focus {
 	background-image: url(group-hover.png);
 }
 #popupmenu .action.afsgroupmngr {

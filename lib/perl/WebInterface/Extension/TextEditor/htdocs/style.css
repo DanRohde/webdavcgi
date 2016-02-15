@@ -26,7 +26,7 @@ tr.iswriteable-no .action.edit,
 	background-repeat: no-repeat;
 	background-position: left center;
 }
-.action.edit:hover {
+.action.edit:hover, .action.edit:focus {
 	background-image: url(edit-hover.png);
 }
 #popupmenu .action.edit {

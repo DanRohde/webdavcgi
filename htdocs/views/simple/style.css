@@ -92,7 +92,7 @@ a {
 	vertical-align: baseline;
 	
 }
-#nav li:hover {
+#nav li:hover, #nav li a:focus, #nav li:focus {
 	background-color: #dddddd;
 }
 #nav li:hover .disabled {
@@ -393,10 +393,10 @@ tr.isreadable-no:hover {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: left -220px;
-	background-color: transparent;
 	color: black;
 }
-.action.delete:hover, .listaction.delete:hover {
+.action.delete:hover, .listaction.delete:hover,
+.action.delete:focus, .listaction.delete:focus {
 	background-image: url(images/sprite-hover.png);
 }
 .action.props {
@@ -409,23 +409,22 @@ tr.isreadable-no:hover {
 	background-position: 4px -214px;
 }
 
-.listaction.copy {
-	background: url(images/sprite.png) no-repeat center -134px;
+.listaction.copy, .listaction.paste, .listaction.cut {
+	background-image: url(images/sprite.png);
+    background-repeat: no-repeat;
 }
-.listaction.copy:hover {
-	background: url(images/sprite-hover.png) no-repeat center -134px;
+.listaction.copy:hover, .listaction.paste:hover, .listaction.cut:hover,
+.listaction.copy:focus, .listaction.paste:focus, .listaction.cut:focus {
+    background-image: url(images/sprite-hover.png);
+}
+.listaction.copy {
+	background-position: center -134px;
 }
 .listaction.cut {
-	background: url(images/sprite.png) no-repeat center -174px;
-}
-.listaction.cut:hover {
-	background: url(images/sprite-hover.png) no-repeat center -174px;
+	background-position: center -174px;
 }
 .listaction.paste {
-	background: url(images/sprite.png) no-repeat center -374px;
-}
-.listaction.paste:hover {
-	background: url(images/sprite-hover.png) no-repeat center -374px;
+	background-position: center -374px;
 }
 .icon {
 	width: 20px;
@@ -464,10 +463,12 @@ tr.isreadable-no:hover {
 	font-size: 100%;
 }
 .action.changedir {
-	background: url(images/sprite.png) no-repeat center -856px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: center -856px;
 }
-.action.changedir:hover {
-	background: url(images/sprite-hover.png) no-repeat center -856px;
+.action.changedir:hover, .action.changedir:focus {
+	background-image: url(images/sprite-hover.png);
 }
 #pathinput {
 	z-index: 70;
@@ -521,30 +522,31 @@ tr.isreadable-no:hover {
 #new ul li.sep, #bookmarks ul li.sep {
 	border-top: 1px solid #999999;
 }
-#new ul li:hover, #bookmarks ul li:hover, #autorefresh ul li.action:hover {
+#new ul li:hover, #bookmarks ul li:hover, #autorefresh ul li.action:hover,
+#new ul li:focus, #bookmarks ul li:focus, #autorefresh ul li.action:focus  {
 	background-color: #f0f0f0;
 	border: 1px dotted #dddddd;
 }
 #new ul li a, #bookmarks ul li a  {
 	padding: 0.2em 0.5em 0.2em 22px ;
 }
-.action.create-folder {
-	background: url(images/sprite.png) no-repeat left -740px;
+.action.create-folder, .action.create-file, .action.create-symlink {
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
 }
-.action.create-folder:hover {
-	background: url(images/sprite-hover.png) no-repeat left -740px;
+.action.create-folder:hover, .action.create-file:hover, .action.create-symlink:hover,
+.action.create-folder:focus, .action.create-file:focus, .action.create-symlink:focus
+{
+    background-image: url(images/sprite-hover.png);
+}
+.action.create-folder {
+	background-position: left -740px;
 }
 .action.create-file {
-	background: url(images/sprite.png) no-repeat left -780px;
-}
-.action.create-file:hover {
-	background: url(images/sprite-hover.png) no-repeat left -780px;
+	background-position: left -780px;
 }
 .action.create-symlink {
-	background: url(images/sprite.png) no-repeat left -820px;
-}
-.action.create-symlink:hover {
-	background: url(images/sprite-hover.png) no-repeat left -820px;
+	background-position: left -820px;
 }
 #popupmenu .action.create-folder {
 	background-position: left -736px;
@@ -719,23 +721,29 @@ li.sep {
 	position: absolute;
 }
 .action.addbookmark {
-	background: url(images/sprite.png) no-repeat center -54px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: center -54px;
 }
-.action.addbookmark:hover {
-	background: url(images/sprite-hover.png) no-repeat center -54px;
+.action.addbookmark:hover,.action.addbookmark:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .action.bookmarkmenu {
-	background: white url(images/sprite.png) no-repeat center -94px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: center -94px;
 }
-.action.bookmarkmenu:hover {
-	background: white url(images/sprite-hover.png) no-repeat center -94px;
+.action.bookmarkmenu:hover,.action.bookmarkmenu:focus {
+	background-image: url(images/sprite-hover.png); 
 }
 .action.rmsinglebookmark {
-	background: url(images/sprite.png) no-repeat left -220px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-postion: left -220px;
 	width: 22px;
 }
-.action.rmsinglebookmark:hover {
-	background: url(images/sprite-hover.png) no-repeat left -220px;
+.action.rmsinglebookmark:hover, .action.rmsinglebookmark:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .time.right, .time-desc.right, .path.right, .path-desc.right {
 	margin-right: 7px;
@@ -820,28 +828,36 @@ td.center {
 	text-align: center;
 }
 #nav .action.refresh {
-	background: url(images/sprite.png) no-repeat 2px -410px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -410px;
 }
-#nav .action.refresh:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -410px;
+#nav .action.refresh:hover, #nav .action.refresh:focus {
+	background-image: url(images/sprite-hover.png);
 }
 #nav .action.viewfilter {
-	background: url(images/sprite.png) no-repeat 2px -651px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -651px;
 }
-#nav .action.viewfilter:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -651px;
+#nav .action.viewfilter:hover, #nav .action.viewfilter:focus {
+	background-image: url(images/sprite-hover.png);
 }
 #nav .action.settings {
-	background: url(images/sprite.png) no-repeat 2px -1132px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -1132px;
 }
-#nav .action.settings:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -1132px;
+#nav .action.settings:hover, #nav .action.settings:focus {
+	background-image: url(images/sprite-hover.png);
 }
 #nav .action.about {
-	background: url(images/sprite.png) no-repeat 2px -12px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -12px;
 }
-#nav .action.about:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -12px;
+#nav .action.about:hover, #nav .action.about:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .viewfilterdialog.ui-dialog .ui-dialog-title {
 	background: url(images/sprite.png) no-repeat 0 -660px;
@@ -904,39 +920,49 @@ img {
 	border: 0;
 }
 .action.upload {
-	background: url(images/sprite.png) no-repeat left -536px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: left -536px;
 	padding-left: 8px;
 }
-.action.upload:hover {
-	background: url(images/sprite-hover.png) no-repeat left -536px;
+.action.upload:hover, .action.upload:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .logout-button {
 	padding-left: 22px;
-	background: url(images/sprite.png) no-repeat 2px -932px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -932px;
 }
-.logout-button:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -932px;
+.logout-button:hover, .logout-button:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .help-button {
 	padding-left: 22px;
-	background: url(images/sprite.png) no-repeat 2px -972px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -972px;
 }
-.help-button:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -972px;
+.help-button:hover, .help-button:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .home-button {
 	padding-left: 22px;
-	background: url(images/sprite.png) no-repeat 2px -1012px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -1012px;
 }
-.home-button:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -1012px;
+.home-button:hover, .home-button:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .contact-button {
 	padding-left: 22px;
-	background: url(images/sprite.png) no-repeat 2px -1372px;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: 2px -1372px;
 }
-.contact-button:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -1372px;
+.contact-button:hover, .contact-button:focus {
+	background-image: url(images/sprite-hover.png);
 }
 .small {
 	font-size: 0.2em;
@@ -1000,13 +1026,13 @@ img {
 	background-position: 2px -420px;
 	height: 24px;
 }
-.action.setautorefresh:hover {
+.action.setautorefresh:hover, .action.setautorefresh:focus {
 	background-image: url(images/sprite-hover.png);
 }
 .action.autorefreshmenu {
 	background: url(images/sprite.png) no-repeat center -414px;
 }
-.action.autorefreshmenu:hover {
+.action.autorefreshmenu:hover, .action.autorefreshmenu:focus {
 	background: url(images/sprite-hover.png) no-repeat center -414px;
 }
 #autorefreshtimer {
@@ -1031,7 +1057,7 @@ img {
 	padding-left: 24px;
 	height: 24px;
 }
-.action.autorefreshtoggle:hover {
+.action.autorefreshtoggle:hover, .action.autorefreshtoggle:focus {
 	background-image: url(images/sprite-hover.png);
 }
 .action.autorefreshtoggle.running {
@@ -1467,4 +1493,14 @@ img {
 .inline-block {
 	display: inline-block;
 	vertical-align: top;
+}
+:focus {
+	outline: black solid 1px;
+}
+.ui-state-default {
+	background-color: transparent;
+}
+.ui-state-hover {
+	color: black;
+	background-color: #eee;
 }

@@ -33,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: 3px center;
 	background-repeat: no-repeat;
 }
-.action.videojs:hover {
+.action.videojs:hover, .action.videojs:focus{
 	background-image: url(videojs-hover.png);
 }
 #popupmenu .action.videojs {

@@ -1,4 +1,4 @@
-<tr class="isviewable-$isviewable unselectable-$unselectable isreadable-$isreadable iswriteable-$iswriteable is-$type islocked-$islocked islink-$islink isdotfile-$isdotfile isempty-$isempty suffix-$suffix $ext_classes" data-file="$name" data-size="$realsize" data-uid="$uid" data-gid="$gid" data-mime="$mime" data-type="$type" data-lastmodified="$lastmodifiedtime" data-created="$createdtime" data-displayname="$displayname" data-mode="$modestr" style="$ext_styles"$ext_attributes>
+<tr class="isviewable-$isviewable unselectable-$unselectable isreadable-$isreadable iswriteable-$iswriteable is-$type islocked-$islocked islink-$islink isdotfile-$isdotfile isempty-$isempty suffix-$suffix $ext_classes" data-file="$name" data-size="$realsize" data-uid="$uid" data-gid="$gid" data-mime="$mime" data-type="$type" data-lastmodified="$lastmodifiedtime" data-created="$createdtime" data-displayname="$displayname" data-mode="$modestr" tabindex="0" style="$ext_styles"$ext_attributes>
 
 <!--TEMPLATE(selector)[<td class="selector -hidden"><input type="checkbox" class="selectbutton" name="file" value="$name" tabindex="-1"/> </td>]-->
 $filelistentrycolumns
@@ -6,7 +6,7 @@ $filelistentrycolumns
 <!--TEMPLATE(name)[
 <td class="filename -hidden"> 
        <div class="filename">
-         <a href="$fileuri" class="action changeuri">
+         <a href="$fileuri" class="action changeuri" tabindex="-1">
 	     	<img src="$iconurl" data-thumb="$thumbiconurl" data-icon="$mimeiconurl" class="$iconclass $ext_iconclasses" alt="icon" title="$thumbtitle"/>
 	     	<span class="nametext" title="$filenametitle">$qdisplayname</span>
 	     </a>
