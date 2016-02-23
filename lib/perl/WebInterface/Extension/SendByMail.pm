@@ -304,10 +304,11 @@ sub sendMail {
         push @fields, 'bcc'  if @bcc && !$self->checkMailAddresses(@bcc);
         $jsondata{field} = join( ',', @fields );
     }
+    my $content = JSON->new->encode( \%jsondata );
     main::printHeaderAndContent(
         $status, $mime,
-        JSON->new->encode( \%jsondata ),
-        'Cache-Control: no-cache, no-store'
+        $content,
+        { 'Cache-Control'=> 'no-cache, no-store', -Content_Length => length $content }
     );
     return 1;
 }
