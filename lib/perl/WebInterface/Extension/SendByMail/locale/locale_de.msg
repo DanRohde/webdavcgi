@@ -1,5 +1,5 @@
 sendbymail			"Per E-Mail versenden"
-sendbymail_short	"E-Mail-Verand"
+sendbymail_short	"E-Mail-Versand"
 sendbymail_from		"Von:"
 sendbymail_to		"Empfänger:"
 sendbymail_to_tooltip	"E-Mail-Adresse [, E-Mail-Adresse, ...]"

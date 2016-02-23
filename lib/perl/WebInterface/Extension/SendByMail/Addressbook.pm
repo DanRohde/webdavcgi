@@ -17,11 +17,17 @@
 #########################################################################
 
 package WebInterface::Extension::SendByMail::Addressbook;
+use strict;
+use warnings;
 
 sub getMailAddresses {
-	my ($self, $extension, $pattern) = @_;
-	my @result =  grep /\Q$pattern\E/, @{$extension->config('mailaddresses', [ 'Test User1 <a@example.org>','Test User2 <b@example.org>'])};
-	return \@result;
+    my ( $self, $extension, $pattern ) = @_;
+    my @result = grep /\Q$pattern\E/xms,
+        @{
+        $extension->config( 'mailaddresses',
+            [ 'Test User1 <a@example.org>', 'Test User2 <b@example.org>' ] )
+        };
+    return \@result;
 }
 
 1;

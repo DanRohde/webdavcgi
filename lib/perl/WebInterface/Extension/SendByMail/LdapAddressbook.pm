@@ -19,61 +19,81 @@
 package WebInterface::Extension::SendByMail::LdapAddressbook;
 
 use strict;
+use warnings;
+
+use base qw( WebInterface::Extension::SendByMail::Addressbook );
 
 use Net::LDAP;
+use CGI::Carp;
 
 sub getMailAddresses {
-	my ($self, $extension, $pattern) = @_;
-	
-	my %c = (
-		server => $extension->config('ldap.server','localhost'),
-		debug => $extension->config('ldap.debug',0),
-		starttls => $extension->config('ldap.starttls',0),
-		verify => $extension->config('ldap.verify','required'),
-		sslversion => $extension->config('ldap.sslversion','tlsv1'),
-		binddn => $extension->config('ldap.binddn',0),
-		password => $extension->config('ldap.password'),
-		basedn => $extension->config('ldap.basedn'),
-		filter => $extension->config('ldap.filter','(|(mail=*%s*)(cn=*%s*))'),
-		scope => $extension->config('ldap.scope','sub'),
-		timelimit => $extension->config('ldap.timelimit',5),
-		sizelimit => $extension->config('ldap.sizelimit',5),
-		cn => $extension->config('ldap.cn','cn'),
-		mail => $extension->config('ldap.mail','mail'),
-	);
-	
-	my @paa = split(/\s*,\s*/, $pattern);
-	my $query = pop(@paa);
-	my $pa = join(', ',@paa);
-	my @result = ();
-	
-	if ($query!~/^\s*$/) {
-	
-		my $ldap = Net::LDAP->new($c{server}, debug=>$c{debug});
-	
-		ldap->start_tls(verify=>$c{verify}, sslversion=>$c{sslversion}) if $c{starttls}; 
-	
-		my $msg = $c{binddn} ? $ldap->bind($c{binddn}, password=>$c{password}) : $ldap->bind();
-	
-		$msg->code && warn $msg->error;
-	
-		$query=~s/([\(\)\&\|\=\!\>\<\~\*])/sprintf('\\%x',ord($1))/eg; 
-		$c{filter} =~ s/\%s/$query/g;
-	
-		$msg = $ldap->search(base=>$c{basedn}, scope=>$c{scope},sizelimit=>$c{sizelimit}, timelimit=>$c{timelimit}, filter=>$c{filter}, attrs=>[ $c{cn}, $c{mail} ]);
-		$msg->code && warn $msg->error;
-		my %dupcheck = ();
-		foreach my $entry ($msg->entries) {
-			my $mail = $entry->get_value($c{mail});
-			my $cn = $entry->get_value($c{cn});
-			my $re = "$cn <$mail>";
-			$re = "$pa, $re" if $pa ne "";
-			push @result, { label=>$re, value=>"$re, " } unless $dupcheck{$re};
-			$dupcheck{$re}=1;
-		}
-		$ldap->unbind();
-	}
-	
-	return \@result;
+    my ( $self, $extension, $pattern ) = @_;
+
+    my %c = (
+        server     => $extension->config( 'ldap.server',     'localhost' ),
+        debug      => $extension->config( 'ldap.debug',      0 ),
+        starttls   => $extension->config( 'ldap.starttls',   0 ),
+        verify     => $extension->config( 'ldap.verify',     'required' ),
+        sslversion => $extension->config( 'ldap.sslversion', 'tlsv1_2' ),
+        binddn     => $extension->config( 'ldap.binddn',     0 ),
+        password   => $extension->config( 'ldap.password' ),
+        basedn     => $extension->config( 'ldap.basedn' ),
+        filter     => $extension->config( 'ldap.filter',     '(|(mail=*%s*)(cn=*%s*))' ),
+        scope      => $extension->config( 'ldap.scope',      'sub' ),
+        timelimit  => $extension->config( 'ldap.timelimit',  5 ),
+        sizelimit  => $extension->config( 'ldap.sizelimit',  5 ),
+        cn         => $extension->config( 'ldap.cn',         'cn' ),
+        mail       => $extension->config( 'ldap.mail',       'mail' ),
+    );
+
+    my @paa    = split( /\s*,\s*/xms, $pattern );
+    my $query  = pop(@paa);
+    my $pa     = join( ', ', @paa );
+    my @result = ();
+
+    if ( $query !~ /^\s*$/xms ) {
+
+        my $ldap = Net::LDAP->new( $c{server}, debug => $c{debug} );
+
+        $c{starttls} and ldap->start_tls( verify => $c{verify}, sslversion => $c{sslversion});
+
+        my $msg
+            = $c{binddn}
+            ? $ldap->bind( $c{binddn}, password => $c{password} )
+            : $ldap->bind();
+
+        $msg->code && carp $msg->error;
+
+        $query =~ s/([\(\)\&\|\=\!\>\<\~\*])/sprintf('\\%x',ord($1))/xmseg;
+        $c{filter} =~ s/\%s/$query/xmsg;
+
+        $msg = $ldap->search(
+            base      => $c{basedn},
+            scope     => $c{scope},
+            sizelimit => $c{sizelimit},
+            timelimit => $c{timelimit},
+            filter    => $c{filter},
+            attrs     => [ $c{cn}, $c{mail} ],
+            raw       => qr/(?i:$c{cn})/xms
+        );
+        $msg->code && carp $msg->error;
+        my %dupcheck = ();
+
+        foreach my $entry ( $msg->entries ) {
+            my $mail = $entry->get_value( $c{mail} );
+            my $cn   = $entry->get_value( $c{cn} );
+            my $re   = "$cn <$mail>";
+            if ($pa ne "") {
+                 $re = "$pa, $re";
+            }
+            if (!$dupcheck{$re}) {
+                push @result, { label => $re, value => "$re, " };
+                $dupcheck{$re} = 1;
+            }
+        }
+        $ldap->unbind();
+    }
+
+    return \@result;
 }
 1;

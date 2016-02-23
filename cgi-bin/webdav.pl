@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = "1.1.1BETA20160215.02";
+$RELEASE = "1.1.1BETA20160223.01";
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1679,15 +1679,14 @@ sub HTTP_PROPFIND {
         = ( $#resps > -1 )
         ? createXML( { 'multistatus' => { 'response' => \@resps } } )
         : "";
-    {
-        use bytes;
-        my $size = length $content;
-        broadcastEvent( 'PROPFIND',
-            { file => $PATH_TRANSLATED, size => $size } );
-        debug("_PROPFIND: status=$status, type=$type, size=$size");
-        debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
-        debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
-    }
+    
+    my $size = bytes::length($content);
+    broadcastEvent( 'PROPFIND',
+        { file => $PATH_TRANSLATED, size => $size } );
+    debug("_PROPFIND: status=$status, type=$type, size=$size");
+    debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
+    debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
+    
     return printHeaderAndContent( $status, $type, $content );
 }
 
@@ -3029,8 +3028,8 @@ sub getAddHeaderHashRef {
     return $header if ref($header) eq 'HASH';
 
     my %params = ();
-    foreach my $line ( split( /\r?\n/, $header ) ) {
-        my ( $h, $v ) = split( /: /, $line );
+    foreach my $line ( split( /\r?\n/xms, $header ) ) {
+        my ( $h, $v ) = split( /:\ /xms, $line );
         $params{$h} = $v;
     }
     return \%params;
@@ -3042,8 +3041,10 @@ sub printHeaderAndContent {
     $status  = '403 Forbidden' unless defined $status;
     $type    = 'text/plain'    unless defined $type;
     $content = ''              unless defined $content;
-    use bytes;
-    my $contentlength = length $content;
+    
+    
+    my $contentlength = bytes::length($content);
+        
     my %header        = (
         -status         => $status,
         -type           => $type,
