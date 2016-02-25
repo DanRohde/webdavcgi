@@ -160,7 +160,7 @@ sub getPropValue {
 }
 sub convXML2Str {
         my ($xml) = @_;
-        return defined $xml ? lc(createXML($xml,1)) : $xml;
+        return defined $xml ? lc(create_xml($xml,1)) : $xml;
 }
 sub doBasicSearch {
         my ($self,$expr, $base, $href, $depth, $limit, $matches, $visited) = @_;

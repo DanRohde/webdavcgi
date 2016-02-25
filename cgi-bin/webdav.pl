@@ -39,9 +39,9 @@ use strict;
 #use warnings;
 use vars
     qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
-    @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG %ELEMENTORDER
+    @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
     $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
-    $ALLOW_INFINITE_PROPFIND %NAMESPACES %NAMESPACEELEMENTS %ELEMENTS %NAMESPACEABBR %DATATYPES
+    $ALLOW_INFINITE_PROPFIND 
     $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE @PROTECTED_PROPS
     @UNSUPPORTED_PROPS $ENABLE_ACL $ENABLE_CALDAV @ALLPROP_PROPS $ENABLE_LOCK
     @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS @IGNORE_PROPS @KNOWN_CALDAV_COLL_PROPS
@@ -71,19 +71,19 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = "1.1.1BETA20160223.02";
+$RELEASE = '1.1.1BETA20160225.01';
 #########################################################################
 ############  S E T U P #################################################
 
 ## -- ENV{PATH}
 ##  search PATH for binaries
-local $ENV{PATH} = "/bin:/usr/bin:/sbin/:/usr/local/bin:/usr/sbin";
+local $ENV{PATH} = '/bin:/usr/bin:/sbin/:/usr/local/bin:/usr/sbin';
 
 ## -- INSTALL_BASE
 ## folder path to the webdav.conf, .css, .js, and. msg files for the Web interface
 ## (don't forget the trailing slash)
-## DEFAULT: $INSTALL_BASE='' # use webdav.pl script path
-$INSTALL_BASE = $ENV{INSTALL_BASE} || '';
+## DEFAULT: $INSTALL_BASE=q{} # use webdav.pl script path
+$INSTALL_BASE = $ENV{INSTALL_BASE} || q{};
 
 ## -- CONFIGFILE
 ## you can overwrite all variables from this setup section with a config file
@@ -94,13 +94,13 @@ $CONFIGFILE = $ENV{REDIRECT_WEBDAVCONF} || $ENV{WEBDAVCONF} || 'webdav.conf';
 ## -- VIRTUAL_BASE
 ## only neccassary if you use redirects or rewrites from a VIRTUAL_BASE to the DOCUMENT_ROOT;
 ## regular expressions are allowed
-## EXAMPLE: $VIRTUAL_BASE = '/';
-$VIRTUAL_BASE = '/';
+## EXAMPLE: $VIRTUAL_BASE = qr{/}xms
+$VIRTUAL_BASE = qr{/}xms;
 
 ## -- DOCUMENT_ROOT
 ## by default the server document root
-## (don't forget a trailing slash '/'):
-$DOCUMENT_ROOT = $ENV{DOCUMENT_ROOT} . '/';
+## (don't forget a trailing slash q{/}):
+$DOCUMENT_ROOT = $ENV{DOCUMENT_ROOT} . q{/};
 
 ## -- UMASK
 ## mask for file/folder creation
@@ -184,7 +184,7 @@ EOF
 ## -- EDITABLEFILES -- obsolete, configure TextEditor extension: $EXTENSION_CONFIG{TextEditor}{editablefiles} =\@EDITABLEFIELS;
 ## text file names (regex; case insensitive)
 #@EDITABLEFILES = ( '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
-#		'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' );
+#                   '^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf)' );
 
 ## -- ICON_WIDTH
 ## specifies the icon width for the folder listings of the Web interface
@@ -198,7 +198,7 @@ $TITLEPREFIX = 'WebDAV CGI:';
 
 ## -- CSS
 ## defines a stylesheet added to the header of the Web interface
-$CSS = '';
+$CSS = q{};
 
 ## -- CSSURI
 ## additional CSS file to include in the Web interface after $CSS
@@ -206,7 +206,7 @@ $CSS = '';
 
 ## -- HTMLHEAD
 ## additional data included in the HTML <head> tag after $CSS/$CSSURI of the Web interface
-#$HTMLHEAD = "";
+#$HTMLHEAD = q{};
 
 ## -- FORBIDDEN_UID
 ## a comman separated list of UIDs to block
@@ -302,10 +302,8 @@ $ALLOW_POST_UPLOADS = 1;
 
 ## -- POST_MAX_SIZE
 ## maximum post size (only POST requests)
-## EXAMPLE: $POST_MAX_SIZE = 1073741824; # 1GB
-$POST_MAX_SIZE = 1073741824;
-
-#$POST_MAX_SIZE = 10240000;
+## EXAMPLE: $POST_MAX_SIZE = 1_073_741_824; # 1GB
+$POST_MAX_SIZE = 1_073_741_824;
 
 ## -- SHOW_QUOTA
 ## enables/disables quota information for fancy indexing
@@ -324,7 +322,7 @@ $SHOW_QUOTA = 1;
 ## supported values: name, lastmodified, created, size, mode, mime, fileaction, uid, gid
 @ALLOWED_TABLE_COLUMNS = (
     'name', 'size', 'lastmodified', 'created',
-    'mode', 'mime', 'uid',          'gid'
+    'mode', 'mime', 'uid',          'gid',
 );
 push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
@@ -388,19 +386,16 @@ $EXTENSION_CONFIG{Permissions}{others} = [ 'r', 'w', 'x', 't' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH
-    = '<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>';
+$LANGSWITCH = q{<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
 
 ## -- HEADER
 ## content after body tag in the Web interface
-$HEADER
-    = '<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>';
+$HEADER = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>};
 
 ## -- SIGNATURE
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
-$SIGNATURE
-    = '&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>';
+$SIGNATURE = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
 
 ## -- LANG
 ## defines the default language for the Web interface
@@ -439,14 +434,14 @@ $ORDER = 'name';
 ## ATTENTION: if users share the same folder they should use the same database. The example works only for users with unshared folders and $CREATE_DB should be enabled.
 $DBI_SRC = 'dbi:SQLite:dbname=/tmp/webdav.'
     . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
-$DBI_USER = "";
-$DBI_PASS = "";
+$DBI_USER = q{};
+$DBI_PASS = q{};
 
 ## -- DBI_TIMEZONE
 ## used to fix timestamp data delivered by the database:
 ## SQLite: $DBI_TIMEZONE = 'GMT';
 ## PostgreSQL: $DBI_TIMEZONE = 'localtime';
-## MySQL: $DBI_TIMEZONE = '';
+## MySQL: $DBI_TIMEZONE = q{};
 #$DBI_TIMEZONE = 'GMT';
 
 ## enables persitent database connection (only usefull in conjunction with mod_perl, Speedy/PersistenPerl)
@@ -475,9 +470,9 @@ $CREATE_DB = 1;
 
 ## -- DEFAULT_LOCK_OWNER
 ## lock owner if not given by client
-## EXAMPLE: $DEFAULT_LOCK_OWNER=$ENV{REMOTE_USER}.'@'.$ENV{REMOTE_ADDR}; ## loggin user @ ip
+## EXAMPLE: $DEFAULT_LOCK_OWNER=$ENV{REMOTE_USER}.q{@}.$ENV{REMOTE_ADDR}; ## loggin user @ ip
 $DEFAULT_LOCK_OWNER
-    = { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '@'
+    = { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{@}
         . $ENV{REMOTE_ADDR} };
 
 ## -- DEFAULT_LOCK_TIMEOUT
@@ -495,8 +490,8 @@ $CHARSET = 'utf-8';
 
 ## -- BUFSIZE
 ## buffer size for read and write operations
-# EXAMPLE: $BUFSIZE = 1073741824;
-$BUFSIZE = 1048576;
+# EXAMPLE: $BUFSIZE = 1_073_741_824;
+$BUFSIZE = 1_048_576;
 
 ## -- LOGFILE
 ## simple log for file/folder modifications (PUT/MKCOL/DELETE/COPY/MOVE)
@@ -577,13 +572,13 @@ $ENABLE_ACL = 1;
 ## --- CURRENT_USER_PRINCIPAL
 ## a virtual URI for ACL principals
 ## for Apple's iCal &  Addressbook
-$CURRENT_USER_PRINCIPAL = "/principals/"
-    . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '/';
+$CURRENT_USER_PRINCIPAL = q{/principals/}
+    . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{/};
 
 ## -- PRINCIPAL_COLLECTION_SET
 ## don't change it for MacOS X Addressbook support
-## DEFAULT: $PRINCIPAL_COLLECTION_SET = '/directory/';
-$PRINCIPAL_COLLECTION_SET = '/directory/';
+## DEFAULT: $PRINCIPAL_COLLECTION_SET = q{/directory/};
+$PRINCIPAL_COLLECTION_SET = q{/directory/};
 
 ## -- ENABLE_CALDAV
 ## enable CalDAV support for Lightning/Sunbird/iCal/iPhone calender/task support
@@ -593,7 +588,7 @@ $ENABLE_CALDAV = 1;
 ## maps UID numbers or remote users (accounts) to calendar folders
 ## Note: all listed folders are not CalDAV enabled;
 ##       you must create and use subfolders for calendars
-%CALENDAR_HOME_SET = ( default => '/', );
+%CALENDAR_HOME_SET = ( default => q{/}, );
 
 ## -- ENABLE_CALDAV_SCHEDULE
 ## really incomplete (ALPHA) - properties exist but POST requests are not supported yet
@@ -605,7 +600,7 @@ $ENABLE_CARDDAV = 1;
 
 ## -- ADDRESSBOOK_HOME_SET
 ## maps UID numbers or remote users to addressbook folders
-%ADDRESSBOOK_HOME_SET = ( default => '/', 1000 => '/carddav/' );
+%ADDRESSBOOK_HOME_SET = ( default => q{/}, 1000 => q{/carddav/} );
 
 ## -- ENABLE_TRASH
 ## enables the server-side trash can (don't forget to setup $TRASH_FOLDER)
@@ -652,7 +647,7 @@ $THUMBNAIL_WIDTH = 110;
 ## defines the path to a cache directory for image thumbnails
 ## this is neccessary if you enable the thumbnail cache ($ENABLE_THUMBNAIL_CACHE)
 ## EXAMPLE: $THUMBNAIL_CACHEDIR=".thumbs";
-$THUMBNAIL_CACHEDIR = "/tmp";
+$THUMBNAIL_CACHEDIR = '/tmp';
 
 ## -- ENABLE_BIND
 ## enables BIND/UNBIND/REBIND methods defined in http://tools.ietf.org/html/draft-ietf-webdav-bind-27
@@ -684,7 +679,7 @@ $FILECOUNTLIMIT = 5000;
 ##   my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 ##   %FILEFILTERPERDIR = ( '/afs/.cms.hu-berlin.de/user/' => "^$_ru\$");
 my $_ru
-    = ( split( /\@/, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) ) )
+    = ( split( /\@/xms, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) ) )
     [0];
 %FILEFILTERPERDIR = (
     '/afs/.cms.hu-berlin.de/user/'          => "^$_ru\$",
@@ -818,14 +813,13 @@ use POSIX qw(strftime setlocale LC_TIME);
 setlocale( LC_TIME, 'en_US.' . $CHARSET )
     ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
 
-unshift( @EVENTLISTENER, 'DatabaseEventAdapter' );
+unshift @EVENTLISTENER, 'DatabaseEventAdapter';
 broadcastEvent('INIT');
-
-use XML::Simple;
 
 use URI::Escape;
 use UUID::Tiny;
 use Digest::MD5;
+use List::Util qw( any );
 
 $method = $cgi->request_method();
 
@@ -841,7 +835,7 @@ use Utils;
 $utils = Utils->new;
 $config->setProperty( 'utils', $utils );
 
-umask $UMASK;
+umask $UMASK || croak("Cannot set umask $UMASK.");
 
 ## supported DAV compliant classes:
 our $DAV = '1';
@@ -865,10 +859,10 @@ debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
 debug("CGI-Version: $CGI::VERSION");
 
-debug( "$0: X-Litmus: " . $cgi->http("X-Litmus") )
-    if defined $cgi->http("X-Litmus");
-debug( "$0: X-Litmus-Second: " . $cgi->http("X-Litmus-Second") )
-    if defined $cgi->http("X-Litmus-Second");
+debug( "$0: X-Litmus: " . $cgi->http('X-Litmus') )
+    if defined $cgi->http('X-Litmus');
+debug( "$0: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') )
+    if defined $cgi->http('X-Litmus-Second');
 
 # 404/rewrite/redirect handling:
 if ( !defined $PATH_TRANSLATED ) {
@@ -878,29 +872,29 @@ if ( !defined $PATH_TRANSLATED ) {
         && ( defined $ENV{SCRIPT_URL} || defined $ENV{REDIRECT_URL} ) )
     {
         my $su = $ENV{SCRIPT_URL} || $ENV{REDIRECT_URL};
-        $su =~ s/^$VIRTUAL_BASE//;
+        $su =~ s/^$VIRTUAL_BASE//xms;
         $PATH_TRANSLATED = $DOCUMENT_ROOT . $su;
     }
 }
 
 # protect against direct CGI script call:
-if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq "" ) {
+if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
     debug('FORBIDDEN DIRECT CALL!');
     printHeaderAndContent('404 Not Found');
     exit();
 }
 
-$PATH_TRANSLATED .= '/'
-    if $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/;
-$REQUEST_URI =~ s/\?.*$//;    ## remove query strings
-$REQUEST_URI .= '/'
-    if $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/;
-$REQUEST_URI =~ s/\&/%26/gs;    ## bug fix (Mac Finder and &)
+$PATH_TRANSLATED .= q{/}
+    if $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/xms;
+$REQUEST_URI =~ s/\?.*$//xms;    ## remove query strings
+$REQUEST_URI .= q{/}
+    if $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/xms;
+$REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
 
-$TRASH_FOLDER .= '/' if $TRASH_FOLDER !~ /\/$/;
+$TRASH_FOLDER .= q{/} if $TRASH_FOLDER !~ /\/$/xms;
 
-if ( grep( { $_ =~ /^\Q$<\E$/ } @FORBIDDEN_UID ) > 0 ) {
-    debug("Forbidden UID");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if ( any { /^\Q$<\E$/xms } @FORBIDDEN_UID ) {
+    debug('Forbidden UID');
     printHeaderAndContent('403 Forbidden');
     exit(0);
 }
@@ -1122,171 +1116,6 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
     'executable'
 );
 
-### XML
-%NAMESPACES = (
-    'DAV:'                                    => 'D',
-    'http://apache.org/dav/props/'            => 'lp2',
-    'urn:schemas-microsoft-com:'              => 'Z',
-    'urn:schemas-microsoft-com:datatypes'     => 'M',
-    'urn:schemas-microsoft-com:office:office' => 'Office',
-    'http://schemas.microsoft.com/repl/'      => 'Repl',
-    'urn:ietf:params:xml:ns:caldav'           => 'C',
-    'http://calendarserver.org/ns/'           => 'CS',
-    'http://www.apple.com/webdav_fs/props/'   => 'Apple',
-    'http://www.w3.org/2000/xmlns/'           => 'x',
-    'urn:ietf:params:xml:ns:carddav'          => 'A',
-    'http://www.w3.org/2001/XMLSchema'        => 'xs',
-    'http://groupdav.org/'                    => 'G'
-);
-
-%ELEMENTS = (
-    'calendar'                         => 'C',
-    'calendar-description'             => 'C',
-    'calendar-timezone'                => 'C',
-    'supported-calendar-component-set' => 'C',
-    'supported-calendar-data'          => 'C',
-    'max-resource-size'                => 'C',
-    'min-date-time'                    => 'C',
-    'max-date-time'                    => 'C',
-    'max-instances'                    => 'C',
-    'max-attendees-per-instance'       => 'C',
-    'read-free-busy'                   => 'C',
-    'calendar-home-set'                => 'C',
-    'supported-collation-set'          => 'C',
-    'schedule-tag'                     => 'C',
-    'calendar-data'                    => 'C',
-    'mkcalendar-response'              => 'C',
-    getctag                            => 'CS',
-    'calendar-user-address-set'        => 'C',
-    'schedule-inbox-URL'               => 'C',
-    'schedule-outbox-URL'              => 'C',
-    'calendar-user-type'               => 'C',
-    'schedule-calendar-transp'         => 'C',
-    'schedule-default-calendar-URL'    => 'C',
-    'schedule-inbox'                   => 'C',
-    'schedule-outbox'                  => 'C',
-    'transparent'                      => 'C',
-    'calendar-multiget'                => 'C',
-    'calendar-query'                   => 'C',
-    'free-busy-query'                  => 'C',
-    'addressbook'                      => 'A',
-    'addressbook-description'          => 'A',
-    'supported-address-data'           => 'A',
-    'addressbook-home-set'             => 'A',
-    'principal-address'                => 'A',
-    'address-data'                     => 'A',
-    'addressbook-query'                => 'A',
-    'addressbook-multiget'             => 'A',
-    'string'                           => 'xs',
-    'anyURI'                           => 'xs',
-    'nonNegativeInteger'               => 'xs',
-    'dateTime'                         => 'xs',
-    'vevent-collection'                => 'G',
-    'vtodo-collection'                 => 'G',
-    'vcard-collection'                 => 'G',
-    'component-set'                    => 'G',
-    'executable'                       => 'lp2',
-    'Win32CreationTime'                => 'Z',
-    'Win32LastModifiedTime'            => 'Z',
-    'Win32LastAccessTime'              => 'Z',
-    'authoritative-directory'          => 'Repl',
-    'resourcetag'                      => 'Repl',
-    'repl-uid'                         => 'Repl',
-    'modifiedby'                       => 'Office',
-    'specialFolderType'                => 'Office',
-    'Win32CreationTime'                => 'Z',
-    'Win32FileAttributes'              => 'Z',
-    'Win32LastAccessTime'              => 'Z',
-    'Win32LastModifiedTime'            => 'Z',
-    default                            => 'D',
-    'appledoubleheader'                => 'Apple',
-    'directory-gateway'                => 'D',
-    'calendar-free-busy-set'           => 'C',
-);
-
-%NAMESPACEABBR = (
-    'D'      => 'DAV:',
-    'lp2'    => 'http://apache.org/dav/props/',
-    'Z'      => 'urn:schemas-microsoft-com:',
-    'Office' => 'urn:schemas-microsoft-com:office:office',
-    'Repl'   => 'http://schemas.microsoft.com/repl/',
-    'M'      => 'urn:schemas-microsoft-com:datatypes',
-    'C'      => 'urn:ietf:params:xml:ns:caldav',
-    'CS'     => 'http://calendarserver.org/ns/',
-    'Apple'  => 'http://www.apple.com/webdav_fs/props/',
-    'A'      => 'urn:ietf:params:xml:ns:carddav',
-    'xs'     => 'http://www.w3.org/2001/XMLSchema',
-    'G'      => 'http://groupdav.org/'
-);
-
-%DATATYPES = (
-    isfolder              => 'M:dt="boolean"',
-    ishidden              => 'M:dt="boolean"',
-    isstructureddocument  => 'M:dt="boolean"',
-    hassubs               => 'M:dt="boolean"',
-    nosubs                => 'M:dt="boolean"',
-    reserved              => 'M:dt="boolean"',
-    iscollection          => 'M:dt="boolean"',
-    isFolder              => 'M:dt="boolean"',
-    isreadonly            => 'M:dt="boolean"',
-    isroot                => 'M:dt="boolean"',
-    lastaccessed          => 'M:dt="dateTime"',
-    Win32CreationTime     => 'M:dt="dateTime"',
-    Win32LastAccessTime   => 'M:dt="dateTime"',
-    Win32LastModifiedTime => 'M:dt="dateTime"',
-    description           => 'xml:lang="en"'
-);
-
-%NAMESPACEELEMENTS = (
-    'multistatus'                   => 1,
-    'prop'                          => 1,
-    'error'                         => 1,
-    'principal-search-property-set' => 1
-);
-
-%ELEMENTORDER = (
-    multistatus           => 1,
-    responsedescription   => 4,
-    allprop               => 1,
-    include               => 2,
-    prop                  => 1,
-    propstat              => 2,
-    status                => 3,
-    error                 => 4,
-    href                  => 1,
-    responsedescription   => 5,
-    location              => 6,
-    locktype              => 1,
-    lockscope             => 2,
-    depth                 => 3,
-    owner                 => 4,
-    timeout               => 5,
-    locktoken             => 6,
-    lockroot              => 7,
-    getcontentlength      => 1001,
-    getlastmodified       => 1002,
-    resourcetype          => 0,
-    getcontenttype        => 1,
-    supportedlock         => 1010,
-    lockdiscovery         => 1011,
-    src                   => 1,
-    dst                   => 2,
-    principal             => 1,
-    grant                 => 2,
-    privilege             => 1,
-    abstract              => 2,
-    description           => 3,
-    'supported-privilege' => 4,
-    collection            => 1,
-    calendar              => 2,
-    'schedule-inbox'      => 3,
-    'schedule-outbox'     => 4,
-    'calendar-data'       => 101,
-    getetag               => 100,
-    properties            => 1,
-    operators             => 2,
-    default               => 1000
-);
 %SEARCH_PROPTYPES = (
     default                                                   => 'string',
     '{DAV:}getlastmodified'                                   => 'dateTime',
@@ -1327,20 +1156,20 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
 %SEARCH_SPECIALCONV = ( dateTime => 'str2time', xml => 'convXML2Str' );
 %SEARCH_SPECIALOPS = (
     int => {
-        eq  => '==',
-        gt  => '>',
-        lt  => '<',
-        gte => '>=',
-        lte => '<=',
-        cmp => '<=>'
+        eq  => q{==},
+        gt  => q{>},
+        lt  => q{<},
+        gte => q{>=},
+        lte => q{<=},
+        cmp => q{<=>},
     },
     dateTime => {
-        eq  => '==',
-        gt  => '>',
-        lt  => '<',
-        gte => '>=',
-        lte => '<=',
-        cmp => '<=>'
+        eq  => q{==},
+        gt  => q{>},
+        lt  => q{<},
+        gte => q{>=},
+        lte => q{<=},
+        cmp => q{<=>},
     },
     string => { lte => 'le', gte => 'ge' }
 );
@@ -1359,7 +1188,7 @@ foreach (@UNSUPPORTED_PROPS) { $unsupported_props{$_} = 1; }
 
 # method handling:
 if ( $method =~
-    /^(GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/xms
+    /^(?:GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/xms
     )
 {
     ### performance is much better than eval:
@@ -1405,14 +1234,14 @@ sub HTTP_GET {
     }
     elsif (
         $FANCYINDEXING
-        && (   $DOCUMENT_ROOT eq '/'
+        && (   $DOCUMENT_ROOT eq q{/}
             || $backend->isDir($PATH_TRANSLATED)
-            || $ENV{QUERY_STRING} ne ""
+            || $ENV{QUERY_STRING} ne q{}
             || !$backend->exists($PATH_TRANSLATED) )
         && getWebInterface()->handleGetRequest()
         )
     {
-        debug("_GET: WebInterface called");
+        debug('_GET: WebInterface called');
     }
     elsif ( $backend->exists($PATH_TRANSLATED)
         && !$backend->isReadable($PATH_TRANSLATED) )
@@ -1424,8 +1253,8 @@ sub HTTP_GET {
         );
     }
     elsif ( $backend->exists($PATH_TRANSLATED) ) {
-        debug("_GET: DOWNLOAD");
-        binmode(STDOUT);
+        debug('_GET: DOWNLOAD');
+        binmode(STDOUT) || croak('Cannot set binmode for STDOUT.');
         my $enc  = $cgi->http('Accept-Encoding');
         my $mime = getMIMEType($PATH_TRANSLATED);
         my @stat = $backend->stat($PATH_TRANSLATED);
@@ -1442,9 +1271,9 @@ sub HTTP_GET {
                 -type   => $mime,
                 -ETag   => getETag($PATH_TRANSLATED),
                 -Last_Modified =>
-                    strftime( "%a, %d %b %Y %T GMT", gmtime( $stat[9] ) ),
+                    strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] ) ),
                 -charset          => $CHARSET,
-                -Content_Encoding => $enc =~ /gzip/ ? 'gzip' : 'deflate',
+                -Content_Encoding => $enc =~ /gzip/xms ? 'gzip' : 'deflate',
                 -Cache_Control    => 'no-cache'
             );
             if ( defined $start ) {
@@ -1455,11 +1284,11 @@ sub HTTP_GET {
             }
             print $cgi->header( \%header );
             my $c;
-            if ( $enc =~ /gzip/i ) {
+            if ( $enc =~ /gzip/xmsi ) {
                 require IO::Compress::Gzip;
                 $c = IO::Compress::Gzip->new( \*STDOUT );
             }
-            elsif ( $enc =~ /deflate/i ) {
+            elsif ( $enc =~ /deflate/xmsi ) {
                 require IO::Compress::Deflate;
                 $c = IO::Compress::Deflate->new( \*STDOUT );
             }
@@ -1472,7 +1301,9 @@ sub HTTP_GET {
                 )
                 )
             {
-                seek( $F, $start, 0 ) if defined $start;
+                if (defined $start) {
+                    seek( $F, $start, 0 ) || croak("Cannot seek filehandle for '$PATH_TRANSLATED' to $start.");   
+                }
                 while ( my $bytesread = read( $F, my $buffer, $bufsize ) ) {
                     $c->write($buffer);
                     $bytecount += $bytesread;
@@ -1481,7 +1312,7 @@ sub HTTP_GET {
                         if defined $count
                         && ( $bytecount + $bufsize > $count );
                 }
-                close($F);
+                close($F) || croak('Cannot close filehandle.');
             }
         }
         else {
@@ -1506,7 +1337,7 @@ sub HTTP_GET {
 
 sub HTTP_HEAD {
     if ( $FANCYINDEXING && getWebInterface()->handleHeadRequest() ) {
-        debug("_HEAD: WebInterface called");
+        debug('_HEAD: WebInterface called');
     }
     elsif ( $backend->exists($PATH_TRANSLATED) ) {
         debug("_HEAD: $PATH_TRANSLATED exists!");
@@ -1527,7 +1358,7 @@ sub HTTP_POST {
         exit 0;
     }
     if ( $ALLOW_FILE_MANAGEMENT && getWebInterface()->handlePostRequest() ) {
-        debug("_POST: WebInterface called");
+        debug('_POST: WebInterface called');
     }
     elsif ( $ENABLE_CALDAV_SCHEDULE && $backend->isDir($PATH_TRANSLATED) ) {
         ## NOT IMPLEMENTED YET
@@ -1580,7 +1411,7 @@ sub HTTP_OPTIONS {
         );
 
     }
-    return main::printHeaderAndContent( $status, $type, '', \%params );
+    return main::printHeaderAndContent( $status, $type, q{}, \%params );
 }
 
 sub HTTP_TRACE {
@@ -1589,7 +1420,7 @@ sub HTTP_TRACE {
     my $type      = 'message/http';
     my $via       = $cgi->http('Via');
     my $addheader = "Via: $ENV{SERVER_NAME}:$ENV{SERVER_PORT}"
-        . ( defined $via ? ", $via" : "" );
+        . ( defined $via ? ", $via" : q{} );
 
     return printHeaderAndContent( $status, $type, $content, $addheader );
 }
@@ -1598,8 +1429,8 @@ sub HTTP_GETLIB {
     my $fn        = $PATH_TRANSLATED;
     my $status    = '200 OK';
     my $type      = undef;
-    my $content   = "";
-    my $addheader = "";
+    my $content   = q{};
+    my $addheader = q{};
     if ( !$backend->exists($fn) ) {
         $status = '404 Not Found';
         $type   = 'text/plain';
@@ -1618,17 +1449,17 @@ sub HTTP_PROPFIND {
     my $type   = 'text/xml';
     my $noroot = 0;
     my $depth  = defined $cgi->http('Depth') ? $cgi->http('Depth') : -1;
-    $noroot = 1  if $depth =~ s/,noroot//;
-    $depth  = -1 if $depth =~ /infinity/i;
+    $noroot = 1  if $depth =~ s/,noroot//xms;
+    $depth  = -1 if $depth =~ /infinity/xmsi;
     $depth  = 0  if $depth == -1 && !$ALLOW_INFINITE_PROPFIND;
 
     my $xml = readRequestBody();
     $xml
         = qq@<?xml version="1.0" encoding="$CHARSET" ?>\n<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>@
-        if !defined $xml || $xml =~ /^\s*$/;
+        if !defined $xml || $xml =~ /^\s*$/xms;
 
-    my $xmldata = "";
-    eval { $xmldata = simpleXMLParser($xml); } or do {
+    my $xmldata = q{};
+    eval { $xmldata = simple_xml_parser($xml); } or do {
         debug("_PROPFIND: invalid XML request: $@");
         printHeaderAndContent('400 Bad Request');
         return;
@@ -1643,20 +1474,20 @@ sub HTTP_PROPFIND {
     ## ACL, CalDAV, CardDAV, ...:
     if (   defined $PRINCIPAL_COLLECTION_SET
         && length($PRINCIPAL_COLLECTION_SET) > 1
-        && $ru =~ /\Q$PRINCIPAL_COLLECTION_SET\E$/ )
+        && $ru =~ /\Q$PRINCIPAL_COLLECTION_SET\E$/xms )
     {
-        $fn =~ s/\Q$PRINCIPAL_COLLECTION_SET\E$//;
+        $fn =~ s/\Q$PRINCIPAL_COLLECTION_SET\E$//xms;
         $depth = 0;
     }
     elsif (defined $CURRENT_USER_PRINCIPAL
         && length($CURRENT_USER_PRINCIPAL) > 1
-        && $ru =~ /\Q$CURRENT_USER_PRINCIPAL\E\/?$/ )
+        && $ru =~ /\Q$CURRENT_USER_PRINCIPAL\E\/?$/xms )
     {
-        $fn =~ s/\Q$CURRENT_USER_PRINCIPAL\E\/?$//;
+        $fn =~ s/\Q$CURRENT_USER_PRINCIPAL\E\/?$//xms;
         $depth = 0;
     }
-    elsif ( $ru =~ m@^/\.well-known/(caldav|carddav)$@ ) {    # RFC5785
-        $fn =~ s@/\.well-known/(caldav|carddav)$@@;
+    elsif ( $ru =~ m@^/\.well-known/(caldav|carddav)$@xms) {    # RFC5785
+        $fn =~ s@/\.well-known/(caldav|carddav)$@@xms;
         $depth = 0;
     }
 
@@ -1677,8 +1508,8 @@ sub HTTP_PROPFIND {
     }
     my $content
         = ( $#resps > -1 )
-        ? createXML( { 'multistatus' => { 'response' => \@resps } } )
-        : "";
+        ? create_xml( { 'multistatus' => { 'response' => \@resps } } )
+        : q{};
     
     my $size = bytes::length($content);
     broadcastEvent( 'PROPFIND',
@@ -1695,7 +1526,7 @@ sub HTTP_PROPPATCH {
     my $fn      = $PATH_TRANSLATED;
     my $status  = '403 Forbidden';
     my $type    = 'text/plain';
-    my $content = "";
+    my $content = q{};
     if ( $backend->exists($fn) && !isAllowed($fn) ) {
         $status = '423 Locked';
     }
@@ -1704,7 +1535,7 @@ sub HTTP_PROPPATCH {
 
         debug("_PROPPATCH: REQUEST: $xml");
         my $dataRef;
-        eval { $dataRef = simpleXMLParser($xml) } or do {
+        eval { $dataRef = simple_xml_parser($xml) } or do {
             debug("_PROPPATCH: invalid XML request: $@");
             printHeaderAndContent('400 Bad Request');
             return;
@@ -1720,7 +1551,7 @@ sub HTTP_PROPPATCH {
         push @resps, \%resp_403 if defined $resp_403{href};
         $status  = '207 Multi-Status';
         $type    = 'text/xml';
-        $content = createXML( { multistatus => { response => \@resps } } );
+        $content = create_xml( { multistatus => { response => \@resps } } );
         broadcastEvent( 'PROPPATCHED', { file => $fn, data => $dataRef } );
     }
     else {
@@ -1733,7 +1564,7 @@ sub HTTP_PROPPATCH {
 sub HTTP_PUT {
     my $status  = '204 No Content';
     my $type    = 'text/plain';
-    my $content = "";
+    my $content = q{};
     my $buffer;
 
     if ( defined $cgi->http('Content-Range') ) {
@@ -1761,7 +1592,7 @@ sub HTTP_PUT {
     }
     elsif ( $backend->isDir( $backend->getParent( ($PATH_TRANSLATED) ) ) ) {
         if ( !$backend->exists($PATH_TRANSLATED) ) {
-            debug("_PUT: created...");
+            debug('_PUT: created...');
             $status = '201 Created';
             $type   = 'text/html';
             $content
@@ -1783,7 +1614,7 @@ sub HTTP_PUT {
                 = isInsufficientStorage()
                 ? '507 Insufficient Storage'
                 : '403 Forbidden';
-            $content = "";
+            $content = q{};
             $type    = 'text/plain';
         }
     }
@@ -1799,7 +1630,7 @@ sub HTTP_COPY {
     my $host        = $cgi->http('Host');
     my $destination = $cgi->http('Destination');
     my $overwrite
-        = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : "T";
+        = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
     $destination =~ s@^https?://([^\@]+\@)?\Q$host\E(:\d+)?$VIRTUAL_BASE@@xms;
     $destination = uri_unescape($destination);
     $destination = uri_unescape($destination);
@@ -1808,12 +1639,12 @@ sub HTTP_COPY {
     debug("_COPY: $PATH_TRANSLATED => $destination");
 
     if (   ( !defined $destination )
-        || ( $destination eq "" )
+        || ( $destination eq q{} )
         || ( $PATH_TRANSLATED eq $destination ) )
     {
         $status = '403 Forbidden';
     }
-    elsif ( $backend->exists($destination) && $overwrite eq "F" ) {
+    elsif ( $backend->exists($destination) && $overwrite eq 'F' ) {
         $status = '412 Precondition Failed';
     }
     elsif ( !$backend->isDir( $backend->getParent( ($destination) ) ) ) {
@@ -1887,7 +1718,7 @@ sub HTTP_MOVE {
     my $host        = $cgi->http('Host');
     my $destination = $cgi->http('Destination');
     my $overwrite
-        = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : "T";
+        = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
     debug("_MOVE: $PATH_TRANSLATED => $destination");
     $destination =~ s@^https?://([^\@]+\@)?\Q$host\E(:\d+)?$VIRTUAL_BASE@@xms;
     $destination = uri_unescape($destination);
@@ -1895,12 +1726,12 @@ sub HTTP_MOVE {
     $destination = $DOCUMENT_ROOT . $destination;
 
     if (   ( !defined $destination )
-        || ( $destination eq "" )
+        || ( $destination eq q{} )
         || ( $PATH_TRANSLATED eq $destination ) )
     {
         $status = '403 Forbidden';
     }
-    elsif ( $backend->exists($destination) && $overwrite eq "F" ) {
+    elsif ( $backend->exists($destination) && $overwrite eq 'F' ) {
         $status = '412 Precondition Failed';
     }
     elsif ( !$backend->isDir( $backend->getParent($destination) ) ) {
@@ -1955,7 +1786,7 @@ sub HTTP_DELETE {
         $status = '404 Not Found';
     }
     elsif (( $REQUEST_URI =~ /\#/xms && $PATH_TRANSLATED !~ /\#/xms )
-        || ( defined $ENV{QUERY_STRING} && $ENV{QUERY_STRING} ne "" ) )
+        || ( defined $ENV{QUERY_STRING} && $ENV{QUERY_STRING} ne q{} ) )
     {
         $status = '400 Bad Request';
     }
@@ -1982,8 +1813,8 @@ sub HTTP_DELETE {
 
     my $content
         = $#resps > -1
-        ? createXML( { 'multistatus' => { 'response' => \@resps } } )
-        : "";
+        ? create_xml( { 'multistatus' => { 'response' => \@resps } } )
+        : q{};
     debug("_DELETE RESPONSE (status=$status): $content");
     return printHeaderAndContent( $status, $#resps > -1 ? 'text/xml' : undef,
         $content );
@@ -2000,16 +1831,16 @@ sub HTTP_MKCOL {
     debug("_MKCOL: $PATH_TRANSLATED");
     my $body = readRequestBody();
     my $dataRef;
-    if ( $body ne "" ) {
+    if ( $body ne q{} ) {
 
         # maybe extended mkcol (RFC5689)
-        if ( $cgi->content_type() =~ /\/xml/ ) {
-            eval { $dataRef = simpleXMLParser($body) } or do {
+        if ( $cgi->content_type() =~ /\/xml/xms ) {
+            eval { $dataRef = simple_xml_parser($body) } or do {
                 debug("_MKCOL: invalid XML request: $@");
                 printHeaderAndContent('400 Bad Request');
                 return;
             };
-            if ( ref( $$dataRef{'{DAV:}set'} ) !~ /(ARRAY|HASH)/ ) {
+            if ( ref( $$dataRef{'{DAV:}set'} ) !~ /(?:ARRAY|HASH)/xms ) {
                 printHeaderAndContent('400 Bad Request');
                 return;
             }
@@ -2021,20 +1852,20 @@ sub HTTP_MKCOL {
         }
     }
     if ( $backend->exists($PATH_TRANSLATED) ) {
-        debug("_MKCOL: folder exists (405 Method Not Allowed)!");
+        debug('_MKCOL: folder exists (405 Method Not Allowed)!');
         $status = '405 Method Not Allowed (folder exists)';
     }
     elsif ( !$backend->exists( $backend->getParent($PATH_TRANSLATED) ) ) {
-        debug("_MKCOL: parent does not exists (409 Conflict)!");
+        debug('_MKCOL: parent does not exists (409 Conflict)!');
         $status = '409 Conflict';
     }
     elsif ( !$backend->isWriteable( $backend->getParent($PATH_TRANSLATED) ) )
     {
-        debug("_MKCOL: parent is not writeable (403 Forbidden)!");
+        debug('_MKCOL: parent is not writeable (403 Forbidden)!');
         $status = '403 Forbidden';
     }
     elsif ( !isAllowed($PATH_TRANSLATED) ) {
-        debug("_MKCOL: not allowed!");
+        debug('_MKCOL: not allowed!');
         $status = '423 Locked';
     }
     elsif ( $backend->isDir( $backend->getParent($PATH_TRANSLATED) )
@@ -2044,7 +1875,7 @@ sub HTTP_MKCOL {
     }
     elsif ( $backend->isDir( $backend->getParent($PATH_TRANSLATED) ) ) {
         debug("_MKCOL: create $PATH_TRANSLATED");
-        broadcastEvent( "MKCOL", { file => $PATH_TRANSLATED } );
+        broadcastEvent( 'MKCOL', { file => $PATH_TRANSLATED } );
         if ( $backend->mkcol($PATH_TRANSLATED) ) {
             my ( %resp_200, %resp_403 );
             handlePropertyRequest( $body, $dataRef, \%resp_200, \%resp_403 );
@@ -2058,7 +1889,7 @@ sub HTTP_MKCOL {
         }
     }
     else {
-        debug("_MKCOL: parent direcory does not exists");
+        debug('_MKCOL: parent direcory does not exists');
         $status = '409 Conflict';
     }
     return printHeaderAndContent( $status, $type, $content );
@@ -2074,13 +1905,13 @@ sub HTTP_LOCK {
     my $timeout   = $cgi->http('Timeout');
     my $status    = '200 OK';
     my $type      = 'application/xml';
-    my $content   = "";
+    my $content   = q{};
     my $addheader = undef;
 
     my $xml = readRequestBody();
-    my $xmldata = $xml ne "" ? simpleXMLParser($xml) : {};
+    my $xmldata = $xml ne q{} ? simple_xml_parser($xml) : {};
 
-    my $token = "opaquelocktoken:" . getuuid($fn);
+    my $token = 'opaquelocktoken:' . getuuid($fn);
 
     if (   !$backend->exists($fn)
         && !$backend->exists( $backend->getParent($fn) ) )
@@ -2089,13 +1920,13 @@ sub HTTP_LOCK {
         $type   = 'text/plain';
     }
     elsif ( !getLockModule()->isLockable( $fn, $xmldata ) ) {
-        debug("_LOCK: not lockable ... but...");
+        debug('_LOCK: not lockable ... but...');
         if ( isAllowed($fn) ) {
             $status = '200 OK';
             getLockModule()
                 ->lockResource( $fn, $ru, $xmldata, $depth, $timeout,
                 $token );
-            $content = createXML(
+            $content = create_xml(
                 {   prop => {
                         lockdiscovery =>
                             getLockModule()->getLockDiscovery($fn)
@@ -2113,7 +1944,7 @@ sub HTTP_LOCK {
             $status = '507 Insufficient Storage';
             $type   = 'text/plain';
         }
-        elsif ( $backend->saveData( $fn, '' ) ) {
+        elsif ( $backend->saveData( $fn, q{} ) ) {
             my $resp
                 = getLockModule()
                 ->lockResource( $fn, $ru, $xmldata, $depth, $timeout,
@@ -2125,7 +1956,7 @@ sub HTTP_LOCK {
                 $addheader = "Lock-Token: $token";
                 $status    = '201 Created';
             }
-            $content = createXML($resp);
+            $content = create_xml($resp);
         }
         else {
             $status = '403 Forbidden';
@@ -2136,7 +1967,7 @@ sub HTTP_LOCK {
         my $resp = getLockModule()
             ->lockResource( $fn, $ru, $xmldata, $depth, $timeout, $token );
         $addheader = "Lock-Token: $token";
-        $content   = createXML($resp);
+        $content   = create_xml($resp);
         $status    = '207 Multi-Status' if defined $$resp{multistatus};
     }
     debug("_LOCK: REQUEST: $xml");
@@ -2149,7 +1980,7 @@ sub HTTP_UNLOCK {
     my $status = '403 Forbidden';
     my $token  = $cgi->http('Lock-Token');
 
-    $token =~ s/[\<\>]//g;
+    $token =~ s/[\<\>]//xmsg;
     debug("_UNLOCK: $PATH_TRANSLATED (token=$token)");
 
     if ( !defined $token ) {
@@ -2172,13 +2003,13 @@ sub HTTP_UNLOCK {
 sub HTTP_ACL {
     my $fn      = $PATH_TRANSLATED;
     my $status  = '200 OK';
-    my $content = "";
+    my $content = q{};
     my $type;
     my %error;
     debug("_ACL($fn)");
     my $xml     = readRequestBody();
-    my $xmldata = "";
-    if ( !eval { $xmldata = simpleXMLParser( $xml, 1 ); } ) {
+    my $xmldata = q{};
+    if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
         debug("_ACL: invalid XML request: $@");
         $status  = '400 Bad Request';
         $type    = 'text/plain';
@@ -2274,9 +2105,9 @@ sub HTTP_ACL {
                 $newperm
                     = ( $write > 0 ) ? $newperm | $mask : $newperm & ~$mask;
             }
-            debug(    "_ACL: old perm="
+            debug(    '_ACL: old perm='
                     . sprintf( '%4o', $mode )
-                    . ", new perm="
+                    . ', new perm='
                     . sprintf( '%4o', $newperm ) );
             if ( !$backend->changeMod( $fn, $newperm ) ) {
                 $status  = '403 Forbidden';
@@ -2294,16 +2125,16 @@ sub HTTP_REPORT {
     my $fn    = $PATH_TRANSLATED;
     my $ru    = $REQUEST_URI;
     my $depth = defined $cgi->http('Depth') ? $cgi->http('Depth') : 0;
-    $depth = -1 if $depth =~ /infinity/i;
+    $depth = -1 if $depth =~ /infinity/xmsi;
     debug("_REPORT($fn,$ru)");
     my $status  = '200 OK';
-    my $content = "";
+    my $content = q{};
     my $type;
     my %error;
     my $xml     = readRequestBody();
-    my $xmldata = "";
+    my $xmldata = q{};
 
-    if ( !eval { $xmldata = simpleXMLParser( $xml, 1 ); } ) {
+    if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
         debug("_REPORT: invalid XML request: $@");
         debug("_REPORT: xml-request=$xml");
         $status  = '400 Bad Request';
@@ -2326,7 +2157,7 @@ sub HTTP_REPORT {
         my @hrefs;
         my $rn;
         my @reports = keys %{$xmldata};
-        debug( "_REPORT: report=" . $reports[0] ) if $#reports > -1;
+        debug( '_REPORT: report=' . $reports[0] ) if $#reports > -1;
 
         if ( defined $$xmldata{'{DAV:}acl-principal-prop-set'} ) {
             my @props;
@@ -2394,7 +2225,7 @@ sub HTTP_REPORT {
                     },
                 ]
             };
-            $content = createXML( \%resp );
+            $content = create_xml( \%resp );
             $status  = '200 OK';
             $type    = 'text/xml';
         }
@@ -2428,10 +2259,7 @@ sub HTTP_REPORT {
                 @hrefs = @{ $$xmldata{$rn}{'{DAV:}href'} };
             }
             elsif ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'HASH' ) {
-                @hrefs
-                    = grep(
-                    { $_ !~ /DAV:/ } values %{ $$xmldata{$rn}{'{DAV:}href'} }
-                    );
+                @hrefs = grep { !/DAV:/xms } values %{ $$xmldata{$rn}{'{DAV:}href'} };
             }
             else {
                 push @hrefs, $$xmldata{$rn}{'{DAV:}href'};
@@ -2460,10 +2288,7 @@ sub HTTP_REPORT {
                 @hrefs = @{ $$xmldata{$rn}{'{DAV:}href'} };
             }
             elsif ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'HASH' ) {
-                @hrefs
-                    = grep(
-                    { $_ !~ /DAV:/ } values %{ $$xmldata{$rn}{'{DAV:}href'} }
-                    );
+                @hrefs = grep { !/DAV:/xms } values %{ $$xmldata{$rn}{'{DAV:}href'} };
             }
             else {
                 push @hrefs, $$xmldata{$rn}{'{DAV:}href'};
@@ -2480,7 +2305,7 @@ sub HTTP_REPORT {
                 $resp_200{status} = 'HTTP/1.1 200 OK';
                 $resp_404{status} = 'HTTP/1.1 404 Not Found';
                 my $nhref = $href;
-                $nhref =~ s/^$VIRTUAL_BASE//;
+                $nhref =~ s/^$VIRTUAL_BASE//xms;
                 my $nfn = $DOCUMENT_ROOT . $nhref;
                 debug("_REPORT: nfn=$nfn, href=$href");
                 if ( !$backend->exists($nfn) ) {
@@ -2506,10 +2331,10 @@ sub HTTP_REPORT {
         }
         $content
             = $#resps > -1
-            ? createXML(
-            { multistatus => $#resps > -1 ? { response => \@resps } : '' } )
+            ? create_xml(
+            { multistatus => $#resps > -1 ? { response => \@resps } : q{} } )
             : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"></D:multistatus>'
-            if $content eq "";
+            if $content eq q{};
     }
     debug("_REPORT: REQUEST: $xml");
     debug("_REPORT: RESPONSE: $content");
@@ -2519,13 +2344,13 @@ sub HTTP_REPORT {
 sub HTTP_SEARCH {
     my @resps;
     my $status  = '207 Multistatus';
-    my $content = "";
+    my $content = q{};
     my $type    = 'application/xml';
     my @errors;
 
     my $xml     = readRequestBody();
-    my $xmldata = "";
-    if ( !eval { $xmldata = simpleXMLParser( $xml, 1 ); } ) {
+    my $xmldata = q{};
+    if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
         debug("_SEARCH: invalid XML request: $@");
         debug("_SEARCH: xml-request=$xml");
         $status  = '400 Bad Request';
@@ -2533,7 +2358,7 @@ sub HTTP_SEARCH {
         $content = '400 Bad Request';
     }
     elsif ( exists $$xmldata{'{DAV:}query-schema-discovery'} ) {
-        debug("_SEARCH: found query-schema-discovery");
+        debug('_SEARCH: found query-schema-discovery');
         require WebDAV::Search;
         WebDAV::Search->new($config)
             ->getSchemaDiscovery( $REQUEST_URI, \@resps );
@@ -2541,7 +2366,7 @@ sub HTTP_SEARCH {
     elsif ( exists $$xmldata{'{DAV:}searchrequest'} ) {
         require WebDAV::Search;
         foreach my $s ( keys %{ $$xmldata{'{DAV:}searchrequest'} } ) {
-            if ( $s =~ /{DAV:}basicsearch/ ) {
+            if ( $s =~ /{DAV:}basicsearch/xms ) {
                 WebDAV::Search->new($config)
                     ->handleBasicSearch( $$xmldata{'{DAV:}searchrequest'}{$s},
                     \@resps, \@errors );
@@ -2549,15 +2374,15 @@ sub HTTP_SEARCH {
         }
     }
     if ( $#errors > -1 ) {
-        $content = createXML( { error => \@errors } );
+        $content = create_xml( { error => \@errors } );
         $status = '409 Conflict';
     }
     elsif ( $#resps > -1 ) {
-        $content = createXML( { multistatus => { response => \@resps } } );
+        $content = create_xml( { multistatus => { response => \@resps } } );
     }
     else {
         $content
-            = createXML( { multistatus => {} } )
+            = create_xml( { multistatus => {} } )
             ;    ## rfc5323 allows empty multistatus
     }
     debug(
@@ -2568,12 +2393,11 @@ sub HTTP_SEARCH {
 
 sub HTTP_BIND {
     my ( $status, $type, $content ) = ( '200 OK', undef, undef );
-    my $overwrite
-        = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : "T";
+    my $overwrite = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
     my $xml     = readRequestBody();
-    my $xmldata = "";
+    my $xmldata = q{};
     my $host    = $cgi->http('Host');
-    if ( !eval { $xmldata = simpleXMLParser( $xml, 0 ); } ) {
+    if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
         $status  = '400 Bad Request';
         $type    = 'text/plain';
         $content = '400 Bad Request';
@@ -2581,13 +2405,13 @@ sub HTTP_BIND {
     else {
         my $segment = $$xmldata{'{DAV:}segment'};
         my $href    = $$xmldata{'{DAV:}href'};
-        $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//;
+        $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//xms;
         $href = uri_unescape( uri_unescape($href) );
         my $src = $DOCUMENT_ROOT . $href;
         my $dst = $PATH_TRANSLATED . $segment;
 
         my $ndst = $dst;
-        $ndst =~ s /\/$//;
+        $ndst =~ s /\/$//xms;
 
         if ( !$backend->exists($src) ) {
             $status = '404 Not Found';
@@ -2597,7 +2421,7 @@ sub HTTP_BIND {
         }
         elsif ($backend->exists($dst)
             && $backend->isLink($ndst)
-            && $overwrite eq "F" )
+            && $overwrite eq 'F' )
         {
             $status = '403 Forbidden';
         }
@@ -2621,8 +2445,8 @@ sub HTTP_BIND {
 sub HTTP_UNBIND {
     my ( $status, $type, $content ) = ( '204 No Content', undef, undef );
     my $xml     = readRequestBody();
-    my $xmldata = "";
-    if ( !eval { $xmldata = simpleXMLParser( $xml, 0 ); } ) {
+    my $xmldata = q{};
+    if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
         $status  = '400 Bad Request';
         $type    = 'text/plain';
         $content = '400 Bad Request';
@@ -2649,12 +2473,11 @@ sub HTTP_UNBIND {
 
 sub HTTP_REBIND {
     my ( $status, $type, $content ) = ( '200 OK', undef, undef );
-    my $overwrite
-        = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : "T";
+    my $overwrite = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
     my $xml     = readRequestBody();
-    my $xmldata = "";
+    my $xmldata = q{};
     my $host    = $cgi->http('Host');
-    if ( !eval { $xmldata = simpleXMLParser( $xml, 0 ); } ) {
+    if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
         $status  = '400 Bad Request';
         $type    = 'text/plain';
         $content = '400 Bad Request';
@@ -2662,15 +2485,15 @@ sub HTTP_REBIND {
     else {
         my $segment = $$xmldata{'{DAV:}segment'};
         my $href    = $$xmldata{'{DAV:}href'};
-        $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//;
+        $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//xms;
         $href = uri_unescape( uri_unescape($href) );
         my $src = $DOCUMENT_ROOT . $href;
         my $dst = $PATH_TRANSLATED . $segment;
 
         my $nsrc = $src;
-        $nsrc =~ s/\/$//;
+        $nsrc =~ s/\/$//xms;
         my $ndst = $dst;
-        $ndst =~ s/\/$//;
+        $ndst =~ s/\/$//xms;
 
         if ( !$backend->exists($src) ) {
             $status = '404 Not Found';
@@ -2723,10 +2546,10 @@ sub readDirBySuffix {
         foreach my $sf (
             @{ $backend->readDir( $fn, getFileLimit($fn), $utils ) } )
         {
-            $sf .= '/' if $backend->isDir( $fn . $sf );
+            $sf .= q{/} if $backend->isDir( $fn . $sf );
             my $nbase = $base . $sf;
             push @{$hrefs}, $nbase
-                if $backend->isFile( $fn . $sf ) && $sf =~ /\.\Q$suffix\E/;
+                if $backend->isFile( $fn . $sf ) && $sf =~ /\.\Q$suffix\E/xms;
             readDirBySuffix( $fn . $sf, $nbase, $hrefs, $suffix, $depth - 1,
                 $visited )
                 if $depth != 0 && $backend->isDir( $fn . $sf );
@@ -2744,33 +2567,33 @@ sub handlePropFindElement {
     my $noval;
     foreach my $propfind ( keys %{$xmldata} ) {
         my $nons = $propfind;
-        my $ns   = "";
-        if ( $nons =~ s/{([^}]*)}// ) {
+        my $ns   = q{};
+        if ( $nons =~ s/{([^}]*)}//xms ) {
             $ns = $1;
         }
-        if ( ( $nons =~ /(allprop|propname)/ ) && ($all) ) {
+        if ( ( $nons =~ /(?:allprop|propname)/xms ) && ($all) ) {
             printHeaderAndContent('400 Bad Request');
             return;
         }
-        elsif ( $nons =~ /^(allprop|propname)$/ ) {
-            $all   = 1;
+        elsif ( $nons =~ /^(allprop|propname)$/xms ) {
             $noval = $1 eq 'propname';
+            $all   = 1;
             push @props, @KNOWN_COLL_PROPS, @KNOWN_FILE_PROPS if $noval;
             push @props, @ALLPROP_PROPS unless $noval;
         }
-        elsif ( $nons =~ /^(prop|include)$/ ) {
+        elsif ( $nons =~ /^(?:prop|include)$/xms ) {
             handlePropElement( $$xmldata{$propfind}, \@props );
         }
-        elsif ( grep( { $_ =~ /\Q$nons\E/ } @IGNORE_PROPS ) ) {
+        elsif ( any { /\Q$nons\E/xms } @IGNORE_PROPS ) {
             next;
         }
-        elsif (defined $NAMESPACES{ $$xmldata{$propfind} }
-            || defined $NAMESPACES{$ns} )
+        elsif (defined $WebDAV::XMLHelper::NAMESPACES{ $$xmldata{$propfind} }
+            || defined $WebDAV::XMLHelper::NAMESPACES{$ns} )
         {    # sometimes the namespace: ignore
         }
         else {
             debug("Unknown element $propfind ($nons) in PROPFIND request");
-            debug( $NAMESPACES{ $$xmldata{$propfind} } );
+            debug( $WebDAV::XMLHelper::NAMESPACES{ $$xmldata{$propfind} } );
             printHeaderAndContent('400 Bad Request');
             exit;
         }
@@ -2782,14 +2605,14 @@ sub handlePropElement {
     my ( $xmldata, $props ) = @_;
     foreach my $prop ( keys %{$xmldata} ) {
         my $nons = $prop;
-        my $ns   = "";
+        my $ns   = q{};
         if ( $nons =~ s/{([^}]*)}//xms ) {
             $ns = $1;
         }
         if ( ref( $$xmldata{$prop} ) !~ /^(?:HASH|ARRAY)$/xms )
         {    # ignore namespaces
         }
-        elsif ( $ns eq "" && !defined $$xmldata{$prop}{xmlns} ) {
+        elsif ( $ns eq q{} && !defined $$xmldata{$prop}{xmlns} ) {
             printHeaderAndContent('400 Bad Request');
             exit;
             ##} elsif (grep({$_=~/\Q$nons\E/} @KNOWN_FILE_PROPS, @KNOWN_COLL_PROPS)>0)  {
@@ -2797,7 +2620,7 @@ sub handlePropElement {
         elsif ( exists $known_filecoll_props{$nons} ) {
             push @{$props}, $nons;
         }
-        elsif ( $ns eq "" ) {
+        elsif ( $ns eq q{} ) {
             push @{$props}, '{}' . $prop;
         }
         else {
@@ -2823,7 +2646,7 @@ sub getPropStat {
 
     my $isDir = $backend->isDir($nfn);
 
-    $fn .= '/' if $isDir && $fn !~ /\/$/xms;
+    $fn .= q{/} if $isDir && $fn !~ /\/$/xms;
     foreach my $prop ( @{$props} ) {
         my ( $xmlnsuri, $propname ) = ( 'DAV:', $prop );
         if ( $prop =~ /^{([^}]*)}(.*)$/xms ) {
@@ -2837,28 +2660,22 @@ sub getPropStat {
             next;
         }
         elsif (
-            (   !defined $NAMESPACES{$xmlnsuri}
-                || grep( { $_ =~ /^\Q$propname\E$/xms } $isDir
-                    ? @KNOWN_COLL_LIVE_PROPS
-                    : @KNOWN_FILE_LIVE_PROPS ) > 0
+            (   !defined $WebDAV::XMLHelper::NAMESPACES{$xmlnsuri}
+                || any { /^\Q$propname\E$/xms } ($isDir ? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) 
             )
-            && grep( { $_ =~ /^\Q$propname\E$/xms } @PROTECTED_PROPS ) == 0
+            && ! any { /^\Q$propname\E$/xms } @PROTECTED_PROPS 
             )
         {
             my $dbval = getDBDriver()->db_getProperty(
                 getPropertyModule()->resolve($fn), $prop =~ /{[^}]*}/xms
                 ? $prop
-                : '{' . getNameSpaceUri($prop) . "}$prop"
+                : '{' . get_namespace_uri($prop) . "}$prop"
             );
             if ( defined $dbval ) {
                 $resp_200{prop}{$prop} = $noval ? undef : $dbval;
                 next;
             }
-            elsif (
-                grep( { $_ =~ /^\Q$propname\E$/xms } $isDir
-                    ? @KNOWN_COLL_LIVE_PROPS
-                    : @KNOWN_FILE_LIVE_PROPS ) == 0
-                )
+            elsif (!any { /^\Q$propname\E$/xms } ($isDir? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) )
             {
                 debug(
                     "getPropStat: #1 NOT FOUND: $prop ($propname, $xmlnsuri)"
@@ -2893,121 +2710,6 @@ sub getPropStat {
     return \@propstat;
 }
 
-sub cmp_elements {
-    my $aa = $ELEMENTORDER{$a} || $ELEMENTORDER{default};
-    my $bb = $ELEMENTORDER{$b} || $ELEMENTORDER{default};
-    return $aa <=> $bb || $a cmp $b;
-}
-
-sub createXMLData {
-    my ( $w, $d, $xmlns ) = @_;
-    if ( ref($d) eq 'HASH' ) {
-        foreach my $e ( sort cmp_elements keys %{$d} ) {
-            my $el   = $e;
-            my $euns = "";
-            my $uns;
-            my $ns   = getNameSpace($e);
-            my $attr = "";
-            if ( defined $DATATYPES{$e} ) {
-                $attr .= " " . $DATATYPES{$e};
-                if ( $DATATYPES{$e} =~ /(\w+):dt/ ) {
-                    $$xmlns{$1} = 1 if defined $NAMESPACEABBR{$1};
-                }
-            }
-            if ( $e =~ /{([^}]*)}/ ) {
-                $ns = $1;
-                if ( defined $NAMESPACES{$ns} ) {
-                    $el =~ s/{[^}]*}//;
-                    $ns = $NAMESPACES{$ns};
-                }
-                else {
-                    $uns  = $ns;
-                    $euns = $e;
-                    $euns =~ s/{[^}]*}//;
-                }
-            }
-            my $el_end = $el;
-            $el_end =~ s/ .*$//;
-            my $euns_end = $euns;
-            $euns_end =~ s/ .*$//;
-            $$xmlns{$ns} = 1 unless defined $uns;
-            my $nsd = "";
-            if ( $e eq 'xmlns' ) {    # ignore namespace defs
-            }
-            elsif ( $e eq 'content' ) {    #
-                $$w .= $$d{$e};
-            }
-            elsif ( !defined $$d{$e} ) {
-                if ( defined $uns ) {
-                    $$w .= "<${euns} xmlns=\"$uns\"/>";
-                }
-                else {
-                    $$w .= "<${ns}:${el}${nsd}${attr}/>";
-                }
-            }
-            elsif ( ref( $$d{$e} ) eq 'ARRAY' ) {
-                foreach my $e1 ( @{ $$d{$e} } ) {
-                    my $tmpw = "";
-                    createXMLData( \$tmpw, $e1, $xmlns );
-                    if ( $NAMESPACEELEMENTS{$el} ) {
-                        foreach my $abbr ( keys %{$xmlns} ) {
-                            $nsd .= qq@ xmlns:$abbr="$NAMESPACEABBR{$abbr}"@;
-                            delete $$xmlns{$abbr};
-                        }
-                    }
-                    $$w .= qq@<${ns}:${el}${nsd}${attr}>@;
-                    $$w .= $tmpw;
-                    $$w .= "</${ns}:${el_end}>";
-                }
-            }
-            else {
-                if ( defined $uns ) {
-                    $$w .= qq@<${euns} xmlns="$uns">@;
-                    createXMLData( $w, $$d{$e}, $xmlns );
-                    $$w .= qq@</${euns_end}>@;
-                }
-                else {
-                    my $tmpw = "";
-                    createXMLData( \$tmpw, $$d{$e}, $xmlns );
-                    if ( $NAMESPACEELEMENTS{$el} ) {
-                        foreach my $abbr ( keys %{$xmlns} ) {
-                            $nsd .= qq@ xmlns:$abbr="$NAMESPACEABBR{$abbr}"@;
-                            delete $$xmlns{$abbr};
-                        }
-                    }
-                    $$w .= qq@<${ns}:${el}${nsd}${attr}>@;
-                    $$w .= $tmpw;
-                    $$w .= "</${ns}:${el_end}>";
-                }
-            }
-        }
-    }
-    elsif ( ref($d) eq 'ARRAY' ) {
-        foreach my $e ( @{$d} ) {
-            createXMLData( $w, $e, $xmlns );
-        }
-    }
-    elsif ( ref($d) eq 'SCALAR' ) {
-        $$w .= qq@$d@;
-    }
-    elsif ( ref($d) eq 'REF' ) {
-        createXMLData( $w, $$d, $xmlns );
-    }
-    else {
-        $$w .= qq@$d@ if defined $d;
-    }
-    return;
-}
-
-sub createXML {
-    my ( $dataRef, $withoutp ) = @_;
-
-    my $data = "";
-    $data = q@<?xml version="1.0" encoding="@ . $CHARSET . q@"?>@
-        unless defined $withoutp;
-    createXMLData( \$data, $dataRef );
-    return $data;
-}
 
 sub getETag {
     my ($file) = @_;
@@ -3019,7 +2721,7 @@ sub getETag {
     $digest->add($file);
     $digest->add( $size  || 0 );
     $digest->add( $mtime || 0 );
-    return '"' . $digest->hexdigest() . '"';
+    return q{"} . $digest->hexdigest() . q{"};
 }
 
 sub getAddHeaderHashRef {
@@ -3040,7 +2742,7 @@ sub printHeaderAndContent {
 
     $status  = '403 Forbidden' unless defined $status;
     $type    = 'text/plain'    unless defined $type;
-    $content = ''              unless defined $content;
+    $content =  q{}            unless defined $content;
     
     
     my $contentlength = bytes::length($content);
@@ -3058,7 +2760,7 @@ sub printHeaderAndContent {
     $header{'Translate'} = 'f' if defined $cgi->http('Translate');
     %header = ( %header, %{ getAddHeaderHashRef($addHeader) } );
 
-    binmode STDOUT;
+    binmode(STDOUT) || croak('Cannot set bindmode for STDOUT.');
     print $cgi->header( \%header ) . $content;
     fixModPerlResponse( \%header );
     return;
@@ -3070,13 +2772,13 @@ sub printCompressedHeaderAndContent {
     if ( $ENABLE_COMPRESSION && ( my $enc = $cgi->http('Accept-Encoding') ) )
     {
         my $orig = $content;
-        if ( $enc =~ /gzip/i ) {
+        if ( $enc =~ /gzip/xmsi ) {
             require IO::Compress::Gzip;
             my $g = IO::Compress::Gzip->new( \$content );
             $g->write($orig);
             $$header{'Content-Encoding'} = 'gzip';
         }
-        elsif ( $enc =~ /deflate/i ) {
+        elsif ( $enc =~ /deflate/xmsi ) {
             require IO::Compress::Deflate;
             my $d = IO::Compress::Deflate->new( \$content );
             $d->write($orig);
@@ -3095,8 +2797,7 @@ sub printLocalFileHeader {
         -type           => getMIMEType($fn),
         -Content_Length => $stat[7],
         -ETag           => getETag($fn),
-        -Last_Modified =>
-            strftime( "%a, %d %b %Y %T GMT", gmtime( $stat[9] || 0 ) ),
+        -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
         -charset        => $CHARSET,
         'DAV'           => $DAV,
         'MS-Author-Via' => 'DAV'
@@ -3116,7 +2817,7 @@ sub printFileHeader {
         -Content_Length => $stat[7],
         -ETag           => getETag($fn),
         -Last_Modified =>
-            strftime( "%a, %d %b %Y %T GMT", gmtime( $stat[9] ) ),
+            strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] ) ),
         -charset        => $CHARSET,
         -Cache_Control  => 'no-cache, no-store',
         'MS-Author-Via' => 'DAV',
@@ -3139,20 +2840,14 @@ sub printFileHeader {
 sub is_hidden {
     my ($fn) = @_;
     my $filter = getHiddenFilter();
-    return $filter && $fn =~ /$filter/;
+    return $filter && $fn =~ /$filter/xms;
 }
 
-sub simpleXMLParser {
-    my ( $text, $keepRoot ) = @_;
-    my %param;
-    $param{NSExpand} = 1;
-    $param{KeepRoot} = 1 if $keepRoot;
-    return XMLin( $text, %param );
-}
+
 
 sub preConditionFailed {
     my ($fn) = @_;
-    $fn = $backend->getParent($fn) . '/' if !$backend->exists($fn);
+    $fn = $backend->getParent($fn) . q{/} if !$backend->exists($fn);
     my $ifheader = getIfHeaderComponents( $cgi->http('If') );
     my $t        = 0;                                           # token found
     my $nnl  = 0;              # not no-lock found
@@ -3160,14 +2855,14 @@ sub preConditionFailed {
     my $e    = 0;              # wrong etag found
     my $etag = getETag($fn);
     foreach my $ie ( @{ $$ifheader{list} } ) {
-        debug( " - ie{token}=" . $$ie{token} );
-        if ( $$ie{token} =~ /Not\s+<DAV:no-lock>/i ) {
+        debug( ' - ie{token}=' . $$ie{token} );
+        if ( $$ie{token} =~ /Not\s+<DAV:no-lock>/xmsi ) {
             $nnl = 1;
         }
-        elsif ( $$ie{token} =~ /<DAV:no-lock>/i ) {
+        elsif ( $$ie{token} =~ /<DAV:no-lock>/xmsi ) {
             $nl = 1;
         }
-        elsif ( $$ie{token} =~ /opaquelocktoken/i ) {
+        elsif ( $$ie{token} =~ /opaquelocktoken/xmsi ) {
             $t = 1;
         }
         if ( defined $$ie{etag} ) {
@@ -3182,7 +2877,7 @@ sub preConditionFailed {
 sub isAllowed {
     my ( $fn, $recurse ) = @_;
 
-    $fn = $backend->getParent($fn) . '/' if !$backend->exists($fn);
+    $fn = $backend->getParent($fn) . q{/} if !$backend->exists($fn);
 
     return 1 unless $ENABLE_LOCK;
 
@@ -3197,10 +2892,10 @@ sub isAllowed {
     foreach my $token ( @{ getLockModule()->getTokens( $fn, $recurse ) } ) {
         for ( my $j = 0; $j <= $#{ $$ifheader{list} }; $j++ ) {
             my $iftoken = $$ifheader{list}[$j]{token};
-            $iftoken = "" unless defined $iftoken;
-            $iftoken =~ s/[\<\>\s]+//g;
+            $iftoken = q{} unless defined $iftoken;
+            $iftoken =~ s/[\<\>\s]+//xmsg;
             debug( "isAllowed: $iftoken send, needed for $token: "
-                    . ( $iftoken eq $token ? "OK" : "FAILED" ) );
+                    . ( $iftoken eq $token ? 'OK' : 'FAILED' ) );
             if ( $token eq $iftoken ) {
                 $ret = 1;
                 last;
@@ -3214,14 +2909,14 @@ sub getIfHeaderComponents {
     my ($if) = @_;
     my ( $ret, $rtag, @tokens );
     if ( defined $if ) {
-        if ( $if =~ s/^<([^>]+)>\s*// ) {
+        if ( $if =~ s/^<([^>]+)>\s*//xms ) {
             $rtag = $1;
         }
         while (
-            $if =~ s/^\((Not\s*)?([^\[\)]+\s*)?\s*(\[([^\]\)]+)\])?\)\s*//i )
+            $if =~ s/^\((Not\s*)?([^\[\)]+\s*)?\s*(\[([^\]\)]+)\])?\)\s*//xmsi )
         {
             push @tokens,
-                { token => ( $1 ? $1 : '' ) . ( $2 ? $2 : '' ), etag => $4 };
+                { token => ( $1 ? $1 : q{} ) . ( $2 ? $2 : q{} ), etag => $4 };
         }
         $ret = { rtag => $rtag, list => \@tokens };
     }
@@ -3265,8 +2960,8 @@ sub readDirRecursive {
                 $isReadable = $backend->isReadable("$nfn/$f");
                 my $nnfn
                     = $isReadable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
-                $fru .= '/'
-                    if $isReadable && $backend->isDir($nnfn) && $fru !~ /\/$/;
+                $fru .= q{/}
+                    if $isReadable && $backend->isDir($nnfn) && $fru !~ /\/$/xms;
                 readDirRecursive( $nnfn, $fru, $respsRef, $props, $all,
                     $noval, $depth > 0 ? $depth - 1 : $depth,
                     0, $visited );
@@ -3325,7 +3020,7 @@ sub handlePropertyRequest {
                 $resp_200, $resp_403 );
         }
     }
-    if ( $xml =~ /<([^:]+:)?set[\s>]+.*<([^:]+:)?remove[\s>]+/s )
+    if ( $xml =~ /<([^:]+:)?set[\s>]+.*<([^:]+:)?remove[\s>]+/xms )
     {    ## fix parser bug: set/remove|remove/set of the same prop
         if ( ref( $$dataRef{'{DAV:}remove'} ) eq 'ARRAY' ) {
             foreach my $remove ( @{ $$dataRef{'{DAV:}remove'} } ) {
@@ -3388,7 +3083,7 @@ sub getDirInfo {
             $counter{realchildcount}++;
             $counter{childcount}++;
             $counter{visiblecount}++
-                if !$backend->isDir("$fn$f") && $f !~ /^\./;
+                if !$backend->isDir("$fn$f") && $f !~ /^\./xms;
             $counter{objectcount}++ if !$backend->isDir("$fn$f");
         }
     }
@@ -3401,25 +3096,16 @@ sub getDirInfo {
     return $counter{$prop} || 0;
 }
 
-sub getNameSpace {
-    my ($el) = @_;
-    return $ELEMENTS{$el} || $ELEMENTS{default};
-}
-
-sub getNameSpaceUri {
-    my ($prop) = @_;
-    return $NAMESPACEABBR{ getNameSpace($prop) };
-}
 
 sub moveToTrash {
     my ($fn) = @_;
 
     my $ret  = 0;
     my $etag = getETag($fn);    ## get a unique name for trash folder
-    $etag =~ s/\"//g;
+    $etag =~ s/\"//xmsg;
     my $trash = "$TRASH_FOLDER$etag/";
 
-    if ( $fn =~ /^\Q$TRASH_FOLDER\E/ ) {    ## delete within trash
+    if ( $fn =~ /^\Q$TRASH_FOLDER\E/xms ) {    ## delete within trash
         my @err;
         $ret += $backend->deltree( $fn, \@err );
         $ret = 0 unless $#err == -1;
@@ -3431,7 +3117,7 @@ sub moveToTrash {
         if ( $backend->exists($trash) ) {
             my $i = 0;
             while ( $backend->exists($trash) ) {   ## find unused trash folder
-                $trash = "$TRASH_FOLDER$etag" . ( $i++ ) . '/';
+                $trash = "$TRASH_FOLDER$etag" . ( $i++ ) . q{/};
             }
         }
         $ret = 1
@@ -3466,20 +3152,15 @@ sub getSupportedMethods {
     return \@methods;
 }
 
-sub nonamespace {
-    my ($prop) = @_;
-    $prop =~ s/^{[^}]*}//;
-    return $prop;
-}
 
 sub logger {
     if ( defined $LOGFILE && open( my $LOG, '>>', $LOGFILE ) ) {
-        print $LOG localtime()
+        print {$LOG} localtime()
             . " - $<($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
-        close($LOG);
+        close($LOG) || croak("Cannot close filehandle for '$LOGFILE'");
     }
     else {
-        print STDERR "$0: @_\n";
+        print {*STDERR} "$0: @_\n";
     }
     return;
 }
@@ -3487,9 +3168,9 @@ sub logger {
 sub hasThumbSupport {
     my ($mime) = @_;
     return 1
-        if $mime =~ /^image\//
-        || $mime =~ /^text\/plain/
-        || ( $ENABLE_THUMBNAIL_PDFPS && $mime =~ /^application\/(pdf|ps)$/ );
+        if $mime =~ /^image\//xms
+        || $mime =~ /^text\/plain/xms
+        || ( $ENABLE_THUMBNAIL_PDFPS && $mime =~ m{^application/(pdf|ps)$}xmsi );
     return 0;
 }
 
@@ -3497,11 +3178,11 @@ sub readMIMETypes {
     my ($mimefile) = @_;
     if ( open( my $f, '<', $mimefile ) ) {
         while ( my $e = <$f> ) {
-            next if $e =~ /^\s*(\#.*)?$/;
-            my ( $type, @suffixes ) = split( /\s+/, $e );
+            next if $e =~ /^\s*(\#.*)?$/xms;
+            my ( $type, @suffixes ) = split( /\s+/xms, $e );
             foreach (@suffixes) { $MIMETYPES{$_} = $type }
         }
-        close($f);
+        close($f) || croak("Cannot close filehandle for '$mimefile'.");
     }
     else {
         carp "Cannot open $mimefile";
@@ -3516,7 +3197,7 @@ sub getMIMEType {
     readMIMETypes($MIMEFILE) if defined $MIMEFILE;
     $MIMEFILE = undef;
     my $extension = 'default';
-    if ( $filename =~ /\.([^\.]+)$/ ) {
+    if ( $filename =~ /\.([^\.]+)$/xms ) {
         $extension = lc($1);
     }
     return $MIMETYPES{$extension} || $MIMETYPES{default};
@@ -3539,7 +3220,7 @@ sub rcopy {
 #	return 0 if $backend->getLinkSrc($src) eq $backend->getLinkSrc($dst); # litmus fails (why?)
 
     # src in dst?
-    return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/;
+    return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/xms;
 
     # src exists and can copy?
     return 0
@@ -3553,12 +3234,12 @@ sub rcopy {
     return 0 if $backend->exists($dst) && !$backend->isWriteable($dst);
 
     my $nsrc = $src;
-    $nsrc =~ s/\/$//;    ## remove trailing slash for link test (-l)
+    $nsrc =~ s/\/$//xms;    ## remove trailing slash for link test (-l)
 
     if ( $backend->isLink($nsrc) ) {    # link
         if ( !$move || !$backend->rename( $nsrc, $dst ) ) {
             my $orig = $backend->getLinkSrc($nsrc);
-            $dst =~ s/\/$//;
+            $dst =~ s/\/$//xms;
             my $ret = $backend->createSymLink( $orig, $dst );
             $ret = $backend->unlinkFile($nsrc) if $ret && $move;
             return $ret;
@@ -3566,7 +3247,7 @@ sub rcopy {
     }
     elsif ( $backend->isFile($src) ) {    # file
         if ( $backend->isDir($dst) ) {
-            $dst .= '/' if $dst !~ /\/$/;
+            $dst .= q{/} if $dst !~ /\/$/xms;
             $dst .= $backend->basename($src);
         }
         if ( !$move || !$backend->rename( $src, $dst ) ) {
@@ -3583,8 +3264,8 @@ sub rcopy {
         # cannot write folders to files:
         return 0 if $backend->isFile($dst);
 
-        $dst .= '/' if $dst !~ /\/$/;
-        $src .= '/' if $src !~ /\/$/;
+        $dst .= q{/} if $dst !~ /\/$/xms;
+        $src .= q{/} if $src !~ /\/$/xms;
 
 #if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
         if ( !$move || !$backend->rename( $src, $dst ) ) {
@@ -3637,7 +3318,7 @@ sub getFileLimit {
 }
 
 sub getHiddenFilter {
-    return @HIDDEN ? '(' . join( '|', @HIDDEN ) . ')' : undef;
+    return @HIDDEN ? '(' . join( q{|}, @HIDDEN ) . ')' : undef;
 }
 
 sub getWebInterface {
@@ -3675,18 +3356,18 @@ sub isLocked {
 
 sub getParentURI {
     my ($uri) = @_;
-    return $uri && $uri =~ /^(.*?)\/[^\/]+\/?$/xms ? ( $1 || '/' ) : '/';
+    return $uri && $uri =~ /^(.*?)\/[^\/]+\/?$/xms ? ( $1 || q{/} ) : q{/};
 }
 
 sub getLocalFileContentAndType {
     my ( $fn, $default, $defaulttype ) = @_;
-    my $content = "";
+    my $content = q{};
     if ( -e $fn && !-d $fn && open( my $F, '<', $fn ) ) {
         {
             local $/ = undef;
             $content = <$F>;
         };
-        close($F);
+        close($F) || croak("Cannot close filehandle for '$fn'.");
         $defaulttype = getMIMEType($fn);
     }
     else {
@@ -3708,7 +3389,7 @@ sub getErrorDocument {
 }
 
 sub debug {
-    print STDERR "$0: @_\n" if $DEBUG;
+    print {*STDERR} "$0: @_\n" if $DEBUG;
     return;
 }
 
@@ -3740,7 +3421,7 @@ sub getEventChannel {
 }
 
 sub readRequestBody {
-    my $body = '';
+    my $body = q{};
     while ( read( STDIN, my $buffer, $BUFSIZE || 1048576 ) ) {
         $body .= $buffer;
     }
@@ -3749,7 +3430,7 @@ sub readRequestBody {
 
 sub getByteRanges {
     my $etag = getETag($PATH_TRANSLATED);
-    my $lm   = strftime( "%a, %d %b %Y %T GMT",
+    my $lm   = strftime( '%a, %d %b %Y %T GMT',
         gmtime( ( $backend->stat($PATH_TRANSLATED) )[9] ) );
     my $ifrange = $cgi->http('If-Range') || $etag;
     return if $ifrange ne $etag && $ifrange ne $lm;
@@ -3763,9 +3444,13 @@ sub getByteRanges {
 sub fixModPerlResponse {
     my ($headerref) = @_;
     ## mod_perl fix for unknown status codes:
+    my $stat200re = qr{(?:20[16789]|2[1-9])}xms;
+    my $stat300re = qr{(?:30[89]|3[1-9])}xms;
+    my $stat400re = qr{(?:41[89]|4[2-9])}xms;
+    my $stat500re = qr{(?:50[6-9]|5[1-9])}xms;
     $cgi->r->status("${1}00")
         if $ENV{MOD_PERL}
-        && $$headerref{-status} =~ /^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/xms
+        && $$headerref{-status} =~ /^(?:$stat200re|$stat300re|$stat400re|$stat500re)/xms # /^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/xms
         && $$headerref{-status} =~ /^(\d)/xms
         && $$headerref{-Content_Length} > 0;
     return;
@@ -3778,6 +3463,25 @@ sub broadcastEvent {
 
 sub getBaseURIFrag {
     my ($uri) = @_;
-    return $uri =~ /([^\/]+)\/?$/xms ? ( $1 // '/' ) : '/';
+    return $uri =~ /([^\/]+)\/?$/xms ? ( $1 // q{/} ) : q{/};
+}
+
+### shorthands WebDAV::XMLHelper:
+use WebDAV::XMLHelper;
+sub simple_xml_parser {
+    my (@args) = @_;
+    return WebDAV::XMLHelper::getinstance()->simple_xml_parser(@args);    
+}
+sub nonnamespace {
+    my (@args) = @_;
+    return WebDAV::XMLHelper::getinstance()->nonamespace(@args);
+}
+sub get_namespace_uri {
+    my (@args) = @_;
+    return WebDAV::XMLHelper::getinstance()->get_namespace_uri(@args);
+}
+sub create_xml {
+    my (@args) = @_;
+    return WebDAV::XMLHelper::getinstance()->create_xml(@args);
 }
 1;

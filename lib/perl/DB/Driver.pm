@@ -19,393 +19,489 @@
 package DB::Driver;
 
 use strict;
+use warnings;
 
 use vars qw( %CACHE $PREFIX);
 
 $PREFIX = '///-/';
 
 use DBI;
-
+use List::Util qw(any);
 sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = {};
-	bless $self, $class;
-	return $self;
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = {};
+    bless $self, $class;
+    return $self;
 }
+
 sub finalize {
-	my $self = shift;
-	%CACHE = ();
-	if (!$main::DBI_PERSISTENT && $$self{DBI_INIT}) {
-		$$self{DBI_INIT}->disconnect();
-		delete $$self{DBI_INIT};
-	}
-	return;
+    my $self = shift;
+    %CACHE = ();
+    if ( !$main::DBI_PERSISTENT && $$self{DBI_INIT} ) {
+        $$self{DBI_INIT}->disconnect();
+        delete $$self{DBI_INIT};
+    }
+    return;
 }
+
 sub db_handleUpdates {
-	my ($self, $dbh, $sth) = @_;
-	my $ret = 0;
-	if ($sth->err) {
-		warn($sth->errstr);
-		$sth->finish();
-		# my $rc = $dbh->rollback();
-		# warn ("rollback failed (rc=$rc)") unless $rc;
-#	} else {
-#		$ret = $dbh->commit();
-#		warn("commit failed (rc=$ret)") unless $ret;
-	}
-	return $ret;
+    my ( $self, $dbh, $sth ) = @_;
+    my $ret = 0;
+    if ( $sth->err ) {
+        carp( $sth->errstr );
+        $sth->finish();
+
+        # my $rc = $dbh->rollback();
+        # warn ("rollback failed (rc=$rc)") unless $rc;
+        #	} else {
+        #		$ret = $dbh->commit();
+        #		warn("commit failed (rc=$ret)") unless $ret;
+    }
+    return $ret;
 }
+
 sub db_handleSelect {
-	my ($self, $dbh, $sth ) = @_;
-	my $ret = 0;
-	if ($sth->err) {
-		warn ($sth->errstr);
-		$sth->finish(); # sqlite needs it
-		$dbh->rollback();
-#	} else {
-#		$ret = $dbh->commit();
-#		warn("commit failed (rc=$ret)") unless $ret;
-	}
-	return $ret;
+    my ( $self, $dbh, $sth ) = @_;
+    my $ret = 0;
+    if ( $sth->err ) {
+        carp( $sth->errstr );
+        $sth->finish();    # sqlite needs it
+        $dbh->rollback();
+
+        #	} else {
+        #		$ret = $dbh->commit();
+        #		warn("commit failed (rc=$ret)") unless $ret;
+    }
+    return $ret;
 }
+
 sub db_isRootFolder {
-        my ($self, $fn, $token) = @_;
-        my $rows =  [];
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn = ? AND basefn = ? AND token = ?');
-        if (defined $sth) {
-                $sth->execute($fn, $fn, $token);
-                $rows = $sth->fetchall_arrayref();
-                $self->db_handleSelect($dbh,$sth);
-        }
-        return $#{$rows}>-1;
+    my ( $self, $fn, $token ) = @_;
+    my $rows = [];
+    my $dbh  = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn = ? AND basefn = ? AND token = ?'
+        );
+    if ( defined $sth ) {
+        $sth->execute( $fn, $fn, $token );
+        $rows = $sth->fetchall_arrayref();
+        $self->db_handleSelect( $dbh, $sth );
+    }
+    return $#{$rows} > -1;
 }
 
 sub db_getLike {
-        my ($self,$fn) = @_;
-        my $rows;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn like ?');
-        if (defined $sth) {
-                $sth->execute($fn);
-                $rows = $sth->fetchall_arrayref();
-                $self->db_handleSelect($dbh,$sth);
-        }
-        return $rows;
+    my ( $self, $fn ) = @_;
+    my $rows;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn like ?'
+        );
+    if ( defined $sth ) {
+        $sth->execute($fn);
+        $rows = $sth->fetchall_arrayref();
+        $self->db_handleSelect( $dbh, $sth );
+    }
+    return $rows;
 }
+
 sub db_getCached {
-	my ($self, $fn, $token ) = @_;
-	return $CACHE{lockentry}{$fn}{row} if defined $token && exists $CACHE{lockentry}{$fn}{token}{$token};
-	return $CACHE{lockentry}{$fn}{row} if exists $CACHE{lockentry}{$fn}{row};
-	my $pfn = main::getParentURI($fn);
-	return [] if exists $CACHE{lockentry}{$pfn}{row};
-	$CACHE{lockentry}{$fn}{row} = [];
-	$CACHE{lockentry}{$fn}{token}{$token} = 0 if defined $token;
-	my $rows = $self->db_getLike($pfn);
-	$CACHE{lockentry}{$pfn}{row} = [];
-	$CACHE{lockentry}{$pfn}{token}{$token} = 0 if defined $token;
-	foreach my $row (@{$rows}) {
-		$CACHE{lockentry}{$$row[1]}{row} = $row;
-		$CACHE{lockentry}{$$row[1]}{token}{$$row[4]}=1;
-	}
-	return $CACHE{lockentry}{$fn}{row} if defined $fn && exists $CACHE{lockentry}{$fn}{row} && (!defined $token || $CACHE{lockentry}{$fn}{token}{$token}); 
-	return [];
+    my ( $self, $fn, $token ) = @_;
+    return $CACHE{lockentry}{$fn}{row}
+        if defined $token && exists $CACHE{lockentry}{$fn}{token}{$token};
+    return $CACHE{lockentry}{$fn}{row} if exists $CACHE{lockentry}{$fn}{row};
+    my $pfn = main::getParentURI($fn);
+    return [] if exists $CACHE{lockentry}{$pfn}{row};
+    $CACHE{lockentry}{$fn}{row} = [];
+    $CACHE{lockentry}{$fn}{token}{$token} = 0 if defined $token;
+    my $rows = $self->db_getLike($pfn);
+    $CACHE{lockentry}{$pfn}{row} = [];
+    $CACHE{lockentry}{$pfn}{token}{$token} = 0 if defined $token;
+
+    foreach my $row ( @{$rows} ) {
+        $CACHE{lockentry}{ $$row[1] }{row} = $row;
+        $CACHE{lockentry}{ $$row[1] }{token}{ $$row[4] } = 1;
+    }
+    return $CACHE{lockentry}{$fn}{row}
+        if defined $fn
+        && exists $CACHE{lockentry}{$fn}{row}
+        && ( !defined $token || $CACHE{lockentry}{$fn}{token}{$token} );
+    return [];
 }
+
 sub db_get {
-        my ($self,$fn,$token) = @_;
-        my $rows;
-        my $dbh = $self->db_init();
-        my $sel = 'SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn = ?';
-        my @params;
-        push @params, $fn;
-        if (defined $token) {
-                $sel .= ' AND token = ?';
-                push @params, $token;
-        }
-        
-        my $sth = $dbh->prepare($sel);
-        if (defined $sth) {
-                $sth->execute(@params);
-                $rows = $sth->fetchall_arrayref();
-                $self->db_handleSelect($dbh,$sth);
-        }
-        return $rows;
+    my ( $self, $fn, $token ) = @_;
+    my $rows;
+    my $dbh = $self->db_init();
+    my $sel
+        = 'SELECT basefn,fn,type,scope,token,depth,timeout,owner,timestamp FROM webdav_locks WHERE fn = ?';
+    my @params;
+    push @params, $fn;
+    if ( defined $token ) {
+        $sel .= ' AND token = ?';
+        push @params, $token;
+    }
+
+    my $sth = $dbh->prepare($sel);
+    if ( defined $sth ) {
+        $sth->execute(@params);
+        $rows = $sth->fetchall_arrayref();
+        $self->db_handleSelect( $dbh, $sth );
+    }
+    return $rows;
 }
+
 sub db_insertProperty {
-        my ($self,$fn, $propname, $value) = @_;
-        my $ret = 0;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('INSERT INTO webdav_props (fn, propname, value) VALUES ( ?,?,?)');
-        if (defined  $sth) {
-                $sth->execute($PREFIX.$fn, $propname, $value);
-                $ret = ($sth->rows >0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-                $CACHE{Properties}{$fn}{$propname}=$value;
-        }
-        return $ret;
+    my ( $self, $fn, $propname, $value ) = @_;
+    my $ret = 0;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare(
+        'INSERT INTO webdav_props (fn, propname, value) VALUES ( ?,?,?)');
+    if ( defined $sth ) {
+        $sth->execute( $PREFIX . $fn, $propname, $value );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+        $CACHE{Properties}{$fn}{$propname} = $value;
+    }
+    return $ret;
 }
+
 sub db_updateProperty {
-        my ($self,$fn, $propname, $value) = @_;
-        my $ret = 0;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('UPDATE webdav_props SET value = ? WHERE (fn = ? OR fn = ?) AND propname = ?');
-        if (defined  $sth) {
-                $sth->execute($value, $fn, $PREFIX.$fn, $propname);
-                $ret=($sth->rows>0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-                $CACHE{Properties}{$fn}{$propname}=$value;
-        }
-        return $ret;
+    my ( $self, $fn, $propname, $value ) = @_;
+    my $ret = 0;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'UPDATE webdav_props SET value = ? WHERE (fn = ? OR fn = ?) AND propname = ?'
+        );
+    if ( defined $sth ) {
+        $sth->execute( $value, $fn, $PREFIX . $fn, $propname );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+        $CACHE{Properties}{$fn}{$propname} = $value;
+    }
+    return $ret;
 }
+
 sub db_moveProperties {
-        my($self,$src,$dst) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('UPDATE webdav_props SET fn = ? WHERE fn = ? OR fn = ?');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($PREFIX.$dst, $PREFIX.$src,$src);
-                $ret = ($sth->rows>0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-                delete $CACHE{Properties}{$src};
-        }
-        return $ret;
+    my ( $self, $src, $dst ) = @_;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare(
+        'UPDATE webdav_props SET fn = ? WHERE fn = ? OR fn = ?');
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $PREFIX . $dst, $PREFIX . $src, $src );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+        delete $CACHE{Properties}{$src};
+    }
+    return $ret;
 }
+
 sub db_movePropertiesRecursive {
-        my($self,$src,$dst) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('UPDATE webdav_props SET fn = REPLACE(fn, ?, ?) WHERE fn = ? OR fn = ? OR fn LIKE ? OR fn LIKE ?');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($PREFIX.$src,$PREFIX.$dst,$src,$PREFIX.$src, "$src/\%","$PREFIX$src/\%");
-                $ret = ($sth->rows>0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-                delete $CACHE{Properties}{$src};
-        }
-        return $ret;
+    my ( $self, $src, $dst ) = @_;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'UPDATE webdav_props SET fn = REPLACE(fn, ?, ?) WHERE fn = ? OR fn = ? OR fn LIKE ? OR fn LIKE ?'
+        );
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute(
+            $PREFIX . $src,
+            $PREFIX . $dst,
+            $src, $PREFIX . $src,
+            "$src/\%", "$PREFIX$src/\%"
+        );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+        delete $CACHE{Properties}{$src};
+    }
+    return $ret;
 }
 
 sub db_copyProperties {
-        my($self,$src,$dst) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ? OR fn = ?');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($PREFIX.$dst,$src, $PREFIX.$src);
-                $ret = ($sth->rows>0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-        }
-        return $ret;
+    my ( $self, $src, $dst ) = @_;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'INSERT INTO webdav_props (fn,propname,value) SELECT ?, propname, value FROM webdav_props WHERE fn = ? OR fn = ?'
+        );
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $PREFIX . $dst, $src, $PREFIX . $src );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+    }
+    return $ret;
 }
-sub db_deleteProperties {
-        my($self,$fn) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? OR fn = ?');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($fn,$PREFIX.$fn);
-                $self->db_handleUpdates($dbh,$sth);
-                delete $CACHE{Properties}{$fn};
-                $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
-        }
-        return $ret;
-        
-}
-sub db_deletePropertiesRecursive {
-        my($self,$fn) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? OR fn = ? OR fn like ? OR fn like ?');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($fn,$PREFIX.$fn,"$fn/\%","$PREFIX$fn/\%");
-                $self->db_handleUpdates($dbh,$sth);
-                delete $CACHE{Properties}{$fn};
-                $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
-        }
-        return $ret;
-        
-}
-sub db_deletePropertiesRecursiveByName {
-        my($self,$fn,$propname) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE propname = ? AND (fn = ? OR fn = ? OR fn like ? OR fn like ?)');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($propname, $fn,$PREFIX.$fn,"$fn/\%","$PREFIX$fn/\%");
-                $self->db_handleUpdates($dbh,$sth);
-                delete $CACHE{Properties}{$fn};
-                $ret = 1; # bugfix by Harald Strack <hstrack@ssystems.de>
-        }
-        return $ret;
-        
-}
-sub db_getProperties {
-        my ($self,$fn) = @_;
-        return $CACHE{Properties}{$fn} if exists $CACHE{Properties}{$fn} || $CACHE{Properties_flag}{$fn}; 
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT REPLACE(fn,?,?), propname, value FROM webdav_props WHERE fn like ? OR fn like ?');
-        if (defined $sth) {
-                $sth->execute($PREFIX,'',"$fn\%","$PREFIX$fn\%");
-                if (!$sth->err) {
-                        my $rows = $sth->fetchall_arrayref();
-                        $self->db_handleSelect($dbh, $sth);
-                        foreach my $row (@{$rows}) {
-                                $CACHE{Properties}{$$row[0]}{$$row[1]}=$$row[2];
-                        }
-                } else {
-                	$self->db_handleSelect($dbh,$sth);
-                }
-        }
-        $CACHE{Properties_flag}{$fn}=1;
-        return $CACHE{Properties}{$fn};
-}
-sub db_getPropertyFromCache {
-	my ($self, $fn, $propname) = @_;
-	return exists $CACHE{Properties}{$fn} ? $CACHE{Properties}{$fn}{$propname} : $CACHE{Properties}{$fn};
-}
-sub db_getProperty {
-        my ($self,$fn,$propname) = @_;
-        my $props = $self->db_getProperties($fn);
-        return $$props{$propname};
-}
-sub db_removeProperty {
-        my ($self, $fn, $propname) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('DELETE FROM webdav_props WHERE (fn = ? OR fn = ?) AND propname = ?');
-        my $ret = 0;
-        if (defined $sth) {
-                $sth->execute($fn, $PREFIX.$fn, $propname);
-                $ret = ($sth->rows >0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-                delete $CACHE{Properties}{$fn}{$propname};
-        }
-        return $ret;
-}
-sub db_getPropertyFnByValue {
-        my ($self,$propname,$value) = @_;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('SELECT REPLACE(fn,?,?) FROM webdav_props WHERE propname = ? and value = ?');
-        if (defined $sth) {
-                $sth->execute($PREFIX, '',$propname,$value);
-                if (!$sth->err) {
-                        my $rows = $sth->fetchall_arrayref();
-                        $self->db_handleSelect($dbh, $sth);
-                        return $$rows[0] if $rows;
-                }
-                $self->db_handleSelect($dbh,$sth);
-        }
-        return;
-}
-sub db_insert {
-        my ($self, $basefn, $fn, $type, $scope, $token, $depth, $timeout, $owner) = @_;
-        my $ret = 0;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('INSERT INTO webdav_locks (basefn, fn, type, scope, token, depth, timeout, owner) VALUES ( ?,?,?,?,?,?,?,?)');
-        if (defined $sth) {
-                $sth->execute($basefn,$fn,$type,$scope,$token,$depth,$timeout,$owner);
-                $ret=($sth->rows>0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-        }
-        return $ret;
-}
-sub db_update {
-        my ($self,$basefn, $fn, $timeout) = @_;
-        my $ret = 0;
-        my $dbh = $self->db_init();
-        my $sth = $dbh->prepare('UPDATE webdav_locks SET timeout=? WHERE basefn = ? AND fn = ?' );
-        if (defined $sth) {
-                $sth->execute($timeout, $basefn, $fn);
-                $ret = ($sth->rows>0)?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-        }
-        return $ret;
-}
-sub db_delete {
-        my ($self,$fn,$token) = @_;
-        my $ret = 0;
-        my $dbh = $self->db_init();
-        my $sel = 'DELETE FROM webdav_locks WHERE ( basefn = ? OR fn = ? )';
-        my @params = ($fn, $fn);
-        if (defined $token) {
-                $sel.=' AND token = ?';
-                push @params, $token;
-        }
-        my $sth = $dbh->prepare($sel);
-        if (defined $sth) {
-                $sth->execute(@params);
-                $ret = $sth->rows>0?1:0;
-                $self->db_handleUpdates($dbh,$sth);
-        }
-        
-        return $ret;
-}
-sub db_modify {
-	my ($self,$prepstmt,@params) = @_;
-	my $ret = 0;
-	my $dbh = $self->db_init();
-	my $sth = $dbh->prepare($prepstmt);
-	if (defined $sth) {
-		$ret = $sth->execute(@params);
-		$self->db_handleUpdates($dbh, $sth);	
-	}
-	return $ret;
-}
-sub db_select {
-	my ($self, $prepstmt, $paramsref, $slice, $max_rows) = @_;
-	my $dbh = $self->db_init();
-	my $sth = $dbh->prepare($prepstmt);
-	return defined $sth && $sth->execute(@{$paramsref}) ? $sth->fetchall_arrayref($slice, $max_rows) : undef; 
-}
-sub db_selecth {
-	my ($self, $prepstmt, $paramsref, $key) = @_;
-	my $dbh = $self->db_init();
-	my $sth = $dbh->prepare($prepstmt);
-	return defined $sth && $sth->execute(@{$paramsref}) ? $sth->fetchall_hashref($key) : undef;
-}
-sub db_table_exists {
-	my $self = shift;
-	my $table = shift;
-	my $dbh = $self->db_init();
-	my @tables = $dbh->tables('','',$table,'TABLE');
-	if (@tables) {
-		foreach (@tables) {
-			next unless $_;
-			return 1 if $_ =~ /\Q${table}\E$/;
-		}
-	}
-	return 0;
-}
-sub db_init {
-        my $self = shift;
-        return $$self{DBI_INIT} if defined $$self{DBI_INIT};
 
-        my $dbh = DBI->connect($main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS, { RaiseError=>0, PrintError=>0, AutoCommit=>1 }) || die("You need a database (see \$DBI_SRC configuration)");
-        if (defined $dbh && $main::CREATE_DB) {
-                foreach my $query (@main::DB_SCHEMA) {
-                        my $sth = $dbh->prepare($query);
-                        if (defined $sth) {
-                                $sth->execute();
-                                if ($sth->err) {
-                                	$sth->finish();
-                                	$dbh->rollback();
-                                        $dbh=undef;
-                                } else {
-                                        $dbh->commit();
-                                }       
-                        } else {
-                                warn("db_init: '$query' preparation failed!");
-                        }
-                }
+sub db_deleteProperties {
+    my ( $self, $fn ) = @_;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare('DELETE FROM webdav_props WHERE fn = ? OR fn = ?');
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $fn, $PREFIX . $fn );
+        $self->db_handleUpdates( $dbh, $sth );
+        delete $CACHE{Properties}{$fn};
+        $ret = 1;    # bugfix by Harald Strack <hstrack@ssystems.de>
+    }
+    return $ret;
+
+}
+
+sub db_deletePropertiesRecursive {
+    my ( $self, $fn ) = @_;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'DELETE FROM webdav_props WHERE fn = ? OR fn = ? OR fn like ? OR fn like ?'
+        );
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $fn, $PREFIX . $fn, "$fn/\%", "$PREFIX$fn/\%" );
+        $self->db_handleUpdates( $dbh, $sth );
+        delete $CACHE{Properties}{$fn};
+        $ret = 1;    # bugfix by Harald Strack <hstrack@ssystems.de>
+    }
+    return $ret;
+
+}
+
+sub db_deletePropertiesRecursiveByName {
+    my ( $self, $fn, $propname ) = @_;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'DELETE FROM webdav_props WHERE propname = ? AND (fn = ? OR fn = ? OR fn like ? OR fn like ?)'
+        );
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $propname, $fn, $PREFIX . $fn,
+            "$fn/\%", "$PREFIX$fn/\%" );
+        $self->db_handleUpdates( $dbh, $sth );
+        delete $CACHE{Properties}{$fn};
+        $ret = 1;    # bugfix by Harald Strack <hstrack@ssystems.de>
+    }
+    return $ret;
+
+}
+
+sub db_getProperties {
+    my ( $self, $fn ) = @_;
+    return $CACHE{Properties}{$fn}
+        if exists $CACHE{Properties}{$fn} || $CACHE{Properties_flag}{$fn};
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'SELECT REPLACE(fn,?,?), propname, value FROM webdav_props WHERE fn like ? OR fn like ?'
+        );
+    if ( defined $sth ) {
+        $sth->execute( $PREFIX, '', "$fn\%", "$PREFIX$fn\%" );
+        if ( !$sth->err ) {
+            my $rows = $sth->fetchall_arrayref();
+            $self->db_handleSelect( $dbh, $sth );
+            foreach my $row ( @{$rows} ) {
+                $CACHE{Properties}{ $$row[0] }{ $$row[1] } = $$row[2];
+            }
         }
-        $$self{DBI_INIT} = $dbh;
-        return $dbh;
+        else {
+            $self->db_handleSelect( $dbh, $sth );
+        }
+    }
+    $CACHE{Properties_flag}{$fn} = 1;
+    return $CACHE{Properties}{$fn};
 }
+
+sub db_getPropertyFromCache {
+    my ( $self, $fn, $propname ) = @_;
+    return
+        exists $CACHE{Properties}{$fn}
+        ? $CACHE{Properties}{$fn}{$propname}
+        : $CACHE{Properties}{$fn};
+}
+
+sub db_getProperty {
+    my ( $self, $fn, $propname ) = @_;
+    my $props = $self->db_getProperties($fn);
+    return $$props{$propname};
+}
+
+sub db_removeProperty {
+    my ( $self, $fn, $propname ) = @_;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare(
+        'DELETE FROM webdav_props WHERE (fn = ? OR fn = ?) AND propname = ?');
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $fn, $PREFIX . $fn, $propname );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+        delete $CACHE{Properties}{$fn}{$propname};
+    }
+    return $ret;
+}
+
+sub db_getPropertyFnByValue {
+    my ( $self, $propname, $value ) = @_;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'SELECT REPLACE(fn,?,?) FROM webdav_props WHERE propname = ? and value = ?'
+        );
+    if ( defined $sth ) {
+        $sth->execute( $PREFIX, '', $propname, $value );
+        if ( !$sth->err ) {
+            my $rows = $sth->fetchall_arrayref();
+            $self->db_handleSelect( $dbh, $sth );
+            return $$rows[0] if $rows;
+        }
+        $self->db_handleSelect( $dbh, $sth );
+    }
+    return;
+}
+
+sub db_insert {
+    my ($self,  $basefn, $fn,      $type, $scope,
+        $token, $depth,  $timeout, $owner
+    ) = @_;
+    my $ret = 0;
+    my $dbh = $self->db_init();
+    my $sth
+        = $dbh->prepare(
+        'INSERT INTO webdav_locks (basefn, fn, type, scope, token, depth, timeout, owner) VALUES ( ?,?,?,?,?,?,?,?)'
+        );
+    if ( defined $sth ) {
+        $sth->execute( $basefn, $fn, $type, $scope, $token, $depth, $timeout,
+            $owner );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+    }
+    return $ret;
+}
+
+sub db_update {
+    my ( $self, $basefn, $fn, $timeout ) = @_;
+    my $ret = 0;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare(
+        'UPDATE webdav_locks SET timeout=? WHERE basefn = ? AND fn = ?');
+    if ( defined $sth ) {
+        $sth->execute( $timeout, $basefn, $fn );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+    }
+    return $ret;
+}
+
+sub db_delete {
+    my ( $self, $fn, $token ) = @_;
+    my $ret    = 0;
+    my $dbh    = $self->db_init();
+    my $sel    = 'DELETE FROM webdav_locks WHERE ( basefn = ? OR fn = ? )';
+    my @params = ( $fn, $fn );
+    if ( defined $token ) {
+        $sel .= ' AND token = ?';
+        push @params, $token;
+    }
+    my $sth = $dbh->prepare($sel);
+    if ( defined $sth ) {
+        $sth->execute(@params);
+        $ret = $sth->rows > 0 ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+    }
+
+    return $ret;
+}
+
+sub db_modify {
+    my ( $self, $prepstmt, @params ) = @_;
+    my $ret = 0;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare($prepstmt);
+    if ( defined $sth ) {
+        $ret = $sth->execute(@params);
+        $self->db_handleUpdates( $dbh, $sth );
+    }
+    return $ret;
+}
+
+sub db_select {
+    my ( $self, $prepstmt, $paramsref, $slice, $max_rows ) = @_;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare($prepstmt);
+    return
+        defined $sth && $sth->execute( @{$paramsref} )
+        ? $sth->fetchall_arrayref( $slice, $max_rows )
+        : undef;
+}
+
+sub db_selecth {
+    my ( $self, $prepstmt, $paramsref, $key ) = @_;
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare($prepstmt);
+    return
+        defined $sth && $sth->execute( @{$paramsref} )
+        ? $sth->fetchall_hashref($key)
+        : undef;
+}
+
+sub db_table_exists {
+    my ($self, $table) = @_;
+    my $dbh    = $self->db_init();
+    my @tables = $dbh->tables( '', '', $table, 'TABLE' );
+    if (@tables) {
+        foreach (@tables) {
+            next unless $_;
+            return 1 if $_ =~ /\Q${table}\E$/xms;
+        }
+    }
+    return 0;
+}
+
+sub db_init {
+    my $self = shift;
+    return $$self{DBI_INIT} if defined $$self{DBI_INIT};
+
+    my $dbh
+        = DBI->connect( $main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS,
+        { RaiseError => 0, PrintError => 0, AutoCommit => 1 } )
+        || die("You need a database (see \$DBI_SRC configuration)");
+    if ( defined $dbh && $main::CREATE_DB ) {
+        foreach my $query (@main::DB_SCHEMA) {
+            my $sth = $dbh->prepare($query);
+            if ( defined $sth ) {
+                $sth->execute();
+                if ( $sth->err ) {
+                    $sth->finish();
+                    $dbh->rollback();
+                    $dbh = undef;
+                }
+                else {
+                    $dbh->commit();
+                }
+            }
+            else {
+                warn("db_init: '$query' preparation failed!");
+            }
+        }
+    }
+    $$self{DBI_INIT} = $dbh;
+    return $dbh;
+}
+
 sub db_rollback {
-        my ($self,$dbh) = @_;
-        return $dbh->rollback();
+    my ( $self, $dbh ) = @_;
+    return $dbh->rollback();
 }
+
 sub db_commit {
-        my ($self,$dbh) = @_;
-        return $dbh->commit();
+    my ( $self, $dbh ) = @_;
+    return $dbh->commit();
 }
 1;
