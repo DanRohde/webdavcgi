@@ -22,9 +22,14 @@ package WebDAV::Lock;
 use strict;
 use warnings;
 
+use base qw( WebDAV::Common );
+
+our $VERSION = '1.0';
+
 use Date::Parse;
 
-use base qw( WebDAV::Common );
+
+
 sub new {
     my $this  = shift;
     my $class = ref($this) || $this;
@@ -233,8 +238,8 @@ sub isLockable {    # check lock and exclusive
     }
     my $ret = 0;
     if ( $#{$rowsRef} > -1 ) {
-        my $row = $$rowsRef[0];
-        $ret = lc( $$row[3] ) ne 'exclusive'
+        my $row = $$rowsRef[0]; 
+        $ret = (! defined ${$row}[3] || lc( ${$row}[3] ) ne 'exclusive')
             && $lockscope ne '{DAV:}exclusive' ? 1 : 0;
     }
     else {

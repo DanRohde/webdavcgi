@@ -18,18 +18,26 @@
 package Events::TestEventListener;
 
 use strict;
+use warnings;
 
-use Events::EventListener;
-our @ISA = qw( Events::EventListener );
+our $VERSION = '2.0';
 
-sub registerChannel {
-	my ($self, $channel) = @_;
-	$channel->addEventListener('ALL', $self);
+use base qw( Events::EventListener );
+
+sub register {
+    my ( $self, $channel ) = @_;
+    $channel->add( 'ALL', $self );
+    return;
 }
-sub receiveEvent {
-	my ($self, $event, $data) = @_;
-	use Data::Dumper;
-	print STDERR "Events::TestEventListener: received event $event with data: ".Dumper($data).".\n";	
+
+sub receive {
+    my ( $self, $event, $data ) = @_;
+    use Data::Dumper;
+    print {*STDERR}
+      "Events::TestEventListener: received event $event with data: "
+      . Dumper($data)
+      . ".\n";
+    return;
 }
 
 1;

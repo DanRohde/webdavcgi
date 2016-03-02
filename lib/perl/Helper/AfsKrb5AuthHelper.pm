@@ -19,25 +19,30 @@
 package Helper::AfsKrb5AuthHelper;
 
 use strict;
+use warnings;
 
-use Helper::Krb5AuthHelper;
-our @ISA = qw( Helper::Krb5AuthHelper );
+our $VERSION = '2.0';
+
+use base qw( Helper::Krb5AuthHelper );
+
 use AFS::PAG qw( setpag unlog );
-use Carp;
+use CGI::Carp;
 
 sub init {
-	my ($self) = @_;
-	my $ret = 1;
-	
-	if ($ret = $self->SUPER::init()) {
-		setpag();
-		confess("aklog failed for $ENV{REMOTE_USER}") if system('aklog') > 0;
-	}
-	return $ret;
+    my ($self) = @_;
+    my $ret = 1;
+
+    if ( $ret = $self->SUPER::init() ) {
+        setpag();
+        confess("aklog failed for $ENV{REMOTE_USER}") if system('aklog') > 0;
+    }
+    return $ret;
 }
-sub receiveEvent {
-	my $self = shift;
-	$self->SUPER::receiveEvent(@_);
-	unlog();
+
+sub receive {
+    my $self = shift;
+    $self->SUPER::receive(@_);
+    unlog();
+    return 1;
 }
 1;

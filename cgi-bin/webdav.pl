@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160225.01';
+$RELEASE = '1.1.1BETA20160302.01';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -813,8 +813,11 @@ use POSIX qw(strftime setlocale LC_TIME);
 setlocale( LC_TIME, 'en_US.' . $CHARSET )
     ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
 
-unshift @EVENTLISTENER, 'DatabaseEventAdapter';
-broadcastEvent('INIT');
+
+use DatabaseEventAdapter;
+DatabaseEventAdapter->new();
+
+broadcast('INIT');
 
 use URI::Escape;
 use UUID::Tiny;
@@ -1194,7 +1197,7 @@ if ( $method =~
     ### performance is much better than eval:
     gotomethod($method);
     $backend->finalize() if $backend;
-    broadcastEvent('FINALIZE');
+    broadcast('FINALIZE');
 }
 else {
     printHeaderAndContent('405 Method Not Allowed');
@@ -1320,7 +1323,7 @@ sub HTTP_GET {
             $backend->printFile( $PATH_TRANSLATED, \*STDOUT, $start, $count );
             fixModPerlResponse($headerref);
         }
-        broadcastEvent( 'GET',
+        broadcast( 'GET',
             { file => $PATH_TRANSLATED, size => $count || $stat[7] } );
     }
     else {
@@ -1382,7 +1385,7 @@ sub HTTP_OPTIONS {
     my $methods;
     my $status = '200 OK';
     my $type;
-    broadcastEvent( 'OPTIONS', { file => $PATH_TRANSLATED } );
+    broadcast( 'OPTIONS', { file => $PATH_TRANSLATED } );
 
     if ( $backend->exists($PATH_TRANSLATED) ) {
         $type
@@ -1494,7 +1497,7 @@ sub HTTP_PROPFIND {
     if ( !is_hidden($fn) && $backend->exists($fn) ) {
         my ( $props, $all, $noval ) = handlePropFindElement($xmldata);
         if ( defined $props ) {
-            readDirRecursive( $fn, $ru, \@resps, $props, $all, $noval, $depth,
+            read_dir_recursive( $fn, $ru, \@resps, $props, $all, $noval, $depth,
                 $noroot );
         }
         else {
@@ -1512,7 +1515,7 @@ sub HTTP_PROPFIND {
         : q{};
     
     my $size = bytes::length($content);
-    broadcastEvent( 'PROPFIND',
+    broadcast( 'PROPFIND',
         { file => $PATH_TRANSLATED, size => $size } );
     debug("_PROPFIND: status=$status, type=$type, size=$size");
     debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
@@ -1540,7 +1543,7 @@ sub HTTP_PROPPATCH {
             printHeaderAndContent('400 Bad Request');
             return;
         };
-        broadcastEvent( 'PROPPATCH', { file => $fn, data => $dataRef } );
+        broadcast( 'PROPPATCH', { file => $fn, data => $dataRef } );
         my @resps    = ();
         my %resp_200 = ();
         my %resp_403 = ();
@@ -1552,7 +1555,7 @@ sub HTTP_PROPPATCH {
         $status  = '207 Multi-Status';
         $type    = 'text/xml';
         $content = create_xml( { multistatus => { response => \@resps } } );
-        broadcastEvent( 'PROPPATCHED', { file => $fn, data => $dataRef } );
+        broadcast( 'PROPPATCHED', { file => $fn, data => $dataRef } );
     }
     else {
         $status = '404 Not Found';
@@ -1602,7 +1605,7 @@ sub HTTP_PUT {
         if ( $backend->saveStream( $PATH_TRANSLATED, \*STDIN ) ) {
             getLockModule()->inheritLock();
             logger("PUT($PATH_TRANSLATED)");
-            broadcastEvent(
+            broadcast(
                 'PUT',
                 {   file => $PATH_TRANSLATED,
                     size => ( $backend->stat($PATH_TRANSLATED) )[7]
@@ -1654,7 +1657,7 @@ sub HTTP_COPY {
         $status = '423 Locked';
     }
     elsif ( $backend->isDir($PATH_TRANSLATED) && $depth == 0 ) {
-        broadcastEvent(
+        broadcast(
             'COPY',
             {   file        => $PATH_TRANSLATED,
                 destination => $destination,
@@ -1668,7 +1671,7 @@ sub HTTP_COPY {
         else {
             if ( $backend->mkcol($destination) ) {
                 getLockModule()->inheritLock($destination);
-                broadcastEvent(
+                broadcast(
                     'FILECOPIED',
                     {   file        => $PATH_TRANSLATED,
                         destination => $destination,
@@ -1683,7 +1686,7 @@ sub HTTP_COPY {
         }
     }
     else {
-        broadcastEvent(
+        broadcast(
             'COPY',
             {   file        => $PATH_TRANSLATED,
                 destination => $destination,
@@ -1695,7 +1698,7 @@ sub HTTP_COPY {
         if ( rcopy( $PATH_TRANSLATED, $destination ) ) {
             getLockModule()->inheritLock( $destination, 1 );
             logger("COPY($PATH_TRANSLATED, $destination)");
-            broadcastEvent(
+            broadcast(
                 'COPIED',
                 {   file        => $PATH_TRANSLATED,
                     destination => $destination,
@@ -1743,7 +1746,7 @@ sub HTTP_MOVE {
         $status = '423 Locked';
     }
     else {
-        broadcastEvent(
+        broadcast(
             'MOVE',
             {   file        => $PATH_TRANSLATED,
                 destination => $destination,
@@ -1757,7 +1760,7 @@ sub HTTP_MOVE {
         if ( rmove( $PATH_TRANSLATED, $destination ) ) {
             getLockModule()->inheritLock( $destination, 1 );
             logger("MOVE($PATH_TRANSLATED, $destination)");
-            broadcastEvent(
+            broadcast(
                 'MOVED',
                 {   file        => $PATH_TRANSLATED,
                     destination => $destination,
@@ -1794,9 +1797,9 @@ sub HTTP_DELETE {
         $status = '423 Locked';
     }
     else {
-        broadcastEvent( 'DELETE', { file => $PATH_TRANSLATED } );
+        broadcast( 'DELETE', { file => $PATH_TRANSLATED } );
         if ($ENABLE_TRASH) {
-            $status = '404 Forbidden' if moveToTrash($PATH_TRANSLATED) <= 0;
+            $status = '404 Forbidden' if move2trash($PATH_TRANSLATED) <= 0;
         }
         else {
             $backend->deltree( $PATH_TRANSLATED, \my @err );
@@ -1808,7 +1811,7 @@ sub HTTP_DELETE {
             }
             $status = '207 Multi-Status' if $#resps > -1;
         }
-        broadcastEvent( 'DELETED', { file => $PATH_TRANSLATED } );
+        broadcast( 'DELETED', { file => $PATH_TRANSLATED } );
     }
 
     my $content
@@ -1875,14 +1878,14 @@ sub HTTP_MKCOL {
     }
     elsif ( $backend->isDir( $backend->getParent($PATH_TRANSLATED) ) ) {
         debug("_MKCOL: create $PATH_TRANSLATED");
-        broadcastEvent( 'MKCOL', { file => $PATH_TRANSLATED } );
+        broadcast( 'MKCOL', { file => $PATH_TRANSLATED } );
         if ( $backend->mkcol($PATH_TRANSLATED) ) {
             my ( %resp_200, %resp_403 );
             handlePropertyRequest( $body, $dataRef, \%resp_200, \%resp_403 );
             ## ignore errors from property request
             getLockModule()->inheritLock();
             logger("MKCOL($PATH_TRANSLATED)");
-            broadcastEvent( 'MDCOL', { file => $PATH_TRANSLATED } );
+            broadcast( 'MDCOL', { file => $PATH_TRANSLATED } );
         }
         else {
             $status = '403 Forbidden';
@@ -2179,7 +2182,7 @@ sub HTTP_REPORT {
                 $$xmldata{'{DAV:}principal-match'}{'{DAV:}prop'}, \@props )
                 if (
                 exists $$xmldata{'{DAV:}principal-match'}{'{DAV:}prop'} );
-            readDirRecursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
+            read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
         }
         elsif ( defined $$xmldata{'{DAV:}principal-property-search'} ) {
             if ( $depth != 0 ) {
@@ -2193,7 +2196,7 @@ sub HTTP_REPORT {
                 \@props )
                 if exists $$xmldata{'{DAV:}principal-property-search'}
                 {'{DAV:}prop'};
-            readDirRecursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
+            read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
             ### XXX filter data
             my @propertysearch;
             if (ref($$xmldata{'{DAV:}principal-property-search'}
@@ -2242,7 +2245,7 @@ sub HTTP_REPORT {
             )
         {    ## missing filter
             $rn = '{urn:ietf:params:xml:ns:caldav}calendar-query';
-            readDirBySuffix( $fn, $ru, \@hrefs, 'ics', $depth );
+            read_dir_by_suffix( $fn, $ru, \@hrefs, 'ics', $depth );
         }
         elsif (
             defined $$xmldata{
@@ -2271,7 +2274,7 @@ sub HTTP_REPORT {
                 '{urn:ietf:params:xml:ns:carddav}addressbook-query'} )
         {
             $rn = '{urn:ietf:params:xml:ns:carddav}addressbook-query';
-            readDirBySuffix( $fn, $ru, \@hrefs, 'vcf', $depth );
+            read_dir_by_suffix( $fn, $ru, \@hrefs, 'vcf', $depth );
         }
         elsif (
             defined $$xmldata{
@@ -2426,12 +2429,12 @@ sub HTTP_BIND {
             $status = '403 Forbidden';
         }
         else {
-            broadcastEvent( 'BIND', { file => $src, destination => $dst } );
+            broadcast( 'BIND', { file => $src, destination => $dst } );
             $status
                 = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
             $backend->unlinkFile($ndst) if $backend->isLink($ndst);
             if ( $backend->createSymLink( $src, $dst ) ) {
-                broadcastEvent( 'BOUND',
+                broadcast( 'BOUND',
                     { file => $src, destination => $dst } );
             }
             else {
@@ -2454,7 +2457,7 @@ sub HTTP_UNBIND {
     else {
         my $segment = $$xmldata{'{DAV:}segment'};
         my $dst     = $PATH_TRANSLATED . $segment;
-        broadcastEvent( 'UNBIND', { file => $dst } );
+        broadcast( 'UNBIND', { file => $dst } );
         if ( !$backend->exists($dst) ) {
             $status = '404 Not Found';
         }
@@ -2462,7 +2465,7 @@ sub HTTP_UNBIND {
             $status = '403 Forbidden';
         }
         elsif ( $backend->unlinkFile($dst) ) {
-            broadcastEvent( 'UNBOUND', { file => $dst } );
+            broadcast( 'UNBOUND', { file => $dst } );
         }
         else {
             $status = '403 Forbidden';
@@ -2511,7 +2514,7 @@ sub HTTP_REBIND {
             $status = '507 Insufficient Storage';
         }
         else {
-            broadcastEvent( 'REBIND',
+            broadcast( 'REBIND',
                 { file => $nsrc, destination => $ndst } );
             $status
                 = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
@@ -2521,7 +2524,7 @@ sub HTTP_REBIND {
                 if (   $backend->createSymLink( $orig, $dst )
                     && $backend->unlinkFile($nsrc) )
                 {
-                    broadcastEvent( 'REBOUND',
+                    broadcast( 'REBOUND',
                         { file => $orig, destination => $dst } );
                 }
                 else {
@@ -2531,33 +2534,6 @@ sub HTTP_REBIND {
         }
     }
     return printHeaderAndContent( $status, $type, $content );
-}
-
-sub readDirBySuffix {
-    my ( $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
-    debug("readDirBySuffix($fn, ..., $suffix, $depth)");
-
-    my $nfn = $backend->resolve($fn);
-    return
-        if exists $$visited{$nfn} && ( $depth eq 'infinity' || $depth < 0 );
-    $$visited{$nfn} = 1;
-
-    if ( $backend->isReadable($fn) ) {
-        foreach my $sf (
-            @{ $backend->readDir( $fn, getFileLimit($fn), $utils ) } )
-        {
-            $sf .= q{/} if $backend->isDir( $fn . $sf );
-            my $nbase = $base . $sf;
-            push @{$hrefs}, $nbase
-                if $backend->isFile( $fn . $sf ) && $sf =~ /\.\Q$suffix\E/xms;
-            readDirBySuffix( $fn . $sf, $nbase, $hrefs, $suffix, $depth - 1,
-                $visited )
-                if $depth != 0 && $backend->isDir( $fn . $sf );
-            ## XXX add only files with requested components
-            ## XXX filter (comp-filter > comp-filter >)
-        }
-    }
-    return;
 }
 
 sub handlePropFindElement {
@@ -2923,53 +2899,6 @@ sub getIfHeaderComponents {
     return $ret;
 }
 
-sub readDirRecursive {
-    my ($fn,    $ru,    $respsRef, $props, $all,
-        $noval, $depth, $noroot,   $visited
-    ) = @_;
-    return if is_hidden($fn);
-    my $isReadable = $backend->isReadable($fn);
-    my $nfn = $isReadable ? $backend->resolve($fn) : $fn;
-    unless ($noroot) {
-        my %response = ( href => $ru );
-        $response{href} = $ru;
-        $response{propstat} = getPropStat( $nfn, $ru, $props, $all, $noval );
-        if ( $#{ $response{propstat} } == -1 ) {
-            $response{status} = 'HTTP/1.1 200 OK';
-            delete $response{propstat};
-        }
-        else {
-            $response{propstat}[0]{status} = 'HTTP/1.1 208 Already Reported'
-                if $ENABLE_BIND && $depth < 0 && exists $$visited{$nfn};
-        }
-        push @{$respsRef}, \%response;
-    }
-    return
-           if exists $$visited{$nfn}
-        && !$noroot
-        && ( $depth eq 'infinity' || $depth < 0 );
-    $$visited{$nfn} = 1;
-    if ( $depth != 0 && $isReadable && $backend->isDir($nfn) ) {
-        if ( !defined $FILECOUNTPERDIRLIMIT{$fn}
-            || $FILECOUNTPERDIRLIMIT{$fn} > 0 )
-        {
-            foreach my $f (
-                @{ $backend->readDir( $fn, getFileLimit($fn), $utils ) } )
-            {
-                my $fru = $ru . $cgi->escape($f);
-                $isReadable = $backend->isReadable("$nfn/$f");
-                my $nnfn
-                    = $isReadable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
-                $fru .= q{/}
-                    if $isReadable && $backend->isDir($nnfn) && $fru !~ /\/$/xms;
-                readDirRecursive( $nnfn, $fru, $respsRef, $props, $all,
-                    $noval, $depth > 0 ? $depth - 1 : $depth,
-                    0, $visited );
-            }
-        }
-    }
-    return;
-}
 
 sub handlePropertyRequest {
     my ( $xml, $dataRef, $resp_200, $resp_403 ) = @_;
@@ -3066,68 +2995,6 @@ sub getuuid {
     return UUID_to_string($uuid);
 }
 
-sub getDirInfo {
-    my ( $fn, $prop, $filter, $limit, $max ) = @_;
-    return $CACHE{getDirInfo}{$fn}{$prop}
-        if defined $CACHE{getDirInfo}{$fn}{$prop};
-    my %counter = (
-        childcount   => 0,
-        visiblecount => 0,
-        objectcount  => 0,
-        hassubs      => 0
-    );
-    if ( $backend->isReadable($fn) ) {
-        foreach my $f (
-            @{ $backend->readDir( $fn, $$limit{$fn} || $max, $utils ) } )
-        {
-            $counter{realchildcount}++;
-            $counter{childcount}++;
-            $counter{visiblecount}++
-                if !$backend->isDir("$fn$f") && $f !~ /^\./xms;
-            $counter{objectcount}++ if !$backend->isDir("$fn$f");
-        }
-    }
-    $counter{hassubs}
-        = ( $counter{childcount} - $counter{objectcount} > 0 ) ? 1 : 0;
-
-    foreach my $k ( keys %counter ) {
-        $CACHE{getDirInfo}{$fn}{$k} = $counter{$k};
-    }
-    return $counter{$prop} || 0;
-}
-
-
-sub moveToTrash {
-    my ($fn) = @_;
-
-    my $ret  = 0;
-    my $etag = getETag($fn);    ## get a unique name for trash folder
-    $etag =~ s/\"//xmsg;
-    my $trash = "$TRASH_FOLDER$etag/";
-
-    if ( $fn =~ /^\Q$TRASH_FOLDER\E/xms ) {    ## delete within trash
-        my @err;
-        $ret += $backend->deltree( $fn, \@err );
-        $ret = 0 unless $#err == -1;
-        debug("moveToTrash($fn)->/dev/null = $ret");
-    }
-    elsif ($backend->exists($TRASH_FOLDER)
-        || $backend->mkcol($TRASH_FOLDER) )
-    {
-        if ( $backend->exists($trash) ) {
-            my $i = 0;
-            while ( $backend->exists($trash) ) {   ## find unused trash folder
-                $trash = "$TRASH_FOLDER$etag" . ( $i++ ) . q{/};
-            }
-        }
-        $ret = 1
-            if $backend->mkcol($trash)
-            && rmove( $fn, $trash . $backend->basename($fn) );
-        debug("moveToTrash($fn)->$trash = $ret");
-    }
-    return $ret;
-}
-
 sub getSupportedMethods {
     my ($path) = @_;
     my @methods;
@@ -3203,114 +3070,7 @@ sub getMIMEType {
     return $MIMETYPES{$extension} || $MIMETYPES{default};
 }
 
-sub rcopy {
-    my ( $src, $dst, $move, $depth ) = @_;
 
-    $depth = 0 unless defined $depth;
-
-    return 0
-        if defined $LIMIT_FOLDER_DEPTH
-        && $LIMIT_FOLDER_DEPTH > 0
-        && $depth > $LIMIT_FOLDER_DEPTH;
-
-    # src == dst ?
-    return 0 if $src eq $dst;
-
-# src == dst ?
-#	return 0 if $backend->getLinkSrc($src) eq $backend->getLinkSrc($dst); # litmus fails (why?)
-
-    # src in dst?
-    return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/xms;
-
-    # src exists and can copy?
-    return 0
-        if !$backend->exists($src)
-        || ( !$move && !$backend->isReadable($src) );
-
-    # src moveable because writeable?
-    return 0 if $move && !$backend->isWriteable($src);
-
-    # dst writeable?
-    return 0 if $backend->exists($dst) && !$backend->isWriteable($dst);
-
-    my $nsrc = $src;
-    $nsrc =~ s/\/$//xms;    ## remove trailing slash for link test (-l)
-
-    if ( $backend->isLink($nsrc) ) {    # link
-        if ( !$move || !$backend->rename( $nsrc, $dst ) ) {
-            my $orig = $backend->getLinkSrc($nsrc);
-            $dst =~ s/\/$//xms;
-            my $ret = $backend->createSymLink( $orig, $dst );
-            $ret = $backend->unlinkFile($nsrc) if $ret && $move;
-            return $ret;
-        }
-    }
-    elsif ( $backend->isFile($src) ) {    # file
-        if ( $backend->isDir($dst) ) {
-            $dst .= q{/} if $dst !~ /\/$/xms;
-            $dst .= $backend->basename($src);
-        }
-        if ( !$move || !$backend->rename( $src, $dst ) ) {
-            return 0 unless $backend->copy( $src, $dst );
-            if ($move) {
-                return 0
-                    unless $backend->isWriteable($src)
-                    && $backend->unlinkFile($src);
-            }
-        }
-    }
-    elsif ( $backend->isDir($src) ) {
-
-        # cannot write folders to files:
-        return 0 if $backend->isFile($dst);
-
-        $dst .= q{/} if $dst !~ /\/$/xms;
-        $src .= q{/} if $src !~ /\/$/xms;
-
-#if (!$move || getDirInfo($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
-        if ( !$move || !$backend->rename( $src, $dst ) ) {
-            $backend->mkcol($dst) unless $backend->exists($dst);
-            return 0 unless $backend->isReadable($src);
-            my $rret = 1;
-            foreach my $filename ( @{ $backend->readDir($src) } ) {
-                $rret = $rret
-                    && rcopy(
-                    $src . $filename,
-                    $dst . $filename,
-                    $move, $depth + 1
-                    );
-            }
-            if ($move) {
-                return 0
-                    unless $rret
-                    && $backend->isWriteable($src)
-                    && $backend->deltree($src);
-            }
-        }
-    }
-    else {
-        return 0;
-    }
-
-    #BUGFIX: properties have no trailing slash
-    $src =~ s/\/$//xms;
-    $dst =~ s/\/$//xms;
-    broadcastEvent(
-        $move ? 'FILEMOVED' : 'FILECOPIED',
-        {   file        => $src,
-            destination => $dst,
-            depth       => $depth,
-            overwrite   => 'T',
-            size        => ( $backend->stat($src) )[7]
-        }
-    );
-    return 1;
-}
-
-sub rmove {
-    my ( $src, $dst ) = @_;
-    return rcopy( $src, $dst, 1 );
-}
 
 sub getFileLimit {
     my ($path) = @_;
@@ -3359,29 +3119,12 @@ sub getParentURI {
     return $uri && $uri =~ /^(.*?)\/[^\/]+\/?$/xms ? ( $1 || q{/} ) : q{/};
 }
 
-sub getLocalFileContentAndType {
-    my ( $fn, $default, $defaulttype ) = @_;
-    my $content = q{};
-    if ( -e $fn && !-d $fn && open( my $F, '<', $fn ) ) {
-        {
-            local $/ = undef;
-            $content = <$F>;
-        };
-        close($F) || croak("Cannot close filehandle for '$fn'.");
-        $defaulttype = getMIMEType($fn);
-    }
-    else {
-        $content = $default;
-    }
-    return ( $defaulttype, $content );
-}
-
 sub getErrorDocument {
     my ( $status, $defaulttype, $default ) = @_;
     return exists $ERROR_DOCS{$status}
         ? (
         $status,
-        getLocalFileContentAndType(
+        get_local_file_content_and_type(
             $ERROR_DOCS{$status}, $default, $defaulttype
         )
         )
@@ -3414,7 +3157,7 @@ sub getEventChannel {
         $eventChannel = Events::EventChannel->new;
         foreach my $listener (@EVENTLISTENER) {
             load $listener;
-            $listener->new($listener)->registerChannel($eventChannel);
+            $listener->new($listener)->register($eventChannel);
         }
     }
     return $eventChannel;
@@ -3456,14 +3199,22 @@ sub fixModPerlResponse {
     return;
 }
 
-sub broadcastEvent {
+sub broadcast {
     my ( $event, $data ) = @_;
-    return getEventChannel()->broadcastEvent( $event, $data );
+    return getEventChannel()->broadcast( $event, $data );
 }
 
 sub getBaseURIFrag {
     my ($uri) = @_;
     return $uri =~ /([^\/]+)\/?$/xms ? ( $1 // q{/} ) : q{/};
+}
+
+
+sub getBackend {
+    return $backend;
+}
+sub getUtils {
+    return $utils;
 }
 
 ### shorthands WebDAV::XMLHelper:
@@ -3483,5 +3234,31 @@ sub get_namespace_uri {
 sub create_xml {
     my (@args) = @_;
     return WebDAV::XMLHelper::getinstance()->create_xml(@args);
+}
+### shorthands FileUtils:
+use FileUtils;
+sub rcopy {
+    my (@args) = @_;
+    return FileUtils::getinstance()->rcopy(@args);
+}
+sub rmove {
+    my (@args) = @_;
+    return FileUtils::getinstance()->rmove(@args);
+}
+sub read_dir_recursive {
+    my (@args) = @_;
+    return FileUtils::getinstance()->read_dir_recursive(@args);
+}
+sub read_dir_by_suffix {
+    my (@args) = @_;
+    return FileUtils::getinstance()->read_dir_by_suffix(@args);
+}
+sub get_local_file_content_and_type {
+    my (@args) = @_;
+    return FileUtils::getinstance()->get_local_file_content_and_type(@args);
+}
+sub move2trash {
+    my (@args) = @_;
+    return FileUtils::getinstance()->move2trash(@args);
 }
 1;

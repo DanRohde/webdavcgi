@@ -87,7 +87,7 @@ sub handle {
             'sendbymail_short', 'sendbymail' );
     }
     elsif ($hook eq 'posthandler'
-        && $$self{cgi}->param('action') eq 'sendbymail' )
+        && defined $$self{cgi}->param('action') && $$self{cgi}->param('action') eq 'sendbymail' )
     {
 
         if ( $$self{cgi}->param('ajax') eq 'preparemail' ) {

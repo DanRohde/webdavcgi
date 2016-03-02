@@ -1,0 +1,348 @@
+#!/usr/bin/perl
+#########################################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin
+# Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+#########################################################################
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#########################################################################
+
+package FileUtils;
+
+use strict;
+use warnings;
+
+our $VERSION = '1.0';
+
+use CGI;
+use CGI::Carp;
+
+use English qw( -no_match_vars );
+
+use CacheManager;
+
+use vars qw( $_INSTANCE );
+
+
+
+sub new {
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = { backend => main::getBackend(), utils => main::getUtils(), };
+    if ( !$_INSTANCE ) {
+        bless $self, $class;
+        $_INSTANCE = $self;
+    }
+    return $_INSTANCE;
+}
+
+sub getinstance {
+    return __PACKAGE__->new();
+}
+
+sub rcopy {
+    my ( $self, $src, $dst, $move, $depth ) = @_;
+
+    my $backend = ${$self}{backend};
+
+    $depth //= 0;
+
+    return 0
+        if defined $main::LIMIT_FOLDER_DEPTH
+        && $main::LIMIT_FOLDER_DEPTH > 0
+        && $depth > $main::LIMIT_FOLDER_DEPTH;
+
+    # src == dst ?
+    return 0 if $src eq $dst;
+
+# src == dst ?
+#   return 0 if $backend->getLinkSrc($src) eq $backend->getLinkSrc($dst); # litmus fails (why?)
+
+    # src in dst?
+    return 0 if $backend->isDir($src) && $dst =~ /^\Q$src\E/xms;
+
+    # src exists and can copy?
+    return 0
+        if !$backend->exists($src)
+        || ( !$move && !$backend->isReadable($src) );
+
+    # src moveable because writeable?
+    return 0 if $move && !$backend->isWriteable($src);
+
+    # dst writeable?
+    return 0 if $backend->exists($dst) && !$backend->isWriteable($dst);
+
+    my $nsrc = $src;
+    $nsrc =~ s/\/$//xms;    ## remove trailing slash for link test (-l)
+
+    if ( $backend->isLink($nsrc) ) {    # link
+        if ( !$move || !$backend->rename( $nsrc, $dst ) ) {
+            my $orig = $backend->getLinkSrc($nsrc);
+            $dst =~ s/\/$//xms;
+            my $ret = $backend->createSymLink( $orig, $dst );
+            if ( $ret && $move ) { $ret = $backend->unlinkFile($nsrc); }
+            return $ret;
+        }
+    }
+    elsif ( $backend->isFile($src) ) {    # file
+        if ( $backend->isDir($dst) ) {
+            $dst .= $dst !~ /\/$/xms ? q{/} : q{};
+            $dst .= $backend->basename($src);
+        }
+        if ( !$move || !$backend->rename( $src, $dst ) ) {
+            if ( !$backend->copy( $src, $dst ) ) { return 0; }
+            if ($move) {
+                if (  !$backend->isWriteable($src)
+                    || $backend->unlinkFile($src) )
+                {
+                    return 0;
+                }
+            }
+        }
+    }
+    elsif ( $backend->isDir($src) ) {
+
+        # cannot write folders to files:
+        return 0 if $backend->isFile($dst);
+
+        $dst .= $dst !~ /\/$/xms ? q{/} : q{};
+        $src .= $src !~ /\/$/xms ? q{/} : q{};
+
+#if (!$move || $self->get_dir_info($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
+        if ( !$move || !$backend->rename( $src, $dst ) ) {
+            if ( !$backend->exists($dst) )     { $backend->mkcol($dst); }
+            if ( !$backend->isReadable($src) ) { return 0; }
+            my $rret = 1;
+            foreach my $filename ( @{ $backend->readDir($src) } ) {
+                $rret = $rret
+                    && $self->rcopy(
+                    $src . $filename,
+                    $dst . $filename,
+                    $move, $depth + 1
+                    );
+            }
+            if ($move) {
+                if (   !$rret
+                    || !$backend->isWriteable($src)
+                    || !$backend->deltree($src) )
+                {
+                    return 0;
+                }
+            }
+        }
+    }
+    else {
+        return 0;
+    }
+
+    #BUGFIX: properties have no trailing slash
+    $src =~ s{/$}{}xms;
+    $dst =~ s{/$}{}xms;
+    main::broadcast(
+        $move ? 'FILEMOVED' : 'FILECOPIED',
+        {   file        => $src,
+            destination => $dst,
+            depth       => $depth,
+            overwrite   => 'T',
+            size        => ( $backend->stat($src) )[7] // 0,
+        },
+    );
+    return 1;
+}
+
+sub rmove {
+    my ( $self, $src, $dst ) = @_;
+    return $self->rcopy( $src, $dst, 1 );
+}
+
+sub read_dir_recursive {
+    my ($self, $fn,    $ru,    $resps_ref, $props,
+        $all,  $noval, $depth, $noroot,    $visited
+    ) = @_;
+    my $backend = ${$self}{backend};
+    my $utils   = ${$self}{utils};
+    return if main::is_hidden($fn);
+    my $is_readable = $backend->isReadable($fn);
+    my $nfn = $is_readable ? $backend->resolve($fn) : $fn;
+    if ( !$noroot ) {
+        my %response = ( href => $ru );
+        $response{href} = $ru;
+        $response{propstat}
+            = main::getPropStat( $nfn, $ru, $props, $all, $noval );
+        if ( $#{ $response{propstat} } == -1 ) {
+            $response{status} = 'HTTP/1.1 200 OK';
+            delete $response{propstat};
+        }
+        else {
+            if (   $main::ENABLE_BIND
+                && $depth < 0
+                && exists ${$visited}{$nfn} )
+            {
+                $response{propstat}[0]{status}
+                    = 'HTTP/1.1 208 Already Reported';
+            }
+        }
+        push @{$resps_ref}, \%response;
+    }
+    return
+           if exists ${$visited}{$nfn}
+        && !$noroot
+        && ( $depth eq 'infinity' || $depth < 0 );
+    ${$visited}{$nfn} = 1;
+    if ( $depth != 0 && $is_readable && $backend->isDir($nfn) ) {
+        if ( !defined $main::FILECOUNTPERDIRLIMIT{$fn}
+            || $main::FILECOUNTPERDIRLIMIT{$fn} > 0 )
+        {
+            foreach my $f (
+                @{ $backend->readDir( $fn, main::getFileLimit($fn), $utils ) }
+                )
+            {
+                my $fru = $ru . CGI::escape($f);
+                $is_readable = $backend->isReadable("$nfn/$f");
+                my $nnfn
+                    = $is_readable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
+                $fru
+                    .= $is_readable
+                    && $backend->isDir($nnfn)
+                    && $fru !~ /\/$/xms ? q{/} : q{};
+                $self->read_dir_recursive( $nnfn, $fru, $resps_ref, $props,
+                    $all, $noval, $depth > 0 ? $depth - 1 : $depth,
+                    0, $visited );
+            }
+        }
+    }
+    return;
+}
+
+sub get_local_file_content_and_type {
+    my ( $self, $fn, $default, $defaulttype ) = @_;
+    my $content = q{};
+    if ( -e $fn && !-d $fn && open my $F, '<', $fn ) {
+        {
+            local $RS = undef;
+            $content = <$F>;
+        };
+        close($F) || croak("Cannot close filehandle for '$fn'.");
+        $defaulttype = main::getMIMEType($fn);
+    }
+    else {
+        $content = $default;
+    }
+    return ( $defaulttype, $content );
+}
+
+sub move2trash {
+    my ( $self, $fn ) = @_;
+    my $backend = ${$self}{backend};
+    my $ret     = 0;
+    my $etag    = main::getETag($fn);    ## get a unique name for trash folder
+    $etag =~ s/\"//xmsg;
+    my $trash = "$main::TRASH_FOLDER$etag/";
+
+    if ( $fn =~ /^\Q$main::TRASH_FOLDER\E/xms ) {    ## delete within trash
+        my @err;
+        $ret += $backend->deltree( $fn, \@err );
+        if ( $#err >= 0 ) { $ret = 0; }
+        main::debug("move2trash($fn)->/dev/null = $ret");
+    }
+    elsif ($backend->exists($main::TRASH_FOLDER)
+        || $backend->mkcol($main::TRASH_FOLDER) )
+    {
+        if ( $backend->exists($trash) ) {
+            my $i = 0;
+            while ( $backend->exists($trash) ) {   ## find unused trash folder
+                $trash = "$main::TRASH_FOLDER$etag" . ( $i++ ) . q{/};
+            }
+        }
+        $ret = $backend->mkcol($trash)
+            && rmove( $fn, $trash . $backend->basename($fn) ) ? 1 : 0;
+        main::debug("move2trash($fn)->$trash = $ret");
+    }
+    return $ret;
+}
+
+sub read_dir_by_suffix {
+    my ( $self, $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
+    debug("read_dir_by_suffix($fn, ..., $suffix, $depth)");
+    my $backend = ${$self}{backend};
+    my $utils   = ${$self}{utils};
+
+    my $nfn = $backend->resolve($fn);
+    return
+        if exists ${$visited}{$nfn} && ( $depth eq 'infinity' || $depth < 0 );
+    ${$visited}{$nfn} = 1;
+
+    if ( $backend->isReadable($fn) ) {
+        foreach my $sf (
+            @{ $backend->readDir( $fn, main::getFileLimit($fn), $utils ) } )
+        {
+            $sf .= $backend->isDir( $fn . $sf ) ? q{/} : q{};
+            my $nbase = $base . $sf;
+            if ( $backend->isFile( $fn . $sf ) && $sf =~ /[.]\Q$suffix\E/xms )
+            {
+                push @{$hrefs}, $nbase;
+            }
+            if ( $depth != 0 && $backend->isDir( $fn . $sf ) ) {
+                $self->read_dir_by_suffix(
+                    $fn . $sf, $nbase,     $hrefs,
+                    $suffix,   $depth - 1, $visited
+                );
+            }
+            ## XXX add only files with requested components
+            ## XXX filter (comp-filter > comp-filter >)
+        }
+    }
+    return;
+}
+
+sub get_dir_info {
+    my ( $self, $fn, $prop, $filter, $limit, $max ) = @_;
+    my $cm = CacheManager::getinstance();
+    if ($cm->exists_entry(['get_dir_info', $fn, $prop])) {
+        return $cm->get_entry(['get_dir_info', $fn, $prop]);
+    }
+
+    my $backend = ${$self}{backend};
+    my $utils   = ${$self}{utils};
+
+    my %counter = (
+        childcount   => 0,
+        visiblecount => 0,
+        objectcount  => 0,
+        hassubs      => 0,
+    );
+    if ( $backend->isReadable($fn) ) {
+        foreach my $f (
+            @{ $backend->readDir( $fn, ${$limit}{$fn} || $max, $utils ) } )
+        {
+            $counter{realchildcount}++;
+            $counter{childcount}++;
+            if ( !$backend->isDir("$fn$f") && $f !~ /^[.]/xms ) {
+                $counter{visiblecount}++;
+            }
+            if ( !$backend->isDir("$fn$f") ) {
+                $counter{objectcount}++;
+            }
+        }
+    }
+    $counter{hassubs}
+        = ( $counter{childcount} - $counter{objectcount} > 0 ) ? 1 : 0;
+
+    
+    foreach my $k ( keys %counter ) {
+        $cm->set_entry(['get_dir_info',$fn,$k], $counter{$k});
+    }
+    return $counter{$prop} // 0;
+}
+
+1;

@@ -19,54 +19,62 @@
 package WebInterface::Extension::PublicUri::EventListener;
 
 use strict;
+use warnings;
 
-use Events::EventListener;
-use WebInterface::Extension::PublicUri::Common;
-our @ISA = qw( Events::EventListener WebInterface::Extension::PublicUri::Common);
+our $VERSION = '2.0';
 
-sub registerChannel {
-	my ($self, $channel) = @_;
-	
-	$self->initDefaults();
-		
-	$channel->addEventListener(['FILECOPIED','PROPFIND','OPTIONS'], $self);
+use base qw( Events::EventListener WebInterface::Extension::PublicUri::Common);
+
+sub register {
+    my ( $self, $channel ) = @_;
+    $self->initDefaults();
+    $channel->add( [ 'FILECOPIED', 'PROPFIND', 'OPTIONS' ], $self );
+    return 1;
 }
 
-sub receiveEvent {
-	my ( $self, $event, $data ) = @_;
-	if ($event eq 'FILECOPIED') {
-		$self->handleFileCopiedEvent($data);
-	} elsif ($event eq 'OPTIONS') {
-		$self->handleWebDAVRequest($data);
-	}
-	
+sub receive {
+    my ( $self, $event, $data ) = @_;
+    if ( $event eq 'FILECOPIED' ) {
+        $self->handle_file_copied_event($data);
+    }
+    elsif ( $event eq 'OPTIONS' ) {
+        $self->handle_webdav_request($data);
+    }
+    return 1;
 }
-sub handleWebDAVRequest {
-	my ($self, $data) = @_;
-	if ($$data{file} =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/) {
-		my ($code, $path) = ($1,$2);
-		my $fn = $self->getFileFromCode($code);
-		return if (!$fn || !$self->isPublicUri($fn, $code, $self->getSeed($fn)));
-		
-		$main::DOCUMENT_ROOT = $fn;
-		$main::DOCUMENT_ROOT.='/' if $main::DOCUMENT_ROOT !~ /\/$/;
-		$main::PATH_TRANSLATED = $fn . $path;		
-		$main::VIRTUAL_BASE = $$self{virtualbase}.$code.'/?';
-		
-		if ($main::backend->isDir($main::PATH_TRANSLATED)) {
-			$main::PATH_TRANSLATED .= '/' if $main::PATH_TRANSLATED !~ /\/$/;
-			$main::REQUEST_URI .= '/' if $main::REQUEST_URI !~ /\/$/;	
-		} 
-	}
-		
+
+sub handle_webdav_request {
+    my ( $self, $data ) = @_;
+    if ( ${$data}{file} =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/xms ) {
+        my ( $code, $path ) = ( $1, $2 );
+        my $fn = $self->getFileFromCode($code);
+        return
+          if ( !$fn || !$self->isPublicUri( $fn, $code, $self->getSeed($fn) ) );
+
+        $main::DOCUMENT_ROOT = $fn;
+        $main::DOCUMENT_ROOT .= $main::DOCUMENT_ROOT !~ /\/$/xms ? q{/} : q{};
+        $main::PATH_TRANSLATED = $fn . $path;
+        $main::VIRTUAL_BASE    = ${$self}{virtualbase} . $code . q{/?};
+        if ( main::getBackend()->isDir($main::PATH_TRANSLATED) ) {
+            $main::PATH_TRANSLATED .=
+              $main::PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
+            $main::REQUEST_URI .= $main::REQUEST_URI !~ /\/$/xms ? q{/} : q{};
+        }
+    }
+    return;
 }
-sub handleFileCopiedEvent {
-	my ($self, $data) = @_;
-	my $dst = $$data{destination};
-	my $db  = $$self{db};
-	$dst=~s/\/$//;
-	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{propname});
-	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{seed});
-	$db->db_deletePropertiesRecursiveByName($dst, $$self{namespace}.$$self{orig});
+
+sub handle_file_copied_event {
+    my ( $self, $data ) = @_;
+    my $dst = ${$data}{destination};
+    my $db  = ${$self}{db};
+    $dst =~ s/\/$//xms;
+    $db->db_deletePropertiesRecursiveByName( $dst,
+        ${$self}{namespace} . ${$self}{propname} );
+    $db->db_deletePropertiesRecursiveByName( $dst,
+        ${$self}{namespace} . ${$self}{seed} );
+    $db->db_deletePropertiesRecursiveByName( $dst,
+        ${$self}{namespace} . ${$self}{orig} );
+    return;
 }
 1;

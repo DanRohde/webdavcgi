@@ -18,69 +18,104 @@
 package Helper::Krb5EnvHelper;
 
 use strict;
+use warnings;
+
+our $VERSION = '2.0';
 
 use Fcntl qw(:flock O_WRONLY O_TRUNC O_CREAT);
 use Env::C;
 
-use Events::EventListener;
-our @ISA = qw ( Events::EventListener );
+use CGI::Carp;
+
+use base qw( Events::EventListener);
 
 sub new {
-	my ($class) = @_;
-	my $self = {};
-	bless $self, $class;
-	$self->init();
-	return $self;
+    my ($class) = @_;
+    my $self = {};
+    bless $self, $class;
+    $self->init();
+    return $self;
 }
-sub init {
-	my $self = shift;
-	my $REMOTE_USER = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
-	my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
-	
-	my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
-	my $agefile = $ticketfn.'.age';
-	Env::C::setenv('KRB5CCNAMEORIG',$ENV{KRB5CCNAME}) if $ENV{KRB5CCNAME};
-	$self->registerChannel(main::getEventChannel());
-	if ($ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn) {
 
-		unlink $ticketfn if -e $ticketfn && ( time() - ( stat($agefile) )[9] >= $TICKET_LIFETIME || !-s $ticketfn );
-		
-		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/ && !-e $ticketfn) {
-			my $oldfilename = $1;
-			
-			
-			my ($in, $out, $age);
-			if (open($in, '<', $oldfilename) && sysopen($out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT, 0600) && open($age, '>', $agefile)) {
-				if (flock($age, LOCK_EX | LOCK_NB) ) {
-					binmode $in;
-					binmode $out;
-					while (read($in, my $buffer, $main::BUFSIZE || 1048576)) {
-						print $out $buffer;
-					}
-					close($in);
-					close($out);
-					flock($age, LOCK_UN);
-					close($age);
-				} else {
-					warn("flock($agefile) failed!");
-				}
-				
-				
-			} else {
-				warn("Cannot read ticket file (don't use a setuid/setgid wrapper):" . (-r $oldfilename));
-			}
-		}
-	}
-	$ENV{KRB5CCNAME} = "FILE:$ticketfn";
-	Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
-	Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG}) if $ENV{KRB5_CONFIG};
+sub init {
+    my $self            = shift;
+    my $REMOTE_USER     = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
+    my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
+
+    my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
+    my $agefile  = $ticketfn . '.age';
+    if ( $ENV{KRB5CCNAME} ) {
+        Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
+    }
+    $self->register( main::getEventChannel() );
+    if ( $ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn ) {
+
+        if (
+            -e $ticketfn
+            && ( time - ( stat $agefile )[9] >= $TICKET_LIFETIME
+                || !-s $ticketfn )
+          )
+        {
+            unlink $ticketfn;
+        }
+        if ( $ENV{KRB5CCNAME} =~ /^FILE:(.*)$/xms && !-e $ticketfn ) {
+            my $oldfilename = $1;
+
+            my ( $in, $out, $age );
+            if (
+                open( $in, '<', $oldfilename )
+                && sysopen( $out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT,
+                    oct 600 )
+                && open $age,
+                '>', $agefile
+              )
+            {
+                if ( flock $age, LOCK_EX | LOCK_NB ) {
+                    binmode $in;
+                    binmode $out;
+                    while ( read $in, my $buffer, $main::BUFSIZE || 1_048_576 )
+                    {
+                        print {$out} $buffer
+                          || carp "Cannot write to tickent file $ticketfn";
+                    }
+                    close $in  || carp "Cannot close $oldfilename.";
+                    close $out || carp "Cannot close $ticketfn.";
+                    flock $age, LOCK_UN;
+                    close $age || carp "Cannot close $agefile.";
+                }
+                else {
+                    carp "flock($agefile) failed!";
+                }
+
+            }
+            else {
+                carp
+q{Cannot read ticket file (don't use a setuid/setgid wrapper):}
+                  . ( -r $oldfilename );
+            }
+        }
+    }
+    $ENV{KRB5CCNAME} = "FILE:$ticketfn";
+    Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
+    if ( $ENV{KRB5_CONFIG} ) {
+        Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG} );
+    }
+    return 1;
 }
-sub registerChannel {
-	my ($self, $channel) = @_;
-	$channel->addEventListener(['FINALIZE'], $self);
+
+sub register {
+    my ( $self, $channel ) = @_;
+    $channel->add( ['FINALIZE'], $self );
+    return 1;
 }
-sub receiveEvent {
-	my ( $self, $event, $data ) = @_;
-	Env::C::setenv('KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG'));
+
+sub receive {
+    my ( $self, $event, $data ) = @_;
+    if (my $ov = Env::C::getenv('KRB5CCNAMEORIG')) {
+        Env::C::setenv( 'KRB5CCNAME', $ov);    
+    } else {
+        Env::C::unsetenv( 'KRB5CCNAME' );
+    }
+    return 1;
 }
 1;

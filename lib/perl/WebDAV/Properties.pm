@@ -28,7 +28,8 @@ use POSIX qw(strftime);
 use Date::Parse;
 use List::Util qw(any);
 use English qw ( -no_match_vars );
-
+use CGI::Carp;
+use FileUtils;
 our $VERSION = '1.0';
 
 sub new {
@@ -126,7 +127,7 @@ sub setProperty {
         ${$resp_200}{propstat}{prop}{Win32FileAttributes} = undef;
         ${$resp_200}{propstat}{status}                    = 'HTTP/1.1 200 OK';
     }
-    elsif ( defined $main::NAMESPACES{$ns}
+    elsif ( defined $main::NAMESPACES{$ns // q{}}
         && any {/^\Q$pn\E$/xms} @main::PROTECTED_PROPS )
     {
         ${$resp_403}{href}                      = $ru;
@@ -245,7 +246,7 @@ sub getProperty {
     }
     ${$resp_200}{prop}{childcount} = (
         $isDir
-        ? main::getDirInfo(
+        ? FileUtils::getinstance()->get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
@@ -261,7 +262,7 @@ sub getProperty {
         if $prop eq 'isstructureddocument';
     ${$resp_200}{prop}{hassubs} = (
         $isDir
-        ? main::getDirInfo(
+        ? FileUtils::getinstance()->get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
@@ -273,7 +274,7 @@ sub getProperty {
         if $prop eq 'nosubs';
     ${$resp_200}{prop}{objectcount} = (
         $isDir
-        ? main::getDirInfo(
+        ? FileUtils::getinstance()->get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
@@ -283,7 +284,7 @@ sub getProperty {
     ${$resp_200}{prop}{reserved} = 0 if $prop eq 'reserved';
     ${$resp_200}{prop}{visiblecount} = (
         $isDir
-        ? main::getDirInfo(
+        ? FileUtils::getinstance()->get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT

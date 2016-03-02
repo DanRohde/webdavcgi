@@ -17,18 +17,29 @@
 #########################################################################
 package Events::EventListener;
 
+use strict;
+use warnings;
+
+our $VERSION = '2.0';
+
+use CGI::Carp;
+
 sub new {
-	my $class = shift;
-	my $self  = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self  = {};
+    return bless $self, $class;
 }
-sub registerChannel {
-	# my ($self, $channel) = @_;
-	warn("overwrite me!");
+
+sub register {
+    # my ($self, $channel) = @_;
+    carp 'overwrite me!';
+    return;
 }
-sub receiveEvent {
-	# my ($self, $event, $data) = @_;
-	warn("overwrite me!");
+
+sub receive {
+    # my ($self, $event, $data) = @_;
+    carp 'overwrite me!';
+    return;
 }
 
 1;

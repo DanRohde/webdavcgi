@@ -18,68 +18,99 @@
 package Helper::Krb5AuthHelper;
 
 use strict;
+use warnings;
 
+our $VERSION = '2.0';
+
+use CGI::Carp;
 use Fcntl qw(:flock);
 use MIME::Base64;
 use Env::C;
 
-use Events::EventListener;
-our @ISA = qw ( Events::EventListener );
+use base qw(Events::EventListener);
 
 sub new {
-	my ($class) = @_;
-	my $self = {};
-	bless $self, $class;
-	$self->init();
-	return $self;
+    my ($class) = @_;
+    my $self = {};
+    bless $self, $class;
+    $self->init();
+    return $self;
 }
+
 sub init {
-	my $self = shift;
-	return 0 unless $ENV{AUTHHEADER};
-	my $ret = 1;
-	my $REMOTE_USER = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
-	my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
+    my $self = shift;
+    if ( !$ENV{AUTHHEADER} ) { return 0; }
+    my $ret             = 1;
+    my $REMOTE_USER     = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
+    my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
 
-	Env::C::setenv('KRB5CCNAMEORIG',$ENV{KRB5CCNAME}) if $ENV{KRB5CCNAME};
-	$self->registerChannel(main::getEventChannel());
-	
-	my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
-	$ENV{KRB5CCNAME} = "FILE:$ticketfn";
-	Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
-	Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG}) if $ENV{KRB5_CONFIG};
+    if ( $ENV{KRB5CCNAME} ) {
+        Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
+    }
+    $self->register( main::getEventChannel() );
 
-	$ENV{WEBDAVISWRAPPED} = 1;
+    my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
+    $ENV{KRB5CCNAME} = "FILE:$ticketfn";
+    Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
+    if ( $ENV{KRB5_CONFIG} ) {
+        Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG} );
+    }
 
-	my $agefile = "$ticketfn.age";
+    $ENV{WEBDAVISWRAPPED} = 1;
 
-	unlink $ticketfn if -e $ticketfn && (time() - ( stat($agefile) )[9] >= $TICKET_LIFETIME || !-s $ticketfn);
-	
-	if ( !-f $ticketfn ) {
-		if ( open( my $lfh, '>', $agefile ) ) {
-			if ( flock( $lfh, LOCK_EX ) ) {
-				open(my $kinit,	'|-', "kinit '$REMOTE_USER' 1>/dev/null 2>&1") || die("Cannot execute kinit $REMOTE_USER");
-				print $kinit (split(/:/, decode_base64((split(/\s+/,$ENV{AUTHHEADER}))[1])))[1];
-				close($kinit);
-				print $lfh time();
-				flock( $lfh, LOCK_UN );
-			} else {
-				warn("flock($agefile) failed!");
-				$ret = 0;
-			}
-			close($lfh);
-		} else {
-			warn("open('>$agefile') failed!");
-			$ret = 0;
-		}
-	}
-	return $ret;
+    my $agefile = "$ticketfn.age";
+
+    if (
+        -e $ticketfn
+        && ( time - ( stat $agefile )[9] >= $TICKET_LIFETIME
+            || !-s $ticketfn )
+      )
+    {
+        unlink $ticketfn;
+    }
+
+    if ( !-f $ticketfn ) {
+        if ( open my $lfh, '>', $agefile ) {
+            if ( flock $lfh, LOCK_EX ) {
+                print {$lfh} time || carp "Cannot write time to $agefile.";
+                open( my $kinit, q{|-},
+                    "kinit '$REMOTE_USER' 1>/dev/null 2>&1" )
+                  || croak "Cannot execute kinit $REMOTE_USER";
+                print {$kinit} (
+                    split /:/xms,
+                    decode_base64( ( split /\s+/xms, $ENV{AUTHHEADER} )[1] )
+                )[1] || carp 'Cannot write login:passwort to kinit.';
+                close $kinit || carp 'Cannot close kinit call.';
+
+                flock $lfh, LOCK_UN;
+                close $lfh || carp "Cannot close $agefile.";
+            }
+            else {
+                carp "flock($agefile) failed!";
+                $ret = 0;
+            }
+        }
+        else {
+            carp "open('>$agefile') failed!";
+            $ret = 0;
+        }
+    }
+    return $ret;
 }
-sub registerChannel {
-	my ($self, $channel) = @_;
-	$channel->addEventListener(['FINALIZE'], $self);
+
+sub register {
+    my ( $self, $channel ) = @_;
+    $channel->add( ['FINALIZE'], $self );
+    return 1;
 }
-sub receiveEvent {
-	my ( $self, $event, $data ) = @_;
-	Env::C::setenv('KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG'));
+
+sub receive {
+    my ( $self, $event, $data ) = @_;
+    if (defined Env::C::getenv('KRB5CCNAMEORIG') ) { 
+        Env::C::setenv( 'KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG') ); 
+    } else {
+        Env::C::unsetenv('KRB5CCNAME');
+    }
+    return 1;
 }
 1;

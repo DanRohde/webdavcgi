@@ -17,44 +17,50 @@
 #########################################################################
 package Events::EventChannel;
 
+use strict;
+use warnings;
+
+our $VERSION = '2.0';
+
+use English qw( -no_match_vars );
+use CGI::Carp;
+
 sub new {
-	my $class = shift;
-	my $self  = {};
-	return bless $self, $class;
+    my $class = shift;
+    my $self  = {};
+    return bless $self, $class;
 }
 
-sub addEventListener {
-	my ( $self, $event, $eventListener ) = @_;
-	if ( defined $eventListener ) {
-		$eventListener->isa('Events::EventListener')
-		  or die("I need a Events::EventListener for $event");
-	}
-	
-	$$self{$event || 'ALL'} = [] unless $$self{$event || 'ALL'};
-	
-	if ( !defined $event) {
-		push(@{$$self{ALL}}, $eventListener);
-	}
-	elsif ( ref($event) eq 'ARRAY' ) {
-		foreach my $e ( @{$event} ) {
-			push(@{$$self{$e}}, $eventListener);
-		}
-	}
-	else {
-		push(@{$$self{$event}}, $eventListener);
-	}
-	return 1;
+sub add {
+    my ( $self, $event, $listener ) = @_;
+    if ( defined $listener ) {
+        $listener->isa('Events::EventListener')
+          or croak "I need a Events::EventListener for $event";
+    }
+
+    if ( !${$self}{ $event || 'ALL' } ) { ${$self}{ $event || 'ALL' } = []; }
+
+    if ( !defined $event ) {
+        push @{ ${$self}{ALL} }, $listener;
+    }
+    elsif ( ref($event) eq 'ARRAY' ) {
+        foreach my $e ( @{$event} ) {
+            push @{ ${$self}{$e} }, $listener;
+        }
+    }
+    else {
+        push @{ ${$self}{$event} }, $listener;
+    }
+    return 1;
 }
 
-sub broadcastEvent {
-	#my ($self, $event, $data) = @_;
-	my $self      = shift;
-	my $event     = shift;
-	my @listeners = ( @{ $$self{$event} || () }, @{ $$self{ALL} } );
-	foreach my $listener (@listeners) {
-		eval { $listener->receiveEvent( $event, @_ ); };
-		warn $@ if ($@);
-	}
+sub broadcast {
+    my ( $self, $event, @data ) = @_;
+    my @listeners = ( @{ ${$self}{$event} // []}, @{ ${$self}{ALL} // [] } );
+    foreach my $listener (@listeners) {
+        $listener->receive( $event, @data );
+    }
+    return 1;
 }
 
 1;

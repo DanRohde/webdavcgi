@@ -19,44 +19,77 @@
 package DatabaseEventAdapter;
 
 use strict;
+use warnings;
 
-use Events::EventListener;
-our @ISA = qw ( Events::EventListener );
+our $VERSION = '2.0';
 
-sub stripTrailingSlash {
-	my ($self, $file) = @_;
-	$file=~s/\/$//;
-	return $file;
+use base qw(Events::EventListener );
+
+use vars qw( $_INSTANCE );
+
+sub new {
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = {};
+    if ( !$_INSTANCE ) {
+        bless $self, $class;
+        $_INSTANCE = $self;
+        $self->register(main::getEventChannel());
+    }
+    return $_INSTANCE;
 }
+
+sub getinstance {
+    return __PACKAGE__->new();
+}
+
+sub strip_slash {
+    my ( $self, $file ) = @_;
+    $file =~ s/\/$//xms;
+    return $file;
+}
+
 sub normalize {
-	my ($self, $file) = @_;
-	return $self->stripTrailingSlash( main::getPropertyModule()->resolve($file) );
+    my ( $self, $file ) = @_;
+    return $self->strip_slash( main::getPropertyModule()->resolve($file) );
 }
-sub registerChannel {
-	my ($self, $channel) = @_;
-	$channel->addEventListener(['FINALIZE','FILEMOVED','FILECOPIED','DELETED','WEB-DELETED'], $self);
+
+sub register {
+    my ( $self, $channel ) = @_;
+    $channel->add(
+        [ 'FINALIZE', 'FILEMOVED', 'FILECOPIED', 'DELETED', 'WEB-DELETED' ],
+        $self );
+    return 1;
 }
-sub receiveEvent {
-	my ( $self, $event, $data ) = @_;
-	my $db = main::getDBDriver();
-	if ( $event eq 'FINALIZE' ) {
-		$db->finalize();
-	}
-	elsif ( $event eq 'FILEMOVED' ) {
-		my ($src,$dst) = ($self->normalize($$data{file}), $self->normalize($$data{destination}));
-		$db->db_deleteProperties($dst);
-		$db->db_movePropertiesRecursive($src,$dst);
-		$db->db_delete($src);
-	}
-	elsif ( $event eq 'FILECOPIED' ) {
-		my ($src,$dst) = ($self->normalize($$data{file}), $self->normalize($$data{destination}));
-		$db->db_deleteProperties($dst);
-		$db->db_copyProperties($src, $dst);
-	}
-	elsif ( $event eq 'DELETED' || $event eq 'WEB-DELETED' ) {
-		my ($dst) = ($self->normalize($$data{file}));
-		$db->db_deletePropertiesRecursive($dst);
-		$db->db_delete($dst);
-	}
+
+sub receive {
+    my ( $self, $event, $data ) = @_;
+    my $db = main::getDBDriver();
+    if ( $event eq 'FINALIZE' ) {
+        $db->finalize();
+    }
+    elsif ( $event eq 'FILEMOVED' ) {
+        my ( $src, $dst ) = (
+            $self->normalize( ${$data}{file} ),
+            $self->normalize( ${$data}{destination} )
+        );
+        $db->db_deleteProperties($dst);
+        $db->db_movePropertiesRecursive( $src, $dst );
+        $db->db_delete($src);
+    }
+    elsif ( $event eq 'FILECOPIED' ) {
+        my ( $src, $dst ) = (
+            $self->normalize( ${$data}{file} ),
+            $self->normalize( ${$data}{destination} )
+        );
+        $db->db_deleteProperties($dst);
+        $db->db_copyProperties( $src, $dst );
+    }
+    elsif ( $event eq 'DELETED' || $event eq 'WEB-DELETED' ) {
+        my ($dst) = ( $self->normalize( ${$data}{file} ) );
+        $db->db_deletePropertiesRecursive($dst);
+        $db->db_delete($dst);
+    }
+    return 1;
 }
 1;
