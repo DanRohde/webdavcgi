@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160302.01';
+$RELEASE = '1.1.1BETA20160302.02';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -822,7 +822,7 @@ broadcast('INIT');
 use URI::Escape;
 use UUID::Tiny;
 use Digest::MD5;
-use List::Util qw( any );
+use List::MoreUtils qw( any );
 
 $method = $cgi->request_method();
 

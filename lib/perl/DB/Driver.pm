@@ -26,7 +26,7 @@ use vars qw( $PREFIX);
 $PREFIX = '///-/';
 
 use DBI;
-use List::Util qw(any);
+use List::MoreUtils qw(any);
 
 use CacheManager;
 

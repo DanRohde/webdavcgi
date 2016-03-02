@@ -26,7 +26,7 @@ use base 'WebDAV::Common';
 
 use POSIX qw(strftime);
 use Date::Parse;
-use List::Util qw(any);
+use List::MoreUtils qw(any);
 use English qw ( -no_match_vars );
 use CGI::Carp;
 use FileUtils;
