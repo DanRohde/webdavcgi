@@ -47,7 +47,7 @@ sub printJSONResponse {
       if $errmsg;
     $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params ) if $msg;
     my $json = new JSON();
-    main::printCompressedHeaderAndContent(
+    main::print_compressed_header_and_content(
         '200 OK', 'application/json',
         $json->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'

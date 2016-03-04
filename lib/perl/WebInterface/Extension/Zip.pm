@@ -131,7 +131,7 @@ sub handleZipUpload {
 	$jsondata{error} = sprintf($self->tl("msg_$errmsg"), @params) if $errmsg;
 	$jsondata{message} = sprintf($self->tl("msg_$msg"), @params ) if $msg;		
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub getZipFilename {
@@ -188,7 +188,7 @@ sub handleZipCompress {
 
 	
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub handleZipUncompress {
@@ -200,7 +200,7 @@ sub handleZipUncompress {
 	my %jsondata = ();
 	$jsondata{message} = sprintf($self->tl('msg_zipuncompress'), $$self{cgi}->escapeHTML(join(', ',@files)));
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub handleZipInfo {

@@ -96,7 +96,7 @@ sub removeProperty {
 		$$self{db}->db_removeProperty($$self{backend}->resolveVirt($main::PATH_TRANSLATED.$self->stripTrailingSlash($file)), $$self{namespace}.$$self{cgi}->param('style'));	
 	}
 	
-	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub saveProperty {
@@ -117,7 +117,7 @@ sub saveProperty {
 		}
 	}
 	
-	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub stripTrailingSlash {

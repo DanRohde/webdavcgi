@@ -153,7 +153,7 @@ sub enablePuri () {
 	else {
 		$jsondata{error}= $self->tl('foldernothingerr');
 	}
-	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	
 	return 1;
 }
@@ -177,7 +177,7 @@ sub showPuri () {
 		$jsondata{error} = $self->tl('foldernothingerr');
 
 	}
-	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 
@@ -194,7 +194,7 @@ sub disablePuri () {
 	else {
 		$jsondata{error} = $self->tl('foldernothingerr');
 	}
-	main::printCompressedHeaderAndContent('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 

@@ -127,7 +127,7 @@ sub handleAclUpdate {
 		$jsondata{msg} = sprintf($self->tl('pacl_msg_success'), $c->escapeHTML($c->param('filename')));
 	}
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub renderPosixAclManager {
@@ -165,7 +165,7 @@ sub renderPosixAclManager {
 	$content.=$c->div({-class=>'template',-id=>'pacl_msg_err_usergroup'}, $self->tl('pacl_msg_err_usergroup'));
 	$content.=$c->div({-class=>'template',-id=>'pacl_msg_err_perm'}, $self->tl('pacl_msg_err_perm'));
 	
-	main::printCompressedHeaderAndContent('200 OK','text/html',$c->div({-class=>'pacl manager',-title=>$self->tl('pacl')},$content), 'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','text/html',$c->div({-class=>'pacl manager',-title=>$self->tl('pacl')},$content), 'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub getStatInfo {
@@ -190,7 +190,7 @@ sub handleUserOrGroupEntrySearch {
 				@{$self->searchGroupEntry($term, $main::EXTENSION_CONFIG{PosixAclManager}{listlimit}, $main::EXTENSION_CONFIG{PosixAclManager}{searchlimit})};
 	} 
 	my $json = new JSON;
-	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode({result=>$result}) , 'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json', $json->encode({result=>$result}) , 'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub searchUserEntry {

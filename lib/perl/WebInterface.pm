@@ -107,10 +107,10 @@ sub handleHeadRequest {
     my ($self) = @_;
     my $handled = 1;
     if ( $$self{backend}->isDir($main::PATH_TRANSLATED) ) {
-        main::printHeaderAndContent( '200 OK', 'httpd/unix-directory' );
+        main::print_header_and_content( '200 OK', 'httpd/unix-directory' );
     }
     elsif ( $main::PATH_TRANSLATED =~ /\/webdav-ui\.(js|css)$/xms ) {
-        main::printLocalFileHeader(
+        main::print_local_file_header(
             -e ($main::INSTALL_BASE . basename($main::PATH_TRANSLATED))
             ? $main::INSTALL_BASE . basename($main::PATH_TRANSLATED)
             : "${main::INSTALL_BASE}lib/"
@@ -240,7 +240,7 @@ sub optimizer_encodeImage {
     my ( $self, $basepath, $url ) = @_;
     return "url($url)" if $url =~ /^data:image/xms;
     my $ifn  = "$basepath/$url";
-    my $mime = main::getMIMEType($ifn);
+    my $mime = main::get_mime_type($ifn);
     if ( open( my $ih, '<', $ifn ) ) {
         main::debug("encode image $ifn");
         my $buffer;

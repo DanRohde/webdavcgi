@@ -22,12 +22,17 @@ package WebDAV::XMLHelper;
 use strict;
 use warnings;
 
+
+use base qw( Exporter );
+
+our @EXPORT_OK = qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES %NAMESPACEELEMENTS );
+
 use XML::Simple;
 
 our $VERSION = '1.0';
 
 use vars
-    qw( $_INSTANCE %NAMESPACES %NAMESPACEABBR %NAMESPACEELEMENTS %DATATYPES %ELEMENTORDER %ELEMENTS );
+    qw( %NAMESPACES %NAMESPACEABBR %NAMESPACEELEMENTS %DATATYPES %ELEMENTORDER %ELEMENTS );
 
 BEGIN {
     %NAMESPACES = (
@@ -197,39 +202,24 @@ BEGIN {
 
 }
 
-sub new {
-    my $this  = shift;
-    my $class = ref($this) || $this;
-    my $self  = {};
-    if ( !$_INSTANCE ) {
-        bless $self, $class;
-        $_INSTANCE = $self;
-    }
-    return $_INSTANCE;
-}
-
-sub getinstance {
-    return __PACKAGE__->new();
-}
-
 sub get_namespace {
-    my ( $self, $el ) = @_;
+    my ( $el ) = @_;
     return $ELEMENTS{$el} || $ELEMENTS{default};
 }
 
 sub get_namespace_uri {
-    my ( $self, $prop ) = @_;
-    return $NAMESPACEABBR{ $self->get_namespace($prop) };
+    my ( $prop ) = @_;
+    return $NAMESPACEABBR{ get_namespace($prop) };
 }
 
 sub nonamespace {
-    my ( $self, $prop ) = @_;
+    my ( $prop ) = @_;
     $prop =~ s/^{[^}]*}//xms;
     return $prop;
 }
 
 sub simple_xml_parser {
-    my ( $self, $text, $keep_root ) = @_;
+    my ( $text, $keep_root ) = @_;
     my %param;
     $param{NSExpand} = 1;
     if ($keep_root) { $param{KeepRoot} = 1; }
@@ -243,12 +233,12 @@ sub _cmp_elements {
 }
 
 sub _create_xml_data_hash {
-    my ( $self, $w, $d, $xmlns ) = @_;
+    my ( $w, $d, $xmlns ) = @_;
     foreach my $e ( sort _cmp_elements keys %{$d} ) {
         my $el   = $e;
         my $euns = q{};
         my $uns;
-        my $ns   = $self->get_namespace($e);
+        my $ns   = get_namespace($e);
         my $attr = q{};
         if ( defined $DATATYPES{$e} ) {
             $attr .= q{ } . $DATATYPES{$e};
@@ -292,7 +282,7 @@ sub _create_xml_data_hash {
         elsif ( ref( ${$d}{$e} ) eq 'ARRAY' ) {
             foreach my $e1 ( @{ ${$d}{$e} } ) {
                 my $tmpw = q{};
-                $self->_create_xml_data( \$tmpw, $e1, $xmlns );
+                _create_xml_data( \$tmpw, $e1, $xmlns );
                 if ( $NAMESPACEELEMENTS{$el} ) {
                     foreach my $abbr ( keys %{$xmlns} ) {
                         $nsd .= qq@ xmlns:$abbr="$NAMESPACEABBR{$abbr}"@;
@@ -305,12 +295,12 @@ sub _create_xml_data_hash {
         else {
             if ( defined $uns ) {
                 ${$w} .= qq@<${euns} xmlns="$uns">@;
-                $self->_create_xml_data( $w, ${$d}{$e}, $xmlns );
+                _create_xml_data( $w, ${$d}{$e}, $xmlns );
                 ${$w} .= qq@</${euns_end}>@;
             }
             else {
                 my $tmpw = q{};
-                $self->_create_xml_data( \$tmpw, ${$d}{$e}, $xmlns );
+                _create_xml_data( \$tmpw, ${$d}{$e}, $xmlns );
                 if ( $NAMESPACEELEMENTS{$el} ) {
                     foreach my $abbr ( keys %{$xmlns} ) {
                         $nsd .= qq@ xmlns:$abbr="$NAMESPACEABBR{$abbr}"@;
@@ -325,20 +315,20 @@ sub _create_xml_data_hash {
 }
 
 sub _create_xml_data {
-    my ( $self, $w, $d, $xmlns ) = @_;
+    my ( $w, $d, $xmlns ) = @_;
     if ( ref($d) eq 'HASH' ) {
-        $self->_create_xml_data_hash( $w, $d, $xmlns);
+        _create_xml_data_hash( $w, $d, $xmlns);
     }
     elsif ( ref($d) eq 'ARRAY' ) {
         foreach my $e ( @{$d} ) {
-            $self->_create_xml_data( $w, $e, $xmlns );
+            _create_xml_data( $w, $e, $xmlns );
         }
     }
     elsif ( ref($d) eq 'SCALAR' ) {
         ${$w} .= qq@$d@;
     }
     elsif ( ref($d) eq 'REF' ) {
-        $self->_create_xml_data( $w, ${$d}, $xmlns );
+        _create_xml_data( $w, ${$d}, $xmlns );
     }
     else {
         ${$w} .= $d // q{};
@@ -347,12 +337,12 @@ sub _create_xml_data {
 }
 
 sub create_xml {
-    my ( $self, $data_ref, $withoutp ) = @_;
+    my ( $data_ref, $withoutp ) = @_;
     my $data
         = !defined $withoutp
         ? q@<?xml version="1.0" encoding="@ . $main::CHARSET . q@"?>@
         : q{};
-    $self->_create_xml_data( \$data, $data_ref );
+    _create_xml_data( \$data, $data_ref );
     return $data;
 }
 

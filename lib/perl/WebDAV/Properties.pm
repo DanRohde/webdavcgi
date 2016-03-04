@@ -32,6 +32,8 @@ use CGI::Carp;
 use FileUtils;
 our $VERSION = '1.0';
 
+use HTTPHelper qw( get_etag );
+
 sub new {
     my $this  = shift;
     my $class = ref($this) || $this;
@@ -189,9 +191,9 @@ sub getProperty {
     ${$resp_200}{prop}{getcontentlength} = $size
         if $prop eq 'getcontentlength';
     ${$resp_200}{prop}{getcontenttype}
-        = ( $isDir ? 'httpd/unix-directory' : main::getMIMEType($fn) )
+        = ( $isDir ? 'httpd/unix-directory' : main::get_mime_type($fn) )
         if $prop eq 'getcontenttype';
-    ${$resp_200}{prop}{getetag} = main::getETag($fn) if $prop eq 'getetag';
+    ${$resp_200}{prop}{getetag} = get_etag($fn) if $prop eq 'getetag';
     ${$resp_200}{prop}{getlastmodified}
         = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime )
         if $prop eq 'getlastmodified';
@@ -299,7 +301,7 @@ sub getProperty {
         if $prop eq 'authoritative-directory';
     ${$resp_200}{prop}{resourcetag} = $main::REQUEST_URI
         if $prop eq 'resourcetag';
-    ${$resp_200}{prop}{'repl-uid'} = main::getuuid($fn)
+    ${$resp_200}{prop}{'repl-uid'} = main::getLockModule()->getuuid($fn)
         if $prop eq 'repl-uid';
     ${$resp_200}{prop}{modifiedby} = $main::REMOTE_USER
         if $prop eq 'modifiedby';
@@ -412,7 +414,7 @@ sub getProperty {
         ${$resp_200}{prop}{'principal-URL'}{href}
             = $main::CURRENT_USER_PRINCIPAL
             if $prop eq 'principal-URL';
-        ${$resp_200}{prop}{'getctag'} = main::getETag($fn)
+        ${$resp_200}{prop}{'getctag'} = get_etag($fn)
             if $prop eq 'getctag';
         ${$resp_200}{prop}{resourcetype}{calendar} = undef
             if $prop eq 'resourcetype'
@@ -460,7 +462,7 @@ sub getProperty {
         ${$resp_200}{prop}{'schedule-default-calendar-URL'}
             = $self->getCalendarHomeSet($uri)
             if $prop eq 'schedule-default-calendar-URL';
-        ${$resp_200}{prop}{'schedule-tag'} = main::getETag($fn)
+        ${$resp_200}{prop}{'schedule-tag'} = get_etag($fn)
             if $prop eq 'schedule-tag';
         ##
     }
@@ -527,7 +529,7 @@ sub getProperty {
     }
 
     if ( $prop eq 'resource-id' ) {
-        my $e = main::getETag( ${$self}{backend}->resolve($fn) );
+        my $e = get_etag( ${$self}{backend}->resolve($fn) );
         $e =~ s/"//xmsg;
         ${$resp_200}{prop}{'resource-id'} = 'urn:uuid:' . $e;
     }

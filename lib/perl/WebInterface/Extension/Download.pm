@@ -60,15 +60,15 @@ sub handle {
 		my $file = $main::PATH_TRANSLATED.$fn;
 		if ( $$self{backend}->exists($file) && !main::is_hidden($file) ) {
 			if (!$$self{backend}->isReadable($file)) {
-				main::printHeaderAndContent(main::getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
+				main::print_header_and_content(main::getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
 			} else {
 				my $qfn = $fn;
 				$qfn=~s/"/\\"/gs;
-				main::printFileHeader($file, {-Content_Disposition=>'attachment; filename="'.$qfn.'"', -type=>'application/octet-stream'});
+				main::print_file_header($file, {-Content_Disposition=>'attachment; filename="'.$qfn.'"', -type=>'application/octet-stream'});
 				$$self{backend}->printFile($file,\*STDOUT);
 			}
 		} else {
-			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
+			main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
 		}
 		$ret = 1;
 	}

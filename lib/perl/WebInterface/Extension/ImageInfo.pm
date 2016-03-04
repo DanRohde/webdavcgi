@@ -41,7 +41,7 @@ sub handle {
 	my ($self, $hook, $config, $params) = @_;
 	my $ret = 0;
 	if ($hook eq 'fileattr') {
-		my $mime = main::getMIMEType($$params{path});
+		my $mime = main::get_mime_type($$params{path});
 		my $isReadable = $$self{backend}->isReadable($$params{path});
 		my $classes = '';
 		foreach my $type (('image', 'audio', 'video')) {
@@ -61,7 +61,7 @@ sub handle {
 		}
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'imageinfo') {
 		my $file = $$self{cgi}->param('file');
-		main::printHeaderAndContent('200 OK','text/html', $self->renderImageInfo($file, $self->getImageInfo($$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$file))));
+		main::print_header_and_content('200 OK','text/html', $self->renderImageInfo($file, $self->getImageInfo($$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$file))));
 		$ret=1;	
 	}
 	 
@@ -86,7 +86,7 @@ sub renderImageInfo {
 	my $groups ="";
 	my $groupcontent = "";
 	
-	my $mime = main::getMIMEType($file);
+	my $mime = main::get_mime_type($file);
 	my $type = $mime=~/^([^\/]+)/?$1:'image';
 	
 	foreach my $gr ( @{$$ii{_groups_}}) {

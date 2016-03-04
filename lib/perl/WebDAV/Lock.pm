@@ -27,8 +27,7 @@ use base qw( WebDAV::Common );
 our $VERSION = '1.0';
 
 use Date::Parse;
-
-
+use UUID::Tiny;
 
 sub new {
     my $this  = shift;
@@ -342,5 +341,11 @@ sub inheritLock {
             $$row[5], $$row[6], $$row[7]
         );
     }
+}
+sub getuuid {
+    my ($fn) = @_;
+    my $uuid_ns = create_UUID( UUID_V1, "opaquelocktoken:$fn" );
+    my $uuid = create_UUID( UUID_V3, $uuid_ns, $fn . time );
+    return UUID_to_string($uuid);
 }
 1;

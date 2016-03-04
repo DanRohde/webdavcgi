@@ -79,9 +79,9 @@ sub getEditForm {
 		$content = $$self{json}-encode({ error=>sprintf($self->tl('msg_sizelimitexceeded'), $$self{cgi}->escapeHTML($filename), ($self->renderByteValue($$self{sizelimit}))[0])});
 		$contenttype='application/json';
 	} else {
-		$content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->readTemplate($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::getMIMEType($full)});
+		$content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->readTemplate($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::get_mime_type($full)});
 	}
-	main::printCompressedHeaderAndContent('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub makeBackupCopy {
@@ -101,7 +101,7 @@ sub saveTextData {
 	} else {
 		$jsondata{error} = sprintf($self->tl('msg_savetexterr'), $efilename);
 	}
-	main::printCompressedHeaderAndContent('200 OK', 'application/json', $$self{json}->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK', 'application/json', $$self{json}->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub isEditable {

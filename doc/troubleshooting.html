@@ -18,6 +18,7 @@ Content of this site:
 <ul>
 <li><a href="#client">Client issues</a></li>
 <li><a href="#setup">Setup/Configuration issues</a></li>
+<li><a href="#common">Common issues</a>
 </ul>
 <a href="index.html"><br/>Back to the WebDAV CGI home</a>
 </div>
@@ -246,6 +247,10 @@ see <a href="https://bugzilla.redhat.com/show_bug.cgi?id=527143#c2">https://bugz
 <h3>Speedy problems with different WebDAV CGI instances on a single server</h3>
 If you run multiple WebDAV CGI instances on a single server with different setups and databases you have to separate the Speedy instances. This can be done with a additional rewrite option: 
 <code>E=SPEEDY_TMPBASE:myprojecttmpbase</code> (replace <code>myprojecttmpbase</code> with a unique name for a WebDAV CGI instances, e.g. <code>E=SPEEDY_TMPBASE:/tmp/project2</code>)
+<a id="common"></a>
+<h2>Common issues</h2>
+<h3> Wide character in print at ... warning</h3>
+You can ignore this warning.  
 <hr/>
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2015 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a>  

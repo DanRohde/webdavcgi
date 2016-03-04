@@ -105,7 +105,7 @@ sub getSearchForm {
 			DATEFORMAT => $dfmt, FIRSTDAY => $main::LANG eq 'de' ? 1 : 0
 	};
 	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')), $vars);
-	main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
+	main::print_compressed_header_and_content('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
 	return 1;
 }
 sub getTempFilename {
@@ -125,7 +125,7 @@ sub addSearchResult {
 		my @stat = $$self{backend}->stat($full);
 		my $uri = $main::REQUEST_URI.$$self{cgi}->escape($file);
 		$uri=~s/\%2f/\//gi; 
-		my $mime = $$self{backend}->isDir($full)?'<folder>':main::getMIMEType($full);
+		my $mime = $$self{backend}->isDir($full)?'<folder>':main::get_mime_type($full);
 		my $suffix = $file eq '..' ? 'folderup' : ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.([\w?]+)$/i ?  lc($1) : 'unknown')) ;
 		my $category = $CACHE{categories}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES =~ /^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/m ? "category-$1" : '';
 		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
@@ -376,7 +376,7 @@ sub getSearchResult {
 		}
 	} 	
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }
 sub renderSelectedFiles{
@@ -409,7 +409,7 @@ sub printOpenSearch {
         			<Image height="64" width="64" type="image/png">https://$ENV{HTTP_HOST}@.$self->getExtensionUri('Search','htdocs/search64x64.png').qq@</Image>
         		</OpenSearchDescription>@;
         $content=~s/[\r]\n//sg;
-        main::printHeaderAndContent("200 OK", 'text/xml', $content);
+        main::print_header_and_content("200 OK", 'text/xml', $content);
         return 1;
 }
 1;

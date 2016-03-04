@@ -67,7 +67,7 @@ sub handle {
 		}
 		if ($content) {
 			delete $CACHE{$self}{$main::PATH_TRANSLATED};
-			main::printCompressedHeaderAndContent('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->getCookies());
+			main::print_compressed_header_and_content('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->getCookies());
 			$ret = 1;
 		}
 	} elsif ($hook eq 'posthandler') {	
@@ -300,7 +300,7 @@ sub doAFSSaveACL {
 	$jsondata{error} = sprintf($self->tl('msg_'.$errmsg), $msgparam ? @{ $msgparam } : '') if $errmsg;
 	$jsondata{message} = sprintf($self->tl('msg_'.$msg), $msgparam ? @{ $msgparam } : '') if $msg;
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store', $self->getCookies());
+	main::print_compressed_header_and_content('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store', $self->getCookies());
 }
 sub uridecode {
 	my ($txt) = @_;

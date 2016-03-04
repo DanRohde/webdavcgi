@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -27,6 +26,7 @@ $PREFIX = '///-/';
 
 use DBI;
 use List::MoreUtils qw(any);
+use CGI::Carp;
 
 use CacheManager;
 
@@ -487,7 +487,7 @@ sub db_init {
     my $dbh =
       DBI->connect( $main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS,
         { RaiseError => 0, PrintError => 0, AutoCommit => 1 } )
-      || die("You need a database (see \$DBI_SRC configuration)");
+      || croak("You need a database (see \$DBI_SRC configuration)");
     if ( defined $dbh && $main::CREATE_DB ) {
         foreach my $query (@main::DB_SCHEMA) {
             my $sth = $dbh->prepare($query);
@@ -504,7 +504,7 @@ sub db_init {
                 #                }
             }
             else {
-                warn("db_init: '$query' preparation failed!");
+                carp("db_init: '$query' preparation failed!");
             }
         }
     }

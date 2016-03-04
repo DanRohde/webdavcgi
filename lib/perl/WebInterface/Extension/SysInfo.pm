@@ -97,7 +97,7 @@ sub renderSysInfo {
 
         $i.=$$self{cgi}->end_html();
 
-        main::printHeaderAndContent('200 OK', 'text/html', $i);
+        main::print_header_and_content('200 OK', 'text/html', $i);
 }
 
 1;

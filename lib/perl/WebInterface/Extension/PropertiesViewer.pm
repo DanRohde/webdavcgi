@@ -96,7 +96,7 @@ sub renderPropertiesViewer {
                     )
             }
         )
-        ) if $self->hasThumbSupport( main::getMIMEType($fn) );
+        ) if $self->hasThumbSupport( main::get_mime_type($fn) );
     my $table = $$self{cgi}->start_table( { -class => 'props' } );
     local (%WebDAV::XMLHelper::NAMESPACEELEMENTS) = %WebDAV::XMLHelper::NAMESPACEELEMENTS;
     my $dbprops
@@ -159,7 +159,7 @@ sub renderPropertiesViewer {
         { -title => "$main::TITLEPREFIX $ru properties", -class => 'props' },
         $content
     );
-    main::printCompressedHeaderAndContent( '200 OK', 'text/html', $content,
+    main::print_compressed_header_and_content( '200 OK', 'text/html', $content,
         'Cache-Control: no-cache, no-store' );
     return 1;
 }

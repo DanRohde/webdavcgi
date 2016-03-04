@@ -38,7 +38,7 @@ sub handle {
 	if ($hook eq 'fileactionpopup') {
 		$ret ={ action=>'gpxviewer', label=>'gpxviewer', path=>$$params{path}, type=>'li'};
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'gpxviewer') {
-		main::printHeaderAndContent('200 OK','text/html', $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->readTemplate('gpxviewer'), { file => $$self{cgi}->escapeHTML($$self{cgi}->param('file')) }), 'Cache-Control: no-cache, no-store');
+		main::print_header_and_content('200 OK','text/html', $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->readTemplate('gpxviewer'), { file => $$self{cgi}->escapeHTML($$self{cgi}->param('file')) }), 'Cache-Control: no-cache, no-store');
 		$ret=1;	
 	} 
 	return $ret;

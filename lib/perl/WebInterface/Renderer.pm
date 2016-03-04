@@ -20,141 +20,226 @@
 package WebInterface::Renderer;
 
 use strict;
+use warnings;
 
-use WebInterface::Common;
-our @ISA = ( 'WebInterface::Common' );
-
+use base qw( WebInterface::Common );
 use Module::Load;
-use Graphics::Magick; 
+use Graphics::Magick;
 use POSIX qw(strftime);
 
-use vars qw( %renderer );
+use CGI::Carp;
+
+use HTTPHelper qw( get_etag );
+use vars qw( %_RENDERER );
 
 sub _getRenderer {
-	my ($self) = @_;
-	my $view = "WebInterface::View::${main::VIEW}::Renderer";
-	$view=~s/[\.\/]+//g;
-	$view="WebInterface::View::$main::SUPPORTED_VIEWS[0]::Renderer" unless -f "${main::INSTALL_BASE}lib/perl/WebInterface/View/${main::VIEW}/Renderer.pm";
-	return $renderer{$self}{$view} if exists $renderer{$self}{$view};
-	eval {
-		load $view;
-		$renderer{$self}{$view} = $view->new($$self{config},$$self{db});
-	};
-	die($@) if $@;
-	return $renderer{$self}{$view};
+    my ($self) = @_;
+    my $view = "WebInterface::View::${main::VIEW}::Renderer";
+    $view =~ s/[\.\/]+//xmsg;
+    $view = "WebInterface::View::$main::SUPPORTED_VIEWS[0]::Renderer"
+        unless
+        -f "${main::INSTALL_BASE}lib/perl/WebInterface/View/${main::VIEW}/Renderer.pm";
+    return $_RENDERER{$self}{$view} if exists $_RENDERER{$self}{$view};
+    eval {
+        load $view;
+        $_RENDERER{$self}{$view} = $view->new( $$self{config}, $$self{db} );
+    };
+    croak($@) if $@;
+    return $_RENDERER{$self}{$view};
 }
+
 sub renderWebInterface {
-	my ($self, $fn, $ru) =@_;
-	my $renderer = $self->_getRenderer();
-	return $renderer->render($fn,$ru);
+    my ( $self, $fn, $ru ) = @_;
+    my $_RENDERER = $self->_getRenderer();
+    return $_RENDERER->render( $fn, $ru );
 }
 
 sub printStylesAndVHTOCSFiles {
-        my ($self,$fn) = @_;
-        my $file = $fn =~ /\Q$main::VHTDOCS\E(.*)/ ? $main::INSTALL_BASE.'htdocs/'.$1 : $main::INSTALL_BASE.'lib/'.$$self{backend}->basename($fn);
-        if ($fn =~ /\Q$main::VHTDOCS\E\_EXTENSION\(([^\)]+)\)_(.*)/) {
-        	$file = $main::INSTALL_BASE.'lib/perl/WebInterface/Extension/'.$1.$2;
-        } elsif ($fn =~ /\Q$main::VHTDOCS\E\_OPTIMIZED\((js|css)\)_/) {
-        	$file = main::getWebInterface()->optimizer_getFilepath($1);
-        } 
-        $file=~s/\/\.\.\///g;
-        my $compression = !-e $file && -e "$file.gz";
-        my $nfile = $file;
-        $file = "$nfile.gz" if $compression;
-        if (open(F,"<$file")) {
-                my $header = { -Expires=>strftime("%a, %d %b %Y %T GMT" ,gmtime(time()+ 604800)), -Vary=>'Accept-Encoding' };
-                if ($compression) {
-                        $$header{-Content_Encoding}='gzip';
-                        $$header{-Content_Length}=(stat($file))[7];
-                }
-                main::printLocalFileHeader($nfile, $header);
-                binmode(STDOUT);
-                while (read(F,my $buffer, $main::BUFSIZE || 1048576 )>0) {
-                        print $buffer;
-                }
-                close(F);
-        } else {
-                main::printHeaderAndContent('404 Not Found','text/plain','404 - NOT FOUND');
+    my ( $self, $fn ) = @_;
+    my $file
+        = $fn =~ /\Q$main::VHTDOCS\E(.*)/xms
+        ? $main::INSTALL_BASE . 'htdocs/' . $1
+        : $main::INSTALL_BASE . 'lib/' . $$self{backend}->basename($fn);
+    if ( $fn =~ /\Q$main::VHTDOCS\E\_EXTENSION\(([^\)]+)\)_(.*)/xms ) {
+        $file
+            = $main::INSTALL_BASE
+            . 'lib/perl/WebInterface/Extension/'
+            . $1
+            . $2;
+    }
+    elsif ( $fn =~ /\Q$main::VHTDOCS\E\_OPTIMIZED\((js|css)\)_/xms ) {
+        $file = main::getWebInterface()->optimizer_getFilepath($1);
+    }
+    $file =~ s{/[.][.]/}{}xmsg;
+    my $compression = !-e $file && -e "$file.gz";
+    my $nfile = $file;
+    $file = "$nfile.gz" if $compression;
+    if ( open( F, "<$file" ) ) {
+        my $header = {
+            -Expires =>
+                strftime( "%a, %d %b %Y %T GMT", gmtime( time() + 604_800 ) ),
+            -Vary => 'Accept-Encoding'
+        };
+        if ($compression) {
+            $$header{-Content_Encoding} = 'gzip';
+            $$header{-Content_Length}   = ( stat($file) )[7];
         }
+        main::print_local_file_header( $nfile, $header );
+        binmode(STDOUT);
+        while ( read( F, my $buffer, $main::BUFSIZE || 1_048_576 ) > 0 ) {
+            print $buffer;
+        }
+        close(F);
+    }
+    else {
+        main::print_header_and_content(
+            '404 Not Found',
+            'text/plain',
+            '404 - NOT FOUND'
+        );
+    }
 
 }
+
 sub printMediaRSS {
-        my ($self,$fn,$ru) = @_;
-	my $renderer = $self->_getRenderer();
-        my $content = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
-        foreach my $file (sort { $renderer->cmp_files } @{$$self{backend}->readDir($fn, main::getFileLimit($fn), $renderer)}) {
-                my $mime = main::getMIMEType($file);
-                $mime='image/gif' if $renderer->hasThumbSupport($mime) && $mime !~ /^image/i;
-                $content.=qq@<item><title>$file</title><link>$ru$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@ if $renderer->hasThumbSupport($mime) && $$self{backend}->isReadable("$fn$file") && $$self{backend}->isFile("$fn$file") && !$$self{backend}->isEmpty("$fn$file");
+    my ( $self, $fn, $ru ) = @_;
+    my $_RENDERER = $self->_getRenderer();
+    my $content
+        = qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
+    foreach my $file (
+        sort { $_RENDERER->cmp_files } @{
+            $$self{backend}
+                ->readDir( $fn, main::getFileLimit($fn), $_RENDERER )
         }
-        $content.=qq@</channel></rss>@;
-        main::printHeaderAndContent("200 OK", 'appplication/rss+xml', $content);
-
+        )
+    {
+        my $mime = main::get_mime_type($file);
+        $mime = 'image/gif'
+            if $_RENDERER->hasThumbSupport($mime) && $mime !~ /^image/xmsi;
+        $content
+            .= qq@<item><title>$file</title><link>$ru$file</link><media:thumbnail type="image/gif" url="$ENV{SCRIPT_URI}$file?action=thumb"/><media:content type="$mime" url="$ENV{SCRIPT_URI}$file?action=image"/></item>@
+            if $_RENDERER->hasThumbSupport($mime)
+            && $$self{backend}->isReadable("$fn$file")
+            && $$self{backend}->isFile("$fn$file")
+            && !$$self{backend}->isEmpty("$fn$file");
+    }
+    $content .= qq@</channel></rss>@;
+    return main::print_header_and_content( "200 OK", 'appplication/rss+xml', $content );
 }
+
 sub printThumbnail {
-        my ($self,$fn) = @_;
-        my $image = Graphics::Magick->new;
-        my $width = $main::THUMBNAIL_WIDTH || $main::ICON_WIDTH || 18;
-        if ($main::ENABLE_THUMBNAIL_CACHE) {
-                my $uniqname = $fn;
-                $uniqname=~s/\//_/g;
-                my $cachefile = "$main::THUMBNAIL_CACHEDIR/$uniqname.thumb.gif";
-                mkdir($main::THUMBNAIL_CACHEDIR) if ! -e $main::THUMBNAIL_CACHEDIR;
-                if (! -e $cachefile || ($$self{backend}->stat($fn))[9] > (stat($cachefile))[9]) {
-                        my $lfn = $$self{backend}->getLocalFilename($fn);
-                        my $x;
-                        my ($w, $h,$s,$f) = $image->Ping($lfn);
+    my ( $self, $fn ) = @_;
+    my $image = Graphics::Magick->new;
+    my $width = $main::THUMBNAIL_WIDTH || $main::ICON_WIDTH || 18;
+    if ($main::ENABLE_THUMBNAIL_CACHE) {
+        my $uniqname = $fn;
+        $uniqname =~ s/\//_/xmsg;
+        my $cachefile = "$main::THUMBNAIL_CACHEDIR/$uniqname.thumb.gif";
+        mkdir($main::THUMBNAIL_CACHEDIR) if !-e $main::THUMBNAIL_CACHEDIR;
+        if ( !-e $cachefile
+            || ( $$self{backend}->stat($fn) )[9] > ( stat($cachefile) )[9] )
+        {
+            my $lfn = $$self{backend}->getLocalFilename($fn);
+            my $x;
+            my ( $w, $h, $s, $f ) = $image->Ping($lfn);
 
-                        $x = $image->Read($lfn); warn "$x" if "$x";
-                        $image->Set(delay=>200);
-                        $image->Crop(height=>$h / ${width} ) if ($h > $width && $w < $width);
-                        $image->Resize(geometry=>$width,filter=>'Gaussian') if ($w > $width);
-                        $image->Frame(width=>2,height=>2,outer=>0,inner=>2, fill=>'black');
-                        $x = $image->Write($cachefile); warn "$x" if "$x";
+            $x = $image->Read($lfn);
+            carp "$x" if "$x";
+            $image->Set( delay => 200 );
+            $image->Crop( height => $h / ${width} )
+                if ( $h > $width && $w < $width );
+            $image->Resize( geometry => $width, filter => 'Gaussian' )
+                if ( $w > $width );
+            $image->Frame(
+                width  => 2,
+                height => 2,
+                outer  => 0,
+                inner  => 2,
+                fill   => 'black'
+            );
+            $x = $image->Write($cachefile);
+            carp "$x" if "$x";
 
-                }
-                if (open(my $cf, "<$cachefile")) {
-                        print $$self{cgi}->header(-status=>'200 OK',-type=>main::getMIMEType($cachefile), -ETag=>main::getETag($cachefile), -Content_length=>(stat($cachefile))[7]);
-                        binmode $cf;
-                        binmode STDOUT;
-                        print while(<$cf>);
-                        close($cf);
-                }
-        } else {
-                my $lfn = $$self{backend}->getLocalFilename($fn);
-                print $$self{cgi}->header(-status=>'200 OK',-type=>'image/gif', -ETag=>main::getETag($fn));
-                my ($w, $h,$s,$f) = $image->Ping($lfn);
-                my $x;
-                $x = $image->Read($lfn); warn "$x" if "$x";
-                $image->Set(delay=>200);
-                $image->Crop(height=>$h / ${width} ) if ($h > $width && $w < $width);
-                $image->Resize(geometry=>$width,filter=>'Gaussian') if ($w > $width);
-                $image->Frame(width=>2,height=>2,outer=>0,inner=>2, fill=>'black');
-                binmode STDOUT;
-                $x = $image->Write('gif:-'); warn "$x" if "$x";
         }
-}
-sub printImage {
-        my ($self, $fn) = @_;
-	if (!$$self{backend}->isFile($fn) || $$self{backend}->isEmpty($fn)) {
-		main::printHeaderAndContent('404 Not Found','text/plain','404 Not Found');
-		return;
-	}
-        $fn = $$self{backend}->getLocalFilename($fn);
-        my $image = Graphics::Magick->new;
-        my $x = $image->Read($fn); warn "$x" if "$x";
-        $image->Set(delay=>200);
+        if ( open my $cf, '<', $cachefile ) {
+            print $$self{cgi}->header(
+                -status         => '200 OK',
+                -type           => main::get_mime_type($cachefile),
+                -ETag           => get_etag($cachefile),
+                -Content_length => ( stat($cachefile) )[7]
+            );
+            binmode $cf;
+            binmode STDOUT;
+            print while (<$cf>);
+            close($cf);
+        }
+    }
+    else {
+        my $lfn = $$self{backend}->getLocalFilename($fn);
+        print $$self{cgi}->header(
+            -status => '200 OK',
+            -type   => 'image/gif',
+            -ETag   => get_etag($fn)
+        );
+        my ( $w, $h, $s, $f ) = $image->Ping($lfn);
+        my $x;
+        $x = $image->Read($lfn);
+        carp "$x" if "$x";
+        $image->Set( delay => 200 );
+        $image->Crop( height => $h / ${width} )
+            if ( $h > $width && $w < $width );
+        $image->Resize( geometry => $width, filter => 'Gaussian' )
+            if ( $w > $width );
+        $image->Frame(
+            width  => 2,
+            height => 2,
+            outer  => 0,
+            inner  => 2,
+            fill   => 'black'
+        );
         binmode STDOUT;
-        print $$self{cgi}->header(-status=>'200 OK',-type=>'image/gif', -ETag=>main::getETag($fn));
-        $x = $image->Write('gif:-'); warn "$x" if "$x";
+        $x = $image->Write('gif:-');
+        carp "$x" if "$x";
+    }
+    return;
 }
+
+sub printImage {
+    my ( $self, $fn ) = @_;
+    if ( !$$self{backend}->isFile($fn) || $$self{backend}->isEmpty($fn) ) {
+        main::print_header_and_content(
+            '404 Not Found',
+            'text/plain',
+            '404 Not Found'
+        );
+        return;
+    }
+    $fn = $$self{backend}->getLocalFilename($fn);
+    my $image = Graphics::Magick->new;
+    my $x     = $image->Read($fn);
+    carp "$x" if "$x";
+    $image->Set( delay => 200 );
+    binmode STDOUT;
+    print $$self{cgi}->header(
+        -status => '200 OK',
+        -type   => 'image/gif',
+        -ETag   => get_etag($fn)
+    );
+    $x = $image->Write('gif:-');
+    carp "$x" if "$x";
+    return;
+}
+
 sub printDAVMount {
-        my ($self,$fn) = @_;
-        my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
-        my $bn = $$self{backend}->basename($fn);
-        $su =~ s/\Q$bn\E\/?//;
-        $bn.='/' if $$self{backend}->isDir($fn) && $bn!~/\/$/;
-        main::printHeaderAndContent('200 OK','application/davmount+xml',
-               qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@);
+    my ( $self, $fn ) = @_;
+    my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
+    my $bn = $$self{backend}->basename($fn);
+    $su =~ s/\Q$bn\E\/?//xms;
+    $bn .= $$self{backend}->isDir($fn) && $bn !~ /\/$/xms ? q{/} : q{};
+    return main::print_header_and_content(
+        '200 OK',
+        'application/davmount+xml',
+        qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@
+    );
 }
 1;

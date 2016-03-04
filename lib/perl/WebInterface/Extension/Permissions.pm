@@ -45,7 +45,7 @@ sub handle {
 	} elsif ($hook eq 'gethandler') {
 		if ($$self{cgi}->param('ajax') eq 'getPermissionsDialog') {
 			my $content = $self->renderPermissionsDialog($main::PATH_TRANSLATED,$main::REQUEST_URI, $$self{cgi}->param('template') || $self->config('template','permissions'));
-			main::printCompressedHeaderAndContent('200 OK','text/html',$content,'Cache-Control: no-cache, no-store');
+			main::print_compressed_header_and_content('200 OK','text/html',$content,'Cache-Control: no-cache, no-store');
 			$ret  = 1;
 		}
 	} elsif ($hook eq 'posthandler') {
@@ -113,7 +113,7 @@ sub changePermissions {
 		$jsondata{error} = sprintf($self->tl("msg_$errmsg"),$msgparam) if $errmsg;
 		$jsondata{message} = sprintf($self->tl("msg_$msg"), $msgparam) if $msg;	
 		my $json = new JSON();
-		main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+		main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 		return 1;
 	}
 	return 0;

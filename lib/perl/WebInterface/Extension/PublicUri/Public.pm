@@ -41,7 +41,7 @@ sub handle {
 	$self->SUPER::handle($hook, $config, $params);
 	if ( $hook eq 'posthandler' ) {
 		return $self->handlePublicUriAccess() if $$self{cgi}->param('action')  =~ /$$self{allowedpostactions}/;
-		main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
+		main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 		return 1;
 	} elsif ($hook eq 'gethandler') {
 		return $self->handlePublicUriAccess();
@@ -54,7 +54,7 @@ sub handlePublicUriAccess {
 		my ($code, $path) = ($1,$2);
 		my $fn = $self->getFileFromCode($code);
 		if (!$fn || !$self->isPublicUri($fn, $code, $self->getSeed($fn))) {
-			main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
+			main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 			return 1;
 		} 	
 
@@ -69,14 +69,14 @@ sub handlePublicUriAccess {
 		} elsif ((!$path || $path eq '')&&($$self{backend}->isReadable($fn))) {
 			my $bfn = $$self{backend}->basename($fn);
 			$bfn=~s/"/_/g;
-			main::printFileHeader($fn, { 'Content-Disposition' => sprintf('attachment; filename="%s"',$bfn)});
+			main::print_file_header($fn, { 'Content-Disposition' => sprintf('attachment; filename="%s"',$bfn)});
 			$$self{backend}->printFile($fn, \*STDOUT);
 			return 1;
 		}
 		
 		return 0;
 	} else {
-		main::printHeaderAndContent(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
+		main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
 		return 1;
 	}
 }

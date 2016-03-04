@@ -35,8 +35,8 @@
 #########################################################################
 package main;
 use strict;
+use warnings;
 
-#use warnings;
 use vars
     qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
     @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160302.02';
+$RELEASE = '1.1.1BETA20160304.01';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -820,7 +820,6 @@ DatabaseEventAdapter->new();
 broadcast('INIT');
 
 use URI::Escape;
-use UUID::Tiny;
 use Digest::MD5;
 use List::MoreUtils qw( any );
 
@@ -837,6 +836,9 @@ $config->setProperty( 'backend', $backend );
 use Utils;
 $utils = Utils->new;
 $config->setProperty( 'utils', $utils );
+
+use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
+use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES );
 
 umask $UMASK || croak("Cannot set umask $UMASK.");
 
@@ -882,9 +884,9 @@ if ( !defined $PATH_TRANSLATED ) {
 
 # protect against direct CGI script call:
 if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
-    debug('FORBIDDEN DIRECT CALL!');
-    printHeaderAndContent('404 Not Found');
-    exit();
+    carp('FORBIDDEN DIRECT CALL!');
+    print_header_and_content('404 Not Found');
+    exit 0;
 }
 
 $PATH_TRANSLATED .= q{/}
@@ -897,9 +899,9 @@ $REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
 $TRASH_FOLDER .= q{/} if $TRASH_FOLDER !~ /\/$/xms;
 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     if ( any { /^\Q$<\E$/xms } @FORBIDDEN_UID ) {
-    debug('Forbidden UID');
-    printHeaderAndContent('403 Forbidden');
-    exit(0);
+    carp('Forbidden UID!');
+    print_header_and_content('403 Forbidden');
+    exit 0;
 }
 
 $WEB_ID = 0;
@@ -1200,7 +1202,7 @@ if ( $method =~
     broadcast('FINALIZE');
 }
 else {
-    printHeaderAndContent('405 Method Not Allowed');
+    print_header_and_content('405 Method Not Allowed');
 }
 
 sub gotomethod {
@@ -1213,7 +1215,7 @@ sub gotomethod {
 sub HTTP_GET {
     debug("_GET: $PATH_TRANSLATED");
     if ( is_hidden($PATH_TRANSLATED) ) {
-        printHeaderAndContent(
+        print_header_and_content(
             getErrorDocument(
                 '404 Not Found',
                 'text/plain',
@@ -1226,7 +1228,7 @@ sub HTTP_GET {
             print $cgi->redirect($REDIRECT_TO);
         }
         else {
-            printHeaderAndContent(
+            print_header_and_content(
                 getErrorDocument(
                     '404 Not Found',
                     'text/plain',
@@ -1249,7 +1251,7 @@ sub HTTP_GET {
     elsif ( $backend->exists($PATH_TRANSLATED)
         && !$backend->isReadable($PATH_TRANSLATED) )
     {
-        printHeaderAndContent(
+        print_header_and_content(
             getErrorDocument(
                 '403 Forbidden', 'text/plain', '403 Forbidden'
             )
@@ -1259,10 +1261,10 @@ sub HTTP_GET {
         debug('_GET: DOWNLOAD');
         binmode(STDOUT) || croak('Cannot set binmode for STDOUT.');
         my $enc  = $cgi->http('Accept-Encoding');
-        my $mime = getMIMEType($PATH_TRANSLATED);
+        my $mime = get_mime_type($PATH_TRANSLATED);
         my @stat = $backend->stat($PATH_TRANSLATED);
 
-        my ( $start, $end, $count ) = getByteRanges();
+        my ( $start, $end, $count ) = get_byte_ranges($cgi,$backend);
         if (   $ENABLE_COMPRESSION
             && $enc
             && $enc =~ /(gzip|deflate)/xms
@@ -1272,7 +1274,7 @@ sub HTTP_GET {
             my %header = (
                 -status => '200 OK',
                 -type   => $mime,
-                -ETag   => getETag($PATH_TRANSLATED),
+                -ETag   => get_etag($PATH_TRANSLATED),
                 -Last_Modified =>
                     strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] ) ),
                 -charset          => $CHARSET,
@@ -1319,16 +1321,16 @@ sub HTTP_GET {
             }
         }
         else {
-            my $headerref = printFileHeader($PATH_TRANSLATED);
+            my $headerref = print_file_header($PATH_TRANSLATED);
             $backend->printFile( $PATH_TRANSLATED, \*STDOUT, $start, $count );
-            fixModPerlResponse($headerref);
+            fix_mod_perl_response($headerref);
         }
         broadcast( 'GET',
             { file => $PATH_TRANSLATED, size => $count || $stat[7] } );
     }
     else {
         debug("GET: $PATH_TRANSLATED NOT FOUND!");
-        printHeaderAndContent(
+        print_header_and_content(
             getErrorDocument(
                 '404 Not Found',
                 'text/plain', '404 - FILE NOT FOUND'
@@ -1344,11 +1346,11 @@ sub HTTP_HEAD {
     }
     elsif ( $backend->exists($PATH_TRANSLATED) ) {
         debug("_HEAD: $PATH_TRANSLATED exists!");
-        fixModPerlResponse( printFileHeader($PATH_TRANSLATED) );
+        fix_mod_perl_response( print_file_header($PATH_TRANSLATED) );
     }
     else {
         debug("_HEAD: $PATH_TRANSLATED does not exists!");
-        printHeaderAndContent('404 Not Found');
+        print_header_and_content('404 Not Found');
     }
     return;
 }
@@ -1357,8 +1359,8 @@ sub HTTP_POST {
     debug("_POST: $PATH_TRANSLATED");
 
     if ( !$cgi->param('file_upload') && $cgi->cgi_error ) {
-        printHeaderAndContent( $cgi->cgi_error, undef, $cgi->cgi_error );
-        exit 0;
+        print_header_and_content( $cgi->cgi_error, undef, $cgi->cgi_error );
+        return;
     }
     if ( $ALLOW_FILE_MANAGEMENT && getWebInterface()->handlePostRequest() ) {
         debug('_POST: WebInterface called');
@@ -1368,7 +1370,7 @@ sub HTTP_POST {
     }
     else {
         debug("_POST: forbidden POST to $PATH_TRANSLATED");
-        printHeaderAndContent(
+        print_header_and_content(
             getErrorDocument(
                 '403 Forbidden',
                 'text/plain',
@@ -1391,7 +1393,7 @@ sub HTTP_OPTIONS {
         $type
             = $backend->isDir($PATH_TRANSLATED)
             ? 'httpd/unix-directory'
-            : getMIMEType($PATH_TRANSLATED);
+            : get_mime_type($PATH_TRANSLATED);
         $methods = join( ', ', @{ getSupportedMethods($PATH_TRANSLATED) } );
 
     }
@@ -1414,18 +1416,18 @@ sub HTTP_OPTIONS {
         );
 
     }
-    return main::printHeaderAndContent( $status, $type, q{}, \%params );
+    return main::print_header_and_content( $status, $type, q{}, \%params );
 }
 
 sub HTTP_TRACE {
     my $status    = '200 OK';
-    my $content   = readRequestBody();
+    my $content   = read_request_body();
     my $type      = 'message/http';
     my $via       = $cgi->http('Via');
     my $addheader = "Via: $ENV{SERVER_NAME}:$ENV{SERVER_PORT}"
         . ( defined $via ? ", $via" : q{} );
 
-    return printHeaderAndContent( $status, $type, $content, $addheader );
+    return print_header_and_content( $status, $type, $content, $addheader );
 }
 
 sub HTTP_GETLIB {
@@ -1443,7 +1445,7 @@ sub HTTP_GETLIB {
         $su =~ s/\/[^\/]+$/\//xms if !$backend->isDir($fn);
         $addheader = "MS-Doclib: $su";
     }
-    return printHeaderAndContent( $status, $type, $content, $addheader );
+    return print_header_and_content( $status, $type, $content, $addheader );
 }
 
 sub HTTP_PROPFIND {
@@ -1456,7 +1458,7 @@ sub HTTP_PROPFIND {
     $depth  = -1 if $depth =~ /infinity/xmsi;
     $depth  = 0  if $depth == -1 && !$ALLOW_INFINITE_PROPFIND;
 
-    my $xml = readRequestBody();
+    my $xml = read_request_body();
     $xml
         = qq@<?xml version="1.0" encoding="$CHARSET" ?>\n<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>@
         if !defined $xml || $xml =~ /^\s*$/xms;
@@ -1464,7 +1466,7 @@ sub HTTP_PROPFIND {
     my $xmldata = q{};
     eval { $xmldata = simple_xml_parser($xml); } or do {
         debug("_PROPFIND: invalid XML request: $@");
-        printHeaderAndContent('400 Bad Request');
+        print_header_and_content('400 Bad Request');
         return;
     };
 
@@ -1521,7 +1523,7 @@ sub HTTP_PROPFIND {
     debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
     debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");
     
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_PROPPATCH {
@@ -1534,13 +1536,13 @@ sub HTTP_PROPPATCH {
         $status = '423 Locked';
     }
     elsif ( $backend->exists($fn) ) {
-        my $xml = readRequestBody();
+        my $xml = read_request_body();
 
         debug("_PROPPATCH: REQUEST: $xml");
         my $dataRef;
         eval { $dataRef = simple_xml_parser($xml) } or do {
             debug("_PROPPATCH: invalid XML request: $@");
-            printHeaderAndContent('400 Bad Request');
+            print_header_and_content('400 Bad Request');
             return;
         };
         broadcast( 'PROPPATCH', { file => $fn, data => $dataRef } );
@@ -1561,7 +1563,7 @@ sub HTTP_PROPPATCH {
         $status = '404 Not Found';
     }
     debug("_PROPPATCH: RESPONSE: $content");
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_PUT {
@@ -1624,7 +1626,7 @@ sub HTTP_PUT {
     else {
         $status = '409 Conflict';
     }
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_COPY {
@@ -1713,7 +1715,7 @@ sub HTTP_COPY {
         }
     }
 
-    return printHeaderAndContent($status);
+    return print_header_and_content($status);
 }
 
 sub HTTP_MOVE {
@@ -1774,7 +1776,7 @@ sub HTTP_MOVE {
         }
     }
     debug("_MOVE: status=$status");
-    return printHeaderAndContent($status);
+    return print_header_and_content($status);
 }
 
 sub HTTP_DELETE {
@@ -1819,7 +1821,7 @@ sub HTTP_DELETE {
         ? create_xml( { 'multistatus' => { 'response' => \@resps } } )
         : q{};
     debug("_DELETE RESPONSE (status=$status): $content");
-    return printHeaderAndContent( $status, $#resps > -1 ? 'text/xml' : undef,
+    return print_header_and_content( $status, $#resps > -1 ? 'text/xml' : undef,
         $content );
 }
 
@@ -1832,7 +1834,7 @@ sub HTTP_MKCOL {
     my $status = '201 Created';
     my ( $type, $content );
     debug("_MKCOL: $PATH_TRANSLATED");
-    my $body = readRequestBody();
+    my $body = read_request_body();
     my $dataRef;
     if ( $body ne q{} ) {
 
@@ -1840,17 +1842,17 @@ sub HTTP_MKCOL {
         if ( $cgi->content_type() =~ /\/xml/xms ) {
             eval { $dataRef = simple_xml_parser($body) } or do {
                 debug("_MKCOL: invalid XML request: $@");
-                printHeaderAndContent('400 Bad Request');
+                print_header_and_content('400 Bad Request');
                 return;
             };
             if ( ref( $$dataRef{'{DAV:}set'} ) !~ /(?:ARRAY|HASH)/xms ) {
-                printHeaderAndContent('400 Bad Request');
+                print_header_and_content('400 Bad Request');
                 return;
             }
         }
         else {
             $status = '415 Unsupported Media Type';
-            printHeaderAndContent( $status, $type, $content );
+            print_header_and_content( $status, $type, $content );
             return;
         }
     }
@@ -1895,7 +1897,7 @@ sub HTTP_MKCOL {
         debug('_MKCOL: parent direcory does not exists');
         $status = '409 Conflict';
     }
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_LOCK {
@@ -1911,10 +1913,10 @@ sub HTTP_LOCK {
     my $content   = q{};
     my $addheader = undef;
 
-    my $xml = readRequestBody();
+    my $xml = read_request_body();
     my $xmldata = $xml ne q{} ? simple_xml_parser($xml) : {};
 
-    my $token = 'opaquelocktoken:' . getuuid($fn);
+    my $token = 'opaquelocktoken:' . getLockModule()->getuuid($fn);
 
     if (   !$backend->exists($fn)
         && !$backend->exists( $backend->getParent($fn) ) )
@@ -1976,7 +1978,7 @@ sub HTTP_LOCK {
     debug("_LOCK: REQUEST: $xml");
     debug("_LOCK: RESPONSE: $content");
     debug("_LOCK: status: $status, type=$type");
-    return printHeaderAndContent( $status, $type, $content, $addheader );
+    return print_header_and_content( $status, $type, $content, $addheader );
 }
 
 sub HTTP_UNLOCK {
@@ -2000,7 +2002,7 @@ sub HTTP_UNLOCK {
     else {
         $status = '409 Conflict';
     }
-    return printHeaderAndContent($status);
+    return print_header_and_content($status);
 }
 
 sub HTTP_ACL {
@@ -2010,7 +2012,7 @@ sub HTTP_ACL {
     my $type;
     my %error;
     debug("_ACL($fn)");
-    my $xml     = readRequestBody();
+    my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
         debug("_ACL: invalid XML request: $@");
@@ -2042,7 +2044,7 @@ sub HTTP_ACL {
             push @ace, @{ $$xmldata{'{DAV:}acl'}{'{DAV:}ace'} };
         }
         else {
-            printHeaderAndContent('400 Bad Request');
+            print_header_and_content('400 Bad Request');
             return;
         }
         foreach my $ace (@ace) {
@@ -2059,12 +2061,12 @@ sub HTTP_ACL {
                     $other = 1;
                 }
                 else {
-                    printHeaderAndContent('400 Bad Request');
+                    print_header_and_content('400 Bad Request');
                     return;
                 }
             }
             else {
-                printHeaderAndContent('400 Bad Request');
+                print_header_and_content('400 Bad Request');
                 return;
             }
             my ( $read, $write ) = ( 0, 0 );
@@ -2085,12 +2087,12 @@ sub HTTP_ACL {
                     {'{DAV:}write'};
             }
             else {
-                printHeaderAndContent('400 Bad Request');
+                print_header_and_content('400 Bad Request');
                 return;
 
             }
             if ( $read == 0 && $write == 0 ) {
-                printHeaderAndContent('400 Bad Request');
+                print_header_and_content('400 Bad Request');
                 return;
             }
             my @stat = $backend->stat($fn);
@@ -2121,7 +2123,7 @@ sub HTTP_ACL {
         }
 
     }
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_REPORT {
@@ -2134,7 +2136,7 @@ sub HTTP_REPORT {
     my $content = q{};
     my $type;
     my %error;
-    my $xml     = readRequestBody();
+    my $xml     = read_request_body();
     my $xmldata = q{};
 
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
@@ -2255,7 +2257,7 @@ sub HTTP_REPORT {
             if (   !defined $$xmldata{$rn}{'{DAV:}href'}
                 || !defined $$xmldata{$rn}{'{DAV:}prop'} )
             {
-                printHeaderAndContent('404 Bad Request');
+                print_header_and_content('404 Bad Request');
                 return;
             }
             if ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'ARRAY' ) {
@@ -2284,7 +2286,7 @@ sub HTTP_REPORT {
             if (   !defined $$xmldata{$rn}{'{DAV:}href'}
                 || !defined $$xmldata{$rn}{'{DAV:}prop'} )
             {
-                printHeaderAndContent('404 Bad Request');
+                print_header_and_content('404 Bad Request');
                 return;
             }
             if ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'ARRAY' ) {
@@ -2341,7 +2343,7 @@ sub HTTP_REPORT {
     }
     debug("_REPORT: REQUEST: $xml");
     debug("_REPORT: RESPONSE: $content");
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_SEARCH {
@@ -2351,7 +2353,7 @@ sub HTTP_SEARCH {
     my $type    = 'application/xml';
     my @errors;
 
-    my $xml     = readRequestBody();
+    my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
         debug("_SEARCH: invalid XML request: $@");
@@ -2391,13 +2393,13 @@ sub HTTP_SEARCH {
     debug(
         "_SEARCH: status=$status, type=$type, request:\n$xml\n\n response:\n $content\n\n"
     );
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_BIND {
     my ( $status, $type, $content ) = ( '200 OK', undef, undef );
     my $overwrite = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
-    my $xml     = readRequestBody();
+    my $xml     = read_request_body();
     my $xmldata = q{};
     my $host    = $cgi->http('Host');
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
@@ -2442,12 +2444,12 @@ sub HTTP_BIND {
             }
         }
     }
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_UNBIND {
     my ( $status, $type, $content ) = ( '204 No Content', undef, undef );
-    my $xml     = readRequestBody();
+    my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
         $status  = '400 Bad Request';
@@ -2471,13 +2473,13 @@ sub HTTP_UNBIND {
             $status = '403 Forbidden';
         }
     }
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_REBIND {
     my ( $status, $type, $content ) = ( '200 OK', undef, undef );
     my $overwrite = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
-    my $xml     = readRequestBody();
+    my $xml     = read_request_body();
     my $xmldata = q{};
     my $host    = $cgi->http('Host');
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
@@ -2533,7 +2535,7 @@ sub HTTP_REBIND {
             }
         }
     }
-    return printHeaderAndContent( $status, $type, $content );
+    return print_header_and_content( $status, $type, $content );
 }
 
 sub handlePropFindElement {
@@ -2548,8 +2550,8 @@ sub handlePropFindElement {
             $ns = $1;
         }
         if ( ( $nons =~ /(?:allprop|propname)/xms ) && ($all) ) {
-            printHeaderAndContent('400 Bad Request');
-            return;
+            print_header_and_content('400 Bad Request');
+            exit 0;
         }
         elsif ( $nons =~ /^(allprop|propname)$/xms ) {
             $noval = $1 eq 'propname';
@@ -2563,15 +2565,15 @@ sub handlePropFindElement {
         elsif ( any { /\Q$nons\E/xms } @IGNORE_PROPS ) {
             next;
         }
-        elsif (defined $WebDAV::XMLHelper::NAMESPACES{ $$xmldata{$propfind} }
-            || defined $WebDAV::XMLHelper::NAMESPACES{$ns} )
+        elsif (defined $NAMESPACES{ $$xmldata{$propfind} }
+            || defined $NAMESPACES{$ns} )
         {    # sometimes the namespace: ignore
         }
         else {
-            debug("Unknown element $propfind ($nons) in PROPFIND request");
-            debug( $WebDAV::XMLHelper::NAMESPACES{ $$xmldata{$propfind} } );
-            printHeaderAndContent('400 Bad Request');
-            exit;
+            debug( $NAMESPACES{ $$xmldata{$propfind} } );
+            carp("Unknown element $propfind ($nons) in PROPFIND request ");
+            print_header_and_content('400 Bad Request');
+            exit 0;
         }
     }
     return ( \@props, $all, $noval );
@@ -2589,8 +2591,9 @@ sub handlePropElement {
         {    # ignore namespaces
         }
         elsif ( $ns eq q{} && !defined $$xmldata{$prop}{xmlns} ) {
-            printHeaderAndContent('400 Bad Request');
-            exit;
+            print_header_and_content('400 Bad Request');
+            carp("Unknown property element $prop");
+            exit 0; # jump over all callers
             ##} elsif (grep({$_=~/\Q$nons\E/} @KNOWN_FILE_PROPS, @KNOWN_COLL_PROPS)>0)  {
         }
         elsif ( exists $known_filecoll_props{$nons} ) {
@@ -2636,7 +2639,7 @@ sub getPropStat {
             next;
         }
         elsif (
-            (   !defined $WebDAV::XMLHelper::NAMESPACES{$xmlnsuri}
+            (   !defined $NAMESPACES{$xmlnsuri}
                 || any { /^\Q$propname\E$/xms } ($isDir ? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) 
             )
             && ! any { /^\Q$propname\E$/xms } @PROTECTED_PROPS 
@@ -2686,133 +2689,6 @@ sub getPropStat {
     return \@propstat;
 }
 
-
-sub getETag {
-    my ($file) = @_;
-    $file = $PATH_TRANSLATED unless defined $file;
-    my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
-        $size, $atime, $mtime, $ctime, $blksize, $blocks
-    ) = $backend->stat($file);
-    my $digest = Digest::MD5->new;
-    $digest->add($file);
-    $digest->add( $size  || 0 );
-    $digest->add( $mtime || 0 );
-    return q{"} . $digest->hexdigest() . q{"};
-}
-
-sub getAddHeaderHashRef {
-    my ($header) = @_;
-    return {} unless defined $header;
-    return $header if ref($header) eq 'HASH';
-
-    my %params = ();
-    foreach my $line ( split( /\r?\n/xms, $header ) ) {
-        my ( $h, $v ) = split( /:\ /xms, $line );
-        $params{$h} = $v;
-    }
-    return \%params;
-}
-
-sub printHeaderAndContent {
-    my ( $status, $type, $content, $addHeader, $cookies ) = @_;
-
-    $status  = '403 Forbidden' unless defined $status;
-    $type    = 'text/plain'    unless defined $type;
-    $content =  q{}            unless defined $content;
-    
-    
-    my $contentlength = bytes::length($content);
-        
-    my %header        = (
-        -status         => $status,
-        -type           => $type,
-        -Content_Length => $contentlength,
-        -ETag           => getETag(),
-        -charset        => $CHARSET,
-        -cookie         => $cookies,
-        'MS-Author-Via' => 'DAV',
-        'DAV'           => $DAV
-    );
-    $header{'Translate'} = 'f' if defined $cgi->http('Translate');
-    %header = ( %header, %{ getAddHeaderHashRef($addHeader) } );
-
-    binmode(STDOUT) || croak('Cannot set bindmode for STDOUT.');
-    print $cgi->header( \%header ) . $content;
-    fixModPerlResponse( \%header );
-    return;
-}
-
-sub printCompressedHeaderAndContent {
-    my ( $status, $type, $content, $addHeader, $cookies ) = @_;
-    my $header = getAddHeaderHashRef($addHeader);
-    if ( $ENABLE_COMPRESSION && ( my $enc = $cgi->http('Accept-Encoding') ) )
-    {
-        my $orig = $content;
-        if ( $enc =~ /gzip/xmsi ) {
-            require IO::Compress::Gzip;
-            my $g = IO::Compress::Gzip->new( \$content );
-            $g->write($orig);
-            $$header{'Content-Encoding'} = 'gzip';
-        }
-        elsif ( $enc =~ /deflate/xmsi ) {
-            require IO::Compress::Deflate;
-            my $d = IO::Compress::Deflate->new( \$content );
-            $d->write($orig);
-            $$header{'Content-Encoding'} = 'deflate';
-        }
-    }
-    return printHeaderAndContent( $status, $type, $content, $header,
-        $cookies );
-}
-
-sub printLocalFileHeader {
-    my ( $fn, $addheader ) = @_;
-    my @stat   = stat($fn);
-    my %header = (
-        -status         => '200 OK',
-        -type           => getMIMEType($fn),
-        -Content_Length => $stat[7],
-        -ETag           => getETag($fn),
-        -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
-        -charset        => $CHARSET,
-        'DAV'           => $DAV,
-        'MS-Author-Via' => 'DAV'
-    );
-    $header{'Translate'} = 'f' if defined $cgi->http('Translate');
-    %header = ( %header, %{ getAddHeaderHashRef($addheader) } );
-    print $cgi->header( \%header );
-    return;
-}
-
-sub printFileHeader {
-    my ( $fn, $addheader ) = @_;
-    my @stat   = $backend->stat($fn);
-    my %header = (
-        -status         => '200 OK',
-        -type           => getMIMEType($fn),
-        -Content_Length => $stat[7],
-        -ETag           => getETag($fn),
-        -Last_Modified =>
-            strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] ) ),
-        -charset        => $CHARSET,
-        -Cache_Control  => 'no-cache, no-store',
-        'MS-Author-Via' => 'DAV',
-        'DAV'           => $DAV,
-        'Accept-Ranges' => 'bytes'
-    );
-    $header{Translate} = 'f' if defined $cgi->http('Translate');
-    my ( $start, $end, $count ) = getByteRanges();
-    if ( defined $start ) {
-        $header{-status} = '206 Partial Content';
-        $header{-Content_Range}
-            = sprintf( 'bytes %s-%s/%s', $start, $end, $stat[7] );
-        $header{-Content_Length} = $count;
-    }
-    %header = ( %header, %{ getAddHeaderHashRef($addheader) } );
-    print $cgi->header( \%header );
-    return \%header;
-}
-
 sub is_hidden {
     my ($fn) = @_;
     my $filter = getHiddenFilter();
@@ -2824,12 +2700,12 @@ sub is_hidden {
 sub preConditionFailed {
     my ($fn) = @_;
     $fn = $backend->getParent($fn) . q{/} if !$backend->exists($fn);
-    my $ifheader = getIfHeaderComponents( $cgi->http('If') );
+    my $ifheader = get_if_header_components( $cgi->http('If') );
     my $t        = 0;                                           # token found
     my $nnl  = 0;              # not no-lock found
     my $nl   = 0;              # no-lock found
     my $e    = 0;              # wrong etag found
-    my $etag = getETag($fn);
+    my $etag = get_etag($fn);
     foreach my $ie ( @{ $$ifheader{list} } ) {
         debug( ' - ie{token}=' . $$ie{token} );
         if ( $$ie{token} =~ /Not\s+<DAV:no-lock>/xmsi ) {
@@ -2857,7 +2733,7 @@ sub isAllowed {
 
     return 1 unless $ENABLE_LOCK;
 
-    my $ifheader = getIfHeaderComponents( $cgi->http('If') );
+    my $ifheader = get_if_header_components( $cgi->http('If') );
 
     return 0
         if $backend->exists($fn)
@@ -2880,25 +2756,6 @@ sub isAllowed {
     }
     return $ret;
 }
-
-sub getIfHeaderComponents {
-    my ($if) = @_;
-    my ( $ret, $rtag, @tokens );
-    if ( defined $if ) {
-        if ( $if =~ s/^<([^>]+)>\s*//xms ) {
-            $rtag = $1;
-        }
-        while (
-            $if =~ s/^\((Not\s*)?([^\[\)]+\s*)?\s*(\[([^\]\)]+)\])?\)\s*//xmsi )
-        {
-            push @tokens,
-                { token => ( $1 ? $1 : q{} ) . ( $2 ? $2 : q{} ), etag => $4 };
-        }
-        $ret = { rtag => $rtag, list => \@tokens };
-    }
-    return $ret;
-}
-
 
 sub handlePropertyRequest {
     my ( $xml, $dataRef, $resp_200, $resp_403 ) = @_;
@@ -2988,12 +2845,6 @@ sub getQuota {
     return ( $block_hard, $block_curr );
 }
 
-sub getuuid {
-    my ($fn) = @_;
-    my $uuid_ns = create_UUID( UUID_V1, "opaquelocktoken:$fn" );
-    my $uuid = create_UUID( UUID_V3, $uuid_ns, "$fn" . time() );
-    return UUID_to_string($uuid);
-}
 
 sub getSupportedMethods {
     my ($path) = @_;
@@ -3039,35 +2890,6 @@ sub hasThumbSupport {
         || $mime =~ /^text\/plain/xms
         || ( $ENABLE_THUMBNAIL_PDFPS && $mime =~ m{^application/(pdf|ps)$}xmsi );
     return 0;
-}
-
-sub readMIMETypes {
-    my ($mimefile) = @_;
-    if ( open( my $f, '<', $mimefile ) ) {
-        while ( my $e = <$f> ) {
-            next if $e =~ /^\s*(\#.*)?$/xms;
-            my ( $type, @suffixes ) = split( /\s+/xms, $e );
-            foreach (@suffixes) { $MIMETYPES{$_} = $type }
-        }
-        close($f) || croak("Cannot close filehandle for '$mimefile'.");
-    }
-    else {
-        carp "Cannot open $mimefile";
-    }
-    $MIMETYPES{default} = 'application/octet-stream';
-    return;
-}
-
-sub getMIMEType {
-    my ($filename) = @_;
-    ## read mime.types file once:
-    readMIMETypes($MIMEFILE) if defined $MIMEFILE;
-    $MIMEFILE = undef;
-    my $extension = 'default';
-    if ( $filename =~ /\.([^\.]+)$/xms ) {
-        $extension = lc($1);
-    }
-    return $MIMETYPES{$extension} || $MIMETYPES{default};
 }
 
 
@@ -3132,7 +2954,10 @@ sub getErrorDocument {
 }
 
 sub debug {
-    print {*STDERR} "$0: @_\n" if $DEBUG;
+    my ($text) = @_;
+    if ($DEBUG) {
+        print {*STDERR} "$0: $text\n";    
+    }
     return;
 }
 
@@ -3163,42 +2988,6 @@ sub getEventChannel {
     return $eventChannel;
 }
 
-sub readRequestBody {
-    my $body = q{};
-    while ( read( STDIN, my $buffer, $BUFSIZE || 1048576 ) ) {
-        $body .= $buffer;
-    }
-    return $body;
-}
-
-sub getByteRanges {
-    my $etag = getETag($PATH_TRANSLATED);
-    my $lm   = strftime( '%a, %d %b %Y %T GMT',
-        gmtime( ( $backend->stat($PATH_TRANSLATED) )[9] ) );
-    my $ifrange = $cgi->http('If-Range') || $etag;
-    return if $ifrange ne $etag && $ifrange ne $lm;
-    my $range = $cgi->http('Range');
-    if ( $range && $range =~ /bytes=(\d+)\-(\d+)/xms ) {
-        return ( $1, $2, $2 - $1 + 1 ) if $1 < $2;
-    }
-    return;
-}
-
-sub fixModPerlResponse {
-    my ($headerref) = @_;
-    ## mod_perl fix for unknown status codes:
-    my $stat200re = qr{(?:20[16789]|2[1-9])}xms;
-    my $stat300re = qr{(?:30[89]|3[1-9])}xms;
-    my $stat400re = qr{(?:41[89]|4[2-9])}xms;
-    my $stat500re = qr{(?:50[6-9]|5[1-9])}xms;
-    $cgi->r->status("${1}00")
-        if $ENV{MOD_PERL}
-        && $$headerref{-status} =~ /^(?:$stat200re|$stat300re|$stat400re|$stat500re)/xms # /^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/xms
-        && $$headerref{-status} =~ /^(\d)/xms
-        && $$headerref{-Content_Length} > 0;
-    return;
-}
-
 sub broadcast {
     my ( $event, $data ) = @_;
     return getEventChannel()->broadcast( $event, $data );
@@ -3209,7 +2998,9 @@ sub getBaseURIFrag {
     return $uri =~ /([^\/]+)\/?$/xms ? ( $1 // q{/} ) : q{/};
 }
 
-
+sub getCGI {
+    return $cgi;
+}
 sub getBackend {
     return $backend;
 }
@@ -3217,24 +3008,6 @@ sub getUtils {
     return $utils;
 }
 
-### shorthands WebDAV::XMLHelper:
-use WebDAV::XMLHelper;
-sub simple_xml_parser {
-    my (@args) = @_;
-    return WebDAV::XMLHelper::getinstance()->simple_xml_parser(@args);    
-}
-sub nonnamespace {
-    my (@args) = @_;
-    return WebDAV::XMLHelper::getinstance()->nonamespace(@args);
-}
-sub get_namespace_uri {
-    my (@args) = @_;
-    return WebDAV::XMLHelper::getinstance()->get_namespace_uri(@args);
-}
-sub create_xml {
-    my (@args) = @_;
-    return WebDAV::XMLHelper::getinstance()->create_xml(@args);
-}
 ### shorthands FileUtils:
 use FileUtils;
 sub rcopy {

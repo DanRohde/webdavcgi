@@ -266,7 +266,7 @@ sub saveData {
 	$_[0]->initialize();
 	my $bucket = $S3->bucket($_[0]->_getBucketName($fn));
 	my $key = $_[0]->basename($fn);
-	my $mime = main::getMIMEType($fn);
+	my $mime = main::get_mime_type($fn);
 	my $ret  = $bucket->add_key($key, $_[2], { content_type=> $mime}  );	
 	warn($bucket->err.': '.$bucket->errstr) unless $ret;
 	return $ret;

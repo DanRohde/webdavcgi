@@ -62,7 +62,7 @@ sub handle {
 	} elsif ( $hook eq 'posthandler' && $$config{cgi}->param('action') eq 'diskusage') {
 		my $suffixes = {};
 		my $content = $self->renderDiskUsageTemplate();
-		main::printCompressedHeaderAndContent('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') if $content;
+		main::print_compressed_header_and_content('200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store') if $content;
 		return 1;
 	}
 	return 0; 
@@ -85,7 +85,7 @@ sub renderDiskUsageTemplate {
 		$self->getDiskUsage($main::PATH_TRANSLATED,$file,$counter);		
 	}
 	if (time() - $$counter{start} > $self->config('timeout',60)) {
-		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode({error=>$cgi->escapeHTML(sprintf($self->tl('du_timeout'),$self->config('timeout',60)))}), 'Cache-Control: no-cache, no-store');
+		main::print_compressed_header_and_content('200 OK', 'application/json', $json->encode({error=>$cgi->escapeHTML(sprintf($self->tl('du_timeout'),$self->config('timeout',60)))}), 'Cache-Control: no-cache, no-store');
 		return;		
 	}; 
 	

@@ -59,7 +59,7 @@ sub handleGetRequest {
 	my $file = $$self{cgi}->param('file');
 	my $fileuri = $main::REQUEST_URI.$$self{cgi}->escape($file);
 	my $tmpl = $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->readTemplate($template), { fileuri=>$fileuri, file=>$$self{cgi}->escapeHTML($file) });
-	main::printCompressedHeaderAndContent('200 OK', 'text/html', $tmpl, 'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK', 'text/html', $tmpl, 'Cache-Control: no-cache, no-store');
 	return 1;
 }
 1;

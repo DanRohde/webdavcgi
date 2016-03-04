@@ -113,7 +113,7 @@ sub searchAddress {
         $jsondata{result} = $addressbook->getMailAddresses( $self, scalar $$self{cgi}->param('query') );
     }
     my $content = JSON->new->encode( \%jsondata );
-    main::printHeaderAndContent(
+    main::print_header_and_content(
         '200 OK', 'application/json',
         $content,
         { 'Cache-Control'=> 'no-cache, no-store', -Content_Length => length $content }
@@ -149,7 +149,7 @@ sub buildMailFile {
         $body->attach(
             Path        => $zipfn,
             Filename    => $zipfilename,
-            Type        => main::getMIMEType($zipfilename),
+            Type        => main::get_mime_type($zipfilename),
             Disposition => 'attachment',
             Encoding    => 'base64'
         );
@@ -164,7 +164,7 @@ sub buildMailFile {
             $body->attach(
                 Path        => $file,
                 Filename    => $fn,
-                Type        => main::getMIMEType($fn),
+                Type        => main::get_mime_type($fn),
                 Disposition => 'attachment',
                 Encoding    => 'base64'
             );
@@ -209,7 +209,7 @@ sub downloadMail {
         my ( $tmpfh, $zipfile ) = $self->buildMailFile( 0, $mailfh );
         close($mailfh);
 
-        main::printLocalFileHeader(
+        main::print_local_file_header(
             $mailfn,
             {   -Content_Disposition => q{attachment; filename="email.eml"},
                 -type                => q{application/octet-stream},
@@ -223,7 +223,7 @@ sub downloadMail {
             close($fh);
         }
         else {
-            main::printHeaderAndContent(
+            main::print_header_and_content(
                 main::getErrorDocument(
                     '404 Not Found',
                     'text/plain', '404 - FILE NOT FOUND'
@@ -305,7 +305,7 @@ sub sendMail {
         $jsondata{field} = join( ',', @fields );
     }
     my $content = JSON->new->encode( \%jsondata );
-    main::printHeaderAndContent(
+    main::print_header_and_content(
         $status, $mime,
         $content,
         { 'Cache-Control'=> 'no-cache, no-store', -Content_Length => length $content }
@@ -361,7 +361,7 @@ sub renderMailDialog {
     );
     $content =~ s/\$\{?(\w+)\}?/exists $vars{$1} ? $vars{$1} : ''/xmesg;
 
-    main::printCompressedHeaderAndContent( '200 OK', 'text/html', $content,
+    main::print_compressed_header_and_content( '200 OK', 'text/html', $content,
         'Cache-Control: no-cache, no-store' );
     return 1;
 }

@@ -113,7 +113,7 @@ sub convertFile {
 	}
 	unlink($tmpdir);
 	my $json = new JSON();
-	main::printHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata));
+	main::print_header_and_content('200 OK', 'application/json', $json->encode(\%jsondata));
 	return 1;
 }
 sub saveAllLocal {

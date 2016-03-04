@@ -29,6 +29,7 @@ use CGI::Carp;
 
 use English qw( -no_match_vars );
 
+use HTTPHelper qw( get_etag );
 use CacheManager;
 
 use vars qw( $_INSTANCE );
@@ -233,7 +234,7 @@ sub get_local_file_content_and_type {
             $content = <$F>;
         };
         close($F) || croak("Cannot close filehandle for '$fn'.");
-        $defaulttype = main::getMIMEType($fn);
+        $defaulttype = main::get_mime_type($fn);
     }
     else {
         $content = $default;
@@ -245,7 +246,7 @@ sub move2trash {
     my ( $self, $fn ) = @_;
     my $backend = ${$self}{backend};
     my $ret     = 0;
-    my $etag    = main::getETag($fn);    ## get a unique name for trash folder
+    my $etag    = get_etag($fn);    ## get a unique name for trash folder
     $etag =~ s/\"//xmsg;
     my $trash = "$main::TRASH_FOLDER$etag/";
 

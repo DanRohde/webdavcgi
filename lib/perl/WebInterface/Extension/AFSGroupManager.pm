@@ -54,7 +54,7 @@ sub handle {
 	} elsif ($hook eq 'gethandler') {
 		if ($$self{cgi}->param('ajax') eq 'getAFSGroupManager') {
 			my $content = $self->renderAFSGroupManager($main::PATH_TRANSLATED,$main::REQUEST_URI, $$self{cgi}->param('template') || $self->config('template','afsgroupmanager'));
-			main::printCompressedHeaderAndContent('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
+			main::print_compressed_header_and_content('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
 			delete $CACHE{$self}{$main::PATH_TRANSLATED};
 			$ret = 1;
 		} 
@@ -294,7 +294,7 @@ sub doAFSGroupActions {
 	$jsondata{error} = sprintf($self->tl("msg_$errmsg"), @params) if $errmsg;
 	$jsondata{message} = sprintf($self->tl("msg_$msg"), @params ) if $msg;	
 	my $json = new JSON();
-	main::printCompressedHeaderAndContent('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
+	main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
 	return 1;
 }	
 1;

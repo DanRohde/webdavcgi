@@ -82,7 +82,7 @@ sub render {
 	}
 	delete $CACHE{$self}{$fn};
 	
-	main::printCompressedHeaderAndContent('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->getCookies());
+	main::print_compressed_header_and_content('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->getCookies());
 }
 sub minifyHTML {
 	my ($self, $content) = @_;
@@ -309,7 +309,7 @@ sub renderFileListEntry {
 	$ctime = 0 unless defined $ctime;
 	$mode = 0 unless defined $mode;
 	my ($sizetxt,$sizetitle) = $self->renderByteValue($size,2,2);
-	my $mime = $file eq '..' ? '< .. >' : $id ?'<folder>':main::getMIMEType($full);
+	my $mime = $file eq '..' ? '< .. >' : $id ?'<folder>':main::get_mime_type($full);
 	my $suffix =  $file eq '..' ? 'folderup': ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.([\w?]+)$/ ?  lc($1) : 'unknown')) ;
 	my $category = $CACHE{category}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES=~/^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/m ? 'category-'.$1 : '';
 	my $isLocked = $main::SHOW_LOCKS && main::isLockedCached($full);

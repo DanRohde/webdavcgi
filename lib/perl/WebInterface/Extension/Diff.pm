@@ -65,7 +65,7 @@ sub handle {
 			$jsondata{content} = $content;
 		}
 		my $json = new JSON();
-		main::printCompressedHeaderAndContent('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
+		main::print_compressed_header_and_content('200 OK', 'application/json', $json->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
 		
 		$ret=1;
 	}

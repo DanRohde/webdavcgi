@@ -193,7 +193,7 @@ sub cmp_files {
                 my $idx = $main::ORDER=~/^lastmodified/? 9 : $main::ORDER=~/^created/ ? 10 : $main::ORDER=~/^mode/? 2 : 7;
                 return $factor * ( ($$self{backend}->stat($fp_a))[$idx] <=> ($$self{backend}->stat($fp_b))[$idx] || $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)) );
         } elsif ($main::ORDER =~ /mime/) {
-                return $factor * ( $self->cmp_strings(main::getMIMEType($a), main::getMIMEType($b)) || $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
+                return $factor * ( $self->cmp_strings(main::get_mime_type($a), main::get_mime_type($b)) || $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b)));
         }
         return $factor * $self->cmp_strings($$self{backend}->getDisplayName($fp_a),$$self{backend}->getDisplayName($fp_b));
 }
@@ -441,7 +441,7 @@ sub renderTemplate {
 sub canCreateThumbnail {
 	my ($self,$fn) = @_;
 	return $main::ENABLE_THUMBNAIL 
-		&& $self->hasThumbSupport(main::getMIMEType($fn)) 
+		&& $self->hasThumbSupport(main::get_mime_type($fn)) 
 		&& $$self{backend}->isFile($fn)
 		&& $$self{backend}->isReadable($fn) 
 		&& !$$self{backend}->isEmpty($fn);
