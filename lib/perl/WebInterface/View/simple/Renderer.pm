@@ -562,7 +562,7 @@ sub round {
 
 sub filter {
         my ($self,$path, $file) = @_;
-        return 1 if $$self{utils}->filter($path,$file);
+        return 1 if FileUtils::filter($path,$file);
         my $ret = 0;
         my $filter = $$self{cgi}->param('search.types') || $$self{cgi}->cookie('filter.types');
         if ( defined $filter ) {

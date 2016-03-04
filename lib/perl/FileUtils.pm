@@ -24,9 +24,9 @@ use warnings;
 
 our $VERSION = '1.0';
 
-
 use base qw( Exporter );
-our @EXPORT_OK = qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove );
+our @EXPORT_OK
+    = qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter );
 
 use CGI;
 use CGI::Carp;
@@ -154,11 +154,11 @@ sub rmove {
 }
 
 sub read_dir_recursive {
-    my ($fn,    $ru,    $resps_ref, $props,
-        $all,  $noval, $depth, $noroot,    $visited
+    my ($fn,    $ru,    $resps_ref, $props, $all,
+        $noval, $depth, $noroot,    $visited
     ) = @_;
     my $backend = main::getBackend();
-    my $utils   = main::getUtils();
+
     return if main::is_hidden($fn);
     my $is_readable = $backend->isReadable($fn);
     my $nfn = $is_readable ? $backend->resolve($fn) : $fn;
@@ -192,7 +192,9 @@ sub read_dir_recursive {
             || $main::FILECOUNTPERDIRLIMIT{$fn} > 0 )
         {
             foreach my $f (
-                @{ $backend->readDir( $fn, main::getFileLimit($fn), $utils ) }
+                @{  $backend->readDir( $fn, main::getFileLimit($fn),
+                        \&filter )
+                }
                 )
             {
                 my $fru = $ru . CGI::escape($f);
@@ -230,10 +232,10 @@ sub get_local_file_content_and_type {
 }
 
 sub move2trash {
-    my ( $fn ) = @_;
+    my ($fn)    = @_;
     my $backend = main::getBackend();
     my $ret     = 0;
-    my $etag    = get_etag($fn);    ## get a unique name for trash folder
+    my $etag    = get_etag($fn);        ## get a unique name for trash folder
     $etag =~ s/\"//xmsg;
     my $trash = "$main::TRASH_FOLDER$etag/";
 
@@ -263,7 +265,6 @@ sub read_dir_by_suffix {
     my ( $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
     debug("read_dir_by_suffix($fn, ..., $suffix, $depth)");
     my $backend = main::getBackend();
-    my $utils   = main::getUtils();
 
     my $nfn = $backend->resolve($fn);
     return
@@ -272,7 +273,7 @@ sub read_dir_by_suffix {
 
     if ( $backend->isReadable($fn) ) {
         foreach my $sf (
-            @{ $backend->readDir( $fn, main::getFileLimit($fn), $utils ) } )
+            @{ $backend->readDir( $fn, main::getFileLimit($fn), \&filter ) } )
         {
             $sf .= $backend->isDir( $fn . $sf ) ? q{/} : q{};
             my $nbase = $base . $sf;
@@ -296,12 +297,11 @@ sub read_dir_by_suffix {
 sub get_dir_info {
     my ( $fn, $prop, $filter, $limit, $max ) = @_;
     my $cm = CacheManager::getinstance();
-    if ($cm->exists_entry(['get_dir_info', $fn, $prop])) {
-        return $cm->get_entry(['get_dir_info', $fn, $prop]);
+    if ( $cm->exists_entry( [ 'get_dir_info', $fn, $prop ] ) ) {
+        return $cm->get_entry( [ 'get_dir_info', $fn, $prop ] );
     }
 
     my $backend = main::getBackend();
-    my $utils   = main::getUtils();
 
     my %counter = (
         childcount   => 0,
@@ -311,7 +311,7 @@ sub get_dir_info {
     );
     if ( $backend->isReadable($fn) ) {
         foreach my $f (
-            @{ $backend->readDir( $fn, ${$limit}{$fn} || $max, $utils ) } )
+            @{ $backend->readDir( $fn, ${$limit}{$fn} || $max, \&filter ) } )
         {
             $counter{realchildcount}++;
             $counter{childcount}++;
@@ -326,11 +326,24 @@ sub get_dir_info {
     $counter{hassubs}
         = ( $counter{childcount} - $counter{objectcount} > 0 ) ? 1 : 0;
 
-    
     foreach my $k ( keys %counter ) {
-        $cm->set_entry(['get_dir_info',$fn,$k], $counter{$k});
+        $cm->set_entry( [ 'get_dir_info', $fn, $k ], $counter{$k} );
     }
     return $counter{$prop} // 0;
+}
+
+sub get_hidden_filter {
+    return @main::HIDDEN ? '(' . join( q{|}, @main::HIDDEN ) . ')' : undef;
+}
+
+sub filter {
+    my ( $path, $file ) = @_;
+    my $hidden = get_hidden_filter();
+    my $filter = defined $path ? $main::FILEFILTERPERDIR{$path} : undef;
+
+    return ( defined $file && $file =~ /^[.]{1,2}$/xms )
+        || ( defined $filter && defined $file && $file !~ $filter )
+        || ( defined $hidden && defined $file && defined $path && "$path$file" =~ /$hidden/xms );
 }
 
 1;

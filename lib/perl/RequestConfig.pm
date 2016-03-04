@@ -20,23 +20,27 @@
 package RequestConfig;
 
 use strict;
+use warnings;
+
+our $VERSION = '2.0';
 
 sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
-	$$self{cgi}=shift;
-	return $self;
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = {};
+    bless $self, $class;
+    $$self{cgi} = shift;
+    return $self;
 }
 
 sub setProperty {
-	my($self,$propname,$propval) = @_;
-	return ($$self{$propname} = $propval);
+    my ( $self, $propname, $propval ) = @_;
+    return ( $$self{$propname} = $propval );
 }
+
 sub getProperty {
-	my($self,$propname,$propvaldefault) = @_;
-	return $$self{$propname} || $propvaldefault;
+    my ( $self, $propname, $propvaldefault ) = @_;
+    return $$self{$propname} || $propvaldefault;
 }
 
 1;

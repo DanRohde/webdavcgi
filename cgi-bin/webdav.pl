@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160304.02';
+$RELEASE = '1.1.1BETA20160304.03';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -833,14 +833,11 @@ $backendmanager = Backend::Manager->new;
 $backend        = $backendmanager->getBackend($BACKEND);
 $config->setProperty( 'backend', $backend );
 
-use Utils;
-$utils = Utils->new;
-$config->setProperty( 'utils', $utils );
 
 use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
 use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES );
 
-use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove );
+use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter);
 
 umask $UMASK || croak("Cannot set umask $UMASK.");
 
@@ -2693,7 +2690,7 @@ sub getPropStat {
 
 sub is_hidden {
     my ($fn) = @_;
-    my $filter = getHiddenFilter();
+    my $filter = get_hidden_filter();
     return $filter && $fn =~ /$filter/xms;
 }
 
@@ -2835,7 +2832,7 @@ sub handlePropertyRequest {
 
 sub getQuota {
     my ($fn) = @_;
-    $fn = $PATH_TRANSLATED unless defined $fn;
+    $fn //= $PATH_TRANSLATED;
 
 #	return ($CACHE{getQuota}{$fn}{block_hard}, $CACHE{getQuota}{$fn}{block_curr}) if defined $CACHE{getQuota}{$fn}{block_hard};
     my ( $block_hard, $block_curr )
@@ -2885,24 +2882,9 @@ sub logger {
     return;
 }
 
-sub hasThumbSupport {
-    my ($mime) = @_;
-    return 1
-        if $mime =~ /^image\//xms
-        || $mime =~ /^text\/plain/xms
-        || ( $ENABLE_THUMBNAIL_PDFPS && $mime =~ m{^application/(pdf|ps)$}xmsi );
-    return 0;
-}
-
-
-
 sub getFileLimit {
     my ($path) = @_;
     return $FILECOUNTPERDIRLIMIT{$path} || $FILECOUNTLIMIT;
-}
-
-sub getHiddenFilter {
-    return @HIDDEN ? '(' . join( q{|}, @HIDDEN ) . ')' : undef;
 }
 
 sub getWebInterface {
@@ -3005,9 +2987,6 @@ sub getCGI {
 }
 sub getBackend {
     return $backend;
-}
-sub getUtils {
-    return $utils;
 }
 
 1;

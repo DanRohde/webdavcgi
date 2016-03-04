@@ -142,7 +142,7 @@ sub printThumbnail {
             my $lfn = $$self{backend}->getLocalFilename($fn);
             my $x;
             my ( $w, $h, $s, $f ) = $image->Ping($lfn);
-
+            $w//=0; $h//=0;
             $x = $image->Read($lfn);
             carp "$x" if "$x";
             $image->Set( delay => 200 );

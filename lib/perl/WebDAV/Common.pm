@@ -20,26 +20,30 @@
 package WebDAV::Common;
 
 use strict;
+use warnings;
+
+our $VERSION = '2.0';
 
 sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
-	$$self{config}=shift;
-	$self->initialize();
-	return $self;
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = {};
+    bless $self, $class;
+    $$self{config} = shift;
+    $self->initialize();
+    return $self;
 }
 
 sub initialize {
-	my $self = shift;
-	$$self{cgi} = $$self{config}->getProperty('cgi');
-	$$self{backend} = $$self{config}->getProperty('backend');
-	$$self{utils} = $$self{config}->getProperty('utils');
+    my $self = shift;
+    $$self{cgi}     = $$self{config}->getProperty('cgi');
+    $$self{backend} = $$self{config}->getProperty('backend');
+    return;
 }
+
 sub resolve {
-	my ($self, $fn) = @_;
-	return $$self{backend}->resolveVirt($fn);
+    my ( $self, $fn ) = @_;
+    return $$self{backend}->resolveVirt($fn);
 }
 
 1;

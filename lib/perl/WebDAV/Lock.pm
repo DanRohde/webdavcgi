@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -28,6 +27,8 @@ our $VERSION = '1.0';
 
 use Date::Parse;
 use UUID::Tiny;
+
+use FileUtils;
 
 sub new {
     my $this  = shift;
@@ -99,7 +100,7 @@ sub lockResource {
         if ( $$self{backend}->isReadable($fn) ) {
             foreach my $f (
                 @{  $$self{backend}->readDir( $fn, main::getFileLimit($fn),
-                        $$self{utils} )
+                        \&FileUtils::filter )
                 }
                 )
             {
@@ -319,7 +320,7 @@ sub inheritLock {
         if ( $backend->isReadable($fn) ) {
             foreach my $f (
                 @{  $backend->readDir( $fn, main::getFileLimit($fn),
-                        $main::utils )
+                        \&FileUtils::filter )
                 }
                 )
             {
