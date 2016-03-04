@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160304.01';
+$RELEASE = '1.1.1BETA20160304.02';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -839,6 +839,8 @@ $config->setProperty( 'utils', $utils );
 
 use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
 use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES );
+
+use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove );
 
 umask $UMASK || croak("Cannot set umask $UMASK.");
 
@@ -3008,30 +3010,4 @@ sub getUtils {
     return $utils;
 }
 
-### shorthands FileUtils:
-use FileUtils;
-sub rcopy {
-    my (@args) = @_;
-    return FileUtils::getinstance()->rcopy(@args);
-}
-sub rmove {
-    my (@args) = @_;
-    return FileUtils::getinstance()->rmove(@args);
-}
-sub read_dir_recursive {
-    my (@args) = @_;
-    return FileUtils::getinstance()->read_dir_recursive(@args);
-}
-sub read_dir_by_suffix {
-    my (@args) = @_;
-    return FileUtils::getinstance()->read_dir_by_suffix(@args);
-}
-sub get_local_file_content_and_type {
-    my (@args) = @_;
-    return FileUtils::getinstance()->get_local_file_content_and_type(@args);
-}
-sub move2trash {
-    my (@args) = @_;
-    return FileUtils::getinstance()->move2trash(@args);
-}
 1;

@@ -24,6 +24,10 @@ use warnings;
 
 our $VERSION = '1.0';
 
+
+use base qw( Exporter );
+our @EXPORT_OK = qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove );
+
 use CGI;
 use CGI::Carp;
 
@@ -34,27 +38,10 @@ use CacheManager;
 
 use vars qw( $_INSTANCE );
 
-
-
-sub new {
-    my $this  = shift;
-    my $class = ref($this) || $this;
-    my $self  = { backend => main::getBackend(), utils => main::getUtils(), };
-    if ( !$_INSTANCE ) {
-        bless $self, $class;
-        $_INSTANCE = $self;
-    }
-    return $_INSTANCE;
-}
-
-sub getinstance {
-    return __PACKAGE__->new();
-}
-
 sub rcopy {
-    my ( $self, $src, $dst, $move, $depth ) = @_;
+    my ( $src, $dst, $move, $depth ) = @_;
 
-    my $backend = ${$self}{backend};
+    my $backend = main::getBackend();
 
     $depth //= 0;
 
@@ -119,14 +106,14 @@ sub rcopy {
         $dst .= $dst !~ /\/$/xms ? q{/} : q{};
         $src .= $src !~ /\/$/xms ? q{/} : q{};
 
-#if (!$move || $self->get_dir_info($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
+#if (!$move || get_dir_info($src,'realchildcount')>0 || !$backend->rename($src,$dst)) {  ## doesn't work with GIT backend; why did I do this shit?
         if ( !$move || !$backend->rename( $src, $dst ) ) {
             if ( !$backend->exists($dst) )     { $backend->mkcol($dst); }
             if ( !$backend->isReadable($src) ) { return 0; }
             my $rret = 1;
             foreach my $filename ( @{ $backend->readDir($src) } ) {
                 $rret = $rret
-                    && $self->rcopy(
+                    && rcopy(
                     $src . $filename,
                     $dst . $filename,
                     $move, $depth + 1
@@ -162,16 +149,16 @@ sub rcopy {
 }
 
 sub rmove {
-    my ( $self, $src, $dst ) = @_;
-    return $self->rcopy( $src, $dst, 1 );
+    my ( $src, $dst ) = @_;
+    return rcopy( $src, $dst, 1 );
 }
 
 sub read_dir_recursive {
-    my ($self, $fn,    $ru,    $resps_ref, $props,
+    my ($fn,    $ru,    $resps_ref, $props,
         $all,  $noval, $depth, $noroot,    $visited
     ) = @_;
-    my $backend = ${$self}{backend};
-    my $utils   = ${$self}{utils};
+    my $backend = main::getBackend();
+    my $utils   = main::getUtils();
     return if main::is_hidden($fn);
     my $is_readable = $backend->isReadable($fn);
     my $nfn = $is_readable ? $backend->resolve($fn) : $fn;
@@ -216,7 +203,7 @@ sub read_dir_recursive {
                     .= $is_readable
                     && $backend->isDir($nnfn)
                     && $fru !~ /\/$/xms ? q{/} : q{};
-                $self->read_dir_recursive( $nnfn, $fru, $resps_ref, $props,
+                read_dir_recursive( $nnfn, $fru, $resps_ref, $props,
                     $all, $noval, $depth > 0 ? $depth - 1 : $depth,
                     0, $visited );
             }
@@ -226,7 +213,7 @@ sub read_dir_recursive {
 }
 
 sub get_local_file_content_and_type {
-    my ( $self, $fn, $default, $defaulttype ) = @_;
+    my ( $fn, $default, $defaulttype ) = @_;
     my $content = q{};
     if ( -e $fn && !-d $fn && open my $F, '<', $fn ) {
         {
@@ -243,8 +230,8 @@ sub get_local_file_content_and_type {
 }
 
 sub move2trash {
-    my ( $self, $fn ) = @_;
-    my $backend = ${$self}{backend};
+    my ( $fn ) = @_;
+    my $backend = main::getBackend();
     my $ret     = 0;
     my $etag    = get_etag($fn);    ## get a unique name for trash folder
     $etag =~ s/\"//xmsg;
@@ -273,10 +260,10 @@ sub move2trash {
 }
 
 sub read_dir_by_suffix {
-    my ( $self, $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
+    my ( $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
     debug("read_dir_by_suffix($fn, ..., $suffix, $depth)");
-    my $backend = ${$self}{backend};
-    my $utils   = ${$self}{utils};
+    my $backend = main::getBackend();
+    my $utils   = main::getUtils();
 
     my $nfn = $backend->resolve($fn);
     return
@@ -294,7 +281,7 @@ sub read_dir_by_suffix {
                 push @{$hrefs}, $nbase;
             }
             if ( $depth != 0 && $backend->isDir( $fn . $sf ) ) {
-                $self->read_dir_by_suffix(
+                read_dir_by_suffix(
                     $fn . $sf, $nbase,     $hrefs,
                     $suffix,   $depth - 1, $visited
                 );
@@ -307,14 +294,14 @@ sub read_dir_by_suffix {
 }
 
 sub get_dir_info {
-    my ( $self, $fn, $prop, $filter, $limit, $max ) = @_;
+    my ( $fn, $prop, $filter, $limit, $max ) = @_;
     my $cm = CacheManager::getinstance();
     if ($cm->exists_entry(['get_dir_info', $fn, $prop])) {
         return $cm->get_entry(['get_dir_info', $fn, $prop]);
     }
 
-    my $backend = ${$self}{backend};
-    my $utils   = ${$self}{utils};
+    my $backend = main::getBackend();
+    my $utils   = main::getUtils();
 
     my %counter = (
         childcount   => 0,

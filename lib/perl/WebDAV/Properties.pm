@@ -29,7 +29,7 @@ use Date::Parse;
 use List::MoreUtils qw(any);
 use English qw ( -no_match_vars );
 use CGI::Carp;
-use FileUtils;
+use FileUtils qw( get_dir_info );
 our $VERSION = '1.0';
 
 use HTTPHelper qw( get_etag );
@@ -248,7 +248,7 @@ sub getProperty {
     }
     ${$resp_200}{prop}{childcount} = (
         $isDir
-        ? FileUtils::getinstance()->get_dir_info(
+        ? get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
@@ -264,7 +264,7 @@ sub getProperty {
         if $prop eq 'isstructureddocument';
     ${$resp_200}{prop}{hassubs} = (
         $isDir
-        ? FileUtils::getinstance()->get_dir_info(
+        ? get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
@@ -276,7 +276,7 @@ sub getProperty {
         if $prop eq 'nosubs';
     ${$resp_200}{prop}{objectcount} = (
         $isDir
-        ? FileUtils::getinstance()->get_dir_info(
+        ? get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
@@ -286,7 +286,7 @@ sub getProperty {
     ${$resp_200}{prop}{reserved} = 0 if $prop eq 'reserved';
     ${$resp_200}{prop}{visiblecount} = (
         $isDir
-        ? FileUtils::getinstance()->get_dir_info(
+        ? get_dir_info(
             $fn,                      $prop,
             \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
             $main::FILECOUNTLIMIT
