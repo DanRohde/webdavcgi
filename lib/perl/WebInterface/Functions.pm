@@ -46,12 +46,13 @@ sub printJSONResponse {
     $jsondata{error} = sprintf( $self->tl("msg_$errmsg"), @params )
       if $errmsg;
     $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params ) if $msg;
-    my $json = new JSON();
+    my $json = JSON->new();
     main::print_compressed_header_and_content(
         '200 OK', 'application/json',
         $json->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
+    return;
 }
 
 sub handlePostUpload {
@@ -62,7 +63,7 @@ sub handlePostUpload {
         next if $filename eq "";
         next unless $$self{cgi}->uploadInfo($filename);
         my $rfn = $filename;
-        $rfn =~ s/\\/\//g;    # fix M$ Windows backslashes
+        $rfn =~ s{\\}{/}xmsg;    # fix M$ Windows backslashes
         my $destination =
           $main::PATH_TRANSLATED . $$self{backend}->basename($rfn);
         push( @filelist, $$self{backend}->basename($rfn) );
@@ -102,11 +103,11 @@ sub handleClipboardAction {
     my ( $self, $redirtarget ) = @_;
     my ( $msg, $msgparam, $errmsg );
     my $srcuri = $$self{cgi}->param('srcuri');
-    $srcuri =~ s/\%([a-f0-9]{2})/chr(hex($1))/eig;
-    $srcuri =~ s/^$main::VIRTUAL_BASE//;
+    $srcuri =~ s/\%([a-f0-9]{2})/chr(hex($1))/xmseig;
+    $srcuri =~ s/^$main::VIRTUAL_BASE//xms;
     my $srcdir = $main::DOCUMENT_ROOT . $srcuri;
     my ( @success, @failed );
-    foreach my $file ( split( /\@\/\@/, $$self{cgi}->param('files') ) ) {
+    foreach my $file ( split( /\@\/\@/xms, $$self{cgi}->param('files') ) ) {
 
         if (   main::isLocked("$srcdir$file")
             || main::isLocked("$main::PATH_TRANSLATED$file") )

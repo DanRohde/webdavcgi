@@ -21,7 +21,7 @@ package DatabaseEventAdapter;
 use strict;
 use warnings;
 
-our $VERSION = '2.0';
+our $VERSION = '2.1';
 
 use base qw(Events::EventListener );
 
@@ -34,7 +34,7 @@ sub new {
     if ( !$_INSTANCE ) {
         bless $self, $class;
         $_INSTANCE = $self;
-        $self->register(main::getEventChannel());
+        $self->register( main::getEventChannel() );
     }
     return $_INSTANCE;
 }
@@ -43,15 +43,15 @@ sub getinstance {
     return __PACKAGE__->new();
 }
 
-sub strip_slash {
+sub _strip_slash {
     my ( $self, $file ) = @_;
     $file =~ s/\/$//xms;
     return $file;
 }
 
-sub normalize {
+sub _normalize {
     my ( $self, $file ) = @_;
-    return $self->strip_slash( main::getPropertyModule()->resolve($file) );
+    return $self->_strip_slash( main::getPropertyModule()->resolve($file) );
 }
 
 sub register {
@@ -62,33 +62,56 @@ sub register {
     return 1;
 }
 
+sub _handle_file_moved {
+    my ( $self, $event, $data, $db ) = @_;
+    if ( $event ne 'FILEMOVED' ) {
+        return 0;
+    }
+    my ( $src, $dst ) = (
+        $self->_normalize( ${$data}{file} ),
+        $self->_normalize( ${$data}{destination} )
+    );
+    $db->db_deleteProperties($dst);
+    $db->db_movePropertiesRecursive( $src, $dst );
+    $db->db_delete($src);
+    return 1;
+}
+
+sub _handle_file_copied {
+    my ( $self, $event, $data, $db ) = @_;
+    if ( $event ne 'FILECOPIED' ) {
+        return 0;
+    }
+    my ( $src, $dst ) = (
+        $self->_normalize( ${$data}{file} ),
+        $self->_normalize( ${$data}{destination} )
+    );
+    $db->db_deleteProperties($dst);
+    $db->db_copyProperties( $src, $dst );
+    return 1;
+}
+
+sub _handle_deleted {
+    my ( $self, $event, $data, $db ) = @_;
+    if ( $event ne 'DELETED' && $event ne 'WEB-DELETED' ) {
+        return 0;
+    }
+    my ($dst) = ( $self->_normalize( ${$data}{file} ) );
+    $db->db_deletePropertiesRecursive($dst);
+    $db->db_delete($dst);
+    return 1;
+}
+
 sub receive {
     my ( $self, $event, $data ) = @_;
     my $db = main::getDBDriver();
     if ( $event eq 'FINALIZE' ) {
         $db->finalize();
     }
-    elsif ( $event eq 'FILEMOVED' ) {
-        my ( $src, $dst ) = (
-            $self->normalize( ${$data}{file} ),
-            $self->normalize( ${$data}{destination} )
-        );
-        $db->db_deleteProperties($dst);
-        $db->db_movePropertiesRecursive( $src, $dst );
-        $db->db_delete($src);
-    }
-    elsif ( $event eq 'FILECOPIED' ) {
-        my ( $src, $dst ) = (
-            $self->normalize( ${$data}{file} ),
-            $self->normalize( ${$data}{destination} )
-        );
-        $db->db_deleteProperties($dst);
-        $db->db_copyProperties( $src, $dst );
-    }
-    elsif ( $event eq 'DELETED' || $event eq 'WEB-DELETED' ) {
-        my ($dst) = ( $self->normalize( ${$data}{file} ) );
-        $db->db_deletePropertiesRecursive($dst);
-        $db->db_delete($dst);
+    else {
+        $self->_handle_file_moved( $event, $data, $db )
+            || $self->_handle_deleted( $event, $data, $db )
+            || $self->_handle_file_copied( $event, $data, $db );
     }
     return 1;
 }

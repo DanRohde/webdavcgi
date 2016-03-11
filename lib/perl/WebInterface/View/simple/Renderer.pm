@@ -229,14 +229,14 @@ sub renderExtension {
 	my ($self,$fn,$ru,$hook) = @_;
 	
 	if ($hook eq 'javascript') {
-		if (main::getWebInterface()->optimizer_isOptimized()) {
+		if (main::getWebInterface()->optimizer_is_optimized()) {
 			my $vbase = $self->getVBase();
 			return q@<script>$(document).ready(function() { $(document.createElement("script")).attr("src","@."${vbase}${main::VHTDOCS}_OPTIMIZED(js)_".q@").appendTo($("body")); });</script>@;
 		} else {
 			return q@<script>$(document).ready(function() {var l=new Array(@.join(',',map { "'".$$self{cgi}->escape($_)."'"} @{$$self{config}{extensions}->handle($hook, { path=>$fn })} ).q@);$("<div/>").html($.map(l,function(v,i){return decodeURIComponent(v);}).join("")).appendTo($("body"));});</script>@;
 		}	
 	} elsif ($hook eq 'css') {
-		if (main::getWebInterface()->optimizer_isOptimized()) {
+		if (main::getWebInterface()->optimizer_is_optimized()) {
 			my $vbase = $self->getVBase();
 			return qq@<link rel="stylesheet" href="${vbase}${main::VHTDOCS}_OPTIMIZED(css)_"/>@;
 		}

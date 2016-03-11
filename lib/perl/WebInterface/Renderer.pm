@@ -22,6 +22,8 @@ package WebInterface::Renderer;
 use strict;
 use warnings;
 
+our $VERSION = '1.0';
+
 use base qw( WebInterface::Common );
 use Module::Load;
 use Graphics::Magick;
@@ -68,7 +70,7 @@ sub printStylesAndVHTOCSFiles {
             . $2;
     }
     elsif ( $fn =~ /\Q$main::VHTDOCS\E\_OPTIMIZED\((js|css)\)_/xms ) {
-        $file = main::getWebInterface()->optimizer_getFilepath($1);
+        $file = main::getWebInterface()->optimizer_get_filepath($1);
     }
     $file =~ s{/[.][.]/}{}xmsg;
     my $compression = !-e $file && -e "$file.gz";

@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160304.03';
+$RELEASE = '1.1.1BETA20160311.01';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -783,6 +783,7 @@ use vars
 
 use CGI;
 use CGI::Carp;
+use English qw ( -no_match_vars );
 
 use Module::Load;
 
@@ -803,8 +804,8 @@ $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? CGI->new( {} ) : CGI->new;
 
 if ( defined $CONFIGFILE ) {
     unless ( my $ret = do($CONFIGFILE) ) {
-        carp "couldn't parse $CONFIGFILE: $@" if $@;
-        carp "couldn't do $CONFIGFILE: $!" unless defined $ret;
+        carp "couldn't parse $CONFIGFILE: ${EVAL_ERROR}" if ${EVAL_ERROR};
+        carp "couldn't do $CONFIGFILE: ${ERRNO}" unless defined $ret;
         ##carp "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
     }
 }
@@ -859,13 +860,13 @@ our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
 our $REQUEST_URI     = $ENV{REQUEST_URI};
 our $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
 
-debug("$0 called with UID='$<' EUID='$>' GID='$(' EGID='$)' method=$method");
+debug("${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method");
 debug("User-Agent: $ENV{HTTP_USER_AGENT}");
 debug("CGI-Version: $CGI::VERSION");
 
-debug( "$0: X-Litmus: " . $cgi->http('X-Litmus') )
+debug( "${PROGRAM_NAME}: X-Litmus: " . $cgi->http('X-Litmus') )
     if defined $cgi->http('X-Litmus');
-debug( "$0: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') )
+debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') )
     if defined $cgi->http('X-Litmus-Second');
 
 # 404/rewrite/redirect handling:
@@ -897,7 +898,7 @@ $REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
 
 $TRASH_FOLDER .= q{/} if $TRASH_FOLDER !~ /\/$/xms;
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if ( any { /^\Q$<\E$/xms } @FORBIDDEN_UID ) {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if ( any { /^\Q${UID}\E$/xms } @FORBIDDEN_UID ) {
     carp('Forbidden UID!');
     print_header_and_content('403 Forbidden');
     exit 0;
@@ -1242,7 +1243,7 @@ sub HTTP_GET {
             || $backend->isDir($PATH_TRANSLATED)
             || $ENV{QUERY_STRING} ne q{}
             || !$backend->exists($PATH_TRANSLATED) )
-        && getWebInterface()->handleGetRequest()
+        && getWebInterface()->handle_get_request()
         )
     {
         debug('_GET: WebInterface called');
@@ -1296,7 +1297,7 @@ sub HTTP_GET {
                 require IO::Compress::Deflate;
                 $c = IO::Compress::Deflate->new( \*STDOUT );
             }
-            my $bufsize = $BUFSIZE || 1048576;
+            my $bufsize = $BUFSIZE || 1_048_576;
             $bufsize = $count if defined $count && $count < $bufsize;
             my $bytecount = 0;
             if (open(
@@ -1340,7 +1341,7 @@ sub HTTP_GET {
 }
 
 sub HTTP_HEAD {
-    if ( $FANCYINDEXING && getWebInterface()->handleHeadRequest() ) {
+    if ( $FANCYINDEXING && getWebInterface()->handle_head_request() ) {
         debug('_HEAD: WebInterface called');
     }
     elsif ( $backend->exists($PATH_TRANSLATED) ) {
@@ -1361,7 +1362,7 @@ sub HTTP_POST {
         print_header_and_content( $cgi->cgi_error, undef, $cgi->cgi_error );
         return;
     }
-    if ( $ALLOW_FILE_MANAGEMENT && getWebInterface()->handlePostRequest() ) {
+    if ( $ALLOW_FILE_MANAGEMENT && getWebInterface()->handle_post_request() ) {
         debug('_POST: WebInterface called');
     }
     elsif ( $ENABLE_CALDAV_SCHEDULE && $backend->isDir($PATH_TRANSLATED) ) {
@@ -1464,7 +1465,7 @@ sub HTTP_PROPFIND {
 
     my $xmldata = q{};
     eval { $xmldata = simple_xml_parser($xml); } or do {
-        debug("_PROPFIND: invalid XML request: $@");
+        debug("_PROPFIND: invalid XML request: ${EVAL_ERROR}");
         print_header_and_content('400 Bad Request');
         return;
     };
@@ -1540,7 +1541,7 @@ sub HTTP_PROPPATCH {
         debug("_PROPPATCH: REQUEST: $xml");
         my $dataRef;
         eval { $dataRef = simple_xml_parser($xml) } or do {
-            debug("_PROPPATCH: invalid XML request: $@");
+            debug("_PROPPATCH: invalid XML request: ${EVAL_ERROR}");
             print_header_and_content('400 Bad Request');
             return;
         };
@@ -1590,7 +1591,7 @@ sub HTTP_PUT {
  #	$status='417 Expectation Failed';
     }
     elsif ( $backend->isDir( $backend->getParent( ($PATH_TRANSLATED) ) )
-        && isInsufficientStorage() )
+        && is_insufficient_storage() )
     {
         $status = '507 Insufficient Storage';
     }
@@ -1615,7 +1616,7 @@ sub HTTP_PUT {
         }
         else {
             $status
-                = isInsufficientStorage()
+                = is_insufficient_storage()
                 ? '507 Insufficient Storage'
                 : '403 Forbidden';
             $content = q{};
@@ -1840,7 +1841,7 @@ sub HTTP_MKCOL {
         # maybe extended mkcol (RFC5689)
         if ( $cgi->content_type() =~ /\/xml/xms ) {
             eval { $dataRef = simple_xml_parser($body) } or do {
-                debug("_MKCOL: invalid XML request: $@");
+                debug("_MKCOL: invalid XML request: ${EVAL_ERROR}");
                 print_header_and_content('400 Bad Request');
                 return;
             };
@@ -1873,7 +1874,7 @@ sub HTTP_MKCOL {
         $status = '423 Locked';
     }
     elsif ( $backend->isDir( $backend->getParent($PATH_TRANSLATED) )
-        && isInsufficientStorage() )
+        && is_insufficient_storage() )
     {
         $status = '507 Insufficient Storage';
     }
@@ -1944,7 +1945,7 @@ sub HTTP_LOCK {
         }
     }
     elsif ( !$backend->exists($fn) ) {
-        if ( isInsufficientStorage() ) {
+        if ( is_insufficient_storage() ) {
             $status = '507 Insufficient Storage';
             $type   = 'text/plain';
         }
@@ -2014,7 +2015,7 @@ sub HTTP_ACL {
     my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        debug("_ACL: invalid XML request: $@");
+        debug("_ACL: invalid XML request: ${EVAL_ERROR}");
         $status  = '400 Bad Request';
         $type    = 'text/plain';
         $content = '400 Bad Request';
@@ -2139,7 +2140,7 @@ sub HTTP_REPORT {
     my $xmldata = q{};
 
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        debug("_REPORT: invalid XML request: $@");
+        debug("_REPORT: invalid XML request: ${EVAL_ERROR}");
         debug("_REPORT: xml-request=$xml");
         $status  = '400 Bad Request';
         $type    = 'text/plain';
@@ -2355,7 +2356,7 @@ sub HTTP_SEARCH {
     my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        debug("_SEARCH: invalid XML request: $@");
+        debug("_SEARCH: invalid XML request: ${EVAL_ERROR}");
         debug("_SEARCH: xml-request=$xml");
         $status  = '400 Bad Request';
         $type    = 'text/plain';
@@ -2511,7 +2512,7 @@ sub HTTP_REBIND {
         elsif ( $backend->exists($dst) && !$backend->isLink($ndst) ) {
             $status = '403 Forbidden';
         }
-        elsif ( isInsufficientStorage() ) {
+        elsif ( is_insufficient_storage() ) {
             $status = '507 Insufficient Storage';
         }
         else {
@@ -2588,6 +2589,7 @@ sub handlePropElement {
         }
         if ( ref( $$xmldata{$prop} ) !~ /^(?:HASH|ARRAY)$/xms )
         {    # ignore namespaces
+            next;
         }
         elsif ( $ns eq q{} && !defined $$xmldata{$prop}{xmlns} ) {
             print_header_and_content('400 Bad Request');
@@ -2741,7 +2743,7 @@ sub isAllowed {
     return 0 unless defined $ifheader;
     my $ret = 0;
     foreach my $token ( @{ getLockModule()->getTokens( $fn, $recurse ) } ) {
-        for ( my $j = 0; $j <= $#{ $$ifheader{list} }; $j++ ) {
+        for my $j (0 .. $#{ ${$ifheader}{list} }) { 
             my $iftoken = $$ifheader{list}[$j]{token};
             $iftoken = q{} unless defined $iftoken;
             $iftoken =~ s/[\<\>\s]+//xmsg;
@@ -2873,11 +2875,11 @@ sub getSupportedMethods {
 sub logger {
     if ( defined $LOGFILE && open( my $LOG, '>>', $LOGFILE ) ) {
         print {$LOG} localtime()
-            . " - $<($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
+            . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
         close($LOG) || croak("Cannot close filehandle for '$LOGFILE'");
     }
     else {
-        print {*STDERR} "$0: @_\n";
+        print {*STDERR} "${PROGRAM_NAME}: @_\n";
     }
     return;
 }
@@ -2940,12 +2942,12 @@ sub getErrorDocument {
 sub debug {
     my ($text) = @_;
     if ($DEBUG) {
-        print {*STDERR} "$0: $text\n";    
+        print {*STDERR} "${PROGRAM_NAME}: $text\n";    
     }
     return;
 }
 
-sub isInsufficientStorage {
+sub is_insufficient_storage {
     my $ret = 0;
     my ( $block_hard, $block_curr ) = getQuota();
     if ( $block_hard > 0 ) {
