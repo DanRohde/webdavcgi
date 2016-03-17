@@ -162,8 +162,6 @@ sub get_file_attributes {
             = ${$self}{db}
             ->db_getPropertyFromCache( $path, ${$self}{namespace} . $prop ) )
         {
-            use Data::Dumper;
-            print STDERR sprintf ("get_file_attributes: %s:%s\n", $prop, Dumper($val));
             $jsondata{$prop} = $val;
         }
     }
