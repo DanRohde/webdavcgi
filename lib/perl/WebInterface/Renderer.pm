@@ -37,12 +37,12 @@ use vars qw( %_RENDERER );
 
 sub _get_renderer {
     my ($self) = @_;
-    my $view = "WebInterface::View::${main::VIEW}::Renderer";
+    my $view = "WebInterface::View::\u${main::VIEW}::Renderer";
     $view =~ s/[.\/]+//xmsg;
-    if (!-f "${main::INSTALL_BASE}lib/perl/WebInterface/View/${main::VIEW}/Renderer.pm"
+    if (!-f "${main::INSTALL_BASE}lib/perl/WebInterface/View/\u${main::VIEW}/Renderer.pm"
         )
     {
-        $view = "WebInterface::View::$main::SUPPORTED_VIEWS[0]::Renderer";
+        $view = "WebInterface::View::\u$main::SUPPORTED_VIEWS[0]::Renderer";
     }
     if ( exists $_RENDERER{$self}{$view} ) {
         return $_RENDERER{$self}{$view};

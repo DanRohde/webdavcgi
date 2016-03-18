@@ -111,8 +111,8 @@ sub readTL {
 sub readViewTL {
     my ( $self, $l ) = @_;
     my $fn
-        = -e "${main::INSTALL_BASE}lib/perl/WebInterface/View/$main::VIEW/locale/locale_${l}.msg"
-        ? "${main::INSTALL_BASE}lib/perl/WebInterface/View/$main::VIEW/locale/locale_${l}.msg"
+        = -e "${main::INSTALL_BASE}lib/perl/WebInterface/View/\u${main::VIEW}/locale/locale_${l}.msg"
+        ? "${main::INSTALL_BASE}lib/perl/WebInterface/View/\u{$main::VIEW}/locale/locale_${l}.msg"
         : undef;
     return unless defined $fn;
     $self->readTLFile( $fn, $main::TRANSLATION{$l} );

@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package WebInterface::View::simple::Renderer;
+package WebInterface::View::Simple::Renderer;
 
 use strict;
 use warnings;
@@ -34,50 +34,17 @@ use vars qw(%CACHE @ERRORS);
 
 sub render {
     my ( $self, $fn, $ru ) = @_;
-    my $content     = q{};
-    my $contenttype = 'text/html';
+    my $content;
+    my $contenttype;
     $self->setLocale();
     my $atcregex = '^(' . join( q{|}, @main::ALLOWED_TABLE_COLUMNS ) . ')$';
-    unless ( 'selector' =~ /$atcregex/xms ) {
+    if ( 'selector' !~ /$atcregex/xms ) {
         unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
         unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';
     }
 
     if ( ${$self}{cgi}->param('ajax') ) {
-        my $ajax = ${$self}{cgi}->param('ajax');
-        if ( $ajax eq 'getFileListTable' ) {
-            $content = $self->_render_file_list_table( $fn, $ru,
-                scalar ${$self}{cgi}->param('template') );
-            $contenttype = 'application/json';
-        }
-        elsif ( $ajax eq 'getViewFilterDialog' ) {
-            $content = $self->_render_viewfilter_dialog( $fn, $ru,
-                ${$self}{cgi}->param('template') );
-        }
-        elsif ( $ajax eq 'getSearchDialog' ) {
-            $content = $self->render_template( $fn, $ru,
-                $self->read_template( ${$self}{cgi}->param('template') ) );
-        }
-        elsif ( $ajax eq 'getTableConfigDialog' ) {
-            $content = $self->render_template( $fn, $ru,
-                $self->read_template( ${$self}{cgi}->param('template') ) );
-        }
-        elsif ( $ajax eq 'getFileListEntry' ) {
-            my $entrytemplate = $self->_render_extension_function(
-                $self->read_template(
-                    scalar ${$self}{cgi}->param('template')
-                )
-            );
-            my $columns
-                = $self->_render_visible_table_columns( \$entrytemplate )
-                . $self->_render_invisible_allowed_table_columns(
-                \$entrytemplate );
-            $entrytemplate =~ s/\$filelistentrycolumns/$columns/xmesg;
-            $content
-                = $self->_render_file_list_entry( $fn, $ru,
-                scalar ${$self}{cgi}->param('file'),
-                $entrytemplate );
-        }
+        ( $content, $contenttype ) = $self->_render_ajax_response( $fn, $ru );
     }
     elsif (${$self}{cgi}->param('msg')
         || ${$self}{cgi}->param('errmsg')
@@ -86,40 +53,84 @@ sub render {
         || ${$self}{cgi}->param('afsmsg')
         || ${$self}{cgi}->param('afserrmsg') )
     {
-        my $msg
-            = ${$self}{cgi}->param('msg')
-            || ${$self}{cgi}->param('aclmsg')
-            || ${$self}{cgi}->param('afsmsg');
-        my $errmsg
-            = ${$self}{cgi}->param('errmsg')
-            || ${$self}{cgi}->param('aclerrmsg')
-            || ${$self}{cgi}->param('afserrmsg');
-        my %jsondata = ();
-        my $p        = 1;
-        my @params   = ();
-        while ( ${$self}{cgi}->param( 'p' . ( $p++ ) ) ) {
-            push @params, ${$self}{cgi}->escapeHTML($_);
-        }
-        if ($msg) {
-            $jsondata{message} = sprintf $self->tl( 'msg_' . $msg ), @params;
-        }
-
-        if ($errmsg) {
-            $jsondata{error} = sprintf $self->tl( 'msg_' . $errmsg ), @params;
-        }
-        my $json = JSON->new();
-        $content     = $json->encode( \%jsondata );
-        $contenttype = 'application/json';
+        ( $content, $contenttype ) = $self->_render_msg_response();
     }
     else {
-        $content = $self->minify_html(
-            $self->render_template( $fn, $ru, $self->read_template('page') ) );
+        $content
+            = $self->minify_html(
+            $self->render_template( $fn, $ru, $self->read_template('page') )
+            );
     }
     delete $CACHE{$self}{$fn};
-
+    $content     //= q{};
+    $contenttype //= 'text/html';
     return main::print_compressed_header_and_content( '200 OK', $contenttype,
         $content, 'Cache-Control: no-cache, no-store',
         $self->getCookies() );
+}
+
+sub _render_ajax_response {
+    my ( $self, $fn, $ru ) = @_;
+    my $ajax = ${$self}{cgi}->param('ajax');
+    if ( $ajax eq 'getFileListTable' ) {
+        return (
+            $self->_render_file_list_table(
+                $fn, $ru, scalar ${$self}{cgi}->param('template')
+            ),
+            'application/json'
+        );
+    }
+    if ( $ajax eq 'getViewFilterDialog' ) {
+        return $self->_render_viewfilter_dialog( $fn, $ru,
+            scalar ${$self}{cgi}->param('template') );
+    }
+    if ( $ajax eq 'getSearchDialog' ) {
+        return $self->render_template( $fn, $ru,
+            $self->read_template( scalar ${$self}{cgi}->param('template') ) );
+    }
+    if ( $ajax eq 'getTableConfigDialog' ) {
+        return $self->render_template( $fn, $ru,
+            $self->read_template( scalar ${$self}{cgi}->param('template') ) );
+    }
+    if ( $ajax eq 'getFileListEntry' ) {
+        my $entrytemplate = $self->_render_extension_function(
+            $self->read_template( scalar ${$self}{cgi}->param('template') ) );
+        my $columns
+            = $self->_render_visible_table_columns( \$entrytemplate )
+            . $self->_render_invisible_allowed_table_columns(
+            \$entrytemplate );
+        $entrytemplate =~ s/\$filelistentrycolumns/$columns/xmesg;
+        return $self->_render_file_list_entry( $fn, $ru,
+            scalar ${$self}{cgi}->param('file'),
+            $entrytemplate );
+    }
+    return;
+}
+
+sub _render_msg_response {
+    my ($self) = @_;
+    my $msg
+        = ${$self}{cgi}->param('msg')
+        || ${$self}{cgi}->param('aclmsg')
+        || ${$self}{cgi}->param('afsmsg');
+    my $errmsg
+        = ${$self}{cgi}->param('errmsg')
+        || ${$self}{cgi}->param('aclerrmsg')
+        || ${$self}{cgi}->param('afserrmsg');
+    my %jsondata = ();
+    my $p        = 1;
+    my @params   = ();
+    while ( ${$self}{cgi}->param( 'p' . ( $p++ ) ) ) {
+        push @params, ${$self}{cgi}->escapeHTML($_);
+    }
+    if ($msg) {
+        $jsondata{message} = sprintf $self->tl( 'msg_' . $msg ), @params;
+    }
+
+    if ($errmsg) {
+        $jsondata{error} = sprintf $self->tl( 'msg_' . $errmsg ), @params;
+    }
+    return ( JSON::encode_json( \%jsondata ), 'application/json' );
 }
 
 sub _get_quota_data {
@@ -142,12 +153,15 @@ sub _get_quota_data {
             }
         }
         if ( $main::QUOTA_LIMITS{$level} ) {
-            $quotastyle .= ';color:' . $main::QUOTA_LIMITS{$level}{color}
-                if $main::QUOTA_LIMITS{$level}{color};
-            $quotastyle
-                .= ';background-color:'
+            $quotastyle .=
+                $main::QUOTA_LIMITS{$level}{color}
+                ? ';color:' . $main::QUOTA_LIMITS{$level}{color}
+                : q{};
+            $quotastyle .=
+                $main::QUOTA_LIMITS{$level}{background}
+                ? ';background-color:'
                 . $main::QUOTA_LIMITS{$level}{background}
-                if $main::QUOTA_LIMITS{$level}{background};
+                : q{};
         }
     }
 
@@ -183,29 +197,24 @@ sub render_template {
         uri          => $ru,
         baseuri      => ${$self}{cgi}->escapeHTML($vbase),
         quicknavpath => $CACHE{$self}{render_template}{quicknavpath}
-            //= $self->_render_quicknav_path( $fn, $ru ),    ## //
+            //= $self->_render_quicknav_path( $fn, $ru ),
         maxuploadsize   => $main::POST_MAX_SIZE,
         maxuploadsizehr => $CACHE{$self}{render_template}{maxuploadsizehr}
-            //= ( $self->renderByteValue( $main::POST_MAX_SIZE, 2, 2 ) )[0]
-        ,                                                 ## //
+            //= ( $self->renderByteValue( $main::POST_MAX_SIZE, 2, 2 ) )[0],
         quotalimit => $CACHE{$self}{render_template}{quotalimit}
-            //= ( $self->renderByteValue( $quota{quotalimit}, 2, ) )[0], ## //
+            //= ( $self->renderByteValue( $quota{quotalimit}, 2, ) )[0],
         quotalimitbytes => $quota{quotalimit},
         quotalimittitle => $CACHE{$self}{render_template}{quotalimittitle}
-            //= ( $self->renderByteValue( $quota{quotalimit}, 2, ) )[1], ## //
+            //= ( $self->renderByteValue( $quota{quotalimit}, 2, ) )[1],
         quotaused => $CACHE{$self}{render_template}{quotaused}
-            //= ( $self->renderByteValue( $quota{quotaused}, 2, 2 ) )[0]
-        ,                                                                ## //
+            //= ( $self->renderByteValue( $quota{quotaused}, 2, 2 ) )[0],
         quotausedtitle => $CACHE{$self}{render_template}{quotausedtitle}
-            //= ( $self->renderByteValue( $quota{quotaused}, 2, 2 ) )[1]
-        ,                                                                ## //
+            //= ( $self->renderByteValue( $quota{quotaused}, 2, 2 ) )[1],
         quotaavailable => $CACHE{$self}{render_template}{quotaavailable}
-            //= ( $self->renderByteValue( $quota{quotaavailable}, 2, 2 ) )[0]
-        ,                                                                ## //
+            //= ( $self->renderByteValue( $quota{quotaavailable}, 2, 2 ) )[0],
         quotaavailabletitle =>
             $CACHE{$self}{render_template}{quotaavailabletitle}
-            //= ( $self->renderByteValue( $quota{quotaavailable}, 2, 2 ) )[1]
-        ,                                                                ## //
+            //= ( $self->renderByteValue( $quota{quotaavailable}, 2, 2 ) )[1],
         quotastyle         => $quota{quotastyle},
         quotalevel         => $quota{quotalevel},
         quotausedperc      => $quota{quotausedperc},
@@ -214,7 +223,7 @@ sub render_template {
             //= $self->stat_matchcount( $main::FILETYPES, '^\S+' ),
         stat_suffixes => $CACHE{render_template}{stat_suffixes}
             //= $self->stat_matchcount( $main::FILETYPES, '\S+' )
-            - $self->stat_matchcount( $main::FILETYPES, '^\S+' ),        ## //
+            - $self->stat_matchcount( $main::FILETYPES, '^\S+' ),
         stat_extensions    => $#main::EXTENSIONS + 1,
         stat_filetypeicons => $CACHE{render_template}{stat_filetypeicons}
             //= join(
@@ -235,7 +244,8 @@ sub render_template {
         stat_extensionlist => $CACHE{render_template}{stat_extensionlist}
             //= join( ', ', sort @main::EXTENSIONS ),
         stat_loadedperlmodules =>
-            $CACHE{render_template}{stat_loadedperlmodules} //= keys(%INC) + 1,
+            $CACHE{render_template}{stat_loadedperlmodules}
+            //= keys(%INC) + 1,
         stat_perlmodulelist => $CACHE{render_template}{stat_perlmodulelist}
             //= join( ', ', sort keys %INC ),
         stat_perlversionnumber => $],
@@ -243,7 +253,9 @@ sub render_template {
         viewname               => $self->tl("${main::VIEW}view"),
         USER                   => $main::REMOTE_USER,
         CLOCK                  => ${$self}{cgi}->span(
-            { id => 'clock', 'data-format' => $self->tl('vartimeformat') },
+            {   id            => 'clock',
+                'data-format' => $self->tl('vartimeformat')
+            },
             strftime( $self->tl('vartimeformat'), localtime )
         ),
         NOW             => strftime( $self->tl('varnowformat'), localtime ),
@@ -258,21 +270,22 @@ sub render_template {
 
 sub exec_template_function {
     my ( $self, $fn, $ru, $func, $param ) = @_;
-    my $content;
-
-    $content = $self->_render_file_list( $fn, $ru, $param )
-        if $func eq 'filelist';
-    $content = $self->isViewFiltered()   if $func eq 'isviewfiltered';
-    $content = $self->_render_filter_info() if $func eq 'filterInfo';
-    $content = $self->_render_language_list( $fn, $ru, $param )
-        if $func eq 'langList';
-    $content = $self->_render_extension( $fn, $ru, $param )
-        if $func eq 'extension';
-
-    $content = $self->SUPER::exec_template_function( $fn, $ru, $func, $param )
-        unless defined $content;
-
-    return $content;
+    if ( $func eq 'filelist' ) {
+        return $self->_render_file_list( $fn, $ru, $param );
+    }
+    if ( $func eq 'isviewfiltered' ) {
+        return $self->isViewFiltered();
+    }
+    if ( $func eq 'filterInfo' ) {
+        return $self->_render_filter_info();
+    }
+    if ( $func eq 'langList' ) {
+        return $self->_render_language_list( $fn, $ru, $param );
+    }
+    if ( $func eq 'extension' ) {
+        return $self->_render_extension( $fn, $ru, $param );
+    }
+    return $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
 }
 
 sub _render_extension_element {
@@ -294,16 +307,17 @@ sub _render_extension_element {
             );
         }
         my %params = ( -class => q{} );
-        $params{-class} .= ' action ' . ${$a}{action} if ${$a}{action};
-        $params{-class} .= ' listaction ' . ${$a}{listaction}
-            if ${$a}{listaction};
-        $params{-class} .= q{ } . ${$a}{classes} if ${$a}{classes};
-        $params{-class} .= ' hidden' if ${$a}{disabled};
-        $params{-accesskey} = ${$a}{accesskey} if ${$a}{accesskey};
-        $params{-title} = $self->tl( ${$a}{title} || ${$a}{label} )
-            if ${$a}{title} || ${$a}{label};
-        $params{-data_template} = ${$a}{template} if ${$a}{template};
-        $content .= ${$a}{prehtml} if ${$a}{prehtml};
+        $params{-class} .= ${$a}{action} ? ' action ' . ${$a}{action} : q{};
+        $params{-class}
+            .= ${$a}{listaction} ? ' listaction ' . ${$a}{listaction} : q{};
+        $params{-class} .= ${$a}{classes}  ? q{ } . ${$a}{classes} : q{};
+        $params{-class} .= ${$a}{disabled} ? ' hidden'             : q{};
+        if ( ${$a}{accesskey} ) { $params{-accesskey} = ${$a}{accesskey}; }
+        if ( ${$a}{title} || ${$a}{label} ) {
+            $params{-title} = $self->tl( ${$a}{title} || ${$a}{label} );
+        }
+        if ( ${$a}{template} ) { $params{-data_template} = ${$a}{template}; }
+        $content .= ${$a}{prehtml} ? ${$a}{prehtml} : q{};
 
         if ( ${$a}{data} ) {
             foreach my $data ( keys %{ ${$a}{data} } ) {
@@ -332,12 +346,13 @@ sub _render_extension_element {
                     { -class => 'label' }, $self->tl( ${$a}{label} )
                 )
             );
-            $content
-                = ${$self}{cgi}
-                ->li( { -class => ${$a}{liclasses} || q{} }, $content )
-                if ${$a}{type} && ${$a}{type} eq 'li-a';
+            if ( ${$a}{type} && ${$a}{type} eq 'li-a' ) {
+                $content
+                    = ${$self}{cgi}
+                    ->li( { -class => ${$a}{liclasses} || q{} }, $content );
+            }
         }
-        $content .= ${$a}{posthtml} if ${$a}{posthtml};
+        $content .= ${$a}{posthtml} ? ${$a}{posthtml} : q{};
     }
     elsif ( ref($a) eq 'ARRAY' ) {
         $content = join q{},
@@ -388,18 +403,22 @@ sub _render_extension {
 
 sub _render_extension_function {
     my ( $self, $content ) = @_;
-    $content =~ s/[\$]extension[(](.*?)[)]/$self->_render_extension($main::PATH_TRANSLATED,$main::REQUEST_URI,$1)/xmegs;
+    $content =~
+        s/[\$]extension[(](.*?)[)]/$self->_render_extension($main::PATH_TRANSLATED,$main::REQUEST_URI,$1)/xmegs;
     return $content;
 }
 
 sub _render_language_list {
     my ( $self, $fn, $ru, $tmplfile ) = @_;
     my $tmpl
-        = $tmplfile =~ /^'(.*)'$/xms ? $1 : $self->read_template($tmplfile);
+        = $tmplfile =~ /^'(.*)'$/xms
+        ? $1
+        : $self->read_template($tmplfile);
     my $content = q{};
     foreach my $lang (
         sort {
-            $main::SUPPORTED_LANGUAGES{$a} cmp $main::SUPPORTED_LANGUAGES{$b}
+            $main::SUPPORTED_LANGUAGES{$a}
+                cmp $main::SUPPORTED_LANGUAGES{$b}
         } keys %main::SUPPORTED_LANGUAGES
         )
     {
@@ -414,7 +433,8 @@ sub _render_language_list {
 sub _render_file_list_table {
     my ( $self, $fn, $ru, $template ) = @_;
     my $filelisttabletemplate
-        = $self->_render_extension_function( $self->read_template($template) );
+        = $self->_render_extension_function(
+        $self->read_template($template) );
     my $columns
         = $self->_render_visible_table_columns( \$filelisttabletemplate )
         . $self->_render_invisible_allowed_table_columns(
@@ -427,7 +447,7 @@ sub _render_file_list_table {
         unselectable => $self->isUnselectable($fn)          ? 'yes' : 'no',
     );
     $filelisttabletemplate =~
-        s/[\$]\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/xmegs;
+        s/[\$]{?(\w+)}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/xmegs;
     my %jsondata = (
         content => $self->minify_html(
             $self->render_template( $fn, $ru, $filelisttabletemplate )
@@ -436,8 +456,9 @@ sub _render_file_list_table {
     if ( !${$self}{backend}->isReadable($fn) ) {
         $jsondata{error} = $self->tl('foldernotreadable');
     }
-    if ( $main::FILEFILTERPERDIR{$fn}
-        || ( $main::ENABLE_NAMEFILTER && ${$self}{cgi}->param('namefilter') )
+    if ($main::FILEFILTERPERDIR{$fn}
+        || ( $main::ENABLE_NAMEFILTER
+            && ${$self}{cgi}->param('namefilter') )
         )
     {
         $jsondata{warn} = sprintf
@@ -463,11 +484,11 @@ sub _render_file_list_entry {
     $ru .= ( $ru =~ /\//xms ? q{} : q{/} );
 
     my $hdr = $CACHE{_render_file_list_entry}{hdr}
-        //= DateTime::Format::Human::Duration->new();    ## //
+        //= DateTime::Format::Human::Duration->new();
     my $lang  = $main::LANG eq 'default' ? 'en' : $main::LANG;
     my $full  = "$fn$file";
     my $fulle = $ru . ${$self}{cgi}->escape($file);
-    $fulle =~ s/\%2f/\//xmsgi;                           ## fix for search
+    $fulle =~ s/\%2f/\//xmsgi;    ## fix for search
     my $ir = ${$self}{backend}->isReadable($full) || 0;
     my $il = ${$self}{backend}->isLink($full)     || 0;
     my $id = ${$self}{backend}->isDir($full)      || 0;
@@ -476,9 +497,9 @@ sub _render_file_list_entry {
     my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
         $size, $atime, $mtime, $ctime, $blksize, $blocks
     ) = ${$self}{backend}->stat($full);
-    $mtime = 0 unless defined $mtime;
-    $ctime = 0 unless defined $ctime;
-    $mode  = 0 unless defined $mode;
+    $mtime //= 0;
+    $ctime //= 0;
+    $mode  //= 0;
     my ( $sizetxt, $sizetitle ) = $self->renderByteValue( $size, 2, 2 );
     my $mime
         = $file eq q{..} ? '< .. >'
@@ -495,26 +516,25 @@ sub _render_file_list_entry {
         && $main::FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
         ? 'category-' . $1
         : q{};
-    my $isLocked = $main::SHOW_LOCKS && main::isLockedCached($full);
+    my $is_locked = $main::SHOW_LOCKS && main::isLockedCached($full);
     my $displayname
         = ${$self}{cgi}
         ->escapeHTML( ${$self}{backend}->getDisplayName($full) );
     my $now = $CACHE{$self}{_render_file_list_entry}{now}{$lang}
-        //= DateTime->now( locale => $lang );    ## //
+        //= DateTime->now( locale => $lang );
     my $cct = $self->canCreateThumbnail($full) || 0;
     my $u = $uid
         ? $CACHE{$self}{_render_file_list_entry}{uid}{$uid} //=
         scalar getpwuid( $uid || 0 ) || $uid
-        : 'unknown';                             ## //
+        : 'unknown';
     my $g = $gid
         ? $CACHE{$self}{_render_file_list_entry}{gid}{$gid} //=
         scalar getgrgid( $gid || 0 ) || $gid
-        : 'unknown';                             ## //
+        : 'unknown';
     my $icon = $CACHE{$self}{_render_file_list_entry}{icon}{$mime}
-        //= $self->getIcon($mime);               ## //
+        //= $self->getIcon($mime);
     my $enthumb = $CACHE{$self}{_render_file_list_entry}{cookie}{thumbnails}
-        //= ${$self}{cgi}->cookie('settings.enable.thumbnails')
-        // 'yes';                                ## //
+        //= ${$self}{cgi}->cookie('settings.enable.thumbnails') // 'yes';
     my $iconurl = $id ? $icon : $cct
         && $enthumb ne 'no' ? $fulle . '?action=thumb' : $icon;
     my %stdvars = (
@@ -528,7 +548,8 @@ sub _render_file_list_entry {
         : q{-},
         'lastmodifiedtime' => $mtime,
         'lastmodifiedhr'   => $ir && $mtime ? $hdr->format_duration_between(
-            DateTime->from_epoch( epoch => $mtime, locale => $lang ), $now,
+            DateTime->from_epoch( epoch => $mtime, locale => $lang ),
+            $now,
             precision         => 'seconds',
             significant_units => 2
             ) : q{-},
@@ -536,7 +557,8 @@ sub _render_file_list_entry {
         ? strftime( $self->tl('lastmodifiedformat'), localtime $ctime )
         : q{-},
         'createdhr' => $ir && $ctime ? $hdr->format_duration_between(
-            DateTime->from_epoch( epoch => $ctime, locale => $lang ), $now,
+            DateTime->from_epoch( epoch => $ctime, locale => $lang ),
+            $now,
             precision         => 'seconds',
             significant_units => 2
             ) : q{-},
@@ -552,9 +574,9 @@ sub _render_file_list_entry {
         'iswriteable' => ${$self}{backend}->isWriteable($full)
             || $il ? 'yes' : 'no',
         'isviewable' => $ir && $cct ? 'yes' : 'no',
-        'islocked' => $isLocked ? 'yes'     : 'no',
-        'islink'   => $il       ? 'yes'     : 'no',
-        'isempty'  => $id       ? 'unknown' : ( defined $size )
+        'islocked' => $is_locked ? 'yes'     : 'no',
+        'islink'   => $il        ? 'yes'     : 'no',
+        'isempty'  => $id        ? 'unknown' : ( defined $size )
             && $size == 0 ? 'yes' : 'no',
         'type' => $file =~ /^[.]{1,2}$/xms
             || $id ? 'dir' : ( $il ? 'link' : 'file' ),
@@ -589,33 +611,34 @@ sub _render_file_list_entry {
         = ${$self}{config}{extensions}
         ->handle( 'fileattr', { path => $full } );
     if ($fileattr_extensions) {
-        foreach my $attrHashRef ( @{$fileattr_extensions} ) {
-            if ( ref($attrHashRef) ne 'HASH' ) { next; }
-            foreach my $supportedFileAttr (
+        foreach my $attr_hashref ( @{$fileattr_extensions} ) {
+            if ( ref($attr_hashref) ne 'HASH' ) { next; }
+            foreach my $supported_file_attr (
                 (   'ext_classes', 'ext_attributes',
                     'ext_styles',  'ext_iconclasses'
                 )
                 )
             {
-                $stdvars{$supportedFileAttr}
-                    .= q{ } . ${$attrHashRef}{$supportedFileAttr}
-                    if ${$attrHashRef}{$supportedFileAttr};
+                $stdvars{$supported_file_attr} .=
+                    ${$attr_hashref}{$supported_file_attr}
+                    ? q{ } . ${$attr_hashref}{$supported_file_attr}
+                    : q{};
             }
         }
     }
 
     # fileprop hook by Harald Strack <hstrack@ssystems.de>
     # overwrites all stdvars including ext_...
-    my $filepropExtensions
+    my $fileprop_extensions
         = ${$self}{config}{extensions}
         ->handle( 'fileprop', { path => $full } );
-    if ( defined $filepropExtensions ) {
-        foreach my $ret ( @{$filepropExtensions} ) {
+    if ( defined $fileprop_extensions ) {
+        foreach my $ret ( @{$fileprop_extensions} ) {
             @stdvars{ keys %{$ret} } = values %{$ret};
         }
     }
     ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-    $e =~ s{[\$]\{?(\w+)\}?}{  $stdvars{$1}//= "\$$1" }xmegs;
+    $e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
     return $self->render_template( $fn, $ru, $e );
 }
 
@@ -624,7 +647,7 @@ sub _render_visible_table_columns {
     my @columns = $self->getVisibleTableColumns();
     my $columns = q{};
     for my $column (@columns) {
-        if ( ${$templateref} =~ s/<!--TEMPLATE[(]$column[)]\[(.*?)\]-->//xmsg )
+        if (${$templateref} =~ s/<!--TEMPLATE[(]$column[)]\[(.*?)\]-->//xmsg )
         {
             my $c = $1;
             $c =~ s/-hidden//xmsg;
@@ -638,7 +661,7 @@ sub _render_invisible_allowed_table_columns {
     my ( $self, $templateref ) = @_;
     my $columns = q{};
     for my $column (@main::ALLOWED_TABLE_COLUMNS) {
-        if ( ${$templateref} =~ s/<!--TEMPLATE[(]$column[)]\[(.*?)\]-->//xmsg )
+        if (${$templateref} =~ s/<!--TEMPLATE[(]$column[)]\[(.*?)\]-->//xmsg )
         {
             my $c = $1;
             $c =~ s/-hidden/hidden/xmsg;
@@ -652,7 +675,8 @@ sub _render_invisible_allowed_table_columns {
 sub _render_file_list {
     my ( $self, $fn, $ru, $template ) = @_;
     my $entrytemplate
-        = $self->_render_extension_function( $self->read_template($template) );
+        = $self->_render_extension_function(
+        $self->read_template($template) );
     my $fl = q{};
 
     my @files
@@ -661,19 +685,24 @@ sub _render_file_list {
         @{ ${$self}{backend}->readDir( $fn, main::getFileLimit($fn), $self ) }
         : ();
 
-    unshift @files, q{..}
-        if $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn;
-    unshift @files, q{.}
-        if $main::SHOW_CURRENT_FOLDER
-        || ( $main::SHOW_CURRENT_FOLDER_ROOTONLY
-        && $ru =~ /^$main::VIRTUAL_BASE$/xms );
-
-    my $columns = $self->_render_visible_table_columns( \$entrytemplate )
+    if ( $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn ) {
+        unshift @files, q{..};
+    }
+    if ($main::SHOW_CURRENT_FOLDER
+        || (   $main::SHOW_CURRENT_FOLDER_ROOTONLY
+            && $ru =~ /^$main::VIRTUAL_BASE$/xms )
+        )
+    {
+        unshift @files, q{.};
+    }
+    my $columns
+        = $self->_render_visible_table_columns( \$entrytemplate )
         . $self->_render_invisible_allowed_table_columns( \$entrytemplate );
     $entrytemplate =~ s/\$filelistentrycolumns/$columns/xmesg;
 
     foreach my $file (@files) {
-        $fl .= $self->_render_file_list_entry( $fn, $ru, $file, $entrytemplate );
+        $fl .= $self->_render_file_list_entry( $fn, $ru, $file,
+            $entrytemplate );
     }
 
     return $fl;
@@ -711,9 +740,15 @@ sub _render_filter_info {
 
         my @ft;
         foreach my $ftype ( split //xms, $filtertypes ) {
-            push @ft, $self->tl('filter.types.files')  if $ftype eq 'f';
-            push @ft, $self->tl('filter.types.folder') if $ftype eq 'd';
-            push @ft, $self->tl('filter.types.links')  if $ftype eq 'l';
+            if ( $ftype eq 'f' ) {
+                push @ft, $self->tl('filter.types.files');
+            }
+            if ( $ftype eq 'd' ) {
+                push @ft, $self->tl('filter.types.folder');
+            }
+            if ( $ftype eq 'l' ) {
+                push @ft, $self->tl('filter.types.links');
+            }
         }
         push @filter, $self->tl('filter.types.showonly') . join ', ', @ft;
     }
@@ -765,7 +800,7 @@ sub _render_quicknav_path {
     for my $i ( 0 .. $#pea ) {
         my $pe = $pea[$i];
         $path .= uri_escape($pe) . q{/};
-        $path = q{/} if $path eq q{//};
+        if ( $path eq q{//} ) { $path = q{/}; }
         my $dn = "$pe/";
         $dn
             = $fnc eq $main::DOCUMENT_ROOT
@@ -795,7 +830,7 @@ sub _render_quicknav_path {
                 $lastignoredpath = "$base$path";
             }
         }
-        $ignoredpes .= "$pe/" if $ignorepe;
+        $ignoredpes .= $ignorepe ? "$pe/" : q{};
         if ( !$ignorepe && $lastignorepe ) {
             $content
                 .= ${$self}{cgi}
@@ -803,17 +838,22 @@ sub _render_quicknav_path {
                 ' [...]/ ' );
             $ignoredpes = q{};
         }
-        $content .= ${$self}{cgi}->a(
+        $content .=
+            !$ignorepe
+            ? ${$self}{cgi}->a(
             {   -href => "$base$path" . ( defined $query ? "?$query" : q{} ),
                 -title =>
                     ${$self}{cgi}->escapeHTML( uri_unescape("$base$path") )
             },
             ${$self}{cgi}->escapeHTML(" $dn ")
-        ) unless $ignorepe;
-        $fnc .= shift(@fna) . q{/} if $#fna > -1;
+            )
+            : q{};
+        if ( $#fna > -1 ) { $fnc .= shift(@fna) . q{/}; }
     }
-    $content .= ${$self}{cgi}->a( { -href => q{/}, -title => q{/} }, q{/} )
-        if $content eq q{};
+    $content .=
+        $content eq q{}
+        ? ${$self}{cgi}->a( { -href => q{/}, -title => q{/} }, q{/} )
+        : q{};
 
     return $content;
 }

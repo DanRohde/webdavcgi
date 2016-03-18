@@ -153,7 +153,7 @@ sub handleFileActions {
                     $msgparam = [$file];
                     last;
                 }
-                if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/ ) {
+                if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/xms ) {
                     my $full = $main::PATH_TRANSLATED . $file;
                     main::broadcast( 'WEB-DELETE', { file => $full } );
                     if ($main::ENABLE_TRASH) {
@@ -201,7 +201,7 @@ sub handleFileActions {
             }
             elsif ( defined $$self{cgi}->param('newname') ) {
                 my $newname = $$self{cgi}->param('newname');
-                $newname =~ s/\/$//;
+                $newname =~ s/\/$//xms;
                 my @files = $$self{cgi}->param('file');
                 if (
                     ( $#files > 0 )
@@ -252,7 +252,7 @@ sub handleFileActions {
           // $$self{cgi}->param('colname');
         if ( $colname ne "" ) {
             $msgparam = [$colname];
-            if (   $colname !~ /\//
+            if (   $colname !~ /\//xms
                 && $$self{backend}->mkcol( $main::PATH_TRANSLATED . $colname ) )
             {
                 main::logger("MKCOL($main::PATH_TRANSLATED$colname via POST");
@@ -281,8 +281,8 @@ sub handleFileActions {
                 $file = $$self{backend}->resolve("$main::PATH_TRANSLATED$file");
                 $lndst =
                   $$self{backend}->resolve("$main::PATH_TRANSLATED$lndst");
-                if (   $file =~ /^\Q$main::DOCUMENT_ROOT\E/
-                    && $lndst =~ /^\Q$main::DOCUMENT_ROOT\E/
+                if (   $file =~ /^\Q$main::DOCUMENT_ROOT\E/xms
+                    && $lndst =~ /^\Q$main::DOCUMENT_ROOT\E/xms
                     && $$self{backend}->createSymLink( $file, $lndst ) )
                 {
                     $msg = 'symlinkcreated';
@@ -307,7 +307,7 @@ sub handleFileActions {
         my $full = $main::PATH_TRANSLATED . $fn;
         if (   $$self{backend}->isWriteable($main::PATH_TRANSLATED)
             && !$$self{backend}->exists($full)
-            && ( $fn !~ /\// )
+            && ( $fn !~ /\//xms )
             && $$self{backend}->saveData( $full, "", 1 ) )
         {
             $msg      = 'newfilecreated';
