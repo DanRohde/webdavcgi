@@ -78,13 +78,13 @@ sub handle {
 	return $ret;
 }
 
-sub execTemplateFunction {
+sub exec_template_function {
 	my ($self, $fn, $ru, $func, $param) = @_;
 	my $content;
 	$content = $self->renderAFSACLList($fn,$ru,1,$param) if $func eq 'afsnormalacllist';
 	$content = $self->renderAFSACLList($fn,$ru,0,$param) if $func eq 'afsnegativeacllist';
 	$content = $$self{backend}->_checkCallerAccess($fn, $param) if $func eq 'checkAFSCallerAccess';
-	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
+	$content = $self->SUPER::exec_template_function($fn,$ru,$func,$param) unless defined $content;
 	return $content;
 }
 sub readAFSGroupList {
@@ -127,7 +127,7 @@ sub renderAFSACLManager {
         if ($$self{backend}->_getCallerAccess($fn) eq "") {
                 $content = $$self{cgi}->div({-title=>$self->tl('afs')},$self->tl('afsnorights'));
         } else {
-                $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
+                $content = $self->render_template($fn,$ru,$self->read_template($tmplfile));
                 my $stdvars = {
                         afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
                                                                                         $self->quoteWhiteSpaces($$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru)))), 
@@ -183,7 +183,7 @@ sub renderAFSAclEntries {
 }
 sub renderAFSACLList {
 	my ($self, $fn, $ru, $positive, $tmplfile) = @_;
-	return $self->renderTemplate($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->readTemplate($tmplfile), !$$self{backend}->_checkCallerAccess($fn,"a")));
+	return $self->render_template($fn,$ru, $self->renderAFSAclEntries($self->readAFSAcls($fn,$ru), $positive, $self->read_template($tmplfile), !$$self{backend}->_checkCallerAccess($fn,"a")));
 }
 sub isValidAFSACL       { return $_[1] =~ /^[rlidwka]+$/; }
 sub isValidAFSGroupName {

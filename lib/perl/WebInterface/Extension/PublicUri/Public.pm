@@ -19,66 +19,97 @@
 
 package WebInterface::Extension::PublicUri::Public;
 
-
 use strict;
+use warnings;
 
-use WebInterface::Extension;
-use WebInterface::Extension::PublicUri::Common;
-our @ISA = qw( WebInterface::Extension WebInterface::Extension::PublicUri::Common );
+our $VERSION = '2.0';
+use base qw( WebInterface::Extension::PublicUri::Common );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
-
 sub init {
-	my ($self, $hookreg) = @_;
+    my ( $self, $hookreg ) = @_;
 
-	$hookreg->register(['posthandler','gethandler'], $self);
-	
-	$self->initDefaults();
+    $hookreg->register( [ 'posthandler', 'gethandler' ], $self );
+
+    $self->init_defaults();
+    return;
 }
+
 sub handle {
-	my ( $self, $hook, $config, $params ) = @_;
-	$self->SUPER::handle($hook, $config, $params);
-	if ( $hook eq 'posthandler' ) {
-		return $self->handlePublicUriAccess() if $$self{cgi}->param('action')  =~ /$$self{allowedpostactions}/;
-		main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
-		return 1;
-	} elsif ($hook eq 'gethandler') {
-		return $self->handlePublicUriAccess();
-	}
-	return 0;    #not handled
+    my ( $self, $hook, $config, $params ) = @_;
+    $self->SUPER::handle( $hook, $config, $params );
+    if ( $hook eq 'posthandler' ) {
+        return $self->handle_public_uri_access()
+            if ${$self}{cgi}->param('action') =~ /${$self}{allowedpostactions}/xms;
+        main::print_header_and_content(
+            main::getErrorDocument(
+                '404 Not Found',
+                'text/plain',
+                '404 - NOT FOUND'
+            )
+        );
+        return 1;
+    }
+    elsif ( $hook eq 'gethandler' ) {
+        return $self->handle_public_uri_access();
+    }
+    return 0;    #not handled
 }
-sub handlePublicUriAccess {
-	my ($self) = @_;
-	if ($main::PATH_TRANSLATED =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/) {
-		my ($code, $path) = ($1,$2);
-		my $fn = $self->getFileFromCode($code);
-		if (!$fn || !$self->isPublicUri($fn, $code, $self->getSeed($fn))) {
-			main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
-			return 1;
-		} 	
 
-		$main::DOCUMENT_ROOT = $fn;
-		$main::DOCUMENT_ROOT.='/' if $main::DOCUMENT_ROOT !~ /\/$/;
-		$main::PATH_TRANSLATED = $fn . $path;		
-		$main::VIRTUAL_BASE = $$self{virtualbase}.$code.'/?';
-		
-		if ($$self{backend}->isDir($main::PATH_TRANSLATED)) {
-			$main::PATH_TRANSLATED .= '/' if $main::PATH_TRANSLATED !~ /\/$/;
-			$main::REQUEST_URI .= '/' if $main::REQUEST_URI !~ /\/$/;	
-		} elsif ((!$path || $path eq '')&&($$self{backend}->isReadable($fn))) {
-			my $bfn = $$self{backend}->basename($fn);
-			$bfn=~s/"/_/g;
-			main::print_file_header($fn, { 'Content-Disposition' => sprintf('attachment; filename="%s"',$bfn)});
-			$$self{backend}->printFile($fn, \*STDOUT);
-			return 1;
-		}
-		
-		return 0;
-	} else {
-		main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - NOT FOUND'));
-		return 1;
-	}
+sub handle_public_uri_access {
+    my ($self) = @_;
+    if ( $main::PATH_TRANSLATED =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/xms ) {
+        my ( $code, $path ) = ( $1, $2 );
+        my $fn = $self->get_file_from_code($code);
+        if ( !$fn || !$self->is_public_uri( $fn, $code, $self->get_seed($fn) ) )
+        {
+            main::print_header_and_content(
+                main::getErrorDocument(
+                    '404 Not Found',
+                    'text/plain',
+                    '404 - NOT FOUND'
+                )
+            );
+            return 1;
+        }
+
+        $main::DOCUMENT_ROOT = $fn;
+        $main::DOCUMENT_ROOT .= $main::DOCUMENT_ROOT !~ /\/$/xms ? q{/} : q{};
+        $main::PATH_TRANSLATED = $fn . $path;
+        $main::VIRTUAL_BASE    = ${$self}{virtualbase} . $code . q{/?};
+
+        if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
+            $main::PATH_TRANSLATED .= $main::PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
+            $main::REQUEST_URI     .= $main::REQUEST_URI !~ /\/$/xms ? q{/} : q{};
+        }
+        elsif (( !$path || $path eq q{} )
+            && ( ${$self}{backend}->isReadable($fn) ) )
+        {
+            my $bfn = ${$self}{backend}->basename($fn);
+            $bfn =~ s/"/_/xmsg;
+            main::print_file_header(
+                $fn,
+                {   'Content-Disposition' =>
+                        sprintf 'attachment; filename="%s"', $bfn
+                }
+            );
+            ${$self}{backend}->printFile( $fn, \*STDOUT );
+            return 1;
+        }
+
+        return 0;
+    }
+    else {
+        main::print_header_and_content(
+            main::getErrorDocument(
+                '404 Not Found',
+                'text/plain',
+                '404 - NOT FOUND'
+            )
+        );
+        return 1;
+    }
 }
 
 1;

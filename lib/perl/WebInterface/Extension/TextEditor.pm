@@ -79,7 +79,7 @@ sub getEditForm {
 		$content = $$self{json}-encode({ error=>sprintf($self->tl('msg_sizelimitexceeded'), $$self{cgi}->escapeHTML($filename), ($self->renderByteValue($$self{sizelimit}))[0])});
 		$contenttype='application/json';
 	} else {
-		$content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->readTemplate($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::get_mime_type($full)});
+		$content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->read_template($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::get_mime_type($full)});
 	}
 	main::print_compressed_header_and_content('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
 	return 1;

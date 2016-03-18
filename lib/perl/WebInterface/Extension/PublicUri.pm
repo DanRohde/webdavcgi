@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 # SETUP:
-# 
+#
 # virtualbase - virtual base URI for the public link (default: /public/)
 # uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
 # propname - property name for the share digest (default: public_prop)
@@ -29,23 +29,27 @@
 package WebInterface::Extension::PublicUri;
 
 use strict;
+use warnings;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+our $VERSION = '2.0';
+use base qw( WebInterface::Extension  );
 
 use Module::Load;
 
-sub init { 
-	my($self, $hookreg) = @_; 
+sub init {
+    my ( $self, $hookreg ) = @_;
 
+    my $mode = $self->config( 'mode',
+        $main::BACKEND eq 'RO' ? 'public' : 'private' );
 
-	my $mode = $self->config('mode', $main::BACKEND eq 'RO' ? 'public' : 'private');
-	
-	my $handler = $mode eq 'private' ? 'WebInterface::Extension::PublicUri::Private' : 'WebInterface::Extension::PublicUri::Public';
-	
-	load $handler;
-	$handler->new($hookreg)->setExtension('PublicUri');
-	
+    my $handler
+        = $mode eq 'private'
+        ? 'WebInterface::Extension::PublicUri::Private'
+        : 'WebInterface::Extension::PublicUri::Public';
+
+    load $handler;
+    $handler->new($hookreg)->setExtension('PublicUri');
+    return;
 }
 
 1;

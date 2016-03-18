@@ -63,8 +63,8 @@ sub handle {
 		if ( ($$self{backend}->stat("$main::PATH_TRANSLATED$file"))[7] > $$self{sizelimit}) {
 			main::print_header_and_content('200 OK', 'application/json', $$self{json}->encode({ error=>sprintf($self->tl('scvsizelimitexceeded'), $$self{cgi}->escapeHTML($file), $self->renderByteValue($$self{sizelimit}))}));
 		} elsif ($$self{supportedsuffixes}{$self->getFileSuffix($file)}) {
-			main::print_header_and_content('200 OK', 'text/html',$self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, 
-							$self->readTemplate('sourcecodeviewer'), { suffix=>$self->getFileSuffix($file),filename=>$$self{cgi}->escapeHTML($$self{backend}->getDisplayName($main::PATH_TRANSLATED.$file)), content=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent("$main::PATH_TRANSLATED$file")) }));
+			main::print_header_and_content('200 OK', 'text/html',$self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI, 
+							$self->read_template('sourcecodeviewer'), { suffix=>$self->getFileSuffix($file),filename=>$$self{cgi}->escapeHTML($$self{backend}->getDisplayName($main::PATH_TRANSLATED.$file)), content=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent("$main::PATH_TRANSLATED$file")) }));
 		} else {
 			main::print_header_and_content('200 OK', 'application/json', $$self{json}->encode({ error=>$self->tl('scvunsupportedfiletype') }));
 		}

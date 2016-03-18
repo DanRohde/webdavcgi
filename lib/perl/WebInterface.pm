@@ -59,21 +59,21 @@ sub handle_thumbnail_get_request {
         && ${$self}{backend}->isReadable($main::PATH_TRANSLATED) )
     {
         $self->get_renderer()
-            ->printMediaRSS( $main::PATH_TRANSLATED, $main::REQUEST_URI );
+            ->print_media_rss( $main::PATH_TRANSLATED, $main::REQUEST_URI );
         return 1;
     }
     if (   $action eq 'image'
         && ${$self}{backend}->isFile($main::PATH_TRANSLATED)
         && ${$self}{backend}->isReadable($main::PATH_TRANSLATED) )
     {
-        $self->get_renderer()->printImage($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_image($main::PATH_TRANSLATED);
         return 1;
     }
     if (   $action eq 'thumb'
         && ${$self}{backend}->isReadable($main::PATH_TRANSLATED)
         && ${$self}{backend}->isFile($main::PATH_TRANSLATED) )
     {
-        $self->get_renderer()->printThumbnail($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_thumbnail($main::PATH_TRANSLATED);
         return 1;
     }
     return 0;
@@ -97,20 +97,20 @@ sub handle_get_request {
         || $main::PATH_TRANSLATED =~ /\Q$main::VHTDOCS\E(.*)$/xms )
     {
         $self->get_renderer()
-            ->printStylesAndVHTOCSFiles($main::PATH_TRANSLATED);
+            ->print_styles_vhtdocs_files($main::PATH_TRANSLATED);
         return 1;
     }
     if (   $main::ENABLE_DAVMOUNT
         && $action eq 'davmount'
         && ${$self}{backend}->exists($main::PATH_TRANSLATED) )
     {
-        $self->get_renderer()->printDAVMount($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_dav_mount($main::PATH_TRANSLATED);
         return 1;
     }
 
     if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
         $self->get_renderer()
-            ->renderWebInterface( $main::PATH_TRANSLATED,
+            ->render_web_interface( $main::PATH_TRANSLATED,
             $main::REQUEST_URI );
         return 1;
     }
@@ -295,8 +295,7 @@ sub optimizer_collect {
         ${$contentref} .= $fc;
         main::debug("optimizer_collect: $full collected.");
     }
-    ${$contentref} .= $data ? $data : q{};
-    return;
+    return ${$contentref} .= $data ? $data : q{};
 }
 
 sub optimizer_extract_content_from_tags_and_attributes {

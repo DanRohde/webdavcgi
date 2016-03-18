@@ -20,7 +20,6 @@
 package WebInterface::Common;
 
 use strict;
-no strict 'refs';
 use warnings;
 
 our $VERSION = '2.0';
@@ -89,7 +88,7 @@ sub readTLFile {
         while ( my $line = <$i> ) {
             chomp($line);
             next if $line =~ /^#/;
-            if ($line =~ /^(\S.*?)\s+"(.*)"\s*$/) {
+            if ( $line =~ /^(\S.*?)\s+"(.*)"\s*$/ ) {
                 $$dataRef{$1} = $2;
             }
         }
@@ -134,8 +133,8 @@ sub readExtensionsTL {
 }
 
 sub tl {
-    my ($self, $key, $default, @args ) = @_;
-    if (!defined $key ) { return $default; } 
+    my ( $self, $key, $default, @args ) = @_;
+    if ( !defined $key ) { return $default; }
     return $CACHE{$self}{tl}{$key}{$default}
         if defined $default && exists $CACHE{$self}{tl}{$key}{$default};
     $self->readTL('default')
@@ -153,8 +152,8 @@ sub tl {
         = $main::TRANSLATION{$main::LANG}{$key}
         || $main::TRANSLATION{default}{$key}
         || $default
-        || $key ;
-    return $CACHE{$self}{tl}{$key}{$default // $key}
+        || $key;
+    return $CACHE{$self}{tl}{$key}{ $default // $key }
         = $#args > -1 ? sprintf( $val, @args ) : $val;
 }
 
@@ -164,10 +163,11 @@ sub setLocale {
         $locale = "en_US.\U$main::CHARSET\E";
     }
     else {
-        if ($main::LANG =~ /^(\w{2})(_(\w{2})([.](\S+))?)?$/) {
+        if ( $main::LANG =~ /^(\w{2})(_(\w{2})([.](\S+))?)?$/ ) {
             my ( $c1, $c, $c3, $c4, $c5 ) = ( $1, $2, $3, $4, $5 );
             $c3 = uc($c1) unless $c3;
-            $c5 = uc($main::CHARSET) unless $c5 && uc($c5) eq uc($main::CHARSET);
+            $c5 = uc($main::CHARSET)
+                unless $c5 && uc($c5) eq uc($main::CHARSET);
             $locale = "${c1}_${c3}.${c5}";
         }
     }
@@ -309,14 +309,14 @@ sub cmp_files {
 
 sub escapeQuotes {
     my ( $self, $q ) = @_;
-    $q =~ s/(["'])/\\$1/g;
+    $q =~ s/(["'])/\\$1/xmsg;
     return $q;
 }
 
 sub renderByteValue {
     my ( $self, $v, $f, $ft ) = @_;   # v-value, f-accuracy, ft-title accuracy
-    $f  = 2  unless defined $f;
-    $ft = $f unless defined $ft;
+    $f  //= 2;
+    $ft //= $f;
     my $showunit = 'B';
     my %rv;
     my $title        = '';
@@ -327,11 +327,11 @@ sub renderByteValue {
         $rv{$unit} = $v / $BYTEUNITS{$unit};
         last if $rv{$unit} < $lowerlimitf;
         $showunit = $unit if $rv{$unit} >= 1;
-        $title
-            .= ( $unit eq 'B'
+        $title .= (
+            $unit eq 'B'
             ? sprintf( ' = %.0fB ', $rv{$unit} )
-            : sprintf( '= %.' . $ft . 'f%s ', $rv{$unit}, $unit ) )
-            if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
+            : sprintf( '= %.' . $ft . 'f%s ', $rv{$unit}, $unit )
+        ) if $rv{$unit} >= $lowerlimitft && $rv{$unit} < $upperlimit;
     }
     return (
         (     $showunit eq 'B'
@@ -346,54 +346,83 @@ sub renderByteValue {
 sub filter {
     my ( $self, $path, $file ) = @_;
     return 1 if FileUtils::filter( $path, $file );
-    my $ret    = 0;
-    my $filter = $main::cgi->cookie('filter.types');
+    my $backend = main::getBackend();
+    my $ret     = 0;
+    my $filter  = ${$self}{cgi}->param('search.types')
+        // ${$self}{cgi}->cookie('filter.types');
     if ( defined $filter ) {
-        $ret |= 1 if $filter !~ /d/ && $main::backend->isDir("$path$file");
-        $ret |= 1 if $filter !~ /f/ && $main::backend->isFile("$path$file");
-        $ret |= 1 if $filter !~ /l/ && $main::backend->isLink("$path$file");
+        $ret |= $filter !~ /d/xms && $backend->isDir("$path$file");
+        $ret |= $filter !~ /f/xms && $backend->isFile("$path$file");
+        $ret |= $filter !~ /l/xms && $backend->isLink("$path$file");
+        if ($ret) {
+            return 1;
+        }
     }
-    return 1 if $ret;
-    $filter = $main::cgi->cookie('filter.size');
+
+    $filter = ${$self}{cgi}->param('search.size')
+        // ${$self}{cgi}->cookie('filter.size');
     if (   defined $filter
-        && $main::backend->isFile("$path$file")
-        && $filter =~ /^([\<\>\=]{1,2})(\d+)(\w*)$/ )
+        && $backend->isFile("$path$file")
+        && $filter =~ /^([\<\>\=]{1,2})(\d+)(\w*)$/xms )
     {
         my ( $op, $val, $unit ) = ( $1, $2, $3 );
         $val = $val * $BYTEUNITS{$unit} if exists $BYTEUNITS{$unit};
-        my $size = ( $main::backend->stat("$path$file") )[7];
-        $ret = !eval("$size $op $val");
+        my $size = ( $backend->stat("$path$file") )[7];
+        $ret = $self->_handle_filter_operator( $size, $op, $val );
+        if ($ret) { return 1; }
     }
-    return 1 if $ret;
-    $filter = $main::cgi->cookie('filter.name');
+    $filter = ${$self}{cgi}->param('search.name')
+        || ${$self}{cgi}->cookie('filter.name');
     if (   defined $filter
         && defined $file
-        && $filter =~ /^(\=\~|\^|\$|eq|ne|lt|gt|le|ge) (.*)$/ )
+        && $filter =~ /^(=~|[\^\$]|eq|ne|lt|gt|le|ge)\s(.*)$/xms )
     {
         my ( $nameop, $nameval ) = ( $1, $2 );
-        $nameval =~ s/\//\/\//g;
-        if ( $nameop eq '^' ) {
-            $ret = !eval(qq@'$file' =~ /\^\Q$nameval\E/i@);
-        }
-        elsif ( $nameop eq '$' ) {
-            $ret = !eval(qq@'$file' =~ /\Q$nameval\E\$/i@);
-        }
-        elsif ( $nameop eq '=~' ) {
-            $ret = !eval("'$file' $nameop /$nameval/i");
-        }
-        else {
-            $ret = !eval("lc('$file') $nameop lc(q/$nameval/)");
-        }
+        $nameval =~ s/\//\/\//xmsg;
+        return $self->_handle_filter_operator( $file, $nameop, $nameval );
     }
-    return 1 if $ret;
+    return 0;
+}
 
-    $filter = $main::cgi->cookie('filter.time');
-    if ( defined $filter && $filter =~ /^([\<\>\=]{1,2})(\d+)$/ ) {
-        my ( $op, $val ) = ( $1, $2 );
-        my $mtime = ( $main::backend->stat("$path$file") )[9];
-        $ret = !eval("$val $op $mtime");
+sub _handle_filter_operator {
+    my ( $self, $operand, $operator, $value ) = @_;
+    if ( $operator eq q{=} ) {
+        return $operand != $value;
     }
-    return $ret;
+    if ( $operator eq q{<} ) {
+        return $operand >= $value;
+    }
+    if ( $operator eq q{>} ) {
+        return $operand <= $value;
+    }
+    if ( $operator eq q{^} ) {
+        return $operand !~ /^\Q$value\E/xmsi;
+    }
+    if ( $operator eq q{$} ) {
+        return $operand !~ /\Q$value\E$/xmsi;
+    }
+    if ( $operator eq q{=~} ) {
+        return $operand !~ /\Q$value\E/xmsi;
+    }
+    if ( $operator eq 'eq' ) {
+        return $operand ne $value;
+    }
+    if ( $operator eq 'ne' ) {
+        return $operand eq $value;
+    }
+    if ( $operator eq 'lt' ) {
+        return $operand ge $value;
+    }
+    if ( $operator eq 'gt' ) {
+        return $operand le $value;
+    }
+    if ( $operator eq 'le' ) {
+        return $operand gt $value;
+    }
+    if ( $operator eq 'ge' ) {
+        return $operand lt $value;
+    }
+    return 0;
 }
 
 sub mode2str {
@@ -427,18 +456,20 @@ sub mode2str {
 
 sub getIcon {
     my ( $self, $type ) = @_;
-    return $CACHE{$self}{getIcon}{$type}
-        //= $self->replaceVars(
+    return $CACHE{$self}{getIcon}{$type} //= $self->replaceVars(
         exists $main::ICONS{$type}
         ? $main::ICONS{$type}
-        : $main::ICONS{default} );    ## //
+        : $main::ICONS{default}
+    );    ## //
 }
 
 sub hasThumbSupport {
-    my ($self, $mime) = @_;
-    return $mime =~ /^image\//xms
+    my ( $self, $mime ) = @_;
+    return
+           $mime =~ /^image\//xms
         || $mime =~ /^text\/plain/xms
-        || ( $main::ENABLE_THUMBNAIL_PDFPS && $mime =~ m{^application/(pdf|ps)$}xmsi );
+        || ( $main::ENABLE_THUMBNAIL_PDFPS
+        && $mime =~ m{^application/(pdf|ps)$}xmsi );
 }
 
 sub getVisibleTableColumns {
@@ -449,7 +480,9 @@ sub getVisibleTableColumns {
         my @cvc = split( ',', $vcs );
         my ($allowed) = 1;
         foreach my $c (@cvc) {
-            push @vc, $c if $c =~ /$avtcregex/i;
+            if ($c =~ /$avtcregex/xmsi) {
+                push @vc, $c;
+            } 
         }
     }
     else {
@@ -458,13 +491,13 @@ sub getVisibleTableColumns {
     return @vc;
 }
 
-sub readTemplate {
+sub read_template {
     my ( $self, $filename, $tmplpath ) = @_;
     return $CACHE{template}{$tmplpath}{$filename}
-        ||= $self->__readTemplate( $filename, $tmplpath );
+        ||= $self->_read_template( $filename, $tmplpath );
 }
 
-sub __readTemplate {
+sub _read_template {
     my ( $self, $filename, $tmplpath ) = @_;
     my $text = "";
     $filename =~ s/\//\./g;
@@ -473,7 +506,7 @@ sub __readTemplate {
         my @tmpl = <IN>;
         close(IN);
         $text = join( "", @tmpl );
-        $text =~ s/\$INCLUDE\((.*?)\)/$self->readTemplate($1,$tmplpath)/egs;
+        $text =~ s/\$INCLUDE\((.*?)\)/$self->read_template($1,$tmplpath)/egs;
     }
     return $text;
 }
@@ -496,8 +529,9 @@ sub flexSorter {
 
 sub renderEach {
     my ( $self, $fn, $ru, $variable, $tmplfile, $filter ) = @_;
-    my $tmpl = $tmplfile =~ /^'(.*)'$/ ? $1 : $self->readTemplate($tmplfile);
-    $filter = $self->renderTemplate( $fn, $ru, $filter ) if defined $filter;
+    no strict 'refs';
+    my $tmpl = $tmplfile =~ /^'(.*)'$/ ? $1 : $self->read_template($tmplfile);
+    $filter = $self->render_template( $fn, $ru, $filter ) if defined $filter;
     my $content = "";
     if ( $variable =~ /^\%/ ) {
         $variable =~ s/^\%//;
@@ -538,10 +572,11 @@ sub renderEach {
     return $content;
 }
 
-sub execTemplateFunction {
+sub exec_template_function {
     my ( $self, $fn, $ru, $func, $param ) = @_;
+    no strict 'refs';
     my $content;
-    
+
     $content = ${"main::${param}"} || '' if $func eq 'config';
     $content = $ENV{$param}        || '' if $func eq 'env';
     $content = $self->tl($param) if $func eq 'tl';
@@ -550,11 +585,11 @@ sub execTemplateFunction {
     return $content;
 }
 
-sub renderTemplate {
+sub render_template {
     my ( $self, $fn, $ru, $content, $vars ) = @_;
 
     $vars //= {};
-    
+
     my $cgi = $$self{cgi};    ## allowes easer access from templates
 
     # replace eval:
@@ -562,16 +597,17 @@ sub renderTemplate {
 
     # replace each:
     $content =~
-        s/\$each(.)(.*?)\1(.*?)\1((.)(.*?)\5\1)?/$self->renderEach($fn,$ru,$2,$3,$6)/egs;
+        s/\$each(.)(.*?)\1(.*?)\1((.)(.*?)\5\1)?/$self->renderEach($fn,$ru,$2,$3,$6)/xmegs;
 
     # replace functions:
     while ( $content =~
-        s/\$(\w+)\(([^\)]*)\)/$self->execTemplateFunction($fn,$ru,$1,$2)/esg )
+        s/\$(\w+)\(([^\)]*)\)/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
+        )
     {
     }
 
-    $content =~ s/\${?ENV{([^}]+?)}}?/$ENV{$1}/egs;
-    $content =~ s/\${?TL{([^}]+)}}?/$self->tl($1)/egs;
+    $content =~ s/\${?ENV{([^}]+?)}}?/$ENV{$1}/xmegs;
+    $content =~ s/\${?TL{([^}]+)}}?/$self->tl($1)/xmegs;
 
     my $vbase = $ru =~ /^($main::VIRTUAL_BASE)/ ? $1 : $ru;
 
@@ -595,12 +631,12 @@ sub renderTemplate {
         %{$vars},
     };
 
-    $content =~ s/\$\[([\w\.]+)\]/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
-    $content =~ s/\$\{?([\w\.]+)\}?/exists $$vars{$1}?$$vars{$1}:"\$$1"/egs;
+    $content =~ s/\$\[([\w\.]+)\]/exists $$vars{$1}?$$vars{$1}:"\$$1"/xmegs;
+    $content =~ s/\$\{?([\w\.]+)\}?/exists $$vars{$1}?$$vars{$1}:"\$$1"/xmegs;
     $content =~
-        s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/egs;
+        s/<!--IF\((.*?)\)-->(.*?)((<!--ELSE-->)(.*?))?<!--ENDIF-->/eval($1)? $2 : $5 ? $5 : ''/xmegs;
     $content =~
-        s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/egs;
+        s/<!--IF(\#\d+)\((.*?)\)-->(.*?)((<!--ELSE\1-->)(.*?))?<!--ENDIF\1-->/eval($2)? $3 : $6 ? $6 : ''/xmegs;
     return $content;
 }
 
@@ -615,7 +651,7 @@ sub canCreateThumbnail {
 }
 
 sub getVBase() {
-    return $main::REQUEST_URI =~ /^($main::VIRTUAL_BASE)/
+    return $main::REQUEST_URI =~ /^($main::VIRTUAL_BASE)/xms
         ? $1
         : $main::REQUEST_URI;
 }
@@ -626,12 +662,56 @@ sub isUnselectable {
         = @main::UNSELECTABLE_FOLDERS
         ? '(' . join( '|', @main::UNSELECTABLE_FOLDERS ) . ')'
         : '___cannot match___';
-    return $$self{backend}->basename($fn) eq '..' || $fn =~ /^$unselregex$/;
+    return $$self{backend}->basename($fn) eq '..'
+        || $fn =~ /^$unselregex$/xms;
 }
 
 sub quoteWhiteSpaces {
     my ( $self, $filename ) = @_;
-    $filename =~ s@( {2,})@<span class="ws">$1</span>@msg;
+    $filename =~ s{([ ]{2,})}{<span class="ws">$1</span>}xmsg;
     return $filename;
+}
+
+sub isViewFiltered {
+    my ($self) = @_;
+    return 1
+        if ${$self}{cgi}->param('search.name')
+        || ${$self}{cgi}->param('search.types')
+        || ${$self}{cgi}->param('search.size');
+    return
+           ${$self}{cgi}->cookie('filter.name')
+        || ${$self}{cgi}->cookie('filter.types')
+        || ${$self}{cgi}->cookie('filter.size') ? 1 : 0;
+}
+
+sub minify_html {
+    my ( $self, $content ) = @_;
+    $content =~ s/<!--.*?-->//xmsg;
+    $content =~ s/[\r\n]/ /xmsg;
+
+#$content=~s/\s{2,}/ /sg; ## bug: filenames with multiple spaces are not managable
+#$content=~s/>\s{2,}</> </sg; ## bug: same problem
+    return $content;
+}
+
+sub round {
+    my ( $self, $float, $precision ) = @_;
+    $precision = 1 unless defined $precision;
+    my $ret = sprintf "%.${precision}f", $float;
+    $ret =~ s/,(\d{0,$precision})$/.$1/xms;    # fix locale specific notation
+    return $ret;
+}
+
+sub stat_matchcount {
+    my ( $self, $string, $search ) = @_;
+    if ( my @m = $string =~ /$search/xmsg ) {
+        return $#m + 1;
+    }
+    return 0;
+}
+
+sub is_in {
+    my ( $self, $string, $value ) = @_;
+    return $string =~ m/\Q$value\E/xms;
 }
 1;

@@ -56,7 +56,7 @@ sub handle {
 sub renderViewerJS {
 	my ($self, $filename) =  @_;
 	my $vars = { filename => $main::REQUEST_URI.$filename, mime => main::get_mime_type($filename), lang => $main::LANG eq 'default' ? 'en' : $main::LANG };
-	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','videojs')), $vars);
+	my $content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->read_template($self->config('template','videojs')), $vars);
 	main::print_compressed_header_and_content('200 OK', 'text/html', $content);
 	return 1;
 }

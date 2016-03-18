@@ -95,7 +95,7 @@ sub handle {
                     },
                     data  => { value => $_, style => $attribute },
                     label => sprintf(
-                        $self->tl( ${$self}{attributes}{$attribute}{label} ),
+                        $self->tl( ${$self}{attributes}{$attribute}{label} // q{} ),
                         $_
                     ),
                     title => $self->tl( "highlighter.$attribute.$_", $_ ),

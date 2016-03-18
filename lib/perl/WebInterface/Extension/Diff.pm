@@ -92,10 +92,10 @@ sub renderDiffOutput {
 	my $cgi = $$self{cgi};
 	my ($f1,$f2) = @files;
 	my $raw = ""; 
-	my $difftmpl = $self->readTemplate('diff');
-	my $difflinetmpl = $self->readTemplate('diffline');
-	my $diffsinglelinetmpl = $self->readTemplate('diffsingleline');
-	my $difffilenamelinetmpl = $self->readTemplate('difffilenameline');
+	my $difftmpl = $self->read_template('diff');
+	my $difflinetmpl = $self->read_template('diffline');
+	my $diffsinglelinetmpl = $self->read_template('diffsingleline');
+	my $difffilenamelinetmpl = $self->read_template('difffilenameline');
 	my @fnstack;
 	if (open(DIFF, '-|', $self->config('diff','/usr/bin/diff'), '-ru',$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f1),$$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$f2))) {
 		my $t = "";
@@ -112,7 +112,7 @@ sub renderDiffOutput {
 			} elsif (/^\+{3}\s+"?(.*?)"?\s+\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ ([\+\-]\d+)$/) {
 				$text2 = $self->substBasepath($1);
 				$text1 = pop @fnstack;
-				$t.=$self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $difffilenamelinetmpl,{ file1=>$cgi->escapeHTML($text1), file2=>$cgi->escapeHTML($text2)}) unless $text2=~/^\s*\Q$f2\E\s*$/ || $text2 =~/^\/tmp\//;
+				$t.=$self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $difffilenamelinetmpl,{ file1=>$cgi->escapeHTML($text1), file2=>$cgi->escapeHTML($text2)}) unless $text2=~/^\s*\Q$f2\E\s*$/ || $text2 =~/^\/tmp\//;
 				next;
 			} elsif (/^diff /) {
 				next;
@@ -146,10 +146,10 @@ sub renderDiffOutput {
 			} elsif (/^\\ (.*)/ || /^(\w+.*)/) {
 				($type, $tmpl, $linenumber1, $text1, $linenumber2,$text2,$text) = ('comment', $diffsinglelinetmpl, '','','','',$1);
 			}
-			$t.= $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $tmpl, { type=>$type, text1=>$cgi->escapeHTML($text1), text2=>$cgi->escapeHTML($text2), linenumber1=>$linenumber1, linenumber2=>$linenumber2, text=>$cgi->escapeHTML($text)});
+			$t.= $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $tmpl, { type=>$type, text1=>$cgi->escapeHTML($text1), text2=>$cgi->escapeHTML($text2), linenumber1=>$linenumber1, linenumber2=>$linenumber2, text=>$cgi->escapeHTML($text)});
 		}
 		close(DIFF);		
-		$ret = $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $difftmpl, { difflines => $t, rawdifflines => $cgi->escapeHTML($raw), file1=> $cgi->escapeHTML($f1), file2=>$cgi->escapeHTML($f2), diffcounter=> sprintf($self->tl('diff_nomorediffs'),$diffcounter) });
+		$ret = $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $difftmpl, { difflines => $t, rawdifflines => $cgi->escapeHTML($raw), file1=> $cgi->escapeHTML($f1), file2=>$cgi->escapeHTML($f2), diffcounter=> sprintf($self->tl('diff_nomorediffs'),$diffcounter) });
 		
 	} 
 	return $ret;

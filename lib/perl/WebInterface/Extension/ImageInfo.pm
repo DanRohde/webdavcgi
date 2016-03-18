@@ -78,10 +78,10 @@ sub renderImageInfo {
 	my $tmpfile = $$self{backend}->basename($tmppath);
 	my $tmpdir = $$self{backend}->dirname($tmppath);
 	
-	my $dialogtmpl = $self->readTemplate('imageinfo');
-	my $groupcontenttmpl = $self->readTemplate('groupcontent');
-	my $grouptmpl = $self->readTemplate('group');
-	my $proptmpl = $self->readTemplate('prop');
+	my $dialogtmpl = $self->read_template('imageinfo');
+	my $groupcontenttmpl = $self->read_template('groupcontent');
+	my $grouptmpl = $self->read_template('group');
+	my $proptmpl = $self->read_template('prop');
 	
 	my $groups ="";
 	my $groupcontent = "";
@@ -91,21 +91,21 @@ sub renderImageInfo {
 	
 	foreach my $gr ( @{$$ii{_groups_}}) {
 		next if $$self{hidegroups}{$gr};
-		$groups.= $self->renderTemplate($pt, $ru, $grouptmpl, { group=>$gr});
+		$groups.= $self->render_template($pt, $ru, $grouptmpl, { group=>$gr});
 		my $props = "";
 		foreach my $pr (sort keys %{$$ii{$gr}}) {
 			my $val = $$ii{$gr}{$pr};
 			$val=~s/\Q$tmpfile\E/$file/g;
 			$val=~s/\Q$tmpdir\E/$main::REQUEST_URI/g;
 			my $img = $$ii{_binarydata_}{$gr}{$pr} ? '<br>'.$c->img({-alt=>$pr, -title=>$pr, -src=>'data:'.$mime.';base64,'.$$ii{_binarydata_}{$gr}{$pr}}) : '';
-			$props.= $self->renderTemplate($pt, $ru, $proptmpl, { propname=>$c->escapeHTML($pr), propvalue=>$c->escapeHTML($val), img=>$img});
+			$props.= $self->render_template($pt, $ru, $proptmpl, { propname=>$c->escapeHTML($pr), propvalue=>$c->escapeHTML($val), img=>$img});
 		}
-		$groupcontent .= $self->renderTemplate($pt, $ru, $groupcontenttmpl, { group=>$gr, props => $props })
+		$groupcontent .= $self->render_template($pt, $ru, $groupcontenttmpl, { group=>$gr, props => $props })
 	}
 	my $img = $$ii{_thumbnail_} 
 			? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) 
 			: $self->hasThumbSupport($mime) ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
-	return $self->renderTemplate($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl("imageinfo.$type.dialogtitle"), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file, type=>$type});
+	return $self->render_template($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl("imageinfo.$type.dialogtitle"), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file, type=>$type});
 }
 sub getImageInfo {
 	my ($self, $file) = @_;

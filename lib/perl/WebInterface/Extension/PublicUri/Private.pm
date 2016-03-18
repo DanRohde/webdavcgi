@@ -19,183 +19,282 @@
 
 package WebInterface::Extension::PublicUri::Private;
 use strict;
+use warnings;
 
-use WebInterface::Extension;
-use WebInterface::Extension::PublicUri::Common;
-our @ISA = qw( WebInterface::Extension WebInterface::Extension::PublicUri::Common );
+our $VERSION = '2.0';
 
+use base qw( WebInterface::Extension::PublicUri::Common );
 
 use JSON;
 
 #URI CRUD
 
-sub setPublicUri {
-	my ( $self, $fn, $code, $seed ) = @_;
-	my $rfn = $$self{backend}->resolveVirt($fn);
-	$$self{db}->db_insertProperty($rfn, $self->getPropertyName(), $code);
-	$$self{db}->db_insertProperty($rfn, $self->getSeedName(), $seed);
-	$$self{db}->db_insertProperty($rfn, $self->getOrigName(), $fn);
+sub set_public_uri {
+    my ( $self, $fn, $code, $seed ) = @_;
+    my $rfn = ${$self}{backend}->resolveVirt($fn);
+    ${$self}{db}->db_insertProperty( $rfn, $self->get_property_name(), $code );
+    ${$self}{db}->db_insertProperty( $rfn, $self->get_seed_name(),     $seed );
+    ${$self}{db}->db_insertProperty( $rfn, $self->get_orig_name(),     $fn );
+    return;
 }
 
-sub getPublicUri {
-	my ( $self, $fn ) = @_;
-	return $$self{db}->db_getProperty($$self{backend}->resolveVirt($fn), $self->getPropertyName());
-}
-sub unsetPublicUri {
-	my ( $self, $fn ) = @_;
-	return $$self{db}->db_removeProperty($$self{backend}->resolveVirt($fn), $self->getPropertyName()) && $$self{db}->db_removeProperty($fn, $self->getSeedName()) && $$self{db}->db_removeProperty($fn, $self->getOrigName());
+sub get_public_uri {
+    my ( $self, $fn ) = @_;
+    return ${$self}{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
+        $self->get_property_name() );
 }
 
-sub resolveFile {
-	my ( $self, $file ) = @_;
-	return $$self{backend}->resolve($main::PATH_TRANSLATED.$file);
+sub unset_public_uri {
+    my ( $self, $fn ) = @_;
+    return ${$self}{db}
+        ->db_removeProperty( ${$self}{backend}->resolveVirt($fn),
+        $self->get_property_name() )
+        && ${$self}{db}->db_removeProperty( $fn, $self->get_seed_name() )
+        && ${$self}{db}->db_removeProperty( $fn, $self->get_orig_name() );
+}
+
+sub resolve_file {
+    my ( $self, $file ) = @_;
+    return ${$self}{backend}->resolve( $main::PATH_TRANSLATED . $file );
 }
 
 sub init {
-	my ( $self, $hookreg ) = @_;
-	
-	$hookreg->register(['css','javascript','locales','templates','fileattr','fileactionpopup','posthandler','fileaction','fileactionpopupnew','fileprop','column','columnhead'], $self);
+    my ( $self, $hookreg ) = @_;
 
-	$self->initDefaults();
-	
-	$$self{json} = new JSON();  
+    $hookreg->register(
+        [   'css',                'javascript',
+            'locales',            'templates',
+            'fileattr',           'fileactionpopup',
+            'posthandler',        'fileaction',
+            'fileactionpopupnew', 'fileprop',
+            'column',             'columnhead'
+        ],
+        $self
+    );
+
+    $self->init_defaults();
+
+    ${$self}{json} = JSON->new();
+    return;
 }
 
 #Show icons and handle actions
 sub handle {
-	my ( $self, $hook, $config, $params ) = @_;
-	if ( $hook eq 'fileattr' ) {
-		my $prop = $self->getPublicUri($$params{path});
-		my ($attr,$classes);
-		if ( !defined($prop) ) {
-			($classes, $attr) = ('unshared','no');
-		}
-		else {
-			($classes, $attr) = ('shared', $prop);
-		}
-		return { "ext_classes"=>$classes, "ext_attributes" => sprintf('data-puri="%s"',$$self{cgi}->escapeHTML($attr)) };
-	}
-	elsif ($hook eq 'fileprop') {
-		my $publicuridigest = $self->getPublicUri($$params{path}) || '';
-		my $publicuri = $$self{cgi}->escapeHTML($$self{uribase}.$publicuridigest) ;
-		return { publicuridigest=> $publicuridigest ,publicurititle=>$publicuri, publicuri=>$publicuri };
-	}
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( $hook eq 'fileattr' ) {
+        my $prop = $self->get_public_uri( ${$params}{path} );
+        my ( $attr, $classes );
+        if ( !defined $prop ) {
+            ( $classes, $attr ) = qw( unshared no );
+        }
+        else {
+            ( $classes, $attr ) = ( 'shared', $prop );
+        }
+        return {
+            ext_classes    => $classes,
+            ext_attributes => sprintf 'data-puri="%s"',
+            ${$self}{cgi}->escapeHTML($attr),
+        };
+    }
+    elsif ( $hook eq 'fileprop' ) {
+        my $publicuridigest = $self->get_public_uri( ${$params}{path} ) || q{};
+        my $publicuri
+            = ${$self}{cgi}
+            ->escapeHTML( ${$self}{uribase} . $publicuridigest );
+        return {
+            publicuridigest => $publicuridigest,
+            publicurititle  => $publicuri,
+            publicuri       => $publicuri
+        };
+    }
+    my $ret = $self->SUPER::handle( $hook, $config, $params );
+    return $ret if $ret;
 
-	
-	if ( $hook eq 'posthandler' ) {
+    if ( $hook eq 'posthandler' ) {
 
-		#handle actions
-		if ( $$self{cgi}->param('puri') ) {
-			enablePuri($self);
-		}
-		elsif ( $$self{cgi}->param('depuri') ) {
-			disablePuri($self);
-		}
-		elsif ( $$self{cgi}->param('spuri') ) {
-			showPuri($self);
-		}
-		else {
-			return 0;    #not handled
-		}
-		return 1;
-	}
-	elsif ( $hook eq 'fileaction' ) {
-		return [ { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path} },
-			 { action => 'spuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'spurifilesbutton', path  => $$params{path} },
-			 { action => 'depuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'depurifilesbutton', path  => $$params{path} },
-		];
-	}
-	elsif ( $hook eq 'fileactionpopup') {
-		return [ { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' },
-			 { action => 'spuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'spurifilesbutton', path  => $$params{path}, type=>'li' },
-			 { action => 'depuri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'depurifilesbutton', path  => $$params{path}, type=>'li' },
-		];
-	}
-	elsif ( $hook eq 'fileactionpopupnew') {
-		return { action => 'puri', disabled => !$$self{backend}->isReadable( $$params{path} ), label => 'purifilesbutton', path  => $$params{path}, type=>'li' };
-	}
-	elsif ( $hook eq 'templates' ) {
-		return q@<div id="purifileconfirm"><div class="purifileconfirm">$tl(purifileconfirm)</div></div><div id="depurifileconfirm"><div class="depurifileconfirm">$tl(depurifileconfirm)</div></div>@;
-	}
-	elsif ($hook eq 'columnhead') {
-		return q@<!--TEMPLATE(publicuri)[<th id="headerPublicUri" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->@;
-	}
-	elsif ($hook eq 'column') {
-		return q@<!--TEMPLATE(publicuri)[<td class="publicuri -hidden"><a href="$publicuri" title="$publicurititle">$publicuridigest</a></td>]-->@;
-	}
-	return 0;                                         #not handled
+        #handle actions
+        if ( ${$self}{cgi}->param('puri') ) {
+            enable_puri($self);
+        }
+        elsif ( ${$self}{cgi}->param('depuri') ) {
+            disable_puri($self);
+        }
+        elsif ( ${$self}{cgi}->param('spuri') ) {
+            show_puri($self);
+        }
+        else {
+            return 0;    #not handled
+        }
+        return 1;
+    }
+    if ( $hook eq 'fileaction' ) {
+        return [
+            {   action => 'puri',
+                disabled =>
+                    !${$self}{backend}->isReadable( ${$params}{path} ),
+                label => 'purifilesbutton',
+                path  => ${$params}{path}
+            },
+            {   action => 'spuri',
+                disabled =>
+                    !${$self}{backend}->isReadable( ${$params}{path} ),
+                label => 'spurifilesbutton',
+                path  => ${$params}{path}
+            },
+            {   action => 'depuri',
+                disabled =>
+                    !${$self}{backend}->isReadable( ${$params}{path} ),
+                label => 'depurifilesbutton',
+                path  => ${$params}{path}
+            },
+        ];
+    }
+    if ( $hook eq 'fileactionpopup' ) {
+        return [
+            {   action => 'puri',
+                disabled =>
+                    !${$self}{backend}->isReadable( ${$params}{path} ),
+                label => 'purifilesbutton',
+                path  => ${$params}{path},
+                type  => 'li'
+            },
+            {   action => 'spuri',
+                disabled =>
+                    !${$self}{backend}->isReadable( ${$params}{path} ),
+                label => 'spurifilesbutton',
+                path  => ${$params}{path},
+                type  => 'li'
+            },
+            {   action => 'depuri',
+                disabled =>
+                    !${$self}{backend}->isReadable( ${$params}{path} ),
+                label => 'depurifilesbutton',
+                path  => ${$params}{path},
+                type  => 'li'
+            },
+        ];
+    }
+    if ( $hook eq 'fileactionpopupnew' ) {
+        return {
+            action   => 'puri',
+            disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+            label    => 'purifilesbutton',
+            path     => ${$params}{path},
+            type     => 'li'
+        };
+    }
+    if ( $hook eq 'templates' ) {
+        return
+            q{<div id="purifileconfirm"><div class="purifileconfirm">$tl(purifileconfirm)</div></div><div id="depurifileconfirm"><div class="depurifileconfirm">$tl(depurifileconfirm)</div></div>};
+    }
+    if ( $hook eq 'columnhead' ) {
+        return
+            q{<!--TEMPLATE(publicuri)[<th id="headerPublicUri" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->};
+    }
+    if ( $hook eq 'column' ) {
+        return
+            q{<!--TEMPLATE(publicuri)[<td class="publicuri -hidden"><a href="$publicuri" title="$publicurititle">$publicuridigest</a></td>]-->};
+    }
+    return 0;    #not handled
 }
 
-sub getSharedMessage {
-	my ($self, $file, $url) = @_;
-	return $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate('shared'), { file=>$$self{cgi}->escapeHTML($file),puri=>$$self{cgi}->escapeHTML($url) });
+sub get_shared_message {
+    my ( $self, $file, $url ) = @_;
+    return $self->render_template(
+        $main::PATH_TRANSLATED,
+        $main::REQUEST_URI,
+        $self->read_template('shared'),
+        {   file => ${$self}{cgi}->escapeHTML($file),
+            puri => ${$self}{cgi}->escapeHTML($url)
+        }
+    );
 }
+
 #Publish URI and show message
-sub enablePuri () {
-	my ($self) = @_;
-	my %jsondata = ();
-	if ( $$self{cgi}->param('file') ) {
-		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
-		my $digest = $self->getPublicUri($file);
-		my $seed = $self->getSeed($file);
-		if (!$digest || $self->isPublicUri($file, $digest, $seed)) {
-			do {
-				($digest, $seed) = $self->genUrlHash($file);
-			} until (!defined $self->getFileFromCode($$self{prefix}.$digest));
-			main::debug( "Creating public URI: " . $digest );
-			$self->unsetPublicUri($file);
-			$self->setPublicUri( $file, $digest, $seed );
-		}
-		$jsondata{message} = $self->getSharedMessage($$self{cgi}->param('file'),$$self{uribase}.$digest);
-	}
-	else {
-		$jsondata{error}= $self->tl('foldernothingerr');
-	}
-	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
-	
-	return 1;
+sub enable_puri {
+    my ($self) = @_;
+    my %jsondata = ();
+    if ( ${$self}{cgi}->param('file') ) {
+        my $file   = $self->resolve_file( ${$self}{cgi}->param('file') );
+        my $digest = $self->get_public_uri($file);
+        my $seed   = $self->get_seed($file);
+        if ( !$digest || $self->is_public_uri( $file, $digest, $seed ) ) {
+            do {
+                ( $digest, $seed ) = $self->gen_url_hash($file);
+                } while (
+                defined $self->get_file_from_code( ${$self}{prefix} . $digest )
+                );
+            main::debug( 'Creating public URI: ' . $digest );
+            $self->unset_public_uri($file);
+            $self->set_public_uri( $file, $digest, $seed );
+        }
+        $jsondata{message}
+            = $self->get_shared_message( ${$self}{cgi}->param('file'),
+            ${$self}{uribase} . $digest );
+    }
+    else {
+        $jsondata{error} = $self->tl('foldernothingerr');
+    }
+    main::print_compressed_header_and_content(
+        '200 OK', 'application/json',
+        ${$self}{json}->encode( \%jsondata ),
+        'Cache-Control: no-cache, no-store'
+    );
+
+    return 1;
 }
 
-sub showPuri () {
-	my ($self) = @_;
-	my %jsondata = ();
-	if ( $$self{cgi}->param('file') ) {
-		my $file   = $self->resolveFile( $$self{cgi}->param('file') );
-		my $digest = $self->getPublicUri($file);
-		my $seed = $self->getSeed($file);
-		main::debug( "Showing public URI: " . $digest );
-		my $url = $$self{cgi}->escapeHTML($$self{uribase}.$digest);
-		if ($digest && $seed && $self->isPublicUri($file, $digest, $seed)) {
-			$jsondata{message} = $self->getSharedMessage($$self{cgi}->param('file'),$url);
-		} else {
-			$self->disablePuri();
-		}
-	}
-	else {
-		$jsondata{error} = $self->tl('foldernothingerr');
+sub show_puri {
+    my ($self) = @_;
+    my %jsondata = ();
+    if ( ${$self}{cgi}->param('file') ) {
+        my $file   = $self->resolve_file( ${$self}{cgi}->param('file') );
+        my $digest = $self->get_public_uri($file);
+        my $seed   = $self->get_seed($file);
+        main::debug( 'Showing public URI: ' . $digest );
+        my $url = ${$self}{cgi}->escapeHTML( ${$self}{uribase} . $digest );
+        if ( $digest && $seed && $self->is_public_uri( $file, $digest, $seed ) )
+        {
+            $jsondata{message}
+                = $self->get_shared_message( ${$self}{cgi}->param('file'),
+                $url );
+        }
+        else {
+            $self->disable_puri();
+        }
+    }
+    else {
+        $jsondata{error} = $self->tl('foldernothingerr');
 
-	}
-	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
-	return 1;
+    }
+    main::print_compressed_header_and_content(
+        '200 OK', 'application/json',
+        ${$self}{json}->encode( \%jsondata ),
+        'Cache-Control: no-cache, no-store'
+    );
+    return 1;
 }
 
 #Unpublish URI and show message
-sub disablePuri () {
-	my ($self) = @_;
-	my %jsondata = ();
-	if ( $$self{cgi}->param('file') ) {
-		my $file = $self->resolveFile( $$self{cgi}->param('file') );
-		main::debug( "Deleting public URI for file " . $file );
-		$self->unsetPublicUri($file);
-		$jsondata{message} = sprintf($self->tl('msg_disabledpuri'), $$self{cgi}->escapeHTML($$self{cgi}->param('file')));
-	}
-	else {
-		$jsondata{error} = $self->tl('foldernothingerr');
-	}
-	main::print_compressed_header_and_content('200 OK','application/json',$$self{json}->encode(\%jsondata),'Cache-Control: no-cache, no-store');
-	return 1;
+sub disable_puri {
+    my ($self) = @_;
+    my %jsondata = ();
+    if ( ${$self}{cgi}->param('file') ) {
+        my $file = $self->resolve_file( ${$self}{cgi}->param('file') );
+        main::debug( 'Deleting public URI for file ' . $file );
+        $self->unset_public_uri($file);
+        $jsondata{message} = sprintf $self->tl('msg_disabledpuri'),
+            ${$self}{cgi}->escapeHTML( ${$self}{cgi}->param('file') );
+    }
+    else {
+        $jsondata{error} = $self->tl('foldernothingerr');
+    }
+    main::print_compressed_header_and_content(
+        '200 OK', 'application/json',
+        ${$self}{json}->encode( \%jsondata ),
+        'Cache-Control: no-cache, no-store'
+    );
+    return 1;
 }
 
 1;

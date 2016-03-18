@@ -187,14 +187,14 @@ sub renderDiskUsageTemplate {
 		time=>time(),
 	};
 	
-	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','diskusage')), $vars);
+	my $content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->read_template($self->config('template','diskusage')), $vars);
 	
 	return $content;
 	
 }
 sub renderDiskUsageDetails {
 	my ($self, $template) = @_;
-	my $tmpl = $template=~/^'(.*)'$/ ? $1 : $self->readTemplate($template) ;
+	my $tmpl = $template=~/^'(.*)'$/ ? $1 : $self->read_template($template) ;
 	my $counter = $$self{counter};
 	my $statfstring = sprintf('%s %%d, %s %%d, %s %%d',$self->tl('statfiles'),$self->tl('statfolders'),$self->tl('statsum'));
 	my $details = "";
@@ -221,18 +221,18 @@ sub renderDiskUsageDetails {
 			percstyle=>sprintf('width: %.0f%%;',$perc),
 		};
 		
-		$details.= $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI, $tmpl, $vars);
+		$details.= $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI, $tmpl, $vars);
 	}
 	return $details;
 }
-sub execTemplateFunction {
+sub exec_template_function {
 	my ($self, $fn, $ru, $func, $param) = @_;
 	my $content;
 	$content = $self->renderDiskUsageDetails($param) if $func eq 'details';
 	$content = $self->collectTreemapData() if $func eq 'json' && $param eq 'treemapdata';
 	$content = $self->collectSuffixData('count') if $func eq 'json' && $param eq 'suffixesbycount';
 	$content = $self->collectSuffixData('size') if $func eq 'json' && $param eq 'suffixesbysize';
-	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
+	$content = $self->SUPER::exec_template_function($fn,$ru,$func,$param) unless defined $content;
 	return $content;
 }
 sub collectSuffixData {

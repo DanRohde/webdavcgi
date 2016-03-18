@@ -27,7 +27,7 @@ use base qw( Events::EventListener WebInterface::Extension::PublicUri::Common);
 
 sub register {
     my ( $self, $channel ) = @_;
-    $self->initDefaults();
+    $self->init_defaults();
     $channel->add( [ 'FILECOPIED', 'PROPFIND', 'OPTIONS' ], $self );
     return 1;
 }
@@ -47,9 +47,9 @@ sub handle_webdav_request {
     my ( $self, $data ) = @_;
     if ( ${$data}{file} =~ /^$main::DOCUMENT_ROOT([^\/]+)(.*)?$/xms ) {
         my ( $code, $path ) = ( $1, $2 );
-        my $fn = $self->getFileFromCode($code);
+        my $fn = $self->get_file_from_code($code);
         return
-          if ( !$fn || !$self->isPublicUri( $fn, $code, $self->getSeed($fn) ) );
+          if ( !$fn || !$self->is_public_uri( $fn, $code, $self->get_seed($fn) ) );
 
         $main::DOCUMENT_ROOT = $fn;
         $main::DOCUMENT_ROOT .= $main::DOCUMENT_ROOT !~ /\/$/xms ? q{/} : q{};

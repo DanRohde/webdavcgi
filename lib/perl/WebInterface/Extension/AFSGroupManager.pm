@@ -83,7 +83,7 @@ sub readAFSGroupList {
 sub renderAFSGroupList {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	my $content ="";
-	my $tmpl = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
+	my $tmpl = $self->render_template($fn,$ru,$self->read_template($tmplfile));
 	foreach my $group (@{$self->readAFSGroupList($fn,$ru)}) {
 		my $t = $tmpl;
 		$t=~s/\$afsgroupname/$group/g;
@@ -104,7 +104,7 @@ sub readAFSMembers {
 sub renderAFSMemberList {
 	my ($self, $fn, $ru, $tmplfile) = @_;
 	my $content = "";
-	my $tmpl = $self->readTemplate($tmplfile);
+	my $tmpl = $self->read_template($tmplfile);
 	my $afsgrp = $$self{cgi}->param('afsgrp');
 	foreach my $user (@{$self->readAFSMembers($afsgrp)}) {
 		my $t = $tmpl;
@@ -112,19 +112,19 @@ sub renderAFSMemberList {
 		$t=~s/\$afsgroupname/$afsgrp/sg;
 		$content.=$t;
 	}
-	return $self->renderTemplate($fn,$ru,$content);
+	return $self->render_template($fn,$ru,$content);
 }
-sub execTemplateFunction {
+sub exec_template_function {
 	my ($self, $fn, $ru, $func, $param) = @_;
 	my $content;
 	$content = $self->renderAFSGroupList($fn,$ru,$param) if $func eq 'afsgrouplist';
 	$content = $self->renderAFSMemberList($fn,$ru,$param) if $func eq 'afsmemberlist';
-	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
+	$content = $self->SUPER::exec_template_function($fn,$ru,$func,$param) unless defined $content;
 	return $content;
 }
 sub renderAFSGroupManager {
 	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = $self->renderTemplate($fn,$ru,$self->readTemplate($tmplfile));
+	my $content = $self->render_template($fn,$ru,$self->read_template($tmplfile));
 	my $stdvars = {
 		afsgroupeditorhead => sprintf($self->tl('afsgroups'), $$self{cgi}->escapeHTML($main::REMOTE_USER)),
 		afsmembereditorhead=> $$self{cgi}->param('afsgrp') ? sprintf($self->tl('afsgrpusers'), $$self{cgi}->escapeHTML($$self{cgi}->param('afsgrp'))): "",

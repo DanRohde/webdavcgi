@@ -325,7 +325,7 @@ sub sanitizeParam {
 
 sub renderMailDialog {
     my ($self) = @_;
-    my $content = $self->replaceVars( $self->readTemplate('mailform') );
+    my $content = $self->replaceVars( $self->read_template('mailform') );
     my $fntmpl = $content =~ s/<!--FILES\[(.*?)\]-->//xmsg ? $1 : q{};
     
     my $FILES        = q{};

@@ -104,7 +104,7 @@ sub getSearchForm {
 			DAYNAMESMIN => '"'.join('","', map { substr(langinfo($_), 0, 2)} ( ABDAY_1, ABDAY_2, ABDAY_3, ABDAY_4, ABDAY_5, ABDAY_6, ABDAY_7)).'"',
 			DATEFORMAT => $dfmt, FIRSTDAY => $main::LANG eq 'de' ? 1 : 0
 	};
-	my $content = $self->renderTemplate($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->readTemplate($self->config('template','search')), $vars);
+	my $content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->read_template($self->config('template','search')), $vars);
 	main::print_compressed_header_and_content('200 OK','text/html', $content,'Cache-Control: no-cache, no-store');	
 	return 1;
 }
@@ -115,7 +115,7 @@ sub getTempFilename {
 }
 sub getResultTemplate {
 	my($self, $tmplname) = @_;
-	return $CACHE{$self}{resulttemplate}{$tmplname} ||= $self->readTemplate($tmplname);
+	return $CACHE{$self}{resulttemplate}{$tmplname} ||= $self->read_template($tmplname);
 }
 sub addSearchResult {
 	my ($self, $base, $file, $counter) = @_;
@@ -128,7 +128,7 @@ sub addSearchResult {
 		my $mime = $$self{backend}->isDir($full)?'<folder>':main::get_mime_type($full);
 		my $suffix = $file eq '..' ? 'folderup' : ($$self{backend}->isDir($full) ? 'folder' : ($file =~ /\.([\w?]+)$/i ?  lc($1) : 'unknown')) ;
 		my $category = $CACHE{categories}{$suffix} ||= $suffix ne 'unknown' && $main::FILETYPES =~ /^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/m ? "category-$1" : '';
-		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
+		print $fh $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,
 				qfilename=>$self->quoteWhiteSpaces($filename),
@@ -261,7 +261,7 @@ sub addDuplicateClusterResult {
 		my @savings = $self->renderByteValue($bytesavings);
 		
 		my ($sl, $slt) = $self->renderByteValue($$self{sizelimit});
-		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchtemplate', 'dupsearch')), 
+		print $fh $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchtemplate', 'dupsearch')), 
 			{
 				filecount => scalar(@{$$data{dupsearch}{md5}{$size}{$md5}}),
 				digest => $md5,
@@ -287,7 +287,7 @@ sub addDuplicateSavings {
 	return if $$data{dupsearch}{savings} == 0;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
 		my @savings  = $self->renderByteValue($$data{dupsearch}{savings});
-		print $fh $self->renderTemplate($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchsavingstemplate', 'dupsearchsavings')), {
+		print $fh $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchsavingstemplate', 'dupsearchsavings')), {
 			savings => $savings[0],
 			savingstitle => $savings[1], 
 			bytesavings =>  $$data{dupsearch}{savings},
@@ -389,12 +389,12 @@ sub renderSelectedFiles{
 	}	
 	return $ret;
 }
-sub execTemplateFunction {
+sub exec_template_function {
 	my ($self, $fn, $ru, $func, $param) = @_;
 	my $content;
 	$content = $self->renderSelectedFiles($param) if $func eq 'renderSelectedFiles';
 	$content = time() if $func eq 'getSearchId';
-	$content = $self->SUPER::execTemplateFunction($fn,$ru,$func,$param) unless defined $content;
+	$content = $self->SUPER::exec_template_function($fn,$ru,$func,$param) unless defined $content;
 	return $content;
 }
 sub printOpenSearch {

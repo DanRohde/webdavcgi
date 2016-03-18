@@ -93,11 +93,11 @@ sub handle {
 }
 sub renderUploadFormTemplate {
 	my($self) = @_;
-	return $self->replaceVars($self->readTemplate('zipfileuploadform'));
+	return $self->replaceVars($self->read_template('zipfileuploadform'));
 }
 sub renderMessageTemplate {
 	my ($self) = @_;
-	return $self->replaceVars($self->readTemplate('messages'));
+	return $self->replaceVars($self->read_template('messages'));
 }
 sub handleZipUpload {
 	my ( $self ) = @_;

@@ -65,9 +65,9 @@ sub checkPermAllowed {
 }
 sub renderPermissionsDialog {
 	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = $self->readTemplate($tmplfile);
+	my $content = $self->read_template($tmplfile);
 	$content =~ s/\$disabled\((\w)(\w)\)/$self->checkPermAllowed($1,$2) ? '' : 'disabled="disabled"'/egs;	
-	return $self->renderTemplate($fn, $ru, $content);
+	return $self->render_template($fn, $ru, $content);
 }
 sub changePermissions {
 	my($self) = @_;
