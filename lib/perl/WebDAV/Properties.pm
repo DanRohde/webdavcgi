@@ -198,7 +198,7 @@ sub getProperty {
         = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime )
         if $prop eq 'getlastmodified';
     ${$resp_200}{prop}{lockdiscovery}
-        = main::getLockModule()->getLockDiscovery($fn)
+        = main::getLockModule()->get_lock_discovery($fn)
         if $prop eq 'lockdiscovery';
     ${$resp_200}{prop}{resourcetype}
         = ( $isDir ? { collection => undef } : undef )

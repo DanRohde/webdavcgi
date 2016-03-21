@@ -26,7 +26,7 @@ our $VERSION = '1.0';
 
 use base qw( Exporter );
 our @EXPORT_OK
-    = qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter );
+    = qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter filter );
 
 use CGI;
 use CGI::Carp;

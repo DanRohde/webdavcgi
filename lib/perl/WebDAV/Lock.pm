@@ -23,56 +23,101 @@ use warnings;
 
 use base qw( WebDAV::Common );
 
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 
 use Date::Parse;
 use UUID::Tiny;
 
-use FileUtils;
+use FileUtils qw( filter );
 
 sub new {
     my $this  = shift;
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
-    $$self{config} = shift;
-    $$self{db}     = shift;
+    ${$self}{config} = shift;
+    ${$self}{db}     = shift;
     $self->initialize();
     return $self;
 }
 
-sub lockResource {
-    my ($self,    $fn,    $ru,   $xmldata, $depth,
-        $timeout, $token, $base, $visited
-    ) = @_;
+sub _lock_dir {
+    my ( $self, @args ) = @_;
+    my ($fn,    $ru,   $xmldata, $depth,   $timeout,
+        $token, $base, $visited, $respref, $propref
+    ) = @args;
+    if ( ${$self}{backend}->isReadable($fn) ) {
+        foreach my $f (
+            @{  ${$self}{backend}->readDir( $fn, main::getFileLimit($fn),
+                    \&filter )
+            }
+            )
+        {
+            my $nru = $ru . $f;
+            my $nfn = $fn . $f;
+            $nru .= ${$self}{backend}->isDir($nfn) ? q{/} : q{};
+            $nfn .= ${$self}{backend}->isDir($nfn) ? q{/} : q{};
+            my $subreqresp = $self->lock_resource(
+                $nfn,
+                $nru,
+                $xmldata,
+                lc($depth) eq 'infinity' ? $depth : $depth - 1,
+                $timeout,
+                $token,
+                defined $base ? $base : $fn,
+                $visited
+            );
+            if ( defined ${$subreqresp}{multistatus} ) {
+                push @{ ${$respref}{multistatus}{response} },
+                    @{ ${$subreqresp}{multistatus}{response} };
+            }
+            else {
+                if ( exists ${$subreqresp}{prop} ) {
+                    push @{$propref},
+                        @{ ${$subreqresp}{prop}{lockdiscovery} };
+                }
+            }
+        }
+    }
+    else {
+        push @{ ${$respref}{multistatus}{response} },
+            { href => $ru, status => 'HTTP/1.1 403 Forbidden' };
+    }
+    return;
+}
+
+sub lock_resource {
+    my ( $self, @args ) = @_;
+    my ( $fn, $ru, $xmldata, $depth, $timeout, $token, $base, $visited )
+        = @args;
     my %resp = ();
     my @prop = ();
 
     my %activelock = ();
-    my @locktypes  = keys %{ $$xmldata{'{DAV:}locktype'} };
-    my @lockscopes = keys %{ $$xmldata{'{DAV:}lockscope'} };
-    my $locktype   = $#locktypes > -1 ? $locktypes[0] : undef;
-    my $lockscope  = $#lockscopes > -1 ? $lockscopes[0] : undef;
+    my @locktypes  = keys %{ ${$xmldata}{'{DAV:}locktype'} };
+    my @lockscopes = keys %{ ${$xmldata}{'{DAV:}lockscope'} };
+    my $locktype   = $#locktypes >= 0 ? $locktypes[0] : undef;
+    my $lockscope  = $#lockscopes >= 0 ? $lockscopes[0] : undef;
     my $owner      = main::create_xml(
-        defined $$xmldata{'{DAV:}owner'}
-        ? $$xmldata{'{DAV:}owner'}
+        defined ${$xmldata}{'{DAV:}owner'}
+        ? ${$xmldata}{'{DAV:}owner'}
         : $main::DEFAULT_LOCK_OWNER,
         0, 1
     );
-    $locktype =~ s/{[^}]+}//xms  if $locktype;
-    $lockscope =~ s/{[^}]+}//xms if $lockscope;
+    if ($locktype)  { $locktype =~ s/{[^}]+}//xms; }
+    if ($lockscope) { $lockscope =~ s/{[^}]+}//xms; }
 
-    $activelock{locktype}{$locktype}   = undef if $locktype;
-    $activelock{lockscope}{$lockscope} = undef if $lockscope;
-    $activelock{locktoken}{href}       = $token;
-    $activelock{depth}                 = $depth;
-    $activelock{lockroot}              = $ru;
+    if ($locktype)  { $activelock{locktype}{$locktype}   = undef; }
+    if ($lockscope) { $activelock{lockscope}{$lockscope} = undef; }
+    $activelock{locktoken}{href} = $token;
+    $activelock{depth}           = $depth;
+    $activelock{lockroot}        = $ru;
 
     my $rfn = $self->resolve($fn);
     my $rbase = $self->resolve( $base ? $base : $fn );
 
 # save lock to database (structure: basefn, fn, type, scope, token, timeout(null), owner(null)):
-    if ($$self{db}->db_insert(
+    if (${$self}{db}->db_insert(
             $rbase, $rfn,   $locktype, $lockscope,
             $token, $depth, $timeout,  $owner
         )
@@ -80,7 +125,7 @@ sub lockResource {
     {
         push @prop, { activelock => \%activelock };
     }
-    elsif ( $$self{db}->db_update( $rbase, $rfn, $timeout ) ) {
+    elsif ( ${$self}{db}->db_update( $rbase, $rfn, $timeout ) ) {
         push @prop, { activelock => \%activelock };
     }
     else {
@@ -90,81 +135,54 @@ sub lockResource {
             status => 'HTTP/1.1 403 Forbidden (db update failed)'
             };
     }
-    my $resfn = $$self{backend}->resolve($fn);
-    return \%resp if exists $$visited{$resfn};
-    $$visited{$resfn} = 1;
+    my $resfn = ${$self}{backend}->resolve($fn);
+    return \%resp if exists ${$visited}{$resfn};
+    ${$visited}{$resfn} = 1;
 
-    if ( $$self{backend}->isDir($fn)
+    if ( ${$self}{backend}->isDir($fn)
         && ( lc($depth) eq 'infinity' || $depth > 0 ) )
     {
-        if ( $$self{backend}->isReadable($fn) ) {
-            foreach my $f (
-                @{  $$self{backend}->readDir( $fn, main::getFileLimit($fn),
-                        \&FileUtils::filter )
-                }
-                )
-            {
-                my $nru = $ru . $f;
-                my $nfn = $fn . $f;
-                $nru .= q{/} if $$self{backend}->isDir($nfn);
-                $nfn .= q{/} if $$self{backend}->isDir($nfn);
-                my $subreqresp = $self->lockResource(
-                    $nfn,
-                    $nru,
-                    $xmldata,
-                    lc($depth) eq 'infinity' ? $depth : $depth - 1,
-                    $timeout,
-                    $token,
-                    defined $base ? $base : $fn,
-                    $visited
-                );
-                if ( defined $$subreqresp{multistatus} ) {
-                    push @{ $resp{multistatus}{response} },
-                        @{ $$subreqresp{multistatus}{response} };
-                }
-                else {
-                    push @prop, @{ $$subreqresp{prop}{lockdiscovery} }
-                        if exists $$subreqresp{prop};
-                }
-            }
-        }
-        else {
-            push @{ $resp{multistatus}{response} },
-                { href => $ru, status => 'HTTP/1.1 403 Forbidden' };
-        }
+        $self->_lock_dir(
+            $fn,    $ru,   $xmldata, $depth, $timeout,
+            $token, $base, $visited, \%resp, \@prop
+        );
     }
-    push @{ $resp{multistatus}{response} },
-        { propstat => { prop => { lockdiscovery => \@prop } } }
-        if exists $resp{multistatus} && $#prop > -1;
-    $resp{prop}{lockdiscovery} = \@prop unless defined $resp{multistatus};
+    if ( exists $resp{multistatus} && $#prop >= 0 ) {
+        push @{ $resp{multistatus}{response} },
+            { propstat => { prop => { lockdiscovery => \@prop } } };
+    }
+
+    if ( !defined $resp{multistatus} ) {
+        $resp{prop}{lockdiscovery} = \@prop;
+    }
 
     return \%resp;
 }
 
-sub unlockResource {
+sub unlock_resource {
     my ( $self, $fn, $token ) = @_;
     my $rfn = $self->resolve($fn);
-    return $$self{db}->db_isRootFolder( $rfn, $token )
-        && $$self{db}->db_delete( $rfn, $token );
+    return ${$self}{db}->db_isRootFolder( $rfn, $token )
+        && ${$self}{db}->db_delete( $rfn, $token );
 }
 
-sub _checkTimedOut {
+sub _check_timed_out {
     my ( $self, $fn, $rows ) = @_;
     my $ret = 0;
-    my $now = time();
+    my $now = time;
     $main::DBI_TIMEZONE
-        = $main::DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime'
-        unless $main::DBI_TIMEZONE;
-    $main::DEFAULT_LOCK_TIMEOUT = 3600 unless $main::DEFAULT_LOCK_TIMEOUT;
+        //= $main::DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime';
+    $main::DEFAULT_LOCK_TIMEOUT //= 3_600;
     while ( my $row = shift @{$rows} ) {
         my ( $token, $timeout, $timestamp ) = (
-            $$row[4], $$row[6],
-            int( str2time( $$row[8], $main::DBI_TIMEZONE ) )
+            ${$row}[4], ${$row}[6],
+            int( str2time( ${$row}[8], $main::DBI_TIMEZONE ) ),
         );
-        $timeout = "Second-$main::DEFAULT_LOCK_TIMEOUT"
-            if !defined $timeout || $timeout =~ /^\s*$/xms;
+        if ( !defined $timeout || $timeout =~ /^\s*$/xms ) {
+            $timeout = "Second-$main::DEFAULT_LOCK_TIMEOUT";
+        }
         main::debug(
-            "_checkTimedOut($fn): token=$token, timeout=$timeout, timestamp=$timestamp"
+            "_check_timed_out($fn): token=$token, timeout=$timeout, timestamp=$timestamp"
         );
         if ( $timeout =~ /(\d+)$/xms ) {
             my $val  = $1;
@@ -172,74 +190,74 @@ sub _checkTimedOut {
             my %m    = (
                 'second' => 1,
                 'minute' => 60,
-                'hour'   => 3600,
-                'day'    => 86400,
-                'week'   => 604800
+                'hour'   => 3_600,
+                'day'    => 86_400,
+                'week'   => 604_800,
             );
             if ( $timeout =~ /^([^\-]+)/xms ) {
-                $mult = $m{ lc($1) } || 1;
+                $mult = $m{ lc $1 } || 1;
             }
             $ret = $now - $timestamp - ( $mult * $val ) >= 0 ? 1 : 0;
             main::debug(
-                "_checkTimedOut($fn): now=$now, mult=$mult, val=$val (now-timestamp)="
+                "_check_timed_out($fn): now=$now, mult=$mult, val=$val (now-timestamp)="
                     . ( $now - $timestamp )
                     . ": ret=$ret" );
-            $$self{db}->db_delete( $fn, $token ) if $ret;
+            if ($ret) { ${$self}{db}->db_delete( $fn, $token ); }
         }
     }
     return $ret;
 }
 
-sub isLockedRecurse {
+sub is_locked_recurse {
     my ( $self, $fn ) = @_;
-    $fn = $main::PATH_TRANSLATED unless defined $fn;
+    $fn //= $main::PATH_TRANSLATED;
     my $rfn  = $self->resolve($fn);
-    my $rows = $$self{db}->db_getLike("$rfn\%");
-    return $#{$rows} > -1 && !$self->_checkTimedOut( $rfn, $rows );
+    my $rows = ${$self}{db}->db_getLike("$rfn\%");
+    return $#{$rows} >= 0 && !$self->_check_timed_out( $rfn, $rows );
 }
 
-sub isLocked {
+sub is_locked {
     my ( $self, $fn ) = @_;
     my $rfn = $self->resolve($fn);
-    $rfn .= q{/} if $$self{backend}->isDir($fn) && $rfn !~ /\/$/xms;
-    my $rows = $$self{db}->db_get($rfn);
-    return ( ( $#{$rows} > -1 ) && !$self->_checkTimedOut( $rfn, $rows ) )
+    $rfn .= ${$self}{backend}->isDir($fn) && $rfn !~ /\/$/xms ? q{/} : q{};
+    my $rows = ${$self}{db}->db_get($rfn);
+    return ( ( $#{$rows} >= 0 ) && !$self->_check_timed_out( $rfn, $rows ) )
         ? 1
         : 0;
 }
 
-sub isLockedCached {
+sub is_locked_cached {
     my ( $self, $fn ) = @_;
     my $rfn = $self->resolve($fn);
-    $rfn .= q{/} if $$self{backend}->isDir($fn) && $rfn !~ /\/$/xms;
-    my $rows = $$self{db}->db_getCached($rfn);
-    return ( ( $#{$rows} > -1 ) && !$self->_checkTimedOut( $rfn, $rows ) )
+    $rfn .= ${$self}{backend}->isDir($fn) && $rfn !~ /\/$/xms ? q{/} : q{};
+    my $rows = ${$self}{db}->db_getCached($rfn);
+    return ( ( $#{$rows} >= 0 ) && !$self->_check_timed_out( $rfn, $rows ) )
         ? 1
         : 0;
 }
 
-sub isLockable {    # check lock and exclusive
+sub is_lockable {    # check lock and exclusive
     my ( $self, $fn, $xmldata ) = @_;
     my $rfn        = $self->resolve($fn);
-    my @lockscopes = keys %{ $$xmldata{'{DAV:}lockscope'} };
+    my @lockscopes = keys %{ ${$xmldata}{'{DAV:}lockscope'} };
     my $lockscope
-        = @lockscopes && $#lockscopes > -1 ? $lockscopes[0] : 'exclusive';
+        = @lockscopes && $#lockscopes >= 0 ? $lockscopes[0] : 'exclusive';
 
-    my $rowsRef;
-    if ( !$$self{backend}->exists($fn) ) {
-        $rowsRef = $$self{db}->db_get(
-            $self->resolve( $$self{backend}->getParent($fn) ) . q{/} );
+    my $rowsref;
+    if ( !${$self}{backend}->exists($fn) ) {
+        $rowsref = ${$self}{db}->db_get(
+            $self->resolve( ${$self}{backend}->getParent($fn) ) . q{/} );
     }
-    elsif ( $$self{backend}->isDir($fn) ) {
-        $rowsRef = $$self{db}->db_getLike("$rfn\%");
+    elsif ( ${$self}{backend}->isDir($fn) ) {
+        $rowsref = ${$self}{db}->db_getLike("$rfn\%");
     }
     else {
-        $rowsRef = $$self{db}->db_get($rfn);
+        $rowsref = ${$self}{db}->db_get($rfn);
     }
     my $ret = 0;
-    if ( $#{$rowsRef} > -1 ) {
-        my $row = $$rowsRef[0]; 
-        $ret = (! defined ${$row}[3] || lc( ${$row}[3] ) ne 'exclusive')
+    if ( $#{$rowsref} >= 0 ) {
+        my $row = ${$rowsref}[0];
+        $ret = ( !defined ${$row}[3] || lc( ${$row}[3] ) ne 'exclusive' )
             && $lockscope ne '{DAV:}exclusive' ? 1 : 0;
     }
     else {
@@ -248,101 +266,107 @@ sub isLockable {    # check lock and exclusive
     return $ret;
 }
 
-sub getLockDiscovery {
+sub get_lock_discovery {
     my ( $self, $fn ) = @_;
     my $rfn = $self->resolve($fn);
-    main::debug("getLockDiscovery($fn) (rfn=$rfn)");
-    my $rowsRef = $$self{db}->db_get($rfn);
+    main::debug("get_lock_discovery($fn) (rfn=$rfn)");
+    my $rowsref = ${$self}{db}->db_get($rfn);
 
     my @resp = ();
-    main::debug( "getLockDiscovery: rowcount=" . $#{$rowsRef} );
-    if ( $#$rowsRef > -1 ) {
-        foreach my $row ( @{$rowsRef} )
+    main::debug( 'get_lock_discovery: rowcount=' . $#{$rowsref} );
+    if ( $#{$rowsref} >= 0 ) {
+        foreach my $row ( @{$rowsref} )
         {    # basefn,fn,type,scope,token,depth,timeout,owner
             my %lock;
-            $lock{locktype}{ $$row[2] }  = undef if defined $$row[2];
-            $lock{lockscope}{ $$row[3] } = undef if defined $$row[3];
-            $lock{locktoken}{href}       = $$row[4];
-            $lock{depth}                 = $$row[5];
-            $lock{timeout} = defined $$row[6] ? $$row[6] : 'Infinite';
-            $lock{owner} = $$row[7] if defined $$row[7];
+            if ( defined ${$row}[2] ) {
+                $lock{locktype}{ ${$row}[2] } = undef;
+            }
+            if ( defined ${$row}[3] ) {
+                $lock{lockscope}{ ${$row}[3] } = undef;
+            }
+            $lock{locktoken}{href} = ${$row}[4];
+            $lock{depth} = ${$row}[5];
+            $lock{timeout} = defined ${$row}[6] ? ${$row}[6] : 'Infinite';
+            if ( defined ${$row}[7] ) { $lock{owner} = ${$row}[7]; }
 
             push @resp, { activelock => \%lock };
         }
 
     }
-    main::debug( "getLockDiscovery: resp count=" . $#resp );
+    main::debug( 'get_lock_discovery: resp count=' . $#resp );
 
     return $#resp > -1 ? \@resp : undef;
 }
 
-sub getTokens {
+sub get_tokens {
     my ( $self, $fn, $recurse ) = @_;
     my $rfn = $self->resolve($fn);
-    my $rowsRef
+    my $rowsref
         = $recurse
-        ? $$self{db}->db_getLike("$rfn%")
-        : $$self{db}->db_get($rfn);
-    my @tokens = map { $$_[4] } @{$rowsRef};
+        ? ${$self}{db}->db_getLike("$rfn%")
+        : ${$self}{db}->db_get($rfn);
+    my @tokens = map { ${$_}[4] } @{$rowsref};
     return \@tokens;
 }
 
-sub inheritLock {
-    my ( $self, $fn, $checkContent, $visited ) = @_;
-    $fn = $main::PATH_TRANSLATED unless defined $fn;
-    my $backend = $$self{backend};
+sub inherit_lock {
+    my ( $self, $fn, $check_content, $visited ) = @_;
+    $fn //= $main::PATH_TRANSLATED;
+    my $backend = ${$self}{backend};
 
     my $rfn = $self->resolve($fn);
 
     my $nfn = $backend->resolveVirt( $backend->resolve($fn) );
-    return if exists $$visited{$nfn};
-    $$visited{$nfn} = 1;
+    return if exists ${$visited}{$nfn};
+    ${$visited}{$nfn} = 1;
 
     my $bfn = $backend->getParent($fn) . q{/};
 
-    main::debug("inheritLock: check lock for $bfn ($fn)");
-    my $db   = $$self{db};
+    main::debug("inherit_lock: check lock for $bfn ($fn)");
+    my $db   = ${$self}{db};
     my $rows = $db->db_get( $self->resolve($bfn) );
-    return if $#{$rows} == -1 && !$checkContent;
-    main::debug("inheritLock: $bfn is locked") if $#{$rows} > -1;
-    if ($checkContent) {
+    return if $#{$rows} == -1 && !$check_content;
+    if ( $#{$rows} >= 0 ) { main::debug("inherit_lock: $bfn is locked"); }
+    if ($check_content) {
         $rows = $db->db_get($rfn);
         return if $#{$rows} == -1;
-        main::debug("inheritLock: $fn is locked");
+        main::debug("inherit_lock: $fn is locked");
     }
-    my $row = $$rows[0];
+    my $row = ${$rows}[0];
     if ( $backend->isDir($fn) ) {
-        main::debug("inheritLock: $fn is a collection");
+        main::debug("inherit_lock: $fn is a collection");
         $db->db_insert(
-            $$row[0], $rfn,     $$row[2], $$row[3],
-            $$row[4], $$row[5], $$row[6], $$row[7]
+            ${$row}[0], $rfn,       ${$row}[2], ${$row}[3],
+            ${$row}[4], ${$row}[5], ${$row}[6], ${$row}[7]
         );
         if ( $backend->isReadable($fn) ) {
             foreach my $f (
                 @{  $backend->readDir( $fn, main::getFileLimit($fn),
-                        \&FileUtils::filter )
+                        \&filter )
                 }
                 )
             {
                 my $full = $fn . $f;
-                $full .= q{/} if $backend->isDir($full) && $full !~ /\/$/xms;
+                $full .= $backend->isDir($full)
+                    && $full !~ /\/$/xms ? q{/} : q{};
                 $db->db_insert(
-                    $self->resolve( $$row[0] ),
-                    $$self->resolve($full),
-                    $$row[2], $$row[3], $$row[4], $$row[5], $$row[6], $$row[7]
+                    $self->resolve( ${$row}[0] ), ${$self}->resolve($full),
+                    ${$row}[2],                   ${$row}[3],
+                    ${$row}[4],                   ${$row}[5],
+                    ${$row}[6],                   ${$row}[7]
                 );
-                $self->inheritLock( $full, undef, $visited );
+                $self->inherit_lock( $full, undef, $visited );
             }
         }
     }
     else {
-        $db->db_insert(
-            $self->resolve( $$row[0] ),
-            $rfn,     $$row[2], $$row[3], $$row[4],
-            $$row[5], $$row[6], $$row[7]
-        );
+        $db->db_insert( $self->resolve( ${$row}[0] ),
+            $rfn, ${$row}[2], ${$row}[3], ${$row}[4], ${$row}[5], ${$row}[6],
+            ${$row}[7] );
     }
+    return;
 }
+
 sub getuuid {
     my ($fn) = @_;
     my $uuid_ns = create_UUID( UUID_V1, "opaquelocktoken:$fn" );

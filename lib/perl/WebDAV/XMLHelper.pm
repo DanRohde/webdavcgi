@@ -317,22 +317,22 @@ sub _create_xml_data_hash {
 sub _create_xml_data {
     my ( $w, $d, $xmlns ) = @_;
     if ( ref($d) eq 'HASH' ) {
-        _create_xml_data_hash( $w, $d, $xmlns);
+        return _create_xml_data_hash( $w, $d, $xmlns);
     }
-    elsif ( ref($d) eq 'ARRAY' ) {
+    if ( ref($d) eq 'ARRAY' ) {
         foreach my $e ( @{$d} ) {
             _create_xml_data( $w, $e, $xmlns );
         }
+        return;
     }
-    elsif ( ref($d) eq 'SCALAR' ) {
+    if ( ref($d) eq 'SCALAR' ) {
         ${$w} .= qq@$d@;
+        return;
     }
-    elsif ( ref($d) eq 'REF' ) {
-        _create_xml_data( $w, ${$d}, $xmlns );
+    if ( ref($d) eq 'REF' ) {
+        return _create_xml_data( $w, ${$d}, $xmlns );
     }
-    else {
-        ${$w} .= $d // q{};
-    }
+    ${$w} .= $d // q{};
     return;
 }
 

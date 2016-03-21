@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160321.05';
+$RELEASE = '1.1.1BETA20160321.06';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1598,7 +1598,7 @@ sub HTTP_PUT {
                 . qq@<body><h1>Created</h1><p>Resource $ENV{REQUEST_URI} has been created.</p></body></html>\n@;
         }
         if ( $backend->saveStream( $PATH_TRANSLATED, \*STDIN ) ) {
-            getLockModule()->inheritLock();
+            getLockModule()->inherit_lock();
             logger("PUT($PATH_TRANSLATED)");
             broadcast(
                 'PUT',
@@ -1665,7 +1665,7 @@ sub HTTP_COPY {
         }
         else {
             if ( $backend->mkcol($destination) ) {
-                getLockModule()->inheritLock($destination);
+                getLockModule()->inherit_lock($destination);
                 broadcast(
                     'FILECOPIED',
                     {   file        => $PATH_TRANSLATED,
@@ -1691,7 +1691,7 @@ sub HTTP_COPY {
         );
         $status = '204 No Content' if $backend->exists($destination);
         if ( rcopy( $PATH_TRANSLATED, $destination ) ) {
-            getLockModule()->inheritLock( $destination, 1 );
+            getLockModule()->inherit_lock( $destination, 1 );
             logger("COPY($PATH_TRANSLATED, $destination)");
             broadcast(
                 'COPIED',
@@ -1753,7 +1753,7 @@ sub HTTP_MOVE {
             && $backend->isFile($destination);
         $status = '204 No Content' if $backend->exists($destination);
         if ( rmove( $PATH_TRANSLATED, $destination ) ) {
-            getLockModule()->inheritLock( $destination, 1 );
+            getLockModule()->inherit_lock( $destination, 1 );
             logger("MOVE($PATH_TRANSLATED, $destination)");
             broadcast(
                 'MOVED',
@@ -1878,7 +1878,7 @@ sub HTTP_MKCOL {
             my ( %resp_200, %resp_403 );
             handlePropertyRequest( $body, $dataRef, \%resp_200, \%resp_403 );
             ## ignore errors from property request
-            getLockModule()->inheritLock();
+            getLockModule()->inherit_lock();
             logger("MKCOL($PATH_TRANSLATED)");
             broadcast( 'MDCOL', { file => $PATH_TRANSLATED } );
         }
@@ -1917,17 +1917,17 @@ sub HTTP_LOCK {
         $status = '409 Conflict';
         $type   = 'text/plain';
     }
-    elsif ( !getLockModule()->isLockable( $fn, $xmldata ) ) {
+    elsif ( !getLockModule()->is_lockable( $fn, $xmldata ) ) {
         debug('_LOCK: not lockable ... but...');
         if ( isAllowed($fn) ) {
             $status = '200 OK';
             getLockModule()
-                ->lockResource( $fn, $ru, $xmldata, $depth, $timeout,
+                ->lock_resource( $fn, $ru, $xmldata, $depth, $timeout,
                 $token );
             $content = create_xml(
                 {   prop => {
                         lockdiscovery =>
-                            getLockModule()->getLockDiscovery($fn)
+                            getLockModule()->get_lock_discovery($fn)
                     }
                 }
             );
@@ -1945,7 +1945,7 @@ sub HTTP_LOCK {
         elsif ( $backend->saveData( $fn, q{} ) ) {
             my $resp
                 = getLockModule()
-                ->lockResource( $fn, $ru, $xmldata, $depth, $timeout,
+                ->lock_resource( $fn, $ru, $xmldata, $depth, $timeout,
                 $token );
             if ( defined $$resp{multistatus} ) {
                 $status = '207 Multi-Status';
@@ -1963,7 +1963,7 @@ sub HTTP_LOCK {
     }
     else {
         my $resp = getLockModule()
-            ->lockResource( $fn, $ru, $xmldata, $depth, $timeout, $token );
+            ->lock_resource( $fn, $ru, $xmldata, $depth, $timeout, $token );
         $addheader = "Lock-Token: $token";
         $content   = create_xml($resp);
         $status    = '207 Multi-Status' if defined $$resp{multistatus};
@@ -1985,7 +1985,7 @@ sub HTTP_UNLOCK {
         $status = '400 Bad Request';
     }
     elsif ( isLocked($PATH_TRANSLATED) ) {
-        if ( getLockModule()->unlockResource( $PATH_TRANSLATED, $token ) ) {
+        if ( getLockModule()->unlock_resource( $PATH_TRANSLATED, $token ) ) {
             $status = '204 No Content';
         }
         else {
@@ -2735,7 +2735,7 @@ sub isAllowed {
     return 1 unless isLocked($fn);         # no lock
     return 0 unless defined $ifheader;
     my $ret = 0;
-    foreach my $token ( @{ getLockModule()->getTokens( $fn, $recurse ) } ) {
+    foreach my $token ( @{ getLockModule()->get_tokens( $fn, $recurse ) } ) {
         for my $j (0 .. $#{ ${$ifheader}{list} }) { 
             my $iftoken = $$ifheader{list}[$j]{token};
             $iftoken = q{} unless defined $iftoken;
@@ -2905,14 +2905,14 @@ sub getLockModule {
 
 sub isLockedCached {
     my ($fn) = @_;
-    return getLockModule()->isLockedCached($fn);
+    return getLockModule()->is_locked_cached($fn);
 }
 
 sub isLocked {
     my ( $fn, $r ) = @_;
     return $r
-        ? getLockModule()->isLockedRecurse($fn)
-        : getLockModule()->isLocked($fn);
+        ? getLockModule()->is_locked_recurse($fn)
+        : getLockModule()->is_locked($fn);
 }
 
 sub getParentURI {
