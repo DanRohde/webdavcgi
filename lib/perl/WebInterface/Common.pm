@@ -163,7 +163,7 @@ sub setLocale {
         $locale = "en_US.\U$main::CHARSET\E";
     }
     else {
-        if ( $main::LANG =~ /^(\w{2})(_(\w{2})([.](\S+))?)?$/ ) {
+        if ( $main::LANG =~ /^(\w{2})(_(\w{2})([.](\S+))?)?$/xms ) {
             my ( $c1, $c, $c3, $c4, $c5 ) = ( $1, $2, $3, $4, $5 );
             $c3 = uc($c1) unless $c3;
             $c5 = uc($main::CHARSET)
@@ -315,6 +315,7 @@ sub escapeQuotes {
 
 sub renderByteValue {
     my ( $self, $v, $f, $ft ) = @_;   # v-value, f-accuracy, ft-title accuracy
+    use locale;
     $f  //= 2;
     $ft //= $f;
     my $showunit = 'B';
