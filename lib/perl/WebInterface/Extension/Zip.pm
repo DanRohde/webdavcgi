@@ -150,16 +150,20 @@ sub handle {
         return $self->renderMessageTemplate();
     }
     if ( $hook eq 'posthandler' ) {
-        if ( ${$self}{cgi}->param('action') eq 'zipdwnload' ) {
+        my $action = ${$self}{cgi}->param('action');
+        if (!defined $action) {
+            return 0;
+        }
+        if ( $action eq 'zipdwnload' ) {
             return $self->handleZipDownload();
         }
-        if ( ${$self}{cgi}->param('action') eq 'zipup' ) {
+        if ( $action eq 'zipup' ) {
             return $self->handleZipUpload();
         }
-        if ( ${$self}{cgi}->param('action') eq 'zipcompress' ) {
+        if ( $action eq 'zipcompress' ) {
             return $self->handleZipCompress();
         }
-        if ( ${$self}{cgi}->param('action') eq 'zipuncompress' ) {
+        if ( $action eq 'zipuncompress' ) {
             return $self->handleZipUncompress();
         }
     }

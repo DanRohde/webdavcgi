@@ -30,7 +30,7 @@ use List::MoreUtils qw( any );
 use FileUtils;
 use English qw(-no_match_vars);
 
-use vars qw( %CACHE %BYTEUNITS @BYTEUNITORDER %STATIDX %TEMPLATEVARS);
+use vars qw( %CACHE %BYTEUNITS @BYTEUNITORDER %STATIDX );
 
 BEGIN {
     %BYTEUNITS = (
@@ -60,11 +60,6 @@ BEGIN {
         blksize      => 11,
         blocks       => 12,
     );
-
-    %TEMPLATEVARS = (
-        BYTEUNITS     => \%BYTEUNITS,
-        BYTEUNITORDER => \@BYTEUNITORDER,
-    );
 }
 
 sub new {
@@ -85,6 +80,7 @@ sub initialize {
 
     ${$self}{BYTEUNITS}     = \%BYTEUNITS;
     ${$self}{BYTEUNITORDER} = \@BYTEUNITORDER;
+    ${$self}{STATIDX}       = \%STATIDX;
     ${$self}{WEB_ID}        = 0;
 
     $main::LANG
@@ -373,7 +369,7 @@ sub filter {
     {
         my ( $op, $val, $unit ) = ( $1, $2, $3 );
         if ( exists $BYTEUNITS{$unit} ) { $val = $val * $BYTEUNITS{$unit}; }
-        my $size = ( $backend->stat("$path$file") )[7];
+        my $size = ( $backend->stat("$path$file") )[$STATIDX{size}];
         $ret = $self->_handle_filter_operator( $size, $op, $val );
         if ($ret) { return 1; }
     }
@@ -435,7 +431,7 @@ sub mode2str {
     my ( $self, $fn, $m ) = @_;
 
     if ( ${$self}{backend}->isLink($fn) ) {
-        $m = ( ${$self}{backend}->lstat($fn) )[2];
+        $m = ( ${$self}{backend}->lstat($fn) )[$STATIDX{mode}];
     }
     my @ret = qw( - - - - - - - - - - );
 
@@ -549,7 +545,7 @@ sub render_each {
     }
     my $content = q{};
     if ( $variable =~ s/^\%(?:main::)?//xms ) {
-        my %hashvar = $main::{$variable} ? %{ $main::{$variable} } : $TEMPLATEVARS{$variable} ? %{$TEMPLATEVARS{$variable}} : ();
+        my %hashvar = $main::{$variable} ? %{ $main::{$variable} } : ${$self}{$variable} ? %{${$self}{$variable}} : ();
         foreach my $key ( sort _flex_sorter keys %hashvar ) {
             next if defined $filter && $hashvar{$key} =~ $filter;
             my $t = $tmpl;
@@ -575,7 +571,7 @@ sub render_each {
             $variable =~ s/\@(?:main::)?//xmsg;
             @arrvar
                 = $main::{$variable}       ? @{ $main::{$variable} }
-                : $TEMPLATEVARS{$variable} ? @{ $TEMPLATEVARS{$variable} }
+                : ${$self}{$variable} ? @{ ${$self}{$variable} }
                 :                            ();
         }
         foreach my $val (@arrvar) {

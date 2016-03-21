@@ -27,11 +27,11 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Renderer );
 
 sub new {
-    my $this  = shift;
+    my ( $this, $hookreg, $extensionname ) = @_;
     my $class = ref($this) || $this;
-    my $self  = { EXTENSION => $_[1] };
+    my $self = { EXTENSION => $extensionname };
     bless $self, $class;
-    $self->init(shift);
+    $self->init($hookreg);
     return $self;
 }
 
@@ -57,9 +57,8 @@ sub getExtensionLocation {
 
 sub getExtensionUri {
     my ( $self, $extension, $file ) = @_;
-    my $vbase
-        = $main::REQUEST_URI =~ /^($main::VIRTUAL_BASE)/xms ? $1 : $main::REQUEST_URI;
-    $vbase .= q{/} unless $vbase =~ /\/$/xms;
+    my $vbase = $self->get_vbase();
+    $vbase .= $vbase !~ /\/$/xms ? q{/} : q{};
     return
           $vbase
         . $main::VHTDOCS
@@ -91,11 +90,12 @@ sub handleLocalesHook {
 }
 
 sub handleAppsHook {
-    my ( $self, $cgi, $action, $label, $title, $href ) = @_;
+    my ( $self, @args ) = @_;
+    my ( $cgi, $action, $label, $title, $href ) = @args;
     return $cgi->li(
-        { -title => $self->tl( $title || $label ) },
+        { -title => $self->tl( $title // $label ) },
         $cgi->a(
-            { -class => "action $action", -href => $href ? $href : '#' },
+            { -class => "action $action", -href => $href ? $href : q{#} },
             $cgi->span( { -class => 'label' }, $self->tl($label) )
         )
     );
@@ -103,9 +103,9 @@ sub handleAppsHook {
 
 sub handleSettingsHook {
     my ( $self, $settings ) = @_;
-    my $ret = "";
+    my $ret = q{};
     if ( ref($settings) eq 'ARRAY' ) {
-        foreach my $setting (@$settings) {
+        foreach my $setting ( @{$settings} ) {
             $ret .= $self->handleSettingsHook($setting);
         }
     }
@@ -113,8 +113,10 @@ sub handleSettingsHook {
         $ret .= ${$self}{cgi}->Tr(
             ${$self}{cgi}->td( $self->tl("settings.$settings") )
                 . ${$self}{cgi}->td(
-                ${$self}{cgi}
-                    ->checkbox( -name => "settings.$settings", -label => '' )
+                ${$self}{cgi}->checkbox(
+                    -name  => "settings.$settings",
+                    -label => q{}
+                )
                 )
         );
     }
@@ -123,12 +125,12 @@ sub handleSettingsHook {
 
 sub handle {
     my ( $self, $hook, $config, $params ) = @_;
-    ${$self}{cgi}     = $$config{cgi};
-    ${$self}{backend} = $$config{backend};
+    ${$self}{cgi}     = ${$config}{cgi};
+    ${$self}{backend} = ${$config}{backend};
     ${$self}{config}  = $config;
-    ${$self}{db}      = $$config{db};
+    ${$self}{db}      = ${$config}{db};
     $self->initialize();    ## Common::initialize to set correct LANG, ...
-    $self->set_locale();     ## Common:set_locale to set right locale
+    $self->set_locale();    ## Common:set_locale to set right locale
     if ( $hook eq 'css' ) {
         return $self->handleCssHook( ${$self}{EXTENSION} );
     }
@@ -155,9 +157,11 @@ sub read_template {
 sub exec_template_function {
     my ( $self, $fn, $ru, $func, $param ) = @_;
     my $content;
-    $content = $self->config( $param, 0 ) || '' if $func eq 'extconfig';
-    $content = $self->SUPER::exec_template_function( $fn, $ru, $func, $param )
-        unless defined $content;
+    if ( $func eq 'extconfig' ) {
+        $content = $self->config( $param, 0 ) // q{};
+    }
+    $content
+        //= $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
     return $content;
 }
 1;

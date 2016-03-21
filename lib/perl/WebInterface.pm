@@ -138,8 +138,6 @@ sub handle_head_request {
 
 sub handle_post_request {
     my ($self) = @_;
-    my $redirtarget = $main::REQUEST_URI;
-    $redirtarget =~ s/[?].*$//xms;    # remove query
     my $handled = 1;
 
     my $ret_by_ext
@@ -148,7 +146,7 @@ sub handle_post_request {
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
 
     if (   $handled_by_ext =~ /1/xms
-        || $self->get_functions()->handleFileActions() )
+        || $self->get_functions()->handle_file_actions() )
     {
         $handled = 1;
     }
@@ -156,10 +154,10 @@ sub handle_post_request {
         && ${$self}{backend}->isDir($main::PATH_TRANSLATED)
         && defined ${$self}{cgi}->param('filesubmit') )
     {
-        $self->get_functions()->handlePostUpload($redirtarget);
+        $self->get_functions()->handle_post_upload();
     }
     elsif ( $main::ENABLE_CLIPBOARD && ${$self}{cgi}->param('action') ) {
-        $self->get_functions()->handleClipboardAction($redirtarget);
+        $self->get_functions()->handle_clipboard_action();
     }
     else {
         $handled = 0;
