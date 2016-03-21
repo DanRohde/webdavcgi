@@ -634,7 +634,9 @@ sub _render_file_list_entry {
         ->handle( 'fileprop', { path => $full } );
     if ( defined $fileprop_extensions ) {
         foreach my $ret ( @{$fileprop_extensions} ) {
-            @stdvars{ keys %{$ret} } = values %{$ret};
+            if (ref $ret eq 'HASH') {
+                @stdvars{ keys %{$ret} } = values %{$ret};
+            }
         }
     }
     ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
