@@ -29,8 +29,9 @@ use base qw( WebInterface::Renderer );
 sub new {
     my ( $this, $hookreg, $extensionname ) = @_;
     my $class = ref($this) || $this;
-    my $self = { EXTENSION => $extensionname };
+    my $self = {};
     bless $self, $class;
+    $self->{EXTENSION} = $extensionname;
     $self->init($hookreg);
     return $self;
 }

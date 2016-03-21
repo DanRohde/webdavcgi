@@ -33,8 +33,11 @@ use HTTPHelper qw( print_compressed_header_and_content );
 sub new {
     my ( $this, $config, $db ) = @_;
     my $class = ref($this) || $this;
-    my $self = { config => $config, db => $db, msglimit => 150, };
+    my $self = {};
     bless $self, $class;
+    $self->{config}   = $config;
+    $self->{db}       = $db;
+    $self->{msglimit} = 150;
     $self->initialize();
     return $self;
 }
