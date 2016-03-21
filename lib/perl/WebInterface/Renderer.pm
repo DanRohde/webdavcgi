@@ -118,11 +118,11 @@ sub print_media_rss {
         )
     {
         my $mime = main::get_mime_type($file);
-        if ( $_RENDERER->hasThumbSupport($mime) && $mime !~ /^image/xmsi ) {
+        if ( $_RENDERER->has_thumb_support($mime) && $mime !~ /^image/xmsi ) {
             $mime = 'image/gif';
         }
 
-        if (   $_RENDERER->hasThumbSupport($mime)
+        if (   $_RENDERER->has_thumb_support($mime)
             && ${$self}{backend}->isReadable("$fn$file")
             && ${$self}{backend}->isFile("$fn$file")
             && !${$self}{backend}->isEmpty("$fn$file") )

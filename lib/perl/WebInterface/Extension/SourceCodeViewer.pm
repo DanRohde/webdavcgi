@@ -61,7 +61,7 @@ sub handle {
 	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'scv') {
 		my $file = $$self{cgi}->param('files');
 		if ( ($$self{backend}->stat("$main::PATH_TRANSLATED$file"))[7] > $$self{sizelimit}) {
-			main::print_header_and_content('200 OK', 'application/json', $$self{json}->encode({ error=>sprintf($self->tl('scvsizelimitexceeded'), $$self{cgi}->escapeHTML($file), $self->renderByteValue($$self{sizelimit}))}));
+			main::print_header_and_content('200 OK', 'application/json', $$self{json}->encode({ error=>sprintf($self->tl('scvsizelimitexceeded'), $$self{cgi}->escapeHTML($file), $self->render_byte_val($$self{sizelimit}))}));
 		} elsif ($$self{supportedsuffixes}{$self->getFileSuffix($file)}) {
 			main::print_header_and_content('200 OK', 'text/html',$self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI, 
 							$self->read_template('sourcecodeviewer'), { suffix=>$self->getFileSuffix($file),filename=>$$self{cgi}->escapeHTML($$self{backend}->getDisplayName($main::PATH_TRANSLATED.$file)), content=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent("$main::PATH_TRANSLATED$file")) }));

@@ -115,12 +115,12 @@ sub renderDiskUsageTemplate {
 	my $lang = $main::LANG eq 'default' ? 'en' : $main::LANG;
 	my $hdr = DateTime::Format::Human::Duration->new();
 		
-	my @pbvsum = $self->renderByteValue($$counter{size}{all});
+	my @pbvsum = $self->render_byte_val($$counter{size}{all});
 	my $filenamelist = join(', ',$cgi->param('file'));
 	$filenamelist='.' if $filenamelist eq "";
 	$filenamelist=substr($filenamelist,0,100).'...' if length($filenamelist)>100;
 	my $vars = {
-		diskusageof => sprintf($self->tl('du_diskusageof'),$self->quoteWhiteSpaces($cgi->escapeHTML($filenamelist))),
+		diskusageof => sprintf($self->tl('du_diskusageof'),$self->quote_ws($cgi->escapeHTML($filenamelist))),
 		files=>$$counter{count}{all}{files} || 0,
 		folders=>$$counter{count}{all}{folders} || 0,
 		sum=>$$counter{count}{all}{sum} || 0,
@@ -132,16 +132,16 @@ sub renderDiskUsageTemplate {
 		biggestfolderfilecount => $$counter{count}{files}{$$counter{size}{biggestfolder}{path}} || 0,
 		biggestfolderfoldercount => $$counter{count}{folders}{$$counter{size}{biggestfolder}{path}} || 0,
 		biggestfoldersum => $$counter{count}{sum}{$$counter{size}{biggestfolder}{path}} || 0, 
-		biggestfoldersize => ($self->renderByteValue($$counter{size}{biggestfolder}{size}))[0],
-		biggestfoldersizetitle => ($self->renderByteValue($$counter{size}{biggestfolder}{size}))[1],
+		biggestfoldersize => ($self->render_byte_val($$counter{size}{biggestfolder}{size}))[0],
+		biggestfoldersizetitle => ($self->render_byte_val($$counter{size}{biggestfolder}{size}))[1],
 		biggestfolderage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{size}{biggestfolder}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
 		biggestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{size}{biggestfolder}{age} || 0)),
 			
 		biggestfilename => $cgi->escapeHTML($$counter{size}{biggestfile}{file}),
 		biggestfilepathuri => $self->getAbsURI($$counter{size}{biggestfile}{path}),
 		biggestfilepathname => $$self{cgi}->escapeHTML($self->_getFolderName($$counter{size}{biggestfile}{path})),
-		biggestfilesize => ($self->renderByteValue($$counter{size}{biggestfile}{size}))[0],
-		biggestfilesizetitle => ($self->renderByteValue($$counter{size}{biggestfile}{size}))[1],
+		biggestfilesize => ($self->render_byte_val($$counter{size}{biggestfile}{size}))[0],
+		biggestfilesizetitle => ($self->render_byte_val($$counter{size}{biggestfile}{size}))[1],
 		biggestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{size}{biggestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
 		biggestfileagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{size}{biggestfile}{age} || 0)),
 		
@@ -151,8 +151,8 @@ sub renderDiskUsageTemplate {
 		oldestfolderfilecount => $$counter{count}{files}{$$counter{age}{oldestfolder}{path}} || 0,
 		oldestfolderfoldercount => $$counter{count}{folders}{$$counter{age}{oldestfolder}{path}} || 0,
 		oldestfoldersum => $$counter{count}{sum}{$$counter{age}{oldestfolder}{path}} || 0, 
-		oldestfoldersize => ($self->renderByteValue($$counter{age}{oldestfolder}{size}))[0],
-		oldestfoldersizetitle => ($self->renderByteValue($$counter{age}{oldestfolder}{size}))[1],
+		oldestfoldersize => ($self->render_byte_val($$counter{age}{oldestfolder}{size}))[0],
+		oldestfoldersizetitle => ($self->render_byte_val($$counter{age}{oldestfolder}{size}))[1],
 		oldestfolderage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{oldestfolder}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
 		oldestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{oldestfolder}{age} || 0)),
 		
@@ -161,8 +161,8 @@ sub renderDiskUsageTemplate {
 		newestfolderfilecount => $$counter{count}{files}{$$counter{age}{newestfolder}{path}} || 0,
 		newestfolderfoldercount => $$counter{count}{folders}{$$counter{age}{newestfolder}{path}} || 0,
 		newestfoldersum => $$counter{count}{sum}{$$counter{age}{newestfolder}{path}} || 0, 
-		newestfoldersize => ($self->renderByteValue($$counter{age}{newestfolder}{size}))[0],
-		newestfoldersizetitle => ($self->renderByteValue($$counter{age}{newestfolder}{size}))[1],
+		newestfoldersize => ($self->render_byte_val($$counter{age}{newestfolder}{size}))[0],
+		newestfoldersizetitle => ($self->render_byte_val($$counter{age}{newestfolder}{size}))[1],
 		newestfolderage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{newestfolder}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
 		newestfolderagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{newestfolder}{age} || 0)),
 		
@@ -170,8 +170,8 @@ sub renderDiskUsageTemplate {
 		oldestfilename => $cgi->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{file})),
 		oldestfilepathuri => $self->getAbsURI($$counter{age}{oldestfile}{path}),
 		oldestfilepathname => $$self{cgi}->escapeHTML($self->_getFolderName($$counter{age}{oldestfile}{path})),
-		oldestfilesize => ($self->renderByteValue($$counter{age}{oldestfile}{size}))[0],
-		oldestfilesizetitle => ($self->renderByteValue($$counter{age}{oldestfile}{size}))[1],
+		oldestfilesize => ($self->render_byte_val($$counter{age}{oldestfile}{size}))[0],
+		oldestfilesizetitle => ($self->render_byte_val($$counter{age}{oldestfile}{size}))[1],
 		oldestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{oldestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
 		oldestfileagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{oldestfile}{age} || 0)),
 		
@@ -179,8 +179,8 @@ sub renderDiskUsageTemplate {
 		newestfilename => $cgi->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{file})),
 		newestfilepathuri => $self->getAbsURI($$counter{age}{newestfile}{path}),
 		newestfilepathname => $$self{cgi}->escapeHTML($self->_getFolderName($$counter{age}{newestfile}{path})),
-		newestfilesize => ($self->renderByteValue($$counter{age}{newestfile}{size}))[0],
-		newestfilesizetitle => ($self->renderByteValue($$counter{age}{newestfile}{size}))[1],
+		newestfilesize => ($self->render_byte_val($$counter{age}{newestfile}{size}))[0],
+		newestfilesizetitle => ($self->render_byte_val($$counter{age}{newestfile}{size}))[1],
 		newestfileage => $hdr->format_duration_between(DateTime->from_epoch(epoch=>$$counter{age}{newestfile}{age} || 0,locale=>$lang), DateTime->now(locale=>$lang), precision=>'seconds', significant_units=>2 ), 
 		newestfileagetitle => strftime($self->tl('lastmodifiedformat'), localtime($$counter{age}{newestfile}{age} || 0)),
 		
@@ -205,13 +205,13 @@ sub renderDiskUsageDetails {
 	foreach my $folder (@{$$self{folders}}) {
 		my $perc = $$counter{size}{all} >0 ? 100*$$counter{size}{path}{$folder}/$$counter{size}{all} : 0;
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
-		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
+		my @pbv = $self->render_byte_val($$counter{size}{path}{$folder});
 		my $foldername = $self->_getFolderName($folder);
 		my $uri = $self->getURI($foldername);
 		
 		my $vars = {
 			foldername=>$cgi->escapeHTML($foldername),
-			qfoldername=>$self->quoteWhiteSpaces($cgi->escapeHTML($foldername)),
+			qfoldername=>$self->quote_ws($cgi->escapeHTML($foldername)),
 			folderuri=> $main::REQUEST_URI.$uri,
 			foldersize=>$pbv[0],
 			foldersizetitle=>$pbv[1],
@@ -238,12 +238,12 @@ sub exec_template_function {
 sub collectSuffixData {
 	my ($self, $key) = @_;
 	my $counter = $$self{counter};
-	my @data = map { { x=>$_, y=> $$counter{suffixes}{$key}{$_},l=>$key eq 'size'? ($self->renderByteValue($$counter{suffixes}{$key}{$_}))[0] : sprintf("%s",$$counter{suffixes}{$key}{$_})   }   } sort { $$counter{suffixes}{$key}{$b} <=> $$counter{suffixes}{$key}{$a} || $a cmp $b } keys %{$$counter{suffixes}{$key}};
+	my @data = map { { x=>$_, y=> $$counter{suffixes}{$key}{$_},l=>$key eq 'size'? ($self->render_byte_val($$counter{suffixes}{$key}{$_}))[0] : sprintf("%s",$$counter{suffixes}{$key}{$_})   }   } sort { $$counter{suffixes}{$key}{$b} <=> $$counter{suffixes}{$key}{$a} || $a cmp $b } keys %{$$counter{suffixes}{$key}};
 	if (scalar(@data)>10) {
 		my @deleted = splice @data, 10;
 		my $others = 0;
 		foreach my $s (@deleted) { $others+= $$s{y} };
-		push @data, { x=>$self->tl('du_others'), y=>$others,l=>$key eq 'size'? ($self->renderByteValue($others))[0] : sprintf("%s",$others)};
+		push @data, { x=>$self->tl('du_others'), y=>$others,l=>$key eq 'size'? ($self->render_byte_val($others))[0] : sprintf("%s",$others)};
 	}
 	return $$self{cgi}->escapeHTML($$self{json}->encode({data=>\@data}));
 }
@@ -269,7 +269,7 @@ sub collectTreemapData {
 		my $uri = $self->getURI($foldername);
 		my $perc = $$counter{size}{all} >0 ? 100*$$counter{size}{path}{$folder}/$$counter{size}{all} : 0;
 		my $title = sprintf('%.2f%%, '.$statfstring,$perc,$$counter{count}{files}{$folder},$$counter{count}{folders}{$folder},$$counter{count}{sum}{$folder});
-		my @pbv = $self->renderByteValue($$counter{size}{path}{$folder});
+		my @pbv = $self->render_byte_val($$counter{size}{path}{$folder});
 		
 		
 		# limit files for treemap and fix foldersize:
@@ -279,7 +279,7 @@ sub collectTreemapData {
 			foreach my $file (@files) { $foldersize+=$$files{$file}; }
 		}
 		foreach my $file ( @files ) {
-			my @pbvfile = $self->renderByteValue($$files{$file});
+			my @pbvfile = $self->render_byte_val($$files{$file});
 			my $perc = $foldersize > 0 ? $$files{$file} / $foldersize : 0;
 			
 			my $uri = $self->getURI($foldername);

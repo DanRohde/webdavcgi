@@ -168,12 +168,12 @@ sub handle {
 
 sub renderUploadFormTemplate {
     my ($self) = @_;
-    return $self->replaceVars( $self->read_template('zipfileuploadform') );
+    return $self->replace_vars( $self->read_template('zipfileuploadform') );
 }
 
 sub renderMessageTemplate {
     my ($self) = @_;
-    return $self->replaceVars( $self->read_template('messages') );
+    return $self->replace_vars( $self->read_template('messages') );
 }
 
 sub handleZipUpload {

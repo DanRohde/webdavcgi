@@ -46,7 +46,7 @@ sub handle {
 		$ret =  { action=>'hexdump', label=>'hexdump',  classes=>'access-readable', type=>'li' };
 	} elsif ($hook eq 'gethandler' && $cgi->param('action') eq 'hexdump') {
 		my $content = $cgi->div({title=>$self->tl('hexdump')},
-			$cgi->div({class=>'hexdump filename'},$self->quoteWhiteSpaces($cgi->escapeHTML(scalar $cgi->param('file')))) 
+			$cgi->div({class=>'hexdump filename'},$self->quote_ws($cgi->escapeHTML(scalar $cgi->param('file')))) 
 			.$cgi->pre({class=>'hexdump'}, $cgi->escapeHTML($self->renderHexDump(scalar $cgi->param('file')))));
 		main::print_compressed_header_and_content('200 OK','text/html', $content, 'Cache-Control: no-cache, no-store');
 		$ret = 1;

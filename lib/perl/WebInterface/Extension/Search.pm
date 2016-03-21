@@ -96,7 +96,7 @@ sub getSearchForm {
 	my $searchinfolders = $$self{cgi}->param('files') ? join(", ", map{ $$self{backend}->getDisplayName($main::PATH_TRANSLATED.$_)} $$self{cgi}->param('files')) : $self->tl('search.currentfolder');
 	my $dfmt = langinfo(D_FMT);
 	$dfmt=~s/\%(.)/\L$1$1\E/g;
-	my $vars = { searchinfolders => $self->quoteWhiteSpaces($$self{cgi}->escapeHTML($self->cutLongString($searchinfolders))), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders),
+	my $vars = { searchinfolders => $self->quote_ws($$self{cgi}->escapeHTML($self->cutLongString($searchinfolders))), searchinfolderstitle => $$self{cgi}->escapeHTML($searchinfolders),
 			MONTHNAMES => '"'.join('","', map { langinfo($_)} ( MON_1, MON_2, MON_3, MON_4, MON_5, MON_6, MON_7, MON_8, MON_9, MON_10, MON_11, MON_12 )).'"',
 			MONTHNAMESABBR => '"'.join('","', map { langinfo($_)} ( ABMON_1, ABMON_2, ABMON_3, ABMON_4, ABMON_5, ABMON_6, ABMON_7, ABMON_8, ABMON_9, ABMON_10, ABMON_11, ABMON_12 )).'"',
 			DAYNAMES => '"'.join('","', map { langinfo($_)} ( DAY_1, DAY_2, DAY_3, DAY_4, DAY_5, DAY_6, DAY_7)).'"',
@@ -131,15 +131,15 @@ sub addSearchResult {
 		print $fh $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('resulttemplate', 'result')), 
 			{ fileuri=>$$self{cgi}->escapeHTML($uri),  
 				filename=>$filename,
-				qfilename=>$self->quoteWhiteSpaces($filename),
+				qfilename=>$self->quote_ws($filename),
 				dirname=>$$self{cgi}->escapeHTML($$self{backend}->dirname($uri)),
-				iconurl=>$$self{backend}->isDir($full) ? $self->getIcon($mime) : $self->canCreateThumbnail($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no' ? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->getIcon($mime),
-				iconclass=>"icon $category suffix-$suffix ".($self->canCreateThumbnail($full) ? 'thumbnail': ''),
+				iconurl=>$$self{backend}->isDir($full) ? $self->get_icon($mime) : $self->can_create_thumb($full) && $$self{cgi}->cookie('settings.enable.thumbnails') ne 'no' ? $$self{cgi}->escapeHTML($uri).'?action=thumb' : $self->get_icon($mime),
+				iconclass=>"icon $category suffix-$suffix ".($self->can_create_thumb($full) ? 'thumbnail': ''),
 				mime => $$self{cgi}->escapeHTML($mime),
 				type=> $mime eq '<folder>' ? 'folder' : 'file',
 				parentfolder => $$self{cgi}->escapeHTML($$self{backend}->dirname($base.$file)),
 				lastmodified => $$self{backend}->isReadable($full) ? strftime($self->tl('lastmodifiedformat'), localtime($stat[9])) : '-', 
-				size=> ($self->renderByteValue($stat[7]))[0]
+				size=> ($self->render_byte_val($stat[7]))[0]
 			});
 		$$counter{results}++;
 		close($fh);
@@ -256,11 +256,11 @@ sub getFullData {
 sub addDuplicateClusterResult {
 	my ($self, $data, $size, $md5) = @_;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
-		my ($s,$st) = $self->renderByteValue($size);
+		my ($s,$st) = $self->render_byte_val($size);
 		my $bytesavings = (scalar(@{$$data{dupsearch}{md5}{$size}{$md5}})-1) * $size;
-		my @savings = $self->renderByteValue($bytesavings);
+		my @savings = $self->render_byte_val($bytesavings);
 		
-		my ($sl, $slt) = $self->renderByteValue($$self{sizelimit});
+		my ($sl, $slt) = $self->render_byte_val($$self{sizelimit});
 		print $fh $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchtemplate', 'dupsearch')), 
 			{
 				filecount => scalar(@{$$data{dupsearch}{md5}{$size}{$md5}}),
@@ -286,7 +286,7 @@ sub addDuplicateSavings {
 	my ($self, $data) = @_;
 	return if $$data{dupsearch}{savings} == 0;
 	if (open(my $fh,">>", $self->getTempFilename('result'))) {
-		my @savings  = $self->renderByteValue($$data{dupsearch}{savings});
+		my @savings  = $self->render_byte_val($$data{dupsearch}{savings});
 		print $fh $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->getResultTemplate($self->config('dupsearchsavingstemplate', 'dupsearchsavings')), {
 			savings => $savings[0],
 			savingstitle => $savings[1], 

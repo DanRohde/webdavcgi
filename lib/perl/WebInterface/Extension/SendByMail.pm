@@ -325,7 +325,7 @@ sub sanitizeParam {
 
 sub renderMailDialog {
     my ($self) = @_;
-    my $content = $self->replaceVars( $self->read_template('mailform') );
+    my $content = $self->replace_vars( $self->read_template('mailform') );
     my $fntmpl = $content =~ s/<!--FILES\[(.*?)\]-->//xmsg ? $1 : q{};
     
     my $FILES        = q{};
@@ -342,8 +342,8 @@ sub renderMailDialog {
         $sumfilesizes += $$fa{bytesize};
     }
     my ( $l, $lt )
-        = $self->renderByteValue( $self->config( 'sizelimit', 20971520 ) );
-    my ( $sfz, $sfzt ) = $self->renderByteValue($sumfilesizes);
+        = $self->render_byte_val( $self->config( 'sizelimit', 20971520 ) );
+    my ( $sfz, $sfzt ) = $self->render_byte_val($sumfilesizes);
     my %vars = (
         FILES               => $FILES,
         mailsizelimit       => $l,
@@ -370,7 +370,7 @@ sub renderFileAttributes {
     my ( $self, $fn ) = @_;
     my $bytesize
         = ( $$self{backend}->stat( $main::PATH_TRANSLATED . $fn ) )[7];
-    my ( $s, $st ) = $self->renderByteValue($bytesize);
+    my ( $s, $st ) = $self->render_byte_val($bytesize);
     my %attr = (
         filename       => $$self{cgi}->escapeHTML($fn),
         filename_short => $$self{cgi}->escapeHTML(

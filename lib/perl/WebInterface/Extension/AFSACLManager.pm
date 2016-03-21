@@ -67,7 +67,7 @@ sub handle {
 		}
 		if ($content) {
 			delete $CACHE{$self}{$main::PATH_TRANSLATED};
-			main::print_compressed_header_and_content('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->getCookies());
+			main::print_compressed_header_and_content('200 OK',$contenttype,$content,'Cache-Control: no-cache, no-store', $self->get_cookies());
 			$ret = 1;
 		}
 	} elsif ($hook eq 'posthandler') {	
@@ -130,8 +130,8 @@ sub renderAFSACLManager {
                 $content = $self->render_template($fn,$ru,$self->read_template($tmplfile));
                 my $stdvars = {
                         afsaclscurrentfolder => sprintf($self->tl('afsaclscurrentfolder'), 
-                                                                                        $self->quoteWhiteSpaces($$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru)))), 
-                                                                                        $self->quoteWhiteSpaces($$self{cgi}->escapeHTML(uridecode($ru)))),
+                                                                                        $self->quote_ws($$self{cgi}->escapeHTML(uridecode($$self{backend}->basename($ru)))), 
+                                                                                        $self->quote_ws($$self{cgi}->escapeHTML(uridecode($ru)))),
                 };
                 $content=~s/\$(\w+)/exists $$stdvars{$1} ? $$stdvars{$1} : ''/egs;
         }
@@ -300,7 +300,7 @@ sub doAFSSaveACL {
 	$jsondata{error} = sprintf($self->tl('msg_'.$errmsg), $msgparam ? @{ $msgparam } : '') if $errmsg;
 	$jsondata{message} = sprintf($self->tl('msg_'.$msg), $msgparam ? @{ $msgparam } : '') if $msg;
 	my $json = new JSON();
-	main::print_compressed_header_and_content('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store', $self->getCookies());
+	main::print_compressed_header_and_content('200 OK','application/json', $json->encode(\%jsondata),'Cache-Control: no-cache, no-store', $self->get_cookies());
 }
 sub uridecode {
 	my ($txt) = @_;

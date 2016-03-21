@@ -36,7 +36,7 @@ sub render {
     my ( $self, $fn, $ru ) = @_;
     my $content;
     my $contenttype;
-    $self->setLocale();
+    $self->set_locale();
     my $atcregex = '^(' . join( q{|}, @main::ALLOWED_TABLE_COLUMNS ) . ')$';
     if ( 'selector' !~ /$atcregex/xms ) {
         unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
@@ -66,7 +66,7 @@ sub render {
     $contenttype //= 'text/html';
     return main::print_compressed_header_and_content( '200 OK', $contenttype,
         $content, 'Cache-Control: no-cache, no-store',
-        $self->getCookies() );
+        $self->get_cookies() );
 }
 
 sub _render_ajax_response {
@@ -200,21 +200,21 @@ sub render_template {
             //= $self->_render_quicknav_path( $fn, $ru ),
         maxuploadsize   => $main::POST_MAX_SIZE,
         maxuploadsizehr => $CACHE{$self}{render_template}{maxuploadsizehr}
-            //= ( $self->renderByteValue( $main::POST_MAX_SIZE, 2, 2 ) )[0],
+            //= ( $self->render_byte_val( $main::POST_MAX_SIZE, 2, 2 ) )[0],
         quotalimit => $CACHE{$self}{render_template}{quotalimit}
-            //= ( $self->renderByteValue( $quota{quotalimit}, 2, ) )[0],
+            //= ( $self->render_byte_val( $quota{quotalimit}, 2, ) )[0],
         quotalimitbytes => $quota{quotalimit},
         quotalimittitle => $CACHE{$self}{render_template}{quotalimittitle}
-            //= ( $self->renderByteValue( $quota{quotalimit}, 2, ) )[1],
+            //= ( $self->render_byte_val( $quota{quotalimit}, 2, ) )[1],
         quotaused => $CACHE{$self}{render_template}{quotaused}
-            //= ( $self->renderByteValue( $quota{quotaused}, 2, 2 ) )[0],
+            //= ( $self->render_byte_val( $quota{quotaused}, 2, 2 ) )[0],
         quotausedtitle => $CACHE{$self}{render_template}{quotausedtitle}
-            //= ( $self->renderByteValue( $quota{quotaused}, 2, 2 ) )[1],
+            //= ( $self->render_byte_val( $quota{quotaused}, 2, 2 ) )[1],
         quotaavailable => $CACHE{$self}{render_template}{quotaavailable}
-            //= ( $self->renderByteValue( $quota{quotaavailable}, 2, 2 ) )[0],
+            //= ( $self->render_byte_val( $quota{quotaavailable}, 2, 2 ) )[0],
         quotaavailabletitle =>
             $CACHE{$self}{render_template}{quotaavailabletitle}
-            //= ( $self->renderByteValue( $quota{quotaavailable}, 2, 2 ) )[1],
+            //= ( $self->render_byte_val( $quota{quotaavailable}, 2, 2 ) )[1],
         quotastyle         => $quota{quotastyle},
         quotalevel         => $quota{quotalevel},
         quotausedperc      => $quota{quotausedperc},
@@ -274,7 +274,7 @@ sub exec_template_function {
         return $self->_render_file_list( $fn, $ru, $param );
     }
     if ( $func eq 'isviewfiltered' ) {
-        return $self->isViewFiltered();
+        return $self->is_filtered_view();
     }
     if ( $func eq 'filterInfo' ) {
         return $self->_render_filter_info();
@@ -369,7 +369,7 @@ sub _render_extension {
 
     if ( $hook eq 'javascript' ) {
         if ( main::getWebInterface()->optimizer_is_optimized() ) {
-            my $vbase = $self->getVBase();
+            my $vbase = $self->get_vbase();
             return
                 q@<script>$(document).ready(function() { $(document.createElement("script")).attr("src","@
                 . "${vbase}${main::VHTDOCS}_OPTIMIZED(js)_"
@@ -389,7 +389,7 @@ sub _render_extension {
     }
     elsif ( $hook eq 'css' ) {
         if ( main::getWebInterface()->optimizer_is_optimized() ) {
-            my $vbase = $self->getVBase();
+            my $vbase = $self->get_vbase();
             return
                 qq@<link rel="stylesheet" href="${vbase}${main::VHTDOCS}_OPTIMIZED(css)_"/>@;
         }
@@ -441,10 +441,10 @@ sub _render_file_list_table {
         \$filelisttabletemplate );
     my %stdvars = (
         filelistheadcolumns => $columns,
-        visiblecolumncount  => scalar( $self->getVisibleTableColumns() ),
+        visiblecolumncount  => scalar( $self->get_visible_table_cols() ),
         isreadable => ${$self}{backend}->isReadable($fn) ? 'yes' : 'no',
         iswriteable  => ${$self}{backend}->isWriteable($fn) ? 'yes' : 'no',
-        unselectable => $self->isUnselectable($fn)          ? 'yes' : 'no',
+        unselectable => $self->is_unselectable($fn)          ? 'yes' : 'no',
     );
     $filelisttabletemplate =~
         s/[\$]{?(\w+)}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/xmegs;
@@ -500,7 +500,7 @@ sub _render_file_list_entry {
     $mtime //= 0;
     $ctime //= 0;
     $mode  //= 0;
-    my ( $sizetxt, $sizetitle ) = $self->renderByteValue( $size, 2, 2 );
+    my ( $sizetxt, $sizetitle ) = $self->render_byte_val( $size, 2, 2 );
     my $mime
         = $file eq q{..} ? '< .. >'
         : $id            ? '<folder>'
@@ -522,7 +522,7 @@ sub _render_file_list_entry {
         ->escapeHTML( ${$self}{backend}->getDisplayName($full) );
     my $now = $CACHE{$self}{_render_file_list_entry}{now}{$lang}
         //= DateTime->now( locale => $lang );
-    my $cct = $self->canCreateThumbnail($full) || 0;
+    my $cct = $self->can_create_thumb($full) || 0;
     my $u = $uid
         ? $CACHE{$self}{_render_file_list_entry}{uid}{$uid} //=
         scalar getpwuid( $uid || 0 ) || $uid
@@ -532,7 +532,7 @@ sub _render_file_list_entry {
         scalar getgrgid( $gid || 0 ) || $gid
         : 'unknown';
     my $icon = $CACHE{$self}{_render_file_list_entry}{icon}{$mime}
-        //= $self->getIcon($mime);
+        //= $self->get_icon($mime);
     my $enthumb = $CACHE{$self}{_render_file_list_entry}{cookie}{thumbnails}
         //= ${$self}{cgi}->cookie('settings.enable.thumbnails') // 'yes';
     my $iconurl = $id ? $icon : $cct
@@ -540,7 +540,7 @@ sub _render_file_list_entry {
     my %stdvars = (
         'name'         => ${$self}{cgi}->escapeHTML($file),
         'displayname'  => $displayname,
-        'qdisplayname' => $self->quoteWhiteSpaces($displayname),
+        'qdisplayname' => $self->quote_ws($displayname),
         'size'         => $ir ? $sizetxt : q{-},
         'sizetitle'    => $sizetitle,
         'lastmodified' => $ir
@@ -582,7 +582,7 @@ sub _render_file_list_entry {
             || $id ? 'dir' : ( $il ? 'link' : 'file' ),
         'fileuri'      => $fulle,
         'unselectable' => $file eq q{..}
-            || $self->isUnselectable($full) ? 'yes' : 'no',
+            || $self->is_unselectable($full) ? 'yes' : 'no',
         'mode'    => sprintf( '%04o',        $mode & oct 7777 ),
         'modestr' => $self->mode2str( $full, $mode ),
         'uidNumber' => $uid || 0,
@@ -644,7 +644,7 @@ sub _render_file_list_entry {
 
 sub _render_visible_table_columns {
     my ( $self, $templateref ) = @_;
-    my @columns = $self->getVisibleTableColumns();
+    my @columns = $self->get_visible_table_cols();
     my $columns = q{};
     for my $column (@columns) {
         if (${$templateref} =~ s/<!--TEMPLATE[(]$column[)]\[(.*?)\]-->//xmsg )

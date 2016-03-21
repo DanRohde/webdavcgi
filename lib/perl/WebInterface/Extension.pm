@@ -128,7 +128,7 @@ sub handle {
     ${$self}{config}  = $config;
     ${$self}{db}      = $$config{db};
     $self->initialize();    ## Common::initialize to set correct LANG, ...
-    $self->setLocale();     ## Common:setLocale to set right locale
+    $self->set_locale();     ## Common:set_locale to set right locale
     if ( $hook eq 'css' ) {
         return $self->handleCssHook( ${$self}{EXTENSION} );
     }

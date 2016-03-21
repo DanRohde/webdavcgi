@@ -76,7 +76,7 @@ sub getEditForm {
 	my $full = "$main::PATH_TRANSLATED$filename";
 	my ($contenttype, $content) = ('text/plain', '' );
 	if ( ($$self{backend}->stat($full))[7] >$$self{sizelimit}) {
-		$content = $$self{json}-encode({ error=>sprintf($self->tl('msg_sizelimitexceeded'), $$self{cgi}->escapeHTML($filename), ($self->renderByteValue($$self{sizelimit}))[0])});
+		$content = $$self{json}-encode({ error=>sprintf($self->tl('msg_sizelimitexceeded'), $$self{cgi}->escapeHTML($filename), ($self->render_byte_val($$self{sizelimit}))[0])});
 		$contenttype='application/json';
 	} else {
 		$content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->read_template($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::get_mime_type($full)});

@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160321.01';
+$RELEASE = '1.1.1BETA20160321.02';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1196,20 +1196,13 @@ if ( $method =~
     /^(?:GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/xms
     )
 {
-    ### performance is much better than eval:
-    gotomethod($method);
+    &{$main::{"HTTP_$method"}};
+    
     $backend->finalize() if $backend;
     broadcast('FINALIZE');
 }
 else {
     print_header_and_content('405 Method Not Allowed');
-}
-
-sub gotomethod {
-    my ($method) = @_;
-    $method = "HTTP_$method";
-    goto &$method
-        ; ## I use 'goto' so I don't need 'no strict "refs"' and 'goto' works only in a subroutine
 }
 
 sub HTTP_GET {

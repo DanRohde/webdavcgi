@@ -68,7 +68,7 @@ sub handle {
 
 sub renderPropertiesViewer {
     my ( $self, $fn, $ru ) = @_;
-    $self->setLocale();
+    $self->set_locale();
     my $content    = "";
     my $fullparent = main::getParentURI($ru) . '/';
     $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
@@ -96,7 +96,7 @@ sub renderPropertiesViewer {
                     )
             }
         )
-        ) if $self->hasThumbSupport( main::get_mime_type($fn) );
+        ) if $self->has_thumb_support( main::get_mime_type($fn) );
     my $table = $$self{cgi}->start_table( { -class => 'props' } );
     local (%WebDAV::XMLHelper::NAMESPACEELEMENTS) = %WebDAV::XMLHelper::NAMESPACEELEMENTS;
     my $dbprops
@@ -153,7 +153,7 @@ sub renderPropertiesViewer {
     $content .= $$self{cgi}->div( { -class => "props content" }, $table );
     $content .= $$self{cgi}->hr()
         . $$self{cgi}->div( { -class => 'signature' },
-        $self->replaceVars($main::SIGNATURE) )
+        $self->replace_vars($main::SIGNATURE) )
         if defined $main::SIGNATURE;
     $content = $$self{cgi}->div(
         { -title => "$main::TITLEPREFIX $ru properties", -class => 'props' },

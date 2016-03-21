@@ -104,7 +104,7 @@ sub renderImageInfo {
 	}
 	my $img = $$ii{_thumbnail_} 
 			? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) 
-			: $self->hasThumbSupport($mime) ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
+			: $self->has_thumb_support($mime) ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
 	return $self->render_template($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl("imageinfo.$type.dialogtitle"), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file, type=>$type});
 }
 sub getImageInfo {
