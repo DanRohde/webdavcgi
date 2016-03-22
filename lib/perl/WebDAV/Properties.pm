@@ -286,7 +286,7 @@ sub _get_cup_props {
     my ( $self, $prop, %params ) = @_;
     my $resp_200 = $params{resp_200};
     if ( $prop eq 'current-user-principal' ) {
-        ${$resp_200}{prop}{'current-user-principal'}{href}
+        ${$resp_200}{prop}{$prop}{href}
             = $main::CURRENT_USER_PRINCIPAL;
         return 1;
     }
@@ -312,7 +312,7 @@ sub _get_coll_props {
         );
         return 1;
     }
-    if ( $prop eq 'id' ) { return ${$resp_200}{prop}{id} = $uri; }
+    if ( $prop eq 'id' ) { return ${$resp_200}{prop}{$prop} = $uri; }
     if ( $prop eq 'objectcount' ) {
         ${$resp_200}{prop}{$prop} = (
             $is_dir
@@ -326,12 +326,12 @@ sub _get_coll_props {
         return 1;
     }
     if ( $prop eq 'reserved' ) {
-        ${$resp_200}{prop}{reserved} = 0;
+        ${$resp_200}{prop}{$prop} = 0;
         return 1;
     }
     if ( $prop eq 'visiblecount' ) {
 
-        ${$resp_200}{prop}{visiblecount} = (
+        ${$resp_200}{prop}{$prop} = (
             $is_dir
             ? get_dir_info(
                 $fn,                      $prop,
@@ -402,39 +402,39 @@ sub _get_webdav_props {
     my $mtime    = $params{mtime};
 
     if ( $prop eq 'creationdate' ) {
-        return ${$resp_200}{prop}{creationdate}
+        return ${$resp_200}{prop}{$prop}
             = strftime( '%Y-%m-%dT%H:%M:%SZ', gmtime $ctime );
     }
     if ( $prop eq 'displayname' && !defined ${$resp_200}{prop}{displayname} )
     {
-        return ${$resp_200}{prop}{displayname}
+        return ${$resp_200}{prop}{$prop}
             = ${$self}{cgi}->escape( main::getBaseURIFrag($uri) );
     }
     if ( $prop eq 'getcontentlanguage' ) {
-        return ${$resp_200}{prop}{getcontentlanguage} = 'en';
+        return ${$resp_200}{prop}{$prop} = 'en';
     }
     if ( $prop eq 'getcontentlength' ) {
-        ${$resp_200}{prop}{getcontentlength} = $size;
+        ${$resp_200}{prop}{$prop} = $size;
         return 0;
     }
     if ( $prop eq 'getcontenttype' ) {
-        return ${$resp_200}{prop}{getcontenttype}
+        return ${$resp_200}{prop}{$prop}
             = ( $is_dir ? 'httpd/unix-directory' : main::get_mime_type($fn) );
     }
     if ( $prop eq 'getetag' ) {
-        return ${$resp_200}{prop}{getetag} = get_etag($fn);
+        return ${$resp_200}{prop}{$prop} = get_etag($fn);
     }
     if ( $prop eq 'getlastmodified' ) {
-        return ${$resp_200}{prop}{getlastmodified}
+        return ${$resp_200}{prop}{$prop}
             = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime );
     }
     if ( $prop eq 'resourcetype' ) {
-        ${$resp_200}{prop}{resourcetype}
+        ${$resp_200}{prop}{$prop}
             = ( $is_dir ? { collection => undef } : undef );
         return 1;
     }
     if ( $prop eq 'source' ) {
-        return ${$resp_200}{prop}{source}
+        return ${$resp_200}{prop}{$prop}
             = { 'link' => { 'src' => $uri, 'dst' => $uri } };
     }
     return 0;
@@ -447,7 +447,7 @@ sub _get_bind_props {
     if ( $prop eq 'resource-id' ) {
         my $e = get_etag( ${$self}{backend}->resolve($fn) );
         $e =~ s/"//xmsg;
-        return ${$resp_200}{prop}{'resource-id'} = 'urn:uuid:' . $e;
+        return ${$resp_200}{prop}{$prop} = 'urn:uuid:' . $e;
     }
     return 0;
 }
@@ -609,7 +609,7 @@ sub _get_lock_props {
         };
     }
     if ( $prop eq 'lockdiscovery' ) {
-        return ${$resp_200}{prop}{lockdiscovery}
+        return ${$resp_200}{prop}{$prop}
             = main::getLockModule()->get_lock_discovery($fn);
     }
     return 0;
@@ -791,21 +791,21 @@ sub _get_carddav_props {
     my $is_dir   = $params{is_dir};
     if ( $prop eq 'address-data' ) {
         if ( $fn =~ /[.]vcf$/xmsi ) {
-            ${$resp_200}{prop}{'address-data'} = ${$self}{cgi}
+            ${$resp_200}{prop}{$prop} = ${$self}{cgi}
                 ->escapeHTML( ${$self}{backend}->getFileContent($fn) );
         }
         else {
-            ${$resp_404}{prop}{'address-data'} = undef;
+            ${$resp_404}{prop}{$prop} = undef;
         }
         return 1;
     }
     if ( $prop eq 'addressbook-description' ) {
-        return ${$resp_200}{prop}{'addressbook-description'}
+        return ${$resp_200}{prop}{$prop}
             = ${$self}{cgi}->escape( ${$self}{backend}->basename($fn) );
 
     }
     if ( $prop eq 'supported-address-data' ) {
-        return ${$resp_200}{prop}{'supported-address-data'}
+        return ${$resp_200}{prop}{$prop}
             = '<A:address-data-type content-type="text/vcard" version="3.0"/>';
     }
     if ( $prop eq 'max-resource-size' ) {
@@ -814,15 +814,15 @@ sub _get_carddav_props {
             = 20_000_000;
     }
     if ( $prop eq 'addressbook-home-set' ) {
-        return ${$resp_200}{prop}{'addressbook-home-set'}{href}
+        return ${$resp_200}{prop}{$prop}{href}
             = $self->_get_addressbook_homeset($uri);
 
     }
     if ( $prop eq 'principal-address' ) {
-        return ${$resp_200}{prop}{'principal-address'}{href} = $uri;
+        return ${$resp_200}{prop}{$prop}{href} = $uri;
     }
     if ( $prop eq 'resourcetype' && $is_dir ) {
-        ${$resp_200}{prop}{resourcetype}{addressbook} = undef;
+        ${$resp_200}{prop}{$prop}{addressbook} = undef;
         return 1;
     }
     return 0;
@@ -835,15 +835,13 @@ sub _get_groupdav_props {
     }
     my $resp_200 = $params{resp_200};
     if ( $prop eq 'resourcetype' && $params{is_dir} ) {
-        foreach my $t (
-            ( 'vevent-collection', 'vtodo-collection', 'vcard-collection' ) )
-        {
-            ${$resp_200}{prop}{$prop}{$t} = undef;
-        }
+        ${$resp_200}{prop}{$prop}{'vevent-collection'} = undef;
+        ${$resp_200}{prop}{$prop}{'vtodo-collection'}  = undef;
+        ${$resp_200}{prop}{$prop}{'vcard-collection'}  = undef;
         return 1;
     }
     if ( $prop eq 'component-set' && $params{is_dir} ) {
-        return ${$resp_200}{prop}{'component-set'} = 'VEVENT,VTODO,VCARD';
+        return ${$resp_200}{prop}{$prop} = 'VEVENT,VTODO,VCARD';
     }
     return 0;
 }
