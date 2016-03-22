@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -22,16 +21,18 @@ package WebDAV::Properties;
 use strict;
 use warnings;
 
+our $VERSION = '2.0';
+
 use base 'WebDAV::Common';
 
 use POSIX qw(strftime);
 use Date::Parse;
 use List::MoreUtils qw(any);
 use English qw ( -no_match_vars );
+use CGI;
 use CGI::Carp;
-use FileUtils qw( get_dir_info );
-our $VERSION = '1.0';
 
+use FileUtils qw( get_dir_info );
 use HTTPHelper qw( get_etag );
 
 sub new {
@@ -45,7 +46,7 @@ sub new {
     return $self;
 }
 
-sub removeProperty {
+sub remove_property {
     my ( $self, $propname, $element_parent_ref, $resp_200, $resp_403 ) = @_;
     ${$self}{db}->db_removeProperty( $self->resolve($main::PATH_TRANSLATED),
         $propname );
@@ -55,7 +56,81 @@ sub removeProperty {
     return 1;
 }
 
-sub setProperty {
+sub _set_exec_mode {
+    my ( $self, $fn, %params ) = @_;
+    my $resp_200           = $params{resp_200};
+    my $propname           = $params{propname};
+    my $ru                 = $params{ru};
+    my $element_parent_ref = $params{element_parent_ref};
+    my $executable         = ${$element_parent_ref}{$propname}{'content'};
+    if ( defined $executable ) {
+        my ($dev,   $ino,     $mode, $nlink, $uid,
+            $gid,   $rdev,    $size, $atime, $mtime,
+            $ctime, $blksize, $blocks
+        ) = ${$self}{backend}->stat($fn);
+        if (!chmod $executable =~ /F/xms
+            ? $mode & oct(666)
+            : $mode | oct(111),
+            $fn
+            )
+        {
+            croak("Chmod($mode,$fn) failed.");
+        }
+        ${$resp_200}{href}                       = $ru;
+        ${$resp_200}{propstat}{prop}{executable} = $executable;
+        ${$resp_200}{propstat}{status}           = 'HTTP/1.1 200 OK';
+    }
+    return;
+}
+
+sub _set_lastmodified {
+    my ( $self, $fn, %params ) = @_;
+    my $resp_200           = $params{resp_200};
+    my $element_parent_ref = $params{element_parent_ref};
+    my $ru                 = $params{ru};
+
+    my $getlastmodified = ${$element_parent_ref}{'{DAV:}getlastmodified'}
+        // ${$element_parent_ref}
+        {'{urn:schemas-microsoft-com:}Win32LastModifiedTime'};
+    my $lastaccesstime = ${$element_parent_ref}
+        {'{urn:schemas-microsoft-com:}Win32LastAccessTime'};
+    if ( defined $getlastmodified ) {
+        my $mtime = str2time($getlastmodified);
+        my $atime
+            = defined $lastaccesstime
+            ? str2time($lastaccesstime)
+            : $mtime;
+        utime $atime, $mtime, $fn
+            or croak("Cannot set utime($atime,$mtime,$fn).");
+        ${$resp_200}{href} = $ru;
+        if ( defined ${$element_parent_ref}{'{DAV:}getlastmodified'} ) {
+            ${$resp_200}{propstat}{prop}{getlastmodified} = $getlastmodified;
+        }
+        if ( ${$element_parent_ref}
+            {'{urn:schemas-microsoft-com:}Win32LastModifiedTime'} )
+        {
+            ${$resp_200}{propstat}{prop}{Win32LastModifiedTime}
+                = $getlastmodified;
+        }
+        if ( ${$element_parent_ref}
+            {'{urn:schemas-microsoft-com:}Win32LastAccessTime'} )
+        {
+            ${$resp_200}{propstat}{prop}{Win32LastAccessTime}
+                = $lastaccesstime;
+        }
+        if (defined ${$element_parent_ref}
+            {'{urn:schemas-microsoft-com:}Win32CreationTime'} )
+        {
+            ${$resp_200}{propstat}{prop}{Win32CreationTime}
+                = ${$element_parent_ref}
+                {'{urn:schemas-microsoft-com:}Win32CreationTime'};
+        }
+        ${$resp_200}{propstat}{status} = 'HTTP/1.1 200 OK';
+    }
+    return;
+}
+
+sub set_property {
     my ( $self, $propname, $element_parent_ref, $resp_200, $resp_403 ) = @_;
     my $fn  = $main::PATH_TRANSLATED;
     my $rfn = $self->resolve($fn);
@@ -66,70 +141,34 @@ sub setProperty {
     }
 
     if ( $propname eq '{http://apache.org/dav/props/}executable' ) {
-        my $executable = ${$element_parent_ref}{$propname}{'content'};
-        if ( defined $executable ) {
-            my ($dev,   $ino,     $mode, $nlink, $uid,
-                $gid,   $rdev,    $size, $atime, $mtime,
-                $ctime, $blksize, $blocks
-            ) = ${$self}{backend}->stat($fn);
-            if (!chmod $executable =~ /F/xms
-                ? $mode & oct(666)
-                : $mode | oct(111),
-                $fn
-                )
-            {
-                croak("Chmod($mode,$fn) failed.");
-            }
-            ${$resp_200}{href}                       = $ru;
-            ${$resp_200}{propstat}{prop}{executable} = $executable;
-            ${$resp_200}{propstat}{status}           = 'HTTP/1.1 200 OK';
-        }
+        return $self->_set_exec_mode(
+            $fn,
+            (   resp_200           => $resp_200,
+                propname           => $propname,
+                ru                 => $ru,
+                element_parent_ref => $element_parent_ref,
+            )
+        );
     }
-    elsif ( ( $propname eq '{DAV:}getlastmodified' )
+    if ( ( $propname eq '{DAV:}getlastmodified' )
         || ($propname eq '{urn:schemas-microsoft-com:}Win32LastModifiedTime' )
         || ( $propname eq '{urn:schemas-microsoft-com:}Win32LastAccessTime' )
         || ( $propname eq '{urn:schemas-microsoft-com:}Win32CreationTime' ) )
     {
-        my $getlastmodified = ${$element_parent_ref}{'{DAV:}getlastmodified'};
-        $getlastmodified
-            = ${$element_parent_ref}
-            {'{urn:schemas-microsoft-com:}Win32LastModifiedTime'}
-            if !defined $getlastmodified;
-        my $lastaccesstime = ${$element_parent_ref}
-            {'{urn:schemas-microsoft-com:}Win32LastAccessTime'};
-        if ( defined $getlastmodified ) {
-            my $mtime = str2time($getlastmodified);
-            my $atime
-                = defined $lastaccesstime
-                ? str2time($lastaccesstime)
-                : $mtime;
-            utime $atime, $mtime, $fn
-                or croak("Cannot set utime($atime,$mtime,$fn).");
-            ${$resp_200}{href} = $ru;
-            ${$resp_200}{propstat}{prop}{getlastmodified} = $getlastmodified
-                if defined ${$element_parent_ref}{'{DAV:}getlastmodified'};
-            ${$resp_200}{propstat}{prop}{Win32LastModifiedTime}
-                = $getlastmodified
-                if ${$element_parent_ref}
-                {'{urn:schemas-microsoft-com:}Win32LastModifiedTime'};
-            ${$resp_200}{propstat}{prop}{Win32LastAccessTime}
-                = $lastaccesstime
-                if ${$element_parent_ref}
-                {'{urn:schemas-microsoft-com:}Win32LastAccessTime'};
-            ${$resp_200}{propstat}{prop}{Win32CreationTime}
-                = ${$element_parent_ref}
-                {'{urn:schemas-microsoft-com:}Win32CreationTime'}
-                if defined ${$element_parent_ref}
-                {'{urn:schemas-microsoft-com:}Win32CreationTime'};
-            ${$resp_200}{propstat}{status} = 'HTTP/1.1 200 OK';
-        }
+        return $self->_set_lastmodified(
+            $fn,
+            (   resp_200           => $resp_200,
+                ru                 => $ru,
+                element_parent_ref => $element_parent_ref,
+            )
+        );
     }
-    elsif ( $propname eq '{urn:schemas-microsoft-com:}Win32FileAttributes' ) {
+    if ( $propname eq '{urn:schemas-microsoft-com:}Win32FileAttributes' ) {
         ${$resp_200}{href}                                = $ru;
         ${$resp_200}{propstat}{prop}{Win32FileAttributes} = undef;
         ${$resp_200}{propstat}{status}                    = 'HTTP/1.1 200 OK';
     }
-    elsif ( defined $main::NAMESPACES{$ns // q{}}
+    elsif ( defined $main::NAMESPACES{ $ns // q{} }
         && any {/^\Q$pn\E$/xms} @main::PROTECTED_PROPS )
     {
         ${$resp_403}{href}                      = $ru;
@@ -138,12 +177,15 @@ sub setProperty {
     }
     else {
         my $n      = $propname;
-        my $parRef = ${$element_parent_ref}{$propname};
-        $n = '{}' . $n
-            if ( $parRef
-            && ref($parRef) eq 'HASH'
-            && ( !${$parRef}{xmlns} || ${$parRef}{xmlns} eq q{} )
-            && $n !~ /^{[^}]*}/xms );
+        my $parref = ${$element_parent_ref}{$propname};
+        if (   $parref
+            && ref($parref) eq 'HASH'
+            && ( !${$parref}{xmlns} || ${$parref}{xmlns} eq q{} )
+            && $n !~ /^{[^}]*}/xms )
+        {
+            $n = '{}' . $n;
+        }
+
         my $dbval = ${$self}{db}->db_getProperty( $rfn, $n );
         my $value = main::create_xml( ${$element_parent_ref}{$propname}, 0 );
         my $ret
@@ -166,420 +208,677 @@ sub setProperty {
     return;
 }
 
-sub getProperty {
-    my ( $self, $fn, $uri, $prop, $statRef, $resp_200, $resp_404 ) = @_;
+sub get_property {
+    my ( $self, $fn, $uri, $prop, @refs ) = @_;
+    my ( $statref, $resp_200, $resp_404 ) = @refs;
 
-    my $isReadable = ${$self}{backend}->isReadable($fn);
-    my $isDir      = ${$self}{backend}->isDir($fn);
-    my $rfn        = $self->resolve($fn);
+    my $is_readable = ${$self}{backend}->isReadable($fn);
+    my $is_dir      = ${$self}{backend}->isDir($fn);
 
     my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
         $size, $atime, $mtime, $ctime, $blksize, $blocks
         )
-        = defined $statRef
-        ? @{$statRef}
-        : ( $isReadable ? ${$self}{backend}->stat($fn) : () );
+        = defined $statref
+        ? @{$statref}
+        : ( $is_readable ? ${$self}{backend}->stat($fn) : () );
 
-    ${$resp_200}{prop}{creationdate}
-        = strftime( '%Y-%m-%dT%H:%M:%SZ', gmtime $ctime )
-        if $prop eq 'creationdate';
-    ${$resp_200}{prop}{displayname}
-        = ${$self}{cgi}->escape( main::getBaseURIFrag($uri) )
-        if $prop eq 'displayname' && !defined ${$resp_200}{prop}{displayname};
-    ${$resp_200}{prop}{getcontentlanguage} = 'en'
-        if $prop eq 'getcontentlanguage';
-    ${$resp_200}{prop}{getcontentlength} = $size
-        if $prop eq 'getcontentlength';
-    ${$resp_200}{prop}{getcontenttype}
-        = ( $isDir ? 'httpd/unix-directory' : main::get_mime_type($fn) )
-        if $prop eq 'getcontenttype';
-    ${$resp_200}{prop}{getetag} = get_etag($fn) if $prop eq 'getetag';
-    ${$resp_200}{prop}{getlastmodified}
-        = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime )
-        if $prop eq 'getlastmodified';
-    ${$resp_200}{prop}{lockdiscovery}
-        = main::getLockModule()->get_lock_discovery($fn)
-        if $prop eq 'lockdiscovery';
-    ${$resp_200}{prop}{resourcetype}
-        = ( $isDir ? { collection => undef } : undef )
-        if $prop eq 'resourcetype';
+    my %params = (
+        resp_200    => $resp_200,
+        resp_404    => $resp_404,
+        fn          => $fn,
+        uri         => $uri,
+        is_dir      => $is_dir,
+        size        => $size,
+        mode        => $mode,
+        ctime       => $ctime,
+        atime       => $atime,
+        mtime       => $mtime,
+        is_readable => $is_readable,
+        prop        => $prop,
+    );
 
-    if ($main::ENABLE_LOCK) {
-        if ( $prop eq 'supportedlock' ) {
-            ${$resp_200}{prop}{supportedlock}{lockentry}[0]{lockscope}
-                {exclusive} = undef;
-            ${$resp_200}{prop}{supportedlock}{lockentry}[0]{locktype}{write}
-                = undef;
-            ${$resp_200}{prop}{supportedlock}{lockentry}[1]{lockscope}{shared}
-                = undef;
-            ${$resp_200}{prop}{supportedlock}{lockentry}[1]{locktype}{write}
-                = undef;
-        }
-    }
+           $self->_get_webdav_props( $prop, %params )
+        || $self->_get_lock_props( $prop, %params )
+        || $self->_get_os_props( $prop, %params )
+        || $self->_get_re_props( $prop, %params )
+        || $self->_get_quota_props( $prop, %params )
+        || $self->_get_coll_props( $prop, %params )
+        || $self->_get_acl_caldav_cardav_props( $prop, %params )
+        || $self->_get_groupdav_props( $prop, %params )
+        || $self->_get_cup_props( $prop, %params )
+        || $self->_get_deltav_props( $prop, %params )
+        || $self->_get_bind_props( $prop, %params );
 
-    ${$resp_200}{prop}{executable}
-        = ( $isReadable && ${$self}{backend}->isExecutable($fn) ) ? 'T' : 'F'
-        if $prop eq 'executable';
+    return 1;
+}
 
-    ${$resp_200}{prop}{source}
-        = { 'link' => { 'src' => $uri, 'dst' => $uri } }
-        if $prop eq 'source';
-
-    if (   $prop eq 'quota-available-bytes'
-        || $prop eq 'quota-used-bytes'
-        || $prop eq 'quota'
-        || $prop eq 'quotaused' )
-    {
-        my ( $ql, $qu ) = ${$self}{backend}->getQuota($fn);
-        if ( defined $ql && defined $qu ) {
-            ${$resp_200}{prop}{'quota-available-bytes'} = $ql - $qu
-                if $prop eq 'quota-available-bytes';
-            ${$resp_200}{prop}{'quota-used-bytes'} = $qu
-                if $prop eq 'quota-used-bytes';
-            ${$resp_200}{prop}{'quota'}     = $ql if $prop eq 'quota';
-            ${$resp_200}{prop}{'quotaused'} = $qu if $prop eq 'quotaused';
-        }
-        else {
-            ${$resp_404}{prop}{'quota-available-bytes'} = undef
-                if $prop eq 'quota-available-bytes';
-            ${$resp_404}{prop}{'quota-used-bytes'} = undef
-                if $prop eq 'quota-used-bytes';
-        }
-    }
-    ${$resp_200}{prop}{childcount} = (
-        $isDir
-        ? get_dir_info(
-            $fn,                      $prop,
-            \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
-            $main::FILECOUNTLIMIT
-            )
-        : 0
-    ) if $prop eq 'childcount';
-    ${$resp_200}{prop}{id} = $uri if $prop eq 'id';
-    ${$resp_200}{prop}{isfolder} = ( $isDir ? 1 : 0 ) if $prop eq 'isfolder';
-    ${$resp_200}{prop}{ishidden}
-        = ( ${$self}{backend}->basename($fn) =~ /^[.]/xms ? 1 : 0 )
-        if $prop eq 'ishidden';
-    ${$resp_200}{prop}{isstructureddocument} = 0
-        if $prop eq 'isstructureddocument';
-    ${$resp_200}{prop}{hassubs} = (
-        $isDir
-        ? get_dir_info(
-            $fn,                      $prop,
-            \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
-            $main::FILECOUNTLIMIT
-            )
-        : 0
-    ) if $prop eq 'hassubs';
-    ${$resp_200}{prop}{nosubs}
-        = ( $isDir ? ( ${$self}{backend}->isWriteable($fn) ? 1 : 0 ) : 1 )
-        if $prop eq 'nosubs';
-    ${$resp_200}{prop}{objectcount} = (
-        $isDir
-        ? get_dir_info(
-            $fn,                      $prop,
-            \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
-            $main::FILECOUNTLIMIT
-            )
-        : 0
-    ) if $prop eq 'objectcount';
-    ${$resp_200}{prop}{reserved} = 0 if $prop eq 'reserved';
-    ${$resp_200}{prop}{visiblecount} = (
-        $isDir
-        ? get_dir_info(
-            $fn,                      $prop,
-            \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
-            $main::FILECOUNTLIMIT
-            )
-        : 0
-    ) if $prop eq 'visiblecount';
-
-    ${$resp_200}{prop}{iscollection} = ( $isDir ? 1 : 0 )
-        if $prop eq 'iscollection';
-    ${$resp_200}{prop}{isFolder} = ( $isDir ? 1 : 0 ) if $prop eq 'isFolder';
-    ${$resp_200}{prop}{'authoritative-directory'} = ( $isDir ? 't' : 'f' )
-        if $prop eq 'authoritative-directory';
-    ${$resp_200}{prop}{resourcetag} = $main::REQUEST_URI
-        if $prop eq 'resourcetag';
-    ${$resp_200}{prop}{'repl-uid'} = main::getLockModule()->getuuid($fn)
-        if $prop eq 'repl-uid';
-    ${$resp_200}{prop}{modifiedby} = $main::REMOTE_USER
-        if $prop eq 'modifiedby';
-    ${$resp_200}{prop}{Win32CreationTime}
-        = strftime( '%a, %d %b %Y %T GMT', gmtime $ctime )
-        if $prop eq 'Win32CreationTime';
-
-    if ( $prop eq 'Win32FileAttributes' ) {
-        my $fileattr = 128 + 32
-            ; # 128 - Normal, 32 - Archive, 4 - System, 2 - Hidden, 1 - Read-Only
-        $fileattr += 1 unless ${$self}{backend}->isWriteable($fn);
-        $fileattr += 2 if ${$self}{backend}->basename($fn) =~ /^[.]/xms;
-        ${$resp_200}{prop}{Win32FileAttributes} = sprintf '%08x', $fileattr;
-    }
-    ${$resp_200}{prop}{Win32LastAccessTime}
-        = strftime( '%a, %d %b %Y %T GMT', gmtime $atime )
-        if $prop eq 'Win32LastAccessTime';
-    ${$resp_200}{prop}{Win32LastModifiedTime}
-        = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime )
-        if $prop eq 'Win32LastModifiedTime';
-    ${$resp_200}{prop}{name}
-        = ${$self}{cgi}->escape( ${$self}{backend}->basename($fn) )
-        if $prop eq 'name';
-    ${$resp_200}{prop}{href} = $uri if $prop eq 'href';
-    ${$resp_200}{prop}{parentname}
-        = ${$self}{cgi}
-        ->escape( main::getBaseURIFrag( main::getParentURI($uri) ) )
-        if $prop eq 'parentname';
-    ${$resp_200}{prop}{isreadonly}
-        = ( !${$self}{backend}->isWriteable($fn) ? 1 : 0 )
-        if $prop eq 'isreadonly';
-    ${$resp_200}{prop}{isroot} = ( $fn eq $main::DOCUMENT_ROOT ? 1 : 0 )
-        if $prop eq 'isroot';
-    ${$resp_200}{prop}{getcontentclass} = (
-        $isDir
-        ? 'urn:content-classes:folder'
-        : 'urn:content-classes:document'
-    ) if $prop eq 'getcontentclass';
-    ${$resp_200}{prop}{contentclass} = (
-        $isDir
-        ? 'urn:content-classes:folder'
-        : 'urn:content-classes:document'
-    ) if $prop eq 'contentclass';
-    ${$resp_200}{prop}{lastaccessed}
-        = strftime( '%m/%d/%Y %I:%M:%S %p', gmtime $atime )
-        if $prop eq 'lastaccessed';
-
-    ${$resp_200}{prop}{'current-user-principal'}{href}
-        = $main::CURRENT_USER_PRINCIPAL
-        if $prop eq 'current-user-principal';
-
-## appledoubleheader: Magic(4) Version(4) Filler(16) EntryCout(2)  EntryDescriptor(id:4(2:resource fork),offset:4,length:4) EntryDescriptor(id:9 finder)... Finder Info(16+16)
-## namespace: http://www.apple.com/webdav_fs/props/
-## content: MIME::Base64(pack('H*', '00051607'. '00020000' . ( '00' x 16 ) . '0002'. '00000002'. '00000026' . '0000002C'.'00000009'. '00000032' . '00000020' . ('00' x 32) ))
-    ${$resp_200}{prop}
-        {'{http://www.apple.com/webdav_fs/props/}appledoubleheader'}
-        = 'AAUWBwACAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAAAJgAAACwAAAAJAAAAMgAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='
-        if $prop eq 'appledoubleheader';
-
+sub _get_acl_caldav_cardav_props {
+    my ( $self, $prop, %params ) = @_;
     if (   $main::ENABLE_ACL
         || $main::ENABLE_CALDAV
         || $main::ENABLE_CALDAV_SCHEDULE
         || $main::ENABLE_CARDDAV )
     {
-        ${$resp_200}{prop}{owner} = { href => $uri } if $prop eq 'owner';
-        ${$resp_200}{prop}{group} = { href => $uri } if $prop eq 'group';
-        ${$resp_200}{prop}{'supported-privilege-set'}
-            = $self->getACLModule()->getACLSupportedPrivilegeSet($fn)
-            if $prop eq 'supported-privilege-set';
-        ${$resp_200}{prop}{'current-user-privilege-set'}
-            = $self->getACLModule()->getACLCurrentUserPrivilegeSet($fn)
-            if $prop eq 'current-user-privilege-set';
-        ${$resp_200}{prop}{acl} = $self->getACLModule()->getACLProp($mode)
-            if $prop eq 'acl';
-        ${$resp_200}{prop}{'acl-restrictions'} = {
+        if ( $self->_get_acl_props( $prop, %params ) ) {
+            return 1;
+        }
+        if ( $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE ) {
+            if ( $self->_get_caldav_props( $prop, %params ) ) {
+                return 1;
+            }
+            if (   $main::ENABLE_CALDAV_SCHEDULE
+                && $self->_get_caldavschedule_props( $prop, %params ) )
+            {
+                return 1;
+            }
+        }
+        if (   $main::ENABLE_CARDDAV
+            && $self->_get_carddav_props( $prop, %params ) )
+        {
+            return 1;
+        }
+
+    }
+    return 0;
+}
+
+sub _get_cup_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    if ( $prop eq 'current-user-principal' ) {
+        ${$resp_200}{prop}{'current-user-principal'}{href}
+            = $main::CURRENT_USER_PRINCIPAL;
+        return 1;
+    }
+    return 0;
+}
+
+sub _get_coll_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    my $uri      = $params{uri};
+    my $is_dir   = $params{is_dir};
+
+    if ( $prop eq 'childcount' ) {
+        ${$resp_200}{prop}{$prop} = (
+            $is_dir
+            ? get_dir_info(
+                $fn,                      $prop,
+                \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
+                $main::FILECOUNTLIMIT
+                )
+            : 0
+        );
+        return 1;
+    }
+    if ( $prop eq 'id' ) { return ${$resp_200}{prop}{id} = $uri; }
+    if ( $prop eq 'objectcount' ) {
+        ${$resp_200}{prop}{$prop} = (
+            $is_dir
+            ? get_dir_info(
+                $fn,                      $prop,
+                \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
+                $main::FILECOUNTLIMIT
+                )
+            : 0
+        );
+        return 1;
+    }
+    if ( $prop eq 'reserved' ) {
+        ${$resp_200}{prop}{reserved} = 0;
+        return 1;
+    }
+    if ( $prop eq 'visiblecount' ) {
+
+        ${$resp_200}{prop}{visiblecount} = (
+            $is_dir
+            ? get_dir_info(
+                $fn,                      $prop,
+                \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
+                $main::FILECOUNTLIMIT
+                )
+            : 0
+        );
+        return 1;
+    }
+    return 0;
+}
+
+sub _get_re_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200    = $params{resp_200};
+    my $fn          = $params{fn};
+    my $uri         = $params{uri};
+    my $is_dir      = $params{is_dir};
+    my $is_readable = $params{is_readable};
+    my $atime       = $params{atime};
+    if ( $prop eq 'executable' ) {
+        return ${$resp_200}{prop}{$prop}
+            = ( $is_readable && ${$self}{backend}->isExecutable($fn) )
+            ? 'T'
+            : 'F';
+    }
+    if ( $prop eq 'name' ) {
+        return ${$resp_200}{prop}{$prop}
+            = ${$self}{cgi}->escape( ${$self}{backend}->basename($fn) );
+    }
+    if ( $prop eq 'href' ) { return ${$resp_200}{prop}{$prop} = $uri; }
+    if ( $prop eq 'parentname' ) {
+        return ${$resp_200}{prop}{$prop} = ${$self}{cgi}
+            ->escape( main::getBaseURIFrag( main::getParentURI($uri) ) );
+    }
+    if ( $prop eq 'isreadonly' ) {
+        ${$resp_200}{prop}{$prop}
+            = ( !${$self}{backend}->isWriteable($fn) ? 1 : 0 );
+        return 1;
+    }
+    if ( $prop eq 'isroot' ) {
+        ${$resp_200}{prop}{$prop} = ( $fn eq $main::DOCUMENT_ROOT ? 1 : 0 );
+        return 1;
+    }
+    if ( $prop =~ /^(?:getcontentclass|contentclass)$/xms ) {
+        return ${$resp_200}{prop}{$prop} = (
+            $is_dir
+            ? 'urn:content-classes:folder'
+            : 'urn:content-classes:document'
+        );
+    }
+    if ( $prop eq 'lastaccessed' ) {
+        return ${$resp_200}{prop}{$prop}
+            = strftime( '%m/%d/%Y %I:%M:%S %p', gmtime $atime );
+    }
+    return 0;
+}
+
+sub _get_webdav_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    my $uri      = $params{uri};
+    my $is_dir   = $params{is_dir};
+    my $size     = $params{size};
+    my $ctime    = $params{ctime};
+    my $mtime    = $params{mtime};
+
+    if ( $prop eq 'creationdate' ) {
+        return ${$resp_200}{prop}{creationdate}
+            = strftime( '%Y-%m-%dT%H:%M:%SZ', gmtime $ctime );
+    }
+    if ( $prop eq 'displayname' && !defined ${$resp_200}{prop}{displayname} )
+    {
+        return ${$resp_200}{prop}{displayname}
+            = ${$self}{cgi}->escape( main::getBaseURIFrag($uri) );
+    }
+    if ( $prop eq 'getcontentlanguage' ) {
+        return ${$resp_200}{prop}{getcontentlanguage} = 'en';
+    }
+    if ( $prop eq 'getcontentlength' ) {
+        ${$resp_200}{prop}{getcontentlength} = $size;
+        return 0;
+    }
+    if ( $prop eq 'getcontenttype' ) {
+        return ${$resp_200}{prop}{getcontenttype}
+            = ( $is_dir ? 'httpd/unix-directory' : main::get_mime_type($fn) );
+    }
+    if ( $prop eq 'getetag' ) {
+        return ${$resp_200}{prop}{getetag} = get_etag($fn);
+    }
+    if ( $prop eq 'getlastmodified' ) {
+        return ${$resp_200}{prop}{getlastmodified}
+            = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime );
+    }
+    if ( $prop eq 'resourcetype' ) {
+        ${$resp_200}{prop}{resourcetype}
+            = ( $is_dir ? { collection => undef } : undef );
+        return 1;
+    }
+    if ( $prop eq 'source' ) {
+        return ${$resp_200}{prop}{source}
+            = { 'link' => { 'src' => $uri, 'dst' => $uri } };
+    }
+    return 0;
+}
+
+sub _get_bind_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    if ( $prop eq 'resource-id' ) {
+        my $e = get_etag( ${$self}{backend}->resolve($fn) );
+        $e =~ s/"//xmsg;
+        return ${$resp_200}{prop}{'resource-id'} = 'urn:uuid:' . $e;
+    }
+    return 0;
+}
+
+sub _get_deltav_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+
+    if ( $prop eq 'supported-report-set' ) {
+        return ${$resp_200}{prop}{$prop} = {
+            'supported-report' => [
+                { report => { 'acl-principal-prop-set'    => undef } },
+                { report => { 'principal-match'           => undef } },
+                { report => { 'principal-property-search' => undef } },
+                { report => { 'calendar-multiget'         => undef } },
+                { report => { 'calendar-query'            => undef } },
+                { report => { 'free-busy-query'           => undef } },
+                { report => { 'addressbook-query'         => undef } },
+                { report => { 'addressbook-multiget'      => undef } },
+                ## { report=>{ 'expand-property'=>undef} },
+            ]
+        };
+    }
+    if ( $prop eq 'supported-method-set' ) {
+        ${$resp_200}{prop}{$prop} = q{};
+        foreach my $method ( @{ main::getSupportedMethods($fn) } ) {
+            ${$resp_200}{prop}{$prop}
+                .= q{<D:supported-method name="} . $method . q{"/>};
+        }
+        return 1;
+    }
+
+    return 0;
+}
+
+sub _get_osflag_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    my $is_dir   = $params{is_dir};
+    if ( $prop eq 'isfolder' ) {
+        ${$resp_200}{prop}{$prop} = ( $is_dir ? 1 : 0 );
+        return 1;
+    }
+    if ( $prop eq 'ishidden' ) {
+        ${$resp_200}{prop}{$prop}
+            = ( ${$self}{backend}->basename($fn) =~ /^[.]/xms ? 1 : 0 );
+        return 1;
+    }
+    if ( $prop eq 'isstructureddocument' ) {
+        ${$resp_200}{prop}{$prop} = 0;
+        return 1;
+    }
+    if ( $prop eq 'hassubs' ) {
+        ${$resp_200}{prop}{$prop} = (
+            $is_dir
+            ? get_dir_info(
+                $fn,                      $prop,
+                \%main::FILEFILTERPERDIR, \%main::FILECOUNTPERDIRLIMIT,
+                $main::FILECOUNTLIMIT
+                )
+            : 0
+        );
+        return 1;
+    }
+    if ( $prop eq 'nosubs' ) {
+        ${$resp_200}{prop}{$prop} = (
+            $is_dir ? ( ${$self}{backend}->isWriteable($fn) ? 1 : 0 ) : 1 );
+        return 1;
+    }
+    if ( $prop eq 'iscollection' ) {
+        ${$resp_200}{prop}{$prop} = ( $is_dir ? 1 : 0 );
+        return 1;
+    }
+    if ( $prop eq 'isFolder' ) {
+        ${$resp_200}{prop}{$prop} = ( $is_dir ? 1 : 0 );
+        return 1;
+    }
+    return 0;
+}
+
+sub _get_os_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    my $is_dir   = $params{is_dir};
+    my $atime    = $params{atime};
+    my $ctime    = $params{ctime};
+    my $mtime    = $params{mtime};
+
+    if ( $self->_get_osflag_props( $prop, %params ) ) {
+        return 1;
+    }
+
+    if ( $prop eq 'Win32CreationTime' ) {
+        return ${$resp_200}{prop}{$prop}
+            = strftime( '%a, %d %b %Y %T GMT', gmtime $ctime );
+
+    }
+    if ( $prop eq 'Win32FileAttributes' ) {
+        my $fileattr = 128 + 32
+            ; # 128 - Normal, 32 - Archive, 4 - System, 2 - Hidden, 1 - Read-Only
+        $fileattr += !${$self}{backend}->isWriteable($fn)          ? 1 : 0;
+        $fileattr += ${$self}{backend}->basename($fn) =~ /^[.]/xms ? 2 : 0;
+        return ${$resp_200}{prop}{$prop} = sprintf '%08x', $fileattr;
+    }
+    if ( $prop eq 'Win32LastAccessTime' ) {
+        return ${$resp_200}{prop}{$prop}
+            = strftime( '%a, %d %b %Y %T GMT', gmtime $atime );
+    }
+    if ( $prop eq 'Win32LastModifiedTime' ) {
+        return ${$resp_200}{prop}{$prop}
+            = strftime( '%a, %d %b %Y %T GMT', gmtime $mtime );
+
+    }
+    if ( $prop eq 'authoritative-directory' ) {
+        return ${$resp_200}{prop}{$prop} = ( $is_dir ? 't' : 'f' );
+    }
+    if ( $prop eq 'resourcetag' ) {
+        return ${$resp_200}{prop}{$prop} = $main::REQUEST_URI;
+    }
+    if ( $prop eq 'repl-uid' ) {
+        return ${$resp_200}{prop}{$prop}
+            = main::getLockModule()->getuuid($fn);
+    }
+    if ( $prop eq 'modifiedby' ) {
+        return ${$resp_200}{prop}{$prop} = $main::REMOTE_USER;
+    }
+
+## appledoubleheader: Magic(4) Version(4) Filler(16) EntryCout(2)  EntryDescriptor(id:4(2:resource fork),offset:4,length:4) EntryDescriptor(id:9 finder)... Finder Info(16+16)
+## namespace: http://www.apple.com/webdav_fs/props/
+## content: MIME::Base64(pack('H*', '00051607'. '00020000' . ( '00' x 16 ) . '0002'. '00000002'. '00000026' . '0000002C'.'00000009'. '00000032' . '00000020' . ('00' x 32) ))
+    if ( $prop eq 'appledoubleheader' ) {
+        return ${$resp_200}{prop}
+            {'{http://www.apple.com/webdav_fs/props/}appledoubleheader'}
+            = 'AAUWBwACAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAACAAAAJgAAACwAAAAJAAAAMgAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    }
+    return 0;
+}
+
+sub _get_lock_props {
+    my ( $self, $prop, %params ) = @_;
+    if ( !$main::ENABLE_LOCK ) {
+        return 0;
+    }
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    if ( $prop eq 'supportedlock' ) {
+        return ${$resp_200}{prop}{$prop} = {
+            lockentry => [
+                {   lockscope => { exclusive => undef },
+                    locktype  => { q{write}  => undef },
+                },
+                {   lockscope => { shared   => undef },
+                    locktype  => { q{write} => undef },
+                },
+            ],
+        };
+    }
+    if ( $prop eq 'lockdiscovery' ) {
+        return ${$resp_200}{prop}{lockdiscovery}
+            = main::getLockModule()->get_lock_discovery($fn);
+    }
+    return 0;
+}
+
+sub _get_quota_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $resp_404 = $params{resp_404};
+    my $fn       = $params{fn};
+    if ( $prop =~
+        /^(?:quota-available-bytes|quota-used-bytes|quota|quotaused)$/xms )
+    {
+        my ( $ql, $qu ) = ${$self}{backend}->getQuota($fn);
+        if ( defined $ql && defined $qu ) {
+            ${$resp_200}{prop}{$prop}
+                = $prop eq 'quota-available-bytes' ? $ql - $qu
+                : $prop eq 'quota-used-bytes'      ? $qu
+                : $prop eq 'quota'                 ? $ql
+                : $prop eq 'quotaused'             ? $qu
+                :                                    undef;
+        }
+        else {
+            ${$resp_404}{prop}{$prop} = undef;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+sub _get_acl_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    my $uri      = $params{uri};
+    my $mode     = $params{mode};
+    if ( $prop =~ /^(?:owner|group)$/xms ) {
+        return ${$resp_200}{prop}{$prop}{href} = $uri;
+    }
+    if ( $prop eq 'supported-privilege-set' ) {
+        return ${$resp_200}{prop}{$prop}
+            = $self->_get_acl_module()->getACLSupportedPrivilegeSet($fn);
+    }
+    if ( $prop eq 'current-user-privilege-set' ) {
+        return ${$resp_200}{prop}{$prop}
+            = $self->_get_acl_module()->getACLCurrentUserPrivilegeSet($fn);
+    }
+    if ( $prop eq 'acl' ) {
+        return ${$resp_200}{prop}{$prop}
+            = $self->_get_acl_module()->getACLProp($mode);
+    }
+    if ( $prop eq 'acl-restrictions' ) {
+        return ${$resp_200}{prop}{$prop} = {
             'no-invert'          => undef,
             'required-principal' => {
                 all      => undef,
                 property => [ { owner => undef }, { group => undef } ]
             }
-            }
-            if $prop eq 'acl-restrictions';
-        ${$resp_200}{prop}{'inherited-acl-set'} = undef
-            if $prop eq 'inherited-acl-set';
-        ${$resp_200}{prop}{'principal-collection-set'}
-            = { href => $main::PRINCIPAL_COLLECTION_SET, }
-            if $prop eq 'principal-collection-set';
+        };
     }
-
-    if ( $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE ) {
-        ${$resp_200}{prop}{'calendar-description'} = undef
-            if $prop eq 'calendar-description';
-        ${$resp_200}{prop}{'calendar-timezone'} = undef
-            if $prop eq 'calendar-timezone';
-        ${$resp_200}{prop}{'supported-calendar-component-set'}
-            = '<C:comp name="VEVENT"/><C:comp name="VTODO"/><C:comp name="VJOURNAL"/><C:comp name="VTIMEZONE"/>'
-            if $prop eq 'supported-calendar-component-set';
-        ${$resp_200}{prop}{'supported-calendar-data'}
-            = '<C:calendar-data content-type="text/calendar" version="2.0"/>'
-            if $prop eq 'supported-calendar-data';
-        ${$resp_200}{prop}{'max-resource-size'} = 20_000_000
-            if $prop eq 'max-resource-size';
-        ${$resp_200}{prop}{'min-date-time'} = '19000101T000000Z'
-            if $prop eq 'min-date-time';
-        ${$resp_200}{prop}{'max-date-time'} = '20491231T235959Z'
-            if $prop eq 'max-date-time';
-        ${$resp_200}{prop}{'max-instances'} = 100 if $prop eq 'max-instances';
-        ${$resp_200}{prop}{'max-attendees-per-instance'} = 100
-            if $prop eq 'max-attendees-per-instance';
-        ${$resp_200}{prop}{'principal-URL'}{href}
-            = $main::CURRENT_USER_PRINCIPAL
-            if $prop eq 'principal-URL';
-        ${$resp_200}{prop}{'getctag'} = get_etag($fn)
-            if $prop eq 'getctag';
-        ${$resp_200}{prop}{resourcetype}{calendar} = undef
-            if $prop eq 'resourcetype'
-            && $isDir
-            && $self->getCalendarHomeSet($uri) ne $uri;
-
-        ${$resp_200}{prop}{'calendar-home-set'}{href}
-            = $self->getCalendarHomeSet($uri)
-            if $prop eq 'calendar-home-set';
-        ${$resp_200}{prop}{'calendar-user-address-set'}{href}
-            = $main::CURRENT_USER_PRINCIPAL
-            if $prop eq 'calendar-user-address-set';
-        ${$resp_200}{prop}{'calendar-user-type'} = 'INDIVIDUAL'
-            if $prop eq 'calendar-user-type';
-        ##${$resp_200}{prop}{'calendar-data'}='<![CDATA['.${$self}{backend}->getFileContent($fn).']]>' if $prop eq 'calendar-data';
-        if ( $prop eq 'calendar-data' ) {
-            if ( $fn =~ /[.]ics$/xmsi ) {
-                ${$resp_200}{prop}{'calendar-data'} = ${$self}{cgi}
-                    ->escapeHTML( ${$self}{backend}->getFileContent($fn) );
-            }
-            else {
-                ${$resp_404}{prop}{'calendar-data'} = undef;
-            }
-        }
-        ${$resp_200}{prop}{'calendar-free-busy-set'}{href}
-            = $self->getCalendarHomeSet($uri)
-            if $prop eq 'calendar-free-busy-set';
-        ## caldav schedule:
-        if ($main::ENABLE_CALDAV_SCHEDULE) {
-            ${$resp_200}{prop}{resourcetype}{'schedule-inbox'} = undef
-                if $prop eq 'resourcetype' && $isDir;
-            ${$resp_200}{prop}{resourcetype}{'schedule-outbox'} = undef
-                if $prop eq 'resourcetype'
-                && $main::ENABLE_CALDAV_SCHEDULE
-                && $isDir;
-        }
-        ${$resp_200}{prop}{'schedule-inbox-URL'}{href}
-            = $self->getCalendarHomeSet( $uri, 'inbox' )
-            if $prop eq 'schedule-inbox-URL';
-        ${$resp_200}{prop}{'schedule-outbox-URL'}{href}
-            = $self->getCalendarHomeSet( $uri, 'outbox' )
-            if $prop eq 'schedule-outbox-URL';
-        ${$resp_200}{prop}{'schedule-calendar-transp'}{transparent} = undef
-            if $prop eq 'schedule-calendar-transp';
-        ${$resp_200}{prop}{'schedule-default-calendar-URL'}
-            = $self->getCalendarHomeSet($uri)
-            if $prop eq 'schedule-default-calendar-URL';
-        ${$resp_200}{prop}{'schedule-tag'} = get_etag($fn)
-            if $prop eq 'schedule-tag';
-        ##
+    if ( $prop eq 'inherited-acl-set' ) {
+        ${$resp_200}{prop}{$prop} = undef;
+        return 1;
     }
-    if ($main::ENABLE_CARDDAV) {
-        if ( $prop eq 'address-data' ) {
-            if ( $fn =~ /[.]vcf$/xmsi ) {
-                ${$resp_200}{prop}{'address-data'} = ${$self}{cgi}
-                    ->escapeHTML( ${$self}{backend}->getFileContent($fn) );
-            }
-            else {
-                ${$resp_404}{prop}{'address-data'} = undef;
-            }
-        }
-        ${$resp_200}{prop}{'addressbook-description'}
-            = ${$self}{cgi}->escape( ${$self}{backend}->basename($fn) )
-            if $prop eq 'addressbook-description';
-        ${$resp_200}{prop}{'supported-address-data'}
-            = '<A:address-data-type content-type="text/vcard" version="3.0"/>'
-            if $prop eq 'supported-address-data';
-        ${$resp_200}{prop}
-            {'{urn:ietf:params:xml:ns:carddav}max-resource-size'}
-            = 20_000_000
-            if $prop eq 'max-resource-size' && $main::ENABLE_CARDDAV;
-        ${$resp_200}{prop}{'addressbook-home-set'}{href}
-            = $self->getAddressbookHomeSet($uri)
-            if $prop eq 'addressbook-home-set';
-        ${$resp_200}{prop}{'principal-address'}{href} = $uri
-            if $prop eq 'principal-address';
-        ${$resp_200}{prop}{resourcetype}{addressbook} = undef
-            if $prop eq 'resourcetype' && $main::ENABLE_CARDDAV && $isDir;
+    if ( $prop eq 'principal-collection-set' ) {
+        return ${$resp_200}{prop}{$prop}{href}
+            = $main::PRINCIPAL_COLLECTION_SET;
     }
-    get_groupdav_props($prop,( resp_200 => $resp_200, ));
-    if ($main::ENABLE_GROUPDAV) {
-        ${$resp_200}{prop}{resourcetype}{'vevent-collection'} = undef
-            if $prop eq 'resourcetype' && $isDir;
-        ${$resp_200}{prop}{resourcetype}{'vtodo-collection'} = undef
-            if $prop eq 'resourcetype' && $isDir;
-        ${$resp_200}{prop}{resourcetype}{'vcard-collection'} = undef
-            if $prop eq 'resourcetype' && $isDir;
-        ${$resp_200}{prop}{'component-set'} = 'VEVENT,VTODO,VCARD'
-            if $prop eq 'component-set' && $isDir;
-    }
-
-    ${$resp_200}{prop}{'supported-report-set'} = {
-        'supported-report' => [
-            { report => { 'acl-principal-prop-set'    => undef } },
-            { report => { 'principal-match'           => undef } },
-            { report => { 'principal-property-search' => undef } },
-            { report => { 'calendar-multiget'         => undef } },
-            { report => { 'calendar-query'            => undef } },
-            { report => { 'free-busy-query'           => undef } },
-            { report => { 'addressbook-query'         => undef } },
-            { report => { 'addressbook-multiget'      => undef } },
-            ## { report=>{ 'expand-property'=>undef} },
-        ]
-    } if $prop eq 'supported-report-set';
-
-    if ( $prop eq 'supported-method-set' ) {
-        ${$resp_200}{prop}{'supported-method-set'} = q{};
-        foreach my $method ( @{ main::getSupportedMethods($fn) } ) {
-            ${$resp_200}{prop}{'supported-method-set'}
-                .= q{<D:supported-method name="} . $method . q{"/>};
-        }
-    }
-
-    if ( $prop eq 'resource-id' ) {
-        my $e = get_etag( ${$self}{backend}->resolve($fn) );
-        $e =~ s/"//xmsg;
-        ${$resp_200}{prop}{'resource-id'} = 'urn:uuid:' . $e;
-    }
-    return 1;
+    return 0;
 }
 
-sub get_groupdav_props {
-    my ( $prop, %params ) = @_;
+sub _get_caldavschedule_props {
+    my ( $self, $prop, %params ) = @_;
     my $resp_200 = $params{resp_200};
-    if ( !$main::ENABLE_GROUPDAV ) { return 0; }
-    ${$resp_200}{prop}{resourcetype}{'vevent-collection'} = undef
-        if $prop eq 'resourcetype' && $params{isDir};
-    ${$resp_200}{prop}{resourcetype}{'vtodo-collection'} = undef
-        if $prop eq 'resourcetype' && $params{isDir};
-    ${$resp_200}{prop}{resourcetype}{'vcard-collection'} = undef
-        if $prop eq 'resourcetype' && $params{isDir};
-    ${$resp_200}{prop}{'component-set'} = 'VEVENT,VTODO,VCARD'
-        if $prop eq 'component-set' && $params{isDir};
-
-    return 1;
+    my $fn       = $params{fn};
+    my $uri      = $params{uri};
+    my $is_dir   = $params{is_dir};
+    if ( $is_dir && $prop eq 'resourcetype' ) {
+        ${$resp_200}{prop}{$prop}{'schedule-inbox'}  = undef;
+        ${$resp_200}{prop}{$prop}{'schedule-outbox'} = undef;
+        return 1;
+    }
+    if ( $prop eq 'schedule-inbox-URL' ) {
+        return ${$resp_200}{prop}{$prop}{href}
+            = $self->_get_calendar_homeset( $uri, 'inbox' );
+    }
+    if ( $prop eq 'schedule-outbox-URL' ) {
+        return ${$resp_200}{prop}{$prop}{href}
+            = $self->_get_calendar_homeset( $uri, 'outbox' );
+    }
+    if ( $prop eq 'schedule-calendar-transp' ) {
+        ${$resp_200}{prop}{$prop}{transparent} = undef;
+        return 1;
+    }
+    if ( $prop eq 'schedule-default-calendar-URL' ) {
+        return ${$resp_200}{prop}{$prop} = $self->_get_calendar_homeset($uri);
+    }
+    if ( $prop eq 'schedule-tag' ) {
+        return ${$resp_200}{prop}{$prop} = get_etag($fn);
+    }
+    return 0;
 }
 
-sub getACLModule {
+sub _get_caldav_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $fn       = $params{fn};
+    my $uri      = $params{uri};
+    my $is_dir   = $params{is_dir};
+
+    if ( $prop =~ /^(?:calendar-description|calendar-timezone)$/xms ) {
+        return ${$resp_200}{prop}{$prop} = undef;
+    }
+    if ( $prop eq 'supported-calendar-component-set' ) {
+        return ${$resp_200}{prop}{$prop}
+            = q{<C:comp name="VEVENT"/><C:comp name="VTODO"/><C:comp name="VJOURNAL"/><C:comp name="VTIMEZONE"/>};
+    }
+    if ( $prop eq 'supported-calendar-data' ) {
+        return ${$resp_200}{prop}{$prop}
+            = q{<C:calendar-data content-type="text/calendar" version="2.0"/>};
+    }
+    if ( $prop eq 'max-resource-size' ) {
+        return ${$resp_200}{prop}{$prop} = $CGI::POST_MAX // 20_000_000;
+    }
+    if ( $prop eq 'min-date-time' ) {
+        return ${$resp_200}{prop}{$prop} = '19000101T000000Z';
+    }
+    if ( $prop eq 'max-date-time' ) {
+        return ${$resp_200}{prop}{$prop} = '20491231T235959Z';
+    }
+    if ( $prop eq 'max-instances' ) {
+        return ${$resp_200}{prop}{$prop} = 100;
+    }    ## TODO: config
+    if ( $prop eq 'max-attendees-per-instance' ) {
+        return ${$resp_200}{prop}{$prop} = 100;
+    }    ## TODO: config
+    if ( $prop eq 'principal-URL' ) {
+        return ${$resp_200}{prop}{$prop}{href}
+            = $main::CURRENT_USER_PRINCIPAL;
+    }
+    if ( $prop eq 'getctag' ) {
+        return ${$resp_200}{prop}{$prop} = get_etag($fn);
+    }
+    if (   $prop eq 'resourcetype'
+        && $is_dir
+        && $self->_get_calendar_homeset($uri) ne $uri )
+    {
+        return ${$resp_200}{prop}{$prop}{calendar} = undef;
+    }
+    if ( $prop eq 'calendar-home-set' ) {
+        return ${$resp_200}{prop}{$prop} = $self->_get_calendar_homeset($uri);
+    }
+    if ( $prop eq 'calendar-user-address-set' ) {
+        return ${$resp_200}{prop}{$prop}{href}
+            = $main::CURRENT_USER_PRINCIPAL;
+    }
+    if ( $prop eq 'calendar-user-type' ) {
+        return ${$resp_200}{prop}{$prop} = 'INDIVIDUAL';
+    }
+    if ( $prop eq 'calendar-data' ) {
+        return ${$resp_200}{prop}{$prop}
+            = $fn =~ /[.]ics$/xmsi
+            ? ${$self}{cgi}
+            ->escapeHTML( ${$self}{backend}->getFileContent($fn) )
+            : undef;
+    }
+    if ( $prop eq 'calendar-free-busy-set' ) {
+        return ${$resp_200}{prop}{$prop} = $self->_get_calendar_homeset($uri);
+    }
+    return 0;
+}
+
+sub _get_carddav_props {
+    my ( $self, $prop, %params ) = @_;
+    my $resp_200 = $params{resp_200};
+    my $resp_404 = $params{resp_404};
+    my $fn       = $params{fn};
+    my $uri      = $params{uri};
+    my $is_dir   = $params{is_dir};
+    if ( $prop eq 'address-data' ) {
+        if ( $fn =~ /[.]vcf$/xmsi ) {
+            ${$resp_200}{prop}{'address-data'} = ${$self}{cgi}
+                ->escapeHTML( ${$self}{backend}->getFileContent($fn) );
+        }
+        else {
+            ${$resp_404}{prop}{'address-data'} = undef;
+        }
+        return 1;
+    }
+    if ( $prop eq 'addressbook-description' ) {
+        return ${$resp_200}{prop}{'addressbook-description'}
+            = ${$self}{cgi}->escape( ${$self}{backend}->basename($fn) );
+
+    }
+    if ( $prop eq 'supported-address-data' ) {
+        return ${$resp_200}{prop}{'supported-address-data'}
+            = '<A:address-data-type content-type="text/vcard" version="3.0"/>';
+    }
+    if ( $prop eq 'max-resource-size' ) {
+        return ${$resp_200}{prop}
+            {'{urn:ietf:params:xml:ns:carddav}max-resource-size'}
+            = 20_000_000;
+    }
+    if ( $prop eq 'addressbook-home-set' ) {
+        return ${$resp_200}{prop}{'addressbook-home-set'}{href}
+            = $self->_get_addressbook_homeset($uri);
+
+    }
+    if ( $prop eq 'principal-address' ) {
+        return ${$resp_200}{prop}{'principal-address'}{href} = $uri;
+    }
+    if ( $prop eq 'resourcetype' && $is_dir ) {
+        ${$resp_200}{prop}{resourcetype}{addressbook} = undef;
+        return 1;
+    }
+    return 0;
+}
+
+sub _get_groupdav_props {
+    my ( $self, $prop, %params ) = @_;
+    if ( !$main::ENABLE_GROUPDAV ) {
+        return 0;
+    }
+    my $resp_200 = $params{resp_200};
+    if ( $prop eq 'resourcetype' && $params{is_dir} ) {
+        foreach my $t (
+            ( 'vevent-collection', 'vtodo-collection', 'vcard-collection' ) )
+        {
+            ${$resp_200}{prop}{$prop}{$t} = undef;
+        }
+        return 1;
+    }
+    if ( $prop eq 'component-set' && $params{is_dir} ) {
+        return ${$resp_200}{prop}{'component-set'} = 'VEVENT,VTODO,VCARD';
+    }
+    return 0;
+}
+
+sub _get_acl_module {
     my ($self) = @_;
     require WebDAV::ACL;
     return WebDAV::ACL->new( ${$self}{cgi}, ${$self}{backend} );
 }
 
-sub getAddressbookHomeSet {
+sub _get_addressbook_homeset {
     my ( $self, $uri ) = @_;
-    return $uri unless %main::ADDRESSBOOK_HOME_SET;
-    my $rmuser = $main::REMOTE_USER;
-    $rmuser = $UID unless exists $main::ADDRESSBOOK_HOME_SET{$rmuser};
-    return (
-        exists $main::ADDRESSBOOK_HOME_SET{$rmuser}
-        ? $main::ADDRESSBOOK_HOME_SET{$rmuser}
-        : $main::ADDRESSBOOK_HOME_SET{default}
-    );
+    if ( !%main::ADDRESSBOOK_HOME_SET ) {
+        return $uri;
+    }
+    my $rmuser
+        = exists $main::ADDRESSBOOK_HOME_SET{$main::REMOTE_USER}
+        ? $main::REMOTE_USER
+        : $UID;
+    return $main::ADDRESSBOOK_HOME_SET{$rmuser}
+        // $main::ADDRESSBOOK_HOME_SET{default};
 }
 
-sub getCalendarHomeSet {
+sub _get_calendar_homeset {
     my ( $self, $uri, $subpath ) = @_;
-    return $uri unless %main::CALENDAR_HOME_SET;
-    my $rmuser = $main::REMOTE_USER;
-    $rmuser = $UID unless exists $main::CALENDAR_HOME_SET{$rmuser};
-    return (
-        exists $main::CALENDAR_HOME_SET{$rmuser}
-        ? $main::CALENDAR_HOME_SET{$rmuser}
-        : $main::CALENDAR_HOME_SET{default}
-    ) . ( defined $subpath ? $subpath : q{} );
+    if ( !%main::CALENDAR_HOME_SET ) {
+        return $uri;
+    }
+    my $rmuser
+        = exists $main::CALENDAR_HOME_SET{$main::REMOTE_USER}
+        ? $main::REMOTE_USER
+        : $UID;
+    return ( $main::CALENDAR_HOME_SET{$rmuser}
+            // $main::CALENDAR_HOME_SET{default} )
+        . ( defined $subpath ? $subpath : q{} );
 }
 
 1;

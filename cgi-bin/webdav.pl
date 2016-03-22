@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160321.06';
+$RELEASE = '1.1.1BETA20160322.01';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -2668,7 +2668,7 @@ sub getPropStat {
             }
             else {
                 getPropertyModule()
-                    ->getProperty( $fn, $uri, $prop, \@stat, \%resp_200,
+                    ->get_property( $fn, $uri, $prop, \@stat, \%resp_200,
                     \%resp_404 );
             }
         }
@@ -2758,7 +2758,7 @@ sub handlePropertyRequest {
         foreach my $remove ( @{ $$dataRef{'{DAV:}remove'} } ) {
             foreach my $propname ( keys %{ $$remove{'{DAV:}prop'} } ) {
                 getPropertyModule()
-                    ->removeProperty( $propname, $$remove{'{DAV:}prop'},
+                    ->remove_property( $propname, $$remove{'{DAV:}prop'},
                     $resp_200, $resp_403 );
             }
         }
@@ -2768,7 +2768,7 @@ sub handlePropertyRequest {
             my $propname ( keys %{ $$dataRef{'{DAV:}remove'}{'{DAV:}prop'} } )
         {
             getPropertyModule()
-                ->removeProperty( $propname,
+                ->remove_property( $propname,
                 $$dataRef{'{DAV:}remove'}{'{DAV:}prop'},
                 $resp_200, $resp_403 );
         }
@@ -2777,7 +2777,7 @@ sub handlePropertyRequest {
         foreach my $set ( @{ $$dataRef{'{DAV:}set'} } ) {
             foreach my $propname ( keys %{ $$set{'{DAV:}prop'} } ) {
                 getPropertyModule()
-                    ->setProperty( $propname, $$set{'{DAV:}prop'}, $resp_200,
+                    ->set_property( $propname, $$set{'{DAV:}prop'}, $resp_200,
                     $resp_403 );
             }
         }
@@ -2795,7 +2795,7 @@ sub handlePropertyRequest {
                 $lastmodifiedprocessed = 1;
             }
             getPropertyModule()
-                ->setProperty( $propname,
+                ->set_property( $propname,
                 $$dataRef{'{DAV:}set'}{'{DAV:}prop'},
                 $resp_200, $resp_403 );
         }
@@ -2806,7 +2806,7 @@ sub handlePropertyRequest {
             foreach my $remove ( @{ $$dataRef{'{DAV:}remove'} } ) {
                 foreach my $propname ( keys %{ $$remove{'{DAV:}prop'} } ) {
                     getPropertyModule()
-                        ->removeProperty( $propname, $$remove{'{DAV:}prop'},
+                        ->remove_property( $propname, $$remove{'{DAV:}prop'},
                         $resp_200, $resp_403 );
                 }
             }
@@ -2816,7 +2816,7 @@ sub handlePropertyRequest {
                 keys %{ $$dataRef{'{DAV:}remove'}{'{DAV:}prop'} } )
             {
                 getPropertyModule()
-                    ->removeProperty( $propname,
+                    ->remove_property( $propname,
                     $$dataRef{'{DAV:}remove'}{'{DAV:}prop'},
                     $resp_200, $resp_403 );
             }

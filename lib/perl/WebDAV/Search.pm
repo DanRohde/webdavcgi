@@ -220,7 +220,7 @@ sub getPropValue {
 
     if ( !defined $propval ) {
         main::getPropertyModule()
-            ->getProperty( $fn, $uri, $propname, undef, \%r200, \%r404 );
+            ->get_property( $fn, $uri, $propname, undef, \%r200, \%r404 );
         $propval = $r200{prop}{$propname};
     }
 

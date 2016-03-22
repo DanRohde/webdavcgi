@@ -128,7 +128,7 @@ sub renderPropertiesViewer {
         }
         else {
             main::getPropertyModule()
-                ->getProperty( $fn, $ru, $prop, undef, \%r200, \my %r404 );
+                ->get_property( $fn, $ru, $prop, undef, \%r200, \my %r404 );
         }
         $visited{$prop} = 1;
         $WebDAV::XMLHelper::NAMESPACEELEMENTS{ main::nonamespace($prop) } = 1;
