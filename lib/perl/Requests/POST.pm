@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package Requests::HEAD;
+package Requests::POST;
 
 use strict;
 use warnings;
@@ -25,24 +25,41 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use HTTPHelper
-  qw( fix_mod_perl_response print_header_and_content print_file_header );
+use HTTPHelper qw( print_header_and_content );
+use FileUtils qw( get_error_document );
 
 sub handle {
-    my ($self)  = @_;
+    my ($self) = @_;
+    main::debug("_POST: $main::PATH_TRANSLATED");
+
+    my $cgi     = main::getCGI();
     my $backend = main::getBackend();
-    if ( $main::FANCYINDEXING
-        && main::getWebInterface()->handle_head_request() )
+
+    if ( !$cgi->param('file_upload') && $cgi->cgi_error ) {
+        return print_header_and_content( $cgi->cgi_error, undef,
+            $cgi->cgi_error );
+    }
+    if ( $main::ALLOW_FILE_MANAGEMENT
+        && main::getWebInterface()->handle_post_request() )
     {
-        main::debug('HEAD: WebInterface called');
+        main::debug('_POST: WebInterface called');
         return;
     }
-    if ( !$backend->exists($main::PATH_TRANSLATED) ) {
-        main::debug("HEAD: $main::PATH_TRANSLATED does not exists!");
-        print_header_and_content('404 Not Found');
-
+    if (   $main::ENABLE_CALDAV_SCHEDULE
+        && $backend->isDir($main::PATH_TRANSLATED) )
+    {
+        ## TODO: NOT IMPLEMENTED YET
+        return print_header_and_content('501 Not Implemented');
     }
-    main::debug("HEAD: $main::PATH_TRANSLATED exists!");
-    return fix_mod_perl_response( print_file_header($main::PATH_TRANSLATED) );
+    main::debug("_POST: forbidden POST to $main::PATH_TRANSLATED");
+    return print_header_and_content(
+        get_error_document(
+            '403 Forbidden',
+            'text/plain',
+            '403 Forbidden (unknown request, params:'
+              . join( ', ', $cgi->param() ) . ')'
+        )
+    );
 }
+
 1;

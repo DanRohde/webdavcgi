@@ -72,7 +72,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160324.08';
+$RELEASE = '1.1.1BETA20160324.09';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -106,8 +106,8 @@ $DOCUMENT_ROOT = $ENV{DOCUMENT_ROOT} . q{/};
 ## -- UMASK
 ## mask for file/folder creation
 ## (it does not change permission of existing files/folders):
-## DEFAULT: $UMASK = oct(2); # read/write/execute for users and groups, others get read/execute permissions
-$UMASK = oct(22);
+## DEFAULT: $UMASK = oct 2; # read/write/execute for users and groups, others get read/execute permissions
+$UMASK = oct 22;
 
 ## -- MIMEFILE
 ## path to your MIME types file
@@ -1278,33 +1278,6 @@ sub HTTP_GET {
             get_error_document(
                 '404 Not Found',
                 'text/plain', '404 - FILE NOT FOUND'
-            )
-        );
-    }
-    return;
-}
-
-sub HTTP_POST {
-    debug("_POST: $PATH_TRANSLATED");
-
-    if ( !$cgi->param('file_upload') && $cgi->cgi_error ) {
-        print_header_and_content( $cgi->cgi_error, undef, $cgi->cgi_error );
-        return;
-    }
-    if ( $ALLOW_FILE_MANAGEMENT && getWebInterface()->handle_post_request() ) {
-        debug('_POST: WebInterface called');
-    }
-    elsif ( $ENABLE_CALDAV_SCHEDULE && $backend->isDir($PATH_TRANSLATED) ) {
-        ## TODO: NOT IMPLEMENTED YET
-    }
-    else {
-        debug("_POST: forbidden POST to $PATH_TRANSLATED");
-        print_header_and_content(
-            get_error_document(
-                '403 Forbidden',
-                'text/plain',
-                '403 Forbidden (unknown request, params:'
-                    . join( ', ', $cgi->param() ) . ')'
             )
         );
     }

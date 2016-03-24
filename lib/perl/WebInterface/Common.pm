@@ -314,6 +314,7 @@ sub cmp_files {
 sub render_byte_val {
     my ( $self, $v, $f, $ft ) = @_;   # v-value, f-accuracy, ft-title accuracy
     use locale;
+    $v  //= 0;
     $f  //= 2;
     $ft //= $f;
     my $showunit = 'B';
