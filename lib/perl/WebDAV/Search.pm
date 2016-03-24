@@ -33,6 +33,70 @@ use CacheManager;
 
 use base qw( WebDAV::Common );
 
+use vars qw( %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS );
+
+BEGIN {
+
+    %SEARCH_PROPTYPES = (
+        default                                                   => 'string',
+        '{DAV:}getlastmodified'                                   => 'dateTime',
+        '{DAV:}lastaccessed'                                      => 'dateTime',
+        '{DAV:}getcontentlength'                                  => 'int',
+        '{DAV:}creationdate'                                      => 'dateTime',
+        '{urn:schemas-microsoft-com:}Win32CreationTime'           => 'dateTime',
+        '{urn:schemas-microsoft-com:}Win32LastAccessTime'         => 'dateTime',
+        '{urn:schemas-microsoft-com:}Win32LastModifiedTime'       => 'dateTime',
+        '{DAV:}childcount'                                        => 'int',
+        '{DAV:}objectcount'                                       => 'int',
+        '{DAV:}visiblecount'                                      => 'int',
+        '{DAV:}acl'                                               => 'xml',
+        '{DAV:}acl-restrictions'                                  => 'xml',
+        '{urn:ietf:params:xml:ns:carddav}addressbook-home-set'    => 'xml',
+        '{urn:ietf:params:xml:ns:caldav}calendar-home-set'        => 'xml',
+        '{DAV:}current-user-principal}'                           => 'xml',
+        '{DAV:}current-user-privilege-set'                        => 'xml',
+        '{DAV:}group'                                             => 'xml',
+        '{DAV:}owner'                                             => 'xml',
+        '{urn:ietf:params:xml:ns:carddav}principal-address'       => 'xml',
+        '{DAV:}principal-collection-set'                          => 'xml',
+        '{DAV:}principal-URL'                                     => 'xml',
+        '{DAV:}resourcetype'                                      => 'xml',
+        '{urn:ietf:params:xml:ns:caldav}schedule-calendar-transp' => 'xml',
+        '{urn:ietf:params:xml:ns:caldav}schedule-inbox-URL'       => 'xml',
+        '{urn:ietf:params:xml:ns:caldav}schedule-outbox-URL'      => 'xml',
+        '{DAV:}source'                                            => 'xml',
+        '{urn:ietf:params:xml:ns:carddav}supported-address-data'  => 'xml',
+        '{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set' =>
+          'xml',
+        '{urn:ietf:params:xml:ns:caldav}supported-calendar-data' => 'xml',
+        '{DAV:}supported-method-set'                             => 'xml',
+        '{DAV:}supported-privilege-set'                          => 'xml',
+        '{DAV:}supported-report-set'                             => 'xml',
+        '{DAV:}supportedlock'                                    => 'xml',
+    );
+    %SEARCH_SPECIALCONV = ( dateTime => 'str2time', xml => 'xml2str' );
+    %SEARCH_SPECIALOPS = (
+        int => {
+            eq  => q{==},
+            gt  => q{>},
+            lt  => q{<},
+            gte => q{>=},
+            lte => q{<=},
+            cmp => q{<=>},
+        },
+        dateTime => {
+            eq  => q{==},
+            gt  => q{>},
+            lt  => q{<},
+            gte => q{>=},
+            lte => q{<=},
+            cmp => q{<=>},
+        },
+        string => { lte => 'le', gte => 'ge' },
+    );
+
+}
+
 sub new {
     my $this  = shift;
     my $class = ref($this) || $this;
@@ -158,15 +222,15 @@ q{get_prop_value($self,'{DAV:}iscollection',$filename,$request_uri)==1};
             ${$xmlref}{'{DAV:}literal'} );
         $ne2 =~ s/'/\\'/xmsg;
         $ne2 =
-            $main::SEARCH_SPECIALCONV{$nt1}
-          ? $main::SEARCH_SPECIALCONV{$nt1} . "('$ne2')"
+            $SEARCH_SPECIALCONV{$nt1}
+          ? $SEARCH_SPECIALCONV{$nt1} . "('$ne2')"
           : "'$ne2'";
         my $cl =
           ${$xmlref}{'caseless'} || ${$xmlref}{'{DAV:}caseless'} || 'yes';
         $expr =
             ( ( $nt1 =~ /(string|xml)/xms && $cl ne 'no' ) ? "lc($ne1)" : $ne1 )
           . q{ }
-          . ( $main::SEARCH_SPECIALOPS{$nt1}{$o} || $o ) . q{ }
+          . ( $SEARCH_SPECIALOPS{$nt1}{$o} || $o ) . q{ }
           . (
             ( $nt1 =~ /(string|xml)/xms && $cl ne 'no' )
             ? "lc($ne2)"
@@ -202,10 +266,10 @@ q{get_prop_value($self,'{DAV:}iscollection',$filename,$request_uri)==1};
         my @props = keys %{$xmlref};
         $props[0] =~ s/'/\\'/xmsg;
         $expr = "get_prop_value(\$self,'$props[0]',\$filename,\$request_uri)";
-        $type = $main::SEARCH_PROPTYPES{ $props[0] }
-          || $main::SEARCH_PROPTYPES{default};
-        if ( exists $main::SEARCH_SPECIALCONV{$type} ) {
-            $expr = $main::SEARCH_SPECIALCONV{$type} . "($expr)";
+        $type = $SEARCH_PROPTYPES{ $props[0] }
+          || $SEARCH_PROPTYPES{default};
+        if ( exists $SEARCH_SPECIALCONV{$type} ) {
+            $expr = $SEARCH_SPECIALCONV{$type} . "($expr)";
         }
 
     }
@@ -316,18 +380,18 @@ sub _build_sort_func {
         foreach my $order (@orders) {
             my @props    = keys %{ ${$order}{'{DAV:}prop'} };
             my $prop     = $props[0] || '{DAV:}displayname';
-            my $proptype = $main::SEARCH_PROPTYPES{$prop}
-              || $main::SEARCH_PROPTYPES{default};
+            my $proptype = $SEARCH_PROPTYPES{$prop}
+              || $SEARCH_PROPTYPES{default};
             my $collation =
               ${$order}{'{DAV:}descending'} ? 'descending' : 'ascending';
             my ( $ta, $tb, $cmp );
             $ta = "get_prop_value(\$self,'$prop',\$\$a{fn},\$\$a{href})";
             $tb = "get_prop_value(\$self,'$prop',\$\$b{fn},\$\$b{href})";
-            if ( $main::SEARCH_SPECIALCONV{$proptype} ) {
-                $ta = $main::SEARCH_SPECIALCONV{$proptype} . "($ta)";
-                $tb = $main::SEARCH_SPECIALCONV{$proptype} . "($tb)";
+            if ( $SEARCH_SPECIALCONV{$proptype} ) {
+                $ta = $SEARCH_SPECIALCONV{$proptype} . "($ta)";
+                $tb = $SEARCH_SPECIALCONV{$proptype} . "($tb)";
             }
-            $cmp = $main::SEARCH_SPECIALOPS{$proptype}{cmp} || 'cmp';
+            $cmp = $SEARCH_SPECIALOPS{$proptype}{cmp} || 'cmp';
             $sortfunc .= $sortfunc ne q{}           ? q{ || }        : q{};
             $sortfunc .= $collation eq 'ascending'  ? "$ta $cmp $tb" : q{};
             $sortfunc .= $collation eq 'descending' ? "$tb $cmp $ta" : q{};

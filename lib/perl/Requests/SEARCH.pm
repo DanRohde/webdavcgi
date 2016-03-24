@@ -22,19 +22,21 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Request );
+use base qw( Requests::Request );
 
 use English qw ( -no_match_vars );
 use XML::Simple;
 
 use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
-use XMLHelper qw( create_xml );
+use WebDAV::XMLHelper qw( create_xml );
 
 use WebDAV::Search;
 
 sub handle {
     my ($self) = @_;
+    
+    my $config = main::getConfig();
 
     my @resps;
     my $status  = '207 Multistatus';

@@ -53,7 +53,7 @@ use vars
     $ENABLE_CARDDAV @KNOWN_CARDDAV_COLL_PROPS @KNOWN_CARDDAV_FILE_PROPS $CURRENT_USER_PRINCIPAL
     %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
     $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
-    $ENABLE_SEARCH $ENABLE_GROUPDAV %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS
+    $ENABLE_SEARCH $ENABLE_GROUPDAV
     @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
     $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
     $ENABLE_BIND $LANGSWITCH
@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160324.01';
+$RELEASE = '1.1.1BETA20160324.02';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -969,7 +969,7 @@ $WEB_ID = 0;
     'supported-privilege-set', 'current-user-privilege-set',
     'acl',                     'acl-restrictions',
     'inherited-acl-set',       'principal-collection-set',
-    'current-user-principal'
+    'current-user-principal',
 );
 @KNOWN_CALDAV_COLL_PROPS = (
     'calendar-description',             'calendar-timezone',
@@ -987,7 +987,7 @@ $WEB_ID = 0;
 
 @KNOWN_CARDDAV_COLL_PROPS = (
     'addressbook-description', 'supported-address-data',
-    'addressbook-home-set',    'principal-address'
+    'addressbook-home-set',    'principal-address',
 );
 @KNOWN_CARDDAV_FILE_PROPS = ('address-data');
 
@@ -996,7 +996,7 @@ $WEB_ID = 0;
 @KNOWN_CALDAV_COLL_LIVE_PROPS = (
     'resourcetype',         'displayname',
     'calendar-description', 'calendar-timezone',
-    'calendar-user-address-set'
+    'calendar-user-address-set',
 );
 @KNOWN_CALDAV_FILE_LIVE_PROPS  = ();
 @KNOWN_CARDDAV_COLL_LIVE_PROPS = ('addressbook-description');
@@ -1107,64 +1107,6 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
     'executable'
 );
 
-%SEARCH_PROPTYPES = (
-    default                                                   => 'string',
-    '{DAV:}getlastmodified'                                   => 'dateTime',
-    '{DAV:}lastaccessed'                                      => 'dateTime',
-    '{DAV:}getcontentlength'                                  => 'int',
-    '{DAV:}creationdate'                                      => 'dateTime',
-    '{urn:schemas-microsoft-com:}Win32CreationTime'           => 'dateTime',
-    '{urn:schemas-microsoft-com:}Win32LastAccessTime'         => 'dateTime',
-    '{urn:schemas-microsoft-com:}Win32LastModifiedTime'       => 'dateTime',
-    '{DAV:}childcount'                                        => 'int',
-    '{DAV:}objectcount'                                       => 'int',
-    '{DAV:}visiblecount'                                      => 'int',
-    '{DAV:}acl'                                               => 'xml',
-    '{DAV:}acl-restrictions'                                  => 'xml',
-    '{urn:ietf:params:xml:ns:carddav}addressbook-home-set'    => 'xml',
-    '{urn:ietf:params:xml:ns:caldav}calendar-home-set'        => 'xml',
-    '{DAV:}current-user-principal}'                           => 'xml',
-    '{DAV:}current-user-privilege-set'                        => 'xml',
-    '{DAV:}group'                                             => 'xml',
-    '{DAV:}owner'                                             => 'xml',
-    '{urn:ietf:params:xml:ns:carddav}principal-address'       => 'xml',
-    '{DAV:}principal-collection-set'                          => 'xml',
-    '{DAV:}principal-URL'                                     => 'xml',
-    '{DAV:}resourcetype'                                      => 'xml',
-    '{urn:ietf:params:xml:ns:caldav}schedule-calendar-transp' => 'xml',
-    '{urn:ietf:params:xml:ns:caldav}schedule-inbox-URL'       => 'xml',
-    '{urn:ietf:params:xml:ns:caldav}schedule-outbox-URL'      => 'xml',
-    '{DAV:}source'                                            => 'xml',
-    '{urn:ietf:params:xml:ns:carddav}supported-address-data'  => 'xml',
-    '{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set' =>
-        'xml',
-    '{urn:ietf:params:xml:ns:caldav}supported-calendar-data' => 'xml',
-    '{DAV:}supported-method-set'                             => 'xml',
-    '{DAV:}supported-privilege-set'                          => 'xml',
-    '{DAV:}supported-report-set'                             => 'xml',
-    '{DAV:}supportedlock'                                    => 'xml'
-);
-%SEARCH_SPECIALCONV = ( dateTime => 'str2time', xml => 'xml2str' );
-%SEARCH_SPECIALOPS = (
-    int => {
-        eq  => q{==},
-        gt  => q{>},
-        lt  => q{<},
-        gte => q{>=},
-        lte => q{<=},
-        cmp => q{<=>},
-    },
-    dateTime => {
-        eq  => q{==},
-        gt  => q{>},
-        lt  => q{<},
-        gte => q{>=},
-        lte => q{<=},
-        cmp => q{<=>},
-    },
-    string => { lte => 'le', gte => 'ge' }
-);
-
 @IGNORE_PROPS = ( 'xmlns', 'CS' );
 
 foreach (@KNOWN_COLL_PROPS) {
@@ -1196,7 +1138,7 @@ sub handle_request {
             &{$main::{"HTTP_$method"}};
         } else {
             my $module = "Requests::${method}";
-            load $module;
+            load($module);
             $module->new()->handle();
         }
         if ($backend) { $backend->finalize(); }
@@ -1391,7 +1333,7 @@ sub HTTP_OPTIONS {
             = $backend->isDir($PATH_TRANSLATED)
             ? 'httpd/unix-directory'
             : get_mime_type($PATH_TRANSLATED);
-        $methods = join( ', ', @{ getSupportedMethods($PATH_TRANSLATED) } );
+        $methods = join ', ', @{ getSupportedMethods($PATH_TRANSLATED) };
 
     }
     else {
@@ -2436,6 +2378,9 @@ sub getCGI {
 }
 sub getBackend {
     return $backend;
+}
+sub getConfig {
+    return $config;
 }
 
 1;

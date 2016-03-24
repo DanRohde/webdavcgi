@@ -22,7 +22,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Request );
+use base qw( Requests::Request );
 
 use XML::Simple;
 

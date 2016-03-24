@@ -22,14 +22,14 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Request );
+use base qw( Requests::Request );
 
 use XML::Simple;
 use English qw ( -no_match_vars );
 
 use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
-use XMLHelper qw( create_xml );
+use WebDAV::XMLHelper qw( create_xml );
 
 sub handle {
     my ($self) = @_;
