@@ -24,10 +24,9 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use XML::Simple;
-
 use FileUtils qw( rmove get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
+use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
     my ($self) = @_;
@@ -53,7 +52,7 @@ sub handle {
 
     my $segment = ${$xmldata}{'{DAV:}segment'};
     my $href    = ${$xmldata}{'{DAV:}href'};
-    $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//xms;
+    $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$main::VIRTUAL_BASE//xms;
     $href = uri_unescape( uri_unescape($href) );
     my $src = $main::DOCUMENT_ROOT . $href;
     my $dst = $main::PATH_TRANSLATED . $segment;

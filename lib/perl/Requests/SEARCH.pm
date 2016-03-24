@@ -25,11 +25,10 @@ our $VERSION = '2.0';
 use base qw( Requests::Request );
 
 use English qw ( -no_match_vars );
-use XML::Simple;
 
 use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
-use WebDAV::XMLHelper qw( create_xml );
+use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 use WebDAV::Search;
 

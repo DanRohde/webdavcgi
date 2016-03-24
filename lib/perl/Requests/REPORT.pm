@@ -25,11 +25,10 @@ our $VERSION = '2.0';
 use base qw( Requests::Request );
 
 use English qw ( -no_match_vars );
-use XML::Simple;
 
 use FileUtils qw( read_dir_recursive read_dir_by_suffix get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
-use WebDAV::XMLHelper qw( create_xml );
+use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 
 sub handle {
@@ -119,8 +118,9 @@ sub handle {
 }
 
 sub _print_response_from_hrefs {
-    my ( $self, $xmldata, $hrefsref ) = @_;
+    my ( $self, $xmldata, $rn, $hrefsref ) = @_;
     my $backend = main::getBackend();
+    my @resps = ();
     foreach my $href ( @{$hrefsref} ) {
         my ( %resp_200, %resp_404 );
         $resp_200{status} = 'HTTP/1.1 200 OK';
@@ -278,13 +278,13 @@ sub _handle_calendar_query { ## missing filter
     my ($self, $fn, $ru, $xmldata, $depth ) = @_;
     my @hrefs = ();
     read_dir_by_suffix( $fn, $ru, \@hrefs, 'ics', $depth );
-    return _print_response_from_hrefs($xmldata, \@hrefs);
+    return _print_response_from_hrefs($xmldata, '{urn:ietf:params:xml:ns:caldav}calendar-query', \@hrefs);
 }
 
 sub _handle_calendar_multiget {    ## OK - complete
     my ( $self, $xmldata ) = @_;
     my @hrefs;
-    $rn = '{urn:ietf:params:xml:ns:caldav}calendar-multiget';
+    my $rn = '{urn:ietf:params:xml:ns:caldav}calendar-multiget';
     if (   !defined ${$xmldata}{$rn}{'{DAV:}href'}
         || !defined ${$xmldata}{$rn}{'{DAV:}prop'} )
     {
@@ -307,13 +307,13 @@ sub _handle_calendar_multiget {    ## OK - complete
     else {
         push @hrefs, ${$xmldata}{$rn}{'{DAV:}href'};
     }
-    return $self->_print_response_from_hrefs($xmldata, \@hrefs);
+    return $self->_print_response_from_hrefs($xmldata, $rn, \@hrefs);
 }
 sub _handle_addressbook_query {
     my ($self, $fn, $ru, $xmldata, $depth ) = @_;
     my @hrefs = ();
     read_dir_by_suffix( $fn, $ru, \@hrefs, 'vcf', $depth );
-    return $self->_print_response_from_hrefs($xmldata, \@hrefs);
+    return $self->_print_response_from_hrefs($xmldata, '{urn:ietf:params:xml:ns:carddav}addressbook-query', \@hrefs);
 }
 sub _handle_addressbook_multiget {
     my ( $self, $xmldata ) = @_;
@@ -341,7 +341,7 @@ sub _handle_addressbook_multiget {
     else {
         push @hrefs, ${$xmldata}{$rn}{'{DAV:}href'};
     }
-    return $self->_print_response_from_hrefs($xmldata, \@hrefs);
+    return $self->_print_response_from_hrefs($xmldata, $rn, \@hrefs);
 }
 
 1;

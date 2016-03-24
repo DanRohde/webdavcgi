@@ -46,10 +46,10 @@ sub handle {
 
     my $segment = ${$xmldata}{'{DAV:}segment'};
     my $href    = ${$xmldata}{'{DAV:}href'};
-    $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//xms;
+    $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$main::VIRTUAL_BASE//xms;
     $href = uri_unescape( uri_unescape($href) );
-    my $src = $DOCUMENT_ROOT . $href;
-    my $dst = $PATH_TRANSLATED . $segment;
+    my $src = $main::DOCUMENT_ROOT . $href;
+    my $dst = $main::PATH_TRANSLATED . $segment;
 
     my $ndst = $dst;
     $ndst =~ s /\/$//xms;

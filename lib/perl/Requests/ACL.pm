@@ -24,12 +24,11 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use XML::Simple;
 use English qw ( -no_match_vars );
 
 use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
-use WebDAV::XMLHelper qw( create_xml );
+use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 sub handle {
     my ($self) = @_;
