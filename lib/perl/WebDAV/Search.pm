@@ -25,7 +25,7 @@ our $VERSION = '2.0';
 
 use CGI::Carp;
 use Date::Parse;
-use List::MoreUtils qw( any );
+use List::MoreUtils qw( none );
 use English qw ( -no_match_vars );
 
 use FileUtils;
@@ -104,6 +104,7 @@ sub new {
     bless $self, $class;
     $self->{config} = shift;
     $self->{cache}  = CacheManager::getinstance();
+    $self->{db}     = main::getDBDriver();
     $self->initialize();
     return $self;
 }
@@ -201,7 +202,7 @@ sub _build_expr_from_basic_search_where_clause {
     }
     elsif ( $op eq 'is-collection' ) {
         $expr =
-q{get_prop_value($self,'{DAV:}iscollection',$filename,$request_uri)==1};
+q{$self->get_prop_value('{DAV:}iscollection',$filename,$request_uri)==1};
     }
     elsif ( $op eq 'is-defined' ) {
         my ( $ne, $nt ) =
@@ -265,7 +266,7 @@ q{get_prop_value($self,'{DAV:}iscollection',$filename,$request_uri)==1};
     elsif ( $op eq 'prop' ) {
         my @props = keys %{$xmlref};
         $props[0] =~ s/'/\\'/xmsg;
-        $expr = "get_prop_value(\$self,'$props[0]',\$filename,\$request_uri)";
+        $expr = "\$self->get_prop_value('$props[0]',\$filename,\$request_uri)";
         $type = $SEARCH_PROPTYPES{ $props[0] }
           || $SEARCH_PROPTYPES{default};
         if ( exists $SEARCH_SPECIALCONV{$type} ) {
@@ -289,6 +290,7 @@ sub get_prop_value {
     my ( $self, $prop, $fn, $uri ) = @_;
     my ( %r200, %r404 );
 
+    main::debug("get_prop_value($prop, $fn, $uri)");
     if ( ${$self}{cache}->exists_entry( [ $fn, $prop ] ) ) {
         return ${$self}{cache}->get_entry( [ $fn, $prop ] );
     }
@@ -297,8 +299,7 @@ sub get_prop_value {
     $propname =~ s/^{[^}]*}//xms;
 
     my $propval =
-      !any { /^\Q$propname\E$/xms }
-    @main::PROTECTED_PROPS
+      ( none { /^\Q$propname\E$/xms } @main::PROTECTED_PROPS )
       ? ${$self}{db}->db_getProperty( $fn, $prop )
       : undef;
 
@@ -385,8 +386,8 @@ sub _build_sort_func {
             my $collation =
               ${$order}{'{DAV:}descending'} ? 'descending' : 'ascending';
             my ( $ta, $tb, $cmp );
-            $ta = "get_prop_value(\$self,'$prop',\$\$a{fn},\$\$a{href})";
-            $tb = "get_prop_value(\$self,'$prop',\$\$b{fn},\$\$b{href})";
+            $ta = "\$self->get_prop_value('$prop',\$\$a{fn},\$\$a{href})";
+            $tb = "\$self->get_prop_value('$prop',\$\$b{fn},\$\$b{href})";
             if ( $SEARCH_SPECIALCONV{$proptype} ) {
                 $ta = $SEARCH_SPECIALCONV{$proptype} . "($ta)";
                 $tb = $SEARCH_SPECIALCONV{$proptype} . "($tb)";

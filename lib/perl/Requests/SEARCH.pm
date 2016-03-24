@@ -15,6 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+# RFC 5323 ( http://tools.ietf.org/search/rfc5323 )
+#
+# EXAMPLES:
+# Schema Discovery Request:
+#  <?xml version="1.0"?>
+#  <query-schema-discovery xmlns="DAV:">
+#  <basicsearch><from><scope><href>http://recipes.example</href><depth>infinity</depth></scope></from></basicsearch>
+#  </query-schema-discovery>
+# 
+# Search Request:
+# <d:searchrequest xmlns:d="DAV:">
+# <d:basicsearch>
+# <d:select><d:prop><d:getcontentlength/></d:prop></d:select>
+# <d:from><d:scope><d:href>/</d:href><d:depth>infinity</d:depth></d:scope></d:from>
+# <d:where><d:gt><d:prop><d:getcontentlength/></d:prop><d:literal>10000</d:literal></d:gt></d:where>
+# <d:orderby><d:order><d:prop><d:getcontentlength/></d:prop><d:ascending/></d:order></d:orderby>
+# </d:basicsearch>
+# </d:searchrequest>
+#
 package Requests::SEARCH;
 
 use strict;
@@ -34,7 +53,7 @@ use WebDAV::Search;
 
 sub handle {
     my ($self) = @_;
-    
+
     my $config = main::getConfig();
 
     my @resps;
@@ -48,7 +67,8 @@ sub handle {
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
         main::debug("_SEARCH: invalid XML request: ${EVAL_ERROR}");
         main::debug("_SEARCH: xml-request=$xml");
-        return print_header_and_content(get_error_document('400 Bad Request'));
+        return print_header_and_content(
+            get_error_document('400 Bad Request') );
     }
     if ( exists ${$xmldata}{'{DAV:}query-schema-discovery'} ) {
         main::debug('_SEARCH: found query-schema-discovery');
