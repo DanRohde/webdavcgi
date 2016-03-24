@@ -72,7 +72,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160324.07';
+$RELEASE = '1.1.1BETA20160324.08';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1280,21 +1280,6 @@ sub HTTP_GET {
                 'text/plain', '404 - FILE NOT FOUND'
             )
         );
-    }
-    return;
-}
-
-sub HTTP_HEAD {
-    if ( $FANCYINDEXING && getWebInterface()->handle_head_request() ) {
-        debug('_HEAD: WebInterface called');
-    }
-    elsif ( $backend->exists($PATH_TRANSLATED) ) {
-        debug("_HEAD: $PATH_TRANSLATED exists!");
-        fix_mod_perl_response( print_file_header($PATH_TRANSLATED) );
-    }
-    else {
-        debug("_HEAD: $PATH_TRANSLATED does not exists!");
-        print_header_and_content('404 Not Found');
     }
     return;
 }
