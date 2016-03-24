@@ -72,7 +72,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160324.06';
+$RELEASE = '1.1.1BETA20160324.07';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1324,18 +1324,6 @@ sub HTTP_POST {
         );
     }
     return;
-}
-
-sub HTTP_GETLIB {
-    my $fn        = $PATH_TRANSLATED;
-    if ( !$backend->exists($fn) ) {
-        return print_header_and_content(get_error_document('404 Not Found'));
-    }
-    my $su = $ENV{SCRIPT_URI};
-    if (!$backend->isDir($fn)) { $su =~ s{/[^/]+$}{/}xms; }
-    my $addheader = "MS-Doclib: $su";
-    debug("HTTP_GETLIB: $addheader\n");
-    return print_header_and_content( '200 OK', 'text/plain', q{}, $addheader );
 }
 
 sub HTTP_PROPFIND {

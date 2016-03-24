@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package Requests::OPTIONS;
+package Requests::GETLIB;
 
 use strict;
 use warnings;
@@ -30,31 +30,14 @@ use HTTPHelper qw( print_header_and_content );
 sub handle {
     my ($self)  = @_;
     my $backend = main::getBackend();
-    my $pt      = $main::PATH_TRANSLATED;
-    main::debug("HTTP_OPTIONS: $pt");
-    main::broadcast( 'OPTIONS', { file => $pt } );
-    if ( !$backend->exists($pt) ) {
-        return print_header_and_content('404 Not Found');
+    my $fn      = $main::PATH_TRANSLATED;
+    if ( !$backend->exists($fn) ) {
+        return print_header_and_content( '404 Not Found' );
     }
-    my $type =
-      $backend->isDir($pt)
-      ? 'httpd/unix-directory'
-      : main::get_mime_type($pt);
-    my $methods = join ', ', @{ main::getSupportedMethods($pt) };
-    my %params;
-    if ($methods) {
-        %params = (
-            %params,
-            'DAV'                      => $main::DAV,
-            'MS-Author-Via'            => 'DAV',
-            'Allow'                    => $methods,
-            'Public'                   => $methods,
-            'DocumentManagementServer' => 'Properties Schema',
-        );
-        if ($main::ENABLE_SEARCH) {
-            $params{DALS} = '<DAV:basicsearch>';
-        }
-    }
-    return print_header_and_content( '200 OK', $type, q{}, \%params );
+    my $su = $ENV{SCRIPT_URI};
+    if ( !$backend->isDir($fn) ) { $su =~ s{/[^/]+$}{/}xms; }
+    my $addheader = "MS-Doclib: $su";
+    main::debug("HTTP_GETLIB: $addheader\n");
+    return print_header_and_content( '200 OK', 'text/plain', q{}, $addheader );
 }
 1;
