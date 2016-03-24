@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+# RFC 5842 ( https://tools.ietf.org/html/rfc5842 )
+# EXAMPLE:
+# UNBIND request:
+# <?xml version="1.0" encoding="utf-8" ?>
+# <D:unbind xmlns:D="DAV:">
+#     <D:segment>foo.html</D:segment>
+# </D:unbind>
+
 package Requests::UNBIND;
 
 use strict;
@@ -24,12 +32,12 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use XML::Simple;
-
 use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
+use WebDAV::XMLHelper qw( simple_xml_parser );
 
-sub handler {
+
+sub handle {
     my ($self) = @_;
     my $backend = main::getBackend();
 

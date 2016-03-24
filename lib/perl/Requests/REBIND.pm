@@ -15,6 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+# RFC 5842 ( https://tools.ietf.org/html/rfc5842 )
+#
+# EXAMPLE:
+# REBIND request:
+# <?xml version="1.0" encoding="utf-8" ?>
+# <D:rebind xmlns:D="DAV:">
+#     <D:segment>foo.html</D:segment>
+#     <D:href>http://localhost/bar.html</D:href>
+# </D:rebind>
+
 package Requests::REBIND;
 
 use strict;
@@ -23,6 +33,8 @@ use warnings;
 our $VERSION = '2.0';
 
 use base qw( Requests::Request );
+
+use URI::Escape;
 
 use FileUtils qw( rmove get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
@@ -52,7 +64,7 @@ sub handle {
 
     my $segment = ${$xmldata}{'{DAV:}segment'};
     my $href    = ${$xmldata}{'{DAV:}href'};
-    $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$main::VIRTUAL_BASE//xms;
+    $href =~ s{^https?://\Q$host\E(:\d+)?$main::VIRTUAL_BASE}{}xms;
     $href = uri_unescape( uri_unescape($href) );
     my $src = $main::DOCUMENT_ROOT . $href;
     my $dst = $main::PATH_TRANSLATED . $segment;
@@ -78,7 +90,7 @@ sub handle {
         return print_header_and_content(
             get_error_document('403 Forbidden') );
     }
-    if ( is_insufficient_storage() ) {
+    if ( main::is_insufficient_storage() ) {
         return print_header_and_content(
             get_error_document('507 Insufficient Storage') );
     }

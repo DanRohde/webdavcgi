@@ -15,6 +15,8 @@
      - fixed WebDAV quota bug
      - fixed tabbing does not work with bookmarks, auto refresh, file list table header bug
      - fixed WebDAV properties are not moved correctly bug (mod_perl only)
+     - fixed WebDAV SEARCH method handling bugs
+     - disabled CalDAV, CalDAV Schedule, CardDAV, GroupDAV, ACL, BIND, SEARCH support by default
      
 1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug

@@ -70,8 +70,9 @@ use vars
     @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
+    $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160324.04';
+$RELEASE = '1.1.1BETA20160324.05';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -567,7 +568,7 @@ $ENABLE_LOCK = 1;
 
 ## -- ENABLE_ACL
 ## enable ACL support: only Unix like read/write access changes for user/group/other are supported
-$ENABLE_ACL = 1;
+$ENABLE_ACL = 0;
 
 ## --- CURRENT_USER_PRINCIPAL
 ## a virtual URI for ACL principals
@@ -582,7 +583,7 @@ $PRINCIPAL_COLLECTION_SET = q{/directory/};
 
 ## -- ENABLE_CALDAV
 ## enable CalDAV support for Lightning/Sunbird/iCal/iPhone calender/task support
-$ENABLE_CALDAV = 1;
+$ENABLE_CALDAV = 0;
 
 ## -- CALENDAR_HOME_SET
 ## maps UID numbers or remote users (accounts) to calendar folders
@@ -596,11 +597,11 @@ $ENABLE_CALDAV_SCHEDULE = 0;
 
 ## -- ENABLE_CARDDAV
 ## enable CardDAV support for Apple's Addressbook
-$ENABLE_CARDDAV = 1;
+$ENABLE_CARDDAV = 0;
 
 ## -- ADDRESSBOOK_HOME_SET
 ## maps UID numbers or remote users to addressbook folders
-%ADDRESSBOOK_HOME_SET = ( default => q{/}, 1000 => q{/carddav/} );
+%ADDRESSBOOK_HOME_SET = ( default => q{/}, 1_000 => q{/carddav/} );
 
 ## -- ENABLE_TRASH
 ## enables the server-side trash can (don't forget to setup $TRASH_FOLDER)
@@ -615,12 +616,12 @@ $TRASH_FOLDER = '/tmp/trash';
 ## -- ENABLE_GROUPDAV
 ## enables GroupDAV (http://groupdav.org/draft-hess-groupdav-01.txt)
 ## EXAMPLE: $ENABLE_GROUPDAV = 0;
-$ENABLE_GROUPDAV = 1;
+$ENABLE_GROUPDAV = 0;
 
 ## -- ENABLE_SEARCH
 ##  enables server-side search (WebDAV SEARCH/DASL, RFC5323)
-## EXAMPLE: $ENABLE_SEARCH = 1;
-$ENABLE_SEARCH = 1;
+## EXAMPLE: $ENABLE_SEARCH = 0;
+$ENABLE_SEARCH = 0;
 
 ## -- ENABLE_THUMBNAIL
 ## enables image thumbnail support and media rss feed for folder listings of the Web interface.
@@ -652,7 +653,7 @@ $THUMBNAIL_CACHEDIR = '/tmp';
 ## -- ENABLE_BIND
 ## enables BIND/UNBIND/REBIND methods defined in http://tools.ietf.org/html/draft-ietf-webdav-bind-27
 ## EXAMPLE: $ENABLE_BIND = 1;
-$ENABLE_BIND = 1;
+$ENABLE_BIND = 0;
 
 ## -- FILECOUNTLIMIT
 ## limits the number of files/folders listed per folder by PROPFIND requests or Web interface browsing
@@ -1129,27 +1130,37 @@ sub handle_request {
     debug("CGI-Version: $CGI::VERSION");
     if (defined $cgi->http('X-Litmus')) { debug( "${PROGRAM_NAME}: X-Litmus: " . $cgi->http('X-Litmus') ); }
     if (defined $cgi->http('X-Litmus-Second')) { debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') ); }
-
-    if ( $method =~
-        /^(?:GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/xms
-        )
-    {
+    $METHODS_RX //= _get_methods_rx();
+    if ( $method =~ /$METHODS_RX/xms ) {
         if ( $main::{"HTTP_$method"}) {
             &{$main::{"HTTP_$method"}};
         } else {
-            my $module = "Requests::${method}";
-            load($module);
-            $module->new()->handle();
+            if (!$REQUEST_HANDLERS{$method}) {
+                my $module = "Requests::${method}";
+                load($module);
+                $REQUEST_HANDLERS{$method} = $module->new();
+            }
+            $REQUEST_HANDLERS{$method}->handle();
         }
         if ($backend) { $backend->finalize(); }
         broadcast('FINALIZE');
     }
     else {
-        print_header_and_content('405 Method Not Allowed');
+        print_header_and_content(get_error_document('405 Method Not Allowed'));
     }
     return;
 }
-
+sub _get_methods_rx {
+    my @methods = qw( GET HEAD POST OPTIONS PUT PROPFIND PROPPATCH MKCOL COPY MOVE DELETE GETLIB );
+    if ($ENABLE_LOCK) { push @methods, qw( LOCK UNLOCK ); }
+    if ($ENABLE_SEARCH) { push @methods, 'SEARCH'; }
+    if ($ENABLE_ACL) { push @methods, 'ACL'; }
+    if ($ENABLE_BIND) { push @methods, qw( BIND UNBIND REBIND ); }
+    if ($ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV || $ENABLE_GROUPDAV ) { push @methods, 'REPORT'; }
+    if ($ENABLE_CALDAV) { push @methods, 'MKCALENDAR'; }
+    if ($DEBUG) { push @methods, 'TRACE'; }
+    return q{^(?:} . join( q{|}, @methods ) . q{)$};
+}
 
 sub HTTP_GET {
     debug("_GET: $PATH_TRANSLATED");
@@ -1167,13 +1178,7 @@ sub HTTP_GET {
             print $cgi->redirect($REDIRECT_TO);
         }
         else {
-            print_header_and_content(
-                get_error_document(
-                    '404 Not Found',
-                    'text/plain',
-                    '404 - NOT FOUND'
-                )
-            );
+            print_header_and_content(get_error_document('404 Not Found'));
         }
     }
     elsif (
@@ -1305,7 +1310,7 @@ sub HTTP_POST {
         debug('_POST: WebInterface called');
     }
     elsif ( $ENABLE_CALDAV_SCHEDULE && $backend->isDir($PATH_TRANSLATED) ) {
-        ## NOT IMPLEMENTED YET
+        ## TODO: NOT IMPLEMENTED YET
     }
     else {
         debug("_POST: forbidden POST to $PATH_TRANSLATED");
@@ -1366,20 +1371,14 @@ sub HTTP_TRACE {
 
 sub HTTP_GETLIB {
     my $fn        = $PATH_TRANSLATED;
-    my $status    = '200 OK';
-    my $type      = undef;
-    my $content   = q{};
-    my $addheader = q{};
     if ( !$backend->exists($fn) ) {
-        $status = '404 Not Found';
-        $type   = 'text/plain';
+        return print_header_and_content(get_error_document('404 Not Found'));
     }
-    else {
-        my $su = $ENV{SCRIPT_URI};
-        $su =~ s/\/[^\/]+$/\//xms if !$backend->isDir($fn);
-        $addheader = "MS-Doclib: $su";
-    }
-    return print_header_and_content( $status, $type, $content, $addheader );
+    my $su = $ENV{SCRIPT_URI};
+    if (!$backend->isDir($fn)) { $su =~ s{/[^/]+$}{/}xms; }
+    my $addheader = "MS-Doclib: $su";
+    debug("HTTP_GETLIB: $addheader\n");
+    return print_header_and_content( '200 OK', 'text/plain', q{}, $addheader );
 }
 
 sub HTTP_PROPFIND {
