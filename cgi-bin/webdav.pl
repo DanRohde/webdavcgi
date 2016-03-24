@@ -71,7 +71,7 @@ use vars
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
 );
-$RELEASE = '1.1.1BETA20160322.01';
+$RELEASE = '1.1.1BETA20160324.01';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -329,7 +329,7 @@ push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 ## -- @VISIBLE_TABLE_COLUMNS
 ## defines the visible columns for the file list in the Web interface
 ## supported values (see @ALLOWED_TABLE_COLUMNS)
-@VISIBLE_TABLE_COLUMNS = ( 'name', 'size', 'lastmodified' );
+@VISIBLE_TABLE_COLUMNS = ( 'name', 'size', 'lastmodified', );
 push @VISIBLE_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
 ## -- SHOW_FILE_ACTIONS
@@ -679,8 +679,7 @@ $FILECOUNTLIMIT = 5000;
 ##   my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 ##   %FILEFILTERPERDIR = ( '/afs/.cms.hu-berlin.de/user/' => "^$_ru\$");
 my $_ru
-    = ( split( /\@/xms, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) ) )
-    [0];
+    = ( split /\@/xms, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) )[0];
 %FILEFILTERPERDIR = (
     '/afs/.cms.hu-berlin.de/user/'          => "^$_ru\$",
     '/usr/local/www/htdocs/rohdedan/links/' => '^loop[1-4]$'
@@ -694,7 +693,7 @@ my $_ru
     300  => '5m',
     600  => '10m',
     900  => '15m',
-    1800 => '30m'
+    1800 => '30m',
 );
 
 ## -- ENABLE_FLOCK
@@ -740,24 +739,23 @@ $DEBUG = 0;
 
 ## -- DEFAULT_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@DEFAULT_EXTENSIONS = (
-    'History',     'VideoJS',   'ViewerJS',     'TextEditor',
-    'Highlighter', 'Download',  'Zip',          'Search',
-    'Diff',        'DiskUsage', 'ODFConverter', 'ImageInfo',
-    'QuickToggle'
+@DEFAULT_EXTENSIONS = qw(
+    History     VideoJS   ViewerJS     TextEditor
+    Highlighter Download  Zip          Search
+    Diff        DiskUsage ODFConverter ImageInfo
+    QuickToggle
 );
 ## -- AFS_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@AFS_EXTENSIONS = ( 'AFSACLManager', 'AFSGroupManager' );
+@AFS_EXTENSIONS = qw( AFSACLManager AFSGroupManager );
 ## -- EXTRA_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
-@EXTRA_EXTENSIONS
-    = ( 'GPXViewer', 'SourceCodeViewer', 'HexDump', 'SendByMail' );
+@EXTRA_EXTENSIONS = qw( GPXViewer SourceCodeViewer HexDump SendByMail );
 ## -- PUB_EXTENSIONS
-@PUB_EXTENSIONS = ( 'PublicUri', 'Redirect' );
+@PUB_EXTENSIONS = qw( PublicUri Redirect );
 ## -- DEV_EXTENSIONS
 ## don't change it - use @EXTENSIONS intead
-@DEV_EXTENSIONS = ( 'SysInfo', 'PropertiesViewer' );
+@DEV_EXTENSIONS = qw( SysInfo PropertiesViewer );
 
 ## -- EXTENSIONS
 ## a list of Web interface extensions:
@@ -779,7 +777,7 @@ $DEBUG = 0;
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars
-    qw( $cgi $method $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
+    qw( $cgi $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
 
 use CGI;
 use CGI::Carp;
@@ -803,9 +801,10 @@ $CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS ? 0 : 1;
 $cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? CGI->new( {} ) : CGI->new;
 
 if ( defined $CONFIGFILE ) {
-    unless ( my $ret = do($CONFIGFILE) ) {
-        carp "couldn't parse $CONFIGFILE: ${EVAL_ERROR}" if ${EVAL_ERROR};
-        carp "couldn't do $CONFIGFILE: ${ERRNO}" unless defined $ret;
+    my $ret;
+    if ( ! ($ret = do($CONFIGFILE)) ) {
+        if ($EVAL_ERROR) { carp "couldn't parse $CONFIGFILE: ${EVAL_ERROR}"; }
+        if (!defined $ret) { carp "couldn't do $CONFIGFILE: ${ERRNO}" };
         ##carp "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
     }
 }
@@ -824,7 +823,6 @@ use URI::Escape;
 use Digest::MD5;
 use List::MoreUtils qw( any );
 
-$method = $cgi->request_method();
 
 use RequestConfig;
 $config = RequestConfig->new($cgi);
@@ -838,36 +836,25 @@ $config->setProperty( 'backend', $backend );
 use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
 use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES );
 
-use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter);
+use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter get_error_document );
 
 umask $UMASK || croak("Cannot set umask $UMASK.");
 
 ## supported DAV compliant classes:
 our $DAV = '1';
-$DAV .= ', 2' if $ENABLE_LOCK;
+$DAV .= $ENABLE_LOCK ? ', 2' : q{};
 $DAV .= ', 3, <http://apache.org/dav/propset/fs/1>, extended-mkcol';
-$DAV .= ', access-control'
-    if $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV;
-$DAV .= ', calendar-access, calendarserver-private-comments'
-    if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
-$DAV
-    .= ', calendar-schedule,calendar-availability,calendarserver-principal-property-search,calendarserver-private-events,calendarserver-private-comments,calendarserver-sharing,calendar-auto-schedule'
-    if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
-$DAV .= ', addressbook' if $ENABLE_CARDDAV;
-$DAV .= ', bind'        if $ENABLE_BIND;
+$DAV .= $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV ? ', access-control' : q{};
+$DAV .= $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE ? ', calendar-access, calendarserver-private-comments' : q{};
+$DAV .= $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE ? ', calendar-schedule,calendar-availability,calendarserver-principal-property-search,calendarserver-private-events,calendarserver-private-comments,calendarserver-sharing,calendar-auto-schedule' : q{};
+$DAV .= $ENABLE_CARDDAV ? ', addressbook' : q{};
+$DAV .= $ENABLE_BIND ? ', bind' : q{};
 
 our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
 our $REQUEST_URI     = $ENV{REQUEST_URI};
 our $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
 
-debug("${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method");
-debug("User-Agent: $ENV{HTTP_USER_AGENT}");
-debug("CGI-Version: $CGI::VERSION");
-
-debug( "${PROGRAM_NAME}: X-Litmus: " . $cgi->http('X-Litmus') )
-    if defined $cgi->http('X-Litmus');
-debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') )
-    if defined $cgi->http('X-Litmus-Second');
+    
 
 # 404/rewrite/redirect handling:
 if ( !defined $PATH_TRANSLATED ) {
@@ -889,16 +876,15 @@ if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
     exit 0;
 }
 
-$PATH_TRANSLATED .= q{/}
-    if $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/xms;
-$REQUEST_URI =~ s/\?.*$//xms;    ## remove query strings
-$REQUEST_URI .= q{/}
-    if $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/xms;
+$PATH_TRANSLATED .= $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
+
+$REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
+$REQUEST_URI .= $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/xms ? q{/} : q{};
 $REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
 
-$TRASH_FOLDER .= q{/} if $TRASH_FOLDER !~ /\/$/xms;
+$TRASH_FOLDER .= $TRASH_FOLDER !~ /\/$/xms ? q{/} : q{};
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if ( any { /^\Q${UID}\E$/xms } @FORBIDDEN_UID ) {
+if ( any { /^\Q${UID}\E$/xms } @FORBIDDEN_UID ) {
     carp('Forbidden UID!');
     print_header_and_content('403 Forbidden');
     exit 0;
@@ -1158,7 +1144,7 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
     '{DAV:}supported-report-set'                             => 'xml',
     '{DAV:}supportedlock'                                    => 'xml'
 );
-%SEARCH_SPECIALCONV = ( dateTime => 'str2time', xml => 'convXML2Str' );
+%SEARCH_SPECIALCONV = ( dateTime => 'str2time', xml => 'xml2str' );
 %SEARCH_SPECIALOPS = (
     int => {
         eq  => q{==},
@@ -1192,24 +1178,42 @@ foreach (@KNOWN_FILE_PROPS) {
 foreach (@UNSUPPORTED_PROPS) { $unsupported_props{$_} = 1; }
 
 # method handling:
-if ( $method =~
-    /^(?:GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/xms
-    )
-{
-    &{$main::{"HTTP_$method"}};
-    
-    $backend->finalize() if $backend;
-    broadcast('FINALIZE');
+handle_request();
+
+sub handle_request {
+    my $method = $cgi->request_method();
+    debug("${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method");
+    debug("User-Agent: $ENV{HTTP_USER_AGENT}");
+    debug("CGI-Version: $CGI::VERSION");
+    if (defined $cgi->http('X-Litmus')) { debug( "${PROGRAM_NAME}: X-Litmus: " . $cgi->http('X-Litmus') ); }
+    if (defined $cgi->http('X-Litmus-Second')) { debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') ); }
+
+    if ( $method =~
+        /^(?:GET|HEAD|POST|OPTIONS|PROPFIND|PROPPATCH|MKCOL|PUT|COPY|MOVE|DELETE|LOCK|UNLOCK|GETLIB|ACL|REPORT|MKCALENDAR|SEARCH|BIND|UNBIND|REBIND)$/xms
+        )
+    {
+        if ( $main::{"HTTP_$method"}) {
+            &{$main::{"HTTP_$method"}};
+        } else {
+            my $module = "Requests::${method}";
+            load $module;
+            $module->new()->handle();
+        }
+        if ($backend) { $backend->finalize(); }
+        broadcast('FINALIZE');
+    }
+    else {
+        print_header_and_content('405 Method Not Allowed');
+    }
+    return;
 }
-else {
-    print_header_and_content('405 Method Not Allowed');
-}
+
 
 sub HTTP_GET {
     debug("_GET: $PATH_TRANSLATED");
     if ( is_hidden($PATH_TRANSLATED) ) {
         print_header_and_content(
-            getErrorDocument(
+            get_error_document(
                 '404 Not Found',
                 'text/plain',
                 '404 - NOT FOUND'
@@ -1222,7 +1226,7 @@ sub HTTP_GET {
         }
         else {
             print_header_and_content(
-                getErrorDocument(
+                get_error_document(
                     '404 Not Found',
                     'text/plain',
                     '404 - NOT FOUND'
@@ -1245,7 +1249,7 @@ sub HTTP_GET {
         && !$backend->isReadable($PATH_TRANSLATED) )
     {
         print_header_and_content(
-            getErrorDocument(
+            get_error_document(
                 '403 Forbidden', 'text/plain', '403 Forbidden'
             )
         );
@@ -1324,7 +1328,7 @@ sub HTTP_GET {
     else {
         debug("GET: $PATH_TRANSLATED NOT FOUND!");
         print_header_and_content(
-            getErrorDocument(
+            get_error_document(
                 '404 Not Found',
                 'text/plain', '404 - FILE NOT FOUND'
             )
@@ -1364,7 +1368,7 @@ sub HTTP_POST {
     else {
         debug("_POST: forbidden POST to $PATH_TRANSLATED");
         print_header_and_content(
-            getErrorDocument(
+            get_error_document(
                 '403 Forbidden',
                 'text/plain',
                 '403 Forbidden (unknown request, params:'
@@ -1413,14 +1417,9 @@ sub HTTP_OPTIONS {
 }
 
 sub HTTP_TRACE {
-    my $status    = '200 OK';
-    my $content   = read_request_body();
-    my $type      = 'message/http';
     my $via       = $cgi->http('Via');
-    my $addheader = "Via: $ENV{SERVER_NAME}:$ENV{SERVER_PORT}"
-        . ( defined $via ? ", $via" : q{} );
-
-    return print_header_and_content( $status, $type, $content, $addheader );
+     return print_header_and_content( '200 OK', 'message/http', read_request_body(), 
+        "Via: $ENV{SERVER_NAME}:$ENV{SERVER_PORT}". ( defined $via ? ", $via" : q{} ) );
 }
 
 sub HTTP_GETLIB {
@@ -1998,539 +1997,6 @@ sub HTTP_UNLOCK {
     return print_header_and_content($status);
 }
 
-sub HTTP_ACL {
-    my $fn      = $PATH_TRANSLATED;
-    my $status  = '200 OK';
-    my $content = q{};
-    my $type;
-    my %error;
-    debug("_ACL($fn)");
-    my $xml     = read_request_body();
-    my $xmldata = q{};
-    if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        debug("_ACL: invalid XML request: ${EVAL_ERROR}");
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    elsif ( !$backend->exists($fn) ) {
-        $status  = '404 Not Found';
-        $type    = 'text/plain';
-        $content = '404 Not Found';
-    }
-    elsif ( !isAllowed($fn) ) {
-        $status  = '423 Locked';
-        $type    = 'text/plain';
-        $content = '423 Locked';
-    }
-    elsif ( !exists $$xmldata{'{DAV:}acl'} ) {
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    else {
-        my @ace;
-        if ( ref( $$xmldata{'{DAV:}acl'}{'{DAV:}ace'} ) eq 'HASH' ) {
-            push @ace, $$xmldata{'{DAV:}acl'}{'{DAV:}ace'};
-        }
-        elsif ( ref( $$xmldata{'{DAV:}acl'}{'{DAV:}ace'} ) eq 'ARRAY' ) {
-            push @ace, @{ $$xmldata{'{DAV:}acl'}{'{DAV:}ace'} };
-        }
-        else {
-            print_header_and_content('400 Bad Request');
-            return;
-        }
-        foreach my $ace (@ace) {
-            my $p;
-            my ( $user, $group, $other ) = ( 0, 0, 0 );
-            if ( defined( $p = $$ace{'{DAV:}principal'} ) ) {
-                if ( exists $$p{'{DAV:}property'}{'{DAV:}owner'} ) {
-                    $user = 1;
-                }
-                elsif ( exists $$p{'{DAV:}property'}{'{DAV:}group'} ) {
-                    $group = 1;
-                }
-                elsif ( exists $$p{'{DAV:}all'} ) {
-                    $other = 1;
-                }
-                else {
-                    print_header_and_content('400 Bad Request');
-                    return;
-                }
-            }
-            else {
-                print_header_and_content('400 Bad Request');
-                return;
-            }
-            my ( $read, $write ) = ( 0, 0 );
-            if ( exists $$ace{'{DAV:}grant'} ) {
-                $read = 1
-                    if exists $$ace{'{DAV:}grant'}{'{DAV:}privilege'}
-                    {'{DAV:}read'};
-                $write = 1
-                    if exists $$ace{'{DAV:}grant'}{'{DAV:}privilege'}
-                    {'{DAV:}write'};
-            }
-            elsif ( exists $$ace{'{DAV:}deny'} ) {
-                $read = -1
-                    if exists $$ace{'{DAV:}deny'}{'{DAV:}privilege'}
-                    {'{DAV:}read'};
-                $write = -1
-                    if exists $$ace{'{DAV:}deny'}{'{DAV:}privilege'}
-                    {'{DAV:}write'};
-            }
-            else {
-                print_header_and_content('400 Bad Request');
-                return;
-
-            }
-            if ( $read == 0 && $write == 0 ) {
-                print_header_and_content('400 Bad Request');
-                return;
-            }
-            my @stat = $backend->stat($fn);
-            my $mode = $stat[2];
-            $mode = $mode & oct(7777);
-
-            my $newperm = $mode;
-            if ( $read != 0 ) {
-                my $mask = $user ? oct(400) : $group ? oct(40) : oct(4);
-                $newperm
-                    = ( $read > 0 ) ? $newperm | $mask : $newperm & ~$mask;
-            }
-            if ( $write != 0 ) {
-                my $mask = $user ? oct(200) : $group ? oct(20) : oct(2);
-                $newperm
-                    = ( $write > 0 ) ? $newperm | $mask : $newperm & ~$mask;
-            }
-            debug(    '_ACL: old perm='
-                    . sprintf( '%4o', $mode )
-                    . ', new perm='
-                    . sprintf( '%4o', $newperm ) );
-            if ( !$backend->changeMod( $fn, $newperm ) ) {
-                $status  = '403 Forbidden';
-                $type    = 'text/plain';
-                $content = '403 Forbidden';
-            }
-
-        }
-
-    }
-    return print_header_and_content( $status, $type, $content );
-}
-
-sub HTTP_REPORT {
-    my $fn    = $PATH_TRANSLATED;
-    my $ru    = $REQUEST_URI;
-    my $depth = defined $cgi->http('Depth') ? $cgi->http('Depth') : 0;
-    $depth = -1 if $depth =~ /infinity/xmsi;
-    debug("_REPORT($fn,$ru)");
-    my $status  = '200 OK';
-    my $content = q{};
-    my $type;
-    my %error;
-    my $xml     = read_request_body();
-    my $xmldata = q{};
-
-    if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        debug("_REPORT: invalid XML request: ${EVAL_ERROR}");
-        debug("_REPORT: xml-request=$xml");
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    elsif ( !$backend->exists($fn)
-        && $ru
-        !~ /^(?:\Q$CURRENT_USER_PRINCIPAL\E|\Q$PRINCIPAL_COLLECTION_SET\E)/xms )
-    {
-        $status  = '404 Not Found';
-        $type    = 'text/plain';
-        $content = '404 Not Found';
-    }
-    else {
-        # MUST CalDAV: DAV:expand-property
-        $status = '207 Multi-Status';
-        $type   = 'application/xml';
-        my @resps;
-        my @hrefs;
-        my $rn;
-        my @reports = keys %{$xmldata};
-        debug( '_REPORT: report=' . $reports[0] ) if $#reports > -1;
-
-        if ( defined $$xmldata{'{DAV:}acl-principal-prop-set'} ) {
-            my @props;
-            handlePropElement(
-                $$xmldata{'{DAV:}acl-principal-prop-set'}{'{DAV:}prop'},
-                \@props );
-            push @resps,
-                { href => $ru, propstat => getPropStat( $fn, $ru, \@props ) };
-        }
-        elsif ( defined $$xmldata{'{DAV:}principal-match'} ) {
-            if ( $depth != 0 ) {
-                printHeaderAndStatus('400 Bad Request');
-                return;
-            }
-
-            # response, href
-            my @props;
-            handlePropElement(
-                $$xmldata{'{DAV:}principal-match'}{'{DAV:}prop'}, \@props )
-                if (
-                exists $$xmldata{'{DAV:}principal-match'}{'{DAV:}prop'} );
-            read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
-        }
-        elsif ( defined $$xmldata{'{DAV:}principal-property-search'} ) {
-            if ( $depth != 0 ) {
-                printHeaderAndStatus('400 Bad Request');
-                return;
-            }
-
-            my @props;
-            handlePropElement(
-                $$xmldata{'{DAV:}principal-property-search'}{'{DAV:}prop'},
-                \@props )
-                if exists $$xmldata{'{DAV:}principal-property-search'}
-                {'{DAV:}prop'};
-            read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
-            ### XXX filter data
-            my @propertysearch;
-            if (ref($$xmldata{'{DAV:}principal-property-search'}
-                        {'{DAV:}property-search'}
-                ) eq 'HASH'
-                )
-            {
-                push @propertysearch,
-                    $$xmldata{'{DAV:}principal-property-search'}
-                    {'{DAV:}property-search'};
-            }
-            elsif (
-                ref($$xmldata{'{DAV:}principal-property-search'}
-                        {'{DAV:}property-search'}
-                ) eq 'ARRAY'
-                )
-            {
-                push @propertysearch,
-                    @{ $$xmldata{'{DAV:}principal-property-search'}
-                        {'{DAV:}property-search'} };
-            }
-        }
-        elsif ( defined $$xmldata{'{DAV:}principal-search-property-set'} ) {
-            my %resp;
-            $resp{'principal-search-property-set'} = {
-                'principal-search-property' => [
-                    {   prop        => { displayname => undef },
-                        description => 'Full name'
-                    },
-                ]
-            };
-            $content = create_xml( \%resp );
-            $status  = '200 OK';
-            $type    = 'text/xml';
-        }
-        elsif (
-            defined $$xmldata{
-                '{urn:ietf:params:xml:ns:caldav}free-busy-query'} )
-        {
-            ( $status, $type ) = ( '200 OK', 'text/calendar' );
-            $content
-                = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Example Corp.//CalDAV Server//EN\r\nBEGIN:VFREEBUSY\r\nEND:VFREEBUSY\r\nEND:VCALENDAR";
-        }
-        elsif (
-            defined $$xmldata{'{urn:ietf:params:xml:ns:caldav}calendar-query'}
-            )
-        {    ## missing filter
-            $rn = '{urn:ietf:params:xml:ns:caldav}calendar-query';
-            read_dir_by_suffix( $fn, $ru, \@hrefs, 'ics', $depth );
-        }
-        elsif (
-            defined $$xmldata{
-                '{urn:ietf:params:xml:ns:caldav}calendar-multiget'} )
-        {    ## OK - complete
-            $rn = '{urn:ietf:params:xml:ns:caldav}calendar-multiget';
-            if (   !defined $$xmldata{$rn}{'{DAV:}href'}
-                || !defined $$xmldata{$rn}{'{DAV:}prop'} )
-            {
-                print_header_and_content('404 Bad Request');
-                return;
-            }
-            if ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'ARRAY' ) {
-                @hrefs = @{ $$xmldata{$rn}{'{DAV:}href'} };
-            }
-            elsif ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'HASH' ) {
-                @hrefs = grep { !/DAV:/xms } values %{ $$xmldata{$rn}{'{DAV:}href'} };
-            }
-            else {
-                push @hrefs, $$xmldata{$rn}{'{DAV:}href'};
-            }
-
-        }
-        elsif (
-            defined $$xmldata{
-                '{urn:ietf:params:xml:ns:carddav}addressbook-query'} )
-        {
-            $rn = '{urn:ietf:params:xml:ns:carddav}addressbook-query';
-            read_dir_by_suffix( $fn, $ru, \@hrefs, 'vcf', $depth );
-        }
-        elsif (
-            defined $$xmldata{
-                '{urn:ietf:params:xml:ns:carddav}addressbook-multiget'} )
-        {
-            $rn = '{urn:ietf:params:xml:ns:carddav}addressbook-multiget';
-            if (   !defined $$xmldata{$rn}{'{DAV:}href'}
-                || !defined $$xmldata{$rn}{'{DAV:}prop'} )
-            {
-                print_header_and_content('404 Bad Request');
-                return;
-            }
-            if ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'ARRAY' ) {
-                @hrefs = @{ $$xmldata{$rn}{'{DAV:}href'} };
-            }
-            elsif ( ref( $$xmldata{$rn}{'{DAV:}href'} ) eq 'HASH' ) {
-                @hrefs = grep { !/DAV:/xms } values %{ $$xmldata{$rn}{'{DAV:}href'} };
-            }
-            else {
-                push @hrefs, $$xmldata{$rn}{'{DAV:}href'};
-            }
-        }
-        else {
-            $status  = '400 Bad Request';
-            $type    = 'text/plain';
-            $content = '400 Bad Request';
-        }
-        if ( defined $rn ) {
-            foreach my $href (@hrefs) {
-                my ( %resp_200, %resp_404 );
-                $resp_200{status} = 'HTTP/1.1 200 OK';
-                $resp_404{status} = 'HTTP/1.1 404 Not Found';
-                my $nhref = $href;
-                $nhref =~ s/^$VIRTUAL_BASE//xms;
-                my $nfn = $DOCUMENT_ROOT . $nhref;
-                debug("_REPORT: nfn=$nfn, href=$href");
-                if ( !$backend->exists($nfn) ) {
-                    push @resps,
-                        { href => $href, status => 'HTTP/1.1 404 Not Found' };
-                    next;
-                }
-                elsif ( $backend->isDir($nfn) ) {
-                    push @resps,
-                        { href => $href, status => 'HTTP/1.1 403 Forbidden' };
-                    next;
-                }
-                my @props;
-                handlePropElement( $$xmldata{$rn}{'{DAV:}prop'}, \@props )
-                    if exists $$xmldata{$rn}{'{DAV:}prop'};
-                push @resps,
-                    {
-                    href     => $href,
-                    propstat => getPropStat( $nfn, $nhref, \@props )
-                    };
-            }
-            ### push @resps, { } if ($#hrefs==-1);  ## empty multistatus response not supported
-        }
-        $content
-            = $#resps > -1
-            ? create_xml(
-            { multistatus => $#resps > -1 ? { response => \@resps } : q{} } )
-            : '<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"></D:multistatus>'
-            if $content eq q{};
-    }
-    debug("_REPORT: REQUEST: $xml");
-    debug("_REPORT: RESPONSE: $content");
-    return print_header_and_content( $status, $type, $content );
-}
-
-sub HTTP_SEARCH {
-    my @resps;
-    my $status  = '207 Multistatus';
-    my $content = q{};
-    my $type    = 'application/xml';
-    my @errors;
-
-    my $xml     = read_request_body();
-    my $xmldata = q{};
-    if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        debug("_SEARCH: invalid XML request: ${EVAL_ERROR}");
-        debug("_SEARCH: xml-request=$xml");
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    elsif ( exists $$xmldata{'{DAV:}query-schema-discovery'} ) {
-        debug('_SEARCH: found query-schema-discovery');
-        require WebDAV::Search;
-        WebDAV::Search->new($config)
-            ->getSchemaDiscovery( $REQUEST_URI, \@resps );
-    }
-    elsif ( exists $$xmldata{'{DAV:}searchrequest'} ) {
-        require WebDAV::Search;
-        foreach my $s ( keys %{ $$xmldata{'{DAV:}searchrequest'} } ) {
-            if ( $s =~ /{DAV:}basicsearch/xms ) {
-                WebDAV::Search->new($config)
-                    ->handleBasicSearch( $$xmldata{'{DAV:}searchrequest'}{$s},
-                    \@resps, \@errors );
-            }
-        }
-    }
-    if ( $#errors > -1 ) {
-        $content = create_xml( { error => \@errors } );
-        $status = '409 Conflict';
-    }
-    elsif ( $#resps > -1 ) {
-        $content = create_xml( { multistatus => { response => \@resps } } );
-    }
-    else {
-        $content
-            = create_xml( { multistatus => {} } )
-            ;    ## rfc5323 allows empty multistatus
-    }
-    debug(
-        "_SEARCH: status=$status, type=$type, request:\n$xml\n\n response:\n $content\n\n"
-    );
-    return print_header_and_content( $status, $type, $content );
-}
-
-sub HTTP_BIND {
-    my ( $status, $type, $content ) = ( '200 OK', undef, undef );
-    my $overwrite = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
-    my $xml     = read_request_body();
-    my $xmldata = q{};
-    my $host    = $cgi->http('Host');
-    if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    else {
-        my $segment = $$xmldata{'{DAV:}segment'};
-        my $href    = $$xmldata{'{DAV:}href'};
-        $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//xms;
-        $href = uri_unescape( uri_unescape($href) );
-        my $src = $DOCUMENT_ROOT . $href;
-        my $dst = $PATH_TRANSLATED . $segment;
-
-        my $ndst = $dst;
-        $ndst =~ s /\/$//xms;
-
-        if ( !$backend->exists($src) ) {
-            $status = '404 Not Found';
-        }
-        elsif ( $backend->exists($dst) && !$backend->isLink($ndst) ) {
-            $status = '403 Forbidden';
-        }
-        elsif ($backend->exists($dst)
-            && $backend->isLink($ndst)
-            && $overwrite eq 'F' )
-        {
-            $status = '403 Forbidden';
-        }
-        else {
-            broadcast( 'BIND', { file => $src, destination => $dst } );
-            $status
-                = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
-            $backend->unlinkFile($ndst) if $backend->isLink($ndst);
-            if ( $backend->createSymLink( $src, $dst ) ) {
-                broadcast( 'BOUND',
-                    { file => $src, destination => $dst } );
-            }
-            else {
-                $status = '403 Forbidden';
-            }
-        }
-    }
-    return print_header_and_content( $status, $type, $content );
-}
-
-sub HTTP_UNBIND {
-    my ( $status, $type, $content ) = ( '204 No Content', undef, undef );
-    my $xml     = read_request_body();
-    my $xmldata = q{};
-    if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    else {
-        my $segment = $$xmldata{'{DAV:}segment'};
-        my $dst     = $PATH_TRANSLATED . $segment;
-        broadcast( 'UNBIND', { file => $dst } );
-        if ( !$backend->exists($dst) ) {
-            $status = '404 Not Found';
-        }
-        elsif ( !$backend->isLink($dst) ) {
-            $status = '403 Forbidden';
-        }
-        elsif ( $backend->unlinkFile($dst) ) {
-            broadcast( 'UNBOUND', { file => $dst } );
-        }
-        else {
-            $status = '403 Forbidden';
-        }
-    }
-    return print_header_and_content( $status, $type, $content );
-}
-
-sub HTTP_REBIND {
-    my ( $status, $type, $content ) = ( '200 OK', undef, undef );
-    my $overwrite = defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
-    my $xml     = read_request_body();
-    my $xmldata = q{};
-    my $host    = $cgi->http('Host');
-    if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
-        $status  = '400 Bad Request';
-        $type    = 'text/plain';
-        $content = '400 Bad Request';
-    }
-    else {
-        my $segment = $$xmldata{'{DAV:}segment'};
-        my $href    = $$xmldata{'{DAV:}href'};
-        $href =~ s/^https?:\/\/\Q$host\E(:\d+)?$VIRTUAL_BASE//xms;
-        $href = uri_unescape( uri_unescape($href) );
-        my $src = $DOCUMENT_ROOT . $href;
-        my $dst = $PATH_TRANSLATED . $segment;
-
-        my $nsrc = $src;
-        $nsrc =~ s/\/$//xms;
-        my $ndst = $dst;
-        $ndst =~ s/\/$//xms;
-
-        if ( !$backend->exists($src) ) {
-            $status = '404 Not Found';
-        }
-        elsif ( !$backend->isLink($nsrc) ) {
-            $status = '403 Forbidden';
-        }
-        elsif ( $backend->exists($dst) && $overwrite ne 'T' ) {
-            $status = '403 Forbidden';
-        }
-        elsif ( $backend->exists($dst) && !$backend->isLink($ndst) ) {
-            $status = '403 Forbidden';
-        }
-        elsif ( is_insufficient_storage() ) {
-            $status = '507 Insufficient Storage';
-        }
-        else {
-            broadcast( 'REBIND',
-                { file => $nsrc, destination => $ndst } );
-            $status
-                = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
-            $backend->unlinkFile($ndst) if $backend->isLink($ndst);
-            if ( !rmove( $nsrc, $ndst ) ) {    ### check rename->rmove OK?
-                my $orig = $backend->getLinkSrc($nsrc);
-                if (   $backend->createSymLink( $orig, $dst )
-                    && $backend->unlinkFile($nsrc) )
-                {
-                    broadcast( 'REBOUND',
-                        { file => $orig, destination => $dst } );
-                }
-                else {
-                    $status = '403 Forbidden';
-                }
-            }
-        }
-    }
-    return print_header_and_content( $status, $type, $content );
-}
-
 sub handlePropFindElement {
     my ($xmldata) = @_;
     my @props;
@@ -2843,12 +2309,12 @@ sub getQuota {
 sub getSupportedMethods {
     my ($path) = @_;
     my @methods;
-    my @rmethods = (
-        'OPTIONS',  'TRACE',     'GET',  'HEAD',
-        'PROPFIND', 'PROPPATCH', 'COPY', 'GETLIB'
+    my @rmethods = qw(
+        OPTIONS  TRACE     GET  HEAD
+        PROPFIND PROPPATCH COPY GETLIB
     );
-    my @wmethods = ( 'POST', 'PUT', 'MKCOL', 'MOVE', 'DELETE' );
-    push @rmethods, ( 'LOCK', 'UNLOCK' ) if $ENABLE_LOCK;
+    my @wmethods = qw( POST PUT MKCOL MOVE DELETE );
+    push @rmethods, qw( LOCK UNLOCK ) if $ENABLE_LOCK;
     push @rmethods, 'REPORT'
         if $ENABLE_ACL
         || $ENABLE_CALDAV
@@ -2857,7 +2323,7 @@ sub getSupportedMethods {
     push @rmethods, 'SEARCH' if $ENABLE_SEARCH;
     push @wmethods, 'ACL' if $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV;
     push @wmethods, 'MKCALENDAR' if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
-    push @wmethods, 'BIND', 'UNBIND', 'REBIND' if $ENABLE_BIND;
+    push @wmethods, qw( BIND UNBIND REBIND) if $ENABLE_BIND;
     @methods = @rmethods;
     push @methods, @wmethods
         if !defined $path || $backend->isWriteable($path);
@@ -2918,18 +2384,6 @@ sub isLocked {
 sub getParentURI {
     my ($uri) = @_;
     return $uri && $uri =~ /^(.*?)\/[^\/]+\/?$/xms ? ( $1 || q{/} ) : q{/};
-}
-
-sub getErrorDocument {
-    my ( $status, $defaulttype, $default ) = @_;
-    return exists $ERROR_DOCS{$status}
-        ? (
-        $status,
-        get_local_file_content_and_type(
-            $ERROR_DOCS{$status}, $default, $defaulttype
-        )
-        )
-        : ( $status, $defaulttype, $default );
 }
 
 sub debug {

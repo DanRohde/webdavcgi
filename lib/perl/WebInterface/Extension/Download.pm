@@ -60,7 +60,7 @@ sub handle {
 		my $file = $main::PATH_TRANSLATED.$fn;
 		if ( $$self{backend}->exists($file) && !main::is_hidden($file) ) {
 			if (!$$self{backend}->isReadable($file)) {
-				main::print_header_and_content(main::getErrorDocument('403 Forbidden','text/plain', '403 Forbidden'));
+				main::print_header_and_content(main::get_error_document('403 Forbidden','text/plain', '403 Forbidden'));
 			} else {
 				my $qfn = $fn;
 				$qfn=~s/"/\\"/gs;
@@ -68,7 +68,7 @@ sub handle {
 				$$self{backend}->printFile($file,\*STDOUT);
 			}
 		} else {
-			main::print_header_and_content(main::getErrorDocument('404 Not Found','text/plain','404 - FILE NOT FOUND'));
+			main::print_header_and_content(main::get_error_document('404 Not Found','text/plain','404 - FILE NOT FOUND'));
 		}
 		$ret = 1;
 	}

@@ -43,7 +43,7 @@ sub handle {
         return $self->handle_public_uri_access()
             if ${$self}{cgi}->param('action') =~ /${$self}{allowedpostactions}/xms;
         main::print_header_and_content(
-            main::getErrorDocument(
+            main::get_error_document(
                 '404 Not Found',
                 'text/plain',
                 '404 - NOT FOUND'
@@ -65,7 +65,7 @@ sub handle_public_uri_access {
         if ( !$fn || !$self->is_public_uri( $fn, $code, $self->get_seed($fn) ) )
         {
             main::print_header_and_content(
-                main::getErrorDocument(
+                main::get_error_document(
                     '404 Not Found',
                     'text/plain',
                     '404 - NOT FOUND'
@@ -102,7 +102,7 @@ sub handle_public_uri_access {
     }
     else {
         main::print_header_and_content(
-            main::getErrorDocument(
+            main::get_error_document(
                 '404 Not Found',
                 'text/plain',
                 '404 - NOT FOUND'

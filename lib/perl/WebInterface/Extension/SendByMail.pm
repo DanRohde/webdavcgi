@@ -224,7 +224,7 @@ sub downloadMail {
         }
         else {
             main::print_header_and_content(
-                main::getErrorDocument(
+                main::get_error_document(
                     '404 Not Found',
                     'text/plain', '404 - FILE NOT FOUND'
                 )
