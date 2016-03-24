@@ -72,7 +72,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160324.05';
+$RELEASE = '1.1.1BETA20160324.06';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1131,6 +1131,7 @@ sub handle_request {
     if (defined $cgi->http('X-Litmus')) { debug( "${PROGRAM_NAME}: X-Litmus: " . $cgi->http('X-Litmus') ); }
     if (defined $cgi->http('X-Litmus-Second')) { debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') ); }
     $METHODS_RX //= _get_methods_rx();
+    debug("METHOD_RX: $METHODS_RX");
     if ( $method =~ /$METHODS_RX/xms ) {
         if ( $main::{"HTTP_$method"}) {
             &{$main::{"HTTP_$method"}};
@@ -1158,7 +1159,6 @@ sub _get_methods_rx {
     if ($ENABLE_BIND) { push @methods, qw( BIND UNBIND REBIND ); }
     if ($ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV || $ENABLE_GROUPDAV ) { push @methods, 'REPORT'; }
     if ($ENABLE_CALDAV) { push @methods, 'MKCALENDAR'; }
-    if ($DEBUG) { push @methods, 'TRACE'; }
     return q{^(?:} . join( q{|}, @methods ) . q{)$};
 }
 
@@ -1324,49 +1324,6 @@ sub HTTP_POST {
         );
     }
     return;
-}
-
-sub HTTP_OPTIONS {
-    debug("_OPTIONS: $PATH_TRANSLATED");
-    my $methods;
-    my $status = '200 OK';
-    my $type;
-    broadcast( 'OPTIONS', { file => $PATH_TRANSLATED } );
-
-    if ( $backend->exists($PATH_TRANSLATED) ) {
-        $type
-            = $backend->isDir($PATH_TRANSLATED)
-            ? 'httpd/unix-directory'
-            : get_mime_type($PATH_TRANSLATED);
-        $methods = join ', ', @{ getSupportedMethods($PATH_TRANSLATED) };
-
-    }
-    else {
-        $status = '404 Not Found';
-        $type   = 'text/plain';
-    }
-    my %params;
-    if ($methods) {
-
-        #$params{'DASL'} = '<DAV:basicsearch>' if $ENABLE_SEARCH;
-        %params = (
-            %params,
-            'DAV'                      => $DAV,
-            'MS-Author-Via'            => 'DAV',
-            'Allow'                    => $methods,
-            'Public'                   => $methods,
-            'DocumentManagementServer' => 'Properties Schema',
-            'DASL' => $ENABLE_SEARCH ? '<DAV:basicsearch>' : undef
-        );
-
-    }
-    return main::print_header_and_content( $status, $type, q{}, \%params );
-}
-
-sub HTTP_TRACE {
-    my $via       = $cgi->http('Via');
-     return print_header_and_content( '200 OK', 'message/http', read_request_body(), 
-        "Via: $ENV{SERVER_NAME}:$ENV{SERVER_PORT}". ( defined $via ? ", $via" : q{} ) );
 }
 
 sub HTTP_GETLIB {
@@ -1756,81 +1713,6 @@ sub HTTP_DELETE {
     debug("_DELETE RESPONSE (status=$status): $content");
     return print_header_and_content( $status, $#resps > -1 ? 'text/xml' : undef,
         $content );
-}
-
-sub HTTP_MKCALENDAR {
-    return _MKCOL(1);
-}
-
-sub HTTP_MKCOL {
-    my ($cal) = @_;
-    my $status = '201 Created';
-    my ( $type, $content );
-    debug("_MKCOL: $PATH_TRANSLATED");
-    my $body = read_request_body();
-    my $dataRef;
-    if ( $body ne q{} ) {
-
-        # maybe extended mkcol (RFC5689)
-        if ( $cgi->content_type() =~ /\/xml/xms ) {
-            eval { $dataRef = simple_xml_parser($body) } or do {
-                debug("_MKCOL: invalid XML request: ${EVAL_ERROR}");
-                print_header_and_content('400 Bad Request');
-                return;
-            };
-            if ( ref( $$dataRef{'{DAV:}set'} ) !~ /(?:ARRAY|HASH)/xms ) {
-                print_header_and_content('400 Bad Request');
-                return;
-            }
-        }
-        else {
-            $status = '415 Unsupported Media Type';
-            print_header_and_content( $status, $type, $content );
-            return;
-        }
-    }
-    if ( $backend->exists($PATH_TRANSLATED) ) {
-        debug('_MKCOL: folder exists (405 Method Not Allowed)!');
-        $status = '405 Method Not Allowed (folder exists)';
-    }
-    elsif ( !$backend->exists( $backend->getParent($PATH_TRANSLATED) ) ) {
-        debug('_MKCOL: parent does not exists (409 Conflict)!');
-        $status = '409 Conflict';
-    }
-    elsif ( !$backend->isWriteable( $backend->getParent($PATH_TRANSLATED) ) )
-    {
-        debug('_MKCOL: parent is not writeable (403 Forbidden)!');
-        $status = '403 Forbidden';
-    }
-    elsif ( !isAllowed($PATH_TRANSLATED) ) {
-        debug('_MKCOL: not allowed!');
-        $status = '423 Locked';
-    }
-    elsif ( $backend->isDir( $backend->getParent($PATH_TRANSLATED) )
-        && is_insufficient_storage() )
-    {
-        $status = '507 Insufficient Storage';
-    }
-    elsif ( $backend->isDir( $backend->getParent($PATH_TRANSLATED) ) ) {
-        debug("_MKCOL: create $PATH_TRANSLATED");
-        broadcast( 'MKCOL', { file => $PATH_TRANSLATED } );
-        if ( $backend->mkcol($PATH_TRANSLATED) ) {
-            my ( %resp_200, %resp_403 );
-            handlePropertyRequest( $body, $dataRef, \%resp_200, \%resp_403 );
-            ## ignore errors from property request
-            getLockModule()->inherit_lock();
-            logger("MKCOL($PATH_TRANSLATED)");
-            broadcast( 'MDCOL', { file => $PATH_TRANSLATED } );
-        }
-        else {
-            $status = '403 Forbidden';
-        }
-    }
-    else {
-        debug('_MKCOL: parent direcory does not exists');
-        $status = '409 Conflict';
-    }
-    return print_header_and_content( $status, $type, $content );
 }
 
 sub HTTP_LOCK {
@@ -2250,10 +2132,7 @@ sub getQuota {
 sub getSupportedMethods {
     my ($path) = @_;
     my @methods;
-    my @rmethods = qw(
-        OPTIONS  TRACE     GET  HEAD
-        PROPFIND PROPPATCH COPY GETLIB
-    );
+    my @rmethods = qw( OPTIONS GET HEAD PROPFIND PROPPATCH COPY GETLIB );
     my @wmethods = qw( POST PUT MKCOL MOVE DELETE );
     push @rmethods, qw( LOCK UNLOCK ) if $ENABLE_LOCK;
     push @rmethods, 'REPORT'
