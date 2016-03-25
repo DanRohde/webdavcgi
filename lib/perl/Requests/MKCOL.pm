@@ -31,13 +31,10 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ( $self, $cal ) = @_;
+    my ( $self, $cgi, $backend ) = @_;
+    my $pt = $main::PATH_TRANSLATED;
 
-    my $cgi     = main::getCGI();
-    my $backend = main::getBackend();
-    my $pt      = $main::PATH_TRANSLATED;
-
-    main::debug("MKCOL: $pt");
+    $self->debug("MKCOL: $pt");
     my $body = read_request_body();
     my $dataref;
     if ( $body ne q{} ) {
@@ -45,7 +42,7 @@ sub handle {
         # maybe extended mkcol (RFC5689)
         if ( $cgi->content_type() =~ /\/xml/xms ) {
             eval { $dataref = simple_xml_parser($body) } or do {
-                main::debug("MKCOL: invalid XML request: ${EVAL_ERROR}");
+                $self->debug("MKCOL: invalid XML request: ${EVAL_ERROR}");
                 print_header_and_content('400 Bad Request');
                 return;
             };
@@ -59,35 +56,35 @@ sub handle {
         }
     }
     if ( $backend->exists($pt) ) {
-        main::debug('MKCOL: folder exists (405 Method Not Allowed)!');
+        $self->debug('MKCOL: folder exists (405 Method Not Allowed)!');
         return print_header_and_content(
             '405 Method Not Allowed (folder exists)');
     }
     if ( !$backend->exists( $backend->getParent($pt) ) ) {
-        main::debug('MKCOL: parent does not exists (409 Conflict)!');
+        $self->debug('MKCOL: parent does not exists (409 Conflict)!');
         return print_header_and_content('409 Conflict');
     }
     if ( !$backend->isWriteable( $backend->getParent($pt) ) ) {
-        main::debug('MKCOL: parent is not writeable (403 Forbidden)!');
+        $self->debug('MKCOL: parent is not writeable (403 Forbidden)!');
         return print_header_and_content('403 Forbidden');
     }
     if ( !main::isAllowed($pt) ) {
-        main::debug('MKCOL: not allowed!');
+        $self->debug('MKCOL: not allowed!');
         return print_header_and_content('423 Locked');
     }
     if ( $backend->isDir( $backend->getParent($pt) )
         && main::is_insufficient_storage() )
     {
-        main::debug('MKCOL: insufficient storage!');
+        $self->debug('MKCOL: insufficient storage!');
         return print_header_and_content('507 Insufficient Storage');
     }
 
     if ( !$backend->isDir( $backend->getParent($pt) ) ) {
-        main::debug('MKCOL: parent direcory does not exists');
+        $self->debug('MKCOL: parent direcory does not exists');
         return print_header_and_content('409 Conflict');
     }
 
-    main::debug("MKCOL: create $pt");
+    $self->debug("MKCOL: create $pt");
     main::broadcast( 'MKCOL', { file => $pt } );
 
     if ( !$backend->mkcol($pt) ) {
@@ -98,7 +95,7 @@ sub handle {
     main::handlePropertyRequest( $body, $dataref, \%resp_200, \%resp_403 );
     ## ignore errors from property request
     main::getLockModule()->inherit_lock();
-    main::logger("MKCOL($pt)");
+    $self->logger("MKCOL($pt)");
     main::broadcast( 'MDCOL', { file => $pt } );
     return print_header_and_content('201 Created');
 }

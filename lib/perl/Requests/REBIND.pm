@@ -36,16 +36,13 @@ use base qw( Requests::Request );
 
 use URI::Escape;
 
-use FileUtils qw( rmove get_error_document );
+use FileUtils qw( rmove );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ($self) = @_;
-
-    my $cgi     = main::getCGI();
-    my $backend = main::getBackend();
-    my $host    = $cgi->http('Host');
+    my ( $self, $cgi, $backend ) = @_;
+    my $host = $cgi->http('Host');
     my $overwrite =
       defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
 
@@ -53,13 +50,7 @@ sub handle {
     my $xmldata = q{};
 
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
-        return print_header_and_content(
-            get_error_document(
-                '400 Bad Request',
-                'text/plain',
-                '400 Bad Request'
-            )
-        );
+        return print_header_and_content('400 Bad Request');
     }
 
     my $segment = ${$xmldata}{'{DAV:}segment'};
@@ -75,46 +66,38 @@ sub handle {
     $ndst =~ s/\/$//xms;
 
     if ( !$backend->exists($src) ) {
-        return print_header_and_content(
-            get_error_document('404 Not Found') );
+        return print_header_and_content('404 Not Found');
     }
     if ( !$backend->isLink($nsrc) ) {
-        return print_header_and_content(
-            get_error_document('403 Forbidden') );
+        return print_header_and_content('403 Forbidden');
     }
     if ( $backend->exists($dst) && $overwrite ne 'T' ) {
-        return print_header_and_content(
-            get_error_document('403 Forbidden') );
+        return print_header_and_content('403 Forbidden');
     }
     if ( $backend->exists($dst) && !$backend->isLink($ndst) ) {
-        return print_header_and_content(
-            get_error_document('403 Forbidden') );
+        return print_header_and_content('403 Forbidden');
     }
     if ( main::is_insufficient_storage() ) {
-        return print_header_and_content(
-            get_error_document('507 Insufficient Storage') );
+        return print_header_and_content('507 Insufficient Storage');
     }
     my ( $status, $type, $content );
 
     main::broadcast( 'REBIND', { file => $nsrc, destination => $ndst } );
-
     $status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
 
-    if ( $backend->isLink($ndst) ) { $backend->unlinkFile($ndst); }
-
-    if ( !rmove( $nsrc, $ndst ) ) {    ### check rename->rmove OK?
-        my $orig = $backend->getLinkSrc($nsrc);
-        if (   $backend->createSymLink( $orig, $dst )
-            && $backend->unlinkFile($nsrc) )
-        {
-            main::broadcast( 'REBOUND',
-                { file => $orig, destination => $dst } );
-        }
-        else {
-            $status = '403 Forbidden';
-        }
+    if ( $backend->isLink($ndst) && $backend->unlinkFile($ndst) ) {
+        return print_header_and_content('403 Forbidden');
     }
 
+    my $orig = $backend->getLinkSrc($nsrc);
+    if ( !rmove( $nsrc, $ndst ) ) {    ### check rename->rmove OK?
+        if (   !$backend->createSymLink( $orig, $dst )
+            || !$backend->unlinkFile($nsrc) )
+        {
+            return print_header_and_content('403 Forbidden');
+        }
+    }
+    main::broadcast( 'REBOUND', { file => $orig, destination => $dst } );
     return print_header_and_content( $status, $type, $content );
 }
 

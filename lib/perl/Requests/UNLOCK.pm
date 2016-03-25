@@ -1,4 +1,4 @@
-#########################################################################
+########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
@@ -15,33 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-package Requests::Request;
+
+package Requests::UNLOCK;
 
 use strict;
 use warnings;
 
 our $VERSION = '2.0';
 
-use CGI::Carp;
+use base qw( Requests::Request );
 
-sub new {
-    my ( $this) = @_;
-    my $class = ref($this) || $this;
-    my $self = {};
-    bless $self, $class;
-    return $self;
-}
+use HTTPHelper qw( print_header_and_content );
 
 sub handle {
-    croak('Implement me!');
-}
+    my ( $self, $cgi, $backend ) = @_;
 
-sub logger {
-    my ($self,@args) = @_;
-    return main::logger(@args);
-}
-sub debug {
-    my ($self,@args) = @_;
-    return main::debug(@args);
+    my $token = $cgi->http('Lock-Token');
+    $token =~ s/[\<\>]//xmsg;
+    debug("_UNLOCK: $main::PATH_TRANSLATED (token=$token)");
+
+    if ( !defined $token ) {
+        return print_header_and_content('400 Bad Request');
+    }
+    if ( !main::isLocked($main::PATH_TRANSLATED) ) {
+        return print_header_and_content('409 Conflict');
+    }
+    if ( !main::getLockModule()
+        ->unlock_resource( $main::PATH_TRANSLATED, $token ) )
+    {
+        return print_header_and_content('423 Locked');
+    }
+    return print_header_and_content('204 No Content');
 }
 1;

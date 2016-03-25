@@ -28,10 +28,9 @@ use base qw( Requests::Request );
 use HTTPHelper qw( print_header_and_content );
 
 sub handle {
-    my ($self)  = @_;
-    my $backend = main::getBackend();
-    my $pt      = $main::PATH_TRANSLATED;
-    main::debug("HTTP_OPTIONS: $pt");
+    my ( $self, $cgi, $backend ) = @_;
+    my $pt = $main::PATH_TRANSLATED;
+    $self->debug("HTTP_OPTIONS: $pt");
     main::broadcast( 'OPTIONS', { file => $pt } );
     if ( !$backend->exists($pt) ) {
         return print_header_and_content('404 Not Found');

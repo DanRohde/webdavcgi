@@ -29,20 +29,19 @@ use HTTPHelper
   qw( fix_mod_perl_response print_header_and_content print_file_header );
 
 sub handle {
-    my ($self)  = @_;
-    my $backend = main::getBackend();
+    my ( $self, $cgi, $backend ) = @_;
     if ( $main::FANCYINDEXING
         && main::getWebInterface()->handle_head_request() )
     {
-        main::debug('HEAD: WebInterface called');
+        $self->debug('HEAD: WebInterface called');
         return;
     }
     if ( !$backend->exists($main::PATH_TRANSLATED) ) {
-        main::debug("HEAD: $main::PATH_TRANSLATED does not exists!");
+        $self->debug("HEAD: $main::PATH_TRANSLATED does not exists!");
         print_header_and_content('404 Not Found');
 
     }
-    main::debug("HEAD: $main::PATH_TRANSLATED exists!");
+    $self->debug("HEAD: $main::PATH_TRANSLATED exists!");
     return fix_mod_perl_response( print_file_header($main::PATH_TRANSLATED) );
 }
 1;

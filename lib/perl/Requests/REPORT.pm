@@ -26,52 +26,37 @@ use base qw( Requests::Request );
 
 use English qw ( -no_match_vars );
 
-use FileUtils qw( read_dir_recursive read_dir_by_suffix get_error_document );
+use FileUtils qw( read_dir_recursive read_dir_by_suffix );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
-
 sub handle {
-    my ($self) = @_;
-    my $fn     = $main::PATH_TRANSLATED;
-    my $ru     = $main::REQUEST_URI;
-    my $cgi    = main::getCGI();
-    my $depth  = $cgi->http('Depth') // 0;
-    if ( $depth =~ /infinity/xmsi ) { $depth = - 1; }
+    my ( $self, $cgi, $backend ) = @_;
 
-    main::debug("_REPORT($fn,$ru)");
+    $self->{backend} = $backend;
+    my $fn    = $main::PATH_TRANSLATED;
+    my $ru    = $main::REQUEST_URI;
+    my $depth = $cgi->http('Depth') // 0;
+    if ( $depth =~ /infinity/xmsi ) { $depth = -1; }
 
+    $self->debug("_REPORT($fn,$ru)");
 
-    my $backend = main::getBackend();
-
-    if (  !$backend->exists($fn)
+    if (
+        !$backend->exists($fn)
         && $ru !~
 /^(?:\Q$main::CURRENT_USER_PRINCIPAL\E|\Q$main::PRINCIPAL_COLLECTION_SET\E)/xms
       )
     {
-        return print_header_and_content(
-            get_error_document(
-                '404 Not Found',
-                'text/plain',
-                '404 Not Found'
-            )
-        );
+        return print_header_and_content('404 Not Found');
     }
-
 
     my $xml     = read_request_body();
     my $xmldata = q{};
 
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        main::debug("_REPORT: invalid XML request: ${EVAL_ERROR}");
-        main::debug("_REPORT: xml-request=$xml");
-        return print_header_and_content(
-            get_error_document(
-                '400 Bad Request',
-                'text/plain',
-                '400 Bad Request'
-            )
-        );
+        $self->debug("_REPORT: invalid XML request: ${EVAL_ERROR}");
+        $self->debug("_REPORT: xml-request=$xml");
+        return print_header_and_content('400 Bad Request');
     }
 
     if ( defined ${$xmldata}{'{DAV:}acl-principal-prop-set'} ) {
@@ -93,7 +78,7 @@ sub handle {
     }
     if ( defined ${$xmldata}{'{urn:ietf:params:xml:ns:caldav}calendar-query'} )
     {
-        return $self->_handle_calendar_query($fn,$ru, $xmldata, $depth);
+        return $self->_handle_calendar_query( $fn, $ru, $xmldata, $depth );
     }
     if (
         defined ${$xmldata}{'{urn:ietf:params:xml:ns:caldav}calendar-multiget'}
@@ -105,22 +90,22 @@ sub handle {
         defined ${$xmldata}{'{urn:ietf:params:xml:ns:carddav}addressbook-query'}
       )
     {
-        return $self->_handle_addressbook_query($fn, $ru, $xmldata, $depth );
+        return $self->_handle_addressbook_query( $fn, $ru, $xmldata, $depth );
     }
     if (
         defined ${$xmldata}
         {'{urn:ietf:params:xml:ns:carddav}addressbook-multiget'} )
     {
-        return  $self->_handle_addressbook_multiget($xmldata);
+        return $self->_handle_addressbook_multiget($xmldata);
     }
 
-    return print_header_and_content(get_error_document('400 Bad Request','text/plain','400 Bad Requst'));
+    return print_header_and_content('400 Bad Request');
 }
 
 sub _print_response_from_hrefs {
     my ( $self, $xmldata, $rn, $hrefsref ) = @_;
-    my $backend = main::getBackend();
-    my @resps = ();
+    my $backend = $self->{backend};
+    my @resps   = ();
     foreach my $href ( @{$hrefsref} ) {
         my ( %resp_200, %resp_404 );
         $resp_200{status} = 'HTTP/1.1 200 OK';
@@ -128,7 +113,7 @@ sub _print_response_from_hrefs {
         my $nhref = $href;
         $nhref =~ s/^$main::VIRTUAL_BASE//xms;
         my $nfn = $main::DOCUMENT_ROOT . $nhref;
-        main::debug("_REPORT: nfn=$nfn, href=$href");
+        $self->debug("_REPORT: nfn=$nfn, href=$href");
         if ( !$backend->exists($nfn) ) {
             push @resps, { href => $href, status => 'HTTP/1.1 404 Not Found' };
             next;
@@ -149,7 +134,7 @@ sub _print_response_from_hrefs {
           };
     }
     ### push @resps, { } if ($#hrefs==-1);  ## empty multistatus response not supported
-    return _print_response( \@resps );
+    return $self->_print_response( \@resps );
 }
 
 sub _print_response {
@@ -163,7 +148,7 @@ q{<?xml version="1.0" encoding="UTF-8"?><D:multistatus xmlns:D="DAV:"></D:multis
     else {
         $content = create_xml( { multistatus => { response => $respsref } } );
     }
-    main::debug("_REPORT: RESPONSE: $content");
+    $self->debug("_REPORT: RESPONSE: $content");
     return print_header_and_content( '207 Multi-Status',
         'application/xml', $content );
 }
@@ -172,13 +157,7 @@ sub _handle_principal_match {
     my ( $self, $fn, $ru, $xmldata, $depth ) = @_;
     my @resps = ();
     if ( $depth != 0 ) {
-        return print_header_and_content(
-            get_error_document(
-                '400 Bad Request',
-                'text/plain',
-                '400 Bad Request'
-            )
-        );
+        return print_header_and_content('400 Bad Request');
     }
 
     # response, href
@@ -208,13 +187,7 @@ sub _handle_acl_principal_prop_set {
 sub _handle_principal_property_search {
     my ( $self, $fn, $ru, $xmldata, $depth ) = @_;
     if ( $depth != 0 ) {
-        return print_header_and_content(
-            get_error_document(
-                '400 Bad Request',
-                'text/plain',
-                '400 Bad Request'
-            )
-        );
+        return print_header_and_content('400 Bad Request');
     }
     my @resps = ();
     my @props;
@@ -274,11 +247,12 @@ sub _handle_free_busy_query {
     );
 }
 
-sub _handle_calendar_query { ## missing filter
-    my ($self, $fn, $ru, $xmldata, $depth ) = @_;
+sub _handle_calendar_query {    ## missing filter
+    my ( $self, $fn, $ru, $xmldata, $depth ) = @_;
     my @hrefs = ();
     read_dir_by_suffix( $fn, $ru, \@hrefs, 'ics', $depth );
-    return _print_response_from_hrefs($xmldata, '{urn:ietf:params:xml:ns:caldav}calendar-query', \@hrefs);
+    return $self->_print_response_from_hrefs( $xmldata,
+        '{urn:ietf:params:xml:ns:caldav}calendar-query', \@hrefs );
 }
 
 sub _handle_calendar_multiget {    ## OK - complete
@@ -288,14 +262,7 @@ sub _handle_calendar_multiget {    ## OK - complete
     if (   !defined ${$xmldata}{$rn}{'{DAV:}href'}
         || !defined ${$xmldata}{$rn}{'{DAV:}prop'} )
     {
-        print_header_and_content(
-            get_error_document(
-                '400 Bad Request',
-                'text/plain',
-                '400 Bad Request'
-            )
-        );
-        return;
+        return print_header_and_content('400 Bad Request');
     }
     if ( ref( ${$xmldata}{$rn}{'{DAV:}href'} ) eq 'ARRAY' ) {
         @hrefs = @{ ${$xmldata}{$rn}{'{DAV:}href'} };
@@ -307,14 +274,17 @@ sub _handle_calendar_multiget {    ## OK - complete
     else {
         push @hrefs, ${$xmldata}{$rn}{'{DAV:}href'};
     }
-    return $self->_print_response_from_hrefs($xmldata, $rn, \@hrefs);
+    return $self->_print_response_from_hrefs( $xmldata, $rn, \@hrefs );
 }
+
 sub _handle_addressbook_query {
-    my ($self, $fn, $ru, $xmldata, $depth ) = @_;
+    my ( $self, $fn, $ru, $xmldata, $depth ) = @_;
     my @hrefs = ();
     read_dir_by_suffix( $fn, $ru, \@hrefs, 'vcf', $depth );
-    return $self->_print_response_from_hrefs($xmldata, '{urn:ietf:params:xml:ns:carddav}addressbook-query', \@hrefs);
+    return $self->_print_response_from_hrefs( $xmldata,
+        '{urn:ietf:params:xml:ns:carddav}addressbook-query', \@hrefs );
 }
+
 sub _handle_addressbook_multiget {
     my ( $self, $xmldata ) = @_;
     my @hrefs;
@@ -323,14 +293,7 @@ sub _handle_addressbook_multiget {
     if (   !defined ${$xmldata}{$rn}{'{DAV:}href'}
         || !defined ${$xmldata}{$rn}{'{DAV:}prop'} )
     {
-        print_header_and_content(
-            get_error_document(
-                '400 Bad Request',
-                'text/plain',
-                '400 Bad Request'
-            )
-        );
-        return;
+        return print_header_and_content('400 Bad Request');
     }
     if ( ref( ${$xmldata}{$rn}{'{DAV:}href'} ) eq 'ARRAY' ) {
         @hrefs = @{ ${$xmldata}{$rn}{'{DAV:}href'} };
@@ -341,7 +304,7 @@ sub _handle_addressbook_multiget {
     else {
         push @hrefs, ${$xmldata}{$rn}{'{DAV:}href'};
     }
-    return $self->_print_response_from_hrefs($xmldata, $rn, \@hrefs);
+    return $self->_print_response_from_hrefs( $xmldata, $rn, \@hrefs );
 }
 
 1;

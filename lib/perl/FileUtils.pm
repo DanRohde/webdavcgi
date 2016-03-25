@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -25,8 +24,9 @@ use warnings;
 our $VERSION = '1.0';
 
 use base qw( Exporter );
-our @EXPORT_OK
-    = qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter filter get_error_document );
+our @EXPORT_OK =
+  qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter filter get_error_document stat2h )
+  ;
 
 use CGI;
 use CGI::Carp;
@@ -46,9 +46,9 @@ sub rcopy {
     $depth //= 0;
 
     return 0
-        if defined $main::LIMIT_FOLDER_DEPTH
-        && $main::LIMIT_FOLDER_DEPTH > 0
-        && $depth > $main::LIMIT_FOLDER_DEPTH;
+      if defined $main::LIMIT_FOLDER_DEPTH
+      && $main::LIMIT_FOLDER_DEPTH > 0
+      && $depth > $main::LIMIT_FOLDER_DEPTH;
 
     # src == dst ?
     return 0 if $src eq $dst;
@@ -61,8 +61,8 @@ sub rcopy {
 
     # src exists and can copy?
     return 0
-        if !$backend->exists($src)
-        || ( !$move && !$backend->isReadable($src) );
+      if !$backend->exists($src)
+      || ( !$move && !$backend->isReadable($src) );
 
     # src moveable because writeable?
     return 0 if $move && !$backend->isWriteable($src);
@@ -113,11 +113,8 @@ sub rcopy {
             my $rret = 1;
             foreach my $filename ( @{ $backend->readDir($src) } ) {
                 $rret = $rret
-                    && rcopy(
-                    $src . $filename,
-                    $dst . $filename,
-                    $move, $depth + 1
-                    );
+                  && rcopy( $src . $filename, $dst . $filename,
+                    $move, $depth + 1 );
             }
             if ($move) {
                 if (   !$rret
@@ -138,7 +135,8 @@ sub rcopy {
     $dst =~ s{/$}{}xms;
     main::broadcast(
         $move ? 'FILEMOVED' : 'FILECOPIED',
-        {   file        => $src,
+        {
+            file        => $src,
             destination => $dst,
             depth       => $depth,
             overwrite   => 'T',
@@ -154,9 +152,8 @@ sub rmove {
 }
 
 sub read_dir_recursive {
-    my ($fn,    $ru,    $resps_ref, $props, $all,
-        $noval, $depth, $noroot,    $visited
-    ) = @_;
+    my ( $fn, $ru, $resps_ref, $props, $all, $noval, $depth, $noroot, $visited )
+      = @_;
     my $backend = main::getBackend();
 
     return if main::is_hidden($fn);
@@ -165,8 +162,8 @@ sub read_dir_recursive {
     if ( !$noroot ) {
         my %response = ( href => $ru );
         $response{href} = $ru;
-        $response{propstat}
-            = main::getPropStat( $nfn, $ru, $props, $all, $noval );
+        $response{propstat} =
+          main::getPropStat( $nfn, $ru, $props, $all, $noval );
         if ( $#{ $response{propstat} } == -1 ) {
             $response{status} = 'HTTP/1.1 200 OK';
             delete $response{propstat};
@@ -176,35 +173,33 @@ sub read_dir_recursive {
                 && $depth < 0
                 && exists ${$visited}{$nfn} )
             {
-                $response{propstat}[0]{status}
-                    = 'HTTP/1.1 208 Already Reported';
+                $response{propstat}[0]{status} =
+                  'HTTP/1.1 208 Already Reported';
             }
         }
         push @{$resps_ref}, \%response;
     }
     return
-           if exists ${$visited}{$nfn}
-        && !$noroot
-        && ( $depth eq 'infinity' || $depth < 0 );
+         if exists ${$visited}{$nfn}
+      && !$noroot
+      && ( $depth eq 'infinity' || $depth < 0 );
     ${$visited}{$nfn} = 1;
     if ( $depth != 0 && $is_readable && $backend->isDir($nfn) ) {
         if ( !defined $main::FILECOUNTPERDIRLIMIT{$fn}
             || $main::FILECOUNTPERDIRLIMIT{$fn} > 0 )
         {
             foreach my $f (
-                @{  $backend->readDir( $fn, main::getFileLimit($fn),
-                        \&filter )
-                }
-                )
+                @{ $backend->readDir( $fn, main::getFileLimit($fn), \&filter ) }
+              )
             {
                 my $fru = $ru . CGI::escape($f);
                 $is_readable = $backend->isReadable("$nfn/$f");
-                my $nnfn
-                    = $is_readable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
-                $fru
-                    .= $is_readable
-                    && $backend->isDir($nnfn)
-                    && $fru !~ /\/$/xms ? q{/} : q{};
+                my $nnfn =
+                  $is_readable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
+                $fru .=
+                     $is_readable
+                  && $backend->isDir($nnfn)
+                  && $fru !~ /\/$/xms ? q{/} : q{};
                 read_dir_recursive( $nnfn, $fru, $resps_ref, $props,
                     $all, $noval, $depth > 0 ? $depth - 1 : $depth,
                     0, $visited );
@@ -250,12 +245,12 @@ sub move2trash {
     {
         if ( $backend->exists($trash) ) {
             my $i = 0;
-            while ( $backend->exists($trash) ) {   ## find unused trash folder
+            while ( $backend->exists($trash) ) {     ## find unused trash folder
                 $trash = "$main::TRASH_FOLDER$etag" . ( $i++ ) . q{/};
             }
         }
         $ret = $backend->mkcol($trash)
-            && rmove( $fn, $trash . $backend->basename($fn) ) ? 1 : 0;
+          && rmove( $fn, $trash . $backend->basename($fn) ) ? 1 : 0;
         main::debug("move2trash($fn)->$trash = $ret");
     }
     return $ret;
@@ -268,7 +263,7 @@ sub read_dir_by_suffix {
 
     my $nfn = $backend->resolve($fn);
     return
-        if exists ${$visited}{$nfn} && ( $depth eq 'infinity' || $depth < 0 );
+      if exists ${$visited}{$nfn} && ( $depth eq 'infinity' || $depth < 0 );
     ${$visited}{$nfn} = 1;
 
     if ( $backend->isReadable($fn) ) {
@@ -277,8 +272,7 @@ sub read_dir_by_suffix {
         {
             $sf .= $backend->isDir( $fn . $sf ) ? q{/} : q{};
             my $nbase = $base . $sf;
-            if ( $backend->isFile( $fn . $sf ) && $sf =~ /[.]\Q$suffix\E/xms )
-            {
+            if ( $backend->isFile( $fn . $sf ) && $sf =~ /[.]\Q$suffix\E/xms ) {
                 push @{$hrefs}, $nbase;
             }
             if ( $depth != 0 && $backend->isDir( $fn . $sf ) ) {
@@ -323,8 +317,8 @@ sub get_dir_info {
             }
         }
     }
-    $counter{hassubs}
-        = ( $counter{childcount} - $counter{objectcount} > 0 ) ? 1 : 0;
+    $counter{hassubs} =
+      ( $counter{childcount} - $counter{objectcount} > 0 ) ? 1 : 0;
 
     foreach my $k ( keys %counter ) {
         $cm->set_entry( [ 'get_dir_info', $fn, $k ], $counter{$k} );
@@ -341,21 +335,53 @@ sub filter {
     my $hidden = get_hidden_filter();
     my $filter = defined $path ? $main::FILEFILTERPERDIR{$path} : undef;
 
-    return ( defined $file && $file =~ /^[.]{1,2}$/xms )
-        || ( defined $filter && defined $file && $file !~ $filter )
-        || ( defined $hidden && defined $file && defined $path && "$path$file" =~ /$hidden/xms );
+    return
+         ( defined $file && $file =~ /^[.]{1,2}$/xms )
+      || ( defined $filter && defined $file && $file !~ $filter )
+      || ( defined $hidden
+        && defined $file
+        && defined $path
+        && "$path$file" =~ /$hidden/xms );
 }
+
 sub get_error_document {
     my ( $status, $defaulttype, $default ) = @_;
     $defaulttype //= 'text/plain';
     $default //= $status;
     return exists $main::ERROR_DOCS{$status}
-        ? (
+      ? (
         $status,
         get_local_file_content_and_type(
-            $main::ERROR_DOCS{$status}, $default, $defaulttype
+            $main::ERROR_DOCS{$status},
+            $default, $defaulttype
         )
-        )
-        : ( $status, $defaulttype, $default );
+      )
+      : ( $status, $defaulttype, $default );
 }
+
+
+sub stat2h {
+    my (@stat) = @_;
+    # map is slower than unpacking arrays to vars !
+    my (
+        $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
+        $size, $atime, $mtime, $ctime, $blksize, $blocks
+    ) = $#stat == 0 && ref $stat[0] eq 'ARRAY' ? @{$stat[0]} : @stat;
+    return {
+        dev     => $dev,
+        ino     => $ino,
+        mode    => $mode,
+        nlink   => $nlink,
+        uid     => $uid,
+        gid     => $gid,
+        rdev    => $dev,
+        size    => $size,
+        atime   => $atime,
+        mtime   => $mtime,
+        ctime   => $ctime,
+        blksize => $blksize,
+        blocks  => $blocks,
+    };
+}
+
 1;

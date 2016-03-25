@@ -45,14 +45,13 @@ use base qw( Requests::Request );
 
 use English qw ( -no_match_vars );
 
-use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 use WebDAV::Search;
 
 sub handle {
-    my ($self) = @_;
+    my ( $self, $cgi, $backend ) = @_;
 
     my $config = main::getConfig();
 
@@ -65,13 +64,12 @@ sub handle {
     my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        main::debug("_SEARCH: invalid XML request: ${EVAL_ERROR}");
-        main::debug("_SEARCH: xml-request=$xml");
-        return print_header_and_content(
-            get_error_document('400 Bad Request') );
+        $self->debug("_SEARCH: invalid XML request: ${EVAL_ERROR}");
+        $self->debug("_SEARCH: xml-request=$xml");
+        return print_header_and_content('400 Bad Request');
     }
     if ( exists ${$xmldata}{'{DAV:}query-schema-discovery'} ) {
-        main::debug('_SEARCH: found query-schema-discovery');
+        $self->debug('_SEARCH: found query-schema-discovery');
         WebDAV::Search->new($config)
           ->get_schema_discovery( $main::REQUEST_URI, \@resps );
     }
@@ -95,7 +93,7 @@ sub handle {
         $content = create_xml( { multistatus => {} } )
           ;    ## rfc5323 allows empty multistatus
     }
-    main::debug(
+    $self->debug(
 "_SEARCH: status=$status, type=$type, request:\n$xml\n\n response:\n $content\n\n"
     );
     return print_header_and_content( $status, $type, $content );

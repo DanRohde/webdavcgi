@@ -26,8 +26,8 @@ our $VERSION = '2.0';
 use base qw( Requests::MKCOL );
 
 sub handle {
-    my ($self) = @_;
-    return $self->SUPER::handle(1);
+    my ( $self, $cgi, $backend ) = @_;
+    return $self->SUPER::handle( $cgi, $backend );
 }
 
 1;

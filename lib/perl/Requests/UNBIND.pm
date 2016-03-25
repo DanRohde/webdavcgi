@@ -32,38 +32,34 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
-
 sub handle {
-    my ($self) = @_;
-    my $backend = main::getBackend();
+    my ( $self, $cgi, $backend ) = @_;
 
     my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
-        return print_header_and_content(
-            get_error_document('400 Bad Request') );
+        return print_header_and_content('400 Bad Request');
 
     }
     my $segment = ${$xmldata}{'{DAV:}segment'};
     my $dst     = $main::PATH_TRANSLATED . $segment;
     main::broadcast( 'UNBIND', { file => $dst } );
+
     if ( !$backend->exists($dst) ) {
-        return print_header_and_content( get_error_document('404 Not Found') );
+        return print_header_and_content('404 Not Found');
     }
     if ( !$backend->isLink($dst) ) {
-        return print_header_and_content( get_error_document('403 Forbidden') );
+        return print_header_and_content('403 Forbidden');
     }
 
-    if ( $backend->unlinkFile($dst) ) {
-        main::broadcast( 'UNBOUND', { file => $dst } );
+    if ( !$backend->unlinkFile($dst) ) {
+        return print_header_and_content('403 Forbidden');
     }
-    else {
-        return print_header_and_content( get_error_document('403 Forbidden') );
-    }
+
+    main::broadcast( 'UNBOUND', { file => $dst } );
     return print_header_and_content('204 No Content');
 }
 

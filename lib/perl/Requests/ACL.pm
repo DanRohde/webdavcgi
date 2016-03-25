@@ -26,35 +26,32 @@ use base qw( Requests::Request );
 
 use English qw ( -no_match_vars );
 
-use FileUtils qw( get_error_document );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 sub handle {
-    my ($self) = @_;
+    my ( $self, $cgi, $backend ) = @_;
 
-    my $backend = main::getBackend();
-    my $fn      = $main::PATH_TRANSLATED;
+    $self->{backend} = $backend;
+    my $fn = $main::PATH_TRANSLATED;
 
-    main::debug("_ACL($fn)");
+    $self->debug("_ACL($fn)");
 
     if ( !$backend->exists($fn) ) {
-        return print_header_and_content( get_error_document('404 Not Found') );
+        return print_header_and_content('404 Not Found');
     }
     if ( !main::isAllowed($fn) ) {
-        return print_header_and_content( get_error_document('432 Locked') );
+        return print_header_and_content('432 Locked');
     }
 
     my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 1 ); } ) {
-        main::debug("_ACL: invalid XML request: ${EVAL_ERROR}");
-        return print_header_and_content(
-            get_error_document('400 Bad Request') );
+        $self->debug("_ACL: invalid XML request: ${EVAL_ERROR}");
+        return print_header_and_content('400 Bad Request');
     }
     if ( !exists ${$xmldata}{'{DAV:}acl'} ) {
-        return print_header_and_content(
-            get_error_document('400 Bad Request') );
+        return print_header_and_content('400 Bad Request');
     }
 
     my @ace = ();
@@ -70,17 +67,14 @@ sub handle {
     foreach my $ace (@ace) {
         my $who = $self->_get_who($ace);
         if ( !defined $who ) {
-            return print_header_and_content(
-                get_error_document('400 Bad Request') );
+            return print_header_and_content('400 Bad Request');
         }
         my ( $read, $write ) = $self->_get_read_write($ace);
         if ( !defined $read || !defined $write ) {
-            return print_header_and_content(
-                get_error_document('400 Bad Request') );
+            return print_header_and_content('400 Bad Request');
         }
         if ( $read == 0 && $write == 0 ) {
-            return print_header_and_content(
-                get_error_document('400 Bad Request') );
+            return print_header_and_content('400 Bad Request');
         }
 
         if (
@@ -89,8 +83,7 @@ sub handle {
             )
           )
         {
-            return print_header_and_content(
-                get_error_document('403 Forbidden') );
+            return print_header_and_content('403 Forbidden');
         }
 
     }
@@ -143,7 +136,7 @@ sub _get_who {
 
 sub _get_new_perm {
     my ( $self, $fn, $who, $read, $write ) = @_;
-    my $mode = ( main::getBackend()->stat($fn) )[2];
+    my $mode = ( $self->{backend}->stat($fn) )[2];
     $mode = $mode & oct 7777;
     my $newperm = $mode;
     if ( $read != 0 ) {
@@ -154,7 +147,7 @@ sub _get_new_perm {
         my $mask = $who == 0 ? oct(200) : $who == 1 ? oct(20) : oct 2;
         $newperm = ( $write > 0 ) ? $newperm | $mask : $newperm & ~$mask;
     }
-    main::debug(
+    $self->debug(
         '_ACL: old perm='
           . sprintf( '%4o', $mode )
           . ', new perm='

@@ -28,16 +28,15 @@ use base qw( Requests::Request );
 use HTTPHelper qw( print_header_and_content );
 
 sub handle {
-    my ($self)  = @_;
-    my $backend = main::getBackend();
-    my $fn      = $main::PATH_TRANSLATED;
+    my ( $self, $cgi, $backend ) = @_;
+    my $fn = $main::PATH_TRANSLATED;
     if ( !$backend->exists($fn) ) {
-        return print_header_and_content( '404 Not Found' );
+        return print_header_and_content('404 Not Found');
     }
     my $su = $ENV{SCRIPT_URI};
     if ( !$backend->isDir($fn) ) { $su =~ s{/[^/]+$}{/}xms; }
     my $addheader = "MS-Doclib: $su";
-    main::debug("HTTP_GETLIB: $addheader\n");
+    $self->debug("HTTP_GETLIB: $addheader\n");
     return print_header_and_content( '200 OK', 'text/plain', q{}, $addheader );
 }
 1;

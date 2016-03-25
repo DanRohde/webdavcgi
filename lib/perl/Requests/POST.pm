@@ -29,12 +29,9 @@ use HTTPHelper qw( print_header_and_content );
 use FileUtils qw( get_error_document );
 
 sub handle {
-    my ($self) = @_;
-    main::debug("_POST: $main::PATH_TRANSLATED");
+    my ( $self, $cgi, $backend ) = @_;
 
-    my $cgi     = main::getCGI();
-    my $backend = main::getBackend();
-
+    $self->debug("_POST: $main::PATH_TRANSLATED");
     if ( !$cgi->param('file_upload') && $cgi->cgi_error ) {
         return print_header_and_content( $cgi->cgi_error, undef,
             $cgi->cgi_error );
@@ -42,7 +39,7 @@ sub handle {
     if ( $main::ALLOW_FILE_MANAGEMENT
         && main::getWebInterface()->handle_post_request() )
     {
-        main::debug('_POST: WebInterface called');
+        $self->debug('_POST: WebInterface called');
         return;
     }
     if (   $main::ENABLE_CALDAV_SCHEDULE
@@ -51,7 +48,7 @@ sub handle {
         ## TODO: NOT IMPLEMENTED YET
         return print_header_and_content('501 Not Implemented');
     }
-    main::debug("_POST: forbidden POST to $main::PATH_TRANSLATED");
+    $self->debug("_POST: forbidden POST to $main::PATH_TRANSLATED");
     return print_header_and_content(
         get_error_document(
             '403 Forbidden',
