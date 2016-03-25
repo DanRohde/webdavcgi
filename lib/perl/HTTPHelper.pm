@@ -23,11 +23,16 @@ use warnings;
 our $VERSION = '2.0';
 
 use base qw{ Exporter };
-our @EXPORT_OK
-    = qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components );
+our @EXPORT_OK =
+  qw( print_header_and_content print_compressed_header_and_content print_file_header 
+     print_header_and_content print_local_file_header fix_mod_perl_response 
+     read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components 
+     get_dav_header );
 
 use CGI::Carp;
 use POSIX qw( strftime );
+use Digest::MD5;
+
 require bytes;
 
 sub _get_header_hashref {
@@ -63,7 +68,7 @@ sub print_header_and_content {
         -charset        => $main::CHARSET,
         -cookie         => $cookies,
         'MS-Author-Via' => 'DAV',
-        'DAV'           => $main::DAV,
+        'DAV'           => get_dav_header(),
     );
     if ( defined $cgi->http('Translate') ) { $header{'Translate'} = 'f'; }
     %header = ( %header, %{ _get_header_hashref($add_header) } );
@@ -110,9 +115,9 @@ sub print_local_file_header {
         -Content_Length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified =>
-            strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
+          strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
         -charset        => $main::CHARSET,
-        'DAV'           => $main::DAV,
+        'DAV'           => get_dav_header(),
         'MS-Author-Via' => 'DAV',
     );
     if ( defined $cgi->http('Translate') ) {
@@ -137,7 +142,7 @@ sub print_file_header {
         -charset        => $main::CHARSET,
         -Cache_Control  => 'no-cache, no-store',
         'MS-Author-Via' => 'DAV',
-        'DAV'           => $main::DAV,
+        'DAV'           => get_dav_header(),
         'Accept-Ranges' => 'bytes',
     );
     if ( defined $cgi->http('Translate') ) {
@@ -147,7 +152,7 @@ sub print_file_header {
     if ( defined $start ) {
         $header{-status} = '206 Partial Content';
         $header{-Content_Range} = sprintf 'bytes %s-%s/%s', $start, $end,
-            $stat[7];
+          $stat[7];
         $header{-Content_Length} = $count;
     }
     %header = ( %header, %{ _get_header_hashref($addheader) } );
@@ -163,12 +168,13 @@ sub fix_mod_perl_response {
     my $stat300re = qr{(?:30[89]|3[1-9])}xms;
     my $stat400re = qr{(?:41[89]|4[2-9])}xms;
     my $stat500re = qr{(?:50[6-9]|5[1-9])}xms;
-    if ($ENV{MOD_PERL}
+    if (
+        $ENV{MOD_PERL}
         && ${$headerref}{-status} =~
         /^(?:$stat200re|$stat300re|$stat400re|$stat500re)/xms # /^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/xms
         && ${$headerref}{-status} =~ /^(\d)/xms
         && ${$headerref}{-Content_Length} > 0
-        )
+      )
     {
         $cgi->r->status("${1}00");
     }
@@ -232,7 +238,8 @@ sub get_etag {
     $file //= $main::PATH_TRANSLATED;
     my $backend = main::getBackend();
 
-    my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
+    my (
+        $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
         $size, $atime, $mtime, $ctime, $blksize, $blocks
     ) = $backend->stat($file);
     my $digest = Digest::MD5->new;
@@ -249,18 +256,39 @@ sub get_if_header_components {
         if ( $if =~ s/^<([^>]+)>\s*//xms ) {
             $rtag = $1;
         }
-        while ( $if =~
-            s/^[(](Not\s*)?([^\[)]+\s*)?\s*(\[([^\])]+)\])?[)]\s*//xmsi )
+        while (
+            $if =~ s/^[(](Not\s*)?([^\[)]+\s*)?\s*(\[([^\])]+)\])?[)]\s*//xmsi )
         {
             push @tokens,
-                {
+              {
                 token => ( $1 ? $1 : q{} ) . ( $2 ? $2 : q{} ),
                 etag => $4
-                };
+              };
         }
         $ret = { rtag => $rtag, list => \@tokens };
     }
     return $ret;
 }
 
+sub get_dav_header {
+    ## supported DAV compliant classes:
+    my $DAV = '1';
+    $DAV .= $main::ENABLE_LOCK ? ', 2' : q{};
+    $DAV .= ', 3, <http://apache.org/dav/propset/fs/1>, extended-mkcol';
+    $DAV .=
+         $main::ENABLE_ACL
+      || $main::ENABLE_CALDAV
+      || $main::ENABLE_CARDDAV ? ', access-control' : q{};
+    $DAV .=
+      $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE
+      ? ', calendar-access, calendarserver-private-comments'
+      : q{};
+    $DAV .=
+      $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE
+      ? ', calendar-schedule,calendar-availability,calendarserver-principal-property-search,calendarserver-private-events,calendarserver-private-comments,calendarserver-sharing,calendar-auto-schedule'
+      : q{};
+    $DAV .= $main::ENABLE_CARDDAV ? ', addressbook' : q{};
+    $DAV .= $main::ENABLE_BIND    ? ', bind'        : q{};
+    return $DAV;
+}
 1;

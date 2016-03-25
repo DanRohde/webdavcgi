@@ -27,7 +27,7 @@ use base qw( Requests::Request );
 
 use URI::Escape;
 
-use FileUtils qw( rmove move2trash );
+use FileUtils qw( move2trash );
 use HTTPHelper qw( print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml );
 

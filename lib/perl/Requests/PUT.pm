@@ -58,8 +58,8 @@ sub handle {
       #} if (defined $ENV{HTTP_EXPECT} && $ENV{HTTP_EXPECT} =~ /100-continue/) {
       #	return print_header_and_content('417 Expectation Failed');
     }
-    if ( $backend->isDir( $backend->getParent( ($main::PATH_TRANSLATED) ) )
-        && main::is_insufficient_storage() )
+    if (   $backend->isDir( $backend->getParent( ($main::PATH_TRANSLATED) ) )
+        && $self->is_insufficient_storage( $cgi, $backend ) )
     {
         return print_header_and_content('507 Insufficient Storage');
     }
@@ -87,8 +87,7 @@ sub handle {
         );
     }
     else {
-        $status =
-          is_insufficient_storage()
+        $status = $self->is_insufficient_storage( $cgi, $backend )
           ? '507 Insufficient Storage'
           : '403 Forbidden';
         $content = q{};

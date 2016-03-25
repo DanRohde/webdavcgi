@@ -25,7 +25,8 @@ our $VERSION = '1.0';
 
 use base qw( Exporter );
 our @EXPORT_OK =
-  qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter filter get_error_document stat2h )
+  qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix
+  rmove is_hidden filter get_error_document stat2h )
   ;
 
 use CGI;
@@ -151,63 +152,6 @@ sub rmove {
     return rcopy( $src, $dst, 1 );
 }
 
-sub read_dir_recursive {
-    my ( $fn, $ru, $resps_ref, $props, $all, $noval, $depth, $noroot, $visited )
-      = @_;
-    my $backend = main::getBackend();
-
-    return if main::is_hidden($fn);
-    my $is_readable = $backend->isReadable($fn);
-    my $nfn = $is_readable ? $backend->resolve($fn) : $fn;
-    if ( !$noroot ) {
-        my %response = ( href => $ru );
-        $response{href} = $ru;
-        $response{propstat} =
-          main::getPropStat( $nfn, $ru, $props, $all, $noval );
-        if ( $#{ $response{propstat} } == -1 ) {
-            $response{status} = 'HTTP/1.1 200 OK';
-            delete $response{propstat};
-        }
-        else {
-            if (   $main::ENABLE_BIND
-                && $depth < 0
-                && exists ${$visited}{$nfn} )
-            {
-                $response{propstat}[0]{status} =
-                  'HTTP/1.1 208 Already Reported';
-            }
-        }
-        push @{$resps_ref}, \%response;
-    }
-    return
-         if exists ${$visited}{$nfn}
-      && !$noroot
-      && ( $depth eq 'infinity' || $depth < 0 );
-    ${$visited}{$nfn} = 1;
-    if ( $depth != 0 && $is_readable && $backend->isDir($nfn) ) {
-        if ( !defined $main::FILECOUNTPERDIRLIMIT{$fn}
-            || $main::FILECOUNTPERDIRLIMIT{$fn} > 0 )
-        {
-            foreach my $f (
-                @{ $backend->readDir( $fn, main::getFileLimit($fn), \&filter ) }
-              )
-            {
-                my $fru = $ru . CGI::escape($f);
-                $is_readable = $backend->isReadable("$nfn/$f");
-                my $nnfn =
-                  $is_readable ? $backend->resolve("$nfn/$f") : "$nfn/$f";
-                $fru .=
-                     $is_readable
-                  && $backend->isDir($nnfn)
-                  && $fru !~ /\/$/xms ? q{/} : q{};
-                read_dir_recursive( $nnfn, $fru, $resps_ref, $props,
-                    $all, $noval, $depth > 0 ? $depth - 1 : $depth,
-                    0, $visited );
-            }
-        }
-    }
-    return;
-}
 
 sub get_local_file_content_and_type {
     my ( $fn, $default, $defaulttype ) = @_;
@@ -326,13 +270,19 @@ sub get_dir_info {
     return $counter{$prop} // 0;
 }
 
-sub get_hidden_filter {
+sub _get_hidden_filter {
     return @main::HIDDEN ? '(' . join( q{|}, @main::HIDDEN ) . ')' : undef;
+}
+
+sub is_hidden {
+    my ($fn) = @_;
+    my $filter = _get_hidden_filter();
+    return $filter && $fn =~ /$filter/xms;
 }
 
 sub filter {
     my ( $path, $file ) = @_;
-    my $hidden = get_hidden_filter();
+    my $hidden = _get_hidden_filter();
     my $filter = defined $path ? $main::FILEFILTERPERDIR{$path} : undef;
 
     return
@@ -359,14 +309,14 @@ sub get_error_document {
       : ( $status, $defaulttype, $default );
 }
 
-
 sub stat2h {
     my (@stat) = @_;
+
     # map is slower than unpacking arrays to vars !
     my (
         $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
         $size, $atime, $mtime, $ctime, $blksize, $blocks
-    ) = $#stat == 0 && ref $stat[0] eq 'ARRAY' ? @{$stat[0]} : @stat;
+    ) = $#stat == 0 && ref $stat[0] eq 'ARRAY' ? @{ $stat[0] } : @stat;
     return {
         dev     => $dev,
         ino     => $ino,

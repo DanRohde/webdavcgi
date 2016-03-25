@@ -23,7 +23,8 @@ use warnings;
 
 use base 'WebInterface::Extension';
 
-use WebDAV::XMLHelper ( create_xml );
+use WebDAV::XMLHelper qw( create_xml nonamespace get_namespace_uri %NAMESPACEELEMENTS );
+use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -100,7 +101,7 @@ sub renderPropertiesViewer {
         )
         ) if $self->has_thumb_support( main::get_mime_type($fn) );
     my $table = $$self{cgi}->start_table( { -class => 'props' } );
-    local (%WebDAV::XMLHelper::NAMESPACEELEMENTS) = %WebDAV::XMLHelper::NAMESPACEELEMENTS;
+    local (%NAMESPACEELEMENTS) = %NAMESPACEELEMENTS;
     my $dbprops
         = $$self{db}->db_getProperties( $$self{backend}->resolveVirt($fn) );
     my @bgstyleclasses = ( 'tr_odd', 'tr_even' );
@@ -112,18 +113,18 @@ sub renderPropertiesViewer {
     );
 
     foreach my $prop (
-        sort { main::nonamespace( lc($a) ) cmp main::nonamespace( lc($b) ) }
+        sort { nonamespace( lc($a) ) cmp nonamespace( lc($b) ) }
         keys %{$dbprops},
         $$self{backend}->isDir($fn)
-        ? @main::KNOWN_COLL_PROPS
-        : @main::KNOWN_FILE_PROPS
+        ? @KNOWN_COLL_PROPS
+        : @KNOWN_FILE_PROPS
         )
     {
         my (%r200);
         next
             if exists $visited{$prop}
             || exists $visited{ '{'
-                . main::get_namespace_uri($prop) . '}'
+                . get_namespace_uri($prop) . '}'
                 . $prop };
         if ( exists $$dbprops{$prop} ) {
             $r200{prop}{$prop} = $$dbprops{$prop};
@@ -133,10 +134,10 @@ sub renderPropertiesViewer {
                 ->get_property( $fn, $ru, $prop, undef, \%r200, \my %r404 );
         }
         $visited{$prop} = 1;
-        $WebDAV::XMLHelper::NAMESPACEELEMENTS{ main::nonamespace($prop) } = 1;
+        $NAMESPACEELEMENTS{ nonamespace($prop) } = 1;
         my $title = create_xml( $r200{prop},        1 );
         my $value = create_xml( $r200{prop}{$prop}, 1 );
-        my $namespace = main::get_namespace_uri($prop);
+        my $namespace = get_namespace_uri($prop);
         if ( $prop =~ /^\{([^\}]*)\}/xms ) {
             $namespace = $1;
         }

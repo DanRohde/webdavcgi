@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -29,18 +28,18 @@ sub new {
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
-    $$self{cgi} = shift;
+    ${$self}{cgi} = shift;
     return $self;
 }
 
 sub setProperty {
     my ( $self, $propname, $propval ) = @_;
-    return ( $$self{$propname} = $propval );
+    return ( ${$self}{$propname} = $propval );
 }
 
 sub getProperty {
     my ( $self, $propname, $propvaldefault ) = @_;
-    return $$self{$propname} || $propvaldefault;
+    return ${$self}{$propname} || $propvaldefault;
 }
 
 1;

@@ -771,7 +771,7 @@ sub read_template {
 
 sub _render_quicknav_path {
     my ( $self, $fn, $ru, $query ) = @_;
-    $ru = main::uri_unescape($ru);
+    $ru = uri_unescape($ru);
     my $content = q{};
     my $path    = q{};
     my $navpath = $ru;

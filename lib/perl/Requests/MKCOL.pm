@@ -70,8 +70,8 @@ sub handle {
         $self->debug('MKCOL: not allowed!');
         return print_header_and_content('423 Locked');
     }
-    if ( $backend->isDir( $backend->getParent($pt) )
-        && main::is_insufficient_storage() )
+    if (   $backend->isDir( $backend->getParent($pt) )
+        && $self->is_insufficient_storage( $cgi, $backend ) )
     {
         $self->debug('MKCOL: insufficient storage!');
         return print_header_and_content('507 Insufficient Storage');

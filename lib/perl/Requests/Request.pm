@@ -25,7 +25,7 @@ our $VERSION = '2.0';
 use CGI::Carp;
 
 sub new {
-    my ( $this) = @_;
+    my ($this) = @_;
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
@@ -37,11 +37,29 @@ sub handle {
 }
 
 sub logger {
-    my ($self,@args) = @_;
+    my ( $self, @args ) = @_;
     return main::logger(@args);
 }
+
 sub debug {
-    my ($self,@args) = @_;
+    my ( $self, @args ) = @_;
     return main::debug(@args);
 }
+
+sub is_insufficient_storage {
+    my ( $self, $cgi, $backend ) = @_;
+    my $ret = 0;
+    my ( $block_hard, $block_curr ) = $backend->getQuota();
+    if ( $block_hard > 0 ) {
+        if ( $block_curr >= $block_hard ) {
+            $ret = 1;
+        }
+        elsif ( defined $cgi->http('Content-Length') ) {
+            my $filesize = $cgi->http('Content-Length');
+            $ret = $filesize + $block_curr > $block_hard;
+        }
+    }
+    return $ret;
+}
+
 1;

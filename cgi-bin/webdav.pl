@@ -42,15 +42,10 @@ use vars
     @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
     $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
     $ALLOW_INFINITE_PROPFIND 
-    $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE @PROTECTED_PROPS
-    @UNSUPPORTED_PROPS $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
-    @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS @KNOWN_CALDAV_COLL_PROPS
-    @KNOWN_COLL_LIVE_PROPS @KNOWN_FILE_LIVE_PROPS
-    @KNOWN_CALDAV_COLL_LIVE_PROPS @KNOWN_CALDAV_FILE_LIVE_PROPS
-    @KNOWN_CARDDAV_COLL_LIVE_PROPS @KNOWN_CARDDAV_FILE_LIVE_PROPS
-    @KNOWN_ACL_PROPS @KNOWN_CALDAV_FILE_PROPS
+    $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE 
+    $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
     $ENABLE_CALDAV_SCHEDULE
-    $ENABLE_CARDDAV @KNOWN_CARDDAV_COLL_PROPS @KNOWN_CARDDAV_FILE_PROPS $CURRENT_USER_PRINCIPAL
+    $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
     %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
     $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
     $ENABLE_SEARCH $ENABLE_GROUPDAV
@@ -63,7 +58,7 @@ use vars
     $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
     $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
     $AFS_PTSCMD
-    $WEB_ID $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
+    $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
     $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
     $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
     @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
@@ -72,7 +67,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160325.03';
+$RELEASE = '1.1.1BETA20160325.04';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -778,28 +773,37 @@ $DEBUG = 0;
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars
-    qw( $cgi $backend $backendmanager $config $utils %known_coll_props %known_file_props %KNOWN_FILECOLL_PROPS %unsupported_props $eventChannel);
+    qw( $CGI $backend $backendmanager $config $eventChannel);
 
+use List::MoreUtils qw( any );
 use CGI;
 use CGI::Carp;
 use English qw ( -no_match_vars );
-
+use IO::Handle;
 use Module::Load;
+use POSIX qw( setlocale LC_TIME);
+
+
+use DatabaseEventAdapter;
+use RequestConfig;
+use Backend::Manager;
+use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header read_request_body get_mime_type get_etag get_if_header_components );
+use FileUtils qw( get_local_file_content_and_type rcopy );
+use WebDAV::WebDAVProps qw( init_webdav_props );
+
 
 ## flush immediately:
-use IO::Handle;
 *STDERR->autoflush(1);
 *STDOUT->autoflush(1);
 
 ## before 'new CGI' to read POST requests:
-local $ENV{REQUEST_METHOD} = $ENV{REDIRECT_REQUEST_METHOD}
-    if ( defined $ENV{REDIRECT_REQUEST_METHOD} );
+our $REQUEST_METHOD = $ENV{REDIRECT_REQUEST_METHOD} // $ENV{REQUEST_METHOD} // 'GET';
 
 $CGI::POST_MAX = $POST_MAX_SIZE;
 $CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS ? 0 : 1;
 
 ## create CGI instance
-$cgi = $ENV{REQUEST_METHOD} eq 'PUT' ? CGI->new( {} ) : CGI->new;
+$CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new;
 
 if ( defined $CONFIGFILE ) {
     my $ret;
@@ -810,46 +814,24 @@ if ( defined $CONFIGFILE ) {
     }
 }
 
-use POSIX qw(strftime setlocale LC_TIME);
+
 setlocale( LC_TIME, 'en_US.' . $CHARSET )
     ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
 
-
-use DatabaseEventAdapter;
 DatabaseEventAdapter->new();
 
 broadcast('INIT');
 
-use URI::Escape;
-use Digest::MD5;
-use List::MoreUtils qw( any );
+$config = RequestConfig->new($CGI);
 
-
-use RequestConfig;
-$config = RequestConfig->new($cgi);
-
-use Backend::Manager;
 $backendmanager = Backend::Manager->new;
 $backend        = $backendmanager->getBackend($BACKEND);
 $config->setProperty( 'backend', $backend );
 
 
-use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
-use WebDAV::XMLHelper qw( get_namespace get_namespace_uri nonamespace handle_prop_element %NAMESPACES );
-
-use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter get_error_document );
 
 umask $UMASK || croak("Cannot set umask $UMASK.");
 
-## supported DAV compliant classes:
-our $DAV = '1';
-$DAV .= $ENABLE_LOCK ? ', 2' : q{};
-$DAV .= ', 3, <http://apache.org/dav/propset/fs/1>, extended-mkcol';
-$DAV .= $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV ? ', access-control' : q{};
-$DAV .= $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE ? ', calendar-access, calendarserver-private-comments' : q{};
-$DAV .= $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE ? ', calendar-schedule,calendar-availability,calendarserver-principal-property-search,calendarserver-private-events,calendarserver-private-comments,calendarserver-sharing,calendar-auto-schedule' : q{};
-$DAV .= $ENABLE_CARDDAV ? ', addressbook' : q{};
-$DAV .= $ENABLE_BIND ? ', bind' : q{};
 
 our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
 our $REQUEST_URI     = $ENV{REQUEST_URI};
@@ -867,17 +849,9 @@ if ( !defined $PATH_TRANSLATED ) {
         my $su = $ENV{SCRIPT_URL} || $ENV{REDIRECT_URL};
         $su =~ s/^$VIRTUAL_BASE//xms;
         $PATH_TRANSLATED = $DOCUMENT_ROOT . $su;
+        $PATH_TRANSLATED .= $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ m{/$}xms && $PATH_TRANSLATED ne q{} ? q{/} : q{};
     }
 }
-
-# protect against direct CGI script call:
-if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
-    carp('FORBIDDEN DIRECT CALL!');
-    print_header_and_content('404 Not Found');
-    exit 0;
-}
-
-$PATH_TRANSLATED .= $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
 
 $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
 $REQUEST_URI .= $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/xms ? q{/} : q{};
@@ -885,354 +859,55 @@ $REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
 
 $TRASH_FOLDER .= $TRASH_FOLDER !~ /\/$/xms ? q{/} : q{};
 
-if ( any { /^\Q${UID}\E$/xms } @FORBIDDEN_UID ) {
-    carp('Forbidden UID!');
-    print_header_and_content('403 Forbidden');
-    exit 0;
-}
 
-$WEB_ID = 0;
+init_webdav_props();
 
-#### PROPERTIES:
-# from RFC2518:
-#    creationdate, displayname, getcontentlanguage, getcontentlength,
-#    getcontenttype, getetag, getlastmodified, lockdiscovery, resourcetype,
-#    source, supportedlock
-# from RFC4918:
-#    -source
-# from RFC4331:
-#    quota-available-bytes, quota-used-bytes
-# from draft-hopmann-collection-props-00.txt:
-#    childcount, defaultdocument (live), id, isfolder, ishidden, isstructureddocument,
-#    hassubs, nosubs, objectcount, reserved, visiblecount
-# from MS-WDVME:
-#    iscollection, isFolder, ishidden (=draft),
-#    Repl:authoritative-directory, Repl:resourcetag, Repl:repl-uid,
-#    Office:modifiedby, Office:specialFolderType (dead),
-#    Z:Win32CreationTime, Z:Win32FileAttributes, Z:Win32LastAccessTime, Z:Win32LastModifiedTime
-# from reverse engineering:
-#    name, href, parentname, isreadonly, isroot, getcontentclass, lastaccessed, contentclass
-#    executable
-# from RFC3744 (ACL):
-#    owner, group, supported-privilege-set, current-user-privilege-set, acl, acl-restrictions
-# from RFC4791 (CalDAV):
-#    calendar-description, calendar-timezone, supported-calendar-component-set, supported-calendar-data,
-#    max-resource-size, min-date-time, max-date-time, max-instances, max-attendees-per-instance,
-#    calendar-home-set,
-# from http://svn.calendarserver.org/repository/calendarserver/CalendarServer/trunk/doc/Extensions/caldav-ctag.txt
-#    getctag
-# from RFC5397 (WebDAV Current User Principal)
-#    current-user-principal
-# from http://tools.ietf.org/html/draft-desruisseaux-caldav-sched-08
-#    principal: schedule-inbox-URL, schedule-outbox-URL, calendar-user-type, calendar-user-address-set,
-#    collection: schedule-calendar-transp,schedule-default-calendar-URL,schedule-tag
-# from http://svn.calendarserver.org/repository/calendarserver/CalendarServer/trunk/doc/Extensions/caldav-pubsubdiscovery.txt
-# from RFC3253 (DeltaV)
-#    supported-report-set
-#    supported-method-set for RFC5323 (DASL/SEARCH):
-# from http://datatracker.ietf.org/doc/draft-ietf-vcarddav-carddav/
-#    collection: addressbook-description, supported-address-data
-#    principal: addressbook-home-set, principal-address
-#    report: address-data
-# from RFC5842 (bind)
-#    resource-id, parent-set (unsupported yet)
-# from http://tools.ietf.org/html/draft-daboo-carddav-directory-gateway-02
-#    directory-gateway (unsupported yet)
-# from ?
-#    calendar-free-busy-set
-
-@KNOWN_COLL_PROPS = (
-    'creationdate',            'displayname',
-    'getcontentlanguage',      'getlastmodified',
-    'lockdiscovery',           'resourcetype',
-    'getetag',                 'getcontenttype',
-    'supportedlock',           'source',
-    'quota-available-bytes',   'quota-used-bytes',
-    'quota',                   'quotaused',
-    'childcount',              'id',
-    'isfolder',                'ishidden',
-    'isstructureddocument',    'hassubs',
-    'nosubs',                  'objectcount',
-    'reserved',                'visiblecount',
-    'iscollection',            'isFolder',
-    'authoritative-directory', 'resourcetag',
-    'repl-uid',                'modifiedby',
-    'Win32CreationTime',       'Win32FileAttributes',
-    'Win32LastAccessTime',     'Win32LastModifiedTime',
-    'name',                    'href',
-    'parentname',              'isreadonly',
-    'isroot',                  'getcontentclass',
-    'lastaccessed',            'contentclass',
-    'supported-report-set',    'supported-method-set',
-);
-@KNOWN_ACL_PROPS = (
-    'owner',                   'group',
-    'supported-privilege-set', 'current-user-privilege-set',
-    'acl',                     'acl-restrictions',
-    'inherited-acl-set',       'principal-collection-set',
-    'current-user-principal',
-);
-@KNOWN_CALDAV_COLL_PROPS = (
-    'calendar-description',             'calendar-timezone',
-    'supported-calendar-component-set', 'supported-calendar-data',
-    'max-resource-size',                'min-date-time',
-    'max-date-time',                    'max-instances',
-    'max-attendees-per-instance',       'getctag',
-    'principal-URL',                    'calendar-home-set',
-    'schedule-inbox-URL',               'schedule-outbox-URL',
-    'calendar-user-type',               'schedule-calendar-transp',
-    'schedule-default-calendar-URL',    'schedule-tag',
-    'calendar-user-address-set',        'calendar-free-busy-set',
-);
-@KNOWN_CALDAV_FILE_PROPS = ('calendar-data');
-
-@KNOWN_CARDDAV_COLL_PROPS = (
-    'addressbook-description', 'supported-address-data',
-    'addressbook-home-set',    'principal-address',
-);
-@KNOWN_CARDDAV_FILE_PROPS = ('address-data');
-
-@KNOWN_COLL_LIVE_PROPS        = ();
-@KNOWN_FILE_LIVE_PROPS        = ();
-@KNOWN_CALDAV_COLL_LIVE_PROPS = (
-    'resourcetype',         'displayname',
-    'calendar-description', 'calendar-timezone',
-    'calendar-user-address-set',
-);
-@KNOWN_CALDAV_FILE_LIVE_PROPS  = ();
-@KNOWN_CARDDAV_COLL_LIVE_PROPS = ('addressbook-description');
-@KNOWN_CARDDAV_FILE_LIVE_PROPS = ();
-
-push @KNOWN_COLL_LIVE_PROPS, @KNOWN_CALDAV_COLL_LIVE_PROPS
-    if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV;
-push @KNOWN_FILE_LIVE_PROPS, @KNOWN_CALDAV_FILE_LIVE_PROPS
-    if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV;
-push @KNOWN_COLL_LIVE_PROPS, @KNOWN_CARDDAV_COLL_LIVE_PROPS
-    if $ENABLE_CARDDAV;
-push @KNOWN_COLL_PROPS, @KNOWN_ACL_PROPS
-    if $ENABLE_ACL
-    || $ENABLE_CALDAV
-    || $ENABLE_CALDAV_SCHEDULE
-    || $ENABLE_CARDDAV;
-push @KNOWN_COLL_PROPS, @KNOWN_CALDAV_COLL_PROPS
-    if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
-push @KNOWN_COLL_PROPS, @KNOWN_CARDDAV_COLL_PROPS if $ENABLE_CARDDAV;
-push @KNOWN_COLL_PROPS, 'resource-id'             if $ENABLE_BIND;
-
-@KNOWN_FILE_PROPS = ( @KNOWN_COLL_PROPS, 'getcontentlength', 'executable' );
-push @KNOWN_FILE_PROPS, @KNOWN_CALDAV_FILE_PROPS
-    if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
-push @KNOWN_FILE_PROPS, @KNOWN_CARDDAV_FILE_PROPS if $ENABLE_CARDDAV;
-
-push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
-
-@UNSUPPORTED_PROPS = (
-    'checked-in', 'checked-out', 'xmpp-uri', 'dropbox-home-URL',
-    'parent-set', 'directory-gateway'
-);
-
-@PROTECTED_PROPS = (
-    @UNSUPPORTED_PROPS,
-    'appledoubleheader',
-    'getcontentlength',
-    'getcontenttype',
-    'getetag',
-    'lockdiscovery',
-    'source',
-    'supportedlock',
-    'supported-report-set',
-    'quota-available-bytes, quota-used-bytes',
-    'quota',
-    'quotaused',
-    'childcount',
-    'id',
-    'isfolder',
-    'ishidden',
-    'isstructureddocument',
-    'hassubs',
-    'nosubs',
-    'objectcount',
-    'reserved',
-    'visiblecount',
-    'iscollection',
-    'isFolder',
-    'authoritative-directory',
-    'resourcetag',
-    'repl-uid',
-    'modifiedby',
-    'name',
-    'href',
-    'parentname',
-    'isreadonly',
-    'isroot',
-    'getcontentclass',
-    'contentclass',
-    'owner',
-    'group',
-    'supported-privilege-set',
-    'current-user-privilege-set',
-    'acl',
-    'acl-restrictions',
-    'inherited-acl-set',
-    'principal-collection-set',
-    'supported-calendar-component-set',
-    'supported-calendar-data',
-    'max-resource-size',
-    'min-date-time',
-    'max-date-time',
-    'max-instances',
-    'max-attendees-per-instance',
-    'getctag',
-    'current-user-principal',
-    'calendar-user-address-set',
-    'schedule-inbox-URL',
-    'schedule-outbox-URL',
-    'schedule-calendar-transp',
-    'schedule-default-calendar-URL',
-    'schedule-tag',
-    'supported-address-data',
-    'supported-collation-set',
-    'supported-method-set',
-    'supported-method',
-    'supported-query-grammar',
-    'directory-gateway',
-    'caldav-free-busy-set',
-);
-
-
-
-foreach (@KNOWN_COLL_PROPS) {
-    $known_coll_props{$_}     = 1;
-    $KNOWN_FILECOLL_PROPS{$_} = 1;
-}
-foreach (@KNOWN_FILE_PROPS) {
-    $known_file_props{$_}     = 1;
-    $KNOWN_FILECOLL_PROPS{$_} = 1;
-}
-foreach (@UNSUPPORTED_PROPS) { $unsupported_props{$_} = 1; }
 
 # method handling:
 handle_request();
 
 sub handle_request {
-    my $method = $cgi->request_method();
+    # protect against direct CGI script call:
+    if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
+        carp('FORBIDDEN DIRECT CALL!');
+        return print_header_and_content('404 Not Found');
+    }
+
+    my $method = $CGI->request_method();
     debug("${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method");
     debug("User-Agent: $ENV{HTTP_USER_AGENT}");
     debug("CGI-Version: $CGI::VERSION");
-    if (defined $cgi->http('X-Litmus')) { debug( "${PROGRAM_NAME}: X-Litmus: " . $cgi->http('X-Litmus') ); }
-    if (defined $cgi->http('X-Litmus-Second')) { debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $cgi->http('X-Litmus-Second') ); }
+    if (defined $CGI->http('X-Litmus')) { debug( "${PROGRAM_NAME}: X-Litmus: " . $CGI->http('X-Litmus') ); }
+    if (defined $CGI->http('X-Litmus-Second')) { debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $CGI->http('X-Litmus-Second') ); }
     $METHODS_RX //= _get_methods_rx();
     debug("METHOD_RX: $METHODS_RX");
-    if ( $method =~ /$METHODS_RX/xms ) {
-        if (!$REQUEST_HANDLERS{$method}) {
-            my $module = "Requests::${method}";
-            load($module);
-            $REQUEST_HANDLERS{$method} = $module->new();
-        }
-        $REQUEST_HANDLERS{$method}->handle($cgi, $backend);
-        if ($backend) { $backend->finalize(); }
-        broadcast('FINALIZE');
+
+    if ( any { /^\Q${UID}\E$/xms } @FORBIDDEN_UID ) {
+        carp("Forbidden UID ${UID}!");
+        return print_header_and_content('403 Forbidden');
     }
-    else {
-        print_header_and_content(get_error_document('405 Method Not Allowed'));
+    if ( $method !~ /$METHODS_RX/xms ) {
+        return print_header_and_content('405 Method Not Allowed');
     }
+    if (!$REQUEST_HANDLERS{$method}) {
+        my $module = "Requests::${method}";
+        load($module);
+        $REQUEST_HANDLERS{$method} = $module->new();
+    }
+    $REQUEST_HANDLERS{$method}->handle($CGI, $backend);
+    if ($backend) { $backend->finalize(); }
+    broadcast('FINALIZE');
     return;
 }
 sub _get_methods_rx {
     my @methods = qw( GET HEAD POST OPTIONS PUT PROPFIND PROPPATCH MKCOL COPY MOVE DELETE GETLIB );
     if ($ENABLE_LOCK) { push @methods, qw( LOCK UNLOCK ); }
     if ($ENABLE_SEARCH) { push @methods, 'SEARCH'; }
-    if ($ENABLE_ACL) { push @methods, 'ACL'; }
+    if ($ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV ) { push @methods, 'ACL'; }
     if ($ENABLE_BIND) { push @methods, qw( BIND UNBIND REBIND ); }
     if ($ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV || $ENABLE_GROUPDAV ) { push @methods, 'REPORT'; }
-    if ($ENABLE_CALDAV) { push @methods, 'MKCALENDAR'; }
+    if ($ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE) { push @methods, 'MKCALENDAR'; }
     return q{^(?:} . join( q{|}, @methods ) . q{)$};
-}
-
-sub getPropStat {
-    my ( $fn, $uri, $props, $all, $noval ) = @_;
-    my @propstat = ();
-
-    debug("getPropStat($fn,$uri,...)");
-
-    my $isReadable = $backend->isReadable($fn);
-
-    my $nfn = $isReadable ? $backend->resolve($fn) : $fn;
-
-    my @stat = $isReadable ? $backend->stat($fn) : ();
-    my %resp_200 = ( status => 'HTTP/1.1 200 OK' );
-    my %resp_404 = ( status => 'HTTP/1.1 404 Not Found' );
-
-    my $isDir = $backend->isDir($nfn);
-
-    $fn .= q{/} if $isDir && $fn !~ /\/$/xms;
-    foreach my $prop ( @{$props} ) {
-        my ( $xmlnsuri, $propname ) = ( 'DAV:', $prop );
-        if ( $prop =~ /^{([^}]*)}(.*)$/xms ) {
-            ( $xmlnsuri, $propname ) = ( $1, $2 );
-        }
-
-        #if (grep({$_=~/^\Q$propname\E$/} @UNSUPPORTED_PROPS) >0) {
-        if ( exists $unsupported_props{$propname} ) {
-            debug("getPropStat: UNSUPPORTED: $propname");
-            $resp_404{prop}{$prop} = undef;
-            next;
-        }
-        elsif (
-            (   !defined $NAMESPACES{$xmlnsuri}
-                || any { /^\Q$propname\E$/xms } ($isDir ? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) 
-            )
-            && ! any { /^\Q$propname\E$/xms } @PROTECTED_PROPS 
-            )
-        {
-            my $dbval = getDBDriver()->db_getProperty(
-                getPropertyModule()->resolve($fn), $prop =~ /{[^}]*}/xms
-                ? $prop
-                : '{' . get_namespace_uri($prop) . "}$prop"
-            );
-            if ( defined $dbval ) {
-                $resp_200{prop}{$prop} = $noval ? undef : $dbval;
-                next;
-            }
-            elsif (!any { /^\Q$propname\E$/xms } ($isDir? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) )
-            {
-                debug(
-                    "getPropStat: #1 NOT FOUND: $prop ($propname, $xmlnsuri)"
-                );
-                $resp_404{prop}{$prop} = undef;
-            }
-        }
-        ##if (grep({$_=~/^\Q$propname\E$/} $isDir ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS)>0) {
-        if ((   $isDir
-                ? exists $known_coll_props{$propname}
-                : exists $known_file_props{$propname}
-            )
-            )
-        {
-            if ($noval) {
-                $resp_200{prop}{$prop} = undef;
-            }
-            else {
-                getPropertyModule()
-                    ->get_property( $fn, $uri, $prop, \@stat, \%resp_200,
-                    \%resp_404 );
-            }
-        }
-        elsif ( !$all ) {
-            debug("getPropStat: #2 NOT FOUND: $prop ($propname, $xmlnsuri)");
-            $resp_404{prop}{$prop} = undef;
-        }
-    }    # foreach
-
-    push @propstat, \%resp_200 if exists $resp_200{prop};
-    push @propstat, \%resp_404 if exists $resp_404{prop};
-    return \@propstat;
-}
-
-sub is_hidden {
-    my ($fn) = @_;
-    my $filter = get_hidden_filter();
-    return $filter && $fn =~ /$filter/xms;
 }
 
 sub isAllowed {
@@ -1242,7 +917,7 @@ sub isAllowed {
 
     return 1 unless $ENABLE_LOCK;
 
-    my $ifheader = get_if_header_components( $cgi->http('If') );
+    my $ifheader = get_if_header_components( $CGI->http('If') );
 
     return 0
         if $backend->exists($fn)
@@ -1367,21 +1042,6 @@ sub debug {
     return;
 }
 
-sub is_insufficient_storage {
-    my $ret = 0;
-    my ( $block_hard, $block_curr ) = getQuota();
-    if ( $block_hard > 0 ) {
-        if ( $block_curr >= $block_hard ) {
-            $ret = 1;
-        }
-        elsif ( defined $cgi->http('Content-Length') ) {
-            my $filesize = $cgi->http('Content-Length');
-            $ret = $filesize + $block_curr > $block_hard;
-        }
-    }
-    return $ret;
-}
-
 sub getEventChannel {
     if ( !$eventChannel ) {
         require Events::EventChannel;
@@ -1405,7 +1065,7 @@ sub getBaseURIFrag {
 }
 
 sub getCGI {
-    return $cgi;
+    return $CGI;
 }
 sub getBackend {
     return $backend;

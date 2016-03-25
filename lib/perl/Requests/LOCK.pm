@@ -69,7 +69,7 @@ sub handle {
         );
     }
     elsif ( !$backend->exists($fn) ) {
-        if ( main::is_insufficient_storage() ) {
+        if ( $self->is_insufficient_storage( $cgi, $backend ) ) {
             return print_header_and_content('507 Insufficient Storage');
         }
         if ( !$backend->saveData( $fn, q{} ) ) {

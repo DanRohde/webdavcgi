@@ -25,7 +25,7 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_header_and_content get_dav_header );
 
 sub handle {
     my ( $self, $cgi, $backend ) = @_;
@@ -44,7 +44,7 @@ sub handle {
     if ($methods) {
         %params = (
             %params,
-            'DAV'                      => $main::DAV,
+            'DAV'                      => get_dav_header(),
             'MS-Author-Via'            => 'DAV',
             'Allow'                    => $methods,
             'Public'                   => $methods,

@@ -27,8 +27,9 @@ package WebInterface::Extension::Download;
 
 use strict;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
+
+use FileUtils qw( is_hidden );
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -58,7 +59,7 @@ sub handle {
 	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') eq 'dwnload') {
 		my $fn = $$self{cgi}->param('file');
 		my $file = $main::PATH_TRANSLATED.$fn;
-		if ( $$self{backend}->exists($file) && !main::is_hidden($file) ) {
+		if ( $$self{backend}->exists($file) && !is_hidden($file) ) {
 			if (!$$self{backend}->isReadable($file)) {
 				main::print_header_and_content(main::get_error_document('403 Forbidden','text/plain', '403 Forbidden'));
 			} else {

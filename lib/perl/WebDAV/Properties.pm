@@ -34,7 +34,9 @@ use CGI::Carp;
 
 use FileUtils qw( get_dir_info );
 use HTTPHelper qw( get_etag );
-use WebDAV::XMLHelper qw( create_xml );
+use WebDAV::XMLHelper qw( create_xml %NAMESPACES );
+use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
+
 
 sub new {
     my $this  = shift;
@@ -169,8 +171,8 @@ sub set_property {
         ${$resp_200}{propstat}{prop}{Win32FileAttributes} = undef;
         ${$resp_200}{propstat}{status}                    = 'HTTP/1.1 200 OK';
     }
-    elsif ( defined $main::NAMESPACES{ $ns // q{} }
-        && any {/^\Q$pn\E$/xms} @main::PROTECTED_PROPS )
+    elsif ( defined $NAMESPACES{ $ns // q{} }
+        && any {/^\Q$pn\E$/xms} @PROTECTED_PROPS )
     {
         ${$resp_403}{href}                      = $ru;
         ${$resp_403}{propstat}{prop}{$propname} = undef;

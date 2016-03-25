@@ -26,10 +26,11 @@ our $VERSION = '2.0';
 use base qw( Requests::Request );
 
 use CGI::Carp;
+use POSIX qw( strftime );
 
 use HTTPHelper
   qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response );
-use FileUtils qw( get_error_document stat2h );
+use FileUtils qw( get_error_document is_hidden stat2h );
 
 use vars qw( $MIN_COMPRESSABLE_FILESIZE $MAX_COMPRESSABLE_FILESIZE $DEFAULT_BUFSIZE );
 
@@ -43,7 +44,7 @@ sub handle {
     my ( $self, $cgi, $backend ) = @_;
 
     $self->debug("_GET: $main::PATH_TRANSLATED");
-    if ( main::is_hidden($main::PATH_TRANSLATED) ) {
+    if ( is_hidden($main::PATH_TRANSLATED) ) {
         return print_header_and_content( get_error_document('404 Not Found') );
     }
     if ( !$main::FANCYINDEXING && $backend->isDir($main::PATH_TRANSLATED) ) {

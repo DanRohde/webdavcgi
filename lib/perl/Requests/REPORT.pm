@@ -22,11 +22,11 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
-use FileUtils qw( read_dir_recursive read_dir_by_suffix );
+use FileUtils qw( read_dir_by_suffix );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser handle_prop_element );
 
@@ -131,7 +131,7 @@ sub _print_response_from_hrefs {
         push @resps,
           {
             href     => $href,
-            propstat => main::getPropStat( $nfn, $nhref, \@props )
+            propstat => $self->get_prop_stat( $nfn, $nhref, \@props )
           };
     }
     ### push @resps, { } if ($#hrefs==-1);  ## empty multistatus response not supported
@@ -172,7 +172,7 @@ sub _handle_principal_match {
     {
         return print_header_and_content('400 Bad Request');
     }
-    read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
+    $self->read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
     return $self->_print_response( \@resps );
 }
 
@@ -191,7 +191,7 @@ sub _handle_acl_principal_prop_set {
     push @resps,
       {
         href     => $ru,
-        propstat => main::getPropStat( $fn, $ru, \@props )
+        propstat => $self->get_prop_stat( $fn, $ru, \@props )
       };
     return $self->_print_response( \@resps );
 }
@@ -213,7 +213,7 @@ sub _handle_principal_property_search {
     {
         return print_header_and_content('400 Bad Request');
     }
-    read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
+    $self->read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
     ### TODO: filter data
     my @propertysearch;
     if (

@@ -77,7 +77,7 @@ sub handle {
     if ( $backend->exists($dst) && !$backend->isLink($ndst) ) {
         return print_header_and_content('403 Forbidden');
     }
-    if ( main::is_insufficient_storage() ) {
+    if ( $self->is_insufficient_storage( $cgi, $backend ) ) {
         return print_header_and_content('507 Insufficient Storage');
     }
     my ( $status, $type, $content );

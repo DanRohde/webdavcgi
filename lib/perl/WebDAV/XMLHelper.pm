@@ -30,6 +30,8 @@ our @EXPORT_OK =
 use XML::Simple;
 use List::MoreUtils qw( any );
 
+use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS %KNOWN_FILECOLL_PROPS_HASH );
+
 our $VERSION = '1.0';
 
 use vars
@@ -374,7 +376,7 @@ sub handle_prop_element {
         if ( $ns eq q{} && !defined $xmldata->{$prop}{xmlns} ) {
             return 0;
         }
-        elsif ( exists $main::KNOWN_FILECOLL_PROPS{$nons} ) {
+        elsif ( exists $KNOWN_FILECOLL_PROPS_HASH{$nons} ) {
             push @{$props}, $nons;
         }
         elsif ( $ns eq q{} ) {
@@ -405,7 +407,7 @@ sub handle_propfind_element {
             $noval = $1 eq 'propname';
             $all   = 1;
             if ($noval) {
-                push @props, @main::KNOWN_COLL_PROPS, @main::KNOWN_FILE_PROPS;
+                push @props, @KNOWN_COLL_PROPS, @KNOWN_FILE_PROPS;
             }
             else {
                 push @props, @ALLPROP_PROPS;
