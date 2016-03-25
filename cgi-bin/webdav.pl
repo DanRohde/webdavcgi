@@ -43,8 +43,8 @@ use vars
     $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
     $ALLOW_INFINITE_PROPFIND 
     $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE @PROTECTED_PROPS
-    @UNSUPPORTED_PROPS $ENABLE_ACL $ENABLE_CALDAV @ALLPROP_PROPS $ENABLE_LOCK
-    @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS @IGNORE_PROPS @KNOWN_CALDAV_COLL_PROPS
+    @UNSUPPORTED_PROPS $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
+    @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS @KNOWN_CALDAV_COLL_PROPS
     @KNOWN_COLL_LIVE_PROPS @KNOWN_FILE_LIVE_PROPS
     @KNOWN_CALDAV_COLL_LIVE_PROPS @KNOWN_CALDAV_FILE_LIVE_PROPS
     @KNOWN_CARDDAV_COLL_LIVE_PROPS @KNOWN_CARDDAV_FILE_LIVE_PROPS
@@ -72,7 +72,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160325.02';
+$RELEASE = '1.1.1BETA20160325.03';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -835,7 +835,7 @@ $config->setProperty( 'backend', $backend );
 
 
 use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
-use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser handle_prop_element %NAMESPACES );
+use WebDAV::XMLHelper qw( get_namespace get_namespace_uri nonamespace handle_prop_element %NAMESPACES );
 
 use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter get_error_document );
 
@@ -1099,16 +1099,7 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
     'caldav-free-busy-set',
 );
 
-@ALLPROP_PROPS = (
-    'creationdate',       'displayname',
-    'getcontentlanguage', 'getlastmodified',
-    'lockdiscovery',      'resourcetype',
-    'supportedlock',      'getetag',
-    'getcontenttype',     'getcontentlength',
-    'executable'
-);
 
-@IGNORE_PROPS = ( 'xmlns', 'CS' );
 
 foreach (@KNOWN_COLL_PROPS) {
     $known_coll_props{$_}     = 1;
@@ -1157,51 +1148,6 @@ sub _get_methods_rx {
     if ($ENABLE_CALDAV) { push @methods, 'MKCALENDAR'; }
     return q{^(?:} . join( q{|}, @methods ) . q{)$};
 }
-
-sub handlePropFindElement {
-    my ($xmldata) = @_;
-    my @props;
-    my $all;
-    my $noval;
-    foreach my $propfind ( keys %{$xmldata} ) {
-        my $nons = $propfind;
-        my $ns   = q{};
-        if ( $nons =~ s/{([^}]*)}//xms ) {
-            $ns = $1;
-        }
-        if ( ( $nons =~ /(?:allprop|propname)/xms ) && ($all) ) {
-            print_header_and_content('400 Bad Request');
-            exit 0;
-        }
-        elsif ( $nons =~ /^(allprop|propname)$/xms ) {
-            $noval = $1 eq 'propname';
-            $all   = 1;
-            push @props, @KNOWN_COLL_PROPS, @KNOWN_FILE_PROPS if $noval;
-            push @props, @ALLPROP_PROPS unless $noval;
-        }
-        elsif ( $nons =~ /^(?:prop|include)$/xms ) {
-            if (!handle_prop_element( $$xmldata{$propfind}, \@props )) {
-                print_header_and_content('400 Bad Request');
-                exit 0;   
-            }
-        }
-        elsif ( any { /\Q$nons\E/xms } @IGNORE_PROPS ) {
-            next;
-        }
-        elsif (defined $NAMESPACES{ $$xmldata{$propfind} }
-            || defined $NAMESPACES{$ns} )
-        {    # sometimes the namespace: ignore
-        }
-        else {
-            debug( $NAMESPACES{ $$xmldata{$propfind} } );
-            carp("Unknown element $propfind ($nons) in PROPFIND request ");
-            print_header_and_content('400 Bad Request');
-            exit 0;
-        }
-    }
-    return ( \@props, $all, $noval );
-}
-
 
 sub getPropStat {
     my ( $fn, $uri, $props, $all, $noval ) = @_;
@@ -1287,37 +1233,6 @@ sub is_hidden {
     my ($fn) = @_;
     my $filter = get_hidden_filter();
     return $filter && $fn =~ /$filter/xms;
-}
-
-
-
-sub preConditionFailed {
-    my ($fn) = @_;
-    $fn = $backend->getParent($fn) . q{/} if !$backend->exists($fn);
-    my $ifheader = get_if_header_components( $cgi->http('If') );
-    my $t        = 0;                                           # token found
-    my $nnl  = 0;              # not no-lock found
-    my $nl   = 0;              # no-lock found
-    my $e    = 0;              # wrong etag found
-    my $etag = get_etag($fn);
-    foreach my $ie ( @{ $$ifheader{list} } ) {
-        debug( ' - ie{token}=' . $$ie{token} );
-        if ( $$ie{token} =~ /Not\s+<DAV:no-lock>/xmsi ) {
-            $nnl = 1;
-        }
-        elsif ( $$ie{token} =~ /<DAV:no-lock>/xmsi ) {
-            $nl = 1;
-        }
-        elsif ( $$ie{token} =~ /opaquelocktoken/xmsi ) {
-            $t = 1;
-        }
-        if ( defined $$ie{etag} ) {
-            $e = ( $$ie{etag} ne $etag ) ? 1 : 0;
-        }
-    }
-    debug("checkPreCondition: t=$t, nnl=$nnl, e=$e, nl=$nl");
-    return ( $t & $nnl & $e ) | $nl;
-
 }
 
 sub isAllowed {

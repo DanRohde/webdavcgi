@@ -25,14 +25,15 @@ use warnings;
 use base qw( Exporter );
 
 our @EXPORT_OK =
-  qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser handle_prop_element %NAMESPACES %NAMESPACEELEMENTS );
+  qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser handle_prop_element handle_propfind_element %NAMESPACES %NAMESPACEELEMENTS );
 
 use XML::Simple;
+use List::MoreUtils qw( any );
 
 our $VERSION = '1.0';
 
 use vars
-  qw( %NAMESPACES %NAMESPACEABBR %NAMESPACEELEMENTS %DATATYPES %ELEMENTORDER %ELEMENTS );
+  qw( %NAMESPACES %NAMESPACEABBR %NAMESPACEELEMENTS %DATATYPES %ELEMENTORDER %ELEMENTS @ALLPROP_PROPS @IGNORE_PROPS);
 
 BEGIN {
     %NAMESPACES = (
@@ -199,6 +200,17 @@ BEGIN {
         'directory-gateway'                => 'D',
         'calendar-free-busy-set'           => 'C',
     );
+
+    @ALLPROP_PROPS = qw(
+      creationdate       displayname
+      getcontentlanguage getlastmodified
+      lockdiscovery      resourcetype
+      supportedlock      getetag
+      getcontenttype     getcontentlength
+      executable
+    );
+
+    @IGNORE_PROPS = qw( xmlns CS );
 
 }
 
@@ -373,6 +385,50 @@ sub handle_prop_element {
         }
     }
     return 1;
+}
+
+sub handle_propfind_element {
+    my ($xmldata) = @_;
+    my @props;
+    my $all;
+    my $noval;
+    foreach my $propfind ( keys %{$xmldata} ) {
+        my $nons = $propfind;
+        my $ns   = q{};
+        if ( $nons =~ s/{([^}]*)}//xms ) {
+            $ns = $1;
+        }
+        if ( ( $nons =~ /(?:allprop|propname)/xms ) && ($all) ) {
+            return; # error !
+        }
+        if ( $nons =~ /^(allprop|propname)$/xms ) {
+            $noval = $1 eq 'propname';
+            $all   = 1;
+            if ($noval) {
+                push @props, @main::KNOWN_COLL_PROPS, @main::KNOWN_FILE_PROPS;
+            }
+            else {
+                push @props, @ALLPROP_PROPS;
+            }
+            next;
+        }
+        if ( $nons =~ /^(?:prop|include)$/xms ) {
+            if ( !handle_prop_element( $xmldata->{$propfind}, \@props ) ) {
+                return; # error!
+            }
+            next;
+        }
+        if ( any { /\Q$nons\E/xms } @IGNORE_PROPS ) {
+            next;
+        }
+        if (   defined $NAMESPACES{ $xmldata->{$propfind} }
+            || defined $NAMESPACES{$ns} )
+        {    # sometimes the namespace: ignore
+            next;
+        }
+        return; # error!
+    }
+    return ( \@props, $all, $noval );
 }
 
 1;

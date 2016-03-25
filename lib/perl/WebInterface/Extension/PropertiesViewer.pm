@@ -23,6 +23,8 @@ use warnings;
 
 use base 'WebInterface::Extension';
 
+use WebDAV::XMLHelper ( create_xml );
+
 sub init {
     my ( $self, $hookreg ) = @_;
     $self->setExtension('PropertiesViewer');
@@ -132,8 +134,8 @@ sub renderPropertiesViewer {
         }
         $visited{$prop} = 1;
         $WebDAV::XMLHelper::NAMESPACEELEMENTS{ main::nonamespace($prop) } = 1;
-        my $title = main::create_xml( $r200{prop},        1 );
-        my $value = main::create_xml( $r200{prop}{$prop}, 1 );
+        my $title = create_xml( $r200{prop},        1 );
+        my $value = create_xml( $r200{prop}{$prop}, 1 );
         my $namespace = main::get_namespace_uri($prop);
         if ( $prop =~ /^\{([^\}]*)\}/xms ) {
             $namespace = $1;

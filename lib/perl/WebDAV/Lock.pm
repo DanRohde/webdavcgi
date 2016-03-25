@@ -29,6 +29,7 @@ use Date::Parse;
 use UUID::Tiny;
 
 use FileUtils qw( filter );
+use WebDAV::XMLHelper qw( create_xml );
 
 sub new {
     my $this  = shift;
@@ -98,7 +99,7 @@ sub lock_resource {
     my @lockscopes = keys %{ ${$xmldata}{'{DAV:}lockscope'} };
     my $locktype   = $#locktypes >= 0 ? $locktypes[0] : undef;
     my $lockscope  = $#lockscopes >= 0 ? $lockscopes[0] : undef;
-    my $owner      = main::create_xml(
+    my $owner      = create_xml(
         defined ${$xmldata}{'{DAV:}owner'}
         ? ${$xmldata}{'{DAV:}owner'}
         : $main::DEFAULT_LOCK_OWNER,

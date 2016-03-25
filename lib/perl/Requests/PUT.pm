@@ -25,11 +25,12 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_header_and_content get_if_header_components get_etag );
 use FileUtils qw( stat2h );
 
 sub handle {
     my ( $self, $cgi, $backend ) = @_;
+
     my $status  = '204 No Content';
     my $type    = 'text/plain';
     my $content = q{};
@@ -46,7 +47,9 @@ sub handle {
     {
         return print_header_and_content('403 Forbidden');
     }
-    if ( main::preConditionFailed($main::PATH_TRANSLATED) ) {
+    if (
+        $self->_pre_condition_failed( $cgi, $backend, $main::PATH_TRANSLATED ) )
+    {
         return print_header_and_content('412 Precondition Failed');
     }
     if ( !main::isAllowed($main::PATH_TRANSLATED) ) {
@@ -78,7 +81,8 @@ sub handle {
             'PUT',
             {
                 file => $main::PATH_TRANSLATED,
-                size => stat2h(\$backend->stat($main::PATH_TRANSLATED))->{size}
+                size =>
+                  stat2h( \$backend->stat($main::PATH_TRANSLATED) )->{size}
             }
         );
     }
@@ -91,6 +95,35 @@ sub handle {
         $type    = 'text/plain';
     }
     return print_header_and_content( $status, $type, $content );
+}
+
+sub _pre_condition_failed {
+    my ( $self, $cgi, $backend, $fn ) = @_;
+    if ( !$backend->exists($fn) ) { $fn = $backend->getParent($fn) . q{/}; }
+    my $ifheader = get_if_header_components( $cgi->http('If') );
+    my $t        = 0;                                              # token found
+    my $nnl  = 0;               # not no-lock found
+    my $nl   = 0;               # no-lock found
+    my $e    = 0;               # wrong etag found
+    my $etag = get_etag($fn);
+    foreach my $ie ( @{ $ifheader->{list} } ) {
+        $self->debug( ' - ie{token}=' . $ie->{token} );
+        if ( $ie->{token} =~ /Not\s+<DAV:no-lock>/xmsi ) {
+            $nnl = 1;
+        }
+        elsif ( $ie->{token} =~ /<DAV:no-lock>/xmsi ) {
+            $nl = 1;
+        }
+        elsif ( $ie->{token} =~ /opaquelocktoken/xmsi ) {
+            $t = 1;
+        }
+        if ( defined $ie->{etag} ) {
+            $e = ( $ie->{etag} ne $etag ) ? 1 : 0;
+        }
+    }
+    $self->debug("checkPreCondition: t=$t, nnl=$nnl, e=$e, nl=$nl");
+    return ( $t & $nnl & $e ) | $nl;
+
 }
 
 1;

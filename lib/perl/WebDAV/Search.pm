@@ -30,6 +30,7 @@ use English qw ( -no_match_vars );
 
 use FileUtils;
 use CacheManager;
+use WebDAV::XMLHelper qw( create_xml handle_propfind_element );
 
 use base qw( WebDAV::Common );
 
@@ -316,7 +317,7 @@ sub get_prop_value {
 
 sub xml2str {
     my ($xml) = @_;
-    return defined $xml ? lc( main::create_xml( $xml, 1 ) ) : $xml;
+    return defined $xml ? lc( create_xml( $xml, 1 ) ) : $xml;
 }
 
 sub _do_basic_search {
@@ -407,8 +408,9 @@ sub handle_basic_search {
 
     # select > (allprop | prop)
     my ( $propsref, $all, $noval ) =
-      main::handlePropFindElement( ${$xmldata}{'{DAV:}select'} );
+      handle_propfind_element( ${$xmldata}{'{DAV:}select'} );
 
+    # XXX TODO: error handling in case of undefined $propsref, $all, or $noval
     # where > op > (prop,literal)
     my ( $expr, $type ) =
       $self->_build_expr_from_basic_search_where_clause( undef,

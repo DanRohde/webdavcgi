@@ -34,6 +34,7 @@ use CGI::Carp;
 
 use FileUtils qw( get_dir_info );
 use HTTPHelper qw( get_etag );
+use WebDAV::XMLHelper qw( create_xml );
 
 sub new {
     my $this  = shift;
@@ -187,7 +188,7 @@ sub set_property {
         }
 
         my $dbval = ${$self}{db}->db_getProperty( $rfn, $n );
-        my $value = main::create_xml( ${$element_parent_ref}{$propname}, 0 );
+        my $value = create_xml( ${$element_parent_ref}{$propname}, 0 );
         my $ret
             = defined $dbval
             ? ${$self}{db}->db_updateProperty( $rfn, $n, $value )

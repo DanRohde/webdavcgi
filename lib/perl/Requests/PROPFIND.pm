@@ -28,7 +28,7 @@ use base qw( Requests::Request );
 use English qw ( -no_match_vars );
 
 use HTTPHelper qw( print_header_and_content read_request_body );
-use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
+use WebDAV::XMLHelper qw( create_xml simple_xml_parser handle_propfind_element );
 use FileUtils qw( read_dir_recursive );
 
 use vars qw( $INFINITY );
@@ -89,7 +89,7 @@ qq{<?xml version="1.0" encoding="$main::CHARSET" ?>\n<D:propfind xmlns:D="DAV:">
     if ( main::is_hidden($fn) || !$backend->exists($fn) ) {
         return print_header_and_content('404 Not Found');
     }
-    my ( $props, $all, $noval ) = main::handlePropFindElement($xmldata);
+    my ( $props, $all, $noval ) = handle_propfind_element($xmldata);
     if ( !defined $props ) {
         return print_header_and_content('400 Bad Request');
     }

@@ -27,7 +27,7 @@ use base qw( Requests::Request );
 use English qw ( -no_match_vars );
 
 use HTTPHelper qw( read_request_body print_header_and_content );
-use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
+use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
     my ( $self, $cgi, $backend ) = @_;
