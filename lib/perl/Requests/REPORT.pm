@@ -28,7 +28,7 @@ use English qw ( -no_match_vars );
 
 use FileUtils qw( read_dir_recursive read_dir_by_suffix );
 use HTTPHelper qw( read_request_body print_header_and_content );
-use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
+use WebDAV::XMLHelper qw( create_xml simple_xml_parser handle_prop_element );
 
 sub handle {
     my ( $self, $cgi, $backend ) = @_;
@@ -41,8 +41,7 @@ sub handle {
 
     $self->debug("_REPORT($fn,$ru)");
 
-    if (
-        !$backend->exists($fn)
+    if (  !$backend->exists($fn)
         && $ru !~
 /^(?:\Q$main::CURRENT_USER_PRINCIPAL\E|\Q$main::PRINCIPAL_COLLECTION_SET\E)/xms
       )
@@ -123,8 +122,10 @@ sub _print_response_from_hrefs {
             next;
         }
         my @props;
-        if ( exists ${$xmldata}{$rn}{'{DAV:}prop'} ) {
-            main::handlePropElement( ${$xmldata}{$rn}{'{DAV:}prop'}, \@props );
+        if ( exists ${$xmldata}{$rn}{'{DAV:}prop'}
+            && !handle_prop_element( ${$xmldata}{$rn}{'{DAV:}prop'}, \@props ) )
+        {
+            return print_header_and_content('400 Bad Request');
         }
 
         push @resps,
@@ -162,9 +163,14 @@ sub _handle_principal_match {
 
     # response, href
     my @props;
-    if ( exists ${$xmldata}{'{DAV:}principal-match'}{'{DAV:}prop'} ) {
-        main::handlePropElement(
-            ${$xmldata}{'{DAV:}principal-match'}{'{DAV:}prop'}, \@props );
+    if (
+        exists ${$xmldata}{'{DAV:}principal-match'}{'{DAV:}prop'}
+        && !handle_prop_element(
+            ${$xmldata}{'{DAV:}principal-match'}{'{DAV:}prop'}, \@props
+        )
+      )
+    {
+        return print_header_and_content('400 Bad Request');
     }
     read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
     return $self->_print_response( \@resps );
@@ -174,8 +180,14 @@ sub _handle_acl_principal_prop_set {
     my ( $self, $fn, $ru, $xmldata ) = @_;
     my @resps = ();
     my @props;
-    main::handlePropElement(
-        ${$xmldata}{'{DAV:}acl-principal-prop-set'}{'{DAV:}prop'}, \@props );
+    if (
+        !handle_prop_element(
+            ${$xmldata}{'{DAV:}acl-principal-prop-set'}{'{DAV:}prop'}, \@props
+        )
+      )
+    {
+        return print_header_and_content('400 Bad Request');
+    }
     push @resps,
       {
         href     => $ru,
@@ -191,10 +203,15 @@ sub _handle_principal_property_search {
     }
     my @resps = ();
     my @props;
-    if ( exists ${$xmldata}{'{DAV:}principal-property-search'}{'{DAV:}prop'} ) {
-        main::handlePropElement(
+    if (
+        exists ${$xmldata}{'{DAV:}principal-property-search'}{'{DAV:}prop'}
+        && !handle_prop_element(
             ${$xmldata}{'{DAV:}principal-property-search'}{'{DAV:}prop'},
-            \@props );
+            \@props
+        )
+      )
+    {
+        return print_header_and_content('400 Bad Request');
     }
     read_dir_recursive( $fn, $ru, \@resps, \@props, 0, 0, 1, 1 );
     ### TODO: filter data

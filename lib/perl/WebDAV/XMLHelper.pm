@@ -22,17 +22,17 @@ package WebDAV::XMLHelper;
 use strict;
 use warnings;
 
-
 use base qw( Exporter );
 
-our @EXPORT_OK = qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES %NAMESPACEELEMENTS );
+our @EXPORT_OK =
+  qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser handle_prop_element %NAMESPACES %NAMESPACEELEMENTS );
 
 use XML::Simple;
 
 our $VERSION = '1.0';
 
 use vars
-    qw( %NAMESPACES %NAMESPACEABBR %NAMESPACEELEMENTS %DATATYPES %ELEMENTORDER %ELEMENTS );
+  qw( %NAMESPACES %NAMESPACEABBR %NAMESPACEELEMENTS %DATATYPES %ELEMENTORDER %ELEMENTS );
 
 BEGIN {
     %NAMESPACES = (
@@ -203,17 +203,17 @@ BEGIN {
 }
 
 sub get_namespace {
-    my ( $el ) = @_;
+    my ($el) = @_;
     return $ELEMENTS{$el} || $ELEMENTS{default};
 }
 
 sub get_namespace_uri {
-    my ( $prop ) = @_;
+    my ($prop) = @_;
     return $NAMESPACEABBR{ get_namespace($prop) };
 }
 
 sub nonamespace {
-    my ( $prop ) = @_;
+    my ($prop) = @_;
     $prop =~ s/^{[^}]*}//xms;
     return $prop;
 }
@@ -317,7 +317,7 @@ sub _create_xml_data_hash {
 sub _create_xml_data {
     my ( $w, $d, $xmlns ) = @_;
     if ( ref($d) eq 'HASH' ) {
-        return _create_xml_data_hash( $w, $d, $xmlns);
+        return _create_xml_data_hash( $w, $d, $xmlns );
     }
     if ( ref($d) eq 'ARRAY' ) {
         foreach my $e ( @{$d} ) {
@@ -338,12 +338,41 @@ sub _create_xml_data {
 
 sub create_xml {
     my ( $data_ref, $withoutp ) = @_;
-    my $data
-        = !defined $withoutp
-        ? q@<?xml version="1.0" encoding="@ . $main::CHARSET . q@"?>@
-        : q{};
+    my $data =
+      !defined $withoutp
+      ? q@<?xml version="1.0" encoding="@ . $main::CHARSET . q@"?>@
+      : q{};
     _create_xml_data( \$data, $data_ref );
     return $data;
+}
+
+sub handle_prop_element {
+    my ( $xmldata, $props ) = @_;
+    foreach my $prop ( keys %{$xmldata} ) {
+        my $nons = $prop;
+        my $ns   = q{};
+        if ( $nons =~ s/{([^}]*)}//xms ) {
+            $ns = $1;
+        }
+        if ( ref( $xmldata->{$prop} ) !~ /^(?:HASH|ARRAY)$/xms )
+        {    # ignore namespaces
+            next;
+        }
+
+        if ( $ns eq q{} && !defined $xmldata->{$prop}{xmlns} ) {
+            return 0;
+        }
+        elsif ( exists $main::KNOWN_FILECOLL_PROPS{$nons} ) {
+            push @{$props}, $nons;
+        }
+        elsif ( $ns eq q{} ) {
+            push @{$props}, '{}' . $prop;
+        }
+        else {
+            push @{$props}, $prop;
+        }
+    }
+    return 1;
 }
 
 1;

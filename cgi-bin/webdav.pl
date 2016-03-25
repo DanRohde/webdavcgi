@@ -72,7 +72,7 @@ use vars
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160325.01';
+$RELEASE = '1.1.1BETA20160325.02';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -778,7 +778,7 @@ $DEBUG = 0;
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars
-    qw( $cgi $backend $backendmanager $config $utils %known_coll_props %known_file_props %known_filecoll_props %unsupported_props $eventChannel);
+    qw( $cgi $backend $backendmanager $config $utils %known_coll_props %known_file_props %KNOWN_FILECOLL_PROPS %unsupported_props $eventChannel);
 
 use CGI;
 use CGI::Carp;
@@ -835,7 +835,7 @@ $config->setProperty( 'backend', $backend );
 
 
 use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header fix_mod_perl_response read_request_body get_byte_ranges get_mime_type get_etag get_if_header_components );
-use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser %NAMESPACES );
+use WebDAV::XMLHelper qw( create_xml get_namespace get_namespace_uri nonamespace simple_xml_parser handle_prop_element %NAMESPACES );
 
 use FileUtils qw( get_local_file_content_and_type move2trash rcopy read_dir_by_suffix read_dir_recursive rmove get_hidden_filter get_error_document );
 
@@ -1112,11 +1112,11 @@ push @KNOWN_COLL_PROPS, 'component-set' if $ENABLE_GROUPDAV;
 
 foreach (@KNOWN_COLL_PROPS) {
     $known_coll_props{$_}     = 1;
-    $known_filecoll_props{$_} = 1;
+    $KNOWN_FILECOLL_PROPS{$_} = 1;
 }
 foreach (@KNOWN_FILE_PROPS) {
     $known_file_props{$_}     = 1;
-    $known_filecoll_props{$_} = 1;
+    $KNOWN_FILECOLL_PROPS{$_} = 1;
 }
 foreach (@UNSUPPORTED_PROPS) { $unsupported_props{$_} = 1; }
 
@@ -1180,7 +1180,10 @@ sub handlePropFindElement {
             push @props, @ALLPROP_PROPS unless $noval;
         }
         elsif ( $nons =~ /^(?:prop|include)$/xms ) {
-            handlePropElement( $$xmldata{$propfind}, \@props );
+            if (!handle_prop_element( $$xmldata{$propfind}, \@props )) {
+                print_header_and_content('400 Bad Request');
+                exit 0;   
+            }
         }
         elsif ( any { /\Q$nons\E/xms } @IGNORE_PROPS ) {
             next;
@@ -1199,36 +1202,6 @@ sub handlePropFindElement {
     return ( \@props, $all, $noval );
 }
 
-sub handlePropElement {
-    my ( $xmldata, $props ) = @_;
-    foreach my $prop ( keys %{$xmldata} ) {
-        my $nons = $prop;
-        my $ns   = q{};
-        if ( $nons =~ s/{([^}]*)}//xms ) {
-            $ns = $1;
-        }
-        if ( ref( $$xmldata{$prop} ) !~ /^(?:HASH|ARRAY)$/xms )
-        {    # ignore namespaces
-            next;
-        }
-        elsif ( $ns eq q{} && !defined $$xmldata{$prop}{xmlns} ) {
-            print_header_and_content('400 Bad Request');
-            carp("Unknown property element $prop");
-            exit 0; # jump over all callers
-            ##} elsif (grep({$_=~/\Q$nons\E/} @KNOWN_FILE_PROPS, @KNOWN_COLL_PROPS)>0)  {
-        }
-        elsif ( exists $known_filecoll_props{$nons} ) {
-            push @{$props}, $nons;
-        }
-        elsif ( $ns eq q{} ) {
-            push @{$props}, '{}' . $prop;
-        }
-        else {
-            push @{$props}, $prop;
-        }
-    }
-    return;
-}
 
 sub getPropStat {
     my ( $fn, $uri, $props, $all, $noval ) = @_;
@@ -1378,79 +1351,6 @@ sub isAllowed {
     return $ret;
 }
 
-sub handlePropertyRequest {
-    my ( $xml, $dataRef, $resp_200, $resp_403 ) = @_;
-
-    if ( ref( $$dataRef{'{DAV:}remove'} ) eq 'ARRAY' ) {
-        foreach my $remove ( @{ $$dataRef{'{DAV:}remove'} } ) {
-            foreach my $propname ( keys %{ $$remove{'{DAV:}prop'} } ) {
-                getPropertyModule()
-                    ->remove_property( $propname, $$remove{'{DAV:}prop'},
-                    $resp_200, $resp_403 );
-            }
-        }
-    }
-    elsif ( ref( $$dataRef{'{DAV:}remove'} ) eq 'HASH' ) {
-        foreach
-            my $propname ( keys %{ $$dataRef{'{DAV:}remove'}{'{DAV:}prop'} } )
-        {
-            getPropertyModule()
-                ->remove_property( $propname,
-                $$dataRef{'{DAV:}remove'}{'{DAV:}prop'},
-                $resp_200, $resp_403 );
-        }
-    }
-    if ( ref( $$dataRef{'{DAV:}set'} ) eq 'ARRAY' ) {
-        foreach my $set ( @{ $$dataRef{'{DAV:}set'} } ) {
-            foreach my $propname ( keys %{ $$set{'{DAV:}prop'} } ) {
-                getPropertyModule()
-                    ->set_property( $propname, $$set{'{DAV:}prop'}, $resp_200,
-                    $resp_403 );
-            }
-        }
-    }
-    elsif ( ref( $$dataRef{'{DAV:}set'} ) eq 'HASH' ) {
-        my $lastmodifiedprocessed = 0;
-        foreach
-            my $propname ( keys %{ $$dataRef{'{DAV:}set'}{'{DAV:}prop'} } )
-        {
-            if (   $propname eq '{DAV:}getlastmodified'
-                || $propname eq
-                '{urn:schemas-microsoft-com:}Win32LastModifiedTime' )
-            {
-                next if $lastmodifiedprocessed;
-                $lastmodifiedprocessed = 1;
-            }
-            getPropertyModule()
-                ->set_property( $propname,
-                $$dataRef{'{DAV:}set'}{'{DAV:}prop'},
-                $resp_200, $resp_403 );
-        }
-    }
-    if ( $xml =~ /<([^:]+:)?set[\s>]+.*<([^:]+:)?remove[\s>]+/xms )
-    {    ## fix parser bug: set/remove|remove/set of the same prop
-        if ( ref( $$dataRef{'{DAV:}remove'} ) eq 'ARRAY' ) {
-            foreach my $remove ( @{ $$dataRef{'{DAV:}remove'} } ) {
-                foreach my $propname ( keys %{ $$remove{'{DAV:}prop'} } ) {
-                    getPropertyModule()
-                        ->remove_property( $propname, $$remove{'{DAV:}prop'},
-                        $resp_200, $resp_403 );
-                }
-            }
-        }
-        elsif ( ref( $$dataRef{'{DAV:}remove'} ) eq 'HASH' ) {
-            foreach my $propname (
-                keys %{ $$dataRef{'{DAV:}remove'}{'{DAV:}prop'} } )
-            {
-                getPropertyModule()
-                    ->remove_property( $propname,
-                    $$dataRef{'{DAV:}remove'}{'{DAV:}prop'},
-                    $resp_200, $resp_403 );
-            }
-        }
-    }
-    return;
-}
 
 sub getQuota {
     my ($fn) = @_;

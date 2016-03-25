@@ -23,7 +23,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
@@ -41,14 +41,12 @@ sub handle {
 
         # maybe extended mkcol (RFC5689)
         if ( $cgi->content_type() =~ /\/xml/xms ) {
-            eval { $dataref = simple_xml_parser($body) } or do {
+            if ( !eval { $dataref = simple_xml_parser($body) } ) {
                 $self->debug("MKCOL: invalid XML request: ${EVAL_ERROR}");
-                print_header_and_content('400 Bad Request');
-                return;
-            };
+                return print_header_and_content('400 Bad Request');
+            }
             if ( ref( ${$dataref}{'{DAV:}set'} ) !~ /(?:ARRAY|HASH)/xms ) {
-                print_header_and_content('400 Bad Request');
-                return;
+                return print_header_and_content('400 Bad Request');
             }
         }
         else {
@@ -92,7 +90,8 @@ sub handle {
     }
 
     my ( %resp_200, %resp_403 );
-    main::handlePropertyRequest( $body, $dataref, \%resp_200, \%resp_403 );
+    $self->handle_property_request( main::getPropertyModule(), $body, $dataref,
+        \%resp_200, \%resp_403 );
     ## ignore errors from property request
     main::getLockModule()->inherit_lock();
     $self->logger("MKCOL($pt)");
