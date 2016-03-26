@@ -33,6 +33,7 @@ use CGI::Carp;
 use English qw( -no_match_vars );
 
 use HTTPHelper qw( get_etag );
+use FileUtils qw( get_file_limit );
 use vars qw( %_RENDERER );
 
 sub _get_renderer {
@@ -72,7 +73,7 @@ sub print_styles_vhtdocs_files {
             . $2;
     }
     elsif ( $fn =~ /\Q$main::VHTDOCS\E_OPTIMIZED[(](js|css)[)]_/xms ) {
-        $file = main::getWebInterface()->optimizer_get_filepath($1);
+        $file = $self->{config}->{webinterface}->optimizer_get_filepath($1);
     }
     $file =~ s{/[.][.]/}{}xmsg;
     my $compression = !-e $file && -e "$file.gz";
@@ -113,7 +114,7 @@ sub print_media_rss {
     foreach my $file (
         sort { $_RENDERER->cmp_files } @{
             ${$self}{backend}
-                ->readDir( $fn, main::getFileLimit($fn), $_RENDERER )
+                ->readDir( $fn, get_file_limit($fn), $_RENDERER )
         }
         )
     {

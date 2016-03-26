@@ -25,21 +25,25 @@ our $VERSION = '2.0';
 use CGI::Carp;
 
 sub new {
-    my $class = shift;
+    my $this  = shift;
+    my $class = ref($this) || $this;
     my $self  = {};
-    return bless $self, $class;
+    bless $self, $class;
+    $self->{config} = shift;
+    return $self;
 }
 
 sub register {
+
     # my ($self, $channel) = @_;
     carp 'overwrite me!';
     return;
 }
 
 sub receive {
+
     # my ($self, $event, $data) = @_;
     carp 'overwrite me!';
     return;
 }
-
 1;

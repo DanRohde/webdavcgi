@@ -28,20 +28,21 @@ our $VERSION = '2.0';
 use Date::Parse;
 use UUID::Tiny;
 
-use FileUtils qw( filter );
+use FileUtils qw( filter get_file_limit );
 use WebDAV::XMLHelper qw( create_xml );
 
 sub _lock_dir {
     my ( $self, @args ) = @_;
-    my ($fn,    $ru,   $xmldata, $depth,   $timeout,
+    my (
+        $fn,    $ru,   $xmldata, $depth,   $timeout,
         $token, $base, $visited, $respref, $propref
     ) = @args;
     if ( ${$self}{backend}->isReadable($fn) ) {
         foreach my $f (
-            @{  ${$self}{backend}->readDir( $fn, main::getFileLimit($fn),
-                    \&filter )
+            @{
+                ${$self}{backend}->readDir( $fn, get_file_limit($fn), \&filter )
             }
-            )
+          )
         {
             my $nru = $ru . $f;
             my $nfn = $fn . $f;
@@ -59,27 +60,26 @@ sub _lock_dir {
             );
             if ( defined ${$subreqresp}{multistatus} ) {
                 push @{ ${$respref}{multistatus}{response} },
-                    @{ ${$subreqresp}{multistatus}{response} };
+                  @{ ${$subreqresp}{multistatus}{response} };
             }
             else {
                 if ( exists ${$subreqresp}{prop} ) {
-                    push @{$propref},
-                        @{ ${$subreqresp}{prop}{lockdiscovery} };
+                    push @{$propref}, @{ ${$subreqresp}{prop}{lockdiscovery} };
                 }
             }
         }
     }
     else {
         push @{ ${$respref}{multistatus}{response} },
-            { href => $ru, status => 'HTTP/1.1 403 Forbidden' };
+          { href => $ru, status => 'HTTP/1.1 403 Forbidden' };
     }
     return;
 }
 
 sub lock_resource {
     my ( $self, @args ) = @_;
-    my ( $fn, $ru, $xmldata, $depth, $timeout, $token, $base, $visited )
-        = @args;
+    my ( $fn, $ru, $xmldata, $depth, $timeout, $token, $base, $visited ) =
+      @args;
     my %resp = ();
     my @prop = ();
 
@@ -107,11 +107,12 @@ sub lock_resource {
     my $rbase = $self->resolve( $base ? $base : $fn );
 
 # save lock to database (structure: basefn, fn, type, scope, token, timeout(null), owner(null)):
-    if (${$self}{db}->db_insert(
+    if (
+        ${$self}{db}->db_insert(
             $rbase, $rfn,   $locktype, $lockscope,
             $token, $depth, $timeout,  $owner
         )
-        )
+      )
     {
         push @prop, { activelock => \%activelock };
     }
@@ -120,10 +121,10 @@ sub lock_resource {
     }
     else {
         push @{ $resp{multistatus}{response} },
-            {
+          {
             href   => $ru,
             status => 'HTTP/1.1 403 Forbidden (db update failed)'
-            };
+          };
     }
     my $resfn = ${$self}{backend}->resolve($fn);
     return \%resp if exists ${$visited}{$resfn};
@@ -139,7 +140,7 @@ sub lock_resource {
     }
     if ( exists $resp{multistatus} && $#prop >= 0 ) {
         push @{ $resp{multistatus}{response} },
-            { propstat => { prop => { lockdiscovery => \@prop } } };
+          { propstat => { prop => { lockdiscovery => \@prop } } };
     }
 
     if ( !defined $resp{multistatus} ) {
@@ -153,15 +154,15 @@ sub unlock_resource {
     my ( $self, $fn, $token ) = @_;
     my $rfn = $self->resolve($fn);
     return ${$self}{db}->db_isRootFolder( $rfn, $token )
-        && ${$self}{db}->db_delete( $rfn, $token );
+      && ${$self}{db}->db_delete( $rfn, $token );
 }
 
 sub _check_timed_out {
     my ( $self, $fn, $rows ) = @_;
     my $ret = 0;
     my $now = time;
-    $main::DBI_TIMEZONE
-        //= $main::DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime';
+    $main::DBI_TIMEZONE //=
+      $main::DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime';
     $main::DEFAULT_LOCK_TIMEOUT //= 3_600;
     while ( my $row = shift @{$rows} ) {
         my ( $token, $timeout, $timestamp ) = (
@@ -172,7 +173,7 @@ sub _check_timed_out {
             $timeout = "Second-$main::DEFAULT_LOCK_TIMEOUT";
         }
         main::debug(
-            "_check_timed_out($fn): token=$token, timeout=$timeout, timestamp=$timestamp"
+"_check_timed_out($fn): token=$token, timeout=$timeout, timestamp=$timestamp"
         );
         if ( $timeout =~ /(\d+)$/xms ) {
             my $val  = $1;
@@ -189,9 +190,9 @@ sub _check_timed_out {
             }
             $ret = $now - $timestamp - ( $mult * $val ) >= 0 ? 1 : 0;
             main::debug(
-                "_check_timed_out($fn): now=$now, mult=$mult, val=$val (now-timestamp)="
-                    . ( $now - $timestamp )
-                    . ": ret=$ret" );
+"_check_timed_out($fn): now=$now, mult=$mult, val=$val (now-timestamp)="
+                  . ( $now - $timestamp )
+                  . ": ret=$ret" );
             if ($ret) { ${$self}{db}->db_delete( $fn, $token ); }
         }
     }
@@ -212,8 +213,8 @@ sub is_locked {
     $rfn .= ${$self}{backend}->isDir($fn) && $rfn !~ /\/$/xms ? q{/} : q{};
     my $rows = ${$self}{db}->db_get($rfn);
     return ( ( $#{$rows} >= 0 ) && !$self->_check_timed_out( $rfn, $rows ) )
-        ? 1
-        : 0;
+      ? 1
+      : 0;
 }
 
 sub is_locked_cached {
@@ -222,16 +223,16 @@ sub is_locked_cached {
     $rfn .= ${$self}{backend}->isDir($fn) && $rfn !~ /\/$/xms ? q{/} : q{};
     my $rows = ${$self}{db}->db_getCached($rfn);
     return ( ( $#{$rows} >= 0 ) && !$self->_check_timed_out( $rfn, $rows ) )
-        ? 1
-        : 0;
+      ? 1
+      : 0;
 }
 
 sub is_lockable {    # check lock and exclusive
     my ( $self, $fn, $xmldata ) = @_;
     my $rfn        = $self->resolve($fn);
     my @lockscopes = keys %{ ${$xmldata}{'{DAV:}lockscope'} };
-    my $lockscope
-        = @lockscopes && $#lockscopes >= 0 ? $lockscopes[0] : 'exclusive';
+    my $lockscope =
+      @lockscopes && $#lockscopes >= 0 ? $lockscopes[0] : 'exclusive';
 
     my $rowsref;
     if ( !${$self}{backend}->exists($fn) ) {
@@ -248,7 +249,7 @@ sub is_lockable {    # check lock and exclusive
     if ( $#{$rowsref} >= 0 ) {
         my $row = ${$rowsref}[0];
         $ret = ( !defined ${$row}[3] || lc( ${$row}[3] ) ne 'exclusive' )
-            && $lockscope ne '{DAV:}exclusive' ? 1 : 0;
+          && $lockscope ne '{DAV:}exclusive' ? 1 : 0;
     }
     else {
         $ret = 1;
@@ -291,10 +292,10 @@ sub get_lock_discovery {
 sub get_tokens {
     my ( $self, $fn, $recurse ) = @_;
     my $rfn = $self->resolve($fn);
-    my $rowsref
-        = $recurse
-        ? ${$self}{db}->db_getLike("$rfn%")
-        : ${$self}{db}->db_get($rfn);
+    my $rowsref =
+      $recurse
+      ? ${$self}{db}->db_getLike("$rfn%")
+      : ${$self}{db}->db_get($rfn);
     my @tokens = map { ${$_}[4] } @{$rowsref};
     return \@tokens;
 }
@@ -331,14 +332,12 @@ sub inherit_lock {
         );
         if ( $backend->isReadable($fn) ) {
             foreach my $f (
-                @{  $backend->readDir( $fn, main::getFileLimit($fn),
-                        \&filter )
-                }
-                )
+                @{ $backend->readDir( $fn, get_file_limit($fn), \&filter ) }
+              )
             {
                 my $full = $fn . $f;
                 $full .= $backend->isDir($full)
-                    && $full !~ /\/$/xms ? q{/} : q{};
+                  && $full !~ /\/$/xms ? q{/} : q{};
                 $db->db_insert(
                     $self->resolve( ${$row}[0] ), ${$self}->resolve($full),
                     ${$row}[2],                   ${$row}[3],

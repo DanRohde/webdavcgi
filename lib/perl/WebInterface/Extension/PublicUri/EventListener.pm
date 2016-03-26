@@ -25,6 +25,16 @@ our $VERSION = '2.0';
 
 use base qw( Events::EventListener WebInterface::Extension::PublicUri::Common);
 
+sub new {
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = {};
+    bless $self, $class;
+    $self->{config} = shift;
+    $self->{db}     = $self->{config}->{db};
+    return $self;
+}
+
 sub register {
     my ( $self, $channel ) = @_;
     $self->init_defaults();
@@ -49,13 +59,14 @@ sub handle_webdav_request {
         my ( $code, $path ) = ( $1, $2 );
         my $fn = $self->get_file_from_code($code);
         return
-          if ( !$fn || !$self->is_public_uri( $fn, $code, $self->get_seed($fn) ) );
+          if ( !$fn
+            || !$self->is_public_uri( $fn, $code, $self->get_seed($fn) ) );
 
         $main::DOCUMENT_ROOT = $fn;
         $main::DOCUMENT_ROOT .= $main::DOCUMENT_ROOT !~ /\/$/xms ? q{/} : q{};
         $main::PATH_TRANSLATED = $fn . $path;
         $main::VIRTUAL_BASE    = ${$self}{virtualbase} . $code . q{/?};
-        if ( main::getBackend()->isDir($main::PATH_TRANSLATED) ) {
+        if ( $self->{config}->{backend}->isDir($main::PATH_TRANSLATED) ) {
             $main::PATH_TRANSLATED .=
               $main::PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
             $main::REQUEST_URI .= $main::REQUEST_URI !~ /\/$/xms ? q{/} : q{};
@@ -67,7 +78,7 @@ sub handle_webdav_request {
 sub handle_file_copied_event {
     my ( $self, $data ) = @_;
     my $dst = ${$data}{destination};
-    my $db  = ${$self}{db};
+    my $db  = $self->{config}->{db};
     $dst =~ s/\/$//xms;
     $db->db_deletePropertiesRecursiveByName( $dst,
         ${$self}{namespace} . ${$self}{propname} );

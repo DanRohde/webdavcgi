@@ -20,6 +20,8 @@ package DB::Driver;
 use strict;
 use warnings;
 
+our $VERSION = '1.0';
+
 use vars qw( $PREFIX);
 
 $PREFIX = '///-/';
@@ -35,6 +37,7 @@ sub new {
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
+    $self->{config} = shift;
     return $self;
 }
 

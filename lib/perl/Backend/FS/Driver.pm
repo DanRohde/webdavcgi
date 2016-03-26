@@ -58,7 +58,7 @@ sub basename {
 }
 
 sub dirname {
-    return $CACHE{ $_[0] }{ $_[1] }{dirname} //= main::getParentURI( $_[1] );
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{dirname} //= main::getParentURI( $_[1] );
 }
 
 sub exists {
@@ -66,7 +66,7 @@ sub exists {
 }
 
 sub isDir {
-    return $CACHE{ $_[0] }{ $_[1] }{isDir} //= -d $_[0]->resolveVirt( $_[1] );
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{isDir} //= defined $_[1] ? -d $_[0]->resolveVirt( $_[1] ) : 0;
 }
 
 sub isFile {
@@ -367,7 +367,7 @@ sub getLinkSrc {
 }
 
 sub resolveVirt {
-    return $CACHE{ $_[0] }{ $_[1] }{resolveVirt} //=
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{resolveVirt} //=
       $_[0]->getVirtualLinkTarget( $_[1] );
 }
 
@@ -492,6 +492,9 @@ sub isVirtualLink {
 sub getVirtualLinkTarget {
     my ( $self, $src ) = @_;
     my $target = $src;
+    if (!defined $src) {
+        return $target;
+    }
     if ( !exists $CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys} ) {
         my @fslinkkeys = reverse sort { $a cmp $b }
           keys %{ $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink} };

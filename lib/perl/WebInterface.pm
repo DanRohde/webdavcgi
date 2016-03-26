@@ -37,6 +37,9 @@ sub new {
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
+    
+    $config->{webinterface} = $self;
+    
     ${$self}{config}  = $config;
     ${$self}{db}      = $config->{db};
     ${$self}{cgi}     = $config->{cgi};

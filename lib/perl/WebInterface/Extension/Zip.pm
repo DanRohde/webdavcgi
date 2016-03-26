@@ -266,7 +266,7 @@ sub handleZipCompress {
             ->compressFiles( $zipfh, $main::PATH_TRANSLATED, @files );
         close($zipfh) || carp("Cannot close $zipfn");
         if ( ( stat $zipfn )[7] > 0 ) {
-            my ( $quotahrd, $quotacur ) = main::getQuota();
+            my ( $quotahrd, $quotacur ) = $self->{backend}->getQuota();
             if ( $quotahrd == 0
                 || ( stat $zipfn )[7] + $quotacur < $quotahrd )
             {

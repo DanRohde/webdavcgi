@@ -67,7 +67,7 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.03';
+$RELEASE = '1.1.1BETA20160326.04';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -784,6 +784,7 @@ use IO::Handle;
 use Module::Load;
 use POSIX qw( setlocale LC_TIME);
 
+use DB::Driver;
 use DatabaseEventAdapter;
 use Backend::Manager;
 use HTTPHelper
@@ -825,13 +826,13 @@ sub init {
     $CONFIG{config} = \%CONFIG;
     $CONFIG{cgi}    = $CGI;
     $CONFIG{cache}  = CacheManager::getinstance();
-    $CONFIG{db}     = getDBDriver();
+    $CONFIG{db}     = $CACHE{ $ENV{REMOTE_USER} }{dbdriver} //= DB::Driver->new(\%CONFIG);
     $CONFIG{event}  = getEventChannel();
 
     setlocale( LC_TIME, 'en_US.' . $CHARSET )
       ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
 
-    DatabaseEventAdapter->new()->register( $CONFIG{event} );
+    DatabaseEventAdapter->new(\%CONFIG)->register( $CONFIG{event} );
 
     broadcast('INIT');
 
@@ -938,20 +939,6 @@ sub _get_methods_rx {
     return q{^(?:} . join( q{|}, @methods ) . q{)$};
 }
 
-sub getQuota {
-    my ($fn) = @_;
-    $fn //= $PATH_TRANSLATED;
-
-#	return ($CACHE{getQuota}{$fn}{block_hard}, $CACHE{getQuota}{$fn}{block_curr}) if defined $CACHE{getQuota}{$fn}{block_hard};
-    my ( $block_hard, $block_curr ) =
-      $CONFIG{backend}->getQuota(
-        $CONFIG{backend}->isDir($fn) ? $fn : $CONFIG{backend}->getParent($fn) );
-
-    #	$CACHE{getQuota}{$fn}{block_hard}=$block_hard;
-    #	$CACHE{getQuota}{$fn}{block_curr}=$block_curr;
-    return ( $block_hard, $block_curr );
-}
-
 sub getSupportedMethods {
     my ($path) = @_;
     my @methods;
@@ -983,21 +970,6 @@ sub logger {
         print {*STDERR} "${PROGRAM_NAME}: @_\n";
     }
     return;
-}
-
-sub getFileLimit {
-    my ($path) = @_;
-    return $FILECOUNTPERDIRLIMIT{$path} || $FILECOUNTLIMIT;
-}
-
-sub getWebInterface {
-    require WebInterface;
-    return WebInterface->new( \%CONFIG );
-}
-
-sub getDBDriver {
-    require DB::Driver;
-    return $CACHE{ $ENV{REMOTE_USER} }{dbdriver} //= DB::Driver->new;
 }
 
 sub getPropertyModule {
@@ -1045,7 +1017,7 @@ sub getEventChannel {
         $cache->set_entry( 'eventchannel', $ec );
         foreach my $listener (@EVENTLISTENER) {
             load $listener;
-            $listener->new()->register($ec);
+            $listener->new(\%CONFIG)->register($ec);
         }
     }
     return $ec;
@@ -1065,7 +1037,7 @@ sub get_cgi {
     return $CGI;
 }
 
-sub getBackend {
+sub get_backend {
     return $CONFIG{backend};
 }
 

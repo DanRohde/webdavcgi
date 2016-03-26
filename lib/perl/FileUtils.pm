@@ -26,7 +26,7 @@ our $VERSION = '1.0';
 use base qw( Exporter );
 our @EXPORT_OK =
   qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix
-  rmove is_hidden filter get_error_document stat2h )
+  rmove is_hidden filter get_error_document stat2h get_file_limit )
   ;
 
 use CGI;
@@ -42,7 +42,7 @@ use vars qw( $_INSTANCE );
 sub rcopy {
     my ( $src, $dst, $move, $depth ) = @_;
 
-    my $backend = main::getBackend();
+    my $backend = main::get_backend();
 
     $depth //= 0;
 
@@ -172,7 +172,7 @@ sub get_local_file_content_and_type {
 
 sub move2trash {
     my ($fn)    = @_;
-    my $backend = main::getBackend();
+    my $backend = main::get_backend();
     my $ret     = 0;
     my $etag    = get_etag($fn);        ## get a unique name for trash folder
     $etag =~ s/\"//xmsg;
@@ -203,7 +203,7 @@ sub move2trash {
 sub read_dir_by_suffix {
     my ( $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
     debug("read_dir_by_suffix($fn, ..., $suffix, $depth)");
-    my $backend = main::getBackend();
+    my $backend = main::get_backend();
 
     my $nfn = $backend->resolve($fn);
     return
@@ -212,7 +212,7 @@ sub read_dir_by_suffix {
 
     if ( $backend->isReadable($fn) ) {
         foreach my $sf (
-            @{ $backend->readDir( $fn, main::getFileLimit($fn), \&filter ) } )
+            @{ $backend->readDir( $fn, get_file_limit($fn), \&filter ) } )
         {
             $sf .= $backend->isDir( $fn . $sf ) ? q{/} : q{};
             my $nbase = $base . $sf;
@@ -239,7 +239,7 @@ sub get_dir_info {
         return $cm->get_entry( [ 'get_dir_info', $fn, $prop ] );
     }
 
-    my $backend = main::getBackend();
+    my $backend = main::get_backend();
 
     my %counter = (
         childcount   => 0,
@@ -332,6 +332,10 @@ sub stat2h {
         blksize => $blksize,
         blocks  => $blocks,
     };
+}
+sub get_file_limit {
+    my ($path) = @_;
+    return $main::FILECOUNTPERDIRLIMIT{$path} || $main::FILECOUNTLIMIT;
 }
 
 1;

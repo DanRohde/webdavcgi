@@ -27,6 +27,7 @@ use base qw( Requests::Request );
 
 use HTTPHelper qw( print_header_and_content );
 use FileUtils qw( get_error_document );
+use WebInterface;
 
 sub handle {
     my ($self)  = @_;
@@ -38,7 +39,7 @@ sub handle {
             $cgi->cgi_error );
     }
     if ( $main::ALLOW_FILE_MANAGEMENT
-        && main::getWebInterface()->handle_post_request() )
+        && WebInterface->new($self->{config})->handle_post_request() )
     {
         $self->debug('_POST: WebInterface called');
         return;

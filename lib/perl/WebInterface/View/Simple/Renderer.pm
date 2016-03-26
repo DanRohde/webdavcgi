@@ -30,6 +30,8 @@ use URI::Escape;
 use DateTime;
 use DateTime::Format::Human::Duration;
 
+use FileUtils qw( get_file_limit );
+
 use vars qw(%CACHE @ERRORS);
 
 sub render {
@@ -137,7 +139,7 @@ sub _get_quota_data {
     my ( $self, $fn ) = @_;
     return $CACHE{$self}{$fn}{quotaData}
         if exists $CACHE{$self}{$fn}{quotaData};
-    my @quota      = $main::SHOW_QUOTA ? main::getQuota($fn) : ( 0, 0 );
+    my @quota      = $main::SHOW_QUOTA ? $self->{backend}->getQuota($fn) : ( 0, 0 );
     my $quotastyle = q{};
     my $level      = 'info';
     if ( $main::SHOW_QUOTA && $quota[0] > 0 ) {
@@ -368,7 +370,7 @@ sub _render_extension {
     my ( $self, $fn, $ru, $hook ) = @_;
 
     if ( $hook eq 'javascript' ) {
-        if ( main::getWebInterface()->optimizer_is_optimized() ) {
+        if ( $self->{config}->{webinterface}->optimizer_is_optimized() ) {
             my $vbase = $self->get_vbase();
             return
                 q@<script>$(document).ready(function() { $(document.createElement("script")).attr("src","@
@@ -388,7 +390,7 @@ sub _render_extension {
         }
     }
     elsif ( $hook eq 'css' ) {
-        if ( main::getWebInterface()->optimizer_is_optimized() ) {
+        if ( $self->{config}->{webinterface}->optimizer_is_optimized() ) {
             my $vbase = $self->get_vbase();
             return
                 qq@<link rel="stylesheet" href="${vbase}${main::VHTDOCS}_OPTIMIZED(css)_"/>@;
@@ -684,7 +686,7 @@ sub _render_file_list {
     my @files
         = ${$self}{backend}->isReadable($fn)
         ? sort { $self->cmp_files( $a, $b ) }
-        @{ ${$self}{backend}->readDir( $fn, main::getFileLimit($fn), $self ) }
+        @{ ${$self}{backend}->readDir( $fn, get_file_limit($fn), $self ) }
         : ();
 
     if ( $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn ) {

@@ -54,7 +54,6 @@ use CacheManager;
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper
   qw( create_xml handle_propfind_element simple_xml_parser );
-
 use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
 
 use vars qw( %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS );
@@ -408,7 +407,7 @@ sub _do_basic_search {
     {
         foreach my $sf (
             @{
-                ${$self}{backend}->readDir( $base, main::getFileLimit($base),
+                ${$self}{backend}->readDir( $base, FileUtils::get_file_limit($base),
                     \&FileUtils::filter )
             }
           )

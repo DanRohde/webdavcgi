@@ -44,7 +44,6 @@ sub init_defaults {
     ${$self}{allowedpostactions} = $self->config( 'allowedpostactions',
         '^(zipdwnload|diskusage|search|diff)$' );
 
-    ${$self}{db} = main::getDBDriver();
     return;
 }
 
@@ -73,20 +72,20 @@ sub get_orig_name {
 
 sub get_file_from_code {
     my ( $self, $digest ) = @_;
-    my $fna = ${$self}{db}
+    my $fna = $self->{config}->{db}
         ->db_getPropertyFnByValue( $self->get_property_name(), $digest );
     return $fna ? ${$fna}[0] : undef;
 }
 
 sub get_seed {
     my ( $self, $fn ) = @_;
-    return ${$self}{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
+    return $self->{config}->{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
         $self->get_seed_name() );
 }
 
 sub get_orig {
     my ( $self, $fn ) = @_;
-    return ${$self}{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
+    return $self->{config}->{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
         $self->get_orig_name() );
 }
 

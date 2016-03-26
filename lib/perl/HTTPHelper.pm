@@ -131,7 +131,7 @@ sub print_local_file_header {
 sub print_file_header {
     my ( $fn, $addheader ) = @_;
     my $cgi     = main::get_cgi();
-    my $backend = main::getBackend();
+    my $backend = main::get_backend();
     my @stat    = $backend->stat($fn);
     my %header  = (
         -status         => '200 OK',
@@ -236,7 +236,7 @@ sub get_mime_type {
 sub get_etag {
     my ($file) = @_;
     $file //= $main::PATH_TRANSLATED;
-    my $backend = main::getBackend();
+    my $backend = main::get_backend();
 
     my (
         $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,

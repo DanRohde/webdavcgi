@@ -35,6 +35,7 @@ sub new {
         bless $self, $class;
         $_INSTANCE = $self;
     }
+    $self->{config} = shift;
     return $_INSTANCE;
 }
 
@@ -103,7 +104,7 @@ sub _handle_deleted {
 
 sub receive {
     my ( $self, $event, $data ) = @_;
-    my $db = main::getDBDriver();
+    my $db = $self->{config}->{db};
     if ( $event eq 'FINALIZE' ) {
         $db->finalize();
     }
