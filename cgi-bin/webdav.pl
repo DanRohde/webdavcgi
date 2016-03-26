@@ -67,7 +67,7 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.01';
+$RELEASE = '1.1.1BETA20160326.03';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -1061,7 +1061,7 @@ sub getBaseURIFrag {
     return $uri =~ /([^\/]+)\/?$/xms ? ( $1 // q{/} ) : q{/};
 }
 
-sub getCGI {
+sub get_cgi {
     return $CGI;
 }
 

@@ -56,7 +56,7 @@ sub print_header_and_content {
     $type    //= 'text/plain';
     $content //= q{};
 
-    my $cgi = main::getCGI();
+    my $cgi = main::get_cgi();
 
     my $contentlength = bytes::length($content);
 
@@ -82,7 +82,7 @@ sub print_header_and_content {
 
 sub print_compressed_header_and_content {
     my ( $status, $type, $content, $add_header, $cookies ) = @_;
-    my $cgi    = main::getCGI();
+    my $cgi    = main::get_cgi();
     my $header = _get_header_hashref($add_header);
     if ( $main::ENABLE_COMPRESSION
         && ( my $enc = $cgi->http('Accept-Encoding') ) )
@@ -107,7 +107,7 @@ sub print_compressed_header_and_content {
 
 sub print_local_file_header {
     my ( $fn, $addheader ) = @_;
-    my $cgi    = main::getCGI();
+    my $cgi    = main::get_cgi();
     my @stat   = stat $fn;
     my %header = (
         -status         => '200 OK',
@@ -130,7 +130,7 @@ sub print_local_file_header {
 
 sub print_file_header {
     my ( $fn, $addheader ) = @_;
-    my $cgi     = main::getCGI();
+    my $cgi     = main::get_cgi();
     my $backend = main::getBackend();
     my @stat    = $backend->stat($fn);
     my %header  = (
@@ -162,7 +162,7 @@ sub print_file_header {
 
 sub fix_mod_perl_response {
     my ($headerref) = @_;
-    my $cgi = main::getCGI();
+    my $cgi = main::get_cgi();
     ## mod_perl fix for unknown status codes:
     my $stat200re = qr{(?:20[16789]|2[1-9])}xms;
     my $stat300re = qr{(?:30[89]|3[1-9])}xms;

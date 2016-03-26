@@ -136,7 +136,7 @@ sub handle {
         };
     }
     elsif ( $hook eq 'posthandler' ) {
-        my $action = ${$self}{cgi}->param('action');
+        my $action = ${$self}{cgi}->param('action') // q{};
         if ( $action eq 'mark' ) {
             $ret = $self->save_property();
         }

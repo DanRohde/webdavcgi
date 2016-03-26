@@ -48,7 +48,7 @@ sub _get_renderer {
         return $_RENDERER{$self}{$view};
     }
     load $view;
-    $_RENDERER{$self}{$view} = $view->new( ${$self}{config}, ${$self}{db} );
+    $_RENDERER{$self}{$view} = $view->new( ${$self}{config} );
     return $_RENDERER{$self}{$view};
 }
 

@@ -37,7 +37,6 @@ sub new {
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
-
     ${$self}{config}  = $config;
     ${$self}{db}      = $config->{db};
     ${$self}{cgi}     = $config->{cgi};
@@ -167,13 +166,13 @@ sub handle_post_request {
 sub get_functions {
     my $self = shift;
     require WebInterface::Functions;
-    return WebInterface::Functions->new( ${$self}{config}, ${$self}{db} );
+    return WebInterface::Functions->new( ${$self}{config} );
 }
 
 sub get_renderer {
     my $self = shift;
     require WebInterface::Renderer;
-    return WebInterface::Renderer->new( ${$self}{config}, ${$self}{db} );
+    return WebInterface::Renderer->new( ${$self}{config} );
 }
 
 sub optimizer_is_optimized {

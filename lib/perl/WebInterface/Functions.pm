@@ -31,12 +31,14 @@ use FileUtils qw( rcopy rmove move2trash );
 use HTTPHelper qw( print_compressed_header_and_content );
 
 sub new {
-    my ( $this, $config, $db ) = @_;
+    my ( $this, $config ) = @_;
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
     $self->{config}   = $config;
-    $self->{db}       = $db;
+    $self->{db}       = $config->{db};
+    $self->{cgi}      = $config->{cgi};
+    $self->{backend}  = $config->{backend};
     $self->{msglimit} = 150;
     $self->initialize();
     return $self;

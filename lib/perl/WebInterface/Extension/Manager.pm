@@ -35,7 +35,7 @@ sub new {
     my $self = {};
     bless $self, $class;
     $self->{config} = $config;
-    return $self->init($self);
+    return $self->init();
 }
 
 sub init {

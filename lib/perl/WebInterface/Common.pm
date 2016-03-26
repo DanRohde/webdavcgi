@@ -77,7 +77,7 @@ sub new {
 
 sub initialize {
     my $self = shift;
-    
+
     ${$self}{BYTEUNITS}     = \%BYTEUNITS;
     ${$self}{BYTEUNITORDER} = \@BYTEUNITORDER;
     ${$self}{STATIDX}       = \%STATIDX;
@@ -349,7 +349,7 @@ sub render_byte_val {
 sub filter {
     my ( $self, $path, $file ) = @_;
     return 1 if FileUtils::filter( $path, $file );
-    my $backend = main::getBackend();
+    my $backend = $self->{config}->{backend};
     my $ret     = 0;
     my $filter  = ${$self}{cgi}->param('search.types')
         // ${$self}{cgi}->cookie('filter.types');
