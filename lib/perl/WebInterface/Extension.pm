@@ -33,7 +33,6 @@ sub new {
     bless $self, $class;
     $self->{EXTENSION} = $extensionname;
     $self->{config}    = $config;
-    print STDERR "WebInterface::Extension: $extensionname, $hookreg, $config\n";
     return $self->init($hookreg);
 }
 

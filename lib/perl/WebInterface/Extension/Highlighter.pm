@@ -63,7 +63,7 @@ sub init {
         }
     );
     ${$self}{json} = JSON->new();
-    return;
+    return $self;
 }
 
 sub handle {

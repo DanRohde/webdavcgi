@@ -67,7 +67,7 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.04';
+$RELEASE = '1.1.1BETA20160326.05';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -788,7 +788,7 @@ use DB::Driver;
 use DatabaseEventAdapter;
 use Backend::Manager;
 use HTTPHelper
-  qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header read_request_body get_mime_type get_etag get_if_header_components );
+  qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header get_mime_type );
 use FileUtils qw( get_local_file_content_and_type rcopy );
 use WebDAV::WebDAVProps qw( init_webdav_props );
 
@@ -807,6 +807,9 @@ sub init {
     ## create CGI instance:
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
 
+    ## some config independent objects for convinience:
+    $CONFIG{event} = getEventChannel();
+    $CONFIG{cache} = CacheManager::getinstance();
     ## read config file:
     if ( defined $CONFIGFILE ) {
         my $ret;
@@ -825,18 +828,18 @@ sub init {
     ## some config objects for the convinience:
     $CONFIG{config} = \%CONFIG;
     $CONFIG{cgi}    = $CGI;
-    $CONFIG{cache}  = CacheManager::getinstance();
-    $CONFIG{db}     = $CACHE{ $ENV{REMOTE_USER} }{dbdriver} //= DB::Driver->new(\%CONFIG);
-    $CONFIG{event}  = getEventChannel();
+    $CONFIG{db}     = $CACHE{ $ENV{REMOTE_USER} }{dbdriver} //=
+      DB::Driver->new( \%CONFIG );
 
     setlocale( LC_TIME, 'en_US.' . $CHARSET )
       ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
 
-    DatabaseEventAdapter->new(\%CONFIG)->register( $CONFIG{event} );
+    DatabaseEventAdapter->new( \%CONFIG )->register( $CONFIG{event} );
 
     broadcast('INIT');
 
-    my $backend      = Backend::Manager::getinstance()->get_backend($BACKEND, \%CONFIG);
+    my $backend =
+      Backend::Manager::getinstance()->get_backend( $BACKEND, \%CONFIG );
     $CONFIG{backend} = $backend;
 
     umask $UMASK || croak("Cannot set umask $UMASK.");
@@ -911,7 +914,7 @@ sub handle_request {
     }
     $CONFIG{method} = $REQUEST_HANDLERS{$method};
     $REQUEST_HANDLERS{$method}->init( \%CONFIG )->handle();
-    if ($CONFIG{backend}) { $CONFIG{backend}->finalize(); }
+    if ( $CONFIG{backend} ) { $CONFIG{backend}->finalize(); }
     broadcast('FINALIZE');
     return;
 }
@@ -939,26 +942,6 @@ sub _get_methods_rx {
     return q{^(?:} . join( q{|}, @methods ) . q{)$};
 }
 
-sub getSupportedMethods {
-    my ($path) = @_;
-    my @methods;
-    my @rmethods = qw( OPTIONS GET HEAD PROPFIND PROPPATCH COPY GETLIB );
-    my @wmethods = qw( POST PUT MKCOL MOVE DELETE );
-    push @rmethods, qw( LOCK UNLOCK ) if $ENABLE_LOCK;
-    push @rmethods, 'REPORT'
-      if $ENABLE_ACL
-      || $ENABLE_CALDAV
-      || $ENABLE_CALDAV_SCHEDULE
-      || $ENABLE_CARDDAV;
-    push @rmethods, 'SEARCH' if $ENABLE_SEARCH;
-    push @wmethods, 'ACL' if $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV;
-    push @wmethods, 'MKCALENDAR' if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
-    push @wmethods, qw( BIND UNBIND REBIND) if $ENABLE_BIND;
-    @methods = @rmethods;
-    push @methods, @wmethods
-      if !defined $path || $CONFIG{backend}->isWriteable($path);
-    return \@methods;
-}
 
 sub logger {
     if ( defined $LOGFILE && open( my $LOG, '>>', $LOGFILE ) ) {
@@ -974,8 +957,7 @@ sub logger {
 
 sub getPropertyModule {
     require WebDAV::Properties;
-    return $CACHE{webdavproperties} //=
-      WebDAV::Properties->new( \%CONFIG );
+    return $CACHE{webdavproperties} //= WebDAV::Properties->new( \%CONFIG );
 }
 
 sub getLockModule {
@@ -1017,7 +999,7 @@ sub getEventChannel {
         $cache->set_entry( 'eventchannel', $ec );
         foreach my $listener (@EVENTLISTENER) {
             load $listener;
-            $listener->new(\%CONFIG)->register($ec);
+            $listener->new( \%CONFIG )->register($ec);
         }
     }
     return $ec;

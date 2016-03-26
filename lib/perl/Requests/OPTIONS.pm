@@ -25,7 +25,7 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use HTTPHelper qw( print_header_and_content get_dav_header );
+use HTTPHelper qw( print_header_and_content get_dav_header get_supported_methods );
 
 sub handle {
     my ($self)  = @_;
@@ -41,7 +41,7 @@ sub handle {
       $backend->isDir($pt)
       ? 'httpd/unix-directory'
       : main::get_mime_type($pt);
-    my $methods = join ', ', @{ main::getSupportedMethods($pt) };
+    my $methods = join ', ', @{ get_supported_methods($backend, $pt) };
     my %params;
     if ($methods) {
         %params = (

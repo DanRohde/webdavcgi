@@ -74,7 +74,7 @@ sub handle {
 	} elsif ($hook eq 'apps') {
 		$ret = $self->handleAppsHook($self->{cgi},'search access-readable ','search','search'); 
 	} elsif ($hook eq 'gethandler') {
-		my $action = $self->{cgi}->param('action');
+		my $action = $self->{cgi}->param('action') // q{};
 		if ($action eq 'getSearchForm') {
 			$ret = $self->getSearchForm();
 		} elsif ($action eq 'getSearchResult') {

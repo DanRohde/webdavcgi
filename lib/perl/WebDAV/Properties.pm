@@ -33,7 +33,7 @@ use CGI;
 use CGI::Carp;
 
 use FileUtils qw( get_dir_info );
-use HTTPHelper qw( get_etag );
+use HTTPHelper qw( get_etag get_supported_methods );
 use WebDAV::XMLHelper qw( create_xml %NAMESPACES );
 use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
 
@@ -465,7 +465,7 @@ sub _get_deltav_props {
     }
     if ( $prop eq 'supported-method-set' ) {
         ${$resp_200}{prop}{$prop} = q{};
-        foreach my $method ( @{ main::getSupportedMethods($fn) } ) {
+        foreach my $method ( @{ get_supported_methods($self->{config}->{backend}, $fn) } ) {
             ${$resp_200}{prop}{$prop}
                 .= q{<D:supported-method name="} . $method . q{"/>};
         }

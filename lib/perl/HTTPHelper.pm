@@ -24,10 +24,10 @@ our $VERSION = '2.0';
 
 use base qw{ Exporter };
 our @EXPORT_OK =
-  qw( print_header_and_content print_compressed_header_and_content print_file_header 
-     print_header_and_content print_local_file_header fix_mod_perl_response 
-     read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components 
-     get_dav_header );
+  qw( print_header_and_content print_compressed_header_and_content print_file_header
+  print_header_and_content print_local_file_header fix_mod_perl_response
+  read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components
+  get_dav_header get_supported_methods );
 
 use CGI::Carp;
 use POSIX qw( strftime );
@@ -291,4 +291,40 @@ sub get_dav_header {
     $DAV .= $main::ENABLE_BIND    ? ', bind'        : q{};
     return $DAV;
 }
+
+sub get_supported_methods {
+    my ($backend, $path) = @_;
+    my @methods;
+    my @rmethods = qw( OPTIONS GET HEAD PROPFIND PROPPATCH COPY GETLIB );
+    my @wmethods = qw( POST PUT MKCOL MOVE DELETE );
+    if ($main::ENABLE_LOCK) {
+        push @rmethods, qw( LOCK UNLOCK );
+    }
+    if (   $main::ENABLE_ACL
+        || $main::ENABLE_CALDAV
+        || $main::ENABLE_CALDAV_SCHEDULE
+        || $main::ENABLE_CARDDAV )
+    {
+        push @rmethods, 'REPORT';
+    }
+    if ($main::ENABLE_SEARCH) {
+        push @rmethods, 'SEARCH';
+    }
+    if ( $main::ENABLE_ACL || $main::ENABLE_CALDAV || $main::ENABLE_CARDDAV )
+    {
+        push @wmethods, 'ACL';
+    }
+    if ( $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE ) {
+        push @wmethods, 'MKCALENDAR';
+    }
+    if ($main::ENABLE_BIND) {
+        push @wmethods, qw( BIND UNBIND REBIND);
+    }
+    @methods = @rmethods;
+    if ( !defined $path || $backend->isWriteable($path) ) {
+        push @methods, @wmethods;
+    }
+    return \@methods;
+}
+
 1;

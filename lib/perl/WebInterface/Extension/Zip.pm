@@ -53,7 +53,7 @@ sub init {
     push @hooks, 'new' unless $main::EXTENSION_CONFIG{Zip}{disable_fnew};
 
     $hookreg->register( \@hooks, $self );
-    return;
+    return $self;
 }
 
 sub handle {
