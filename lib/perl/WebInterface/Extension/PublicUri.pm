@@ -48,8 +48,8 @@ sub init {
         : 'WebInterface::Extension::PublicUri::Public';
 
     load $handler;
-    $handler->new($hookreg)->setExtension('PublicUri');
-    return;
+    $handler->new($hookreg,'PublicUri',$self->{config});
+    return $self;
 }
 
 1;

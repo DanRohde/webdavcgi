@@ -37,13 +37,9 @@ use vars qw( $SHARESEP $DOCUMENT_ROOT %CACHE %SMBCLIENT);
 $SHARESEP =  $main::BACKEND_CONFIG{$main::BACKEND}{sharesep} || q{~};
 $DOCUMENT_ROOT = $main::DOCUMENT_ROOT || q{/};
 
-sub new {
-    my $self = SUPER::new(@_);
-	$self->initialize();
-	return $self;
-}
-sub initialize {
-	my $self = shift;
+sub init {
+	my ($self, $config) = @_;
+	$self->SUPER::init($config);
 	## backup credential cache
 	if ($ENV{KRB5CCNAME} && !exists $ENV{WEBDAVISWRAPPED} ) {
 		if ($ENV{KRB5CCNAME}=~/^FILE:(.*)$/) {
@@ -65,7 +61,7 @@ sub initialize {
 			}
 		}
 	}
-	return;
+	return $self;
 }
 sub getSmbClient {
 	my ($self) = @_;

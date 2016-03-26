@@ -28,11 +28,11 @@ use base qw ( Backend::FS::Driver );
 
 use Fcntl qw(:flock);
 
-sub new {
-    my $self = SUPER::new(@_);
-    $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git',
-		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock'
-	};
+sub init {
+    my ($self, $config) = @_;
+    $self->SUPER::init($config);
+    $self->{GIT} = $main::BACKEND_CONFIG{GIT}{gitcmd} // '/usr/bin/git';
+    $self->{LOCKFILE} = $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock';
 	if (!$self->isDir($main::DOCUMENT_ROOT.'.git')) {
 		$self->execGit('init');
 		$self->execGit('config','user.email',$ENV{REMOTE_USER});

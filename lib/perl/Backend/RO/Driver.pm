@@ -28,10 +28,11 @@ use base qw( Backend::Helper );
 
 use Backend::Manager;
 
-sub new {
-	my $self = SUPER::new(@_);
-	$self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{$main::BACKEND}{backend} || 'FS', $self->{config});
-	return $self;
+sub init {
+    my ($self, $config) = @_;
+    $self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{$main::BACKEND}{backend} || 'FS', $self->{config});
+	$self->SUPER::init($config);
+    return $self;
 }
 sub finalize {
 	$_[0]{BACKEND}->finalize();

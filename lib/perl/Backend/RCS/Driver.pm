@@ -34,9 +34,10 @@ use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 use vars qw( %CACHE );
 
-sub new {
-	my $self = SUPER::new(@_);
-	$self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{RCS}{backend} || 'FS', $self->{config});
+sub init {
+    my ($self, $config) = @_;
+    $self->SUPER::init($config);
+    $self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{RCS}{backend} || 'FS', $self->{config});
 	return $self;
 }
 sub finalize {
