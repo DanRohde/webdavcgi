@@ -27,7 +27,7 @@ our @EXPORT_OK =
   qw( print_header_and_content print_compressed_header_and_content print_file_header
   print_header_and_content print_local_file_header fix_mod_perl_response
   read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components
-  get_dav_header get_supported_methods );
+  get_dav_header get_supported_methods get_parent_uri get_base_uri_frag );
 
 use CGI::Carp;
 use POSIX qw( strftime );
@@ -325,6 +325,14 @@ sub get_supported_methods {
         push @methods, @wmethods;
     }
     return \@methods;
+}
+sub get_parent_uri {
+    my ($uri) = @_;
+    return $uri && $uri =~ m{^(.*?)/[^/]+/?$}xms ? ( $1 || q{/} ) : q{/};
+}
+sub get_base_uri_frag {
+    my ($uri) = @_;
+    return $uri && $uri =~ m{([^/]+)/?$}xms ? ( $1 // q{/} ) : q{/};
 }
 
 1;

@@ -51,7 +51,7 @@ sub _strip_slash {
 
 sub _normalize {
     my ( $self, $file ) = @_;
-    return $self->_strip_slash( main::getPropertyModule()->resolve($file) );
+    return $self->_strip_slash( $self->{config}->{backend}->resolveVirt($file) );
 }
 
 sub register {

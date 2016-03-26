@@ -34,7 +34,7 @@ sub new {
     if ( !$_INSTANCE ) {
         bless $self, $class;
         $_INSTANCE = $self;
-        $self->register(main::getEventChannel());
+        $self->register(main::get_event_channel());
     }
     return $_INSTANCE;
 }

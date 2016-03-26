@@ -36,6 +36,8 @@ use Fcntl qw(:flock);
 use CGI::Carp;
 use English qw ( -no_match_vars );
 
+use HTTPHelper qw( get_parent_uri get_base_uri_frag );
+
 use vars qw( %CACHE );
 
 
@@ -47,7 +49,7 @@ sub finalize {
 }
 
 sub __basename {
-    my $bn = main::getBaseURIFrag( $_[1] );
+    my $bn = get_base_uri_frag( $_[1] );
     if ( $_[2] ) { $bn =~ s/\Q$_[2]\E//xms; }
     return $bn;
 }
@@ -58,7 +60,7 @@ sub basename {
 }
 
 sub dirname {
-    return $CACHE{ $_[0] }{ $_[1] // q{} }{dirname} //= main::getParentURI( $_[1] );
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{dirname} //= get_parent_uri( $_[1] );
 }
 
 sub exists {

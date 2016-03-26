@@ -188,7 +188,7 @@ sub handleZipUpload {
         my $rfn = $fh;
         $rfn =~ s/\\/\//xmsg;    # fix M$ Windows backslashes
         $rfn = ${$self}{backend}->basename($rfn);
-        if ( main::isLocked("$main::PATH_TRANSLATED$rfn") ) {
+        if ( $self->{config}->{method}->is_locked("$main::PATH_TRANSLATED$rfn") ) {
             $errmsg   = 'locked';
             $msgparam = [$rfn];
             last;

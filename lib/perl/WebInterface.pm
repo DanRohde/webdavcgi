@@ -32,6 +32,8 @@ use IO::Compress::Gzip;
 use MIME::Base64;
 use CGI::Carp;
 
+use HTTPHelper qw( get_parent_uri );
+
 sub new {
     my ($this, $config)  = @_;
     my $class = ref($this) || $this;
@@ -287,7 +289,7 @@ sub optimizer_collect {
         my $fc
             = ( main::get_local_file_content_and_type($full) )[1];
         if ( $type eq 'css' ) {
-            my $basepath = main::getParentURI($full);
+            my $basepath = get_parent_uri($full);
             $fc =~
                 s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/iegxms;
         }

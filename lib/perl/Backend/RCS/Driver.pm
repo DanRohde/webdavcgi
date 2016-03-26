@@ -30,6 +30,7 @@ use Rcs;
 use File::Temp qw/ tempfile /;
 
 use Backend::Manager;
+use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 use vars qw( %CACHE );
 
@@ -47,12 +48,12 @@ sub finalize {
 
 sub basename {
 	my $self = shift @_;
-	return main::getBaseURIFrag($_[0]) if $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
+	return get_base_uri_frag($_[0]) if $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
 	return $$self{BACKEND}->basename(@_);
 }
 sub dirname {
 	my $self = shift @_;
-	return main::getParentURI($_[0]) if  $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
+	return get_parent_uri($_[0]) if  $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
 	return $$self{BACKEND}->dirname(@_);
 }
 
@@ -394,8 +395,8 @@ sub printFile {
 }
 sub getDisplayName {
 	my $self = shift @_;
-	return main::getBaseURIFrag($_[0]).'/' if $self->_isVirtualDir($_[0]);
-	return main::getBaseURIFrag($_[0]) if $self->_isVirtualFile($_[0]);
+	return get_base_uri_frag($_[0]).'/' if $self->_isVirtualDir($_[0]);
+	return get_base_uri_frag($_[0]) if $self->_isVirtualFile($_[0]);
 	return $$self{BACKEND}->getDisplayName(@_);
 }
 sub rename {

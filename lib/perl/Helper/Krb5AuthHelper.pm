@@ -47,7 +47,7 @@ sub init {
     if ( $ENV{KRB5CCNAME} ) {
         Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
     }
-    $self->register( main::getEventChannel() );
+    $self->register( main::get_event_channel() );
 
     my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
     $ENV{KRB5CCNAME} = "FILE:$ticketfn";

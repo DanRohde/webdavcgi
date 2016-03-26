@@ -67,7 +67,7 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.05';
+$RELEASE = '1.1.1BETA20160326.06';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -808,7 +808,7 @@ sub init {
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
 
     ## some config independent objects for convinience:
-    $CONFIG{event} = getEventChannel();
+    $CONFIG{event} = get_event_channel();
     $CONFIG{cache} = CacheManager::getinstance();
     ## read config file:
     if ( defined $CONFIGFILE ) {
@@ -905,6 +905,7 @@ sub handle_request {
         return print_header_and_content('403 Forbidden');
     }
     if ( $method !~ /$METHODS_RX/xms ) {
+        carp("Method not allowed: $method");
         return print_header_and_content('405 Method Not Allowed');
     }
     if ( !$REQUEST_HANDLERS{$method} ) {
@@ -947,39 +948,12 @@ sub logger {
     if ( defined $LOGFILE && open( my $LOG, '>>', $LOGFILE ) ) {
         print {$LOG} localtime()
           . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
-        close($LOG) || croak("Cannot close filehandle for '$LOGFILE'");
+        close($LOG) || carp("Cannot close filehandle for '$LOGFILE'");
     }
     else {
         print {*STDERR} "${PROGRAM_NAME}: @_\n";
     }
     return;
-}
-
-sub getPropertyModule {
-    require WebDAV::Properties;
-    return $CACHE{webdavproperties} //= WebDAV::Properties->new( \%CONFIG );
-}
-
-sub getLockModule {
-    require WebDAV::Lock;
-    return $CACHE{webdavlock} //= WebDAV::Lock->new( \%CONFIG );
-}
-
-sub isLockedCached {
-    my ($fn) = @_;
-    return getLockModule()->is_locked_cached($fn);
-}
-
-sub isLocked {
-    my ( $fn, $r ) = @_;
-    return $r
-      ? getLockModule()->is_locked_recurse($fn)
-      : getLockModule()->is_locked($fn);
-}
-
-sub getParentURI {
-    my ($uri) = @_;
-    return $uri && $uri =~ /^(.*?)\/[^\/]+\/?$/xms ? ( $1 || q{/} ) : q{/};
 }
 
 sub debug {
@@ -990,7 +964,7 @@ sub debug {
     return;
 }
 
-sub getEventChannel {
+sub get_event_channel {
     my $cache = CacheManager::getinstance();
     my $ec    = $cache->get_entry('eventchannel');
     if ( !$ec ) {
@@ -1007,12 +981,7 @@ sub getEventChannel {
 
 sub broadcast {
     my ( $event, $data ) = @_;
-    return getEventChannel()->broadcast( $event, $data );
-}
-
-sub getBaseURIFrag {
-    my ($uri) = @_;
-    return $uri =~ /([^\/]+)\/?$/xms ? ( $1 // q{/} ) : q{/};
+    return get_event_channel()->broadcast( $event, $data );
 }
 
 sub get_cgi {

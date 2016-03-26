@@ -24,6 +24,10 @@ our $VERSION = '2.0';
 
 use CGI::Carp;
 
+use HTTPHelper qw( get_if_header_components );
+use WebDAV::Lock;
+use CacheManager;
+
 sub new {
     my ($this) = @_;
     my $class = ref($this) || $this;
@@ -65,6 +69,73 @@ sub is_insufficient_storage {
         elsif ( defined $cgi->http('Content-Length') ) {
             my $filesize = $cgi->http('Content-Length');
             $ret = $filesize + $block_curr > $block_hard;
+        }
+    }
+    return $ret;
+}
+
+sub is_locked_cached {
+    my ( $self, $fn ) = @_;
+    if (!$main::ENABLE_LOCK) { return 0; }
+    return $self->get_lock_module()->is_locked_cached($fn);
+}
+
+sub is_locked {
+    my ( $self, $fn, $r ) = @_;
+    if (!$main::ENABLE_LOCK) { return 0; }
+    return $r
+      ? $self->get_lock_module()->is_locked_recurse($fn)
+      : $self->get_lock_module()->is_locked($fn);
+}
+
+sub get_lock_module {
+    my ($self) = @_;
+    my $cache  = CacheManager::getinstance();
+    my $lm     = $cache->get_entry('lockmodule');
+    if ( !$lm ) {
+        $lm = WebDAV::Lock->new( $self->{config} );
+        $cache->set_entry( 'lockmodule', $lm );
+    }
+    return $lm;
+}
+sub is_allowed {
+    my ( $self, $fn, $recurse ) = @_;
+
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
+
+    if ( !$backend->exists($fn) ) {
+        $fn = $backend->getParent($fn) . q{/};
+    }
+
+    if ( !$main::ENABLE_LOCK ) {
+        return 1;
+    }
+
+    my $ifheader = get_if_header_components( $cgi->http('If') );
+
+    if ( $backend->exists($fn) && !$backend->isWriteable($fn) )
+    {                                             # not writeable
+        return 0;
+    }
+    if ( !$self->is_locked($fn) ) {
+        return 1;
+    }
+    if ( !defined $ifheader ) {
+        return 0;
+    }
+    my $ret = 0;
+    foreach my $token ( @{ $self->get_lock_module()->get_tokens( $fn, $recurse ) } ) {
+        for my $j ( 0 .. $#{ ${$ifheader}{list} } ) {
+            my $iftoken = $ifheader->{list}[$j]{token};
+            $iftoken //= q{};
+            $iftoken =~ s/[<>\s]+//xmsg;
+            $self->debug( "is_allowed: $iftoken send, needed for $token: "
+                  . ( $iftoken eq $token ? 'OK' : 'FAILED' ) );
+            if ( $token eq $iftoken ) {
+                $ret = 1;
+                last;
+            }
         }
     }
     return $ret;

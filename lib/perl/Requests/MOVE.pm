@@ -83,7 +83,7 @@ sub handle {
             "403 Forbidden (rmove($main::PATH_TRANSLATED, $destination) failed)"
         );
     }
-    main::getLockModule()->inherit_lock( $destination, 1 );
+    $self->get_lock_module()->inherit_lock( $destination, 1 );
     $self->logger("MOVE($main::PATH_TRANSLATED, $destination)");
     main::broadcast(
         'MOVED',

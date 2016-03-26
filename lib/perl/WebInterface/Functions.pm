@@ -76,7 +76,7 @@ sub handle_post_upload {
         my $destination
             = $main::PATH_TRANSLATED . ${$self}{backend}->basename($rfn);
         push @filelist, ${$self}{backend}->basename($rfn);
-        if ( main::isLocked("$destination$filename") ) {
+        if ( $self->{config}->{method}->is_locked("$destination$filename") ) {
             $errmsg   = 'locked';
             $msgparam = [$rfn];
         }
@@ -120,8 +120,8 @@ sub handle_clipboard_action {
     my ( @success, @failed );
     foreach my $file ( split /\@\/\@/xms, ${$self}{cgi}->param('files') ) {
 
-        if (   main::isLocked("$srcdir$file")
-            || main::isLocked("$main::PATH_TRANSLATED$file") )
+        if (   $self->{config}->{method}->is_locked("$srcdir$file")
+            || $self->{config}->{method}->is_locked("$main::PATH_TRANSLATED$file") )
         {
             $errmsg = 'locked';
             push @failed, $file;
@@ -159,7 +159,7 @@ sub _handle_delete_action {
             if ( $file eq q{.} ) { $file = q{}; }
             my $fullname
                 = ${$self}{backend}->resolve("$main::PATH_TRANSLATED$file");
-            if ( main::isLocked( $fullname, 1 ) ) {
+            if ( $self->{config}->{method}->is_locked( $fullname, 1 ) ) {
                 $count    = 0;
                 $errmsg   = 'locked';
                 $msgparam = [$file];
@@ -197,7 +197,7 @@ sub _handle_rename_action {
     my ($self) = @_;
     my ( $msg, $errmsg, $msgparam );
     if ( defined ${$self}{cgi}->param('file') ) {
-        if (main::isLocked(
+        if ($self->{config}->{method}->is_locked(
                 $main::PATH_TRANSLATED . ${$self}{cgi}->param('file')
             )
             )
@@ -207,7 +207,7 @@ sub _handle_rename_action {
         }
         elsif (
             ${$self}{cgi}->param('newname')
-            && main::isLocked(
+            && $self->{config}->{method}->is_locked(
                 $main::PATH_TRANSLATED . ${$self}{cgi}->param('newname')
             )
             )

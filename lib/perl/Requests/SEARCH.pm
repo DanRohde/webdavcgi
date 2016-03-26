@@ -349,7 +349,7 @@ sub get_prop_value {
     my ( $self, $prop, $fn, $uri ) = @_;
     my ( %r200, %r404 );
 
-    main::debug("get_prop_value($prop, $fn, $uri)");
+    $self->debug("get_prop_value($prop, $fn, $uri)");
     if ( ${$self}{cache}->exists_entry( [ $fn, $prop ] ) ) {
         return ${$self}{cache}->get_entry( [ $fn, $prop ] );
     }
@@ -363,7 +363,7 @@ sub get_prop_value {
       : undef;
 
     if ( !defined $propval ) {
-        main::getPropertyModule()
+        $self->get_property_module()
           ->get_property( $fn, $uri, $propname, undef, \%r200, \%r404 );
         $propval = $r200{prop}{$propname};
     }

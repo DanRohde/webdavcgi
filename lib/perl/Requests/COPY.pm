@@ -85,7 +85,7 @@ sub handle {
             return print_header_and_content(
                 "403 Forbidden (mkcol($destination) failed)");
         }
-        main::getLockModule()->inherit_lock($destination);
+        $self->get_lock_module()->inherit_lock($destination);
         main::broadcast(
             'FILECOPIED',
             {
@@ -102,7 +102,7 @@ sub handle {
 "403 Forbidden - copy failed (rcopy($main::PATH_TRANSLATED,$destination))"
             );
         }
-        main::getLockModule()->inherit_lock( $destination, 1 );
+        $self->get_lock_module()->inherit_lock( $destination, 1 );
         main::broadcast(
             'COPIED',
             {

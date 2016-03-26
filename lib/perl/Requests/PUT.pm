@@ -77,7 +77,7 @@ sub handle {
           . qq@<body><h1>Created</h1><p>Resource $ENV{REQUEST_URI} has been created.</p></body></html>\n@;
     }
     if ( $backend->saveStream( $main::PATH_TRANSLATED, \*STDIN ) ) {
-        main::getLockModule()->inherit_lock();
+        $self->get_lock_module()->inherit_lock();
         $self->logger("PUT($main::PATH_TRANSLATED)");
         main::broadcast(
             'PUT',

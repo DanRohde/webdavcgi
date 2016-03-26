@@ -92,10 +92,9 @@ sub handle {
     }
 
     my ( %resp_200, %resp_403 );
-    $self->handle_property_request( main::getPropertyModule(), $body, $dataref,
-        \%resp_200, \%resp_403 );
+    $self->handle_property_request( $body, $dataref, \%resp_200, \%resp_403 );
     ## ignore errors from property request
-    main::getLockModule()->inherit_lock();
+    $self->get_lock_module()->inherit_lock();
     $self->logger("MKCOL($pt)");
     main::broadcast( 'MDCOL', { file => $pt } );
     return print_header_and_content('201 Created');

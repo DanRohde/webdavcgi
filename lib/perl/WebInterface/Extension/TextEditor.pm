@@ -94,7 +94,7 @@ sub saveTextData {
 	my $full = $main::PATH_TRANSLATED . $filename;
 	my $efilename = $$self{cgi}->escapeHTML($filename);
 	my %jsondata = ();
-	if (main::isLocked($full)) {
+	if ($self->{config}->{method}->is_locked($full)) {
 		$jsondata{error} = sprintf($self->tl('msg_locked'), $efilename);	
 	} elsif ( $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full) && $self->makeBackupCopy($full) && $$self{backend}->saveData($full, $$self{cgi}->param('textdata') ) ) {
 		$jsondata{message} = sprintf($self->tl('msg_textsaved'), $efilename);

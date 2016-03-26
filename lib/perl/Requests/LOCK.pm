@@ -34,7 +34,7 @@ sub handle {
 
     my $backend = $self->{backend};
     my $cgi     = $self->{cgi};
-    my $lm      = main::getLockModule();
+    my $lm      = $self->get_lock_module();
     my $fn      = $main::PATH_TRANSLATED;
     my $ru      = $main::REQUEST_URI;
     my $depth = defined $cgi->http('Depth') ? $cgi->http('Depth') : 'infinity';

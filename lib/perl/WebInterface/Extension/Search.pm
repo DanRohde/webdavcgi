@@ -83,7 +83,8 @@ sub handle {
                 	$ret = $self->printOpenSearch();
 		}
 	} elsif ($hook eq 'posthandler') {
-		if ($self->{cgi}->param('action') eq 'search') {
+	    my $action = $self->{cgi}->param('action') // q{};
+		if ($action eq 'search') {
 			$ret = $self->handleSearch();
 		}
 	} elsif ($hook eq 'link') {

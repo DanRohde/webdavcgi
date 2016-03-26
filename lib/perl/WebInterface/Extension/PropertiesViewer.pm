@@ -23,7 +23,9 @@ use warnings;
 
 use base 'WebInterface::Extension';
 
+use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 use WebDAV::XMLHelper qw( create_xml nonamespace get_namespace_uri %NAMESPACEELEMENTS );
+use WebDAV::Properties;
 use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS );
 
 sub init {
@@ -73,7 +75,7 @@ sub renderPropertiesViewer {
     my ( $self, $fn, $ru ) = @_;
     $self->set_locale();
     my $content    = "";
-    my $fullparent = main::getParentURI($ru) . '/';
+    my $fullparent = get_parent_uri($ru) . '/';
     $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
     $content .= $$self{cgi}->h2(
         { -class => 'foldername' },
@@ -81,7 +83,7 @@ sub renderPropertiesViewer {
             ? $fn
             : $$self{backend}->getParent($fn) . '/' . ' '
                 . $$self{cgi}
-                ->a( { -href => $ru }, main::getBaseURIFrag($ru) )
+                ->a( { -href => $ru }, get_base_uri_frag($ru) )
             )
             . $self->tl('properties')
     );
@@ -111,7 +113,7 @@ sub renderPropertiesViewer {
         $$self{cgi}->th( { -class => 'thname' },  $self->tl('propertyname') ),
         $$self{cgi}->th( { -class => 'thvalue' }, $self->tl('propertyvalue') )
     );
-
+    my $pm = WebDAV::Properties->new($self->{config});
     foreach my $prop (
         sort { nonamespace( lc($a) ) cmp nonamespace( lc($b) ) }
         keys %{$dbprops},
@@ -130,8 +132,7 @@ sub renderPropertiesViewer {
             $r200{prop}{$prop} = $$dbprops{$prop};
         }
         else {
-            main::getPropertyModule()
-                ->get_property( $fn, $ru, $prop, undef, \%r200, \my %r404 );
+            $pm->get_property( $fn, $ru, $prop, undef, \%r200, \my %r404 );
         }
         $visited{$prop} = 1;
         $NAMESPACEELEMENTS{ nonamespace($prop) } = 1;
@@ -145,7 +146,7 @@ sub renderPropertiesViewer {
         $table .= $$self{cgi}->Tr(
             { -class => $bgstyleclasses[0] },
             $$self{cgi}->td( { -title => $namespace, -class => 'tdname' },
-                main::nonamespace($prop) )
+                nonamespace($prop) )
                 . $$self{cgi}->td(
                 { -title => $title, -class => 'tdvalue' },
                 $$self{cgi}->pre( $$self{cgi}->escapeHTML($value) )

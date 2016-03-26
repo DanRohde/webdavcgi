@@ -33,16 +33,15 @@ sub handle {
     my $cgi   = $self->{cgi};
     my $token = $cgi->http('Lock-Token');
     $token =~ s/[\<\>]//xmsg;
-    debug("_UNLOCK: $main::PATH_TRANSLATED (token=$token)");
+    $self->debug("_UNLOCK: $main::PATH_TRANSLATED (token=$token)");
 
     if ( !defined $token ) {
         return print_header_and_content('400 Bad Request');
     }
-    if ( !main::isLocked($main::PATH_TRANSLATED) ) {
+    if ( !$self->is_locked($main::PATH_TRANSLATED) ) {
         return print_header_and_content('409 Conflict');
     }
-    if ( !main::getLockModule()
-        ->unlock_resource( $main::PATH_TRANSLATED, $token ) )
+    if ( !$self->get_lock_module()->unlock_resource( $main::PATH_TRANSLATED, $token ) )
     {
         return print_header_and_content('423 Locked');
     }

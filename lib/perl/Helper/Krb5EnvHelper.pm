@@ -47,7 +47,7 @@ sub init {
     if ( $ENV{KRB5CCNAME} ) {
         Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
     }
-    $self->register( main::getEventChannel() );
+    $self->register( main::get_event_channel() );
     if ( $ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn ) {
 
         if (

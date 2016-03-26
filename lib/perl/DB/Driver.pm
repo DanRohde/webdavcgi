@@ -31,6 +31,7 @@ use List::MoreUtils qw(any);
 use CGI::Carp;
 
 use CacheManager;
+use HTTPHelper qw( get_parent_uri );
 
 sub new {
     my $this  = shift;
@@ -124,7 +125,7 @@ sub db_getCached {
     if ( $cm->exists_entry( [ 'lockentry', $fn, 'row' ] ) ) {
         return $cm->get_entry( [ 'lockentry', $fn, 'row' ] );
     }
-    my $pfn = main::getParentURI($fn);
+    my $pfn = get_parent_uri($fn);
     if ( $cm->exists_entry( [ 'lockentry', $pfn, 'row' ] ) ) { return []; }
 
     $cm->set_entry( [ 'lockentry', $fn, 'row' ], [] );

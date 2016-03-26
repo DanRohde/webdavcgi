@@ -56,8 +56,10 @@ sub handle {
     my %resp_200 = ();
     my %resp_403 = ();
 
-    $self->handle_property_request( main::getPropertyModule(), $xml, $dataref,
-        \%resp_200, \%resp_403 );
+    $self->handle_property_request(
+        $xml, $dataref,
+        \%resp_200, \%resp_403
+    );
 
     if ( defined $resp_200{href} ) { push @resps, \%resp_200; }
     if ( defined $resp_403{href} ) { push @resps, \%resp_403; }

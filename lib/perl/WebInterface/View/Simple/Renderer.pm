@@ -31,6 +31,7 @@ use DateTime;
 use DateTime::Format::Human::Duration;
 
 use FileUtils qw( get_file_limit );
+use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 use vars qw(%CACHE @ERRORS);
 
@@ -518,7 +519,7 @@ sub _render_file_list_entry {
         && $main::FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
         ? 'category-' . $1
         : q{};
-    my $is_locked = $main::SHOW_LOCKS && main::isLockedCached($full);
+    my $is_locked = $main::SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
     my $displayname
         = ${$self}{cgi}
         ->escapeHTML( ${$self}{backend}->getDisplayName($full) );
@@ -783,8 +784,8 @@ sub _render_quicknav_path {
     }
 
     if ( $base ne q{/} ) {
-        $navpath = main::getBaseURIFrag($base) . "/$navpath";
-        $base    = main::getParentURI($base);
+        $navpath = get_base_uri_frag($base) . "/$navpath";
+        $base    = get_parent_uri($base);
         $base .= $base ne q{/} ? q{/} : q{};
         $content .= $base;
     }

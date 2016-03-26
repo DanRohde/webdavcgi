@@ -33,7 +33,7 @@ use CGI;
 use CGI::Carp;
 
 use FileUtils qw( get_dir_info );
-use HTTPHelper qw( get_etag get_supported_methods );
+use HTTPHelper qw( get_etag get_supported_methods get_parent_uri get_base_uri_frag );
 use WebDAV::XMLHelper qw( create_xml %NAMESPACES );
 use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
 
@@ -357,7 +357,7 @@ sub _get_re_props {
     if ( $prop eq 'href' ) { return ${$resp_200}{prop}{$prop} = $uri; }
     if ( $prop eq 'parentname' ) {
         return ${$resp_200}{prop}{$prop} = ${$self}{cgi}
-            ->escape( main::getBaseURIFrag( main::getParentURI($uri) ) );
+            ->escape( get_base_uri_frag( get_parent_uri($uri) ) );
     }
     if ( $prop eq 'isreadonly' ) {
         ${$resp_200}{prop}{$prop}
@@ -399,7 +399,7 @@ sub _get_webdav_props {
     if ( $prop eq 'displayname' && !defined ${$resp_200}{prop}{displayname} )
     {
         return ${$resp_200}{prop}{$prop}
-            = ${$self}{cgi}->escape( main::getBaseURIFrag($uri) );
+            = ${$self}{cgi}->escape( get_base_uri_frag($uri) );
     }
     if ( $prop eq 'getcontentlanguage' ) {
         return ${$resp_200}{prop}{$prop} = 'en';
@@ -563,7 +563,7 @@ sub _get_os_props {
     }
     if ( $prop eq 'repl-uid' ) {
         return ${$resp_200}{prop}{$prop}
-            = main::getLockModule()->getuuid($fn);
+            = $self->{config}->{method}->get_lock_module()->getuuid($fn);
     }
     if ( $prop eq 'modifiedby' ) {
         return ${$resp_200}{prop}{$prop} = $main::REMOTE_USER;
@@ -601,7 +601,7 @@ sub _get_lock_props {
     }
     if ( $prop eq 'lockdiscovery' ) {
         return ${$resp_200}{prop}{$prop}
-            = main::getLockModule()->get_lock_discovery($fn);
+            = $self->{config}->{method}->get_lock_module()->get_lock_discovery($fn);
     }
     return 0;
 }
