@@ -27,6 +27,7 @@ use CGI::Carp;
 use HTTPHelper qw( get_if_header_components );
 use WebDAV::Lock;
 use CacheManager;
+use WebInterface;
 
 sub new {
     my ($this) = @_;
@@ -140,5 +141,14 @@ sub is_allowed {
     }
     return $ret;
 }
-
+sub get_webinterface {
+    my ($self) = @_;
+    my $cache = CacheManager::getinstance();
+    my $wi = $cache->get_entry('webinterface', undef, $cache->get_app_context());
+    if (!$wi) {
+        $wi = WebInterface->new();
+        $cache->set_entry('webinterface', $wi, $cache->get_app_context());
+    }
+    return $wi->init($self->{config});
+}
 1;

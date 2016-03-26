@@ -37,6 +37,7 @@ sub init {
 	my @hooks = ('css','javascript', 'fileprop');
 	push @hooks, 'gethandler' if $self->config('enable_directredirect', 0); 
 	$hookreg->register(\@hooks, $self) if defined $$self{redirect};
+	return $self;
 }
 sub stripSlash {
 	my ($self, $path) = @_;

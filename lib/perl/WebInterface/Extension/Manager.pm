@@ -34,12 +34,12 @@ sub new {
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
-    $self->{config} = $config;
-    return $self->init();
+    return $self->init($config);
 }
 
 sub init {
-    my ($self) = @_;
+    my ($self, $config) = @_;
+    $self->{config} = $config;
     foreach my $extname (@main::EXTENSIONS) {
         eval {
             load "WebInterface::Extension::$extname";

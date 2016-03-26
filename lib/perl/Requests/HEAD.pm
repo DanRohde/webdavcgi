@@ -27,13 +27,12 @@ use base qw( Requests::Request );
 
 use HTTPHelper
   qw( fix_mod_perl_response print_header_and_content print_file_header );
-use WebInterface;
 
 sub handle {
     my ($self) = @_;
     my $backend = $self->{backend};
     if ( $main::FANCYINDEXING
-        && WebInterface->new($self->{config})->handle_head_request() )
+        && $self->get_webinterface()->handle_head_request() )
     {
         $self->debug('HEAD: WebInterface called');
         return;

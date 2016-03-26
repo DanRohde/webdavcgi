@@ -31,7 +31,6 @@ use POSIX qw( strftime );
 use HTTPHelper
   qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response );
 use FileUtils qw( get_error_document is_hidden stat2h );
-use WebInterface;
 
 use vars qw( $MIN_COMPRESSABLE_FILESIZE $MAX_COMPRESSABLE_FILESIZE $DEFAULT_BUFSIZE );
 
@@ -64,7 +63,7 @@ sub handle {
             || $backend->isDir($main::PATH_TRANSLATED)
             || $ENV{QUERY_STRING} ne q{}
             || !$backend->exists($main::PATH_TRANSLATED) )
-        && WebInterface->new($self->{config})->handle_get_request()
+        && $self->get_webinterface()->handle_get_request()
       )
     {
         $self->debug('_GET: WebInterface called');

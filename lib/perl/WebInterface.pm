@@ -35,20 +35,26 @@ use CGI::Carp;
 use HTTPHelper qw( get_parent_uri );
 
 sub new {
-    my ($this, $config)  = @_;
+    my ($this) = @_;
     my $class = ref($this) || $this;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
-    
+    return $self;
+}
+
+sub init {
+    my ( $self, $config ) = @_;
+
     $config->{webinterface} = $self;
-    
+
     ${$self}{config}  = $config;
     ${$self}{db}      = $config->{db};
     ${$self}{cgi}     = $config->{cgi};
     ${$self}{backend} = $config->{backend};
-    ${$self}{config}{extensions}
-        = WebInterface::Extension::Manager->new( $config );
+    ${$self}{config}{extensions} =
+      WebInterface::Extension::Manager->new($config);
     $self->optimize_css_and_js();
+
     return $self;
 }
 
@@ -62,7 +68,7 @@ sub handle_thumbnail_get_request {
         && ${$self}{backend}->isReadable($main::PATH_TRANSLATED) )
     {
         $self->get_renderer()
-            ->print_media_rss( $main::PATH_TRANSLATED, $main::REQUEST_URI );
+          ->print_media_rss( $main::PATH_TRANSLATED, $main::REQUEST_URI );
         return 1;
     }
     if (   $action eq 'image'
@@ -86,9 +92,8 @@ sub handle_get_request {
     my ($self) = @_;
     my $action = ${$self}{cgi}->param('action') // '_unknown_';
 
-    my $ret_by_ext
-        = ${$self}{config}{extensions}
-        ->handle( 'gethandler', ${$self}{config} );
+    my $ret_by_ext =
+      ${$self}{config}{extensions}->handle( 'gethandler', ${$self}{config} );
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
 
     if (   $handled_by_ext =~ /1/xms
@@ -96,11 +101,11 @@ sub handle_get_request {
     {
         return 1;
     }
-    if ( $main::PATH_TRANSLATED =~ /\/webdav-ui(-[^.\/]+)?[.](js|css)\/?$/xms
+    if (   $main::PATH_TRANSLATED =~ /\/webdav-ui(-[^.\/]+)?[.](js|css)\/?$/xms
         || $main::PATH_TRANSLATED =~ /\Q$main::VHTDOCS\E(.*)$/xms )
     {
         $self->get_renderer()
-            ->print_styles_vhtdocs_files($main::PATH_TRANSLATED);
+          ->print_styles_vhtdocs_files($main::PATH_TRANSLATED);
         return 1;
     }
     if (   $main::ENABLE_DAVMOUNT
@@ -113,8 +118,7 @@ sub handle_get_request {
 
     if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
         $self->get_renderer()
-            ->render_web_interface( $main::PATH_TRANSLATED,
-            $main::REQUEST_URI );
+          ->render_web_interface( $main::PATH_TRANSLATED, $main::REQUEST_URI );
         return 1;
     }
     return 0;
@@ -143,9 +147,8 @@ sub handle_post_request {
     my ($self) = @_;
     my $handled = 1;
 
-    my $ret_by_ext
-        = ${$self}{config}{extensions}
-        ->handle( 'posthandler', ${$self}{config} );
+    my $ret_by_ext =
+      ${$self}{config}{extensions}->handle( 'posthandler', ${$self}{config} );
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
 
     if (   $handled_by_ext =~ /1/xms
@@ -188,8 +191,8 @@ sub optimizer_is_optimized {
 sub optimizer_get_filepath {
     my ( $self, $ft ) = @_;
     my $tmp = $main::OPTIMIZERTMP || $main::THUMBNAIL_CACHEDIR || '/var/tmp';
-    my $optimizerbasefn
-        = "${main::CONFIGFILE}_${main::RELEASE}_${main::REMOTE_USER}";
+    my $optimizerbasefn =
+      "${main::CONFIGFILE}_${main::RELEASE}_${main::REMOTE_USER}";
     $optimizerbasefn =~ s/[\/.]/_/xmsg;
     my $optimizerbase = $tmp . q{/} . $optimizerbasefn;
     return "${optimizerbase}.$ft";
@@ -207,7 +210,7 @@ sub optimize_css_and_js {
     {
         ${$self}{notoptimized} = 1;
         carp(
-            "Cannot write optimized CSS and JavaScript to $csstargetfile and/or $jstargetfile"
+"Cannot write optimized CSS and JavaScript to $csstargetfile and/or $jstargetfile"
         );
         return;
     }
@@ -221,20 +224,18 @@ sub optimize_css_and_js {
 
     ## collect CSS:
     my $tags = join "\n",
-        @{ ${$self}{config}{extensions}->handle('css') || [] };
-    my $content
-        = $self->optimizer_extract_content_from_tags_and_attributes( $tags,
-        'css' );
+      @{ ${$self}{config}{extensions}->handle('css') || [] };
+    my $content =
+      $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'css' );
     if ($content) {
         $self->optimizer_write_content2zip( $csstargetfile, \$content );
     }
 
     ## collect JS:
     $tags = join "\n",
-        @{ ${$self}{config}{extensions}->handle('javascript') || [] };
-    $content
-        = $self->optimizer_extract_content_from_tags_and_attributes( $tags,
-        'js' );
+      @{ ${$self}{config}{extensions}->handle('javascript') || [] };
+    $content =
+      $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'js' );
     if ($content) {
         $self->optimizer_write_content2zip( $jstargetfile, \$content );
     }
@@ -268,10 +269,10 @@ sub optimizer_encode_image {
         read $ih, $buffer, ( stat $ih )[7] || carp("Cannot read $ifn.");
         close $ih || carp("Cannot close filehandle for $ifn.");
         return
-              'url(data:'
-            . $mime
-            . ';base64,'
-            . encode_base64( $buffer, q{} ) . ')';
+            'url(data:'
+          . $mime
+          . ';base64,'
+          . encode_base64( $buffer, q{} ) . ')';
     }
     else {
         carp("Cannot read $ifn.");
@@ -284,14 +285,14 @@ sub optimizer_collect {
     if ($filename) {
         my $full = $filename;
         $full =~
-            s{^.*${main::VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${main::INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
+s{^.*${main::VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${main::INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
         main::debug("collect $type from $full");
-        my $fc
-            = ( main::get_local_file_content_and_type($full) )[1];
+        my $fc =
+          ( main::get_local_file_content_and_type($full) )[1];
         if ( $type eq 'css' ) {
             my $basepath = get_parent_uri($full);
             $fc =~
-                s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/iegxms;
+s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/iegxms;
         }
         ${$contentref} .= $fc;
         main::debug("optimizer_collect: $full collected.");
@@ -304,13 +305,13 @@ sub optimizer_extract_content_from_tags_and_attributes {
     my $content = q{};
     if ( $type eq 'css' ) {
         $data =~
-            s{<style[^>]*>(.*?)</style>}{$self->optimizer_collect(\$content, undef, $1, $type)}xmiegs;
+s{<style[^>]*>(.*?)</style>}{$self->optimizer_collect(\$content, undef, $1, $type)}xmiegs;
         $data =~
-            s{<link[ ].*?href="(.*?)"}{$self->optimizer_collect(\$content, $1, undef, $type)}xmiegs;
+s{<link[ ].*?href="(.*?)"}{$self->optimizer_collect(\$content, $1, undef, $type)}xmiegs;
     }
     else {
         $data =~
-            s{<script[ ].*?src="([^>"]+)".*?>(.*?)</script>}{$self->optimizer_collect(\$content, $1, $2, $type)}xmiegs;
+s{<script[ ].*?src="([^>"]+)".*?>(.*?)</script>}{$self->optimizer_collect(\$content, $1, $2, $type)}xmiegs;
     }
 
     return $content;

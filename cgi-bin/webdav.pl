@@ -67,7 +67,8 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.07';
+$RELEASE = '1.1.1BETA20160326.08';
+our $VERSION = '1.1.1BETA20160326.08';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -316,8 +317,7 @@ $SHOW_QUOTA = 1;
 ## -- @ALLOWED_TABLE_COLUMNS
 ## defines the allowed columns for the file list in the Web interface
 ## supported values: name, lastmodified, created, size, mode, mime, fileaction, uid, gid
-@ALLOWED_TABLE_COLUMNS =
-  ( 'name', 'size', 'lastmodified', 'created', 'mode', 'mime', 'uid', 'gid', );
+@ALLOWED_TABLE_COLUMNS = qw( name size lastmodified created mode mime uid gid );
 push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
 ## -- @VISIBLE_TABLE_COLUMNS
@@ -945,13 +945,13 @@ sub _get_methods_rx {
 
 
 sub logger {
-    if ( defined $LOGFILE && open( my $LOG, '>>', $LOGFILE ) ) {
+    if ( defined $LOGFILE && open my $LOG, '>>', $LOGFILE ) {
         print {$LOG} localtime()
-          . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
+          . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n" || carp("Cannot write log entry to $LOGFILE: @_");
         close($LOG) || carp("Cannot close filehandle for '$LOGFILE'");
     }
     else {
-        print {*STDERR} "${PROGRAM_NAME}: @_\n";
+        print {*STDERR} "${PROGRAM_NAME}: @_\n" || carp("Cannot print log entry to STDERR: @_");
     }
     return;
 }
@@ -959,7 +959,7 @@ sub logger {
 sub debug {
     my ($text) = @_;
     if ($DEBUG) {
-        print {*STDERR} "${PROGRAM_NAME}: $text\n";
+        print {*STDERR} "${PROGRAM_NAME}: $text\n" || carp("Cannot print debug output to STDERR: $text");
     }
     return;
 }
