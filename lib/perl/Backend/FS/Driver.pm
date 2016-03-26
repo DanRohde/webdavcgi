@@ -64,7 +64,7 @@ sub dirname {
 }
 
 sub exists {
-    return $CACHE{ $_[0] }{ $_[1] }{exists} //= -e $_[0]->resolveVirt( $_[1] );
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{exists} //= -e $_[0]->resolveVirt( $_[1] );
 }
 
 sub isDir {

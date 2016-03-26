@@ -67,8 +67,8 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.08';
-our $VERSION = '1.1.1BETA20160326.08';
+$RELEASE = '1.1.1BETA20160326.09';
+our $VERSION = '1.1.1BETA20160326.09';
 #########################################################################
 ############  S E T U P #################################################
 

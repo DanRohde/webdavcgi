@@ -16,33 +16,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package Requests::HEAD;
+package Requests::WebInterfaceRequest;
 
 use strict;
 use warnings;
 
-our $VERSION = '2.0';
+our $VERSION = '1.0';
 
-use base qw( Requests::WebInterfaceRequest );
+use base qw( Requests::Request );
 
-use HTTPHelper
-  qw( fix_mod_perl_response print_header_and_content print_file_header );
+use WebInterface;
+use CacheManager;
 
-sub handle {
+sub get_webinterface {
     my ($self) = @_;
-    my $backend = $self->{backend};
-    if ( $main::FANCYINDEXING
-        && $self->get_webinterface()->handle_head_request() )
-    {
-        $self->debug('HEAD: WebInterface called');
-        return;
+    my $cache = CacheManager::getinstance();
+    my $wi = $cache->get_entry('webinterface', undef, $cache->get_app_context());
+    if (!$wi) {
+        $wi = WebInterface->new();
+        $cache->set_entry('webinterface', $wi, $cache->get_app_context());
     }
-    if ( !$backend->exists($main::PATH_TRANSLATED) ) {
-        $self->debug("HEAD: $main::PATH_TRANSLATED does not exists!");
-        print_header_and_content('404 Not Found');
-
-    }
-    $self->debug("HEAD: $main::PATH_TRANSLATED exists!");
-    return fix_mod_perl_response( print_file_header($main::PATH_TRANSLATED) );
+    return $wi->init($self->{config});
 }
+
 1;

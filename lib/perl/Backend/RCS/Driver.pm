@@ -54,7 +54,7 @@ sub basename {
 }
 sub dirname {
 	my $self = shift @_;
-	return get_parent_uri($_[0]) if  $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
+	return get_parent_uri($_[0]) if defined $_[0] && $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
 	return $$self{BACKEND}->dirname(@_);
 }
 
@@ -498,15 +498,15 @@ sub _isRcsDir {
 }
 sub _isVirtualRcsDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?$/;
+	return defined $fn && $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?$/;
 }
 sub _isRevisionsDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/?$/;
+	return defined $fn && $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/?$/;
 }
 sub _isRevisionDir {
 	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/\d+\.\d+\/?$/;
+	return defined $fn && $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/\d+\.\d+\/?$/;
 }
 sub _getRcs {
 	my ($self) = @_;

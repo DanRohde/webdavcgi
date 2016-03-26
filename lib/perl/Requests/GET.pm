@@ -23,7 +23,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebInterfaceRequest );
 
 use CGI::Carp;
 use POSIX qw( strftime );

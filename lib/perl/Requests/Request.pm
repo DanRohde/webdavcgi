@@ -27,7 +27,6 @@ use CGI::Carp;
 use HTTPHelper qw( get_if_header_components );
 use WebDAV::Lock;
 use CacheManager;
-use WebInterface;
 
 sub new {
     my ($this) = @_;
@@ -77,13 +76,13 @@ sub is_insufficient_storage {
 
 sub is_locked_cached {
     my ( $self, $fn ) = @_;
-    if (!$main::ENABLE_LOCK) { return 0; }
+    if ( !$main::ENABLE_LOCK ) { return 0; }
     return $self->get_lock_module()->is_locked_cached($fn);
 }
 
 sub is_locked {
     my ( $self, $fn, $r ) = @_;
-    if (!$main::ENABLE_LOCK) { return 0; }
+    if ( !$main::ENABLE_LOCK ) { return 0; }
     return $r
       ? $self->get_lock_module()->is_locked_recurse($fn)
       : $self->get_lock_module()->is_locked($fn);
@@ -99,34 +98,39 @@ sub get_lock_module {
     }
     return $lm;
 }
+
 sub is_allowed {
     my ( $self, $fn, $recurse ) = @_;
 
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
 
-    if ( !$backend->exists($fn) ) {
-        $fn = $backend->getParent($fn) . q{/};
-    }
-
     if ( !$main::ENABLE_LOCK ) {
         return 1;
     }
 
-    my $ifheader = get_if_header_components( $cgi->http('If') );
+    if ( !$backend->exists($fn) ) {
+        $fn = $backend->getParent($fn) . q{/};
+    }
 
     if ( $backend->exists($fn) && !$backend->isWriteable($fn) )
-    {                                             # not writeable
+    {    # not writeable
         return 0;
     }
     if ( !$self->is_locked($fn) ) {
         return 1;
     }
+
+    my $ifheader = get_if_header_components( $cgi->http('If') );
+
     if ( !defined $ifheader ) {
         return 0;
     }
     my $ret = 0;
-    foreach my $token ( @{ $self->get_lock_module()->get_tokens( $fn, $recurse ) } ) {
+
+    foreach
+      my $token ( @{ $self->get_lock_module()->get_tokens( $fn, $recurse ) } )
+    {
         for my $j ( 0 .. $#{ ${$ifheader}{list} } ) {
             my $iftoken = $ifheader->{list}[$j]{token};
             $iftoken //= q{};
@@ -140,15 +144,5 @@ sub is_allowed {
         }
     }
     return $ret;
-}
-sub get_webinterface {
-    my ($self) = @_;
-    my $cache = CacheManager::getinstance();
-    my $wi = $cache->get_entry('webinterface', undef, $cache->get_app_context());
-    if (!$wi) {
-        $wi = WebInterface->new();
-        $cache->set_entry('webinterface', $wi, $cache->get_app_context());
-    }
-    return $wi->init($self->{config});
 }
 1;
