@@ -23,7 +23,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use URI::Escape;
 
@@ -31,8 +31,9 @@ use FileUtils qw( rmove );
 use HTTPHelper qw( print_header_and_content );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-
+    my ($self)      = @_;
+    my $cgi         = $self->{cgi};
+    my $backend     = $self->{backend};
     my $host        = $cgi->http('Host');
     my $destination = $cgi->http('Destination');
     my $overwrite =
@@ -57,9 +58,9 @@ sub handle {
         return print_header_and_content('409 Conflict');
     }
     if (
-        !main::isAllowed( $main::PATH_TRANSLATED,
+        !$self->is_allowed( $main::PATH_TRANSLATED,
             $backend->isDir($main::PATH_TRANSLATED) )
-        || !main::isAllowed( $destination, $backend->isDir($destination) )
+        || !$self->is_allowed( $destination, $backend->isDir($destination) )
       )
     {
         return print_header_and_content('423 Locked');

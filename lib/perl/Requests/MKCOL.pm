@@ -31,8 +31,10 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-    my $pt = $main::PATH_TRANSLATED;
+    my ($self)  = @_;
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
+    my $pt      = $main::PATH_TRANSLATED;
 
     $self->debug("MKCOL: $pt");
     my $body = read_request_body();
@@ -66,7 +68,7 @@ sub handle {
         $self->debug('MKCOL: parent is not writeable (403 Forbidden)!');
         return print_header_and_content('403 Forbidden');
     }
-    if ( !main::isAllowed($pt) ) {
+    if ( !$self->is_allowed($pt) ) {
         $self->debug('MKCOL: not allowed!');
         return print_header_and_content('423 Locked');
     }

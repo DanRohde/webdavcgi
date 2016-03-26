@@ -63,21 +63,21 @@ BEGIN {
 }
 
 sub new {
-    my $this  = shift;
+    my ($this,$config)  = @_;
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
-    ${$self}{config} = shift;
-    ${$self}{db}     = shift;
+    $self->{config} = $config;
+    $self->{db}     = $config->{db};
+    $self->{cgi}    = $config->{cgi};
+    $self->{backend}= $config->{backend};
     $self->initialize();
     return $self;
 }
 
 sub initialize {
     my $self = shift;
-    ${$self}{cgi}     = ${$self}{config}->getProperty('cgi');
-    ${$self}{backend} = ${$self}{config}->getProperty('backend');
-
+    
     ${$self}{BYTEUNITS}     = \%BYTEUNITS;
     ${$self}{BYTEUNITORDER} = \@BYTEUNITORDER;
     ${$self}{STATIDX}       = \%STATIDX;

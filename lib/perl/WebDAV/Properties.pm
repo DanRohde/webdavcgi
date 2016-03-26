@@ -37,18 +37,6 @@ use HTTPHelper qw( get_etag );
 use WebDAV::XMLHelper qw( create_xml %NAMESPACES );
 use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
 
-
-sub new {
-    my $this  = shift;
-    my $class = ref($this) || $this;
-    my $self  = {};
-    bless $self, $class;
-    ${$self}{config} = shift;
-    ${$self}{db}     = shift;
-    $self->initialize();
-    return $self;
-}
-
 sub remove_property {
     my ( $self, $propname, $element_parent_ref, $resp_200, $resp_403 ) = @_;
     ${$self}{db}->db_removeProperty( $self->resolve($main::PATH_TRANSLATED),

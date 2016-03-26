@@ -26,6 +26,8 @@ use warnings;
 
 our $VERSION = '2.0';
 
+use base qw( Backend::Driver );
+
 # fixed ACL bug  reported by Thomas Klose <thomas.klose@gmx.com>:
 use filetest 'access';
 
@@ -36,11 +38,6 @@ use English qw ( -no_match_vars );
 
 use vars qw( %CACHE );
 
-sub new {
-    my $class = shift;
-    my $self = { cache => \%CACHE };
-    return bless $self, $class;
-}
 
 sub finalize {
     my ($self) = @_;
@@ -182,7 +179,7 @@ sub deltree {
     my ( $self, $f, $err_ref ) = @_;
     $err_ref //= [];
     my $count = 0;
-    if ( !main::isAllowed( $f, 1 ) ) {
+    if ( !$self->{config}->{method}->is_allowed( $f, 1 ) ) {
         push @{$err_ref}, { $f => "Cannot delete $f" };
         return 0;
     }
@@ -445,7 +442,7 @@ sub rename {
     delete $CACHE{ $_[0] }{ $_[2] };
     return 0
       if $_[0]->isVirtualLink( $_[1] ) || $_[0]->isVirtualLink( $_[2] );
-    return main::isAllowed( $_[0]->resolveVirt( $_[1] ), 1 )
+    return $_[0]->{config}->{method}->is_allowed( $_[0]->resolveVirt( $_[1] ), 1 )
       ? CORE::rename( $_[0]->resolveVirt( $_[1] ), $_[0]->resolveVirt( $_[2] ) )
       : 0;
 }

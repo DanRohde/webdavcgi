@@ -28,8 +28,9 @@ use base qw( Requests::Request );
 use HTTPHelper qw( print_header_and_content );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-    my $fn = $main::PATH_TRANSLATED;
+    my ($self)  = @_;
+    my $backend = $self->{backend};
+    my $fn      = $main::PATH_TRANSLATED;
     if ( !$backend->exists($fn) ) {
         return print_header_and_content('404 Not Found');
     }

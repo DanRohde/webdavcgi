@@ -41,8 +41,11 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-    my $host = $cgi->http('Host');
+    my ($self) = @_;
+
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
+    my $host    = $cgi->http('Host');
     my $overwrite =
       defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
 

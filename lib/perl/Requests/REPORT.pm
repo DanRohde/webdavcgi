@@ -31,12 +31,13 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser handle_prop_element );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
 
-    $self->{backend} = $backend;
-    my $fn    = $main::PATH_TRANSLATED;
-    my $ru    = $main::REQUEST_URI;
-    my $depth = $cgi->http('Depth') // 0;
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
+    my $fn      = $main::PATH_TRANSLATED;
+    my $ru      = $main::REQUEST_URI;
+    my $depth   = $cgi->http('Depth') // 0;
     if ( $depth =~ /infinity/xmsi ) { $depth = -1; }
 
     $self->debug("_REPORT($fn,$ru)");

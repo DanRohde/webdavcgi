@@ -38,36 +38,36 @@ use strict;
 use warnings;
 
 use vars
-    qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
-    @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
-    $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
-    $ALLOW_INFINITE_PROPFIND 
-    $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE 
-    $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
-    $ENABLE_CALDAV_SCHEDULE
-    $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
-    %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
-    $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
-    $ENABLE_SEARCH $ENABLE_GROUPDAV
-    @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
-    $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
-    $ENABLE_BIND $LANGSWITCH
-    $DBI_PERSISTENT
-    $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR
-    $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
-    $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
-    $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
-    $AFS_PTSCMD
-    $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
-    $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
-    $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
-    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
-    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
-    $METHODS_RX %REQUEST_HANDLERS
+  qw($VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
+  @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
+  $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
+  $ALLOW_INFINITE_PROPFIND
+  $CHARSET $LOGFILE %CACHE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE
+  $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
+  $ENABLE_CALDAV_SCHEDULE
+  $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
+  %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
+  $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
+  $ENABLE_SEARCH $ENABLE_GROUPDAV
+  @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
+  $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
+  $ENABLE_BIND $LANGSWITCH
+  $DBI_PERSISTENT
+  $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR
+  $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
+  $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
+  $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
+  $AFS_PTSCMD
+  $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
+  $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
+  $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
+  @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
+  @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
+  %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
+  @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
+  $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160325.04';
+$RELEASE = '1.1.1BETA20160326.01';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -168,7 +168,7 @@ config	cf cnf conf exrc gvimrc gxt inf ini manifest muttrc pif pinerc pref prefe
 gis	axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
 crypt	cer cert crl crt csr der gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
 EOF
-    ;
+  ;
 
 ## -- UI_ICONS -- obsolete, use stylesheets instead
 ## user interface icons
@@ -309,17 +309,15 @@ $SHOW_QUOTA = 1;
 ## -- QUOTA_LIMITS
 ## defines warn limit and critical limit with colors
 %QUOTA_LIMITS = (
-    'warn' => { limit => 0.02, background => 'yellow', },
-    'critical' => { limit => 0.01, color => 'yellow', background => 'red' }
+    'warn'     => { limit => 0.02, background => 'yellow', },
+    'critical' => { limit => 0.01, color      => 'yellow', background => 'red' }
 );
 
 ## -- @ALLOWED_TABLE_COLUMNS
 ## defines the allowed columns for the file list in the Web interface
 ## supported values: name, lastmodified, created, size, mode, mime, fileaction, uid, gid
-@ALLOWED_TABLE_COLUMNS = (
-    'name', 'size', 'lastmodified', 'created',
-    'mode', 'mime', 'uid',          'gid',
-);
+@ALLOWED_TABLE_COLUMNS =
+  ( 'name', 'size', 'lastmodified', 'created', 'mode', 'mime', 'uid', 'gid', );
 push @ALLOWED_TABLE_COLUMNS, 'fileactions' if $ALLOW_FILE_MANAGEMENT;
 
 ## -- @VISIBLE_TABLE_COLUMNS
@@ -382,16 +380,19 @@ $EXTENSION_CONFIG{Permissions}{others} = [ 'r', 'w', 'x', 't' ];
 
 ## -- LANGSWITCH
 ## a simple language switch
-$LANGSWITCH = q{<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
+$LANGSWITCH =
+q{<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
 
 ## -- HEADER
 ## content after body tag in the Web interface
-$HEADER = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>};
+$HEADER =
+q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>};
 
 ## -- SIGNATURE
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
-$SIGNATURE = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
+$SIGNATURE =
+q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
 
 ## -- LANG
 ## defines the default language for the Web interface
@@ -429,7 +430,7 @@ $ORDER = 'name';
 ## EXAMPLE: $DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.($ENV{REDIRECT_REMOTE_USER}||$ENV{REMOTE_USER}).'.db';
 ## ATTENTION: if users share the same folder they should use the same database. The example works only for users with unshared folders and $CREATE_DB should be enabled.
 $DBI_SRC = 'dbi:SQLite:dbname=/tmp/webdav.'
-    . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
+  . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
 $DBI_USER = q{};
 $DBI_PASS = q{};
 
@@ -454,22 +455,22 @@ $CREATE_DB = 1;
 ## for MySQL 5.x: remove 'IF NOT EXISTS' for all 'CREATE INDEX' statements and if the schema exists set $CREATE_DB to 0
 ## WARNING!!! do not use a unique index
 @DB_SCHEMA = (
-    'CREATE TABLE IF NOT EXISTS webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, type VARCHAR(255), scope VARCHAR(255), token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, timeout VARCHAR(255) NULL, owner TEXT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-    'CREATE TABLE IF NOT EXISTS webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT)',
+'CREATE TABLE IF NOT EXISTS webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, type VARCHAR(255), scope VARCHAR(255), token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, timeout VARCHAR(255) NULL, owner TEXT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+'CREATE TABLE IF NOT EXISTS webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT)',
     'CREATE INDEX IF NOT EXISTS webdav_locks_idx1 ON webdav_locks (fn)',
     'CREATE INDEX IF NOT EXISTS webdav_locks_idx2 ON webdav_locks (basefn)',
     'CREATE INDEX IF NOT EXISTS webdav_locks_idx3 ON webdav_locks (fn,basefn)',
-    'CREATE INDEX IF NOT EXISTS webdav_locks_idx4 ON webdav_locks (fn,basefn,token)',
+'CREATE INDEX IF NOT EXISTS webdav_locks_idx4 ON webdav_locks (fn,basefn,token)',
     'CREATE INDEX IF NOT EXISTS webdav_props_idx1 ON webdav_props (fn)',
-    'CREATE INDEX IF NOT EXISTS webdav_props_idx2 ON webdav_props (fn,propname)',
+'CREATE INDEX IF NOT EXISTS webdav_props_idx2 ON webdav_props (fn,propname)',
 );
 
 ## -- DEFAULT_LOCK_OWNER
 ## lock owner if not given by client
 ## EXAMPLE: $DEFAULT_LOCK_OWNER=$ENV{REMOTE_USER}.q{@}.$ENV{REMOTE_ADDR}; ## loggin user @ ip
-$DEFAULT_LOCK_OWNER
-    = { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{@}
-        . $ENV{REMOTE_ADDR} };
+$DEFAULT_LOCK_OWNER =
+  { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{@}
+      . $ENV{REMOTE_ADDR} };
 
 ## -- DEFAULT_LOCK_TIMEOUT
 ## sets a default lock timout in seconds if a WebDAV client forget to set one
@@ -568,8 +569,8 @@ $ENABLE_ACL = 0;
 ## --- CURRENT_USER_PRINCIPAL
 ## a virtual URI for ACL principals
 ## for Apple's iCal &  Addressbook
-$CURRENT_USER_PRINCIPAL = q{/principals/}
-    . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{/};
+$CURRENT_USER_PRINCIPAL =
+  q{/principals/} . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{/};
 
 ## -- PRINCIPAL_COLLECTION_SET
 ## don't change it for MacOS X Addressbook support
@@ -674,8 +675,8 @@ $FILECOUNTLIMIT = 5000;
 ##   ## show only the user home in the AFS home dir 'user' of the cell '.cms.hu-berlin.de'
 ##   my $_ru = (split(/\@/, ($ENV{REMOTE_USER}||$ENV{REDIRECT_REMOTE_USER})))[0];
 ##   %FILEFILTERPERDIR = ( '/afs/.cms.hu-berlin.de/user/' => "^$_ru\$");
-my $_ru
-    = ( split /\@/xms, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) )[0];
+my $_ru =
+  ( split /\@/xms, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) )[0];
 %FILEFILTERPERDIR = (
     '/afs/.cms.hu-berlin.de/user/'          => "^$_ru\$",
     '/usr/local/www/htdocs/rohdedan/links/' => '^loop[1-4]$'
@@ -736,10 +737,10 @@ $DEBUG = 0;
 ## -- DEFAULT_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
 @DEFAULT_EXTENSIONS = qw(
-    History     VideoJS   ViewerJS     TextEditor
-    Highlighter Download  Zip          Search
-    Diff        DiskUsage ODFConverter ImageInfo
-    QuickToggle
+  History     VideoJS   ViewerJS     TextEditor
+  Highlighter Download  Zip          Search
+  Diff        DiskUsage ODFConverter ImageInfo
+  QuickToggle
 );
 ## -- AFS_EXTENSIONS
 ## don't change it - use @EXTENSIONS instead
@@ -773,7 +774,7 @@ $DEBUG = 0;
 ############  S E T U P - END ###########################################
 #########################################################################
 use vars
-    qw( $CGI $backend $backendmanager $config $eventChannel);
+  qw( $CGI %CONFIG $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_METHOD );
 
 use List::MoreUtils qw( any );
 use CGI;
@@ -783,90 +784,96 @@ use IO::Handle;
 use Module::Load;
 use POSIX qw( setlocale LC_TIME);
 
-
 use DatabaseEventAdapter;
-use RequestConfig;
 use Backend::Manager;
-use HTTPHelper qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header read_request_body get_mime_type get_etag get_if_header_components );
+use HTTPHelper
+  qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header read_request_body get_mime_type get_etag get_if_header_components );
 use FileUtils qw( get_local_file_content_and_type rcopy );
 use WebDAV::WebDAVProps qw( init_webdav_props );
 
-
-## flush immediately:
-*STDERR->autoflush(1);
-*STDOUT->autoflush(1);
-
-## before 'new CGI' to read POST requests:
-our $REQUEST_METHOD = $ENV{REDIRECT_REQUEST_METHOD} // $ENV{REQUEST_METHOD} // 'GET';
-
-$CGI::POST_MAX = $POST_MAX_SIZE;
-$CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS ? 0 : 1;
-
-## create CGI instance
-$CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new;
-
-if ( defined $CONFIGFILE ) {
-    my $ret;
-    if ( ! ($ret = do($CONFIGFILE)) ) {
-        if ($EVAL_ERROR) { carp "couldn't parse $CONFIGFILE: ${EVAL_ERROR}"; }
-        if (!defined $ret) { carp "couldn't do $CONFIGFILE: ${ERRNO}" };
-        ##carp "couldn't run $CONFIGFILE" unless $ret; ## ignore bad return value *bugfix*
-    }
-}
-
-
-setlocale( LC_TIME, 'en_US.' . $CHARSET )
-    ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
-
-DatabaseEventAdapter->new();
-
-broadcast('INIT');
-
-$config = RequestConfig->new($CGI);
-
-$backendmanager = Backend::Manager->new;
-$backend        = $backendmanager->getBackend($BACKEND);
-$config->setProperty( 'backend', $backend );
-
-
-
-umask $UMASK || croak("Cannot set umask $UMASK.");
-
-
-our $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
-our $REQUEST_URI     = $ENV{REQUEST_URI};
-our $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
-
-    
-
-# 404/rewrite/redirect handling:
-if ( !defined $PATH_TRANSLATED ) {
-    $PATH_TRANSLATED = $ENV{REDIRECT_PATH_TRANSLATED};
-
-    if ( !defined $PATH_TRANSLATED
-        && ( defined $ENV{SCRIPT_URL} || defined $ENV{REDIRECT_URL} ) )
-    {
-        my $su = $ENV{SCRIPT_URL} || $ENV{REDIRECT_URL};
-        $su =~ s/^$VIRTUAL_BASE//xms;
-        $PATH_TRANSLATED = $DOCUMENT_ROOT . $su;
-        $PATH_TRANSLATED .= $backend->isDir($PATH_TRANSLATED) && $PATH_TRANSLATED !~ m{/$}xms && $PATH_TRANSLATED ne q{} ? q{/} : q{};
-    }
-}
-
-$REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
-$REQUEST_URI .= $backend->isDir($PATH_TRANSLATED) && $REQUEST_URI !~ /\/$/xms ? q{/} : q{};
-$REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
-
-$TRASH_FOLDER .= $TRASH_FOLDER !~ /\/$/xms ? q{/} : q{};
-
-
-init_webdav_props();
-
-
-# method handling:
+init();
 handle_request();
 
+sub init {
+    ## flush immediately:
+    *STDERR->autoflush(1);
+    *STDOUT->autoflush(1);
+
+    ## before 'new CGI' to read POST requests:
+    $REQUEST_METHOD = $ENV{REDIRECT_REQUEST_METHOD} // $ENV{REQUEST_METHOD}
+      // 'GET';
+
+    ## create CGI instance:
+    $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
+
+    ## read config file:
+    if ( defined $CONFIGFILE ) {
+        my $ret;
+        if ( !( $ret = do($CONFIGFILE) ) ) {
+            if ($EVAL_ERROR) {
+                carp "couldn't parse $CONFIGFILE: ${EVAL_ERROR}";
+            }
+            if ( !defined $ret ) { carp "couldn't do $CONFIGFILE: ${ERRNO}" }
+        }
+    }
+
+    ## for security reasons:
+    $CGI::POST_MAX = $POST_MAX_SIZE;
+    $CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS ? 0 : 1;
+
+    ## some config objects for the convinience:
+    $CONFIG{config} = \%CONFIG;
+    $CONFIG{cgi}    = $CGI;
+    $CONFIG{cache}  = CacheManager::getinstance();
+    $CONFIG{db}     = getDBDriver();
+    $CONFIG{event}  = getEventChannel();
+
+    setlocale( LC_TIME, 'en_US.' . $CHARSET )
+      ; ## fixed Speedy/mod_perl related bug: strftime in PROPFIND delivers localized getlastmodified
+
+    DatabaseEventAdapter->new()->register( $CONFIG{event} );
+
+    broadcast('INIT');
+
+    my $backend      = Backend::Manager::getinstance()->get_backend($BACKEND, \%CONFIG);
+    $CONFIG{backend} = $backend;
+
+    umask $UMASK || croak("Cannot set umask $UMASK.");
+
+    $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
+    $REQUEST_URI     = $ENV{REQUEST_URI};
+    $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER};
+
+    # 404/rewrite/redirect handling:
+    if ( !defined $PATH_TRANSLATED ) {
+        $PATH_TRANSLATED = $ENV{REDIRECT_PATH_TRANSLATED};
+
+        if ( !defined $PATH_TRANSLATED
+            && ( defined $ENV{SCRIPT_URL} || defined $ENV{REDIRECT_URL} ) )
+        {
+            my $su = $ENV{SCRIPT_URL} || $ENV{REDIRECT_URL};
+            $su =~ s/^$VIRTUAL_BASE//xms;
+            $PATH_TRANSLATED = $DOCUMENT_ROOT . $su;
+            $PATH_TRANSLATED .=
+                 $backend->isDir($PATH_TRANSLATED)
+              && $PATH_TRANSLATED !~ m{/$}xms
+              && $PATH_TRANSLATED ne q{} ? q{/} : q{};
+        }
+    }
+
+    $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
+    $REQUEST_URI .= $backend->isDir($PATH_TRANSLATED)
+      && $REQUEST_URI !~ /\/$/xms ? q{/} : q{};
+    $REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
+
+    $TRASH_FOLDER .= $TRASH_FOLDER !~ /\/$/xms ? q{/} : q{};
+
+    init_webdav_props();
+    return;
+}
+
 sub handle_request {
+
     # protect against direct CGI script call:
     if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
         carp('FORBIDDEN DIRECT CALL!');
@@ -874,11 +881,18 @@ sub handle_request {
     }
 
     my $method = $CGI->request_method();
-    debug("${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method");
+    debug(
+"${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method"
+    );
     debug("User-Agent: $ENV{HTTP_USER_AGENT}");
     debug("CGI-Version: $CGI::VERSION");
-    if (defined $CGI->http('X-Litmus')) { debug( "${PROGRAM_NAME}: X-Litmus: " . $CGI->http('X-Litmus') ); }
-    if (defined $CGI->http('X-Litmus-Second')) { debug( "${PROGRAM_NAME}: X-Litmus-Second: " . $CGI->http('X-Litmus-Second') ); }
+    if ( defined $CGI->http('X-Litmus') ) {
+        debug( "${PROGRAM_NAME}: X-Litmus: " . $CGI->http('X-Litmus') );
+    }
+    if ( defined $CGI->http('X-Litmus-Second') ) {
+        debug( "${PROGRAM_NAME}: X-Litmus-Second: "
+              . $CGI->http('X-Litmus-Second') );
+    }
     $METHODS_RX //= _get_methods_rx();
     debug("METHOD_RX: $METHODS_RX");
 
@@ -889,73 +903,54 @@ sub handle_request {
     if ( $method !~ /$METHODS_RX/xms ) {
         return print_header_and_content('405 Method Not Allowed');
     }
-    if (!$REQUEST_HANDLERS{$method}) {
+    if ( !$REQUEST_HANDLERS{$method} ) {
         my $module = "Requests::${method}";
         load($module);
         $REQUEST_HANDLERS{$method} = $module->new();
     }
-    $REQUEST_HANDLERS{$method}->handle($CGI, $backend);
-    if ($backend) { $backend->finalize(); }
+    $CONFIG{method} = $REQUEST_HANDLERS{$method};
+    $REQUEST_HANDLERS{$method}->init( \%CONFIG )->handle();
+    if ($CONFIG{backend}) { $CONFIG{backend}->finalize(); }
     broadcast('FINALIZE');
     return;
 }
+
 sub _get_methods_rx {
-    my @methods = qw( GET HEAD POST OPTIONS PUT PROPFIND PROPPATCH MKCOL COPY MOVE DELETE GETLIB );
-    if ($ENABLE_LOCK) { push @methods, qw( LOCK UNLOCK ); }
+    my @methods =
+      qw( GET HEAD POST OPTIONS PUT PROPFIND PROPPATCH MKCOL COPY MOVE DELETE GETLIB );
+    if ($ENABLE_LOCK)   { push @methods, qw( LOCK UNLOCK ); }
     if ($ENABLE_SEARCH) { push @methods, 'SEARCH'; }
-    if ($ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV ) { push @methods, 'ACL'; }
+    if ( $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV ) {
+        push @methods, 'ACL';
+    }
     if ($ENABLE_BIND) { push @methods, qw( BIND UNBIND REBIND ); }
-    if ($ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE || $ENABLE_CARDDAV || $ENABLE_GROUPDAV ) { push @methods, 'REPORT'; }
-    if ($ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE) { push @methods, 'MKCALENDAR'; }
+    if (   $ENABLE_ACL
+        || $ENABLE_CALDAV
+        || $ENABLE_CALDAV_SCHEDULE
+        || $ENABLE_CARDDAV
+        || $ENABLE_GROUPDAV )
+    {
+        push @methods, 'REPORT';
+    }
+    if ( $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE ) {
+        push @methods, 'MKCALENDAR';
+    }
     return q{^(?:} . join( q{|}, @methods ) . q{)$};
 }
-
-sub isAllowed {
-    my ( $fn, $recurse ) = @_;
-
-    $fn = $backend->getParent($fn) . q{/} if !$backend->exists($fn);
-
-    return 1 unless $ENABLE_LOCK;
-
-    my $ifheader = get_if_header_components( $CGI->http('If') );
-
-    return 0
-        if $backend->exists($fn)
-        && !$backend->isWriteable($fn);    # not writeable
-    return 1 unless isLocked($fn);         # no lock
-    return 0 unless defined $ifheader;
-    my $ret = 0;
-    foreach my $token ( @{ getLockModule()->get_tokens( $fn, $recurse ) } ) {
-        for my $j (0 .. $#{ ${$ifheader}{list} }) { 
-            my $iftoken = $$ifheader{list}[$j]{token};
-            $iftoken = q{} unless defined $iftoken;
-            $iftoken =~ s/[\<\>\s]+//xmsg;
-            debug( "isAllowed: $iftoken send, needed for $token: "
-                    . ( $iftoken eq $token ? 'OK' : 'FAILED' ) );
-            if ( $token eq $iftoken ) {
-                $ret = 1;
-                last;
-            }
-        }
-    }
-    return $ret;
-}
-
 
 sub getQuota {
     my ($fn) = @_;
     $fn //= $PATH_TRANSLATED;
 
 #	return ($CACHE{getQuota}{$fn}{block_hard}, $CACHE{getQuota}{$fn}{block_curr}) if defined $CACHE{getQuota}{$fn}{block_hard};
-    my ( $block_hard, $block_curr )
-        = $backend->getQuota(
-        $backend->isDir($fn) ? $fn : $backend->getParent($fn) );
+    my ( $block_hard, $block_curr ) =
+      $CONFIG{backend}->getQuota(
+        $CONFIG{backend}->isDir($fn) ? $fn : $CONFIG{backend}->getParent($fn) );
 
     #	$CACHE{getQuota}{$fn}{block_hard}=$block_hard;
     #	$CACHE{getQuota}{$fn}{block_curr}=$block_curr;
     return ( $block_hard, $block_curr );
 }
-
 
 sub getSupportedMethods {
     my ($path) = @_;
@@ -964,25 +959,24 @@ sub getSupportedMethods {
     my @wmethods = qw( POST PUT MKCOL MOVE DELETE );
     push @rmethods, qw( LOCK UNLOCK ) if $ENABLE_LOCK;
     push @rmethods, 'REPORT'
-        if $ENABLE_ACL
-        || $ENABLE_CALDAV
-        || $ENABLE_CALDAV_SCHEDULE
-        || $ENABLE_CARDDAV;
+      if $ENABLE_ACL
+      || $ENABLE_CALDAV
+      || $ENABLE_CALDAV_SCHEDULE
+      || $ENABLE_CARDDAV;
     push @rmethods, 'SEARCH' if $ENABLE_SEARCH;
     push @wmethods, 'ACL' if $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV;
     push @wmethods, 'MKCALENDAR' if $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE;
     push @wmethods, qw( BIND UNBIND REBIND) if $ENABLE_BIND;
     @methods = @rmethods;
     push @methods, @wmethods
-        if !defined $path || $backend->isWriteable($path);
+      if !defined $path || $CONFIG{backend}->isWriteable($path);
     return \@methods;
 }
-
 
 sub logger {
     if ( defined $LOGFILE && open( my $LOG, '>>', $LOGFILE ) ) {
         print {$LOG} localtime()
-            . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
+          . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n";
         close($LOG) || croak("Cannot close filehandle for '$LOGFILE'");
     }
     else {
@@ -998,7 +992,7 @@ sub getFileLimit {
 
 sub getWebInterface {
     require WebInterface;
-    return WebInterface->new( $config, getDBDriver() );
+    return WebInterface->new( \%CONFIG );
 }
 
 sub getDBDriver {
@@ -1008,13 +1002,13 @@ sub getDBDriver {
 
 sub getPropertyModule {
     require WebDAV::Properties;
-    return $CACHE{webdavproperties}
-        //= WebDAV::Properties->new( $config, getDBDriver() );
+    return $CACHE{webdavproperties} //=
+      WebDAV::Properties->new( \%CONFIG );
 }
 
 sub getLockModule {
     require WebDAV::Lock;
-    return $CACHE{webdavlock} //= WebDAV::Lock->new( $config, getDBDriver() );
+    return $CACHE{webdavlock} //= WebDAV::Lock->new( \%CONFIG );
 }
 
 sub isLockedCached {
@@ -1025,8 +1019,8 @@ sub isLockedCached {
 sub isLocked {
     my ( $fn, $r ) = @_;
     return $r
-        ? getLockModule()->is_locked_recurse($fn)
-        : getLockModule()->is_locked($fn);
+      ? getLockModule()->is_locked_recurse($fn)
+      : getLockModule()->is_locked($fn);
 }
 
 sub getParentURI {
@@ -1037,21 +1031,24 @@ sub getParentURI {
 sub debug {
     my ($text) = @_;
     if ($DEBUG) {
-        print {*STDERR} "${PROGRAM_NAME}: $text\n";    
+        print {*STDERR} "${PROGRAM_NAME}: $text\n";
     }
     return;
 }
 
 sub getEventChannel {
-    if ( !$eventChannel ) {
+    my $cache = CacheManager::getinstance();
+    my $ec    = $cache->get_entry('eventchannel');
+    if ( !$ec ) {
         require Events::EventChannel;
-        $eventChannel = Events::EventChannel->new;
+        $ec = Events::EventChannel->new();
+        $cache->set_entry( 'eventchannel', $ec );
         foreach my $listener (@EVENTLISTENER) {
             load $listener;
-            $listener->new($listener)->register($eventChannel);
+            $listener->new()->register($ec);
         }
     }
-    return $eventChannel;
+    return $ec;
 }
 
 sub broadcast {
@@ -1067,11 +1064,9 @@ sub getBaseURIFrag {
 sub getCGI {
     return $CGI;
 }
+
 sub getBackend {
-    return $backend;
-}
-sub getConfig {
-    return $config;
+    return $CONFIG{backend};
 }
 
 1;

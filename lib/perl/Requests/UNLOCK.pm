@@ -28,8 +28,9 @@ use base qw( Requests::Request );
 use HTTPHelper qw( print_header_and_content );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
 
+    my $cgi   = $self->{cgi};
     my $token = $cgi->http('Lock-Token');
     $token =~ s/[\<\>]//xmsg;
     debug("_UNLOCK: $main::PATH_TRANSLATED (token=$token)");

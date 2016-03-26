@@ -29,8 +29,9 @@ use HTTPHelper qw( print_header_and_content );
 use FileUtils qw( get_error_document );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-
+    my ($self)  = @_;
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
     $self->debug("_POST: $main::PATH_TRANSLATED");
     if ( !$cgi->param('file_upload') && $cgi->cgi_error ) {
         return print_header_and_content( $cgi->cgi_error, undef,

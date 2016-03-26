@@ -28,7 +28,8 @@ use base qw( Requests::WebDAVRequest );
 use English qw ( -no_match_vars );
 
 use HTTPHelper qw( print_header_and_content read_request_body );
-use WebDAV::XMLHelper qw( create_xml simple_xml_parser handle_propfind_element );
+use WebDAV::XMLHelper
+  qw( create_xml simple_xml_parser handle_propfind_element );
 use FileUtils qw( is_hidden );
 
 use vars qw( $INFINITY );
@@ -38,11 +39,13 @@ BEGIN {
 }
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-    my $fn     = $main::PATH_TRANSLATED;
-    my $status = '207 Multi-Status';
-    my $type   = 'text/xml';
-    my $depth  = $cgi->http('Depth') // $INFINITY;
+    my ($self)  = @_;
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
+    my $fn      = $main::PATH_TRANSLATED;
+    my $status  = '207 Multi-Status';
+    my $type    = 'text/xml';
+    my $depth = $cgi->http('Depth') // $INFINITY;
     my $noroot = $depth =~ s/,noroot//xms ? 1 : 0;
     $depth = $depth =~ /infinity/xmsi ? $INFINITY : $depth;
     $depth = $depth == $INFINITY

@@ -31,17 +31,6 @@ use UUID::Tiny;
 use FileUtils qw( filter );
 use WebDAV::XMLHelper qw( create_xml );
 
-sub new {
-    my $this  = shift;
-    my $class = ref($this) || $this;
-    my $self  = {};
-    bless $self, $class;
-    ${$self}{config} = shift;
-    ${$self}{db}     = shift;
-    $self->initialize();
-    return $self;
-}
-
 sub _lock_dir {
     my ( $self, @args ) = @_;
     my ($fn,    $ru,   $xmldata, $depth,   $timeout,

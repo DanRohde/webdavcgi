@@ -29,7 +29,8 @@ use HTTPHelper
   qw( fix_mod_perl_response print_header_and_content print_file_header );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
+    my $backend = $self->{backend};
     if ( $main::FANCYINDEXING
         && main::getWebInterface()->handle_head_request() )
     {

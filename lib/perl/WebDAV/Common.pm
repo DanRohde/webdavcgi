@@ -25,25 +25,27 @@ use warnings;
 our $VERSION = '2.0';
 
 sub new {
-    my $this  = shift;
+    my ( $this, $config ) = @_;
     my $class = ref($this) || $this;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
-    $$self{config} = shift;
+    $self->{config}  = $config;
+    $self->{cgi}     = $config->{cgi};
+    $self->{backend} = $config->{backend};
+    $self->{db}      = $config->{db};
+
     $self->initialize();
     return $self;
 }
 
 sub initialize {
     my $self = shift;
-    $$self{cgi}     = $$self{config}->getProperty('cgi');
-    $$self{backend} = $$self{config}->getProperty('backend');
-    return;
+    return $self;
 }
 
 sub resolve {
     my ( $self, $fn ) = @_;
-    return $$self{backend}->resolveVirt($fn);
+    return $self->{backend}->resolveVirt($fn);
 }
 
 1;

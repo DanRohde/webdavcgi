@@ -20,12 +20,11 @@
 package Backend::DBB::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::Helper;
-our @ISA = qw( Backend::Helper );
+our $VERSION = '1.0';
 
-our $VERSION = 0.1;
+use base qw( Backend::Helper );
 
 use DBI qw( :sql_types );
 
@@ -41,12 +40,6 @@ use constant TYPES => qw ( TYPE_DIR TYPE_FILE TYPE_LINK );
 
 use vars qw( $DB );
 
-sub new {
-	my $class = shift;
-	my $self = {};
-	bless $self, $class;
-	return $self;
-}
 sub finalize {
 	$DB->disconnect() if $DB; 
 	$DB=undef;

@@ -24,7 +24,6 @@
 #     <D:href>http://localhost/foo.html</D:href>
 # </D:bind>
 
-
 package Requests::BIND;
 
 use strict;
@@ -41,16 +40,19 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
+
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
 
     my $overwrite =
       defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
     my $xml     = read_request_body();
     my $xmldata = q{};
     my $host    = $cgi->http('Host');
-    
-    $self->debug(__PACKAGE__."::handle: xml=$xml");
-    
+
+    $self->debug( __PACKAGE__ . "::handle: xml=$xml" );
+
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {
         $self->debug($EVAL_ERROR);
         return print_header_and_content('400 Bad Request');
@@ -80,7 +82,7 @@ sub handle {
     }
     main::broadcast( 'BIND', { file => $src, destination => $dst } );
     my $status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
-    if ( $backend->isLink($ndst) && !$backend->unlinkFile($ndst)) {
+    if ( $backend->isLink($ndst) && !$backend->unlinkFile($ndst) ) {
         return print_header_and_content('403 Forbidden');
     }
     if ( !$backend->createSymLink( $src, $dst ) ) {
@@ -88,6 +90,6 @@ sub handle {
     }
 
     main::broadcast( 'BOUND', { file => $src, destination => $dst } );
-    return print_header_and_content( $status );
+    return print_header_and_content($status);
 }
 1;

@@ -28,8 +28,10 @@ use base qw( Requests::Request );
 use HTTPHelper qw( print_header_and_content get_dav_header );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-    my $pt = $main::PATH_TRANSLATED;
+    my ($self)  = @_;
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
+    my $pt      = $main::PATH_TRANSLATED;
     $self->debug("HTTP_OPTIONS: $pt");
     main::broadcast( 'OPTIONS', { file => $pt } );
     if ( !$backend->exists($pt) ) {

@@ -22,7 +22,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
@@ -30,9 +30,10 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ( $self ) = @_;
 
-    $self->{backend} = $backend;
+    my $backend = $self->{backend};
+    
     my $fn = $main::PATH_TRANSLATED;
 
     $self->debug("_ACL($fn)");
@@ -40,7 +41,7 @@ sub handle {
     if ( !$backend->exists($fn) ) {
         return print_header_and_content('404 Not Found');
     }
-    if ( !main::isAllowed($fn) ) {
+    if ( !$self->is_allowed($fn) ) {
         return print_header_and_content('432 Locked');
     }
 

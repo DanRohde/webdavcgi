@@ -23,7 +23,7 @@
 #  <query-schema-discovery xmlns="DAV:">
 #  <basicsearch><from><scope><href>http://recipes.example</href><depth>infinity</depth></scope></from></basicsearch>
 #  </query-schema-discovery>
-# 
+#
 # Search Request:
 # <d:searchrequest xmlns:d="DAV:">
 # <d:basicsearch>
@@ -52,12 +52,12 @@ use URI::Escape;
 use FileUtils;
 use CacheManager;
 use HTTPHelper qw( read_request_body print_header_and_content );
-use WebDAV::XMLHelper qw( create_xml handle_propfind_element simple_xml_parser );
+use WebDAV::XMLHelper
+  qw( create_xml handle_propfind_element simple_xml_parser );
 
 use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
 
 use vars qw( %SEARCH_PROPTYPES %SEARCH_SPECIALCONV %SEARCH_SPECIALOPS );
-
 
 BEGIN {
 
@@ -121,16 +121,11 @@ BEGIN {
 
 }
 
-
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
 
-    $self->{cgi} = $cgi;
-    $self->{backend} = $backend;
-    $self->{config} = main::getConfig();
-    $self->{db}= main::getDBDriver();
-    $self->{cache} = CacheManager::getinstance();
-    
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
     my @resps;
     my $status  = '207 Multistatus';
     my $content = q{};
@@ -151,7 +146,8 @@ sub handle {
     elsif ( exists ${$xmldata}{'{DAV:}searchrequest'} ) {
         foreach my $s ( keys %{ ${$xmldata}{'{DAV:}searchrequest'} } ) {
             if ( $s =~ /{DAV:}basicsearch/xms ) {
-                $self->_handle_basic_search( ${$xmldata}{'{DAV:}searchrequest'}{$s},
+                $self->_handle_basic_search(
+                    ${$xmldata}{'{DAV:}searchrequest'}{$s},
                     \@resps, \@errors );
             }
         }
@@ -506,8 +502,7 @@ sub _handle_basic_search {
         my $base  = $href;
         $base =~
           s{^(https?://([^\@]+\@)?\Q$host\E(:\d+)?)?$main::VIRTUAL_BASE}{}xms;
-        $base = $main::DOCUMENT_ROOT
-          . uri_unescape( uri_unescape($base) );
+        $base = $main::DOCUMENT_ROOT . uri_unescape( uri_unescape($base) );
 
         if ( !${$self}{backend}->exists($base) ) {
             push @{$error},

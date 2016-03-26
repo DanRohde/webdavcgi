@@ -20,19 +20,23 @@
 package Backend::RCS::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::Helper;
-our @ISA = qw( Backend::Helper );
+our $VERSION = '1.0';
+
+use base qw( Backend::Helper );
 
 use Rcs;
 use File::Temp qw/ tempfile /;
+
+use Backend::Manager;
+
 use vars qw( %CACHE );
 
 sub new {
-	my $class = my $self = shift;
-	my $self = { BACKEND=> $main::backendmanager->getBackend($main::BACKEND_CONFIG{RCS}{backend} || 'FS') };
-	return bless $self, $class;
+	my $self = SUPER::new(@_);
+	$self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{RCS}{backend} || 'FS', $self->{config});
+	return $self;
 }
 sub finalize {
 	my ($self) = @_;

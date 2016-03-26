@@ -32,6 +32,14 @@ sub new {
     return $self;
 }
 
+sub init {
+    my ( $self, $config ) = @_;
+    foreach my $k ( keys %{$config} ) {
+        $self->{$k} = $config->{$k};
+    }
+    return $self;
+}
+
 sub handle {
     croak('Implement me!');
 }

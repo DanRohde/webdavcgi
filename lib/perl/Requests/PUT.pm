@@ -23,14 +23,16 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use HTTPHelper qw( print_header_and_content get_if_header_components get_etag );
 use FileUtils qw( stat2h );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
 
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
     my $status  = '204 No Content';
     my $type    = 'text/plain';
     my $content = q{};
@@ -52,7 +54,7 @@ sub handle {
     {
         return print_header_and_content('412 Precondition Failed');
     }
-    if ( !main::isAllowed($main::PATH_TRANSLATED) ) {
+    if ( !$self->is_allowed($main::PATH_TRANSLATED) ) {
         return print_header_and_content('423 Locked');
 
       #} if (defined $ENV{HTTP_EXPECT} && $ENV{HTTP_EXPECT} =~ /100-continue/) {
@@ -87,7 +89,8 @@ sub handle {
         );
     }
     else {
-        $status = $self->is_insufficient_storage( $cgi, $backend )
+        $status =
+          $self->is_insufficient_storage( $cgi, $backend )
           ? '507 Insufficient Storage'
           : '403 Forbidden';
         $content = q{};

@@ -36,8 +36,10 @@ use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ($self) = @_;
 
+    my $cgi     = $self->{cgi};
+    my $backend = $self->{backend};
     my $xml     = read_request_body();
     my $xmldata = q{};
     if ( !eval { $xmldata = simple_xml_parser( $xml, 0 ); } ) {

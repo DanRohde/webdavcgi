@@ -23,19 +23,20 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use HTTPHelper qw( print_header_and_content read_request_body );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-
+    my ($self) = @_;
     $self->debug("_LOCK: $main::PATH_TRANSLATED");
 
-    my $lm    = main::getLockModule();
-    my $fn    = $main::PATH_TRANSLATED;
-    my $ru    = $main::REQUEST_URI;
+    my $backend = $self->{backend};
+    my $cgi     = $self->{cgi};
+    my $lm      = main::getLockModule();
+    my $fn      = $main::PATH_TRANSLATED;
+    my $ru      = $main::REQUEST_URI;
     my $depth = defined $cgi->http('Depth') ? $cgi->http('Depth') : 'infinity';
     my $timeout   = $cgi->http('Timeout');
     my $status    = '200 OK';
@@ -55,7 +56,7 @@ sub handle {
     }
     if ( !$lm->is_lockable( $fn, $xmldata ) ) {
         $self->debug('_LOCK: not lockable ... but...');
-        if ( !main::isAllowed($fn) ) {
+        if ( !$self->is_allowed($fn) ) {
             return print_header_and_content('423 Locked');
         }
         $status = '200 OK';

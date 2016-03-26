@@ -20,10 +20,11 @@
 package Backend::SMB::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::Helper;
-our @ISA = qw( Backend::Helper);
+our $VERSION = '1.0';
+
+use base qw( Backend::Helper);
 
 use Filesys::SmbClient;
 
@@ -33,14 +34,11 @@ use Fcntl qw(:flock);
 
 use vars qw( $SHARESEP $DOCUMENT_ROOT %CACHE %SMBCLIENT);
 
-$SHARESEP =  $main::BACKEND_CONFIG{$main::BACKEND}{sharesep} || '~';
-$DOCUMENT_ROOT = $main::DOCUMENT_ROOT || '/';
+$SHARESEP =  $main::BACKEND_CONFIG{$main::BACKEND}{sharesep} || q{~};
+$DOCUMENT_ROOT = $main::DOCUMENT_ROOT || q{/};
 
 sub new {
-	my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
+    my $self = SUPER::new(@_);
 	$self->initialize();
 	return $self;
 }

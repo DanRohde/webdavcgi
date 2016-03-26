@@ -19,59 +19,67 @@
 package WebInterface::Extension::Manager;
 
 use strict;
+use warnings;
+
+our $VERSION = '1.0';
 
 use Module::Load;
+use CGI::Carp;
+use English qw( -no_match_vars ) ;
 
-our %HOOKS;
+use vars qw( %HOOKS );
 
 sub new {
-        my $this = shift;
-	my $class = ref($this) || $this;
-	my $self = { };
-	bless $self, $class;
-	$$self{config}=shift;
-	$$self{config}{db} = shift;
-	$self->init($self);
-	return $self;
+    my ( $this, $config ) = @_;
+    my $class = ref($this) || $this;
+    my $self = {};
+    bless $self, $class;
+    $self->{config} = $config;
+    return $self->init($self);
 }
 
 sub init {
-	my ($self) = @_;
-	foreach my $extname (@main::EXTENSIONS) {
-		eval { 
-			load "WebInterface::Extension::$extname";
-			my $extension = "WebInterface::Extension::$extname"->new($self, $extname);
-		};
-		warn("Can't load extension $extname: $@") if $@;
-	}
+    my ($self) = @_;
+    foreach my $extname (@main::EXTENSIONS) {
+        eval {
+            load "WebInterface::Extension::$extname";
+            my $extension =
+              "WebInterface::Extension::$extname"->new( $self, $extname, $self->{config} );
+        } || carp("Can't load extension $extname: $EVAL_ERROR");
+    }
+    return $self;
 }
 
 sub register {
-	my($self, $hook, $handler) = @_;
-	my $ref = ref($hook);
-	if ($ref eq 'ARRAY') {
-		foreach my $h (@{$hook}) {
-			$self->register($h, $handler);
-		}
-	} elsif ($ref eq 'HASH') {
-		foreach my $h (keys %{$hook}) {
-			$self->register($h, $$hook{$h} || $handler);
-		}
-	} else {
-		$HOOKS{$self}{$hook} = [ ] unless exists $HOOKS{$self}{$hook};
-		push @{$HOOKS{$self}{$hook}}, $handler;
-	}
-	return 1;
+    my ( $self, $hook, $handler ) = @_;
+    my $ref = ref $hook;
+    if ( $ref eq 'ARRAY' ) {
+        foreach my $h ( @{$hook} ) {
+            $self->register( $h, $handler );
+        }
+    }
+    elsif ( $ref eq 'HASH' ) {
+        foreach my $h ( keys %{$hook} ) {
+            $self->register( $h, $hook->{$h} // $handler );
+        }
+    }
+    else {
+        $HOOKS{$self}{$hook} //= [];
+        push @{ $HOOKS{$self}{$hook} }, $handler;
+    }
+    return 1;
 }
 
 sub handle {
-	my ($self, $hook, $params) = @_;
-	return undef unless exists $HOOKS{$self}{$hook};
-	my @ret;
-	foreach my $handler (@{$HOOKS{$self}{$hook}}) {
-		push @ret, $handler->handle($hook,$$self{config},$params);
-	}
-	return \@ret;
+    my ( $self, $hook, $params ) = @_;
+    if (!exists $HOOKS{$self}{$hook}) {;
+        return;
+    }
+    my @ret;
+    foreach my $handler ( @{ $HOOKS{$self}{$hook} } ) {
+        push @ret, $handler->handle( $hook, $self->{config}, $params );
+    }
+    return \@ret;
 }
 
 1;

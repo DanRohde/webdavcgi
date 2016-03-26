@@ -20,25 +20,24 @@
 package Backend::GIT::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::FS::Driver;
-our @ISA = qw( Backend::FS::Driver );
+our $VERSION = '1.0';
+
+use base qw ( Backend::FS::Driver );
 
 use Fcntl qw(:flock);
 
 sub new {
-	my $class = my $self = shift;
-	my $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git', 
+    my $self = SUPER::new(@_);
+    $self = { GIT=>$main::BACKEND_CONFIG{GIT}{gitcmd} || '/usr/bin/git',
 		     LOCKFILE => $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock'
 	};
-	bless $self, $class;
 	if (!$self->isDir($main::DOCUMENT_ROOT.'.git')) {
 		$self->execGit('init');
 		$self->execGit('config','user.email',$ENV{REMOTE_USER});
-		$self->autoAdd(); 
+		$self->autoAdd();
 	}
-	
 	return $self;
 }
 sub mkcolhier {

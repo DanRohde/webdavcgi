@@ -23,7 +23,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( Requests::Request );
+use base qw( Requests::WebDAVRequest );
 
 use URI::Escape;
 
@@ -32,8 +32,10 @@ use HTTPHelper qw( print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml );
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
+    my ( $self ) = @_;
     $self->debug("_DELETE: $main::PATH_TRANSLATED");
+
+    my $backend = $self->{backend};
 
     my @resps = ();
     if ( !$backend->exists($main::PATH_TRANSLATED) ) {
@@ -44,7 +46,7 @@ sub handle {
     {
         return print_header_and_content('400 Bad Request');
     }
-    if ( !main::isAllowed($main::PATH_TRANSLATED) ) {
+    if ( !$self->is_allowed($main::PATH_TRANSLATED) ) {
         return print_header_and_content('423 Locked');
     }
     main::broadcast( 'DELETE', { file => $main::PATH_TRANSLATED } );

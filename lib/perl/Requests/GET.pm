@@ -41,9 +41,12 @@ BEGIN {
 }
 
 sub handle {
-    my ( $self, $cgi, $backend ) = @_;
-
+    my ( $self ) = @_;
     $self->debug("_GET: $main::PATH_TRANSLATED");
+    
+    my $backend = $self->{backend};
+    my $cgi     = $self->{cgi};
+    
     if ( is_hidden($main::PATH_TRANSLATED) ) {
         return print_header_and_content( get_error_document('404 Not Found') );
     }

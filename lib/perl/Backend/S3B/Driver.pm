@@ -20,15 +20,13 @@
 package Backend::S3B::Driver;
 
 use strict;
-#use warnings;
+use warnings;
+
+our $VERSION = '1.0';
+
+use base qw( Backend::Helper );
 
 use Carp;
-
-use Backend::Helper;
-our @ISA = qw( Backend::Helper );
-
-our $VERSION = 0.1;
-
 use Amazon::S3;
 use Digest::SHA qw( sha512_base64 );
 use File::Temp qw( tempfile tempdir );
@@ -39,12 +37,7 @@ use Date::Parse;
 use Data::Dumper;
 
 use vars qw( $S3 %CACHE );
-sub new {
-	my $class = shift;
-	my $self = {};
-	bless $self, $class;
-	return $self;
-}
+
 sub finalize {
 	$S3 = undef;
 	%CACHE = ();

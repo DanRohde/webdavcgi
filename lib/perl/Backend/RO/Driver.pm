@@ -20,14 +20,18 @@
 package Backend::RO::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::Helper;
-our @ISA = qw( Backend::Helper );
+our $VERSION = '1.0';
+
+use base qw( Backend::Helper );
+
+use Backend::Manager;
+
 sub new {
-	my $class = shift;
-	my $self = { BACKEND=> $main::backendmanager->getBackend($main::BACKEND_CONFIG{$main::BACKEND}{backend} || 'FS') };
-	return bless $self, $class;
+	my $self = SUPER::new(@_);
+	$self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{$main::BACKEND}{backend} || 'FS', $self->{config});
+	return $self;
 }
 sub finalize {
 	$_[0]{BACKEND}->finalize();

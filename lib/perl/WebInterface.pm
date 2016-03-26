@@ -33,18 +33,17 @@ use MIME::Base64;
 use CGI::Carp;
 
 sub new {
-    my $this  = shift;
+    my ($this, $config)  = @_;
     my $class = ref($this) || $this;
     my $self  = {};
     bless $self, $class;
 
-    ${$self}{config}  = shift;
-    ${$self}{db}      = shift;
-    ${$self}{cgi}     = ${$self}{config}->getProperty('cgi');
-    ${$self}{backend} = ${$self}{config}->getProperty('backend');
+    ${$self}{config}  = $config;
+    ${$self}{db}      = $config->{db};
+    ${$self}{cgi}     = $config->{cgi};
+    ${$self}{backend} = $config->{backend};
     ${$self}{config}{extensions}
-        = WebInterface::Extension::Manager->new( ${$self}{config},
-        ${$self}{db} );
+        = WebInterface::Extension::Manager->new( $config );
     $self->optimize_css_and_js();
     return $self;
 }

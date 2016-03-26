@@ -27,18 +27,18 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Renderer );
 
 sub new {
-    my ( $this, $hookreg, $extensionname ) = @_;
+    my ( $this, $hookreg, $extensionname, $config ) = @_;
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
     $self->{EXTENSION} = $extensionname;
-    $self->init($hookreg);
-    return $self;
+    $self->{config}    = $config;
+    return $self->init($hookreg);
 }
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    return;
+    return $self;
 }
 
 sub setExtension {
@@ -50,44 +50,38 @@ sub setExtension {
 sub getExtensionLocation {
     my ( $self, $extension, $file ) = @_;
     return
-          $main::INSTALL_BASE
-        . 'lib/perl/WebInterface/Extension/'
-        . $extension . q{/}
-        . $file;
+        $main::INSTALL_BASE
+      . 'lib/perl/WebInterface/Extension/'
+      . $extension . q{/}
+      . $file;
 }
 
 sub getExtensionUri {
     my ( $self, $extension, $file ) = @_;
     my $vbase = $self->get_vbase();
     $vbase .= $vbase !~ /\/$/xms ? q{/} : q{};
-    return
-          $vbase
-        . $main::VHTDOCS
-        . '_EXTENSION('
-        . $extension . ')_/'
-        . $file;
+    return $vbase . $main::VHTDOCS . '_EXTENSION(' . $extension . ')_/' . $file;
 }
 
 sub handleJavascriptHook {
     my ( $self, $extension, $file ) = @_;
-    return q@<script src="@
-        . $self->getExtensionUri( $extension,
-        $file || 'htdocs/script.min.js' )
-        . q@"></script>@;
+    return
+        q@<script src="@
+      . $self->getExtensionUri( $extension, $file || 'htdocs/script.min.js' )
+      . q@"></script>@;
 }
 
 sub handleCssHook {
     my ( $self, $extension, $file ) = @_;
-    return q@<link rel="stylesheet" type="text/css" href="@
-        . $self->getExtensionUri( $extension,
-        $file || 'htdocs/style.min.css' )
-        . q@">@;
+    return
+        q@<link rel="stylesheet" type="text/css" href="@
+      . $self->getExtensionUri( $extension, $file || 'htdocs/style.min.css' )
+      . q@">@;
 }
 
 sub handleLocalesHook {
     my ( $self, $extension, $file ) = @_;
-    return $self->getExtensionLocation( $extension,
-        $file || 'locale/locale' );
+    return $self->getExtensionLocation( $extension, $file || 'locale/locale' );
 }
 
 sub handleAppsHook {
@@ -113,12 +107,12 @@ sub handleSettingsHook {
     else {
         $ret .= ${$self}{cgi}->Tr(
             ${$self}{cgi}->td( $self->tl("settings.$settings") )
-                . ${$self}{cgi}->td(
+              . ${$self}{cgi}->td(
                 ${$self}{cgi}->checkbox(
                     -name  => "settings.$settings",
                     -label => q{}
                 )
-                )
+              )
         );
     }
     return $ret;
@@ -161,8 +155,8 @@ sub exec_template_function {
     if ( $func eq 'extconfig' ) {
         $content = $self->config( $param, 0 ) // q{};
     }
-    $content
-        //= $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
+    $content //=
+      $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
     return $content;
 }
 1;

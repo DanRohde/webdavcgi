@@ -19,26 +19,36 @@
 package Backend::Manager;
 
 use strict;
+use warnings;
 
 use Module::Load;
 
-our $VERSION = 0.1;
+our $VERSION = '2.0';
 
-our %BACKENDS;
+use vars qw( %_BACKENDS $_MANAGER );
 
 sub new {
-	my $class = shift;
-	my $self = { };
-	return bless $self, $class;
+    my $this  = shift;
+    my $class = ref($this) || $this;
+    my $self  = {};
+    if ( !$_MANAGER ) {
+        bless $self, $class;
+        $_MANAGER = $self;
+    }
+    return $_MANAGER;
 }
 
-sub getBackend {
-	my $self = shift;
-	my $backendname = shift;
-	my $module = "Backend::${backendname}::Driver";
-	return $BACKENDS{$backendname} if exists $BACKENDS{$backendname};
-	load $module;
-	return $BACKENDS{$backendname} = $module->new;
+sub getinstance {
+    return __PACKAGE__->new();
 }
 
+sub get_backend {
+    my ( $self, $backendname, $config ) = @_;
+    my $module = "Backend::${backendname}::Driver";
+    if ( exists $_BACKENDS{$backendname} ) {
+        return $_BACKENDS{$backendname}->init($config);
+    }
+    load $module;
+    return $_BACKENDS{$backendname} = $module->new()->init($config);
+}
 1;
