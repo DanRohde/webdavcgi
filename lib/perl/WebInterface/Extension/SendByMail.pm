@@ -39,6 +39,8 @@ package WebInterface::Extension::SendByMail;
 use strict;
 use warnings;
 
+our $VERSION = '1.0';
+
 use base qw( WebInterface::Extension );
 
 use MIME::Entity;
@@ -46,6 +48,10 @@ use Net::SMTP;
 use JSON;
 use File::Temp qw( tempfile );
 use Module::Load;
+
+use HTTPHelper qw( print_local_file_header print_header_and_content get_mime_type print_compressed_header_and_content );
+use FileUtils qw( get_error_document );
+
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -112,8 +118,8 @@ sub searchAddress {
         load $addressbook;
         $jsondata{result} = $addressbook->getMailAddresses( $self, scalar $$self{cgi}->param('query') );
     }
-    my $content = JSON->new->encode( \%jsondata );
-    main::print_header_and_content(
+    my $content = JSON::encode_json( \%jsondata );
+    print_header_and_content(
         '200 OK', 'application/json',
         $content,
         { 'Cache-Control'=> 'no-cache, no-store', -Content_Length => length $content }
@@ -149,7 +155,7 @@ sub buildMailFile {
         $body->attach(
             Path        => $zipfn,
             Filename    => $zipfilename,
-            Type        => main::get_mime_type($zipfilename),
+            Type        => get_mime_type($zipfilename),
             Disposition => 'attachment',
             Encoding    => 'base64'
         );
@@ -164,7 +170,7 @@ sub buildMailFile {
             $body->attach(
                 Path        => $file,
                 Filename    => $fn,
-                Type        => main::get_mime_type($fn),
+                Type        => get_mime_type($fn),
                 Disposition => 'attachment',
                 Encoding    => 'base64'
             );
@@ -209,7 +215,7 @@ sub downloadMail {
         my ( $tmpfh, $zipfile ) = $self->buildMailFile( 0, $mailfh );
         close($mailfh);
 
-        main::print_local_file_header(
+        print_local_file_header(
             $mailfn,
             {   -Content_Disposition => q{attachment; filename="email.eml"},
                 -type                => q{application/octet-stream},
@@ -223,12 +229,7 @@ sub downloadMail {
             close($fh);
         }
         else {
-            main::print_header_and_content(
-                main::get_error_document(
-                    '404 Not Found',
-                    'text/plain', '404 - FILE NOT FOUND'
-                )
-            );
+            print_header_and_content(get_error_document('404 Not Found'));
         }
         unlink $mailfn;
         unlink $zipfile if $zipfile;
@@ -304,8 +305,8 @@ sub sendMail {
         push @fields, 'bcc'  if @bcc && !$self->checkMailAddresses(@bcc);
         $jsondata{field} = join( ',', @fields );
     }
-    my $content = JSON->new->encode( \%jsondata );
-    main::print_header_and_content(
+    my $content = JSON::encode_json( \%jsondata );
+    print_header_and_content(
         $status, $mime,
         $content,
         { 'Cache-Control'=> 'no-cache, no-store', -Content_Length => length $content }
@@ -361,7 +362,7 @@ sub renderMailDialog {
     );
     $content =~ s/\$\{?(\w+)\}?/exists $vars{$1} ? $vars{$1} : ''/xmesg;
 
-    main::print_compressed_header_and_content( '200 OK', 'text/html', $content,
+    print_compressed_header_and_content( '200 OK', 'text/html', $content,
         'Cache-Control: no-cache, no-store' );
     return 1;
 }

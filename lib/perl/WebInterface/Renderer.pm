@@ -32,7 +32,7 @@ use POSIX qw(strftime);
 use CGI::Carp;
 use English qw( -no_match_vars );
 
-use HTTPHelper qw( get_etag );
+use HTTPHelper qw( get_etag print_header_and_content print_local_file_header );
 use FileUtils qw( get_file_limit );
 use vars qw( %_RENDERER );
 
@@ -89,7 +89,7 @@ sub print_styles_vhtdocs_files {
         ${$header}{-Content_Length}   = ( stat $file )[7];
     }
     if ( open my $f, '<', $file ) {
-        main::print_local_file_header( $nfile, $header );
+        print_local_file_header( $nfile, $header );
         binmode(STDOUT) || carp("Cannot set binmode for $file");
         while ( read( $f, my $buffer, $main::BUFSIZE || 1_048_576 ) > 0 ) {
             print $buffer;
@@ -97,11 +97,7 @@ sub print_styles_vhtdocs_files {
         close $f || carp("Cannot close $file.");
     }
     else {
-        main::print_header_and_content(
-            '404 Not Found',
-            'text/plain',
-            '404 - NOT FOUND'
-        );
+        print_header_and_content('404 Not Found');
     }
     return;
 }
@@ -133,8 +129,7 @@ sub print_media_rss {
         }
     }
     $content .= q@</channel></rss>@;
-    return main::print_header_and_content( '200 OK', 'appplication/rss+xml',
-        $content );
+    return print_header_and_content( '200 OK', 'appplication/rss+xml', $content );
 }
 
 sub _create_thumbnail {
@@ -212,11 +207,7 @@ sub print_image {
     my ( $self, $fn ) = @_;
     if ( !${$self}{backend}->isFile($fn) || ${$self}{backend}->isEmpty($fn) )
     {
-        main::print_header_and_content(
-            '404 Not Found',
-            'text/plain',
-            '404 Not Found'
-        );
+        print_header_and_content('404 Not Found');
         return;
     }
     $fn = ${$self}{backend}->getLocalFilename($fn);
@@ -241,7 +232,7 @@ sub print_dav_mount {
     my $bn = ${$self}{backend}->basename($fn);
     $su =~ s/\Q$bn\E\/?//xms;
     $bn .= ${$self}{backend}->isDir($fn) && $bn !~ /\/$/xms ? q{/} : q{};
-    return main::print_header_and_content(
+    return print_header_and_content(
         '200 OK',
         'application/davmount+xml',
         qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@

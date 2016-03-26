@@ -32,7 +32,8 @@ use IO::Compress::Gzip;
 use MIME::Base64;
 use CGI::Carp;
 
-use HTTPHelper qw( get_parent_uri );
+use HTTPHelper qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type );
+use FileUtils qw( get_local_file_content_and_type );
 
 sub new {
     my ($this) = @_;
@@ -128,10 +129,10 @@ sub handle_head_request {
     my ($self) = @_;
     my $handled = 1;
     if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
-        main::print_header_and_content( '200 OK', 'httpd/unix-directory' );
+        print_header_and_content( '200 OK', 'httpd/unix-directory' );
     }
     elsif ( $main::PATH_TRANSLATED =~ /\/webdav-ui[.](js|css)$/xms ) {
-        main::print_local_file_header(
+        print_local_file_header(
             -e ( $main::INSTALL_BASE . basename($main::PATH_TRANSLATED) )
             ? $main::INSTALL_BASE . basename($main::PATH_TRANSLATED)
             : "${main::INSTALL_BASE}lib/" . basename($main::PATH_TRANSLATED)
@@ -261,7 +262,7 @@ sub optimizer_encode_image {
     my ( $self, $basepath, $url ) = @_;
     return "url($url)" if $url =~ /^data:image/xms;
     my $ifn  = "$basepath/$url";
-    my $mime = main::get_mime_type($ifn);
+    my $mime = get_mime_type($ifn);
     if ( open my $ih, '<', $ifn ) {
         main::debug("encode image $ifn");
         my $buffer;
@@ -288,7 +289,7 @@ sub optimizer_collect {
 s{^.*${main::VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${main::INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
         main::debug("collect $type from $full");
         my $fc =
-          ( main::get_local_file_content_and_type($full) )[1];
+          ( get_local_file_content_and_type($full) )[1];
         if ( $type eq 'css' ) {
             my $basepath = get_parent_uri($full);
             $fc =~

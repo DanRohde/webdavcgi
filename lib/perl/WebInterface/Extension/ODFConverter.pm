@@ -22,12 +22,17 @@
 package WebInterface::Extension::ODFConverter;
 
 use strict;
+#use warnings;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+our $VERSION = '1.0';
+
+use base qw( WebInterface::Extension  );
 
 use File::Temp qw( tempdir );
 use JSON;
+
+use FileUtils qw( rcopy );
+
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -128,7 +133,7 @@ sub saveAllLocal {
 			my $targetlocal = $tmpdir.$file;
 			next if $file=~/^\.{1,2}$/ || -d $targetlocal;
 			my $targetfull = $main::PATH_TRANSLATED. ($file eq $localtargetfilename ? $targetfilename : $file);
-			$ret = main::rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
+			$ret = rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
 			
 			if ($ret && open(my $fh,"<",$targetlocal)) {
 				$ret = $$self{backend}->saveStream($targetfull, $fh);

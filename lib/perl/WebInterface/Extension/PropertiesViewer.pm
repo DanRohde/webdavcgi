@@ -26,7 +26,7 @@ use base 'WebInterface::Extension';
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 use WebDAV::XMLHelper qw( create_xml nonamespace get_namespace_uri %NAMESPACEELEMENTS );
 use WebDAV::Properties;
-use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS );
+use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS init_webdav_props );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -38,6 +38,8 @@ sub init {
         ],
         $self
     );
+    init_webdav_props();
+    return $self;
 }
 
 sub handle {

@@ -27,11 +27,16 @@
 package WebInterface::Extension::TextEditor;
 
 use strict;
+use warnings;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+our $VERSION = '1.0';
+
+use base qw( WebInterface::Extension  );
 
 use JSON;
+
+use FileUtils qw( rcopy );
+
 
 sub init { 
 	my($self, $hookreg) = @_; 
@@ -63,9 +68,9 @@ sub handle {
 		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton' };
 	} elsif ($hook eq 'fileactionpopup') {
 		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton', type=>'li'};
-	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') eq 'edit') {
+	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') && $$self{cgi}->param('action') eq 'edit') {
 		$ret = $self->getEditForm(); 
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'savetextdata') {
+	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') && $$self{cgi}->param('action') eq 'savetextdata') {
 		$ret = $self->saveTextData();
 	}
 	return $ret;
@@ -86,7 +91,7 @@ sub getEditForm {
 }
 sub makeBackupCopy {
 	my ($self, $full) = @_;
-	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || ($$self{backend}->stat($full))[7] == 0 || main::rcopy($full, "$full.backup");
+	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || ($$self{backend}->stat($full))[7] == 0 || rcopy($full, "$full.backup");
 }
 sub saveTextData {
 	my ($self) = @_;

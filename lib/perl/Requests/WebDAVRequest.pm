@@ -34,6 +34,13 @@ use FileUtils qw( is_hidden get_file_limit );
 use CacheManager;
 
 
+sub init {
+    my ($self, $config) = @_;
+    $self->SUPER::init($config);
+    WebDAV::WebDAVProps::init_webdav_props();
+    return $self;
+}
+
 sub handle_property_request {
     my ( $self, $xml, $dataref, $resp_200, $resp_403 ) = @_;
     my $pm = $self->get_property_module();

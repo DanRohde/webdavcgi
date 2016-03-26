@@ -27,6 +27,9 @@ use base qw( WebInterface::Extension::PublicUri::Common );
 
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
+use HTTPHelper qw( print_header_and_content print_file_header );
+use FileUtils qw( get_error_document );
+
 sub init {
     my ( $self, $hookreg ) = @_;
 
@@ -41,14 +44,9 @@ sub handle {
     $self->SUPER::handle( $hook, $config, $params );
     if ( $hook eq 'posthandler' ) {
         return $self->handle_public_uri_access()
-            if ${$self}{cgi}->param('action') =~ /${$self}{allowedpostactions}/xms;
-        main::print_header_and_content(
-            main::get_error_document(
-                '404 Not Found',
-                'text/plain',
-                '404 - NOT FOUND'
-            )
-        );
+          if ${$self}{cgi}->param('action') =~
+          /${$self}{allowedpostactions}/xms;
+        print_header_and_content( get_error_document('404 Not Found') );
         return 1;
     }
     elsif ( $hook eq 'gethandler' ) {
@@ -64,13 +62,7 @@ sub handle_public_uri_access {
         my $fn = $self->get_file_from_code($code);
         if ( !$fn || !$self->is_public_uri( $fn, $code, $self->get_seed($fn) ) )
         {
-            main::print_header_and_content(
-                main::get_error_document(
-                    '404 Not Found',
-                    'text/plain',
-                    '404 - NOT FOUND'
-                )
-            );
+            print_header_and_content( get_error_document('404 Not Found') );
             return 1;
         }
 
@@ -80,18 +72,21 @@ sub handle_public_uri_access {
         $main::VIRTUAL_BASE    = ${$self}{virtualbase} . $code . q{/?};
 
         if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
-            $main::PATH_TRANSLATED .= $main::PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
-            $main::REQUEST_URI     .= $main::REQUEST_URI !~ /\/$/xms ? q{/} : q{};
+            $main::PATH_TRANSLATED .=
+              $main::PATH_TRANSLATED !~ /\/$/xms ? q{/} : q{};
+            $main::REQUEST_URI .= $main::REQUEST_URI !~ /\/$/xms ? q{/} : q{};
         }
         elsif (( !$path || $path eq q{} )
             && ( ${$self}{backend}->isReadable($fn) ) )
         {
             my $bfn = ${$self}{backend}->basename($fn);
             $bfn =~ s/"/_/xmsg;
-            main::print_file_header(
+            print_file_header(
                 $fn,
-                {   'Content-Disposition' =>
-                        sprintf 'attachment; filename="%s"', $bfn
+                {
+                    'Content-Disposition' =>
+                      sprintf 'attachment; filename="%s"',
+                    $bfn
                 }
             );
             ${$self}{backend}->printFile( $fn, \*STDOUT );

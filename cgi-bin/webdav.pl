@@ -67,8 +67,8 @@ use vars
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES $RELEASE @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $METHODS_RX %REQUEST_HANDLERS
 );
-$RELEASE = '1.1.1BETA20160326.09';
-our $VERSION = '1.1.1BETA20160326.09';
+$RELEASE = '1.1.1BETA20160326.10';
+our $VERSION = '1.1.1BETA20160326.10';
 #########################################################################
 ############  S E T U P #################################################
 
@@ -788,9 +788,7 @@ use DB::Driver;
 use DatabaseEventAdapter;
 use Backend::Manager;
 use HTTPHelper
-  qw( print_header_and_content print_compressed_header_and_content print_file_header print_header_and_content print_local_file_header get_mime_type );
-use FileUtils qw( get_local_file_content_and_type rcopy );
-use WebDAV::WebDAVProps qw( init_webdav_props );
+  qw( print_header_and_content print_compressed_header_and_content print_header_and_content get_mime_type );
 
 init();
 handle_request();
@@ -872,7 +870,6 @@ sub init {
 
     $TRASH_FOLDER .= $TRASH_FOLDER !~ /\/$/xms ? q{/} : q{};
 
-    init_webdav_props();
     return;
 }
 

@@ -64,11 +64,11 @@ sub dirname {
 }
 
 sub exists {
-    return $CACHE{ $_[0] }{ $_[1] // q{} }{exists} //= -e $_[0]->resolveVirt( $_[1] );
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{exists} //= defined $_[1] && -e $_[0]->resolveVirt( $_[1] );
 }
 
 sub isDir {
-    return $CACHE{ $_[0] }{ $_[1] // q{} }{isDir} //= defined $_[1] ? -d $_[0]->resolveVirt( $_[1] ) : 0;
+    return $CACHE{ $_[0] }{ $_[1] // q{} }{isDir} //= defined $_[1] && -d $_[0]->resolveVirt( $_[1] );
 }
 
 sub isFile {
