@@ -73,9 +73,9 @@ sub print_header_and_content {
     if ( defined $cgi->http('Translate') ) { $header{'Translate'} = 'f'; }
     %header = ( %header, %{ _get_header_hashref($add_header) } );
 
-#binmode STDOUT, ":encoding(\U$CHARSET\E)" || croak('Cannot set bindmode for STDOUT.'); # WebDAV works but web doesn't so ignore wide character warnings
-    binmode(STDOUT) || croak('Cannot set bindmode for STDOUT.');
-    print $cgi->header( \%header ) . $content;
+#binmode STDOUT, ":encoding(\U$CHARSET\E)" || carp('Cannot set bindmode for STDOUT.'); # WebDAV works but web doesn't so ignore wide character warnings
+    binmode(STDOUT) || carp('Cannot set bindmode for STDOUT.');
+    print($cgi->header( \%header ) . $content) || carp('Cannot write header and content to STDOUT.');
     fix_mod_perl_response( \%header );
     return;
 }
@@ -124,8 +124,7 @@ sub print_local_file_header {
         $header{'Translate'} = 'f';
     }
     %header = ( %header, %{ _get_header_hashref($addheader) } );
-    print $cgi->header( \%header );
-    return;
+    return print $cgi->header( \%header );
 }
 
 sub print_file_header {
@@ -212,7 +211,7 @@ sub _read_mime_types {
             my ( $type, @suffixes ) = split /\s+/xms, $e;
             foreach (@suffixes) { $main::MIMETYPES{$_} = $type }
         }
-        close($f) || croak("Cannot close filehandle for '$mimefile'.");
+        close($f) || carp("Cannot close filehandle for '$mimefile'.");
     }
     else {
         carp "Cannot open $mimefile";

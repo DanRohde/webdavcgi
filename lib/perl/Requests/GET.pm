@@ -79,7 +79,7 @@ sub handle {
     }
 
     $self->debug('_GET: DOWNLOAD');
-    binmode(STDOUT) || croak('Cannot set binmode for STDOUT.');
+    binmode(STDOUT) || carp('Cannot set binmode for STDOUT.');
 
     if ( !$self->_handle_compressed_file( $cgi, $backend ) ) {
         my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
@@ -159,7 +159,7 @@ sub _handle_compressed_file {
     if ( open my $F, '<', $backend->getLocalFilename($main::PATH_TRANSLATED) ) {
         if ( defined $start ) {
             seek( $F, $start, 0 )
-              || croak(
+              || carp(
                 "Cannot seek filehandle for '$main::PATH_TRANSLATED' to $start."
               );
         }
@@ -171,7 +171,7 @@ sub _handle_compressed_file {
                 $bufsize = $count - $bytecount;
             }
         }
-        close($F) || croak('Cannot close filehandle.');
+        close($F) || carp('Cannot close filehandle.');
     }
     main::broadcast(
         'GET',

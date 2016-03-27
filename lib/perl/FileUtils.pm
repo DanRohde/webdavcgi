@@ -161,7 +161,7 @@ sub get_local_file_content_and_type {
             local $RS = undef;
             $content = <$F>;
         };
-        close($F) || croak("Cannot close filehandle for '$fn'.");
+        close($F) || carp("Cannot close filehandle for '$fn'.");
         $defaulttype = main::get_mime_type($fn);
     }
     else {

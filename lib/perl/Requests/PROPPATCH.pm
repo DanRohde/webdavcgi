@@ -48,8 +48,8 @@ sub handle {
     $self->debug("_PROPPATCH: REQUEST: $xml");
     my $dataref;
     if ( !eval { $dataref = simple_xml_parser($xml) } ) {
-        $self->debug("_PROPPATCH: invalid XML request: ${EVAL_ERROR}");
-        return print_header_and_content('400 Bad Request');
+        carp("PROPPATCH: invalid XML request: ${EVAL_ERROR}");
+        return print_header_and_content('400 Bad Request (invalid XML request)');
     }
     main::broadcast( 'PROPPATCH', { file => $fn, data => $dataref } );
     my @resps    = ();

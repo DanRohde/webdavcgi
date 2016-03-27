@@ -212,9 +212,7 @@ sub is_locked {
     my $rfn = $self->resolve($fn);
     $rfn .= ${$self}{backend}->isDir($fn) && $rfn !~ /\/$/xms ? q{/} : q{};
     my $rows = ${$self}{db}->db_get($rfn);
-    return ( ( $#{$rows} >= 0 ) && !$self->_check_timed_out( $rfn, $rows ) )
-      ? 1
-      : 0;
+    return ( $#{$rows} >= 0 ) && !$self->_check_timed_out( $rfn, $rows );
 }
 
 sub is_locked_cached {

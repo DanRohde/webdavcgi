@@ -25,6 +25,8 @@ our $VERSION = '2.0';
 
 use base qw( Requests::WebDAVRequest );
 
+use CGI::Carp;
+
 use HTTPHelper qw( print_header_and_content get_if_header_components get_etag );
 use FileUtils qw( stat2h );
 
@@ -55,7 +57,8 @@ sub handle {
         return print_header_and_content('412 Precondition Failed');
     }
     if ( !$self->is_allowed($main::PATH_TRANSLATED) ) {
-        return print_header_and_content('423 Locked');
+        carp("PUT: 423 Locked: not owner or missing lock token");
+        return print_header_and_content('423 Locked','text/plain','434 Locked: not owner or missing lock token');
 
       #} if (defined $ENV{HTTP_EXPECT} && $ENV{HTTP_EXPECT} =~ /100-continue/) {
       #	return print_header_and_content('417 Expectation Failed');
