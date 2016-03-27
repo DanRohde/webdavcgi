@@ -26,16 +26,17 @@ our $VERSION = '2.0';
 use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
+use CGI::Carp;
 
 use HTTPHelper qw( print_header_and_content read_request_body );
 use WebDAV::XMLHelper
   qw( create_xml simple_xml_parser handle_propfind_element );
 use FileUtils qw( is_hidden );
 
-use vars qw( $INFINITY );
+use vars qw( $DEPTH_INFINITY );
 
 BEGIN {
-    $INFINITY = 1 - 2;
+    $DEPTH_INFINITY = -1;
 }
 
 sub handle {
@@ -43,13 +44,20 @@ sub handle {
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
     my $fn      = $main::PATH_TRANSLATED;
+    my $ru      = $main::REQUEST_URI;
     my $status  = '207 Multi-Status';
     my $type    = 'text/xml';
-    my $depth = $cgi->http('Depth') // $INFINITY;
+    my $depth = $cgi->http('Depth') // $DEPTH_INFINITY;
     my $noroot = $depth =~ s/,noroot//xms ? 1 : 0;
-    $depth = $depth =~ /infinity/xmsi ? $INFINITY : $depth;
-    $depth = $depth == $INFINITY
-      && !$main::ALLOW_INFINITE_PROPFIND ? 0 : $INFINITY;
+    $depth = $depth =~ /infinity/xmsi ? $DEPTH_INFINITY : $depth;
+    $self->debug("_PROPFIND: depth=$depth, fn=$fn, ru=$ru");
+    if (   ( $depth == $DEPTH_INFINITY && !$main::ALLOW_INFINITE_PROPFIND )
+        || ( $depth !~ /^(?:0|-?1)$/xms ) )
+    {
+        carp("PROPFIND: 400 Bad Request: illegal Depth header value: $depth");
+        return print_header_and_content(
+            '400 Bad Request (illegal Depth header value in PROPFIND request)');
+    }
 
     my $xml = read_request_body();
     if ( !defined $xml || $xml =~ /^\s*$/xms ) {
@@ -59,13 +67,12 @@ qq{<?xml version="1.0" encoding="$main::CHARSET" ?>\n<D:propfind xmlns:D="DAV:">
 
     my $xmldata;
     if ( !eval { $xmldata = simple_xml_parser($xml); } ) {
-        $self->debug("_PROPFIND: invalid XML request: ${EVAL_ERROR}");
-        return print_header_and_content('400 Bad Request');
+        carp("PROPFIND: invalid XML request: ${EVAL_ERROR}\n$xml");
+        return print_header_and_content(
+            '400 Bad Request (invalid XML in PROPFIND request)');
     }
 
-    my $ru = $main::REQUEST_URI;
     $ru =~ s/\s/%20/xmsg;
-    $self->debug("_PROPFIND: depth=$depth, fn=$fn, ru=$ru");
 
     my @resps = ();
 
@@ -94,7 +101,8 @@ qq{<?xml version="1.0" encoding="$main::CHARSET" ?>\n<D:propfind xmlns:D="DAV:">
     }
     my ( $props, $all, $noval ) = handle_propfind_element($xmldata);
     if ( !defined $props ) {
-        return print_header_and_content('400 Bad Request');
+        carp("PROPFIND: 400 Bad Request: no or unsupported properties found.");
+        return print_header_and_content('400 Bad Request (no or unsupported properties found)');
     }
     $self->read_dir_recursive( $fn, $ru, \@resps, $props, $all, $noval, $depth,
         $noroot );
