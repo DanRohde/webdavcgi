@@ -133,7 +133,7 @@ sub saveAllLocal {
 			my $targetlocal = $tmpdir.$file;
 			next if $file=~/^\.{1,2}$/ || -d $targetlocal;
 			my $targetfull = $main::PATH_TRANSLATED. ($file eq $localtargetfilename ? $targetfilename : $file);
-			$ret = rcopy($targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
+			$ret = rcopy($self->{config},$targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
 			
 			if ($ret && open(my $fh,"<",$targetlocal)) {
 				$ret = $$self{backend}->saveStream($targetfull, $fh);

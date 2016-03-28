@@ -28,53 +28,55 @@ use base qw( Requests::WebInterfaceRequest );
 use CGI::Carp;
 use POSIX qw( strftime );
 
+use DefaultConfig
+  qw( $PATH_TRANSLATED $DOCUMENT_ROOT $CHARSET $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
 use HTTPHelper
-  qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response );
+  qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response
+  get_mime_type );
 use FileUtils qw( get_error_document is_hidden stat2h );
 
-use vars qw( $MIN_COMPRESSABLE_FILESIZE $MAX_COMPRESSABLE_FILESIZE $DEFAULT_BUFSIZE );
+use vars qw( $MIN_COMPRESSABLE_FILESIZE $MAX_COMPRESSABLE_FILESIZE );
 
 BEGIN {
     $MIN_COMPRESSABLE_FILESIZE = 1_024;
     $MAX_COMPRESSABLE_FILESIZE = 1_073_741_824;
-    $DEFAULT_BUFSIZE           = 1_048_576;
 }
 
 sub handle {
-    my ( $self ) = @_;
-    $self->debug("_GET: $main::PATH_TRANSLATED");
-    
+    my ($self) = @_;
+    $self->debug("_GET: $PATH_TRANSLATED");
+
     my $backend = $self->{backend};
     my $cgi     = $self->{cgi};
-    
-    if ( is_hidden($main::PATH_TRANSLATED) ) {
+
+    if ( is_hidden($PATH_TRANSLATED) ) {
         return print_header_and_content( get_error_document('404 Not Found') );
     }
-    if ( !$main::FANCYINDEXING && $backend->isDir($main::PATH_TRANSLATED) ) {
-        if ( !defined $main::REDIRECT_TO ) {
+    if ( !$FANCYINDEXING && $backend->isDir($PATH_TRANSLATED) ) {
+        if ( !defined $REDIRECT_TO ) {
             return print_header_and_content(
                 get_error_document('404 Not Found') );
         }
-        return print $cgi->redirect($main::REDIRECT_TO);
+        return print $cgi->redirect($REDIRECT_TO);
     }
     if (
-        $main::FANCYINDEXING
-        && (   $main::DOCUMENT_ROOT eq q{/}
-            || $backend->isDir($main::PATH_TRANSLATED)
+        $FANCYINDEXING
+        && (   $DOCUMENT_ROOT eq q{/}
+            || $backend->isDir($PATH_TRANSLATED)
             || $ENV{QUERY_STRING} ne q{}
-            || !$backend->exists($main::PATH_TRANSLATED) )
+            || !$backend->exists($PATH_TRANSLATED) )
         && $self->get_webinterface()->handle_get_request()
       )
     {
         $self->debug('_GET: WebInterface called');
         return;
     }
-    if ( !$backend->exists($main::PATH_TRANSLATED) ) {
-        $self->debug("GET: $main::PATH_TRANSLATED NOT FOUND!");
+    if ( !$backend->exists($PATH_TRANSLATED) ) {
+        $self->debug("GET: $PATH_TRANSLATED NOT FOUND!");
         return print_header_and_content( get_error_document('404 Not Found') );
     }
-    if ( !$backend->isReadable($main::PATH_TRANSLATED) ) {
-        $self->debug("GET: $main::PATH_TRANSLATED not readable!");
+    if ( !$backend->isReadable($PATH_TRANSLATED) ) {
+        $self->debug("GET: $PATH_TRANSLATED not readable!");
         return print_header_and_content( get_error_document('403 Forbidden') );
     }
 
@@ -83,16 +85,16 @@ sub handle {
 
     if ( !$self->_handle_compressed_file( $cgi, $backend ) ) {
         my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
-        my $headerref = print_file_header($main::PATH_TRANSLATED);
-        $backend->printFile( $main::PATH_TRANSLATED, \*STDOUT, $start, $count );
+        my $headerref = print_file_header($PATH_TRANSLATED);
+        $backend->printFile( $PATH_TRANSLATED, \*STDOUT, $start, $count );
         fix_mod_perl_response($headerref);
 
-        main::broadcast(
+        $self->{event}->broadcast(
             'GET',
             {
-                file => $main::PATH_TRANSLATED,
+                file => $PATH_TRANSLATED,
                 size => $count
-                  || stat2h( \$backend->stat($main::PATH_TRANSLATED))->{size}
+                  || stat2h( \$backend->stat($PATH_TRANSLATED) )->{size}
             }
         );
     }
@@ -103,11 +105,11 @@ sub handle {
 sub _compressable {
     my ( $self, $cgi, $backend ) = @_;
     my $enc  = $cgi->http('Accept-Encoding');
-    my $mime = main::get_mime_type($main::PATH_TRANSLATED);
-    my $stat = stat2h( \$backend->stat($main::PATH_TRANSLATED) );
+    my $mime = get_mime_type($PATH_TRANSLATED);
+    my $stat = stat2h( \$backend->stat($PATH_TRANSLATED) );
 
     return
-         $main::ENABLE_COMPRESSION
+         $ENABLE_COMPRESSION
       && $enc
       && $enc =~ /(?:gzip|deflate)/xms
       && $stat->{size} >= $MIN_COMPRESSABLE_FILESIZE
@@ -122,18 +124,18 @@ sub _handle_compressed_file {
     }
 
     my $enc  = $cgi->http('Accept-Encoding');
-    my $mime = main::get_mime_type($main::PATH_TRANSLATED);
-    my $stat = stat2h( \$backend->stat($main::PATH_TRANSLATED) );
+    my $mime = get_mime_type($PATH_TRANSLATED);
+    my $stat = stat2h( \$backend->stat($PATH_TRANSLATED) );
 
     my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
 
     my %header = (
         -status => '200 OK',
         -type   => $mime,
-        -ETag   => get_etag($main::PATH_TRANSLATED),
+        -ETag   => get_etag($PATH_TRANSLATED),
         -Last_Modified =>
           strftime( '%a, %d %b %Y %T GMT', gmtime $stat->{mtime} ),
-        -charset          => $main::CHARSET,
+        -charset          => $CHARSET,
         -Content_Encoding => $enc =~ /gzip/xms ? 'gzip' : 'deflate',
         -Cache_Control    => 'no-cache',
     );
@@ -153,15 +155,14 @@ sub _handle_compressed_file {
         require IO::Compress::Deflate;
         $c = IO::Compress::Deflate->new( \*STDOUT );
     }
-    my $bufsize = $main::BUFSIZE || $DEFAULT_BUFSIZE;
+    my $bufsize = $BUFSIZE;
     if ( defined $count && $count < $bufsize ) { $bufsize = $count; }
     my $bytecount = 0;
-    if ( open my $F, '<', $backend->getLocalFilename($main::PATH_TRANSLATED) ) {
+    if ( open my $F, '<', $backend->getLocalFilename($PATH_TRANSLATED) ) {
         if ( defined $start ) {
             seek( $F, $start, 0 )
               || carp(
-                "Cannot seek filehandle for '$main::PATH_TRANSLATED' to $start."
-              );
+                "Cannot seek filehandle for '$PATH_TRANSLATED' to $start.");
         }
         while ( my $bytesread = read $F, my $buffer, $bufsize ) {
             $c->write($buffer);
@@ -173,10 +174,10 @@ sub _handle_compressed_file {
         }
         close($F) || carp('Cannot close filehandle.');
     }
-    main::broadcast(
+    $self->{event}->broadcast(
         'GET',
         {
-            file => $main::PATH_TRANSLATED,
+            file => $PATH_TRANSLATED,
             size => $count || $stat->{size}
         }
     );

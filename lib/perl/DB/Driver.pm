@@ -30,6 +30,7 @@ use DBI;
 use List::MoreUtils qw(any);
 use CGI::Carp;
 
+use DefaultConfig qw( $DBI_SRC $DBI_USER $DBI_PASS $CREATE_DB @DB_SCHEMA $DBI_PERSISTENT );
 use CacheManager;
 use HTTPHelper qw( get_parent_uri );
 
@@ -44,9 +45,9 @@ sub new {
 
 sub finalize {
     my $self = shift;
-    if ( !$main::DBI_PERSISTENT && $$self{DBI_INIT} ) {
-        $$self{DBI_INIT}->disconnect();
-        delete $$self{DBI_INIT};
+    if ( !$DBI_PERSISTENT && $self->{DBI_INIT} ) {
+        $self->{DBI_INIT}->disconnect();
+        delete $self->{DBI_INIT};
     }
     return;
 }
@@ -95,7 +96,7 @@ sub db_isRootFolder {
         $rows = $sth->fetchall_arrayref();
         $self->db_handleSelect( $dbh, $sth );
     }
-    return $#{$rows} > -1;
+    return $#{$rows} >= 0;
 }
 
 sub db_getLike {
@@ -334,7 +335,7 @@ sub db_getProperties {
         'SELECT REPLACE(fn,?,?), propname, value FROM webdav_props WHERE fn like ? OR fn like ?'
         );
     if ( defined $sth ) {
-        $sth->execute( $PREFIX, '', "$fn\%", "$PREFIX$fn\%" );
+        $sth->execute( $PREFIX, q{}, "$fn\%", "$PREFIX$fn\%" );
         if ( !$sth->err ) {
             my $rows = $sth->fetchall_arrayref();
             $self->db_handleSelect( $dbh, $sth );
@@ -359,7 +360,7 @@ sub db_getPropertyFromCache {
 sub db_getProperty {
     my ( $self, $fn, $propname ) = @_;
     my $props = $self->db_getProperties($fn);
-    return $$props{$propname};
+    return $props->{$propname};
 }
 
 sub db_removeProperty {
@@ -386,11 +387,11 @@ sub db_getPropertyFnByValue {
         'SELECT REPLACE(fn,?,?) FROM webdav_props WHERE propname = ? and value = ?'
         );
     if ( defined $sth ) {
-        $sth->execute( $PREFIX, '', $propname, $value );
+        $sth->execute( $PREFIX, q{}, $propname, $value );
         if ( !$sth->err ) {
             my $rows = $sth->fetchall_arrayref();
             $self->db_handleSelect( $dbh, $sth );
-            return $$rows[0] if $rows;
+            return $rows->[0] if $rows;
         }
         $self->db_handleSelect( $dbh, $sth );
     }
@@ -485,11 +486,12 @@ sub db_selecth {
 sub db_table_exists {
     my ( $self, $table ) = @_;
     my $dbh = $self->db_init();
-    my @tables = $dbh->tables( '', '', $table, 'TABLE' );
+    my @tables = $dbh->tables( q{}, q{}, $table, 'TABLE' );
     if (@tables) {
         foreach (@tables) {
-            next unless $_;
-            return 1 if $_ =~ /\Q${table}\E$/xms;
+            if ($_ && /\Q${table}\E$/xms) {
+                return 1;
+            }
         }
     }
     return 0;
@@ -497,14 +499,14 @@ sub db_table_exists {
 
 sub db_init {
     my $self = shift;
-    return $$self{DBI_INIT} if defined $$self{DBI_INIT};
+    return $self->{DBI_INIT} if defined $self->{DBI_INIT};
 
     my $dbh
-        = DBI->connect( $main::DBI_SRC, $main::DBI_USER, $main::DBI_PASS,
+        = DBI->connect( $DBI_SRC, $DBI_USER, $DBI_PASS,
         { RaiseError => 0, PrintError => 0, AutoCommit => 1 } )
-        || croak("You need a database (see \$DBI_SRC configuration)");
-    if ( defined $dbh && $main::CREATE_DB ) {
-        foreach my $query (@main::DB_SCHEMA) {
+        || croak('You need a database (see $DBI_SRC configuration)');
+    if ( defined $dbh && $CREATE_DB ) {
+        foreach my $query (@DB_SCHEMA) {
             my $sth = $dbh->prepare($query);
             if ( defined $sth ) {
                 $sth->execute();
@@ -523,7 +525,7 @@ sub db_init {
             }
         }
     }
-    $$self{DBI_INIT} = $dbh;
+    $self->{DBI_INIT} = $dbh;
     return $dbh;
 }
 

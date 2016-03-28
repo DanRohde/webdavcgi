@@ -33,6 +33,14 @@ use CGI::Carp;
 use POSIX qw( strftime );
 use Digest::MD5;
 
+
+use DefaultConfig qw( 
+  $CGI $PATH_TRANSLATED
+  $CHARSET %MIMETYPES $MIMEFILE $ENABLE_COMPRESSION $BUFSIZE
+  $ENABLE_ACL $ENABLE_CALDAV $ENABLE_CARDDAV $ENABLE_CALDAV_SCHEDULE 
+  $ENABLE_LOCK $ENABLE_BIND $ENABLE_SEARCH
+);
+
 require bytes;
 
 sub _get_header_hashref {
@@ -56,7 +64,7 @@ sub print_header_and_content {
     $type    //= 'text/plain';
     $content //= q{};
 
-    my $cgi = main::get_cgi();
+    my $cgi = $CGI;
 
     my $contentlength = bytes::length($content);
 
@@ -65,7 +73,7 @@ sub print_header_and_content {
         -type           => $type,
         -Content_Length => $contentlength,
         -ETag           => get_etag(),
-        -charset        => $main::CHARSET,
+        -charset        => $CHARSET,
         -cookie         => $cookies,
         'MS-Author-Via' => 'DAV',
         'DAV'           => get_dav_header(),
@@ -82,9 +90,9 @@ sub print_header_and_content {
 
 sub print_compressed_header_and_content {
     my ( $status, $type, $content, $add_header, $cookies ) = @_;
-    my $cgi    = main::get_cgi();
+    my $cgi    = $CGI;
     my $header = _get_header_hashref($add_header);
-    if ( $main::ENABLE_COMPRESSION
+    if ( $ENABLE_COMPRESSION
         && ( my $enc = $cgi->http('Accept-Encoding') ) )
     {
         my $orig = $content;
@@ -107,8 +115,9 @@ sub print_compressed_header_and_content {
 
 sub print_local_file_header {
     my ( $fn, $addheader ) = @_;
-    my $cgi    = main::get_cgi();
+    my $cgi    = $CGI;
     my @stat   = stat $fn;
+    no locale;
     my %header = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
@@ -116,7 +125,7 @@ sub print_local_file_header {
         -ETag           => get_etag($fn),
         -Last_Modified =>
           strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
-        -charset        => $main::CHARSET,
+        -charset        => $CHARSET,
         'DAV'           => get_dav_header(),
         'MS-Author-Via' => 'DAV',
     );
@@ -129,16 +138,17 @@ sub print_local_file_header {
 
 sub print_file_header {
     my ( $fn, $addheader ) = @_;
-    my $cgi     = main::get_cgi();
+    my $cgi     = $CGI;
     my $backend = main::get_backend();
     my @stat    = $backend->stat($fn);
+    no locale;
     my %header  = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
         -Content_Length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime $stat[9] ),
-        -charset        => $main::CHARSET,
+        -charset        => $CHARSET,
         -Cache_Control  => 'no-cache, no-store',
         'MS-Author-Via' => 'DAV',
         'DAV'           => get_dav_header(),
@@ -161,7 +171,7 @@ sub print_file_header {
 
 sub fix_mod_perl_response {
     my ($headerref) = @_;
-    my $cgi = main::get_cgi();
+    my $cgi = $CGI;
     ## mod_perl fix for unknown status codes:
     my $stat200re = qr{(?:20[16789]|2[1-9])}xms;
     my $stat300re = qr{(?:30[89]|3[1-9])}xms;
@@ -183,7 +193,7 @@ sub fix_mod_perl_response {
 
 sub read_request_body {
     my $body = q{};
-    while ( read STDIN, my $buffer, $main::BUFSIZE || 1_048_576 ) {
+    while ( read STDIN, my $buffer, $BUFSIZE ) {
         $body .= $buffer;
     }
     return $body;
@@ -191,9 +201,10 @@ sub read_request_body {
 
 sub get_byte_ranges {
     my ( $cgi, $backend ) = @_;
-    my $etag = get_etag($main::PATH_TRANSLATED);
+    no locale;
+    my $etag = get_etag($PATH_TRANSLATED);
     my $lm   = strftime( '%a, %d %b %Y %T GMT',
-        gmtime( ( $backend->stat($main::PATH_TRANSLATED) )[9] ) );
+        gmtime( ( $backend->stat($PATH_TRANSLATED) )[9] ) );
     my $ifrange = $cgi->http('If-Range') || $etag;
     return if $ifrange ne $etag && $ifrange ne $lm;
     my $range = $cgi->http('Range');
@@ -209,32 +220,32 @@ sub _read_mime_types {
         while ( my $e = <$f> ) {
             next if $e =~ /^\s*(\#.*)?$/xms;
             my ( $type, @suffixes ) = split /\s+/xms, $e;
-            foreach (@suffixes) { $main::MIMETYPES{$_} = $type }
+            foreach (@suffixes) { $MIMETYPES{$_} = $type }
         }
         close($f) || carp("Cannot close filehandle for '$mimefile'.");
     }
     else {
         carp "Cannot open $mimefile";
     }
-    $main::MIMETYPES{default} = 'application/octet-stream';
+    $MIMETYPES{default} = 'application/octet-stream';
     return;
 }
 
 sub get_mime_type {
     my ($filename) = @_;
     ## read mime.types file once:
-    if ( defined $main::MIMEFILE ) { _read_mime_types($main::MIMEFILE); }
-    $main::MIMEFILE = undef;
+    if ( defined $MIMEFILE ) { _read_mime_types($MIMEFILE); }
+    $MIMEFILE = undef;
     my $extension = 'default';
     if ( $filename =~ /[.]([^.]+)$/xms ) {
         $extension = lc $1;
     }
-    return $main::MIMETYPES{$extension} || $main::MIMETYPES{default};
+    return $MIMETYPES{$extension} || $MIMETYPES{default};
 }
 
 sub get_etag {
     my ($file) = @_;
-    $file //= $main::PATH_TRANSLATED;
+    $file //= $PATH_TRANSLATED;
     my $backend = main::get_backend();
 
     my (
@@ -272,22 +283,22 @@ sub get_if_header_components {
 sub get_dav_header {
     ## supported DAV compliant classes:
     my $DAV = '1';
-    $DAV .= $main::ENABLE_LOCK ? ', 2' : q{};
+    $DAV .= $ENABLE_LOCK ? ', 2' : q{};
     $DAV .= ', 3, <http://apache.org/dav/propset/fs/1>, extended-mkcol';
     $DAV .=
-         $main::ENABLE_ACL
-      || $main::ENABLE_CALDAV
-      || $main::ENABLE_CARDDAV ? ', access-control' : q{};
+         $ENABLE_ACL
+      || $ENABLE_CALDAV
+      || $ENABLE_CARDDAV ? ', access-control' : q{};
     $DAV .=
-      $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE
+      $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE
       ? ', calendar-access, calendarserver-private-comments'
       : q{};
     $DAV .=
-      $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE
+      $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE
       ? ', calendar-schedule,calendar-availability,calendarserver-principal-property-search,calendarserver-private-events,calendarserver-private-comments,calendarserver-sharing,calendar-auto-schedule'
       : q{};
-    $DAV .= $main::ENABLE_CARDDAV ? ', addressbook' : q{};
-    $DAV .= $main::ENABLE_BIND    ? ', bind'        : q{};
+    $DAV .= $ENABLE_CARDDAV ? ', addressbook' : q{};
+    $DAV .= $ENABLE_BIND    ? ', bind'        : q{};
     return $DAV;
 }
 
@@ -296,27 +307,27 @@ sub get_supported_methods {
     my @methods;
     my @rmethods = qw( OPTIONS GET HEAD PROPFIND PROPPATCH COPY GETLIB );
     my @wmethods = qw( POST PUT MKCOL MOVE DELETE );
-    if ($main::ENABLE_LOCK) {
+    if ($ENABLE_LOCK) {
         push @rmethods, qw( LOCK UNLOCK );
     }
-    if (   $main::ENABLE_ACL
-        || $main::ENABLE_CALDAV
-        || $main::ENABLE_CALDAV_SCHEDULE
-        || $main::ENABLE_CARDDAV )
+    if (   $ENABLE_ACL
+        || $ENABLE_CALDAV
+        || $ENABLE_CALDAV_SCHEDULE
+        || $ENABLE_CARDDAV )
     {
         push @rmethods, 'REPORT';
     }
-    if ($main::ENABLE_SEARCH) {
+    if ($ENABLE_SEARCH) {
         push @rmethods, 'SEARCH';
     }
-    if ( $main::ENABLE_ACL || $main::ENABLE_CALDAV || $main::ENABLE_CARDDAV )
+    if ( $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV )
     {
         push @wmethods, 'ACL';
     }
-    if ( $main::ENABLE_CALDAV || $main::ENABLE_CALDAV_SCHEDULE ) {
+    if ( $ENABLE_CALDAV || $ENABLE_CALDAV_SCHEDULE ) {
         push @wmethods, 'MKCALENDAR';
     }
-    if ($main::ENABLE_BIND) {
+    if ($ENABLE_BIND) {
         push @wmethods, qw( BIND UNBIND REBIND);
     }
     @methods = @rmethods;

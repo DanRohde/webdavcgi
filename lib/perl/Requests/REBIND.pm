@@ -36,6 +36,7 @@ use base qw( Requests::Request );
 
 use URI::Escape;
 
+use DefaultConfig qw( $PATH_TRANSLATED $DOCUMENT_ROOT $VIRTUAL_BASE );
 use FileUtils qw( rmove );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
@@ -58,10 +59,10 @@ sub handle {
 
     my $segment = ${$xmldata}{'{DAV:}segment'};
     my $href    = ${$xmldata}{'{DAV:}href'};
-    $href =~ s{^https?://\Q$host\E(:\d+)?$main::VIRTUAL_BASE}{}xms;
+    $href =~ s{^https?://\Q$host\E(:\d+)?$VIRTUAL_BASE}{}xms;
     $href = uri_unescape( uri_unescape($href) );
-    my $src = $main::DOCUMENT_ROOT . $href;
-    my $dst = $main::PATH_TRANSLATED . $segment;
+    my $src = $DOCUMENT_ROOT . $href;
+    my $dst = $PATH_TRANSLATED . $segment;
 
     my $nsrc = $src;
     $nsrc =~ s/\/$//xms;
@@ -85,7 +86,7 @@ sub handle {
     }
     my ( $status, $type, $content );
 
-    main::broadcast( 'REBIND', { file => $nsrc, destination => $ndst } );
+    $self->{event}->broadcast( 'REBIND', { file => $nsrc, destination => $ndst } );
     $status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
 
     if ( $backend->isLink($ndst) && $backend->unlinkFile($ndst) ) {
@@ -93,14 +94,14 @@ sub handle {
     }
 
     my $orig = $backend->getLinkSrc($nsrc);
-    if ( !rmove( $nsrc, $ndst ) ) {    ### check rename->rmove OK?
+    if ( !rmove( $self->{config}, $nsrc, $ndst ) ) {    ### check rename->rmove OK?
         if (   !$backend->createSymLink( $orig, $dst )
             || !$backend->unlinkFile($nsrc) )
         {
             return print_header_and_content('403 Forbidden');
         }
     }
-    main::broadcast( 'REBOUND', { file => $orig, destination => $dst } );
+    $self->{event}->broadcast( 'REBOUND', { file => $orig, destination => $dst } );
     return print_header_and_content( $status, $type, $content );
 }
 

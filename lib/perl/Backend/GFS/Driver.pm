@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -20,22 +19,30 @@
 package Backend::GFS::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::FS::Driver;
+our $VERSION = '2.0';
 
-our @ISA = qw( Backend::FS::Driver );
+use base qw( Backend::FS::Driver );
+
+use CGI::Carp;
 
 sub getQuota {
-	my ($self, $fn) = @_;
-	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd,'-|', sprintf("%s \"%s\"", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
-		my @lines = <$cmd>;
-		close($cmd);
-		my @vals = split(/\s+/,$lines[0]);
-		return ($vals[3] * 1048576, $vals[7] * 1048576);
-	}
-	return (0,0);
+    my ( $self, $fn ) = @_;
+    $fn =~ s/(["\$\\])/\\$1/xmsg;
+    my $cmdline = sprintf '%s "%s"',
+      $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn);
+    if ( open my $cmd, q{-|}, $cmdline ) {
+
+        #my @lines = <$cmd>;
+        my $firstline = <$cmd>;
+        close($cmd) || carp( 'Cannot close GFS quota command: ' . $cmdline );
+
+        #my @vals = split( /\s+/, $lines[0] );
+        my @vals = split /\s+/xms, $firstline;
+        return ( $vals[3] * 1_048_576, $vals[7] * 1_048_576 );
+    }
+    return ( 0, 0 );
 }
 
 1;

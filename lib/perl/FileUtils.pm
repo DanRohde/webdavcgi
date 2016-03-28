@@ -26,30 +26,33 @@ our $VERSION = '1.0';
 use base qw( Exporter );
 our @EXPORT_OK =
   qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix
-  rmove is_hidden filter get_error_document stat2h get_file_limit )
-  ;
+  rmove is_hidden filter get_error_document stat2h get_file_limit );
 
 use CGI;
 use CGI::Carp;
 
 use English qw( -no_match_vars );
 
-use HTTPHelper qw( get_etag );
+use HTTPHelper qw( get_etag get_mime_type );
 use CacheManager;
+
+use DefaultConfig
+  qw( $LIMIT_FOLDER_DEPTH $TRASH_FOLDER %FILEFILTERPERDIR $FILECOUNTLIMIT 
+      %FILECOUNTPERDIRLIMIT @HIDDEN %ERROR_DOCS );
 
 use vars qw( $_INSTANCE );
 
 sub rcopy {
-    my ( $src, $dst, $move, $depth ) = @_;
+    my ( $config, $src, $dst, $move, $depth ) = @_;
 
-    my $backend = main::get_backend();
+    my $backend = $config->{backend};
 
     $depth //= 0;
 
     return 0
-      if defined $main::LIMIT_FOLDER_DEPTH
-      && $main::LIMIT_FOLDER_DEPTH > 0
-      && $depth > $main::LIMIT_FOLDER_DEPTH;
+      if defined $LIMIT_FOLDER_DEPTH
+      && $LIMIT_FOLDER_DEPTH > 0
+      && $depth > $LIMIT_FOLDER_DEPTH;
 
     # src == dst ?
     return 0 if $src eq $dst;
@@ -114,7 +117,7 @@ sub rcopy {
             my $rret = 1;
             foreach my $filename ( @{ $backend->readDir($src) } ) {
                 $rret = $rret
-                  && rcopy( $src . $filename, $dst . $filename,
+                  && rcopy( $config, $src . $filename, $dst . $filename,
                     $move, $depth + 1 );
             }
             if ($move) {
@@ -134,24 +137,23 @@ sub rcopy {
     #BUGFIX: properties have no trailing slash
     $src =~ s{/$}{}xms;
     $dst =~ s{/$}{}xms;
-    main::broadcast(
+    $config->{event}->broadcast(
         $move ? 'FILEMOVED' : 'FILECOPIED',
         {
             file        => $src,
             destination => $dst,
             depth       => $depth,
             overwrite   => 'T',
-            size        => ( $backend->stat($src) )[7] // 0,
+            size        => stat2h( \$backend->stat($src) )->{size} // 0,
         },
     );
     return 1;
 }
 
 sub rmove {
-    my ( $src, $dst ) = @_;
-    return rcopy( $src, $dst, 1 );
+    my ( $config, $src, $dst ) = @_;
+    return rcopy( $config, $src, $dst, 1 );
 }
-
 
 sub get_local_file_content_and_type {
     my ( $fn, $default, $defaulttype ) = @_;
@@ -162,7 +164,7 @@ sub get_local_file_content_and_type {
             $content = <$F>;
         };
         close($F) || carp("Cannot close filehandle for '$fn'.");
-        $defaulttype = main::get_mime_type($fn);
+        $defaulttype = get_mime_type($fn);
     }
     else {
         $content = $default;
@@ -171,39 +173,39 @@ sub get_local_file_content_and_type {
 }
 
 sub move2trash {
-    my ($fn)    = @_;
-    my $backend = main::get_backend();
+    my ($config, $fn)    = @_;
+    my $backend = $config->{backend};
     my $ret     = 0;
-    my $etag    = get_etag($fn);        ## get a unique name for trash folder
+    my $etag    = get_etag($fn);         ## get a unique name for trash folder
     $etag =~ s/\"//xmsg;
-    my $trash = "$main::TRASH_FOLDER$etag/";
+    my $trash = "$TRASH_FOLDER$etag/";
 
-    if ( $fn =~ /^\Q$main::TRASH_FOLDER\E/xms ) {    ## delete within trash
+    if ( $fn =~ /^\Q$TRASH_FOLDER\E/xms ) {    ## delete within trash
         my @err;
         $ret += $backend->deltree( $fn, \@err );
         if ( $#err >= 0 ) { $ret = 0; }
-        main::debug("move2trash($fn)->/dev/null = $ret");
+        $config->{debug}->("move2trash($fn)->/dev/null = $ret");
     }
-    elsif ($backend->exists($main::TRASH_FOLDER)
-        || $backend->mkcol($main::TRASH_FOLDER) )
+    elsif ($backend->exists($TRASH_FOLDER)
+        || $backend->mkcol($TRASH_FOLDER) )
     {
         if ( $backend->exists($trash) ) {
             my $i = 0;
-            while ( $backend->exists($trash) ) {     ## find unused trash folder
-                $trash = "$main::TRASH_FOLDER$etag" . ( $i++ ) . q{/};
+            while ( $backend->exists($trash) ) {    ## find unused trash folder
+                $trash = "$TRASH_FOLDER$etag" . ( $i++ ) . q{/};
             }
         }
         $ret = $backend->mkcol($trash)
-          && rmove( $fn, $trash . $backend->basename($fn) ) ? 1 : 0;
-        main::debug("move2trash($fn)->$trash = $ret");
+          && rmove( $config, $fn, $trash . $backend->basename($fn) ) ? 1 : 0;
+        $config->{debug}->("move2trash($fn)->$trash = $ret");
     }
     return $ret;
 }
 
 sub read_dir_by_suffix {
-    my ( $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
+    my ( $config, $fn, $base, $hrefs, $suffix, $depth, $visited ) = @_;
     debug("read_dir_by_suffix($fn, ..., $suffix, $depth)");
-    my $backend = main::get_backend();
+    my $backend = $config->{backend};
 
     my $nfn = $backend->resolve($fn);
     return
@@ -233,13 +235,13 @@ sub read_dir_by_suffix {
 }
 
 sub get_dir_info {
-    my ( $fn, $prop, $filter, $limit, $max ) = @_;
+    my ( $config, $fn, $prop, $filter, $limit, $max ) = @_;
     my $cm = CacheManager::getinstance();
     if ( $cm->exists_entry( [ 'get_dir_info', $fn, $prop ] ) ) {
         return $cm->get_entry( [ 'get_dir_info', $fn, $prop ] );
     }
 
-    my $backend = main::get_backend();
+    my $backend = $config->{backend};
 
     my %counter = (
         childcount   => 0,
@@ -271,7 +273,7 @@ sub get_dir_info {
 }
 
 sub _get_hidden_filter {
-    return @main::HIDDEN ? '(' . join( q{|}, @main::HIDDEN ) . ')' : undef;
+    return @HIDDEN ? '(' . join( q{|}, @HIDDEN ) . ')' : undef;
 }
 
 sub is_hidden {
@@ -283,7 +285,7 @@ sub is_hidden {
 sub filter {
     my ( $path, $file ) = @_;
     my $hidden = _get_hidden_filter();
-    my $filter = defined $path ? $main::FILEFILTERPERDIR{$path} : undef;
+    my $filter = defined $path ? $FILEFILTERPERDIR{$path} : undef;
 
     return
          ( defined $file && $file =~ /^[.]{1,2}$/xms )
@@ -298,11 +300,11 @@ sub get_error_document {
     my ( $status, $defaulttype, $default ) = @_;
     $defaulttype //= 'text/plain';
     $default //= $status;
-    return exists $main::ERROR_DOCS{$status}
+    return exists $ERROR_DOCS{$status}
       ? (
         $status,
         get_local_file_content_and_type(
-            $main::ERROR_DOCS{$status},
+            $ERROR_DOCS{$status},
             $default, $defaulttype
         )
       )
@@ -333,9 +335,10 @@ sub stat2h {
         blocks  => $blocks,
     };
 }
+
 sub get_file_limit {
     my ($path) = @_;
-    return $main::FILECOUNTPERDIRLIMIT{$path} || $main::FILECOUNTLIMIT;
+    return $FILECOUNTPERDIRLIMIT{$path} // $FILECOUNTLIMIT;
 }
 
 1;

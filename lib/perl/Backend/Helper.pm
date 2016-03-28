@@ -19,115 +19,121 @@
 package Backend::Helper;
 
 use strict;
+use warnings;
 
-use Backend::FS::Driver;
-our @ISA = qw( Backend::FS::Driver );
-
+use base qw( Backend::FS::Driver );
 use File::Temp qw/ tempdir /;
+use CGI::Carp;
 
-our $VERSION = 0.1;
+use FileUtils qw( stat2h );
+
+our $VERSION = '2.0';
 
 sub _copytolocal {
-	my ( $self, $destdir, @files ) = @_;
-	foreach my $file (@files) {
-		my $ndestdir = $destdir . $self->basename($file);
-		if ( $self->isDir($file) ) {
-			$file .= '/' if $file !~ /\/$/;
-			if ( $self->SUPER::mkcol($ndestdir) ) {
-				foreach my $nfile ( @{ $self->readDir($file) } ) {
-					next if $nfile =~ /^\.{1,2}$/;
-					$self->_copytolocal( "$ndestdir/", "$file$nfile" );
-				}
-			}
-		}
-		else {
-			if ( open( my $fh, ">$ndestdir" ) ) {
-				$self->printFile( $file, $fh );
-				close($fh);
-			}
-		}
-		my @stat = $self->stat($file);
-		utime( $stat[8], $stat[9], $ndestdir );
-	}
+    my ( $self, $destdir, @files ) = @_;
+    foreach my $file (@files) {
+        my $ndestdir = $destdir . $self->basename($file);
+        if ( $self->isDir($file) ) {
+            $file .= $file !~ m{/$}xms ? q{/} : q{};
+            if ( $self->SUPER::mkcol($ndestdir) ) {
+                foreach my $nfile ( @{ $self->readDir($file) } ) {
+                    if ( $nfile !~ /^[.]{1,2}$/xms ) {
+                        $self->_copytolocal( "$ndestdir/", "$file$nfile" );
+                    }
+                }
+            }
+        }
+        else {
+            if ( open my $fh, '>', $ndestdir ) {
+                $self->printFile( $file, $fh );
+                close($fh) || carp("Cannot close $ndestdir");
+            }
+        }
+        my $stat = stat2h( \$self->stat($file) );
+        utime $stat->{atime}, $stat->{mtime}, $ndestdir;
+    }
+    return;
 }
 
-sub compressFiles {
-	my ( $self, $desthandle, $basepath, @files ) = @_;
-	my $tempdir = tempdir( '/tmp/webdavcgi-compressFiles-XXXXX', CLEANUP => 1 );
-	require Archive::Zip;
-	my $zip = Archive::Zip->new();
-	foreach my $file (@files) {
-		$self->_copytolocal( "$tempdir/", "$basepath$file" );
-		if ( -d "$tempdir/$file" ) {
-			$zip->addTree( "$tempdir/$file", $file );
-		}
-		elsif ( -e "$tempdir/$file" ) {
-			$zip->addFile( "$tempdir/$file", $file );
-		}
-	}
-	$zip->writeToFileHandle( $desthandle, 0 );
+sub compress_files {
+    my ( $self, $desthandle, $basepath, @files ) = @_;
+    my $tempdir =
+      tempdir( '/tmp/webdavcgi-compress-files-XXXXX', CLEANUP => 1 );
+    require Archive::Zip;
+    my $zip = Archive::Zip->new();
+    foreach my $file (@files) {
+        $self->_copytolocal( "$tempdir/", "$basepath$file" );
+        if ( -d "$tempdir/$file" ) {
+            $zip->addTree( "$tempdir/$file", $file );
+        }
+        elsif ( -e "$tempdir/$file" ) {
+            $zip->addFile( "$tempdir/$file", $file );
+        }
+    }
+    return $zip->writeToFileHandle( $desthandle, 0 );
 }
 
 sub _copytodestination {
-	my ( $self, $src, $dst ) = @_;
-	my $ret = 0;
-	if ( opendir( my $dir, $src ) ) {
-		$ret = 1;
-		while ( my $file = readdir($dir) ) {
-			next if $file =~ /^\.{1,2}$/;
-			my $nsrc = "$src$file";
-			my $ndst = "$dst$file";
-			if ( -d $nsrc ) {
-				$self->mkcol($ndst);
-				$ret &= $self->_copytodestination( "$nsrc/", "$ndst/" );
-			}
-			else {
-				if ( open( my $fh, "<$nsrc" ) ) {
-					$ret &= $self->saveStream( $ndst, $fh );
-					close($fh);
-				}
-				else {
-					$ret = 0;
-				}
-			}
-		}
-		closedir($dir);
-	}
-	return $ret;
+    my ( $self, $src, $dst ) = @_;
+    my $ret = 0;
+    if ( opendir my $dir, $src ) {
+        $ret = 1;
+        while ( my $file = readdir $dir ) {
+            if ( $file =~ /^[.]{1,2}$/xms ) { next; }
+            my $nsrc = "$src$file";
+            my $ndst = "$dst$file";
+            if ( -d $nsrc ) {
+                $self->mkcol($ndst);
+                $ret &= $self->_copytodestination( "$nsrc/", "$ndst/" );
+            }
+            else {
+                if ( open my $fh, '<', $nsrc ) {
+                    $ret &= $self->saveStream( $ndst, $fh );
+                    close($fh) || carp("Cannot close $nsrc.");
+                }
+                else {
+                    $ret = 0;
+                }
+            }
+        }
+        closedir $dir;
+    }
+    return $ret;
 }
 
 sub __deltree {
-	my ($file) = @_;
-	if ( -l $file ) {
-		CORE::unlink($file);
-	}
-	elsif ( -d $file ) {
-		if ( opendir( my $dir, $file ) ) {
-			foreach my $f ( grep { !/^\.{1,2}$/ } readdir($dir) ) {
-				my $nf = $file . $f;
-				$nf .= '/' if -d $nf;
-				__deltree($nf);
-			}
-			closedir($dir);
-			CORE::rmdir($file);
-		}
-	}
-	elsif ( -e $file ) {
-		CORE::unlink($file);
-	}
+    my ($file) = @_;
+    if ( -l $file ) {
+        return CORE::unlink($file);
+    }
+    if ( -d $file ) {
+        if ( opendir my $dir, $file ) {
+            foreach my $f ( grep { !/^[.]{1,2}$/xms } readdir $dir ) {
+                my $nf = $file . $f;
+                $nf .= -d $nf ? q{/} : q{};
+                __deltree($nf);
+            }
+            closedir $dir;
+            return CORE::rmdir($file);
+        }
+        return 0;
+    }
+    if ( -e $file ) {
+        return CORE::unlink($file);
+    }
+    return 0;
 }
 
-sub uncompressArchive {
-	my ( $self, $zipfile, $destination ) = @_;
-	my $tempdir =
-	  tempdir( '/tmp/webdav-uncompressArchive-XXXXX', CLEANUP => 1 );
-	my $localzip = $self->getLocalFilename($zipfile);
-	my $ret      =
-	     $self->SUPER::uncompressArchive( $localzip, "$tempdir/" )
-	  && $self->_copytodestination( "$tempdir/", $destination );
-	CORE::unlink($localzip);
-	__deltree("$tempdir/");    # fixes Speedy bug
-	return $ret;
+sub uncompress_archive {
+    my ( $self, $zipfile, $destination ) = @_;
+    my $tempdir =
+      tempdir( '/tmp/webdav-uncompress_archive-XXXXX', CLEANUP => 1 );
+    my $localzip = $self->getLocalFilename($zipfile);
+    my $ret = $self->SUPER::uncompress_archive( $localzip, "$tempdir/" )
+      && $self->_copytodestination( "$tempdir/", $destination );
+    CORE::unlink($localzip);
+    __deltree("$tempdir/");    # fixes Speedy bug
+    return $ret;
 }
 
 1;

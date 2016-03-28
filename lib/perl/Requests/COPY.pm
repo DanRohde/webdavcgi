@@ -27,6 +27,7 @@ use base qw( Requests::WebDAVRequest );
 
 use URI::Escape;
 
+use DefaultConfig qw( $PATH_TRANSLATED $DOCUMENT_ROOT $VIRTUAL_BASE );
 use FileUtils qw( rcopy );
 use HTTPHelper qw( print_header_and_content );
 
@@ -40,16 +41,16 @@ sub handle {
     my $overwrite =
       defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
     $destination =~
-      s{^https?://([^\@]+\@)?\Q$host\E(:\d+)?$main::VIRTUAL_BASE}{}xms;
+      s{^https?://([^\@]+\@)?\Q$host\E(:\d+)?$VIRTUAL_BASE}{}xms;
     $destination = uri_unescape($destination);
     $destination = uri_unescape($destination);
-    $destination = $main::DOCUMENT_ROOT . $destination;
+    $destination = $DOCUMENT_ROOT . $destination;
 
-    $self->debug("_COPY: $main::PATH_TRANSLATED => $destination");
+    $self->debug("_COPY: $PATH_TRANSLATED => $destination");
 
     if (   ( !defined $destination )
         || ( $destination eq q{} )
-        || ( $main::PATH_TRANSLATED eq $destination ) )
+        || ( $PATH_TRANSLATED eq $destination ) )
     {
         return print_header_and_content('403 Forbidden');
     }
@@ -61,16 +62,16 @@ sub handle {
     }
     if (
         !$self->is_allowed(
-            $destination, $backend->isDir($main::PATH_TRANSLATED)
+            $destination, $backend->isDir($PATH_TRANSLATED)
         )
       )
     {
         return print_header_and_content('423 Locked');
     }
-    main::broadcast(
+    $self->{event}->broadcast(
         'COPY',
         {
-            file        => $main::PATH_TRANSLATED,
+            file        => $PATH_TRANSLATED,
             destination => $destination,
             depth       => $depth,
             overwrite   => $overwrite
@@ -79,17 +80,17 @@ sub handle {
     my $status =
       $backend->exists($destination) ? '204 No Content' : '201 Created';
 
-    if ( $backend->isDir($main::PATH_TRANSLATED) && $depth == 0 ) {
+    if ( $backend->isDir($PATH_TRANSLATED) && $depth == 0 ) {
         if ( !$backend->exists($destination) && !$backend->mkcol($destination) )
         {
             return print_header_and_content(
                 "403 Forbidden (mkcol($destination) failed)");
         }
         $self->get_lock_module()->inherit_lock($destination);
-        main::broadcast(
+        $self->{event}->broadcast(
             'FILECOPIED',
             {
-                file        => $main::PATH_TRANSLATED,
+                file        => $PATH_TRANSLATED,
                 destination => $destination,
                 depth       => $depth,
                 overwrite   => $overwrite
@@ -97,23 +98,23 @@ sub handle {
         );
     }
     else {
-        if ( !rcopy( $main::PATH_TRANSLATED, $destination ) ) {
+        if ( !rcopy( $self->{config}, $PATH_TRANSLATED, $destination ) ) {
             return print_header_and_content(
-"403 Forbidden - copy failed (rcopy($main::PATH_TRANSLATED,$destination))"
+"403 Forbidden - copy failed (rcopy($PATH_TRANSLATED,$destination))"
             );
         }
         $self->get_lock_module()->inherit_lock( $destination, 1 );
-        main::broadcast(
+        $self->{event}->broadcast(
             'COPIED',
             {
-                file        => $main::PATH_TRANSLATED,
+                file        => $PATH_TRANSLATED,
                 destination => $destination,
                 depth       => $depth,
                 overwrite   => $overwrite
             }
         );
     }
-    $self->logger("COPY($main::PATH_TRANSLATED, $destination)");
+    $self->logger("COPY($PATH_TRANSLATED, $destination)");
     return print_header_and_content($status);
 }
 

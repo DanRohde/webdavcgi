@@ -111,12 +111,12 @@ sub saveData {
 sub saveStream {
 	return 0;
 }
-sub uncompressArchive {
+sub uncompress_archive {
 	return 0;
 }
-sub compressFiles {
+sub compress_files {
 	my $self = shift @_;
-	return $$self{BACKEND}->compressFiles(@_);
+	return $$self{BACKEND}->compress_files(@_);
 }
 sub changeMod {
 	return 0;

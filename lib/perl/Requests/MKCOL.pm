@@ -27,6 +27,7 @@ use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
+use DefaultConfig qw( $PATH_TRANSLATED );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
@@ -34,7 +35,7 @@ sub handle {
     my ($self)  = @_;
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
-    my $pt      = $main::PATH_TRANSLATED;
+    my $pt      = $PATH_TRANSLATED;
 
     $self->debug("MKCOL: $pt");
     my $body = read_request_body();
@@ -85,7 +86,7 @@ sub handle {
     }
 
     $self->debug("MKCOL: create $pt");
-    main::broadcast( 'MKCOL', { file => $pt } );
+    $self->{event}->broadcast( 'MKCOL', { file => $pt } );
 
     if ( !$backend->mkcol($pt) ) {
         return print_header_and_content('403 Forbidden');
@@ -96,7 +97,7 @@ sub handle {
     ## ignore errors from property request
     $self->get_lock_module()->inherit_lock();
     $self->logger("MKCOL($pt)");
-    main::broadcast( 'MDCOL', { file => $pt } );
+    $self->{event}->broadcast( 'MDCOL', { file => $pt } );
     return print_header_and_content('201 Created');
 }
 

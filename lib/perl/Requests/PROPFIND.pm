@@ -28,6 +28,10 @@ use base qw( Requests::WebDAVRequest );
 use English qw ( -no_match_vars );
 use CGI::Carp;
 
+use DefaultConfig 
+   qw( $PATH_TRANSLATED $REQUEST_URI $ALLOW_INFINITE_PROPFIND 
+       $PRINCIPAL_COLLECTION_SET $CURRENT_USER_PRINCIPAL $CHARSET
+   );
 use HTTPHelper qw( print_header_and_content read_request_body );
 use WebDAV::XMLHelper
   qw( create_xml simple_xml_parser handle_propfind_element );
@@ -43,15 +47,15 @@ sub handle {
     my ($self)  = @_;
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
-    my $fn      = $main::PATH_TRANSLATED;
-    my $ru      = $main::REQUEST_URI;
+    my $fn      = $PATH_TRANSLATED;
+    my $ru      = $REQUEST_URI;
     my $status  = '207 Multi-Status';
     my $type    = 'text/xml';
     my $depth = $cgi->http('Depth') // $DEPTH_INFINITY;
     my $noroot = $depth =~ s/,noroot//xms ? 1 : 0;
     $depth = $depth =~ /infinity/xmsi ? $DEPTH_INFINITY : $depth;
     $self->debug("_PROPFIND: depth=$depth, fn=$fn, ru=$ru");
-    if (   ( $depth == $DEPTH_INFINITY && !$main::ALLOW_INFINITE_PROPFIND )
+    if (   ( $depth == $DEPTH_INFINITY && !$ALLOW_INFINITE_PROPFIND )
         || ( $depth !~ /^(?:0|-?1)$/xms ) )
     {
         carp("PROPFIND: 400 Bad Request: illegal Depth header value: $depth");
@@ -62,7 +66,7 @@ sub handle {
     my $xml = read_request_body();
     if ( !defined $xml || $xml =~ /^\s*$/xms ) {
         $xml =
-qq{<?xml version="1.0" encoding="$main::CHARSET" ?>\n<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>};
+qq{<?xml version="1.0" encoding="$CHARSET" ?>\n<D:propfind xmlns:D="DAV:"><D:allprop/></D:propfind>};
     }
 
     my $xmldata;
@@ -77,18 +81,18 @@ qq{<?xml version="1.0" encoding="$main::CHARSET" ?>\n<D:propfind xmlns:D="DAV:">
     my @resps = ();
 
     ## ACL, CalDAV, CardDAV, ...:
-    if (   defined $main::PRINCIPAL_COLLECTION_SET
-        && length($main::PRINCIPAL_COLLECTION_SET) > 1
-        && $ru =~ /\Q$main::PRINCIPAL_COLLECTION_SET\E$/xms )
+    if (   defined $PRINCIPAL_COLLECTION_SET
+        && length($PRINCIPAL_COLLECTION_SET) > 1
+        && $ru =~ /\Q$PRINCIPAL_COLLECTION_SET\E$/xms )
     {
-        $fn =~ s/\Q$main::PRINCIPAL_COLLECTION_SET\E$//xms;
+        $fn =~ s/\Q$PRINCIPAL_COLLECTION_SET\E$//xms;
         $depth = 0;
     }
-    elsif (defined $main::CURRENT_USER_PRINCIPAL
-        && length($main::CURRENT_USER_PRINCIPAL) > 1
-        && $ru =~ /\Q$main::CURRENT_USER_PRINCIPAL\E\/?$/xms )
+    elsif (defined $CURRENT_USER_PRINCIPAL
+        && length($CURRENT_USER_PRINCIPAL) > 1
+        && $ru =~ /\Q$CURRENT_USER_PRINCIPAL\E\/?$/xms )
     {
-        $fn =~ s/\Q$main::CURRENT_USER_PRINCIPAL\E\/?$//xms;
+        $fn =~ s/\Q$CURRENT_USER_PRINCIPAL\E\/?$//xms;
         $depth = 0;
     }
     elsif ( $ru =~ m{^/[.]well-known/(?:caldav|carddav)$}xms ) {    # RFC5785
@@ -113,8 +117,8 @@ qq{<?xml version="1.0" encoding="$main::CHARSET" ?>\n<D:propfind xmlns:D="DAV:">
       : q{};
 
     my $size = bytes::length($content);
-    main::broadcast( 'PROPFIND',
-        { file => $main::PATH_TRANSLATED, size => $size } );
+    $self->{event}->broadcast( 'PROPFIND',
+        { file => $PATH_TRANSLATED, size => $size } );
     $self->debug("_PROPFIND: status=$status, type=$type, size=$size");
     $self->debug("_PROPFIND: REQUEST:\n$xml\nEND-REQUEST");
     $self->debug("_PROPFIND: RESPONSE:\n$content\nEND-RESPONSE");

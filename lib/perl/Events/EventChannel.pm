@@ -22,7 +22,6 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use English qw( -no_match_vars );
 use CGI::Carp;
 
 sub new {
@@ -56,7 +55,7 @@ sub add {
 
 sub broadcast {
     my ( $self, $event, @data ) = @_;
-    my @listeners = ( @{ ${$self}{$event} // []}, @{ ${$self}{ALL} // [] } );
+    my @listeners = ( @{ ${$self}{$event} // [] }, @{ ${$self}{ALL} // [] } );
     foreach my $listener (@listeners) {
         $listener->receive( $event, @data );
     }

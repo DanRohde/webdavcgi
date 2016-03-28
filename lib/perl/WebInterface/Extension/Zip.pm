@@ -199,7 +199,7 @@ sub handleZipUpload {
             push @zipfiles, $rfn;
             ${$self}{backend}->unlinkFile( $main::PATH_TRANSLATED . $rfn )
                 if ${$self}{backend}
-                ->uncompressArchive( "$main::PATH_TRANSLATED$rfn",
+                ->uncompress_archive( "$main::PATH_TRANSLATED$rfn",
                 $main::PATH_TRANSLATED );
         }
     }
@@ -246,7 +246,7 @@ sub handleZipDownload {
         -Content_disposition => 'attachment; filename=' . $zfn
     );
     ${$self}{backend}
-        ->compressFiles( \*STDOUT, $main::PATH_TRANSLATED, @files );
+        ->compress_files( \*STDOUT, $main::PATH_TRANSLATED, @files );
     return 1;
 }
 
@@ -263,7 +263,7 @@ sub handleZipCompress {
     my $error;
     if ( open( $zipfh, ">", "$zipfn" ) ) {
         ${$self}{backend}
-            ->compressFiles( $zipfh, $main::PATH_TRANSLATED, @files );
+            ->compress_files( $zipfh, $main::PATH_TRANSLATED, @files );
         close($zipfh) || carp("Cannot close $zipfn");
         if ( ( stat $zipfn )[7] > 0 ) {
             my ( $quotahrd, $quotacur ) = $self->{backend}->getQuota();
@@ -314,7 +314,7 @@ sub handleZipUncompress {
     my ($self) = @_;
     my @files = ${$self}{cgi}->param('files');
     foreach my $file ( ${$self}{cgi}->param('files') ) {
-        ${$self}{backend}->uncompressArchive( $main::PATH_TRANSLATED . $file,
+        ${$self}{backend}->uncompress_archive( $main::PATH_TRANSLATED . $file,
             $main::PATH_TRANSLATED );
     }
     my %jsondata = ();

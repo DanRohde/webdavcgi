@@ -25,6 +25,7 @@ our $VERSION = '2.0';
 
 use base qw( Requests::WebInterfaceRequest );
 
+use DefaultConfig qw( $PATH_TRANSLATED $ALLOW_FILE_MANAGEMENT $ENABLE_CALDAV_SCHEDULE );
 use HTTPHelper qw( print_header_and_content );
 use FileUtils qw( get_error_document );
 
@@ -32,24 +33,24 @@ sub handle {
     my ($self)  = @_;
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
-    $self->debug("_POST: $main::PATH_TRANSLATED");
+    $self->debug("_POST: $PATH_TRANSLATED");
     if ( !$cgi->param('file_upload') && $cgi->cgi_error ) {
         return print_header_and_content( $cgi->cgi_error, undef,
             $cgi->cgi_error );
     }
-    if ( $main::ALLOW_FILE_MANAGEMENT
+    if ( $ALLOW_FILE_MANAGEMENT
         && $self->get_webinterface()->handle_post_request() )
     {
         $self->debug('_POST: WebInterface called');
         return;
     }
-    if (   $main::ENABLE_CALDAV_SCHEDULE
-        && $backend->isDir($main::PATH_TRANSLATED) )
+    if (   $ENABLE_CALDAV_SCHEDULE
+        && $backend->isDir($PATH_TRANSLATED) )
     {
         ## TODO: NOT IMPLEMENTED YET
         return print_header_and_content('501 Not Implemented');
     }
-    $self->debug("_POST: forbidden POST to $main::PATH_TRANSLATED");
+    $self->debug("_POST: forbidden POST to $PATH_TRANSLATED");
     return print_header_and_content(
         get_error_document(
             '403 Forbidden',

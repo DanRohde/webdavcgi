@@ -19,85 +19,126 @@
 package WebInterface::Extension::SysInfo;
 
 use strict;
+use warnings;
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension );
+our $VERSION = '2.0';
 
-sub init { 
-	my ($self, $hookreg) = @_;
-	$self->setExtension('SysInfo'); 
-	$hookreg->register(['gethandler','apps'], $self);
+use base qw( WebInterface::Extension );
+
+use English qw( -no_match_vars ) ;
+use Data::Dumper;
+
+
+use DefaultConfig qw{ $TITLEPREFIX };
+use HTTPHelper qw( print_header_and_content );
+
+sub init {
+    my ( $self, $hookreg ) = @_;
+    $self->setExtension('SysInfo');
+    $hookreg->register( [ 'gethandler', 'apps' ], $self );
+    return $self;
 }
 
-sub handle { 
-	my ($self, $hook, $config, $params) = @_; 
-	my $handled = $self->SUPER::handle($hook,$config,$params);
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    my $handled = $self->SUPER::handle( $hook, $config, $params );
+    my $cgi = $self->{cgi};
 
-	if ($hook eq 'gethandler' && $$self{cgi}->request_uri() =~ /\/sysinfo.html$/) {
-		$self->renderSysInfo();
-		$handled = 1;
-	}elsif ($hook eq 'apps') {
-		return $$self{cgi}->li({-title=>$self->tl('SysInfo')},$$self{cgi}->a({-class=>'action sysinfo', -href=>'sysinfo.html'},$self->tl('SysInfo')));
-	}
+    if ( $hook eq 'gethandler' && $cgi->request_uri() =~ /\/sysinfo.html$/xms )
+    {
+        $self->render_sys_info();
+        $handled = 1;
+    }
+    elsif ( $hook eq 'apps' ) {
+        return $cgi->li(
+            { -title => $self->tl('SysInfo') },
+            $cgi->a(
+                { -class => 'action sysinfo', -href => 'sysinfo.html' },
+                $self->tl('SysInfo')
+            )
+        );
+    }
 
-	return $handled; 
+    return $handled;
 }
-sub renderSysInfo {
-        my $self = shift;
-        my $i = "";
-        $i.= $$self{cgi}->start_html("$main::TITLEPREFIX SysInfo");
 
-        $i.= $$self{cgi}->h1('WebDAV CGI SysInfo');
-        $i.= $$self{cgi}->h2('Process - '.$0);
-        $i.= $$self{cgi}->start_table()
-             .$$self{cgi}->Tr($$self{cgi}->td('BASETIME').$$self{cgi}->td(''.localtime($^T)))
-             .$$self{cgi}->Tr($$self{cgi}->td('OSNAME').$$self{cgi}->td($^O))
-             .$$self{cgi}->Tr($$self{cgi}->td('PID').$$self{cgi}->td($$))
-             .$$self{cgi}->Tr($$self{cgi}->td('REAL UID').$$self{cgi}->td($<))
-             .$$self{cgi}->Tr($$self{cgi}->td('EFFECTIVE UID').$$self{cgi}->td($>))
-             .$$self{cgi}->Tr($$self{cgi}->td('REAL GID').$$self{cgi}->td($())
-             .$$self{cgi}->Tr($$self{cgi}->td('EFFECTIVE GID').$$self{cgi}->td($)))
+sub render_sys_info {
+    my ($self) = @_;
+    my $i    = q{};
 
-             .$$self{cgi}->end_table();
-        $i.= $$self{cgi}->h2('Perl');
-        $i.= $$self{cgi}->start_table()
-                .$$self{cgi}->Tr($$self{cgi}->td('version').$$self{cgi}->td(sprintf('%vd',$^V)))
-                .$$self{cgi}->Tr($$self{cgi}->td('debugging').$$self{cgi}->td($^D))
-                .$$self{cgi}->Tr($$self{cgi}->td('taint mode').$$self{cgi}->td(${^TAINT}))
-                .$$self{cgi}->Tr($$self{cgi}->td('unicode').$$self{cgi}->td(${^UNICODE}))
-                .$$self{cgi}->Tr($$self{cgi}->td('warning').$$self{cgi}->td($^W))
-                .$$self{cgi}->Tr($$self{cgi}->td('executable name').$$self{cgi}->td($^X))
-                .$$self{cgi}->end_table();
-        $i.= $$self{cgi}->h2('Perl Variables');
-        $i.= $$self{cgi}->start_table()
-                .$$self{cgi}->Tr($$self{cgi}->td('@INC').$$self{cgi}->td(join(" ",@INC)))
-                .$$self{cgi}->end_table();
+    my $cgi = $self->{cgi};
 
-        $i.= $$self{cgi}->h2('Includes');
-        $i.= $$self{cgi}->start_table();
-        foreach my $e (sort keys %INC) {
-                $i.=$$self{cgi}->Tr($$self{cgi}->td($e).$$self{cgi}->td($ENV{$e}));
+    $i .= $cgi->start_html("$TITLEPREFIX SysInfo");
+
+    $i .= $cgi->h1('WebDAV CGI SysInfo');
+    $i .= $cgi->h2( 'Process - ' . $PROGRAM_NAME );
+    $i .=
+        $cgi->start_table()
+      . $cgi->Tr( $cgi->td('BASETIME') . $cgi->td( q{} . localtime $BASETIME) )
+      . $cgi->Tr( $cgi->td('OSNAME') . $cgi->td($OSNAME) )
+      . $cgi->Tr( $cgi->td('PID') . $cgi->td($PID) )
+      . $cgi->Tr( $cgi->td('REAL UID') . $cgi->td($UID) )
+      . $cgi->Tr( $cgi->td('EFFECTIVE UID') . $cgi->td($EUID) )
+      . $cgi->Tr( $cgi->td('REAL GID') . $cgi->td($GID) )
+      . $cgi->Tr( $cgi->td('EFFECTIVE GID') . $cgi->td($EGID) )
+
+      . $cgi->end_table();
+    $i .= $cgi->h2('Perl');
+    $i .=
+        $cgi->start_table()
+      . $cgi->Tr( $cgi->td('version') . $cgi->td( sprintf '%vd', $PERL_VERSION ) )
+      . $cgi->Tr( $cgi->td('debugging') . $cgi->td($DEBUGGING) )
+      . $cgi->Tr( $cgi->td('warning') . $cgi->td($WARNING) )
+      . $cgi->Tr( $cgi->td('executable name') . $cgi->td($EXECUTABLE_NAME) )
+      . $cgi->end_table();
+    $i .= $cgi->h2('Perl Variables');
+    $i .=
+        $cgi->start_table()
+      . $cgi->Tr( $cgi->td('INC') . $cgi->td( join q{ }, @INC ) )
+      . $cgi->end_table();
+
+    $i .= $cgi->h2('Includes');
+    $i .= $cgi->start_table();
+    foreach my $e ( sort keys %INC ) {
+        $i .= $cgi->Tr( $cgi->td($e) . $cgi->td( $ENV{$e} ) );
+    }
+    $i .= $cgi->end_table();
+
+    $i .= $cgi->h2('System Times');
+    my ( $user, $system, $cuser, $csystem ) = times;
+    $i .=
+        $cgi->start_table()
+      . $cgi->Tr( $cgi->td('user (s)') . $cgi->td($user) )
+      . $cgi->Tr( $cgi->td('system (s)') . $cgi->td($system) )
+      . $cgi->Tr( $cgi->td('cuser (s)') . $cgi->td($cuser) )
+      . $cgi->Tr( $cgi->td('csystem (s)') . $cgi->td($csystem) )
+      . $cgi->end_table();
+    $i .= $cgi->h2('Environment');
+    $i .= $cgi->start_table();
+    foreach my $e ( sort keys %ENV ) {
+        $i .= $cgi->Tr( $cgi->td($e) . $cgi->td( $ENV{$e} ) );
+    }
+    $i .= $cgi->end_table();
+
+    $i .= $cgi->h2('WebDAV CGI setup') . $cgi->start_table();
+    foreach my $cfg ( sort keys %DefaultConfig:: ) {
+        my $val = $DefaultConfig::{$cfg};
+        if ( $val !~ /DefaultConfig::/xms  || $cfg =~ /^(?:ARG|DBI_PASS|CGI|EXPORT_OK|EXPORT_TAGS|cgi|_.*)$/xms ) {
+            next;
         }
-        $i.= $$self{cgi}->end_table();
-
-        $i.= $$self{cgi}->h2('System Times');
-        my ($user,$system,$cuser,$csystem) = times;
-        $i.=  $$self{cgi}->start_table()
-             .$$self{cgi}->Tr($$self{cgi}->td('user (s)').$$self{cgi}->td($user))
-             .$$self{cgi}->Tr($$self{cgi}->td('system (s)').$$self{cgi}->td($system))
-             .$$self{cgi}->Tr($$self{cgi}->td('cuser (s)').$$self{cgi}->td($cuser))
-             .$$self{cgi}->Tr($$self{cgi}->td('csystem (s)').$$self{cgi}->td($csystem))
-             .$$self{cgi}->end_table();
-        $i.= $$self{cgi}->h2('Environment');
-        $i.= $$self{cgi}->start_table();
-        foreach my $e (sort keys %ENV) {
-                $i.=$$self{cgi}->Tr($$self{cgi}->td($e).$$self{cgi}->td($ENV{$e}));
+        if (defined ${$val} ) {
+            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( ${$val} ) );
+        } elsif (@{$val}) {
+            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( Dumper(\@{$val}) ) );
+        } elsif (%{$val}) {
+            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( Dumper(\%{$val}) ) );
         }
-        $i.= $$self{cgi}->end_table();
+    }
+    $i .= $cgi->end_table();
 
-        $i.=$$self{cgi}->end_html();
+    $i .= $cgi->end_html();
 
-        main::print_header_and_content('200 OK', 'text/html', $i);
+    return print_header_and_content( '200 OK', 'text/html', $i );
 }
 
 1;

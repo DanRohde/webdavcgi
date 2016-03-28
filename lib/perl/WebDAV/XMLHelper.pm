@@ -30,6 +30,7 @@ our @EXPORT_OK =
 use XML::Simple;
 use List::MoreUtils qw( any );
 
+use DefaultConfig qw( $CHARSET );
 use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS %KNOWN_FILECOLL_PROPS_HASH );
 
 our $VERSION = '1.0';
@@ -354,7 +355,7 @@ sub create_xml {
     my ( $data_ref, $withoutp ) = @_;
     my $data =
       !defined $withoutp
-      ? q@<?xml version="1.0" encoding="@ . $main::CHARSET . q@"?>@
+      ? q@<?xml version="1.0" encoding="@ . $CHARSET . q@"?>@
       : q{};
     _create_xml_data( \$data, $data_ref );
     return $data;

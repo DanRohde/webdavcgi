@@ -25,22 +25,23 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
-use HTTPHelper qw( print_header_and_content get_dav_header get_supported_methods );
+use DefaultConfig qw( $PATH_TRANSLATED $ENABLE_SEARCH );
+use HTTPHelper qw( print_header_and_content get_dav_header get_supported_methods get_mime_type );
 
 sub handle {
     my ($self)  = @_;
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
-    my $pt      = $main::PATH_TRANSLATED;
+    my $pt      = $PATH_TRANSLATED;
     $self->debug("HTTP_OPTIONS: $pt");
-    main::broadcast( 'OPTIONS', { file => $pt } );
+    $self->{event}->broadcast( 'OPTIONS', { file => $pt } );
     if ( !$backend->exists($pt) ) {
         return print_header_and_content('404 Not Found');
     }
     my $type =
       $backend->isDir($pt)
       ? 'httpd/unix-directory'
-      : main::get_mime_type($pt);
+      : get_mime_type($pt);
     my $methods = join ', ', @{ get_supported_methods($backend, $pt) };
     my %params;
     if ($methods) {
@@ -52,7 +53,7 @@ sub handle {
             'Public'                   => $methods,
             'DocumentManagementServer' => 'Properties Schema',
         );
-        if ($main::ENABLE_SEARCH) {
+        if ($ENABLE_SEARCH) {
             $params{DALS} = '<DAV:basicsearch>';
         }
     }

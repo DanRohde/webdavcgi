@@ -27,15 +27,15 @@ use base qw( Requests::Request );
 
 use List::MoreUtils qw( any );
 
+use DefaultConfig qw( $ENABLE_BIND %FILECOUNTPERDIRLIMIT );
 use WebDAV::XMLHelper qw( get_namespace_uri %NAMESPACES );
 use WebDAV::Properties;
 use WebDAV::WebDAVProps;
 use FileUtils qw( is_hidden get_file_limit );
 use CacheManager;
 
-
 sub init {
-    my ($self, $config) = @_;
+    my ( $self, $config ) = @_;
     $self->SUPER::init($config);
     WebDAV::WebDAVProps::init_webdav_props();
     return $self;
@@ -89,10 +89,8 @@ sub handle_property_request {
         if ( ref( $dataref->{'{DAV:}remove'} ) eq 'ARRAY' ) {
             foreach my $remove ( @{ $dataref->{'{DAV:}remove'} } ) {
                 foreach my $propname ( keys %{ $remove->{'{DAV:}prop'} } ) {
-                    $pm->remove_property(
-                        $propname, $remove->{'{DAV:}prop'},
-                        $resp_200, $resp_403
-                    );
+                    $pm->remove_property( $propname, $remove->{'{DAV:}prop'},
+                        $resp_200, $resp_403 );
                 }
             }
         }
@@ -141,14 +139,17 @@ sub get_prop_stat {
             next;
         }
         elsif (
-            (   !defined $NAMESPACES{$xmlnsuri}
-                || any { /^\Q$propname\E$/xms } ($is_dir ? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) 
+            (
+                !defined $NAMESPACES{$xmlnsuri}
+                || any { /^\Q$propname\E$/xms }
+                ( $is_dir ? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS )
             )
-            && ! any { /^\Q$propname\E$/xms } @PROTECTED_PROPS 
-            )
+            && !any { /^\Q$propname\E$/xms } @PROTECTED_PROPS
+          )
         {
             my $dbval = $self->{config}->{db}->db_getProperty(
-                $self->get_property_module()->resolve($fn), $prop =~ /{[^}]*}/xms
+                $self->get_property_module()->resolve($fn),
+                $prop =~ /{[^}]*}/xms
                 ? $prop
                 : '{' . get_namespace_uri($prop) . "}$prop"
             );
@@ -156,7 +157,8 @@ sub get_prop_stat {
                 $resp_200{prop}{$prop} = $noval ? undef : $dbval;
                 next;
             }
-            elsif (!any { /^\Q$propname\E$/xms } ($is_dir? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS) )
+            elsif ( !any { /^\Q$propname\E$/xms }
+                ( $is_dir ? @KNOWN_COLL_LIVE_PROPS : @KNOWN_FILE_LIVE_PROPS ) )
             {
                 $self->debug(
                     "get_prop_stat: #1 NOT FOUND: $prop ($propname, $xmlnsuri)"
@@ -165,23 +167,26 @@ sub get_prop_stat {
             }
         }
         ##if (grep({$_=~/^\Q$propname\E$/} $is_dir ? @KNOWN_COLL_PROPS : @KNOWN_FILE_PROPS)>0) {
-        if ((   $is_dir
+        if (
+            (
+                $is_dir
                 ? exists $KNOWN_COLL_PROPS_HASH{$propname}
                 : exists $KNOWN_FILE_PROPS_HASH{$propname}
             )
-            )
+          )
         {
             if ($noval) {
                 $resp_200{prop}{$prop} = undef;
             }
             else {
                 $self->get_property_module()
-                    ->get_property( $fn, $uri, $prop, \@stat, \%resp_200,
+                  ->get_property( $fn, $uri, $prop, \@stat, \%resp_200,
                     \%resp_404 );
             }
         }
         elsif ( !$all ) {
-            $self->debug("get_prop_stat: #2 NOT FOUND: $prop ($propname, $xmlnsuri)");
+            $self->debug(
+                "get_prop_stat: #2 NOT FOUND: $prop ($propname, $xmlnsuri)");
             $resp_404{prop}{$prop} = undef;
         }
     }    # foreach
@@ -190,9 +195,12 @@ sub get_prop_stat {
     push @propstat, \%resp_404 if exists $resp_404{prop};
     return \@propstat;
 }
+
 sub read_dir_recursive {
-    my ( $self, $fn, $ru, $resps_ref, $props, $all, $noval, $depth, $noroot, $visited )
-      = @_;
+    my (
+        $self, $fn,    $ru,    $resps_ref, $props,
+        $all,  $noval, $depth, $noroot,    $visited
+    ) = @_;
     my $backend = $self->{config}->{backend};
 
     return if is_hidden($fn);
@@ -208,7 +216,7 @@ sub read_dir_recursive {
             delete $response{propstat};
         }
         else {
-            if (   $main::ENABLE_BIND
+            if (   $ENABLE_BIND
                 && $depth < 0
                 && exists ${$visited}{$nfn} )
             {
@@ -224,11 +232,14 @@ sub read_dir_recursive {
       && ( $depth eq 'infinity' || $depth < 0 );
     ${$visited}{$nfn} = 1;
     if ( $depth != 0 && $is_readable && $backend->isDir($nfn) ) {
-        if ( !defined $main::FILECOUNTPERDIRLIMIT{$fn}
-            || $main::FILECOUNTPERDIRLIMIT{$fn} > 0 )
+        if ( !defined $FILECOUNTPERDIRLIMIT{$fn}
+            || $FILECOUNTPERDIRLIMIT{$fn} > 0 )
         {
             foreach my $f (
-                @{ $backend->readDir( $fn, get_file_limit($fn), \&FileUtils::filter ) }
+                @{
+                    $backend->readDir( $fn, get_file_limit($fn),
+                        \&FileUtils::filter )
+                }
               )
             {
                 my $fru = $ru . CGI::escape($f);
@@ -248,14 +259,13 @@ sub read_dir_recursive {
     return;
 }
 
-
 sub get_property_module {
     my ($self) = @_;
-    my $cache = CacheManager::getinstance();
-    my $pm = $cache->get_entry('propertymodule');
-    if (!$pm) {
-        $pm = WebDAV::Properties->new($self->{config});
-        $cache->set_entry('propertymodule', $pm);
+    my $cache  = CacheManager::getinstance();
+    my $pm     = $cache->get_entry('propertymodule');
+    if ( !$pm ) {
+        $pm = WebDAV::Properties->new( $self->{config} );
+        $cache->set_entry( 'propertymodule', $pm );
     }
     return $pm;
 }

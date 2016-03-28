@@ -27,6 +27,8 @@ use base qw(WebInterface::Common);
 use English qw(-no_match_vars);
 use JSON;
 
+use DefaultConfig qw( $PATH_TRANSLATED $VIRTUAL_BASE $DOCUMENT_ROOT
+  $ALLOW_SYMLINK $ENABLE_TRASH );
 use FileUtils qw( rcopy rmove move2trash );
 use HTTPHelper qw( print_compressed_header_and_content );
 
@@ -47,8 +49,8 @@ sub new {
 sub _print_json_response {
     my ( $self, $msg, $errmsg, $msgparam ) = @_;
     my %jsondata = ();
-    my @params
-        = $msgparam ? map { ${$self}{cgi}->escapeHTML($_) } @{$msgparam} : ();
+    my @params =
+      $msgparam ? map { ${$self}{cgi}->escapeHTML($_) } @{$msgparam} : ();
     if ($errmsg) {
         $jsondata{error} = sprintf $self->tl("msg_$errmsg"), @params;
     }
@@ -73,8 +75,8 @@ sub handle_post_upload {
         }
         my $rfn = $filename;
         $rfn =~ s{\\}{/}xmsg;    # fix M$ Windows backslashes
-        my $destination
-            = $main::PATH_TRANSLATED . ${$self}{backend}->basename($rfn);
+        my $destination =
+          $PATH_TRANSLATED . ${$self}{backend}->basename($rfn);
         push @filelist, ${$self}{backend}->basename($rfn);
         if ( $self->{config}->{method}->is_locked("$destination$filename") ) {
             $errmsg   = 'locked';
@@ -85,11 +87,12 @@ sub handle_post_upload {
             push @{$msgparam}, $rfn;
         }
         else {
-            main::broadcast(
+            $self->{config}->{event}->broadcast(
                 'WEB-UPLOADED',
-                {   file => $destination,
+                {
+                    file => $destination,
                     size => ( ${$self}{backend}->stat($destination) )
-                        [ ${$self}{STATIDX}{size} ]
+                      [ ${$self}{STATIDX}{size} ]
                 }
             );
         }
@@ -115,24 +118,25 @@ sub handle_clipboard_action {
     my ( $msg, $msgparam, $errmsg );
     my $srcuri = ${$self}{cgi}->param('srcuri');
     $srcuri =~ s/\%([a-f\d]{2})/chr(hex($1))/xmseig;
-    $srcuri =~ s/^$main::VIRTUAL_BASE//xms;
-    my $srcdir = $main::DOCUMENT_ROOT . $srcuri;
+    $srcuri =~ s/^$VIRTUAL_BASE//xms;
+    my $srcdir = $DOCUMENT_ROOT . $srcuri;
     my ( @success, @failed );
     foreach my $file ( split /\@\/\@/xms, ${$self}{cgi}->param('files') ) {
 
         if (   $self->{config}->{method}->is_locked("$srcdir$file")
-            || $self->{config}->{method}->is_locked("$main::PATH_TRANSLATED$file") )
+            || $self->{config}->{method}->is_locked("$PATH_TRANSLATED$file") )
         {
             $errmsg = 'locked';
             push @failed, $file;
         }
         elsif (
             rcopy(
+                $self->{config},
                 "$srcdir$file",
-                $main::PATH_TRANSLATED . $file,
+                $PATH_TRANSLATED . $file,
                 ${$self}{cgi}->param('action') eq 'cut'
             )
-            )
+          )
         {
             $msg = ${$self}{cgi}->param('action') . 'success';
             push @success, $file;
@@ -157,26 +161,29 @@ sub _handle_delete_action {
         my $count = 0;
         foreach my $file ( ${$self}{cgi}->param('file') ) {
             if ( $file eq q{.} ) { $file = q{}; }
-            my $fullname
-                = ${$self}{backend}->resolve("$main::PATH_TRANSLATED$file");
+            my $fullname =
+              ${$self}{backend}->resolve("$PATH_TRANSLATED$file");
             if ( $self->{config}->{method}->is_locked( $fullname, 1 ) ) {
                 $count    = 0;
                 $errmsg   = 'locked';
                 $msgparam = [$file];
                 last;
             }
-            if ( $fullname =~ /^\Q$main::DOCUMENT_ROOT\E/xms ) {
-                my $full = $main::PATH_TRANSLATED . $file;
-                main::broadcast( 'WEB-DELETE', { file => $full } );
-                if ($main::ENABLE_TRASH) {
-                    $count += move2trash($full);
+            if ( $fullname =~ /^\Q$DOCUMENT_ROOT\E/xms ) {
+                my $full = $PATH_TRANSLATED . $file;
+                $self->{config}->{event}
+                  ->broadcast( 'WEB-DELETE', { file => $full } );
+                if ($ENABLE_TRASH) {
+                    $count += move2trash( $self->{config}, $full );
                 }
                 else {
-                    $count
-                        += ${$self}{backend}->deltree( $full, \my @err );
+                    $count +=
+                      ${$self}{backend}->deltree( $full, \my @err );
                 }
-                main::broadcast( 'WEB-DELETED', { file => $full } );
-                main::logger("DELETE($main::PATH_TRANSLATED) via POST");
+                $self->{config}->{event}
+                  ->broadcast( 'WEB-DELETED', { file => $full } );
+                $self->{config}->{logger}
+                  ->("DELETE($PATH_TRANSLATED) via POST");
             }
         }
         if ( $count > 0 ) {
@@ -197,20 +204,15 @@ sub _handle_rename_action {
     my ($self) = @_;
     my ( $msg, $errmsg, $msgparam );
     if ( defined ${$self}{cgi}->param('file') ) {
-        if ($self->{config}->{method}->is_locked(
-                $main::PATH_TRANSLATED . ${$self}{cgi}->param('file')
-            )
-            )
+        if ( $self->{config}->{method}
+            ->is_locked( $PATH_TRANSLATED . ${$self}{cgi}->param('file') ) )
         {
             $errmsg   = 'locked';
             $msgparam = [ ${$self}{cgi}->param('file') ];
         }
-        elsif (
-            ${$self}{cgi}->param('newname')
-            && $self->{config}->{method}->is_locked(
-                $main::PATH_TRANSLATED . ${$self}{cgi}->param('newname')
-            )
-            )
+        elsif ( ${$self}{cgi}->param('newname')
+            && $self->{config}->{method}
+            ->is_locked( $PATH_TRANSLATED . ${$self}{cgi}->param('newname') ) )
         {
             $errmsg   = 'locked';
             $msgparam = [ ${$self}{cgi}->param('newname') ];
@@ -219,10 +221,9 @@ sub _handle_rename_action {
             my $newname = ${$self}{cgi}->param('newname');
             $newname =~ s/\/$//xms;
             my @files = ${$self}{cgi}->param('file');
-            if (( $#files > 0 )
-                && ( !${$self}{backend}
-                    ->isDir( $main::PATH_TRANSLATED . $newname ) )
-                )
+            if (   ( $#files > 0 )
+                && ( !${$self}{backend}->isDir( $PATH_TRANSLATED . $newname ) )
+              )
             {
                 $errmsg = 'renameerr';
             }
@@ -233,16 +234,21 @@ sub _handle_rename_action {
             else {
                 $msgparam = [ join( ', ', @files ), $newname ];
                 foreach my $file (@files) {
-                    my $target = $main::PATH_TRANSLATED . $newname;
+                    my $target = $PATH_TRANSLATED . $newname;
                     $target .=
-                        ${$self}{backend}->isDir($target)
-                        ? q{/} . $file
-                        : q{};
-                    if ( rmove( $main::PATH_TRANSLATED . $file, $target ) ) {
+                      ${$self}{backend}->isDir($target)
+                      ? q{/} . $file
+                      : q{};
+                    if (
+                        rmove(
+                            $self->{config}, $PATH_TRANSLATED . $file,
+                            $target
+                        )
+                      )
+                    {
                         $msg = 'rename';
-                        main::logger(
-                            "MOVE $main::PATH_TRANSLATED$file to $target via POST"
-                        );
+                        $self->{config}->{logger}->(
+                            "MOVE $PATH_TRANSLATED$file to $target via POST" );
                     }
                     else {
                         $errmsg = 'renameerr';
@@ -265,23 +271,24 @@ sub _handle_mkcol_action {
     my ($self) = @_;
     my ( $msg, $errmsg, $msgparam );
     my $colname = ${$self}{cgi}->param('colname1')
-        // ${$self}{cgi}->param('colname');
+      // ${$self}{cgi}->param('colname');
     if ( $colname ne q{} ) {
         $msgparam = [$colname];
         if ( $colname !~ /\//xms
-            && ${$self}{backend}->mkcol( $main::PATH_TRANSLATED . $colname ) )
+            && ${$self}{backend}->mkcol( $PATH_TRANSLATED . $colname ) )
         {
-            main::logger("MKCOL($main::PATH_TRANSLATED$colname via POST");
+            $self->{config}->{logger}
+              ->("MKCOL($PATH_TRANSLATED$colname via POST");
             $msg = 'foldercreated';
-            main::broadcast( 'WEB-FOLDERCREATED',
-                { file => $main::PATH_TRANSLATED . $colname } );
+            $self->{config}->{event}->broadcast( 'WEB-FOLDERCREATED',
+                { file => $PATH_TRANSLATED . $colname } );
         }
         else {
             $errmsg = 'foldererr';
             push @{$msgparam},
-                ${$self}{backend}->exists( $main::PATH_TRANSLATED . $colname )
-                ? $self->tl('folderexists')
-                : $self->tl($ERRNO);
+              ${$self}{backend}->exists( $PATH_TRANSLATED . $colname )
+              ? $self->tl('folderexists')
+              : $self->tl($ERRNO);
         }
     }
     else {
@@ -298,15 +305,15 @@ sub _handle_createsymlink_action {
     if ( defined $lndst && $lndst ne q{} ) {
         if ( defined $file && $file ne q{} ) {
             $msgparam = [ $lndst, $file ];
-            $file = ${$self}{backend}->resolve("$main::PATH_TRANSLATED$file");
-            $lndst
-                = ${$self}{backend}->resolve("$main::PATH_TRANSLATED$lndst");
-            if (   $file =~ /^\Q$main::DOCUMENT_ROOT\E/xms
-                && $lndst =~ /^\Q$main::DOCUMENT_ROOT\E/xms
+            $file = ${$self}{backend}->resolve("$PATH_TRANSLATED$file");
+            $lndst =
+              ${$self}{backend}->resolve("$PATH_TRANSLATED$lndst");
+            if (   $file =~ /^\Q$DOCUMENT_ROOT\E/xms
+                && $lndst =~ /^\Q$DOCUMENT_ROOT\E/xms
                 && ${$self}{backend}->createSymLink( $file, $lndst ) )
             {
                 $msg = 'symlinkcreated';
-                main::broadcast( 'WEB-SYMLINKCREATED',
+                $self->{config}->{event}->broadcast( 'WEB-SYMLINKCREATED',
                     { file => $lndst, src => $file } );
             }
             else {
@@ -328,20 +335,22 @@ sub _handle_createnewfile_action {
     my ($self) = @_;
     my ( $msg, $errmsg, $msgparam );
     my $fn   = ${$self}{cgi}->param('cnfname');
-    my $full = $main::PATH_TRANSLATED . $fn;
-    if (   ${$self}{backend}->isWriteable($main::PATH_TRANSLATED)
+    my $full = $PATH_TRANSLATED . $fn;
+    if (   ${$self}{backend}->isWriteable($PATH_TRANSLATED)
         && !${$self}{backend}->exists($full)
         && ( $fn !~ /\//xms )
         && ${$self}{backend}->saveData( $full, q{}, 1 ) )
     {
         $msg      = 'newfilecreated';
         $msgparam = [$fn];
-        main::broadcast( 'WEB-FILECREATED', { file => $full, size => 0 } );
+        $self->{config}->{event}
+          ->broadcast( 'WEB-FILECREATED', { file => $full, size => 0 } );
     }
     else {
         $msgparam = [
             $fn,
-            (   ${$self}{backend}->exists($full)
+            (
+                ${$self}{backend}->exists($full)
                 ? $self->tl('fileexists')
                 : $self->tl($ERRNO)
             )
@@ -362,7 +371,7 @@ sub handle_file_actions {
     if ( ${$self}{cgi}->param('mkcol') ) {
         return $self->_print_json_response( $self->_handle_mkcol_action() );
     }
-    if ( ${$self}{cgi}->param('createsymlink') && $main::ALLOW_SYMLINK ) {
+    if ( ${$self}{cgi}->param('createsymlink') && $ALLOW_SYMLINK ) {
         return $self->_print_json_response(
             $self->_handle_createsymlink_action() );
     }

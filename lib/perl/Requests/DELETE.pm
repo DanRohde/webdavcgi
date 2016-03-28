@@ -27,43 +27,44 @@ use base qw( Requests::WebDAVRequest );
 
 use URI::Escape;
 
+use DefaultConfig qw( $PATH_TRANSLATED $ENABLE_TRASH $REQUEST_URI );
 use FileUtils qw( move2trash );
 use HTTPHelper qw( print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml );
 
 sub handle {
     my ( $self ) = @_;
-    $self->debug("_DELETE: $main::PATH_TRANSLATED");
+    $self->debug("_DELETE: $PATH_TRANSLATED");
 
     my $backend = $self->{backend};
 
     my @resps = ();
-    if ( !$backend->exists($main::PATH_TRANSLATED) ) {
+    if ( !$backend->exists($PATH_TRANSLATED) ) {
         return print_header_and_content('404 Not Found');
     }
-    if ( ( $main::REQUEST_URI =~ /\#/xms && $main::PATH_TRANSLATED !~ /\#/xms )
+    if ( ( $REQUEST_URI =~ /\#/xms && $PATH_TRANSLATED !~ /\#/xms )
         || ( defined $ENV{QUERY_STRING} && $ENV{QUERY_STRING} ne q{} ) )
     {
         return print_header_and_content('400 Bad Request');
     }
-    if ( !$self->is_allowed($main::PATH_TRANSLATED) ) {
+    if ( !$self->is_allowed($PATH_TRANSLATED) ) {
         return print_header_and_content('423 Locked');
     }
-    main::broadcast( 'DELETE', { file => $main::PATH_TRANSLATED } );
-    if ( $main::ENABLE_TRASH && move2trash($main::PATH_TRANSLATED) <= 0 ) {
+    $self->{event}->broadcast( 'DELETE', { file => $PATH_TRANSLATED } );
+    if ( $ENABLE_TRASH && move2trash($self->{config}, $PATH_TRANSLATED) <= 0 ) {
         return print_header_and_content('404 Forbidden');
 
     }
 
-    $backend->deltree( $main::PATH_TRANSLATED, \my @err );
-    $self->logger("DELETE($main::PATH_TRANSLATED)");
+    $backend->deltree( $PATH_TRANSLATED, \my @err );
+    $self->logger("DELETE($PATH_TRANSLATED)");
     for my $diag (@err) {
         my ( $file, $message ) = each %{$diag};
         push @resps, { href => $file, status => "403 Forbidden - $message" };
     }
 
     my $status = $#resps >= 0 ? '207 Multi-Status' : '204 No Content';
-    main::broadcast( 'DELETED', { file => $main::PATH_TRANSLATED } );
+    $self->{event}->broadcast( 'DELETED', { file => $PATH_TRANSLATED } );
     my $content =
       $#resps >= 0
       ? create_xml( { 'multistatus' => { 'response' => \@resps } } )

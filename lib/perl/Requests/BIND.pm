@@ -36,6 +36,7 @@ use base qw( Requests::Request );
 use English qw ( -no_match_vars );
 use URI::Escape;
 
+use DefaultConfig qw( $DOCUMENT_ROOT $PATH_TRANSLATED $VIRTUAL_BASE );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
@@ -60,10 +61,10 @@ sub handle {
 
     my $segment = ${$xmldata}{'{DAV:}segment'};
     my $href    = ${$xmldata}{'{DAV:}href'};
-    $href =~ s{^https?://\Q$host\E(:\d+)?$main::VIRTUAL_BASE}{}xms;
+    $href =~ s{^https?://\Q$host\E(:\d+)?$VIRTUAL_BASE}{}xms;
     $href = uri_unescape( uri_unescape($href) );
-    my $src = $main::DOCUMENT_ROOT . $href;
-    my $dst = $main::PATH_TRANSLATED . $segment;
+    my $src = $DOCUMENT_ROOT . $href;
+    my $dst = $PATH_TRANSLATED . $segment;
 
     my $ndst = $dst;
     $ndst =~ s /\/$//xms;
@@ -80,7 +81,7 @@ sub handle {
     {
         return print_header_and_content('403 Forbidden');
     }
-    main::broadcast( 'BIND', { file => $src, destination => $dst } );
+    $self->{event}->broadcast( 'BIND', { file => $src, destination => $dst } );
     my $status = $backend->isLink($ndst) ? '204 No Content' : '201 Created';
     if ( $backend->isLink($ndst) && !$backend->unlinkFile($ndst) ) {
         return print_header_and_content('403 Forbidden');
@@ -89,7 +90,7 @@ sub handle {
         return print_header_and_content('403 Forbidden');
     }
 
-    main::broadcast( 'BOUND', { file => $src, destination => $dst } );
+    $self->{event}->broadcast( 'BOUND', { file => $src, destination => $dst } );
     return print_header_and_content($status);
 }
 1;

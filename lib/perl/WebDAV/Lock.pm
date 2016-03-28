@@ -28,6 +28,8 @@ our $VERSION = '2.0';
 use Date::Parse;
 use UUID::Tiny;
 
+use DefaultConfig
+  qw( $DBI_SRC $PATH_TRANSLATED $DEFAULT_LOCK_OWNER $DEFAULT_LOCK_TIMEOUT $DBI_TIMEZONE );
 use FileUtils qw( filter get_file_limit );
 use WebDAV::XMLHelper qw( create_xml );
 
@@ -91,7 +93,7 @@ sub lock_resource {
     my $owner      = create_xml(
         defined ${$xmldata}{'{DAV:}owner'}
         ? ${$xmldata}{'{DAV:}owner'}
-        : $main::DEFAULT_LOCK_OWNER,
+        : $DEFAULT_LOCK_OWNER,
         0, 1
     );
     if ($locktype)  { $locktype =~ s/{[^}]+}//xms; }
@@ -161,18 +163,18 @@ sub _check_timed_out {
     my ( $self, $fn, $rows ) = @_;
     my $ret = 0;
     my $now = time;
-    $main::DBI_TIMEZONE //=
-      $main::DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime';
-    $main::DEFAULT_LOCK_TIMEOUT //= 3_600;
+    $DBI_TIMEZONE //=
+      $DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime';
+    $DEFAULT_LOCK_TIMEOUT //= 3_600;
     while ( my $row = shift @{$rows} ) {
         my ( $token, $timeout, $timestamp ) = (
             ${$row}[4], ${$row}[6],
-            int( str2time( ${$row}[8], $main::DBI_TIMEZONE ) ),
+            int( str2time( ${$row}[8], $DBI_TIMEZONE ) ),
         );
         if ( !defined $timeout || $timeout =~ /^\s*$/xms ) {
-            $timeout = "Second-$main::DEFAULT_LOCK_TIMEOUT";
+            $timeout = "Second-$DEFAULT_LOCK_TIMEOUT";
         }
-        main::debug(
+        $self->{debug}->(
 "_check_timed_out($fn): token=$token, timeout=$timeout, timestamp=$timestamp"
         );
         if ( $timeout =~ /(\d+)$/xms ) {
@@ -189,7 +191,7 @@ sub _check_timed_out {
                 $mult = $m{ lc $1 } || 1;
             }
             $ret = $now - $timestamp - ( $mult * $val ) >= 0 ? 1 : 0;
-            main::debug(
+            $self->{debug}->(
 "_check_timed_out($fn): now=$now, mult=$mult, val=$val (now-timestamp)="
                   . ( $now - $timestamp )
                   . ": ret=$ret" );
@@ -201,7 +203,7 @@ sub _check_timed_out {
 
 sub is_locked_recurse {
     my ( $self, $fn ) = @_;
-    $fn //= $main::PATH_TRANSLATED;
+    $fn //= $PATH_TRANSLATED;
     my $rfn  = $self->resolve($fn);
     my $rows = ${$self}{db}->db_getLike("$rfn\%");
     return $#{$rows} >= 0 && !$self->_check_timed_out( $rfn, $rows );
@@ -258,11 +260,11 @@ sub is_lockable {    # check lock and exclusive
 sub get_lock_discovery {
     my ( $self, $fn ) = @_;
     my $rfn = $self->resolve($fn);
-    main::debug("get_lock_discovery($fn) (rfn=$rfn)");
+    $self->{debug}->("get_lock_discovery($fn) (rfn=$rfn)");
     my $rowsref = ${$self}{db}->db_get($rfn);
 
     my @resp = ();
-    main::debug( 'get_lock_discovery: rowcount=' . $#{$rowsref} );
+    $self->{debug}->( 'get_lock_discovery: rowcount=' . $#{$rowsref} );
     if ( $#{$rowsref} >= 0 ) {
         foreach my $row ( @{$rowsref} )
         {    # basefn,fn,type,scope,token,depth,timeout,owner
@@ -282,7 +284,7 @@ sub get_lock_discovery {
         }
 
     }
-    main::debug( 'get_lock_discovery: resp count=' . $#resp );
+    $self->{debug}->( 'get_lock_discovery: resp count=' . $#resp );
 
     return $#resp > -1 ? \@resp : undef;
 }
@@ -300,7 +302,7 @@ sub get_tokens {
 
 sub inherit_lock {
     my ( $self, $fn, $check_content, $visited ) = @_;
-    $fn //= $main::PATH_TRANSLATED;
+    $fn //= $PATH_TRANSLATED;
     my $backend = ${$self}{backend};
 
     my $rfn = $self->resolve($fn);
@@ -311,27 +313,26 @@ sub inherit_lock {
 
     my $bfn = $backend->getParent($fn) . q{/};
 
-    main::debug("inherit_lock: check lock for $bfn ($fn)");
+    $self->{debug}->("inherit_lock: check lock for $bfn ($fn)");
     my $db   = ${$self}{db};
     my $rows = $db->db_get( $self->resolve($bfn) );
     return if $#{$rows} == -1 && !$check_content;
-    if ( $#{$rows} >= 0 ) { main::debug("inherit_lock: $bfn is locked"); }
+    if ( $#{$rows} >= 0 ) { $self->{debug}->("inherit_lock: $bfn is locked"); }
     if ($check_content) {
         $rows = $db->db_get($rfn);
         return if $#{$rows} == -1;
-        main::debug("inherit_lock: $fn is locked");
+        $self->{debug}->("inherit_lock: $fn is locked");
     }
     my $row = ${$rows}[0];
     if ( $backend->isDir($fn) ) {
-        main::debug("inherit_lock: $fn is a collection");
+        $self->{debug}->("inherit_lock: $fn is a collection");
         $db->db_insert(
             ${$row}[0], $rfn,       ${$row}[2], ${$row}[3],
             ${$row}[4], ${$row}[5], ${$row}[6], ${$row}[7]
         );
         if ( $backend->isReadable($fn) ) {
             foreach my $f (
-                @{ $backend->readDir( $fn, get_file_limit($fn), \&filter ) }
-              )
+                @{ $backend->readDir( $fn, get_file_limit($fn), \&filter ) } )
             {
                 my $full = $fn . $f;
                 $full .= $backend->isDir($full)

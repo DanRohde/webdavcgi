@@ -32,6 +32,7 @@ our $VERSION = '2.0';
 
 use base qw( Requests::Request );
 
+use DefaultConfig qw( $PATH_TRANSLATED );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
@@ -47,8 +48,8 @@ sub handle {
 
     }
     my $segment = ${$xmldata}{'{DAV:}segment'};
-    my $dst     = $main::PATH_TRANSLATED . $segment;
-    main::broadcast( 'UNBIND', { file => $dst } );
+    my $dst     = $PATH_TRANSLATED . $segment;
+    $self->{event}->broadcast( 'UNBIND', { file => $dst } );
 
     if ( !$backend->exists($dst) ) {
         return print_header_and_content('404 Not Found');
@@ -61,7 +62,7 @@ sub handle {
         return print_header_and_content('403 Forbidden');
     }
 
-    main::broadcast( 'UNBOUND', { file => $dst } );
+    $self->{event}->broadcast( 'UNBOUND', { file => $dst } );
     return print_header_and_content('204 No Content');
 }
 

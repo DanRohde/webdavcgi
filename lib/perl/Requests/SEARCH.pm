@@ -49,6 +49,7 @@ use List::MoreUtils qw( none );
 use English qw ( -no_match_vars );
 use URI::Escape;
 
+use DefaultConfig qw( $REQUEST_URI $DOCUMENT_ROOT $VIRTUAL_BASE );
 use FileUtils;
 use CacheManager;
 use HTTPHelper qw( read_request_body print_header_and_content );
@@ -140,7 +141,7 @@ sub handle {
     }
     if ( exists ${$xmldata}{'{DAV:}query-schema-discovery'} ) {
         $self->debug('_SEARCH: found query-schema-discovery');
-        $self->_get_schema_discovery( $main::REQUEST_URI, \@resps );
+        $self->_get_schema_discovery( $REQUEST_URI, \@resps );
     }
     elsif ( exists ${$xmldata}{'{DAV:}searchrequest'} ) {
         foreach my $s ( keys %{ ${$xmldata}{'{DAV:}searchrequest'} } ) {
@@ -485,7 +486,7 @@ sub _handle_basic_search {
     else {
         push @scopes,
           {
-            '{DAV:}href'  => $main::REQUEST_URI,
+            '{DAV:}href'  => $REQUEST_URI,
             '{DAV:}depth' => 'infinity'
           };
     }
@@ -500,8 +501,8 @@ sub _handle_basic_search {
         my $href  = ${$scope}{'{DAV:}href'};
         my $base  = $href;
         $base =~
-          s{^(https?://([^\@]+\@)?\Q$host\E(:\d+)?)?$main::VIRTUAL_BASE}{}xms;
-        $base = $main::DOCUMENT_ROOT . uri_unescape( uri_unescape($base) );
+          s{^(https?://([^\@]+\@)?\Q$host\E(:\d+)?)?$VIRTUAL_BASE}{}xms;
+        $base = $DOCUMENT_ROOT . uri_unescape( uri_unescape($base) );
 
         if ( !${$self}{backend}->exists($base) ) {
             push @{$error},

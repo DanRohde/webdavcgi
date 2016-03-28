@@ -25,18 +25,19 @@ our $VERSION = '2.0';
 
 use base qw( Requests::WebDAVRequest );
 
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( print_header_and_content read_request_body );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 sub handle {
     my ($self) = @_;
-    $self->debug("_LOCK: $main::PATH_TRANSLATED");
+    $self->debug("_LOCK: $PATH_TRANSLATED");
 
     my $backend = $self->{backend};
     my $cgi     = $self->{cgi};
     my $lm      = $self->get_lock_module();
-    my $fn      = $main::PATH_TRANSLATED;
-    my $ru      = $main::REQUEST_URI;
+    my $fn      = $PATH_TRANSLATED;
+    my $ru      = $REQUEST_URI;
     my $depth = defined $cgi->http('Depth') ? $cgi->http('Depth') : 'infinity';
     my $timeout   = $cgi->http('Timeout');
     my $status    = '200 OK';

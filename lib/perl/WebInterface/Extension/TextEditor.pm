@@ -91,7 +91,7 @@ sub getEditForm {
 }
 sub makeBackupCopy {
 	my ($self, $full) = @_;
-	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || ($$self{backend}->stat($full))[7] == 0 || rcopy($full, "$full.backup");
+	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || ($$self{backend}->stat($full))[7] == 0 || rcopy($self->{config}, $full, "$full.backup");
 }
 sub saveTextData {
 	my ($self) = @_;

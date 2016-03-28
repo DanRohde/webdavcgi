@@ -143,7 +143,7 @@ sub buildMailFile {
             CLEANUP  => 1,
             SUFFIX   => ".zip"
         );
-        $$self{backend}->compressFiles( $zipfh, $main::PATH_TRANSLATED,
+        $$self{backend}->compress_files( $zipfh, $main::PATH_TRANSLATED,
             $$self{cgi}->param('files') );
         close($zipfh);
         if ( $limit && ( stat($zipfn) )[7] > $limit ) {

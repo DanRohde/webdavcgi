@@ -26,6 +26,7 @@ use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
+use DefaultConfig qw( $PATH_TRANSLATED );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( simple_xml_parser );
 
@@ -34,7 +35,7 @@ sub handle {
 
     my $backend = $self->{backend};
     
-    my $fn = $main::PATH_TRANSLATED;
+    my $fn = $PATH_TRANSLATED;
 
     $self->debug("_ACL($fn)");
 

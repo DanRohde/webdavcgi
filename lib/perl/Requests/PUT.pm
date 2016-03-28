@@ -27,6 +27,7 @@ use base qw( Requests::WebDAVRequest );
 
 use CGI::Carp;
 
+use DefaultConfig qw( $PATH_TRANSLATED );
 use HTTPHelper qw( print_header_and_content get_if_header_components get_etag );
 use FileUtils qw( stat2h );
 
@@ -43,35 +44,35 @@ sub handle {
         $status = '501 Not Implemented';
     }
     if (
-        $backend->isDir( $backend->getParent( ($main::PATH_TRANSLATED) ) )
+        $backend->isDir( $backend->getParent( ($PATH_TRANSLATED) ) )
         && !$backend->isWriteable(
-            $backend->getParent( ($main::PATH_TRANSLATED) )
+            $backend->getParent( ($PATH_TRANSLATED) )
         )
       )
     {
         return print_header_and_content('403 Forbidden');
     }
     if (
-        $self->_pre_condition_failed( $cgi, $backend, $main::PATH_TRANSLATED ) )
+        $self->_pre_condition_failed( $cgi, $backend, $PATH_TRANSLATED ) )
     {
         return print_header_and_content('412 Precondition Failed');
     }
-    if ( !$self->is_allowed($main::PATH_TRANSLATED) ) {
-        carp("PUT: 423 Locked: not owner or missing lock token");
+    if ( !$self->is_allowed($PATH_TRANSLATED) ) {
+        carp('PUT: 423 Locked: not owner or missing lock token');
         return print_header_and_content('423 Locked','text/plain','434 Locked: not owner or missing lock token');
 
       #} if (defined $ENV{HTTP_EXPECT} && $ENV{HTTP_EXPECT} =~ /100-continue/) {
       #	return print_header_and_content('417 Expectation Failed');
     }
-    if (   $backend->isDir( $backend->getParent( ($main::PATH_TRANSLATED) ) )
+    if (   $backend->isDir( $backend->getParent( ($PATH_TRANSLATED) ) )
         && $self->is_insufficient_storage( $cgi, $backend ) )
     {
         return print_header_and_content('507 Insufficient Storage');
     }
-    if ( !$backend->isDir( $backend->getParent( ($main::PATH_TRANSLATED) ) ) ) {
+    if ( !$backend->isDir( $backend->getParent( ($PATH_TRANSLATED) ) ) ) {
         return print_header_and_content('409 Conflict');
     }
-    if ( !$backend->exists($main::PATH_TRANSLATED) ) {
+    if ( !$backend->exists($PATH_TRANSLATED) ) {
         $self->debug('_PUT: created...');
         $status = '201 Created';
         $type   = 'text/html';
@@ -79,15 +80,15 @@ sub handle {
             qq@<!DOCTYPE html>\n<html><head><title>201 Created</title></head>@
           . qq@<body><h1>Created</h1><p>Resource $ENV{REQUEST_URI} has been created.</p></body></html>\n@;
     }
-    if ( $backend->saveStream( $main::PATH_TRANSLATED, \*STDIN ) ) {
+    if ( $backend->saveStream( $PATH_TRANSLATED, \*STDIN ) ) {
         $self->get_lock_module()->inherit_lock();
-        $self->logger("PUT($main::PATH_TRANSLATED)");
-        main::broadcast(
+        $self->logger("PUT($PATH_TRANSLATED)");
+        $self->{event}->broadcast(
             'PUT',
             {
-                file => $main::PATH_TRANSLATED,
+                file => $PATH_TRANSLATED,
                 size =>
-                  stat2h( \$backend->stat($main::PATH_TRANSLATED) )->{size}
+                  stat2h( \$backend->stat($PATH_TRANSLATED) )->{size}
             }
         );
     }

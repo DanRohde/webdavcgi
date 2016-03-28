@@ -24,6 +24,7 @@ our $VERSION = '2.0';
 
 use CGI::Carp;
 
+use DefaultConfig qw( $ENABLE_LOCK );
 use HTTPHelper qw( get_if_header_components );
 use WebDAV::Lock;
 use CacheManager;
@@ -50,12 +51,12 @@ sub handle {
 
 sub logger {
     my ( $self, @args ) = @_;
-    return main::logger(@args);
+    return $self->{logger}->(@args);
 }
 
 sub debug {
     my ( $self, @args ) = @_;
-    return main::debug(@args);
+    return $self->{debug}->(@args);
 }
 
 sub is_insufficient_storage {
@@ -76,13 +77,13 @@ sub is_insufficient_storage {
 
 sub is_locked_cached {
     my ( $self, $fn ) = @_;
-    if ( !$main::ENABLE_LOCK ) { return 0; }
+    if ( !$ENABLE_LOCK ) { return 0; }
     return $self->get_lock_module()->is_locked_cached($fn);
 }
 
 sub is_locked {
     my ( $self, $fn, $r ) = @_;
-    if ( !$main::ENABLE_LOCK ) { return 0; }
+    if ( !$ENABLE_LOCK ) { return 0; }
     return $r
       ? $self->get_lock_module()->is_locked_recurse($fn)
       : $self->get_lock_module()->is_locked($fn);
@@ -105,7 +106,7 @@ sub is_allowed {
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
 
-    if ( !$main::ENABLE_LOCK ) {
+    if ( !$ENABLE_LOCK ) {
         return 1;
     }
 

@@ -322,7 +322,7 @@ sub saveStream {
     return $ret;
 }
 
-sub uncompressArchive {
+sub uncompress_archive {
     my ( $self, $zipfile, $destination ) = @_;
     my $ret = 1;
     require Archive::Zip;
@@ -334,7 +334,7 @@ sub uncompressArchive {
     return $ret;
 }
 
-sub compressFiles {
+sub compress_files {
     my ( $self, $desthandle, $basepath, @files ) = @_;
 
     require Archive::Zip;
@@ -525,14 +525,12 @@ s/^\Q$linkdir$link\E(\/?|\/.+)?$/$main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{
 }
 
 sub add_slash {
-
     # my ($self, $filename, $cond) = @_;
     return $_[1] .=
       ( !defined $_[2] || $_[2] ) && $_[1] !~ m{/$}xms ? q{/} : q{};
 }
 
 sub remove_slash {
-
     # my ($self, $filename ) = @_;
     return $_[1] =~ s{/$}{}xms;
 }

@@ -27,16 +27,17 @@ use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
+use DefaultConfig qw( $PATH_TRANSLATED );
 use HTTPHelper qw( print_header_and_content read_request_body );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser );
 
 sub handle {
     my ($self) = @_;
-    $self->debug("_PROPPATCH: $main::PATH_TRANSLATED");
+    $self->debug("_PROPPATCH: $PATH_TRANSLATED");
 
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
-    my $fn      = $main::PATH_TRANSLATED;
+    my $fn      = $PATH_TRANSLATED;
     if ( $backend->exists($fn) && !$self->is_allowed($fn) ) {
         return print_header_and_content('423 Locked');
     }
@@ -51,7 +52,7 @@ sub handle {
         carp("PROPPATCH: invalid XML request: ${EVAL_ERROR}");
         return print_header_and_content('400 Bad Request (invalid XML request)');
     }
-    main::broadcast( 'PROPPATCH', { file => $fn, data => $dataref } );
+    $self->{event}->broadcast( 'PROPPATCH', { file => $fn, data => $dataref } );
     my @resps    = ();
     my %resp_200 = ();
     my %resp_403 = ();
@@ -64,7 +65,7 @@ sub handle {
     if ( defined $resp_200{href} ) { push @resps, \%resp_200; }
     if ( defined $resp_403{href} ) { push @resps, \%resp_403; }
     my $content = create_xml( { multistatus => { response => \@resps } } );
-    main::broadcast( 'PROPPATCHED', { file => $fn, data => $dataref } );
+    $self->{event}->broadcast( 'PROPPATCHED', { file => $fn, data => $dataref } );
     $self->debug("_PROPPATCH: RESPONSE: $content");
     return print_header_and_content( '207 Multi-Status', 'text/xml', $content );
 }

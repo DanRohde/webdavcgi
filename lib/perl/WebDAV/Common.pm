@@ -33,6 +33,7 @@ sub new {
     $self->{cgi}     = $config->{cgi};
     $self->{backend} = $config->{backend};
     $self->{db}      = $config->{db};
+    $self->{debug}   = $config->{debug};
 
     $self->initialize();
     return $self;

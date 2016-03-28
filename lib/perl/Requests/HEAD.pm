@@ -25,24 +25,24 @@ our $VERSION = '2.0';
 
 use base qw( Requests::WebInterfaceRequest );
 
+use DefaultConfig qw( $PATH_TRANSLATED $FANCYINDEXING );
 use HTTPHelper
   qw( fix_mod_perl_response print_header_and_content print_file_header );
 
 sub handle {
     my ($self) = @_;
     my $backend = $self->{backend};
-    if ( $main::FANCYINDEXING
-        && $self->get_webinterface()->handle_head_request() )
+    if ( $FANCYINDEXING && $self->get_webinterface()->handle_head_request() )
     {
         $self->debug('HEAD: WebInterface called');
         return;
     }
-    if ( !$backend->exists($main::PATH_TRANSLATED) ) {
-        $self->debug("HEAD: $main::PATH_TRANSLATED does not exists!");
+    if ( !$backend->exists($PATH_TRANSLATED) ) {
+        $self->debug("HEAD: $PATH_TRANSLATED does not exists!");
         print_header_and_content('404 Not Found');
 
     }
-    $self->debug("HEAD: $main::PATH_TRANSLATED exists!");
-    return fix_mod_perl_response( print_file_header($main::PATH_TRANSLATED) );
+    $self->debug("HEAD: $PATH_TRANSLATED exists!");
+    return fix_mod_perl_response( print_file_header($PATH_TRANSLATED) );
 }
 1;

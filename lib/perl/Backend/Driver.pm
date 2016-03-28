@@ -37,7 +37,7 @@ sub init {
     $self->{config} = $config;
     $self->{db}     = $config->{db};
     $self->{method} = $config->{method};
- 
+
     return $self;
 }
 1;

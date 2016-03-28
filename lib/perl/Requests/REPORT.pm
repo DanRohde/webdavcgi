@@ -26,6 +26,9 @@ use base qw( Requests::WebDAVRequest );
 
 use English qw ( -no_match_vars );
 
+use DefaultConfig
+  qw( $PATH_TRANSLATED $REQUEST_URI $VIRTUAL_BASE $DOCUMENT_ROOT $CURRENT_USER_PRINCIPAL $PRINCIPAL_COLLECTION_SET )
+  ;
 use FileUtils qw( read_dir_by_suffix );
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper qw( create_xml simple_xml_parser handle_prop_element );
@@ -35,8 +38,8 @@ sub handle {
 
     my $cgi     = $self->{cgi};
     my $backend = $self->{backend};
-    my $fn      = $main::PATH_TRANSLATED;
-    my $ru      = $main::REQUEST_URI;
+    my $fn      = $PATH_TRANSLATED;
+    my $ru      = $REQUEST_URI;
     my $depth   = $cgi->http('Depth') // 0;
     if ( $depth =~ /infinity/xmsi ) { $depth = -1; }
 
@@ -44,7 +47,7 @@ sub handle {
 
     if (  !$backend->exists($fn)
         && $ru !~
-/^(?:\Q$main::CURRENT_USER_PRINCIPAL\E|\Q$main::PRINCIPAL_COLLECTION_SET\E)/xms
+/^(?:\Q$CURRENT_USER_PRINCIPAL\E|\Q$PRINCIPAL_COLLECTION_SET\E)/xms
       )
     {
         return print_header_and_content('404 Not Found');
@@ -111,8 +114,8 @@ sub _print_response_from_hrefs {
         $resp_200{status} = 'HTTP/1.1 200 OK';
         $resp_404{status} = 'HTTP/1.1 404 Not Found';
         my $nhref = $href;
-        $nhref =~ s/^$main::VIRTUAL_BASE//xms;
-        my $nfn = $main::DOCUMENT_ROOT . $nhref;
+        $nhref =~ s/^$VIRTUAL_BASE//xms;
+        my $nfn = $DOCUMENT_ROOT . $nhref;
         $self->debug("_REPORT: nfn=$nfn, href=$href");
         if ( !$backend->exists($nfn) ) {
             push @resps, { href => $href, status => 'HTTP/1.1 404 Not Found' };
@@ -268,7 +271,7 @@ sub _handle_free_busy_query {
 sub _handle_calendar_query {    ## missing filter
     my ( $self, $fn, $ru, $xmldata, $depth ) = @_;
     my @hrefs = ();
-    read_dir_by_suffix( $fn, $ru, \@hrefs, 'ics', $depth );
+    read_dir_by_suffix( $self->{config}, $fn, $ru, \@hrefs, 'ics', $depth );
     return $self->_print_response_from_hrefs( $xmldata,
         '{urn:ietf:params:xml:ns:caldav}calendar-query', \@hrefs );
 }
@@ -298,7 +301,7 @@ sub _handle_calendar_multiget {    ## OK - complete
 sub _handle_addressbook_query {
     my ( $self, $fn, $ru, $xmldata, $depth ) = @_;
     my @hrefs = ();
-    read_dir_by_suffix( $fn, $ru, \@hrefs, 'vcf', $depth );
+    read_dir_by_suffix( $self->{config}, $fn, $ru, \@hrefs, 'vcf', $depth );
     return $self->_print_response_from_hrefs( $xmldata,
         '{urn:ietf:params:xml:ns:carddav}addressbook-query', \@hrefs );
 }

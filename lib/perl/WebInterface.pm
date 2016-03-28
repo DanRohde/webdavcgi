@@ -32,8 +32,15 @@ use IO::Compress::Gzip;
 use MIME::Base64;
 use CGI::Carp;
 
-use HTTPHelper qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type );
-use FileUtils qw( get_local_file_content_and_type );
+use HTTPHelper
+  qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type );
+use FileUtils qw( get_local_file_content_and_type stat2h );
+
+use DefaultConfig qw(
+  $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
+  $ENABLE_THUMBNAIL $ENABLE_DAVMOUNT $ALLOW_POST_UPLOADS $ENABLE_CLIPBOARD
+  $OPTIMIZERTMP $THUMBNAIL_CACHEDIR $RELEASE $CONFIGFILE
+);
 
 sub new {
     my ($this) = @_;
@@ -52,6 +59,7 @@ sub init {
     ${$self}{db}      = $config->{db};
     ${$self}{cgi}     = $config->{cgi};
     ${$self}{backend} = $config->{backend};
+    ${$self}{debug}   = $config->{debug};
     ${$self}{config}{extensions} =
       WebInterface::Extension::Manager->new($config);
     $self->optimize_css_and_js();
@@ -61,29 +69,29 @@ sub init {
 
 sub handle_thumbnail_get_request {
     my ( $self, $action ) = @_;
-    if ( !$main::ENABLE_THUMBNAIL ) {
+    if ( !$ENABLE_THUMBNAIL ) {
         return 0;
     }
     if (   $action eq 'mediarss'
-        && ${$self}{backend}->isDir($main::PATH_TRANSLATED)
-        && ${$self}{backend}->isReadable($main::PATH_TRANSLATED) )
+        && ${$self}{backend}->isDir($PATH_TRANSLATED)
+        && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
     {
         $self->get_renderer()
-          ->print_media_rss( $main::PATH_TRANSLATED, $main::REQUEST_URI );
+          ->print_media_rss( $PATH_TRANSLATED, $REQUEST_URI );
         return 1;
     }
     if (   $action eq 'image'
-        && ${$self}{backend}->isFile($main::PATH_TRANSLATED)
-        && ${$self}{backend}->isReadable($main::PATH_TRANSLATED) )
+        && ${$self}{backend}->isFile($PATH_TRANSLATED)
+        && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
     {
-        $self->get_renderer()->print_image($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_image($PATH_TRANSLATED);
         return 1;
     }
     if (   $action eq 'thumb'
-        && ${$self}{backend}->isReadable($main::PATH_TRANSLATED)
-        && ${$self}{backend}->isFile($main::PATH_TRANSLATED) )
+        && ${$self}{backend}->isReadable($PATH_TRANSLATED)
+        && ${$self}{backend}->isFile($PATH_TRANSLATED) )
     {
-        $self->get_renderer()->print_thumbnail($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_thumbnail($PATH_TRANSLATED);
         return 1;
     }
     return 0;
@@ -102,24 +110,23 @@ sub handle_get_request {
     {
         return 1;
     }
-    if (   $main::PATH_TRANSLATED =~ /\/webdav-ui(-[^.\/]+)?[.](js|css)\/?$/xms
-        || $main::PATH_TRANSLATED =~ /\Q$main::VHTDOCS\E(.*)$/xms )
+    if (   $PATH_TRANSLATED =~ /\/webdav-ui(-[^.\/]+)?[.](js|css)\/?$/xms
+        || $PATH_TRANSLATED =~ /\Q$VHTDOCS\E(.*)$/xms )
     {
-        $self->get_renderer()
-          ->print_styles_vhtdocs_files($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_styles_vhtdocs_files($PATH_TRANSLATED);
         return 1;
     }
-    if (   $main::ENABLE_DAVMOUNT
+    if (   $ENABLE_DAVMOUNT
         && $action eq 'davmount'
-        && ${$self}{backend}->exists($main::PATH_TRANSLATED) )
+        && ${$self}{backend}->exists($PATH_TRANSLATED) )
     {
-        $self->get_renderer()->print_dav_mount($main::PATH_TRANSLATED);
+        $self->get_renderer()->print_dav_mount($PATH_TRANSLATED);
         return 1;
     }
 
-    if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
+    if ( ${$self}{backend}->isDir($PATH_TRANSLATED) ) {
         $self->get_renderer()
-          ->render_web_interface( $main::PATH_TRANSLATED, $main::REQUEST_URI );
+          ->render_web_interface( $PATH_TRANSLATED, $REQUEST_URI );
         return 1;
     }
     return 0;
@@ -128,14 +135,14 @@ sub handle_get_request {
 sub handle_head_request {
     my ($self) = @_;
     my $handled = 1;
-    if ( ${$self}{backend}->isDir($main::PATH_TRANSLATED) ) {
+    if ( ${$self}{backend}->isDir($PATH_TRANSLATED) ) {
         print_header_and_content( '200 OK', 'httpd/unix-directory' );
     }
-    elsif ( $main::PATH_TRANSLATED =~ /\/webdav-ui[.](js|css)$/xms ) {
+    elsif ( $PATH_TRANSLATED =~ /\/webdav-ui[.](js|css)$/xms ) {
         print_local_file_header(
-            -e ( $main::INSTALL_BASE . basename($main::PATH_TRANSLATED) )
-            ? $main::INSTALL_BASE . basename($main::PATH_TRANSLATED)
-            : "${main::INSTALL_BASE}lib/" . basename($main::PATH_TRANSLATED)
+            -e ( $INSTALL_BASE . basename($PATH_TRANSLATED) )
+            ? $INSTALL_BASE . basename($PATH_TRANSLATED)
+            : "${INSTALL_BASE}lib/" . basename($PATH_TRANSLATED)
         );
     }
     else {
@@ -157,13 +164,13 @@ sub handle_post_request {
     {
         $handled = 1;
     }
-    elsif ($main::ALLOW_POST_UPLOADS
-        && ${$self}{backend}->isDir($main::PATH_TRANSLATED)
+    elsif ($ALLOW_POST_UPLOADS
+        && ${$self}{backend}->isDir($PATH_TRANSLATED)
         && defined ${$self}{cgi}->param('filesubmit') )
     {
         $self->get_functions()->handle_post_upload();
     }
-    elsif ( $main::ENABLE_CLIPBOARD && ${$self}{cgi}->param('action') ) {
+    elsif ( $ENABLE_CLIPBOARD && ${$self}{cgi}->param('action') ) {
         $self->get_functions()->handle_clipboard_action();
     }
     else {
@@ -191,9 +198,8 @@ sub optimizer_is_optimized {
 
 sub optimizer_get_filepath {
     my ( $self, $ft ) = @_;
-    my $tmp = $main::OPTIMIZERTMP || $main::THUMBNAIL_CACHEDIR || '/var/tmp';
-    my $optimizerbasefn =
-      "${main::CONFIGFILE}_${main::RELEASE}_${main::REMOTE_USER}";
+    my $tmp = $OPTIMIZERTMP || $THUMBNAIL_CACHEDIR || '/var/tmp';
+    my $optimizerbasefn = "${CONFIGFILE}_${RELEASE}_${REMOTE_USER}";
     $optimizerbasefn =~ s/[\/.]/_/xmsg;
     my $optimizerbase = $tmp . q{/} . $optimizerbasefn;
     return "${optimizerbase}.$ft";
@@ -217,7 +223,8 @@ sub optimize_css_and_js {
     }
     if (   -r $jstargetfile
         && -r $csstargetfile
-        && ( stat $jstargetfile )[10] > ( stat $main::CONFIGFILE )[10] )
+        && stat2h( \stat $jstargetfile )->{ctime} >
+        stat2h( \stat $CONFIGFILE )->{ctime} )
     {
         ${$self}{isoptimized} = 1;
         return;
@@ -251,8 +258,8 @@ sub optimizer_write_content2zip {
         my $z = IO::Compress::Gzip->new($fh);
         $z->print( ${$contentref} );
         $z->close();
-        flock $fh, LOCK_UN || carp("Cannot unlock $file.");
-        close $fh || carp("Cannot close filehandle for $file.");
+        flock( $fh, LOCK_UN ) || carp("Cannot unlock $file.");
+        close($fh) || carp("Cannot close filehandle for $file.");
         return 1;
     }
     return 0;
@@ -264,11 +271,12 @@ sub optimizer_encode_image {
     my $ifn  = "$basepath/$url";
     my $mime = get_mime_type($ifn);
     if ( open my $ih, '<', $ifn ) {
-        main::debug("encode image $ifn");
+        $self->{debug}->("encode image $ifn");
         my $buffer;
-        binmode $ih || carp("Cannot set binmode for $ifn.");
-        read $ih, $buffer, ( stat $ih )[7] || carp("Cannot read $ifn.");
-        close $ih || carp("Cannot close filehandle for $ifn.");
+        binmode($ih) || carp("Cannot set binmode for $ifn.");
+        read( $ih, $buffer, stat2h( \stat $ih )->{size} )
+          || carp("Cannot read $ifn.");
+        close($ih) || carp("Cannot close filehandle for $ifn.");
         return
             'url(data:'
           . $mime
@@ -286,8 +294,8 @@ sub optimizer_collect {
     if ($filename) {
         my $full = $filename;
         $full =~
-s{^.*${main::VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${main::INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
-        main::debug("collect $type from $full");
+s{^.*${VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
+        $self->{debug}->("collect $type from $full");
         my $fc =
           ( get_local_file_content_and_type($full) )[1];
         if ( $type eq 'css' ) {
@@ -296,7 +304,7 @@ s{^.*${main::VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${main::INSTALL_BASE}lib/perl/W
 s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/iegxms;
         }
         ${$contentref} .= $fc;
-        main::debug("optimizer_collect: $full collected.");
+        $self->{debug}->("optimizer_collect: $full collected.");
     }
     return ${$contentref} .= $data ? $data : q{};
 }

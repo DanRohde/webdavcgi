@@ -27,6 +27,7 @@ use base qw( Requests::WebDAVRequest );
 
 use URI::Escape;
 
+use DefaultConfig qw( $PATH_TRANSLATED $DOCUMENT_ROOT $VIRTUAL_BASE );
 use FileUtils qw( rmove );
 use HTTPHelper qw( print_header_and_content );
 
@@ -38,16 +39,16 @@ sub handle {
     my $destination = $cgi->http('Destination');
     my $overwrite =
       defined $cgi->http('Overwrite') ? $cgi->http('Overwrite') : 'T';
-    $self->debug("_MOVE: $main::PATH_TRANSLATED => $destination");
+    $self->debug("_MOVE: $PATH_TRANSLATED => $destination");
     $destination =~
-      s{^https?://([^\@]+\@)?\Q$host\E(:\d+)?$main::VIRTUAL_BASE}{}xms;
+      s{^https?://([^\@]+\@)?\Q$host\E(:\d+)?$VIRTUAL_BASE}{}xms;
     $destination = uri_unescape($destination);
     $destination = uri_unescape($destination);
-    $destination = $main::DOCUMENT_ROOT . $destination;
+    $destination = $DOCUMENT_ROOT . $destination;
 
     if (   ( !defined $destination )
         || ( $destination eq q{} )
-        || ( $main::PATH_TRANSLATED eq $destination ) )
+        || ( $PATH_TRANSLATED eq $destination ) )
     {
         return print_header_and_content('403 Forbidden');
     }
@@ -58,17 +59,17 @@ sub handle {
         return print_header_and_content('409 Conflict');
     }
     if (
-        !$self->is_allowed( $main::PATH_TRANSLATED,
-            $backend->isDir($main::PATH_TRANSLATED) )
+        !$self->is_allowed( $PATH_TRANSLATED,
+            $backend->isDir($PATH_TRANSLATED) )
         || !$self->is_allowed( $destination, $backend->isDir($destination) )
       )
     {
         return print_header_and_content('423 Locked');
     }
-    main::broadcast(
+    $self->{event}->broadcast(
         'MOVE',
         {
-            file        => $main::PATH_TRANSLATED,
+            file        => $PATH_TRANSLATED,
             destination => $destination,
             overwrite   => $overwrite
         }
@@ -78,17 +79,17 @@ sub handle {
     }
     my $status =
       $backend->exists($destination) ? '204 No Content' : '201 Created';
-    if ( !rmove( $main::PATH_TRANSLATED, $destination ) ) {
+    if ( !rmove( $self->{config}, $PATH_TRANSLATED, $destination ) ) {
         return print_header_and_content(
-            "403 Forbidden (rmove($main::PATH_TRANSLATED, $destination) failed)"
+            "403 Forbidden (rmove($PATH_TRANSLATED, $destination) failed)"
         );
     }
     $self->get_lock_module()->inherit_lock( $destination, 1 );
-    $self->logger("MOVE($main::PATH_TRANSLATED, $destination)");
-    main::broadcast(
+    $self->logger("MOVE($PATH_TRANSLATED, $destination)");
+    $self->{event}->broadcast(
         'MOVED',
         {
-            file        => $main::PATH_TRANSLATED,
+            file        => $PATH_TRANSLATED,
             destination => $destination,
             overwrite   => $overwrite
         }
