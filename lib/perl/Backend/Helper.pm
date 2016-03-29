@@ -49,7 +49,7 @@ sub _copytolocal {
                 close($fh) || carp("Cannot close $ndestdir");
             }
         }
-        my $stat = stat2h( \$self->stat($file) );
+        my $stat = stat2h( $self->stat($file) );
         utime $stat->{atime}, $stat->{mtime}, $ndestdir;
     }
     return;

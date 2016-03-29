@@ -144,7 +144,7 @@ sub rcopy {
             destination => $dst,
             depth       => $depth,
             overwrite   => 'T',
-            size        => stat2h( \$backend->stat($src) )->{size} // 0,
+            size        => stat2h( $backend->stat($src) )->{size} // 0,
         },
     );
     return 1;
@@ -158,12 +158,12 @@ sub rmove {
 sub get_local_file_content_and_type {
     my ( $fn, $default, $defaulttype ) = @_;
     my $content = q{};
-    if ( -e $fn && !-d $fn && open my $F, '<', $fn ) {
+    if ( -e $fn && !-d $fn && open my $fh, '<', $fn ) {
         {
             local $RS = undef;
-            $content = <$F>;
+            $content = <$fh>;
         };
-        close($F) || carp("Cannot close filehandle for '$fn'.");
+        close($fh) || carp("Cannot close filehandle for '$fn'.");
         $defaulttype = get_mime_type($fn);
     }
     else {
@@ -326,7 +326,7 @@ sub stat2h {
         nlink   => $nlink,
         uid     => $uid,
         gid     => $gid,
-        rdev    => $dev,
+        rdev    => $rdev,
         size    => $size,
         atime   => $atime,
         mtime   => $mtime,

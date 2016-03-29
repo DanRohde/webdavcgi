@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -20,96 +19,137 @@
 package Backend::AFS::Driver;
 
 use strict;
-#use warnings;
+use warnings;
 
-use Backend::FS::Driver;
+our $VERSION = '2.0';
 
-our @ISA = qw( Backend::FS::Driver );
+use base qw( Backend::FS::Driver );
 
-our $VERSION = 0.1;
+use CGI::Carp;
+
+use DefaultConfig qw( %BACKEND_CONFIG $BACKEND );
 
 sub isFile {
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isFile($_[1]) : 1;
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::isFile( $_[1] )
+      : 1;
 }
+
 sub isLink {
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isLink($_[1]) : 0;
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::isLink( $_[1] )
+      : 0;
 }
-sub isReadable { 
-	return $_[0]->_checkCallerAccess($_[1],"l","r");
+
+sub isReadable {
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' );
 }
-sub isWriteable { 
-	return $_[0]->_checkCallerAccess($_[1],"w");
+
+sub isWriteable {
+    return $_[0]->_check_caller_access( $_[1], 'w' );
 }
+
 sub isExecutable {
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isExecutable($_[1]) : 1;
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::isExecutable( $_[1] )
+      : 1;
 }
-sub hasSetUidBit { 
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::hasSetUidBit($_[1]) : 0;
+
+sub hasSetUidBit {
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::hasSetUidBit( $_[1] )
+      : 0;
 }
-sub hasSetGidBit { 
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::hasSetGidBit($_[1]) : 0;
+
+sub hasSetGidBit {
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::hasSetGidBit( $_[1] )
+      : 0;
 }
-sub hasStickyBit { 
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::hasStickyBit($_[1]) : 0;
+
+sub hasStickyBit {
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::hasStickyBit( $_[1] )
+      : 0;
 }
-sub isBlockDevice { 
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isBlockDevice($_[1]) : 0;
+
+sub isBlockDevice {
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::isBlockDevice( $_[1] )
+      : 0;
 }
-sub isCharDevice { 
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isCharDevice($_[1]) : 0;
+
+sub isCharDevice {
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::isCharDevice( $_[1] )
+      : 0;
 }
+
 sub exists {
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::exists($_[1]) : 1;
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::exists( $_[1] )
+      : 1;
 }
+
 sub isEmpty {
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::isEmpty($_[1]) : 1;
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::isEmpty( $_[1] )
+      : 1;
 }
+
 sub stat {
-	return $_[0]->_checkCallerAccess($_[1],"l","r") ? $_[0]->SUPER::stat($_[1]) : (0,0,0,0,0,0,0,0,0,0,0,0,0);
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+      ? $_[0]->SUPER::stat( $_[1] )
+      : ( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
 }
 
 sub getQuota {
-	my ($self, $fn) = @_;
-	$fn=~s/(["\$\\])/\\$1/g;
-	if (defined $main::BACKEND_CONFIG{$main::BACKEND}{quota} && open(my $cmd, '-|', sprintf("%s \"%s\"", $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn)))) {
-		my @lines = <$cmd>;
-		close($cmd);
-		my @vals = split(/\s+/, $lines[1]);
-		return ($vals[1] * 1024, $vals[2] * 1024);
-	}
-	return (0,0);
+    my ( $self, $fn ) = @_;
+    $fn =~ s/(["\$\\])/\\$1/xmsg;
+    if ( !defined $BACKEND_CONFIG{$BACKEND}{quota} ) {
+        return ( 0, 0 );
+    }
+    my $cmd = sprintf '%s "%s"', $BACKEND_CONFIG{$BACKEND}{quota},
+      $self->resolveVirt($fn);
+    if ( open my $cmdfh, q{-|}, $cmd ) {
+        my @lines = <$cmdfh>;
+        close($cmdfh) || carp("Cannot close cmd $cmd\n");
+        my @vals = $#lines >=1 ? split /\s+/xms, $lines[1] : (0,0,0);
+        return ( $vals[1] * 1024, $vals[2] * 1024 );
+    }
+    return ( 0, 0 );
 }
-sub _getCallerAccess {
-	my ($self, $fn) = @_;
-	$fn = $self->resolveVirt($fn);
-	$fn=~s/\/$//;
-	$fn=~s/\/[^\/]+\/\.\.$//;
-	return $$self{cache}{$fn}{_getCallerAccess} if exists $$self{cache}{$fn}{_getCallerAccess};
-	return $self->_getCallerAccess($self->dirname($fn)) unless $self->isDir($fn);
-	my $access = "";
 
-	$fn=~s/(["\$\\])/\\$1/g;
-	if (open(my $cmd, '-|', sprintf("%s getcalleraccess \"%s\" 2>/dev/null", $main::BACKEND_CONFIG{$main::BACKEND}{fscmd}, $fn))) {
-		local $/ = undef;
-		my $lines = <$cmd>;
-		close($cmd);
-		chomp $lines;
-		my @sl=split(/\s+/,$lines);
-		$access = $sl[-1] if $sl[-1]=~/^[rlidwka]{1,7}$/;
-	}
-	return $$self{cache}{$fn}{_getCallerAccess} = $access;
+sub _get_caller_access {
+    my ( $self, $fn ) = @_;
+    $fn = $self->resolveVirt($fn);
+    $fn =~ s{/$}{}xms;                # remove trailing slash
+    $fn =~ s{/[^/]+/[.]{2}$}{}xms;    # eliminate ../
+    $fn =~ s/(["\$\\])/\\$1/xmsg;     # quote special characters
+    if ( exists $self->{cache}{$fn}{_get_caller_access} ) {
+        return $self->{cache}{$fn}{_get_caller_access};
+    }
+    if ( !$self->isDir($fn) ) {
+        return $self->_get_caller_access( $self->dirname($fn) );
+    }
+    my $access = q{};
+
+    my $cmd = sprintf '%s getcalleraccess "%s" 2>/dev/null',
+      $BACKEND_CONFIG{$BACKEND}{fscmd}, $fn;
+    if ( open my $cmdfh, q{-|}, $cmd ) {
+        my @lines = <$cmdfh>;
+        close $cmdfh;
+        if ( $#lines >=0 && $lines[-1] =~ /^[rlidwka]{1,7}$/xms ) { $access = $lines[-1]; }
+    }
+    return $self->{cache}{$fn}{_get_caller_access} = $access;
 }
-sub _checkCallerAccess {
-	my ($self, $fn, $dright,$fright) = @_;	
-	$fright = $dright unless defined $fright;
-	my $right = $dright eq $fright || $self->SUPER::isDir($fn) ? $dright : $fright;  
-	return $self->_getCallerAccess($fn) =~ /\Q$right\E/;
-}
-sub _checkAFSAccess {
-	my $CACHE = $_[0] && $$_[0]{cache}? $$_[0]{cache} : {};
-	return exists $$CACHE{$_[0]}{$_[1]}{_checkAFSAccess} 
-			? $$CACHE{$_[0]}{$_[1]}{_checkAFSAccess} 
-			: ( $$CACHE{$_[0]}{$_[1]}{_checkAFSAccess} = ($_[0]->SUPER::lstat($_[1]) ? 1 : 0) );
+
+sub _check_caller_access {
+    my ( $self, $fn, $dright, $fright ) = @_;
+    $fright //= $dright;
+    my $aright =
+      $dright eq $fright || $self->SUPER::isDir($fn) ? $dright : $fright;
+    return $self->_get_caller_access($fn) =~ /\Q$aright\E/xms;
 }
 
 1;

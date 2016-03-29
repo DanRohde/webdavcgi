@@ -34,12 +34,12 @@ use CGI::Carp;
 
 use HTTPHelper
   qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type );
-use FileUtils qw( get_local_file_content_and_type stat2h );
+use FileUtils qw( get_local_file_content_and_type );
 
 use DefaultConfig qw(
   $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
   $ENABLE_THUMBNAIL $ENABLE_DAVMOUNT $ALLOW_POST_UPLOADS $ENABLE_CLIPBOARD
-  $OPTIMIZERTMP $THUMBNAIL_CACHEDIR $RELEASE $CONFIGFILE
+  $OPTIMIZERTMP $THUMBNAIL_CACHEDIR $RELEASE $CONFIGFILE $READBUFSIZE
 );
 
 sub new {
@@ -110,7 +110,7 @@ sub handle_get_request {
     {
         return 1;
     }
-    if (   $PATH_TRANSLATED =~ /\/webdav-ui(-[^.\/]+)?[.](js|css)\/?$/xms
+    if (   $PATH_TRANSLATED =~ m{\/webdav-ui(?:-[^./]+)?[.](?:js|css)/?$}xms
         || $PATH_TRANSLATED =~ /\Q$VHTDOCS\E(.*)$/xms )
     {
         $self->get_renderer()->print_styles_vhtdocs_files($PATH_TRANSLATED);
@@ -223,8 +223,7 @@ sub optimize_css_and_js {
     }
     if (   -r $jstargetfile
         && -r $csstargetfile
-        && stat2h( \stat $jstargetfile )->{ctime} >
-        stat2h( \stat $CONFIGFILE )->{ctime} )
+        && (stat $jstargetfile)[10] > (stat $CONFIGFILE)[10] )
     {
         ${$self}{isoptimized} = 1;
         return;
@@ -254,7 +253,7 @@ sub optimize_css_and_js {
 sub optimizer_write_content2zip {
     my ( $self, $file, $contentref ) = @_;
     if ( open my $fh, '>', $file ) {
-        flock $fh, LOCK_EX || carp("Cannot get exclusive lock for $file.");
+        flock( $fh, LOCK_EX ) || carp("Cannot get exclusive lock for $file.");
         my $z = IO::Compress::Gzip->new($fh);
         $z->print( ${$contentref} );
         $z->close();
@@ -273,15 +272,17 @@ sub optimizer_encode_image {
     if ( open my $ih, '<', $ifn ) {
         $self->{debug}->("encode image $ifn");
         my $buffer;
+        my $image = q{};
         binmode($ih) || carp("Cannot set binmode for $ifn.");
-        read( $ih, $buffer, stat2h( \stat $ih )->{size} )
-          || carp("Cannot read $ifn.");
+        while (read $ih, $buffer, $READBUFSIZE) {
+            $image.=$buffer;
+        }
         close($ih) || carp("Cannot close filehandle for $ifn.");
         return
             'url(data:'
           . $mime
           . ';base64,'
-          . encode_base64( $buffer, q{} ) . ')';
+          . encode_base64( $image, q{} ) . ')';
     }
     else {
         carp("Cannot read $ifn.");
@@ -301,7 +302,7 @@ s{^.*${VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${INSTALL_BASE}lib/perl/WebInterface/
         if ( $type eq 'css' ) {
             my $basepath = get_parent_uri($full);
             $fc =~
-s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/iegxms;
+s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/exmsig;
         }
         ${$contentref} .= $fc;
         $self->{debug}->("optimizer_collect: $full collected.");
@@ -314,13 +315,13 @@ sub optimizer_extract_content_from_tags_and_attributes {
     my $content = q{};
     if ( $type eq 'css' ) {
         $data =~
-s{<style[^>]*>(.*?)</style>}{$self->optimizer_collect(\$content, undef, $1, $type)}xmiegs;
+s{<style[^>]*>(.*?)</style>}{$self->optimizer_collect(\$content, undef, $1, $type)}exmsig;
         $data =~
-s{<link[ ].*?href="(.*?)"}{$self->optimizer_collect(\$content, $1, undef, $type)}xmiegs;
+s{<link[ ].*?href="(.*?)"}{$self->optimizer_collect(\$content, $1, undef, $type)}exmsig;
     }
     else {
         $data =~
-s{<script[ ].*?src="([^>"]+)".*?>(.*?)</script>}{$self->optimizer_collect(\$content, $1, $2, $type)}xmiegs;
+s{<script[ ].*?src="([^>"]+)".*?>(.*?)</script>}{$self->optimizer_collect(\$content, $1, $2, $type)}exmsig;
     }
 
     return $content;

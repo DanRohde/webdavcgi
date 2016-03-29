@@ -25,12 +25,13 @@ our $VERSION = '2.0';
 
 use base qw( Requests::WebInterfaceRequest );
 
-use DefaultConfig qw( $PATH_TRANSLATED $FANCYINDEXING );
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI $FANCYINDEXING );
 use HTTPHelper
   qw( fix_mod_perl_response print_header_and_content print_file_header );
 
 sub handle {
     my ($self) = @_;
+    $self->debug("HEAD: $REQUEST_URI => $PATH_TRANSLATED");
     my $backend = $self->{backend};
     if ( $FANCYINDEXING && $self->get_webinterface()->handle_head_request() )
     {

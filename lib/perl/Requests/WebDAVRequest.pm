@@ -29,7 +29,6 @@ use List::MoreUtils qw( any );
 
 use DefaultConfig qw( $ENABLE_BIND %FILECOUNTPERDIRLIMIT );
 use WebDAV::XMLHelper qw( get_namespace_uri %NAMESPACES );
-use WebDAV::Properties;
 use WebDAV::WebDAVProps;
 use FileUtils qw( is_hidden get_file_limit );
 use CacheManager;
@@ -264,6 +263,7 @@ sub get_property_module {
     my $cache  = CacheManager::getinstance();
     my $pm     = $cache->get_entry('propertymodule');
     if ( !$pm ) {
+        require WebDAV::Properties;
         $pm = WebDAV::Properties->new( $self->{config} );
         $cache->set_entry( 'propertymodule', $pm );
     }

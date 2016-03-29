@@ -25,7 +25,6 @@ our $VERSION = '1.0';
 
 use base qw( Requests::Request );
 
-use WebInterface;
 use CacheManager;
 
 sub get_webinterface {
@@ -33,6 +32,7 @@ sub get_webinterface {
     my $cache = CacheManager::getinstance();
     my $wi = $cache->get_entry('webinterface', undef, $cache->get_app_context());
     if (!$wi) {
+        require WebInterface;
         $wi = WebInterface->new();
         $cache->set_entry('webinterface', $wi, $cache->get_app_context());
     }

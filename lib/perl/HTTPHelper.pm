@@ -133,7 +133,8 @@ sub print_local_file_header {
         $header{'Translate'} = 'f';
     }
     %header = ( %header, %{ _get_header_hashref($addheader) } );
-    return print $cgi->header( \%header );
+    print $cgi->header( \%header );
+    return \%header;
 }
 
 sub print_file_header {

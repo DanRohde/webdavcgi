@@ -29,6 +29,7 @@ use base qw( Backend::Helper );
 use Rcs;
 use File::Temp qw/ tempfile /;
 
+use DefaultConfig qw( $READBUFSIZE );
 use Backend::Manager;
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
@@ -235,7 +236,7 @@ sub saveStream {
 	if ($ret = open(my $lfh,'>',$localfilename)) {
 		binmode($lfh);
 		binmode($fh);
-		while (read($fh, my $buffer,$main::BUFSIZE || 1048576)>0) {
+		while (read($fh, my $buffer, $READBUFSIZE )>0) {
 			print $lfh $buffer;
 		}
 		close($lfh);
@@ -371,7 +372,7 @@ sub printFile {
 				$CACHE{$self}{$fn}{stat}=\@stat;
 				binmode($fh);
 				binmode($lfh);
-				my $bufsize = $main::BUFSIZE || 1048576;
+				my $bufsize = $READBUFSIZE;
 				$bufsize = $count if defined $count && $count < $bufsize;
 				my $buffer;
 				my $bytecount = 0;

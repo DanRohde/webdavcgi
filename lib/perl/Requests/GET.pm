@@ -29,7 +29,7 @@ use CGI::Carp;
 use POSIX qw( strftime );
 
 use DefaultConfig
-  qw( $PATH_TRANSLATED $DOCUMENT_ROOT $CHARSET $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
+  qw( $PATH_TRANSLATED $REQUEST_URI $VIRTUAL_BASE $VHTDOCS $DOCUMENT_ROOT $CHARSET $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
 use HTTPHelper
   qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response
   get_mime_type );
@@ -44,7 +44,7 @@ BEGIN {
 
 sub handle {
     my ($self) = @_;
-    $self->debug("_GET: $PATH_TRANSLATED");
+    $self->debug("GET: $REQUEST_URI => $PATH_TRANSLATED");
 
     my $backend = $self->{backend};
     my $cgi     = $self->{cgi};
@@ -62,13 +62,14 @@ sub handle {
     if (
         $FANCYINDEXING
         && (   $DOCUMENT_ROOT eq q{/}
-            || $backend->isDir($PATH_TRANSLATED)
+            || $REQUEST_URI =~ /^$VIRTUAL_BASE\Q$VHTDOCS\E/xms
             || $ENV{QUERY_STRING} ne q{}
+            || $backend->isDir($PATH_TRANSLATED)
             || !$backend->exists($PATH_TRANSLATED) )
         && $self->get_webinterface()->handle_get_request()
       )
     {
-        $self->debug('_GET: WebInterface called');
+        $self->debug('GET: WebInterface called');
         return;
     }
     if ( !$backend->exists($PATH_TRANSLATED) ) {
@@ -80,7 +81,7 @@ sub handle {
         return print_header_and_content( get_error_document('403 Forbidden') );
     }
 
-    $self->debug('_GET: DOWNLOAD');
+    $self->debug('GET: DOWNLOAD');
     binmode(STDOUT) || carp('Cannot set binmode for STDOUT.');
 
     if ( !$self->_handle_compressed_file( $cgi, $backend ) ) {
@@ -94,11 +95,10 @@ sub handle {
             {
                 file => $PATH_TRANSLATED,
                 size => $count
-                  || stat2h( \$backend->stat($PATH_TRANSLATED) )->{size}
+                  || stat2h( $backend->stat($PATH_TRANSLATED) )->{size}
             }
         );
     }
-
     return;
 }
 
@@ -106,7 +106,7 @@ sub _compressable {
     my ( $self, $cgi, $backend ) = @_;
     my $enc  = $cgi->http('Accept-Encoding');
     my $mime = get_mime_type($PATH_TRANSLATED);
-    my $stat = stat2h( \$backend->stat($PATH_TRANSLATED) );
+    my $stat = stat2h( $backend->stat($PATH_TRANSLATED) );
 
     return
          $ENABLE_COMPRESSION
@@ -125,7 +125,7 @@ sub _handle_compressed_file {
 
     my $enc  = $cgi->http('Accept-Encoding');
     my $mime = get_mime_type($PATH_TRANSLATED);
-    my $stat = stat2h( \$backend->stat($PATH_TRANSLATED) );
+    my $stat = stat2h( $backend->stat($PATH_TRANSLATED) );
 
     my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
 

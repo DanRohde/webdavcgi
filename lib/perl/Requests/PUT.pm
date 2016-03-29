@@ -88,7 +88,7 @@ sub handle {
             {
                 file => $PATH_TRANSLATED,
                 size =>
-                  stat2h( \$backend->stat($PATH_TRANSLATED) )->{size}
+                  stat2h( $backend->stat($PATH_TRANSLATED) )->{size}
             }
         );
     }

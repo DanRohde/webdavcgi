@@ -36,6 +36,7 @@ use Fcntl qw(:flock);
 use CGI::Carp;
 use English qw ( -no_match_vars );
 
+use DefaultConfig qw( $READBUFSIZE );
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 use vars qw( %CACHE );
@@ -301,7 +302,7 @@ sub saveStream {
             binmode $filehandle;
             my ($consumed) = 0;
             while (
-                read( $filehandle, my $buffer, $main::BUFSIZE || 1_048_576 ) >
+                read( $filehandle, my $buffer, $READBUFSIZE ) >
                 0 )
             {
                 last

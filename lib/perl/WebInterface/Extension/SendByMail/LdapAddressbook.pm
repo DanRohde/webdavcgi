@@ -21,12 +21,14 @@ package WebInterface::Extension::SendByMail::LdapAddressbook;
 use strict;
 use warnings;
 
+our $VERSION = '2.0';
+
 use base qw( WebInterface::Extension::SendByMail::Addressbook );
 
 use Net::LDAP;
 use CGI::Carp;
 
-sub getMailAddresses {
+sub get_mail_addresses {
     my ( $self, $extension, $pattern ) = @_;
 
     my %c = (
@@ -36,35 +38,38 @@ sub getMailAddresses {
         verify     => $extension->config( 'ldap.verify',     'required' ),
         sslversion => $extension->config( 'ldap.sslversion', 'tlsv1_2' ),
         binddn     => $extension->config( 'ldap.binddn',     0 ),
-        password   => $extension->config( 'ldap.password' ),
-        basedn     => $extension->config( 'ldap.basedn' ),
-        filter     => $extension->config( 'ldap.filter',     '(|(mail=*%s*)(cn=*%s*))' ),
-        scope      => $extension->config( 'ldap.scope',      'sub' ),
-        timelimit  => $extension->config( 'ldap.timelimit',  5 ),
-        sizelimit  => $extension->config( 'ldap.sizelimit',  5 ),
-        cn         => $extension->config( 'ldap.cn',         'cn' ),
-        mail       => $extension->config( 'ldap.mail',       'mail' ),
+        password   => $extension->config('ldap.password'),
+        basedn     => $extension->config('ldap.basedn'),
+        filter =>
+          $extension->config( 'ldap.filter', '(|(mail=*%s*)(cn=*%s*))' ),
+        scope     => $extension->config( 'ldap.scope',     'sub' ),
+        timelimit => $extension->config( 'ldap.timelimit', 5 ),
+        sizelimit => $extension->config( 'ldap.sizelimit', 5 ),
+        cn        => $extension->config( 'ldap.cn',        'cn' ),
+        mail      => $extension->config( 'ldap.mail',      'mail' ),
     );
 
-    my @paa    = split( /\s*,\s*/xms, $pattern );
-    my $query  = pop(@paa);
-    my $pa     = join( ', ', @paa );
+    my @paa    = split /\s*,\s*/xms, $pattern;
+    my $query  = pop @paa;
+    my $pa     = join ', ', @paa;
     my @result = ();
 
     if ( $query !~ /^\s*$/xms ) {
 
         my $ldap = Net::LDAP->new( $c{server}, debug => $c{debug} );
 
-        $c{starttls} and ldap->start_tls( verify => $c{verify}, sslversion => $c{sslversion});
+        $c{starttls}
+          and
+          ldap->start_tls( verify => $c{verify}, sslversion => $c{sslversion} );
 
-        my $msg
-            = $c{binddn}
-            ? $ldap->bind( $c{binddn}, password => $c{password} )
-            : $ldap->bind();
+        my $msg =
+            $c{binddn}
+          ? $ldap->bind( $c{binddn}, password => $c{password} )
+          : $ldap->bind();
 
         $msg->code && carp $msg->error;
 
-        $query =~ s/([\(\)\&\|\=\!\>\<\~\*])/sprintf('\\%x',ord($1))/xmseg;
+        $query =~ s/([()&|=!><~*])/sprintf('\\%x',ord($1))/exmsg;
         $c{filter} =~ s/\%s/$query/xmsg;
 
         $msg = $ldap->search(
@@ -83,10 +88,10 @@ sub getMailAddresses {
             my $mail = $entry->get_value( $c{mail} );
             my $cn   = $entry->get_value( $c{cn} );
             my $re   = "$cn <$mail>";
-            if ($pa ne "") {
-                 $re = "$pa, $re";
+            if ( $pa ne q{} ) {
+                $re = "$pa, $re";
             }
-            if (!$dupcheck{$re}) {
+            if ( !$dupcheck{$re} ) {
                 push @result, { label => $re, value => "$re, " };
                 $dupcheck{$re} = 1;
             }

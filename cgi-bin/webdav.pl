@@ -3,7 +3,7 @@
 ##!/usr/bin/perl -d:NYTProf
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2015 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -53,8 +53,8 @@ use Backend::Manager;
 use HTTPHelper
   qw( print_header_and_content print_compressed_header_and_content print_header_and_content get_mime_type );
 
-$RELEASE = '1.1.1BETA20160328.1';
-our $VERSION = '1.1.1BETA20160327.1';
+$RELEASE = '1.1.1BETA20160329.2';
+our $VERSION = '1.1.1BETA20160329.2';
 
 use vars qw( %_CONFIG $_METHODS_RX %_REQUEST_HANDLERS %_CACHE );
 
@@ -75,20 +75,25 @@ sub init {
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
 
     ## some config independent objects for convinience:
-    $_CONFIG{debug} = \&debug;
+    $_CONFIG{debug}  = \&debug;
     $_CONFIG{logger} = \&logger;
-    $_CONFIG{event} = get_event_channel();
-    $_CONFIG{cache} = CacheManager::getinstance();
+    $_CONFIG{event}  = get_event_channel();
+    $_CONFIG{cache}  = CacheManager::getinstance();
 
     ## read config file:
     read_config($CONFIGFILE);
 
     ## for security reasons:
-    $CGI::POST_MAX = $POST_MAX_SIZE;
-    $CGI::DISABLE_UPLOADS = $ALLOW_POST_UPLOADS ? 0 : 1;
+    $CGI::POST_MAX        = $POST_MAX_SIZE;
+    $CGI::DISABLE_UPLOADS = !$ALLOW_POST_UPLOADS;
+
+    $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
+    $REQUEST_URI     = $ENV{REQUEST_URI};
+    $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // $UID;
 
     ## some must haves:
     $BUFSIZE //= 1_048_576;
+    $TRASH_FOLDER .= $TRASH_FOLDER !~ m{/$}xms ? q{/} : q{};
 
     ## some config objects for the convinience:
     $_CONFIG{config} = \%_CONFIG;
@@ -98,17 +103,9 @@ sub init {
 
     DatabaseEventAdapter->new( \%_CONFIG )->register( $_CONFIG{event} );
 
-    broadcast('INIT');
-
     my $backend =
       Backend::Manager::getinstance()->get_backend( $BACKEND, \%_CONFIG );
     $_CONFIG{backend} = $backend;
-
-    umask $UMASK || croak("Cannot set umask $UMASK.");
-
-    $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
-    $REQUEST_URI     = $ENV{REQUEST_URI};
-    $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // $UID;
 
     # 404/rewrite/redirect handling:
     if ( !defined $PATH_TRANSLATED ) {
@@ -130,10 +127,10 @@ sub init {
     $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
     $REQUEST_URI .= $backend->isDir($PATH_TRANSLATED)
       && $REQUEST_URI !~ /\/$/xms ? q{/} : q{};
-    $REQUEST_URI =~ s/\&/%26/xmsg;    ## bug fix (Mac Finder and &)
+    $REQUEST_URI =~ s/&/%26/xmsg;     ## bug fix (Mac Finder and &)
 
-    $TRASH_FOLDER .= $TRASH_FOLDER !~ /\/$/xms ? q{/} : q{};
-
+    umask($UMASK) || croak("Cannot set umask $UMASK.");
+    $_CONFIG{event}->broadcast('INIT');
     return;
 }
 
@@ -167,7 +164,8 @@ sub handle_request {
     $_CONFIG{method} = $_REQUEST_HANDLERS{$method};
     $_REQUEST_HANDLERS{$method}->init( \%_CONFIG )->handle();
     if ( $_CONFIG{backend} ) { $_CONFIG{backend}->finalize(); }
-    broadcast('FINALIZE');
+    $_CONFIG{event}->broadcast('FINALIZE');
+    debug("Modules loaded:".(scalar keys %INC));
     return;
 }
 
@@ -248,11 +246,6 @@ sub get_event_channel {
         }
     }
     return $ec;
-}
-
-sub broadcast {
-    my ( $event, $data ) = @_;
-    return $_CONFIG{event}->broadcast( $event, $data );
 }
 
 sub get_cgi {

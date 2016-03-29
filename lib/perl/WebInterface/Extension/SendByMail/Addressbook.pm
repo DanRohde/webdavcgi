@@ -19,14 +19,15 @@
 package WebInterface::Extension::SendByMail::Addressbook;
 use strict;
 use warnings;
+our $VERSION = '2.0';
 
-sub getMailAddresses {
+sub get_mail_addresses {
     my ( $self, $extension, $pattern ) = @_;
-    my @result = grep /\Q$pattern\E/xms,
-        @{
+    my @result = grep { /\Q$pattern\E/xms }
+      @{
         $extension->config( 'mailaddresses',
             [ 'Test User1 <a@example.org>', 'Test User2 <b@example.org>' ] )
-        };
+      };
     return \@result;
 }
 
