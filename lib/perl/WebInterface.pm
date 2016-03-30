@@ -65,6 +65,13 @@ sub handle_thumbnail_get_request {
     if ( !$ENABLE_THUMBNAIL ) {
         return 0;
     }
+    if (   $action eq 'thumb'
+        && ${$self}{backend}->isReadable($PATH_TRANSLATED)
+        && ${$self}{backend}->isFile($PATH_TRANSLATED) )
+    {
+        return $self->get_thumbnail_renderer()
+          ->print_thumbnail($PATH_TRANSLATED);
+    }
     if (   $action eq 'mediarss'
         && ${$self}{backend}->isDir($PATH_TRANSLATED)
         && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
@@ -77,13 +84,6 @@ sub handle_thumbnail_get_request {
         && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
     {
         return $self->get_thumbnail_renderer()->print_image($PATH_TRANSLATED);
-    }
-    if (   $action eq 'thumb'
-        && ${$self}{backend}->isReadable($PATH_TRANSLATED)
-        && ${$self}{backend}->isFile($PATH_TRANSLATED) )
-    {
-        return $self->get_thumbnail_renderer()
-          ->print_thumbnail($PATH_TRANSLATED);
     }
     return 0;
 }
@@ -126,7 +126,6 @@ sub handle_get_request {
 
 sub handle_head_request {
     my ($self) = @_;
-    my $handled = 1;
     if ( ${$self}{backend}->isDir($PATH_TRANSLATED) ) {
         print_header_and_content( '200 OK', 'httpd/unix-directory' );
     }
@@ -138,15 +137,13 @@ sub handle_head_request {
         );
     }
     else {
-        $handled = 0;
+        return 0;
     }
-    return $handled;
+    return 1;
 }
 
 sub handle_post_request {
     my ($self) = @_;
-    my $handled = 1;
-
     my $ret_by_ext =
       $self->get_extension_manager()->handle( 'posthandler', ${$self}{config} );
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
@@ -154,9 +151,9 @@ sub handle_post_request {
     if (   $handled_by_ext =~ /1/xms
         || $self->get_functions()->handle_file_actions() )
     {
-        $handled = 1;
+        return 1;
     }
-    elsif ($ALLOW_POST_UPLOADS
+    if ($ALLOW_POST_UPLOADS
         && ${$self}{backend}->isDir($PATH_TRANSLATED)
         && defined ${$self}{cgi}->param('filesubmit') )
     {
@@ -166,9 +163,9 @@ sub handle_post_request {
         $self->get_functions()->handle_clipboard_action();
     }
     else {
-        $handled = 0;
+        return 0;
     }
-    return $handled;
+    return 1;
 }
 
 sub get_thumbnail_renderer {
