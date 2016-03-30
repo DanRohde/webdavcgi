@@ -43,7 +43,8 @@ use DefaultConfig qw(
 
 use FileUtils qw( get_dir_info );
 use HTTPHelper
-  qw( get_etag get_supported_methods get_parent_uri get_base_uri_frag );
+  qw( get_etag get_supported_methods get_parent_uri get_base_uri_frag get_mime_type)
+  ;
 use WebDAV::XMLHelper qw( create_xml %NAMESPACES );
 use WebDAV::WebDAVProps qw( @PROTECTED_PROPS );
 
@@ -516,9 +517,9 @@ sub _get_osflag_props {
         ${$resp_200}{prop}{$prop} = (
             $is_dir
             ? get_dir_info(
-                $self->{config},    $fn, $prop,
-                \%FILEFILTERPERDIR, \%FILECOUNTPERDIRLIMIT,
-                $FILECOUNTLIMIT
+                $self->{config},        $fn,
+                $prop,                  \%FILEFILTERPERDIR,
+                \%FILECOUNTPERDIRLIMIT, $FILECOUNTLIMIT
               )
             : 0
         );
