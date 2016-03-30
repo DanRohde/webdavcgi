@@ -53,8 +53,8 @@ use Backend::Manager;
 use HTTPHelper
   qw( print_header_and_content print_compressed_header_and_content print_header_and_content get_mime_type );
 
-$RELEASE = '1.1.1BETA20160329.2';
-our $VERSION = '1.1.1BETA20160329.2';
+$RELEASE = '1.1.1BETA20160330.1';
+our $VERSION = '1.1.1BETA20160330.1';
 
 use vars qw( %_CONFIG $_METHODS_RX %_REQUEST_HANDLERS %_CACHE );
 

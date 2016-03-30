@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -24,18 +23,16 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use WebInterface::Extension::Manager;
-
 # for optimizing css/js:
 use Fcntl qw (:flock);
 use IO::Compress::Gzip;
 use MIME::Base64;
 use CGI::Carp;
+use POSIX qw(strftime);
 
 use HTTPHelper
-  qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type );
+  qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type fix_mod_perl_response );
 use FileUtils qw( get_local_file_content_and_type );
-
 use DefaultConfig qw(
   $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
   $ENABLE_THUMBNAIL $ENABLE_DAVMOUNT $ALLOW_POST_UPLOADS $ENABLE_CLIPBOARD
@@ -43,9 +40,8 @@ use DefaultConfig qw(
 );
 
 sub new {
-    my ($this) = @_;
-    my $class = ref($this) || $this;
-    my $self = {};
+    my $class = shift;
+    my $self  = {};
     bless $self, $class;
     return $self;
 }
@@ -60,9 +56,6 @@ sub init {
     ${$self}{cgi}     = $config->{cgi};
     ${$self}{backend} = $config->{backend};
     ${$self}{debug}   = $config->{debug};
-    ${$self}{config}{extensions} =
-      WebInterface::Extension::Manager->new($config);
-    $self->optimize_css_and_js();
 
     return $self;
 }
@@ -76,23 +69,21 @@ sub handle_thumbnail_get_request {
         && ${$self}{backend}->isDir($PATH_TRANSLATED)
         && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
     {
-        $self->get_renderer()
+        return $self->get_thumbnail_renderer()
           ->print_media_rss( $PATH_TRANSLATED, $REQUEST_URI );
-        return 1;
     }
     if (   $action eq 'image'
         && ${$self}{backend}->isFile($PATH_TRANSLATED)
         && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
     {
-        $self->get_renderer()->print_image($PATH_TRANSLATED);
-        return 1;
+        return $self->get_thumbnail_renderer()->print_image($PATH_TRANSLATED);
     }
     if (   $action eq 'thumb'
         && ${$self}{backend}->isReadable($PATH_TRANSLATED)
         && ${$self}{backend}->isFile($PATH_TRANSLATED) )
     {
-        $self->get_renderer()->print_thumbnail($PATH_TRANSLATED);
-        return 1;
+        return $self->get_thumbnail_renderer()
+          ->print_thumbnail($PATH_TRANSLATED);
     }
     return 0;
 }
@@ -101,26 +92,27 @@ sub handle_get_request {
     my ($self) = @_;
     my $action = ${$self}{cgi}->param('action') // '_unknown_';
 
-    my $ret_by_ext =
-      ${$self}{config}{extensions}->handle( 'gethandler', ${$self}{config} );
-    my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
-
-    if (   $handled_by_ext =~ /1/xms
-        || $self->handle_thumbnail_get_request($action) )
-    {
-        return 1;
-    }
     if (   $PATH_TRANSLATED =~ m{\/webdav-ui(?:-[^./]+)?[.](?:js|css)/?$}xms
         || $PATH_TRANSLATED =~ /\Q$VHTDOCS\E(.*)$/xms )
     {
-        $self->get_renderer()->print_styles_vhtdocs_files($PATH_TRANSLATED);
+        $self->optimize_css_and_js();
+        $self->print_styles_vhtdocs_files($PATH_TRANSLATED);
+        return 1;
+    }
+    if ( $self->handle_thumbnail_get_request($action) ) {
         return 1;
     }
     if (   $ENABLE_DAVMOUNT
         && $action eq 'davmount'
         && ${$self}{backend}->exists($PATH_TRANSLATED) )
     {
-        $self->get_renderer()->print_dav_mount($PATH_TRANSLATED);
+        return $self->_print_dav_mount($PATH_TRANSLATED);
+    }
+    my $ret_by_ext =
+      $self->get_extension_manager()->handle( 'gethandler', ${$self}{config} );
+    my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
+
+    if ( $handled_by_ext =~ /1/xms ) {
         return 1;
     }
 
@@ -156,7 +148,7 @@ sub handle_post_request {
     my $handled = 1;
 
     my $ret_by_ext =
-      ${$self}{config}{extensions}->handle( 'posthandler', ${$self}{config} );
+      $self->get_extension_manager()->handle( 'posthandler', ${$self}{config} );
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
 
     if (   $handled_by_ext =~ /1/xms
@@ -179,6 +171,13 @@ sub handle_post_request {
     return $handled;
 }
 
+sub get_thumbnail_renderer {
+    my ($self) = @_;
+    require WebInterface::ThumbnailRenderer;
+    return $self->{config}->{thumbnailrender} //=
+      WebInterface::ThumbnailRenderer->new( $self->{config} );
+}
+
 sub get_functions {
     my $self = shift;
     require WebInterface::Functions;
@@ -189,6 +188,66 @@ sub get_renderer {
     my $self = shift;
     require WebInterface::Renderer;
     return WebInterface::Renderer->new( ${$self}{config} );
+}
+
+sub get_extension_manager {
+    my ($self) = @_;
+    require WebInterface::Extension::Manager;
+    return $self->{config}->{extensions} //=
+      WebInterface::Extension::Manager->new( $self->{config} );
+}
+
+sub print_styles_vhtdocs_files {
+    my ( $self, $fn ) = @_;
+    my $file =
+        $fn =~ /\Q$VHTDOCS\E(.*)/xms
+      ? $INSTALL_BASE . 'htdocs/' . $1
+      : $INSTALL_BASE . 'lib/' . ${$self}{backend}->basename($fn);
+    if ( $fn =~ /\Q$VHTDOCS\E_EXTENSION[(]([^)]+)[)]_(.*)/xms ) {
+        $file = $INSTALL_BASE . 'lib/perl/WebInterface/Extension/' . $1 . $2;
+    }
+    elsif ( $fn =~ /\Q$VHTDOCS\E_OPTIMIZED[(](js|css)[)]_/xms ) {
+        $file = $self->optimizer_get_filepath($1);
+    }
+    $file =~ s{/[.][.]/}{}xmsg;
+    my $compression = !-e $file && -e "$file.gz";
+    my $nfile = $file;
+    if ($compression) { $file = "$nfile.gz"; }
+    my $header = {
+        -Expires => strftime( '%a, %d %b %Y %T GMT', gmtime( time + 604_800 ) ),
+        -Vary    => 'Accept-Encoding'
+    };
+    if ($compression) {
+        ${$header}{-Content_Encoding} = 'gzip';
+        ${$header}{-Content_Length}   = ( stat $file )[7];
+    }
+    if ( open my $f, '<', $file ) {
+        my $headerref = print_local_file_header( $nfile, $header );
+        binmode(STDOUT) || carp("Cannot set binmode for $file");
+        while ( read $f, my $buffer, $READBUFSIZE ) {
+            print($buffer) || carp('Cannot write to STDOUT!');
+        }
+        close $f || carp("Cannot close $file.");
+        fix_mod_perl_response($headerref);
+    }
+    else {
+        print_header_and_content('404 Not Found');
+    }
+    return;
+}
+
+sub _print_dav_mount {
+    my ( $self, $fn ) = @_;
+    my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
+    my $bn = ${$self}{backend}->basename($fn);
+    $su =~ s/\Q$bn\E\/?//xms;
+    $bn .= ${$self}{backend}->isDir($fn) && $bn !~ /\/$/xms ? q{/} : q{};
+    print_header_and_content(
+        '200 OK',
+        'application/davmount+xml',
+qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm:open>$bn</dm:open></dm:mount>@
+    );
+    return 1;
 }
 
 sub optimizer_is_optimized {
@@ -223,7 +282,7 @@ sub optimize_css_and_js {
     }
     if (   -r $jstargetfile
         && -r $csstargetfile
-        && (stat $jstargetfile)[10] > (stat $CONFIGFILE)[10] )
+        && ( stat $jstargetfile )[10] > ( stat $CONFIGFILE )[10] )
     {
         ${$self}{isoptimized} = 1;
         return;
@@ -231,7 +290,7 @@ sub optimize_css_and_js {
 
     ## collect CSS:
     my $tags = join "\n",
-      @{ ${$self}{config}{extensions}->handle('css') || [] };
+      @{ $self->get_extension_manager()->handle('css') // [] };
     my $content =
       $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'css' );
     if ($content) {
@@ -240,7 +299,7 @@ sub optimize_css_and_js {
 
     ## collect JS:
     $tags = join "\n",
-      @{ ${$self}{config}{extensions}->handle('javascript') || [] };
+      @{ $self->get_extension_manager()->handle('javascript') // [] };
     $content =
       $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'js' );
     if ($content) {
@@ -274,8 +333,8 @@ sub optimizer_encode_image {
         my $buffer;
         my $image = q{};
         binmode($ih) || carp("Cannot set binmode for $ifn.");
-        while (read $ih, $buffer, $READBUFSIZE) {
-            $image.=$buffer;
+        while ( read $ih, $buffer, $READBUFSIZE ) {
+            $image .= $buffer;
         }
         close($ih) || carp("Cannot close filehandle for $ifn.");
         return
