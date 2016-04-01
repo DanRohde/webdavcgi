@@ -34,7 +34,6 @@ sub isFile {
       ? $_[0]->SUPER::isFile( $_[1] )
       : 1;
 }
-
 sub isLink {
     return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
       ? $_[0]->SUPER::isLink( $_[1] )
@@ -129,9 +128,10 @@ sub _get_caller_access {
     if ( exists $self->{cache}{$fn}{_get_caller_access} ) {
         return $self->{cache}{$fn}{_get_caller_access};
     }
-    if ( !$self->isDir($fn) ) {
-        return $self->_get_caller_access( $self->dirname($fn) );
-    }
+###  checks on files working too
+#    if ( !$self->isDir($fn) ) {
+#        return $self->_get_caller_access( $self->dirname($fn) );
+#    }
     my $access = q{};
 
     my $cmd = sprintf '%s getcalleraccess "%s" 2>/dev/null',

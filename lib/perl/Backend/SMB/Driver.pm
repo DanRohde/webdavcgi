@@ -282,7 +282,7 @@ sub _is_allowed {
             && $shareidx
             && exists $BACKEND_CONFIG{$BACKEND}
             {domains}{$userdomain}{fileserver}{$server}{shares}[$shareidx] )
-          || $share =~ /$sregex/i
+          || $share =~ /$sregex/xmsi
     );
 }
 
@@ -513,7 +513,7 @@ sub unlinkFile {
         $self->isDir($file)
       ? $self->getSmbClient()->rmdir_recurse( $self->_get_smb_url($file) )
       : $self->getSmbClient()->unlink( $self->_get_smb_url($file) );
-    if   ( !$ret ) { carp("Could not delete $file: $!"); }
+    if   ( !$ret ) { carp("Could not delete $file: $ERRNO"); }
     else           { $self->finalize(); }
     return $ret;
 }
@@ -669,7 +669,7 @@ sub _get_path_info {
     my ($file) = @_;
     my ( $server, $share, $path, $shareidx ) = ( q{}, q{}, $file, undef );
     if ( $file =~
-/^\Q$DOCUMENT_ROOT\E([^\Q$_SHARESEP\E]+)\Q$_SHARESEP\E([^\/\Q$_SHARESEP\E]+)(\Q$_SHARESEP\E(\d+))?(.*)$/xms
+m{^\Q$DOCUMENT_ROOT\E([^\Q$_SHARESEP\E]+)\Q$_SHARESEP\E([^/\Q$_SHARESEP\E]+)(\Q$_SHARESEP\E(\d+))?(.*)$}xms
       )
     {
         ( $server, $share, $path, $shareidx ) = ( $1, $2, $5, $4 );
@@ -683,7 +683,7 @@ sub _get_smb_url {
     my $fs =
       $BACKEND_CONFIG{$BACKEND}{domains}{ _get_user_domain() }{fileserver};
     if ( $file =~
-/^\Q$DOCUMENT_ROOT\E([^\Q$_SHARESEP\E]+)\Q$_SHARESEP\E([^\/\Q$_SHARESEP\E]*)(\Q$_SHARESEP\E(\d+))?(\/.*)?$/xms
+m{^\Q$DOCUMENT_ROOT\E([^\Q$_SHARESEP\E]+)\Q$_SHARESEP\E([^/\Q$_SHARESEP\E]*)(\Q$_SHARESEP\E(\d+))?(/.*)?$}xms
       )
     {
         my ( $server, $share, $initdir, $path, $shareidx ) =

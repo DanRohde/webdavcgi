@@ -40,6 +40,8 @@ use strict;
 use warnings;
 our $VERSION = '2.0';    # only module version! release number is in $RELEASE
 
+use utf8;
+
 use CGI;
 use CGI::Carp;
 use English qw ( -no_match_vars );
@@ -54,7 +56,7 @@ use Backend::Manager;
 use HTTPHelper
   qw( print_header_and_content print_compressed_header_and_content print_header_and_content get_mime_type );
 
-$RELEASE = '1.1.1BETA20160401.1';
+$RELEASE = '1.1.1BETA20160401.2';
 
 use vars qw( %_CONFIG $_METHODS_RX %_REQUEST_HANDLERS %_CACHE );
 

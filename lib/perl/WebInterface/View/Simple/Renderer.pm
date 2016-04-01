@@ -31,7 +31,14 @@ use DateTime;
 use DateTime::Format::Human::Duration;
 
 use FileUtils qw( get_file_limit );
-use HTTPHelper qw( get_parent_uri get_base_uri_frag );
+use HTTPHelper qw( get_parent_uri get_base_uri_frag get_mime_type print_compressed_header_and_content );
+use DefaultConfig qw( $DOCUMENT_ROOT $ENABLE_NAMEFILTER $FILETYPES $INSTALL_BASE
+ $LANG $MAXFILENAMESIZE $MAXNAVPATHSIZE $PATH_TRANSLATED $POST_MAX_SIZE 
+ $REMOTE_USER $REQUEST_URI $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY 
+ $SHOW_LOCKS $SHOW_PARENT_FOLDER $SHOW_QUOTA $VHTDOCS $VIEW $VIRTUAL_BASE 
+ %FILEFILTERPERDIR %QUOTA_LIMITS %SUPPORTED_LANGUAGES @ALLOWED_TABLE_COLUMNS 
+ @EXTENSIONS @VISIBLE_TABLE_COLUMNS );
+
 
 use vars qw(%CACHE @ERRORS);
 
@@ -40,10 +47,10 @@ sub render {
     my $content;
     my $contenttype;
     $self->set_locale();
-    my $atcregex = '^(' . join( q{|}, @main::ALLOWED_TABLE_COLUMNS ) . ')$';
+    my $atcregex = '^(' . join( q{|}, @ALLOWED_TABLE_COLUMNS ) . ')$';
     if ( 'selector' !~ /$atcregex/xms ) {
-        unshift @main::ALLOWED_TABLE_COLUMNS, 'selector';
-        unshift @main::VISIBLE_TABLE_COLUMNS, 'selector';
+        unshift @ALLOWED_TABLE_COLUMNS, 'selector';
+        unshift @VISIBLE_TABLE_COLUMNS, 'selector';
     }
 
     if ( ${$self}{cgi}->param('ajax') ) {
@@ -67,7 +74,7 @@ sub render {
     delete $CACHE{$self}{$fn};
     $content     //= q{};
     $contenttype //= 'text/html';
-    return main::print_compressed_header_and_content( '200 OK', $contenttype,
+    return print_compressed_header_and_content( '200 OK', $contenttype,
         $content, 'Cache-Control: no-cache, no-store',
         $self->get_cookies() );
 }
@@ -140,30 +147,30 @@ sub _get_quota_data {
     my ( $self, $fn ) = @_;
     return $CACHE{$self}{$fn}{quotaData}
         if exists $CACHE{$self}{$fn}{quotaData};
-    my @quota      = $main::SHOW_QUOTA ? $self->{backend}->getQuota($fn) : ( 0, 0 );
+    my @quota      = $SHOW_QUOTA ? $self->{backend}->getQuota($fn) : ( 0, 0 );
     my $quotastyle = q{};
     my $level      = 'info';
-    if ( $main::SHOW_QUOTA && $quota[0] > 0 ) {
+    if ( $SHOW_QUOTA && $quota[0] > 0 ) {
         my $qusage      = ( $quota[0] - $quota[1] ) / $quota[0];
         my $lowestlimit = 1;
-        foreach my $l ( keys %main::QUOTA_LIMITS ) {
-            if (   $main::QUOTA_LIMITS{$l}{limit}
-                && $main::QUOTA_LIMITS{$l}{limit} <= $lowestlimit
-                && $qusage <= $main::QUOTA_LIMITS{$l}{limit} )
+        foreach my $l ( keys %QUOTA_LIMITS ) {
+            if (   $QUOTA_LIMITS{$l}{limit}
+                && $QUOTA_LIMITS{$l}{limit} <= $lowestlimit
+                && $qusage <= $QUOTA_LIMITS{$l}{limit} )
             {
                 $level       = $l;
-                $lowestlimit = $main::QUOTA_LIMITS{$l}{limit};
+                $lowestlimit = $QUOTA_LIMITS{$l}{limit};
             }
         }
-        if ( $main::QUOTA_LIMITS{$level} ) {
+        if ( $QUOTA_LIMITS{$level} ) {
             $quotastyle .=
-                $main::QUOTA_LIMITS{$level}{color}
-                ? ';color:' . $main::QUOTA_LIMITS{$level}{color}
+                $QUOTA_LIMITS{$level}{color}
+                ? ';color:' . $QUOTA_LIMITS{$level}{color}
                 : q{};
             $quotastyle .=
-                $main::QUOTA_LIMITS{$level}{background}
+                $QUOTA_LIMITS{$level}{background}
                 ? ';background-color:'
-                . $main::QUOTA_LIMITS{$level}{background}
+                . $QUOTA_LIMITS{$level}{background}
                 : q{};
         }
     }
@@ -192,7 +199,7 @@ sub _get_quota_data {
 
 sub render_template {
     my ( $self, $fn, $ru, $content ) = @_;
-    my $vbase = $ru =~ /^($main::VIRTUAL_BASE)/xms ? $1 : $ru;
+    my $vbase = $ru =~ /^($VIRTUAL_BASE)/xms ? $1 : $ru;
     my %quota = %{ $self->_get_quota_data($fn) };
 
     # replace standard variables:
@@ -201,9 +208,9 @@ sub render_template {
         baseuri      => ${$self}{cgi}->escapeHTML($vbase),
         quicknavpath => $CACHE{$self}{render_template}{quicknavpath}
             //= $self->_render_quicknav_path( $fn, $ru ),
-        maxuploadsize   => $main::POST_MAX_SIZE,
+        maxuploadsize   => $POST_MAX_SIZE,
         maxuploadsizehr => $CACHE{$self}{render_template}{maxuploadsizehr}
-            //= ( $self->render_byte_val( $main::POST_MAX_SIZE, 2, 2 ) )[0],
+            //= ( $self->render_byte_val( $POST_MAX_SIZE, 2, 2 ) )[0],
         quotalimit => $CACHE{$self}{render_template}{quotalimit}
             //= ( $self->render_byte_val( $quota{quotalimit}, 2, ) )[0],
         quotalimitbytes => $quota{quotalimit},
@@ -223,11 +230,11 @@ sub render_template {
         quotausedperc      => $quota{quotausedperc},
         quotaavailableperc => $quota{quotaavailableperc},
         stat_filetypes     => $CACHE{render_template}{stat_filetypes}
-            //= $self->stat_matchcount( $main::FILETYPES, '^\S+' ),
+            //= $self->stat_matchcount( $FILETYPES, '^\S+' ),
         stat_suffixes => $CACHE{render_template}{stat_suffixes}
-            //= $self->stat_matchcount( $main::FILETYPES, '\S+' )
-            - $self->stat_matchcount( $main::FILETYPES, '^\S+' ),
-        stat_extensions    => $#main::EXTENSIONS + 1,
+            //= $self->stat_matchcount( $FILETYPES, '\S+' )
+            - $self->stat_matchcount( $FILETYPES, '^\S+' ),
+        stat_extensions    => $#EXTENSIONS + 1,
         stat_filetypeicons => $CACHE{render_template}{stat_filetypeicons}
             //= join(
             q{},
@@ -242,19 +249,19 @@ sub render_template {
                         -title => "\u$_"
                     }
                     )
-            } $main::FILETYPES =~ /^\S+/xmsg
+            } $FILETYPES =~ /^\S+/xmsg
             ),
         stat_extensionlist => $CACHE{render_template}{stat_extensionlist}
-            //= join( ', ', sort @main::EXTENSIONS ),
+            //= join( ', ', sort @EXTENSIONS ),
         stat_loadedperlmodules =>
             $CACHE{render_template}{stat_loadedperlmodules}
             //= keys(%INC) + 1,
         stat_perlmodulelist => $CACHE{render_template}{stat_perlmodulelist}
             //= join( ', ', sort keys %INC ),
         stat_perlversionnumber => $],
-        view                   => $main::VIEW,
-        viewname               => $self->tl("${main::VIEW}view"),
-        USER                   => $main::REMOTE_USER,
+        view                   => $VIEW,
+        viewname               => $self->tl("${VIEW}view"),
+        USER                   => $REMOTE_USER,
         CLOCK                  => ${$self}{cgi}->span(
             {   id            => 'clock',
                 'data-format' => $self->tl('vartimeformat')
@@ -262,11 +269,11 @@ sub render_template {
             strftime( $self->tl('vartimeformat'), localtime )
         ),
         NOW             => strftime( $self->tl('varnowformat'), localtime ),
-        REQUEST_URI     => $main::REQUEST_URI,
-        PATH_TRANSLATED => $main::PATH_TRANSLATED,
-        LANG            => $main::LANG,
+        REQUEST_URI     => $REQUEST_URI,
+        PATH_TRANSLATED => $PATH_TRANSLATED,
+        LANG            => $LANG,
         VBASE           => ${$self}{cgi}->escapeHTML($vbase),
-        VHTDOCS         => $vbase . $main::VHTDOCS,
+        VHTDOCS         => $vbase . $VHTDOCS,
     );
     return $self->SUPER::render_template( $fn, $ru, $content, \%stdvars );
 }
@@ -375,7 +382,7 @@ sub _render_extension {
             my $vbase = $self->get_vbase();
             return
                 q@<script>$(document).ready(function() { $(document.createElement("script")).attr("src","@
-                . "${vbase}${main::VHTDOCS}_OPTIMIZED(js)_"
+                . "${vbase}${VHTDOCS}_OPTIMIZED(js)_"
                 . q@").appendTo($("body")); });</script>@;
         }
         else {
@@ -394,7 +401,7 @@ sub _render_extension {
         if ( $self->{config}->{webinterface}->optimizer_is_optimized() ) {
             my $vbase = $self->get_vbase();
             return
-                qq@<link rel="stylesheet" href="${vbase}${main::VHTDOCS}_OPTIMIZED(css)_"/>@;
+                qq@<link rel="stylesheet" href="${vbase}${VHTDOCS}_OPTIMIZED(css)_"/>@;
         }
     }
 
@@ -407,7 +414,7 @@ sub _render_extension {
 sub _render_extension_function {
     my ( $self, $content ) = @_;
     $content =~
-        s/[\$]extension[(](.*?)[)]/$self->_render_extension($main::PATH_TRANSLATED,$main::REQUEST_URI,$1)/xmegs;
+        s/[\$]extension[(](.*?)[)]/$self->_render_extension($PATH_TRANSLATED,$REQUEST_URI,$1)/xmegs;
     return $content;
 }
 
@@ -420,13 +427,13 @@ sub _render_language_list {
     my $content = q{};
     foreach my $lang (
         sort {
-            $main::SUPPORTED_LANGUAGES{$a}
-                cmp $main::SUPPORTED_LANGUAGES{$b}
-        } keys %main::SUPPORTED_LANGUAGES
+            $SUPPORTED_LANGUAGES{$a}
+                cmp $SUPPORTED_LANGUAGES{$b}
+        } keys %SUPPORTED_LANGUAGES
         )
     {
         my $l = $tmpl;
-        $l =~ s/\$langname/$main::SUPPORTED_LANGUAGES{$lang}/xmsg;
+        $l =~ s/\$langname/$SUPPORTED_LANGUAGES{$lang}/xmsg;
         $l =~ s/\$lang/$lang/xmsg;
         $content .= $l;
     }
@@ -459,16 +466,16 @@ sub _render_file_list_table {
     if ( !${$self}{backend}->isReadable($fn) ) {
         $jsondata{error} = $self->tl('foldernotreadable');
     }
-    if ($main::FILEFILTERPERDIR{$fn}
-        || ( $main::ENABLE_NAMEFILTER
+    if ($FILEFILTERPERDIR{$fn}
+        || ( $ENABLE_NAMEFILTER
             && ${$self}{cgi}->param('namefilter') )
         )
     {
         $jsondata{warn} = sprintf
             $self->tl('folderisfiltered'),
-            $main::FILEFILTERPERDIR{$fn}
+            $FILEFILTERPERDIR{$fn}
             || (
-            $main::ENABLE_NAMEFILTER
+            $ENABLE_NAMEFILTER
             ? ${$self}{cgi}->param('namefilter')
             : undef
             );
@@ -488,7 +495,7 @@ sub _render_file_list_entry {
 
     my $hdr = $CACHE{_render_file_list_entry}{hdr}
         //= DateTime::Format::Human::Duration->new();
-    my $lang  = $main::LANG eq 'default' ? 'en' : $main::LANG;
+    my $lang  = $LANG eq 'default' ? 'en' : $LANG;
     my $full  = "$fn$file";
     my $fulle = $ru . ${$self}{cgi}->escape($file);
     $fulle =~ s/\%2f/\//xmsgi;    ## fix for search
@@ -507,7 +514,7 @@ sub _render_file_list_entry {
     my $mime
         = $file eq q{..} ? '< .. >'
         : $id            ? '<folder>'
-        :                  main::get_mime_type($full);
+        :                  get_mime_type($full);
     my $suffix
         = $file eq q{..} ? 'folderup'
         : (
@@ -516,10 +523,10 @@ sub _render_file_list_entry {
         );
     my $category = $CACHE{category}{$suffix} ||=
            $suffix ne 'unknown'
-        && $main::FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
+        && $FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
         ? 'category-' . $1
         : q{};
-    my $is_locked = $main::SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
+    my $is_locked = $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
     my $displayname
         = ${$self}{cgi}
         ->escapeHTML( ${$self}{backend}->getDisplayName($full) );
@@ -665,7 +672,7 @@ sub _render_visible_table_columns {
 sub _render_invisible_allowed_table_columns {
     my ( $self, $templateref ) = @_;
     my $columns = q{};
-    for my $column (@main::ALLOWED_TABLE_COLUMNS) {
+    for my $column (@ALLOWED_TABLE_COLUMNS) {
         if (${$templateref} =~ s/<!--TEMPLATE[(]$column[)]\[(.*?)\]-->//xmsg )
         {
             my $c = $1;
@@ -690,12 +697,12 @@ sub _render_file_list {
         @{ ${$self}{backend}->readDir( $fn, get_file_limit($fn), $self ) }
         : ();
 
-    if ( $main::SHOW_PARENT_FOLDER && $main::DOCUMENT_ROOT ne $fn ) {
+    if ( $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $fn ) {
         unshift @files, q{..};
     }
-    if ($main::SHOW_CURRENT_FOLDER
-        || (   $main::SHOW_CURRENT_FOLDER_ROOTONLY
-            && $ru =~ /^$main::VIRTUAL_BASE$/xms )
+    if ($SHOW_CURRENT_FOLDER
+        || (   $SHOW_CURRENT_FOLDER_ROOTONLY
+            && $ru =~ /^$VIRTUAL_BASE$/xms )
         )
     {
         unshift @files, q{.};
@@ -762,14 +769,14 @@ sub _render_filter_info {
 
     }
 
-    return $#filter > -1 ? join( ', ', @filter ) : q{};
+    return scalar(@filter) > 0 ? join( ', ', @filter ) : q{};
 
 }
 
 sub read_template {
     my ( $self, $filename ) = @_;
     return $self->SUPER::read_template( $filename,
-        "$main::INSTALL_BASE/templates/simple/" );
+        "$INSTALL_BASE/templates/simple/" );
 }
 
 sub _render_quicknav_path {
@@ -779,7 +786,7 @@ sub _render_quicknav_path {
     my $path    = q{};
     my $navpath = $ru;
     my $base    = q{};
-    if ( $navpath =~ s/^($main::VIRTUAL_BASE)//xms ) {
+    if ( $navpath =~ s/^($VIRTUAL_BASE)//xms ) {
         $base = $1;
     }
 
@@ -793,8 +800,8 @@ sub _render_quicknav_path {
         $base    = q{};
         $navpath = "/$navpath";
     }
-    my @fna = split /\//xms, substr $fn, length $main::DOCUMENT_ROOT;
-    my $fnc = $main::DOCUMENT_ROOT;
+    my @fna = split /\//xms, substr $fn, length $DOCUMENT_ROOT;
+    my $fnc = $DOCUMENT_ROOT;
     my @pea             = split /\//xms, $navpath;    ## path element array
     my $navpathlength   = length $navpath;
     my $ignorepe        = 0;
@@ -808,25 +815,25 @@ sub _render_quicknav_path {
         if ( $path eq q{//} ) { $path = q{/}; }
         my $dn = "$pe/";
         $dn
-            = $fnc eq $main::DOCUMENT_ROOT
+            = $fnc eq $DOCUMENT_ROOT
             ? "$pe/"
             : ${$self}{backend}->getDisplayName($fnc);
         $lastignorepe = $ignorepe;
         $ignorepe     = 0;
-        if (   defined $main::MAXNAVPATHSIZE
-            && $main::MAXNAVPATHSIZE > 0
-            && $navpathlength > $main::MAXNAVPATHSIZE )
+        if (   defined $MAXNAVPATHSIZE
+            && $MAXNAVPATHSIZE > 0
+            && $navpathlength > $MAXNAVPATHSIZE )
         {
 
             if ( $i == 0 ) {
-                if ( length($dn) > $main::MAXFILENAMESIZE ) {
-                    $dn = substr( $dn, 0, $main::MAXFILENAMESIZE - 6 )
+                if ( length($dn) > $MAXFILENAMESIZE ) {
+                    $dn = substr( $dn, 0, $MAXFILENAMESIZE - 6 )
                         . '[...]/';
-                    $navpathlength -= $main::MAXFILENAMESIZE - 8;
+                    $navpathlength -= $MAXFILENAMESIZE - 8;
                 }
             }
             elsif ( $i == $#pea ) {
-                $dn = substr( $dn, 0, $main::MAXNAVPATHSIZE - 7 ) . '[...]/';
+                $dn = substr( $dn, 0, $MAXNAVPATHSIZE - 7 ) . '[...]/';
                 $navpathlength -= length($dn) - 8;
             }
             else {

@@ -27,11 +27,13 @@ use base qw( Backend::FS::Driver );
 
 use CGI::Carp;
 
+use DefaultConfig qw( $BACKEND %BACKEND_CONFIG );
+
 sub getQuota {
     my ( $self, $fn ) = @_;
     $fn =~ s/(["\$\\])/\\$1/xmsg;
     my $cmdline = sprintf '%s "%s"',
-      $main::BACKEND_CONFIG{$main::BACKEND}{quota}, $self->resolveVirt($fn);
+      $BACKEND_CONFIG{$BACKEND}{quota}, $self->resolveVirt($fn);
     if ( open my $cmd, q{-|}, $cmdline ) {
 
         #my @lines = <$cmd>;

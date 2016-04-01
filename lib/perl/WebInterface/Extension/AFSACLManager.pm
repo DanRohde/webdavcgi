@@ -83,7 +83,7 @@ sub handle {
             'afs', 'afs' );
     }
     if ( $hook eq 'gethandler' ) {
-        my $ajax = $self->{cgi}->param('ajax');
+        my $ajax = $self->{cgi}->param('ajax') // q{};
         my $content;
         my $contenttype = 'text/html';
         if ( $ajax eq 'getAFSACLManager' ) {

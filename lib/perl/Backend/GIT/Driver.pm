@@ -29,13 +29,15 @@ use base qw ( Backend::FS::Driver );
 use Fcntl qw(:flock);
 use CGI::Carp;
 
+use DefaultConfig qw( $DOCUMENT_ROOT $ENABLE_FLOCK %BACKEND_CONFIG );
+
 sub init {
     my ( $self, $config ) = @_;
     $self->SUPER::init($config);
-    $self->{GIT} = $main::BACKEND_CONFIG{GIT}{gitcmd} // '/usr/bin/git';
+    $self->{GIT} = $BACKEND_CONFIG{GIT}{gitcmd} // '/usr/bin/git';
     $self->{LOCKFILE} =
-      $main::BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock';
-    if ( !$self->isDir( $main::DOCUMENT_ROOT . '.git' ) ) {
+      $BACKEND_CONFIG{GIT}{lockfile} || '/tmp/webdav-git.lock';
+    if ( !$self->isDir( $DOCUMENT_ROOT . '.git' ) ) {
         $self->execGit('init');
         $self->execGit( 'config', 'user.email', $ENV{REMOTE_USER} );
         $self->autoAdd();
@@ -45,7 +47,9 @@ sub init {
 
 sub mkcolhier {
     my ( $self, $dir ) = @_;
-    $self->mkcolhier( $self->dirname($dir) ) unless -d $self->dirname($dir);
+    if ( !-d $self->dirname($dir) ) {
+        $self->mkcolhier( $self->dirname($dir) );
+    }
     $self->mkcol($dir);
     return;
 }
@@ -100,8 +104,8 @@ sub readDir {
 sub gitFilter {
     my ( $self, $dirname, $file ) = @_;
     return
-         ( $file eq '.git' && $main::DOCUMENT_ROOT =~ /^\Q$dirname\E\/?$/xms )
-      || $dirname =~ /^\Q$main::DOCUMENT_ROOT\E\.git(\/.*)?$/xms
+         ( $file eq '.git' && $DOCUMENT_ROOT =~ /^\Q$dirname\E\/?$/xms )
+      || $dirname =~ /^\Q$DOCUMENT_ROOT\E\.git(\/.*)?$/xms
       || $self->filter( undef, $dirname, $file );
 }
 
@@ -142,8 +146,10 @@ sub compress_files {
         elsif ($self->isReadable( $basepath . $file )
             && $self->exists( $basepath . $file ) )
         {
-            $zip->addFile( $self->resolveVirt( $basepath . $file ), $file )
-              unless $self->gitFilter( $basepath, $file );
+            if ( !$self->gitFilter( $basepath, $file ) )
+            {
+                $zip->addFile( $self->resolveVirt( $basepath . $file ), $file );
+            }
         }
     }
     return $zip->writeToFileHandle( $desthandle, 0 );
@@ -199,19 +205,19 @@ sub execGit {
 
 sub _exec_git {
     my ( $self, @args ) = @_;
-    my @params = map { /^\Q$main::DOCUMENT_ROOT\E(.*)/xms ? $1 : $_ } @args;
+    my @params = map { /^\Q$DOCUMENT_ROOT\E(.*)/xms ? $1 : $_ } @args;
     my $ret = 1;
 
     #warn(join(" ",@_));
     if ( open my $fd, '>', $self->{LOCKFILE} ) {
-        chdir $main::DOCUMENT_ROOT;
-        if ( ( !$main::ENABLE_FLOCK || flock $fd, LOCK_EX  )
-            && open my $git, q{-|}, $self->{GIT}, @params )
+        chdir $DOCUMENT_ROOT;
+        if ( ( !$ENABLE_FLOCK || flock $fd, LOCK_EX ) && open my $git,
+            q{-|}, $self->{GIT}, @params )
         {
             my @output = <$git>;
             close($git) || carp('Cannot close git command.');
         }
-        if ($main::ENABLE_FLOCK) { flock $fd, LOCK_UN; }
+        if ($ENABLE_FLOCK) { flock $fd, LOCK_UN; }
         close($fd) || carp('Cannot close lockfile for git command.');
     }
     else {
@@ -226,12 +232,12 @@ sub autoAdd {
     my $ret = 1;
     my @add;
     if ( open my $fd, '>', $self->{LOCKFILE} ) {
-        $ret = !$main::ENABLE_FLOCK || flock $fd, LOCK_EX;
-        chdir $main::DOCUMENT_ROOT;
+        $ret = !$ENABLE_FLOCK || flock $fd, LOCK_EX;
+        chdir $DOCUMENT_ROOT;
         if ( $ret && open my $git, q{-|}, $self->{GIT}, 'status', '-s' ) {
-            while ( <$git> ) {
+            while (<$git>) {
                 chomp;
-                if ( /^[?][?] (.*)$/xms ) {
+                if (/^[?][?] (.*)$/xms) {
                     push @add, $1;
                 }
             }

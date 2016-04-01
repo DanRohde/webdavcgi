@@ -27,513 +27,643 @@ our $VERSION = '1.0';
 use base qw( Backend::Helper );
 
 use Rcs;
+use English qw( -no_match_vars );
 use File::Temp qw/ tempfile /;
+use List::MoreUtils qw( none );
+use CGI::Carp;
 
-use DefaultConfig qw( $READBUFSIZE );
+use DefaultConfig qw( $READBUFSIZE %BACKEND_CONFIG );
 use Backend::Manager;
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 use vars qw( %CACHE );
 
 sub init {
-    my ($self, $config) = @_;
+    my ( $self, $config ) = @_;
     $self->SUPER::init($config);
-    $self->{BACKEND} = Backend::Manager::getinstance()->get_backend($main::BACKEND_CONFIG{RCS}{backend} || 'FS', $self->{config});
-	return $self;
+    $self->{BACKEND} =
+      Backend::Manager::getinstance()
+      ->get_backend( $BACKEND_CONFIG{RCS}{backend} || 'FS', $self->{config} );
+    return $self;
 }
+
 sub finalize {
-	my ($self) = @_;
-	%CACHE = ();
-	$$self{BACKEND}->finalize();
-	return;
+    my ($self) = @_;
+    %CACHE = ();
+    $self->{BACKEND}->finalize();
+    return;
 }
 
 sub basename {
-	my $self = shift @_;
-	return get_base_uri_frag($_[0]) if $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
-	return $$self{BACKEND}->basename(@_);
+    my $self = shift @_;
+    return get_base_uri_frag( $_[0] )
+      if $_[0] =~
+/\/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
+    return $self->{BACKEND}->basename(@_);
 }
+
 sub dirname {
-	my $self = shift @_;
-	return get_parent_uri($_[0]) if defined $_[0] && $_[0] =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
-	return $$self{BACKEND}->dirname(@_);
+    my $self = shift @_;
+    return get_parent_uri( $_[0] )
+      if defined $_[0]
+      && $_[0] =~
+/\/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?/;
+    return $self->{BACKEND}->dirname(@_);
 }
 
 sub exists {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->exists(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->exists(@_);
 }
+
 sub isDir {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtualDir($_[0]));
-	return 0 if ($self->_isVirtualFile($_[0]));
-	return $$self{BACKEND}->isDir(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual_dir( $_[0] ) );
+    return 0 if ( $self->_is_virtual_file( $_[0] ) );
+    return $self->{BACKEND}->isDir(@_);
 }
+
 sub isFile {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtualFile($_[0]));
-	return 0 if ($self->_isVirtualDir($_[0]));
-	return $$self{BACKEND}->isFile(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual_file( $_[0] ) );
+    return 0 if ( $self->_is_virtual_dir( $_[0] ) );
+    return $self->{BACKEND}->isFile(@_);
 }
+
 sub isLink {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isLink(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isLink(@_);
 }
+
 sub isBlockDevice {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isBlockDevice(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isBlockDevice(@_);
 }
+
 sub isCharDevice {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isCharDevice(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isCharDevice(@_);
 }
+
 sub isEmpty {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isEmpty(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isEmpty(@_);
 }
+
 sub isReadable {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isReadable(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isReadable(@_);
 }
+
 sub isWriteable {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isWriteable(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isWriteable(@_);
 }
+
 sub isExecutable {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->isExecutable(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->isExecutable(@_);
 }
+
 sub getParent {
-	my $self = shift @_;
-	return $$self{BACKEND}->getParent(@_);
+    my $self = shift @_;
+    return $self->{BACKEND}->getParent(@_);
 }
 
 sub mkcol {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->mkcol(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->mkcol(@_);
 }
+
 sub unlinkFile {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->unlinkFile(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->unlinkFile(@_);
 }
+
 sub unlinkDir {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->unlinkDir(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->unlinkDir(@_);
 }
+
 sub readDir {
-	my ($self, $dirname, $limit, $filter) = @_;
-	my $ret;
-	if (! ($ret = $self->_readVirtualDir($dirname, $limit, $filter))) {
-		$ret = $$self{BACKEND}->readDir($dirname, $limit, $filter);
-		push @{$ret} , $main::BACKEND_CONFIG{RCS}{virtualrcsdir} 
-			unless $self->basename($dirname) ne $main::BACKEND_CONFIG{RCS}{rcsdirname} || grep({$_=~/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E/} @{$ret});
-	}
-	return $ret;
+    my ( $self, $dirname, $limit, $filter ) = @_;
+    my $ret;
+    if ( !( $ret = $self->_read_virtual_dir( $dirname, $limit, $filter ) ) ) {
+        $ret = $self->{BACKEND}->readDir( $dirname, $limit, $filter );
+
+        if ( $self->basename($dirname) eq $BACKEND_CONFIG{RCS}{rcsdirname}
+            && none { /\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E/xms } @{$ret} )
+        {
+            push @{$ret}, $BACKEND_CONFIG{RCS}{virtualrcsdir};
+        }
+    }
+    return $ret;
 }
+
 sub filter {
-	my $self = shift @_;
-	return $$self{BACKEND}->filter(@_);
+    my $self = shift @_;
+    return $self->{BACKEND}->filter(@_);
 }
+
 sub stat {
-	my ($self, $fn) = @_;
-	return ( 0,0, oct(555), 2, $<, $(, 0,0, time(),time(),time(), 4096,0 )  if ($self->_isVirtualDir($fn));
-	if ($self->_isVirtualFile($fn)) {
-		return @{$CACHE{$self}{$fn}{stat}} if exists $CACHE{$self}{$fn}{stat};
-		my $lf = $self->_saveToLocal($fn);
-		my @stat = $CACHE{$self}{$fn}{stat} ? @{ $CACHE{$self}{$fn}{stat} } : CORE::stat($lf);
-		unlink $lf;
-		return @stat;
-	}
-	return $$self{BACKEND}->stat($fn);
+    my ( $self, $fn ) = @_;
+    return ( 0, 0, oct(555), 2, $UID, $GID, 0, 0, time, time, time, 4096, 0 )
+      if ( $self->_is_virtual_dir($fn) );
+    if ( $self->_is_virtual_file($fn) ) {
+        return @{ $CACHE{$self}{$fn}{stat} } if exists $CACHE{$self}{$fn}{stat};
+        my $lf = $self->_save_to_local($fn);
+        my @stat =
+          $CACHE{$self}{$fn}{stat}
+          ? @{ $CACHE{$self}{$fn}{stat} }
+          : CORE::stat($lf);
+        unlink $lf;
+        return @stat;
+    }
+    return $self->{BACKEND}->stat($fn);
 }
+
 sub lstat {
-	my $self = shift @_;
-	return $self->stat(@_) if $self->_isVirtual($_[0]);
-	return $$self{BACKEND}->lstat(@_);
+    my $self = shift @_;
+    return $self->stat(@_) if $self->_is_virtual( $_[0] );
+    return $self->{BACKEND}->lstat(@_);
 }
 
 sub deltree {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtualDir($_[0]));
-	return $$self{BACKEND}->deltree(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual_dir( $_[0] ) );
+    return $self->{BACKEND}->deltree(@_);
 }
+
 sub changeFilePermissions {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtualDir($_[0]));
-	return $$self{BACKEND}->changeFilePermissions(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual_dir( $_[0] ) );
+    return $self->{BACKEND}->changeFilePermissions(@_);
 }
 
 sub saveData {
-	my ($self, $destination, $data, $append) = @_;
-	return 1 if ($self->_isVirtualDir($destination));
-	my $ret = 0;
-	my ($tmpfh, $localfilename) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>'tmp');
-	$ret = $$self{BACKEND}->printFile($localfilename, $tmpfh) if $append;
-	print $tmpfh $data;
-	close($tmpfh);
+    my ( $self, $destination, $data, $append ) = @_;
+    return 1 if ( $self->_is_virtual_dir($destination) );
+    my $ret = 0;
+    my ( $tmpfh, $localfilename ) = tempfile(
+        TEMPLATE => '/tmp/webdavcgiXXXXX',
+        CLEANUP  => 1,
+        SUFFIX   => 'tmp'
+    );
+    if ($append) {
+        $ret = $self->{BACKEND}->printFile( $localfilename, $tmpfh );
+    }
+    print( {$tmpfh} $data ) || carp('Cannot write to temporary file.');
+    close($tmpfh) || carp('Cannot close temporary file.');
 
-	if ($ret = open($tmpfh,'<', $localfilename)) {
-		$ret = $self->saveStream($destination, $tmpfh);
-		close($tmpfh);
-	}
-	unlink $localfilename;
-	return $ret;
+    if ( $ret = open $tmpfh, '<', $localfilename ) {
+        $ret = $self->saveStream( $destination, $tmpfh );
+        close($tmpfh) || carp('Cannot close temporary file.');
+    }
+    unlink $localfilename;
+    return $ret;
 }
 
 sub saveStream {
-	my ($self, $destination, $fh) = @_;
+    my ( $self, $destination, $fh ) = @_;
 
-	return 1 if ($self->_isVirtualDir($destination));
+    return 1 if ( $self->_is_virtual_dir($destination) );
 
-	if (!$self->_isAllowed($destination)) {
-		return $$self{BACKEND}->saveStream($destination, $fh);
-	}
+    if ( !$self->_is_allowed($destination) ) {
+        return $self->{BACKEND}->saveStream( $destination, $fh );
+    }
 
-	my $ret = 0;
+    my $ret = 0;
 
-	my $filename = $self->basename($destination);
-	my $remotercsfilename = $self->dirname($destination)."/$main::BACKEND_CONFIG{RCS}{rcsdirname}/$filename,v";
-	$destination=~/(\.[^\.]+)$/;
-	my $suffix = $1;
-	my ($tmpfh, $localfilename) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>$suffix);
-	my $arcfile = "$localfilename,v";
+    my $filename          = $self->basename($destination);
+    my $remotercsfilename = $self->dirname($destination)
+      . "/$BACKEND_CONFIG{RCS}{rcsdirname}/$filename,v";
+    my $suffix;
+    if ( $destination =~ /([.][^.]+)$/xms ) {
+        $suffix = $1;
+    }
+    my ( $tmpfh, $localfilename ) = tempfile(
+        TEMPLATE => '/tmp/webdavcgiXXXXX',
+        CLEANUP  => 1,
+        SUFFIX   => $suffix
+    );
+    my $arcfile = "$localfilename,v";
 
-	my $rcs = $self->_getRcs();
-	$rcs->workdir('/tmp');
-	$rcs->file($self->basename($localfilename));
-	$rcs->rcsdir($self->dirname($arcfile));
-	$rcs->arcfile($self->basename($arcfile));
-	if ($self->exists($destination)) {
-		if ($self->exists($remotercsfilename)) {
-			if ($ret = open(my $arcfilefh,'>', $arcfile)) {
-				$$self{BACKEND}->printFile($remotercsfilename, $arcfilefh);
-				close($arcfilefh);
-			} else {
-				warn("Cannot open $arcfile for writing: $!");
-			}
-			unlink($localfilename);
-		} else {
-			if ($ret = open(my $lfh,'>', $localfilename)) {
-				$$self{BACKEND}->printFile($destination, $lfh);
-				close($lfh);
-			}
-			$rcs->ci();
-		}
-		$rcs->co("-l");
-	}
+    my $rcs = $self->_getRcs();
+    $rcs->workdir('/tmp');
+    $rcs->file( $self->basename($localfilename) );
+    $rcs->rcsdir( $self->dirname($arcfile) );
+    $rcs->arcfile( $self->basename($arcfile) );
+    if ( $self->exists($destination) ) {
+        if ( $self->exists($remotercsfilename) ) {
+            if ( $ret = open my $arcfilefh, '>', $arcfile ) {
+                $self->{BACKEND}->printFile( $remotercsfilename, $arcfilefh );
+                close($arcfilefh) || carp("Cannot close $arcfile.");
+            }
+            else {
+                carp("Cannot open $arcfile for writing: $ERRNO");
+            }
+            unlink $localfilename;
+        }
+        else {
+            if ( $ret = open my $lfh, '>', $localfilename ) {
+                $self->{BACKEND}->printFile( $destination, $lfh );
+                close($lfh) || carp("Cannot close $localfilename.");
+            }
+            $rcs->ci();
+        }
+        $rcs->co('-l');
+    }
 
-	if ($ret = open(my $lfh,'>',$localfilename)) {
-		binmode($lfh);
-		binmode($fh);
-		while (read($fh, my $buffer, $READBUFSIZE )>0) {
-			print $lfh $buffer;
-		}
-		close($lfh);
-		
-		$rcs->ci();
-		my @revisions = $rcs->revisions();
-		if (defined $main::BACKEND_CONFIG{RCS}{maxrevisions} && $#revisions >= $main::BACKEND_CONFIG{RCS}{maxrevisions}) {
-			my @removedrevisions = splice(@revisions, $main::BACKEND_CONFIG{RCS}{maxrevisions});
-			my $range = $removedrevisions[0];
-			$range.=":$removedrevisions[$#removedrevisions]" if $#removedrevisions > 0;
-			$rcs->rcs("-o$range");
-		}
-		$rcs->co();
+    if ( $ret = open my $lfh, '>', $localfilename ) {
+        binmode $lfh;
+        binmode $fh;
+        while ( read( $fh, my $buffer, $READBUFSIZE ) > 0 ) {
+            print( {$lfh} $buffer ) || carp("Cannot write to $localfilename");
+        }
+        close($lfh) || carp("Cannot close $localfilename.");
 
+        $rcs->ci();
+        my @revisions = $rcs->revisions();
+        if ( defined $BACKEND_CONFIG{RCS}{maxrevisions}
+            && $#revisions >= $BACKEND_CONFIG{RCS}{maxrevisions} )
+        {
+            my @removedrevisions = splice @revisions,
+              $BACKEND_CONFIG{RCS}{maxrevisions};
+            my $range = $removedrevisions[0];
+            $range .=
+              $#removedrevisions > 0
+              ? ":$removedrevisions[$#removedrevisions]"
+              : q{};
+            $rcs->rcs("-o$range");
+        }
+        $rcs->co();
 
-		if (($ret = open($lfh,'<',$localfilename)) && ($ret = $$self{BACKEND}->saveStream($destination, $lfh))) {
-			close($lfh);
-			$ret = $$self{BACKEND}->mkcol($self->dirname($remotercsfilename)) if !$self->exists($self->dirname($remotercsfilename));
-			if ($ret = open($lfh,'<',$arcfile)) {
-				$$self{BACKEND}->saveStream($remotercsfilename, $lfh);
-				close($lfh);
-			}
-		}
+        if (   ( $ret = open $lfh, '<', $localfilename )
+            && ( $ret = $self->{BACKEND}->saveStream( $destination, $lfh ) ) )
+        {
+            close($lfh) || carp("Cannot close $localfilename");
+            $ret =
+               !$self->exists( $self->dirname($remotercsfilename) )
+              ? $self->{BACKEND}->mkcol( $self->dirname($remotercsfilename) )
+              : 1;
+            if ( $ret = open $lfh, '<', $arcfile ) {
+                $self->{BACKEND}->saveStream( $remotercsfilename, $lfh );
+                close($lfh) || carp("Cannot close $arcfile.");
+            }
+        }
 
-		unlink($arcfile);
-		unlink($localfilename);
-	}
-	return $ret;
+        unlink $arcfile;
+        unlink $localfilename;
+    }
+    return $ret;
 }
-
 
 sub uncompress_archive {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $self->SUPER::uncompress_archive(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->SUPER::uncompress_archive(@_);
 }
+
 sub changeMod {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->changeMod(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->changeMod(@_);
 }
+
 sub createSymLink {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->createSymLink(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->createSymLink(@_);
 }
+
 sub getLinkSrc {
-	my $self = shift @_;
-	return $_[0] if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->getLinkSrc(@_);
+    my $self = shift @_;
+    return $_[0] if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->getLinkSrc(@_);
 }
+
 sub resolve {
-	my $self = shift @_;
-	return $_[1] if $self->_isVirtual($_[1]);
-	return $$self{BACKEND}->resolve(@_);
+    my $self = shift @_;
+    return $_[1] if $self->_is_virtual( $_[1] );
+    return $self->{BACKEND}->resolve(@_);
 }
 
 sub getFileContent {
-	my $self = shift @_;
-	if ($self->_isVirtualFile($_[0])) {
-		my $lf = $self->_saveToLocal($_[0]);
-		if (open(my $lfh,'<',$lf)) {
-			my @content = <$lfh>;
-			close($lfh);
-			unlink $lf;
-			return join("",@content);
-		}
-		return "";
-	} 
-	return $$self{BACKEND}->getFileContent(@_);
+    my $self = shift @_;
+    if ( $self->_is_virtual_file( $_[0] ) ) {
+        my $lf = $self->_save_to_local( $_[0] );
+        if ( open my $lfh, '<', $lf ) {
+            local $RS = undef;
+            my $content = <$lfh>;
+            close($lfh) || carp("Cannot close $lf.");
+            unlink $lf;
+            return $content;
+        }
+        return q{};
+    }
+    return $self->{BACKEND}->getFileContent(@_);
 }
+
 sub hasSetUidBit {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->hasSetUidBit(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->hasSetUidBit(@_);
 }
+
 sub hasSetGidBit {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->hasSetGidBit(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->hasSetGidBit(@_);
 }
+
 sub hasStickyBit {
-	my $self = shift @_;
-	return 0 if ($self->_isVirtual($_[0]));
-	return $$self{BACKEND}->hasStickyBit(@_);
+    my $self = shift @_;
+    return 0 if ( $self->_is_virtual( $_[0] ) );
+    return $self->{BACKEND}->hasStickyBit(@_);
 }
+
 sub getLocalFilename {
-	my $self = shift @_;
-	return $self->_saveToLocal($_[0]) if $self->_isVirtualFile($_[0]);
-	return $$self{BACKEND}->getLocalFilename(@_);
+    my $self = shift @_;
+    return $self->_save_to_local( $_[0] ) if $self->_is_virtual_file( $_[0] );
+    return $self->{BACKEND}->getLocalFilename(@_);
 }
 
 sub printFile {
-	my($self,$fn,$fh,$pos,$count) = @_;
-	if ($self->_isVirtualFile($fn)) {
-		$fh=\*STDOUT unless defined $fh;
+    my ( $self, $fn, $fh, $pos, $count ) = @_;
+    if ( $self->_is_virtual_file($fn) ) {
+        $fh //= \*STDOUT;
 
-		my $dn = $self->basename($self->dirname($fn));
-		my ($file, $rcsfile) = $self->_getRcsFile($fn);
+        my $dn = $self->basename( $self->dirname($fn) );
+        my ( $file, $rcsfile ) = $self->_get_rcs_file($fn);
 
-		my $rcs = $self->_getRcs();
-		$rcs->workdir('/tmp');
-		$rcs->rcsdir($self->dirname($rcsfile));
-		$rcs->file($self->basename($file));
-		if ($fn=~/log.txt$/) {
-			my $filebn = $self->basename($file);
-			my $rlog = join('',$rcs->rlog('-zLT'));
-			$rlog=~s/\Q$rcsfile\E/$dn,v/mg;
-			$rlog=~s/\Q$filebn\E/$dn/mg;
-			print $fh ( defined $pos && defined $count ? substr($rlog,$pos,$count) : $rlog);
-		} elsif ($fn=~/diff.txt$/) {
-			my $buffer='';
-			my $firstrev;
-			foreach my $rev ($rcs->revisions()) {
-				if (!defined $firstrev) {
-					$firstrev = $rev;
-					next;
-				}
-				eval { 
-					my $diff = join('',$rcs->rcsdiff('-kkv','-q','-u',"-r$rev", "-r$firstrev",'-zLT'));
-					$diff=~s/^(\+\+\+|\-\-\-) \Q$file\E/$1 $dn/mg;
-					$buffer.=$diff;
-				};
-				$firstrev = $rev;
-			}
-			print $fh (defined $pos && defined $count ? substr($buffer,$pos,$count) : $buffer)
-			
-		} else {
-			$fn=~/\/(\d+\.\d+)\/[^\/]+$/;
-			my $rev = $1;
-			if ($rcs->co("-r$rev","-M$rev") && open(my $lfh,'<',$file)) {
-				my @stat = CORE::stat($lfh);
-				$CACHE{$self}{$fn}{stat}=\@stat;
-				binmode($fh);
-				binmode($lfh);
-				my $bufsize = $READBUFSIZE;
-				$bufsize = $count if defined $count && $count < $bufsize;
-				my $buffer;
-				my $bytecount = 0;
-				seek($fh, $pos, 0) if $pos;
-				while (my $bytesread = read($lfh,$buffer,$bufsize)) {
-					print $fh $buffer;
-					$bytecount+=$bytesread;
-					last if defined $count && $bytecount >= $count;
-					$bufsize=$count - $bytecount if defined $count && ($bytecount + $bufsize > $count);
-				}
-				close($lfh);
-			} else {
-				print $fh "NOT IMPLEMENTED\n";
-			}
-			unlink($file);
-		}
-		unlink($rcsfile);
-	} else {
-		$$self{BACKEND}->printFile($fn,$fh,$pos,$count);
-	}
-	return;
+        my $rcs = $self->_getRcs();
+        $rcs->workdir('/tmp');
+        $rcs->rcsdir( $self->dirname($rcsfile) );
+        $rcs->file( $self->basename($file) );
+        if ( $fn =~ /log.txt$/xms ) {
+            my $filebn = $self->basename($file);
+            my $rlog = join q{}, $rcs->rlog('-zLT');
+            $rlog =~ s/\Q$rcsfile\E/$dn,v/xmsg;
+            $rlog =~ s/\Q$filebn\E/$dn/xmsg;
+            print( {$fh} (
+                defined $pos
+                  && defined $count ? substr( $rlog, $pos, $count ) : $rlog
+            )) || carp("Cannot write to $fn.");
+        }
+        elsif ( $fn =~ /diff[.]txt$/xms ) {
+            my $buffer = q{};
+            my $firstrev;
+            foreach my $rev ( $rcs->revisions() ) {
+                if ( !defined $firstrev ) {
+                    $firstrev = $rev;
+                    next;
+                }
+                eval {
+                    my $diff = join q{},
+                      $rcs->rcsdiff( '-kkv', '-q', '-u', "-r$rev",
+                        "-r$firstrev", '-zLT' );
+                    $diff =~ s/^([+]{3}|[-]{3}) \Q$file\E/$1 $dn/xmsg;
+                    $buffer .= $diff;
+                } || carp("rcsdiff failed: $EVAL_ERROR");
+                $firstrev = $rev;
+            }
+            print(
+                {$fh} (
+                    defined $pos && defined $count
+                    ? substr( $buffer, $pos, $count )
+                    : $buffer
+                )
+              )
+              || carp("Cannot write to $fn.");
+        }
+        else {
+            my $rev = $fn =~ m{/(\d+[.]\d+)/[^/]+$}xms ? $1 : 0;
+            if ( $rcs->co( "-r$rev", "-M$rev" ) && open my $lfh, '<', $file ) {
+                my @stat = CORE::stat($lfh);
+                $CACHE{$self}{$fn}{stat} = \@stat;
+                binmode $fh;
+                binmode $lfh;
+                my $bufsize = $READBUFSIZE;
+                if ( defined $count && $count < $bufsize ) {
+                    $bufsize = $count;
+                }
+                my $buffer;
+                my $bytecount = 0;
+                seek( $fh, $pos, 0 ) if $pos;
+
+                while ( my $bytesread = read( $lfh, $buffer, $bufsize ) ) {
+                    print( {$fh} $buffer ) || carp("Cannot write to $fn.");
+                    $bytecount += $bytesread;
+                    last if defined $count && $bytecount >= $count;
+
+                    if ( defined $count && ( $bytecount + $bufsize > $count ) )
+                    {
+                        $bufsize = $count - $bytecount;
+                    }
+                }
+                close($lfh) || carp("Cannot close $file.");
+            }
+            else {
+                print( {$fh} "NOT IMPLEMENTED\n" )
+                  || carp("Cannot write to $fn.");
+            }
+            unlink $file;
+        }
+        unlink $rcsfile;
+    }
+    else {
+        $self->{BACKEND}->printFile( $fn, $fh, $pos, $count );
+    }
+    return;
 }
+
 sub getDisplayName {
-	my $self = shift @_;
-	return get_base_uri_frag($_[0]).'/' if $self->_isVirtualDir($_[0]);
-	return get_base_uri_frag($_[0]) if $self->_isVirtualFile($_[0]);
-	return $$self{BACKEND}->getDisplayName(@_);
+    my $self = shift @_;
+    return get_base_uri_frag( $_[0] ) . q{/} if $self->_is_virtual_dir( $_[0] );
+    return get_base_uri_frag( $_[0] ) if $self->_is_virtual_file( $_[0] );
+    return $self->{BACKEND}->getDisplayName(@_);
 }
+
 sub rename {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]) || $self->_isVirtual($_[1]));
-	return $$self{BACKEND}->rename(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) || $self->_is_virtual( $_[1] ) );
+    return $self->{BACKEND}->rename(@_);
 }
+
 sub getQuota {
-	my $self = shift @_;
-	if ($self->_isVirtual($_[0])) {
-		my $realpath = $_[0];
-		$realpath=~s/\/$main::BACKEND_CONFIG{RCS}{rcsdirname}(\/$main::BACKEND_CONFIG{RCS}{virtualrcsdir}.*)?$//;
-		return $$self{BACKEND}->getQuota($realpath);
-	}
-	return $$self{BACKEND}->getQuota(@_);
+    my $self = shift @_;
+    if ( $self->_is_virtual( $_[0] ) ) {
+        my $realpath = $_[0];
+        $realpath =~
+s{/$BACKEND_CONFIG{RCS}{rcsdirname}(/$BACKEND_CONFIG{RCS}{virtualrcsdir}.*)?$}{}xms;
+        return $self->{BACKEND}->getQuota($realpath);
+    }
+    return $self->{BACKEND}->getQuota(@_);
 }
+
 sub copy {
-	my $self = shift @_;
-	return 1 if ($self->_isVirtual($_[0]) || $self->_isVirtual($_[1]));
-	return $$self{BACKEND}->copy(@_);
+    my $self = shift @_;
+    return 1 if ( $self->_is_virtual( $_[0] ) || $self->_is_virtual( $_[1] ) );
+    return $self->{BACKEND}->copy(@_);
 }
 
-sub _readVirtualDir {
-	my ($self, $dirname, $limit, $filter) = @_;
-	my $ret;
-	return $ret unless $self->_isVirtualDir($dirname);
+sub _read_virtual_dir {
+    my ( $self, $dirname, $limit, $filter ) = @_;
+    my $ret;
+    return $ret if !$self->_is_virtual_dir($dirname);
 
-	my $basename = $self->basename($dirname);
-	my $parent = $self->dirname($dirname);
-	my $parentbasename = $self->basename($parent);
+    my $basename       = $self->basename($dirname);
+    my $parent         = $self->dirname($dirname);
+    my $parentbasename = $self->basename($parent);
 
-	if ($self->_isRevisionDir($dirname)) {
-		push  @{$ret}, $parentbasename;
+    if ( $self->_is_revision_dir($dirname) ) {
+        push @{$ret}, $parentbasename;
 
-	} elsif ($self->_isRevisionsDir($dirname)) {
-		my $rcsfilename=$self->dirname($parent)."/$basename,v";
-		my ($tmpfh, $localfilename) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>",v");
-		$$self{BACKEND}->printFile($rcsfilename, $tmpfh);
-		close($tmpfh);
+    }
+    elsif ( $self->_is_revisions_dir($dirname) ) {
+        my $rcsfilename = $self->dirname($parent) . "/$basename,v";
+        my ( $tmpfh, $localfilename ) = tempfile(
+            TEMPLATE => '/tmp/webdavcgiXXXXX',
+            CLEANUP  => 1,
+            SUFFIX   => ',v'
+        );
+        $self->{BACKEND}->printFile( $rcsfilename, $tmpfh );
+        close($tmpfh) || carp("Cannot close $localfilename.");
 
-		my $rcs = $self->_getRcs();
-		$rcs->workdir($self->dirname($localfilename));
-		$rcs->rcsdir($self->dirname($localfilename));
-		my $fn = $self->basename($localfilename);
-		$fn=~s/,v$//;
-		$rcs->file($fn);
-		push @{$ret}, $rcs->revisions(), 'diff.txt', 'log.txt';
-		unlink $localfilename;
-		
-	} elsif ($self->_isVirtualRcsDir($dirname)) {
-		my $fl = $$self{BACKEND}->readDir($parent, $limit, $filter);
-		foreach my $f (@{$fl}) {
-			$f=~s/,v$//;
-			push @{$ret}, $f;
-		}
-	}
-	return $ret;
+        my $rcs = $self->_getRcs();
+        $rcs->workdir( $self->dirname($localfilename) );
+        $rcs->rcsdir( $self->dirname($localfilename) );
+        my $fn = $self->basename($localfilename);
+        $fn =~ s/,v$//xms;
+        $rcs->file($fn);
+        push @{$ret}, $rcs->revisions(), 'diff.txt', 'log.txt';
+        unlink $localfilename;
+
+    }
+    elsif ( $self->_is_virtual_rcs_dir($dirname) ) {
+        my $fl = $self->{BACKEND}->readDir( $parent, $limit, $filter );
+        foreach my $f ( @{$fl} ) {
+            $f =~ s/,v$//xms;
+            push @{$ret}, $f;
+        }
+    }
+    return $ret;
 
 }
 
-sub _saveToLocal {
-	my ($self, $fn, $suffix) = @_; 
-	if (!$suffix && $fn=~/(\.[^\.]+)$/) { $suffix = $1; }
-	my ($tmpfh, $vfile) = tempfile(TEMPLATE=>'/tmp/webdavcgiXXXXX', CLEANUP=>1, SUFFIX=>$suffix || '.tmp');
-	$self->printFile($fn, $tmpfh);
-	close($tmpfh);
-	return $vfile;
+sub _save_to_local {
+    my ( $self, $fn, $suffix ) = @_;
+    if ( !$suffix && $fn =~ /([.][^.]+)$/xms ) { $suffix = $1; }
+    my ( $tmpfh, $vfile ) = tempfile(
+        TEMPLATE => '/tmp/webdavcgiXXXXX',
+        CLEANUP  => 1,
+        SUFFIX   => $suffix || '.tmp'
+    );
+    $self->printFile( $fn, $tmpfh );
+    close($tmpfh) || carp("Cannot close $vfile.");
+    return $vfile;
 }
 
-sub _getRcsFile {
-	my ($self, $vpath) = @_;
+sub _get_rcs_file {
+    my ( $self, $vpath ) = @_;
 
-	$vpath=~/^(.*?\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/)\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/([^\/]+)/;
-	my ($fn) = ("$1$2,v");
+    $vpath =~
+m{^(.*?/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E/)\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E/([^/]+)}xms;
+    my ($fn) = ("$1$2,v");
 
-	my $rcsfile = $self->_saveToLocal($fn, ',v');
-	my $file = $rcsfile;
-	$file=~s/,v$//;
+    my $rcsfile = $self->_save_to_local( $fn, ',v' );
+    my $file = $rcsfile;
+    $file =~ s/,v$//xms;
 
-	return ($file, $rcsfile);
+    return ( $file, $rcsfile );
 }
-sub _isVirtual {
-	my ($self, $fn) = @_;
-	return $self->_isVirtualFile($fn) || $self->_isVirtualDir($fn);
+
+sub _is_virtual {
+    my ( $self, $fn ) = @_;
+    return $self->_is_virtual_file($fn) || $self->_is_virtual_dir($fn);
 }
-	
-sub _isVirtualFile {
-	my ($self, $fn) = @_;
-	return ($self->_isRevisionsDir($self->dirname($fn)) && $self->basename($fn) =~ /^(log|diff).txt$/) || $self->_isRevisionDir($self->dirname($fn));
+
+sub _is_virtual_file {
+    my ( $self, $fn ) = @_;
+    return ( $self->_is_revisions_dir( $self->dirname($fn) )
+          && $self->basename($fn) =~ /^(?:log|diff)[.]txt$/xms )
+      || $self->_is_revision_dir( $self->dirname($fn) );
 }
-sub _isVirtualDir {
-	my ($self,$fn) = @_;
-	return !$$self{BACKEND}->exists($fn)  && ( $self->_isVirtualRcsDir($fn) || $self->_isRevisionsDir($fn) || $self->_isRevisionDir($fn));
+
+sub _is_virtual_dir {
+    my ( $self, $fn ) = @_;
+    return !$self->{BACKEND}->exists($fn)
+      && ( $self->_is_virtual_rcs_dir($fn)
+        || $self->_is_revisions_dir($fn)
+        || $self->_is_revision_dir($fn) );
 }
-sub _isRcsDir {
-	my ($self, $fn) = @_;
-	return $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/?$/;
+
+#sub _is_rcs_dir {
+#    my ( $self, $fn ) = @_;
+#    return $fn =~ m{/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E/?$}xms;
+#}
+
+sub _is_virtual_rcs_dir {
+    my ( $self, $fn ) = @_;
+    return defined $fn
+      && $fn =~
+m{/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E/\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E/?$}xms;
 }
-sub _isVirtualRcsDir {
-	my ($self, $fn) = @_;
-	return defined $fn && $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/?$/;
+
+sub _is_revisions_dir {
+    my ( $self, $fn ) = @_;
+    return defined $fn
+      && $fn =~
+m{/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E/\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E/[^/]+/?$}xms;
 }
-sub _isRevisionsDir {
-	my ($self, $fn) = @_;
-	return defined $fn && $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/?$/;
+
+sub _is_revision_dir {
+    my ( $self, $fn ) = @_;
+    return defined $fn
+      && $fn =~
+m{/\Q$BACKEND_CONFIG{RCS}{rcsdirname}\E/\Q$BACKEND_CONFIG{RCS}{virtualrcsdir}\E/[^/]+/\d+[.]\d+/?$}xms;
 }
-sub _isRevisionDir {
-	my ($self, $fn) = @_;
-	return defined $fn && $fn =~ /\/\Q$main::BACKEND_CONFIG{RCS}{rcsdirname}\E\/\Q$main::BACKEND_CONFIG{RCS}{virtualrcsdir}\E\/[^\/]+\/\d+\.\d+\/?$/;
-}
+
 sub _getRcs {
-	my ($self) = @_;
-	my $rcs = Rcs->new;
-	$rcs->bindir($main::BACKEND_CONFIG{RCS}{bindir} || '/usr/bin');
-	return $rcs;
+    my ($self) = @_;
+    my $rcs = Rcs->new;
+    $rcs->bindir( $BACKEND_CONFIG{RCS}{bindir} || '/usr/bin' );
+    return $rcs;
 }
-sub _isAllowed {
-	my ($self, $filename) = @_;
-	my $ret = 1;
-	if ($filename=~/\.([^\.]+)$/) {
-		my $suffix = $1;
-		if (defined $main::BACKEND_CONFIG{RCS}{allowedsuffixes}) {
-			my $regex = '^('.join('|', @{ $main::BACKEND_CONFIG{RCS}{allowedsuffixes}}).')$';
-			$ret = $suffix =~ /$regex/i;
-		}
-		if ($ret && defined $main::BACKEND_CONFIG{RCS}{ignoresuffixes}) {
-			my $regex = '^('.join('|', @{ $main::BACKEND_CONFIG{RCS}{ignoresuffixes}}).')$';
-			$ret = $suffix !~ /$regex/i;
-		}
-	}
-	if ($ret && defined $main::BACKEND_CONFIG{RCS}{ignorefilenames}) {
-			my $regex = '^('.join('|', @{ $main::BACKEND_CONFIG{RCS}{ignorefilenames}}).')$';
-			$ret = $$self{BACKEND}->basename($filename) !~ /$regex/i;
-	}
-	return $ret;
+
+sub _is_allowed {
+    my ( $self, $filename ) = @_;
+    my $ret = 1;
+    if ( $filename =~ /[.]([^.]+)$/xms ) {
+        my $suffix = $1;
+        if ( defined $BACKEND_CONFIG{RCS}{allowedsuffixes} ) {
+            my $regex = '^('
+              . join( q{|}, @{ $BACKEND_CONFIG{RCS}{allowedsuffixes} } ) . ')$';
+            $ret = $suffix =~ /$regex/xmsi;
+        }
+        if ( $ret && defined $BACKEND_CONFIG{RCS}{ignoresuffixes} ) {
+            my $regex = '^('
+              . join( q{|}, @{ $BACKEND_CONFIG{RCS}{ignoresuffixes} } ) . ')$';
+            $ret = $suffix !~ /$regex/xmsi;
+        }
+    }
+    if ( $ret && defined $BACKEND_CONFIG{RCS}{ignorefilenames} ) {
+        my $regex = '^('
+          . join( q{|}, @{ $BACKEND_CONFIG{RCS}{ignorefilenames} } ) . ')$';
+        $ret = $self->{BACKEND}->basename($filename) !~ /$regex/xmsi;
+    }
+    return $ret;
 }
 1;
 

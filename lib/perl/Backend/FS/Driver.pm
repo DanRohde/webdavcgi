@@ -36,7 +36,7 @@ use Fcntl qw(:flock);
 use CGI::Carp;
 use English qw ( -no_match_vars );
 
-use DefaultConfig qw( $READBUFSIZE );
+use DefaultConfig qw( $READBUFSIZE $BUFSIZE $ENABLE_FLOCK $BACKEND %BACKEND_CONFIG );
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 use vars qw( %CACHE );
@@ -146,12 +146,12 @@ sub readDir {
             push @files, $file;
         }
         closedir($dir) || carp("Cannot close $dirname.");
-        if ( exists $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$dirname}
+        if ( exists $BACKEND_CONFIG{$BACKEND}{fsvlink}{$dirname}
             && ( !defined $limit || $#files < $limit ) )
         {
             foreach my $file (
                 keys
-                %{ $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$dirname} } )
+                %{ $BACKEND_CONFIG{$BACKEND}{fsvlink}{$dirname} } )
             {
                 last if defined $limit && $#files >= $limit;
                 next if $self->filter( $filter, $dirname, $file );
@@ -271,12 +271,12 @@ sub saveData {
     my $mode = $append ? '>>' : '>';
 
     if ( ( $ret = open my $f, ${mode}, $self->resolveVirt($file) ) ) {
-        if ( $main::ENABLE_FLOCK && !flock $f, LOCK_EX | LOCK_NB ) {
+        if ( $ENABLE_FLOCK && !flock $f, LOCK_EX | LOCK_NB ) {
             $ret = 0;
         }
         else {
             print( {$f} $data ) || carp("Cannot write data to $file.");
-            if ($main::ENABLE_FLOCK) { flock $f, LOCK_UN; }
+            if ($ENABLE_FLOCK) { flock $f, LOCK_UN; }
         }
         close($f) || carp("Cannot close $file");
     }
@@ -293,7 +293,7 @@ sub saveStream {
       $self->getQuota( $self->dirname($destination) );
 
     if ( ( $ret = open my $f, '>', $self->resolveVirt($destination) ) ) {
-        if ( $main::ENABLE_FLOCK && !flock $f, LOCK_EX | LOCK_NB ) {
+        if ( $ENABLE_FLOCK && !flock $f, LOCK_EX | LOCK_NB ) {
             close($f) || carp("Cannot close $destination.");
             $ret = 0;
         }
@@ -301,17 +301,14 @@ sub saveStream {
             binmode $f;
             binmode $filehandle;
             my ($consumed) = 0;
-            while (
-                read( $filehandle, my $buffer, $READBUFSIZE ) >
-                0 )
-            {
+            while ( read $filehandle, my $buffer, $READBUFSIZE ) {
                 last
                   if $block_hard > 0
                   && $consumed + $block_curr >= $block_hard;
                 print( {$f} $buffer ) || carp("Cannot write to $destination.");
                 $consumed += bytes::length( $buffer );
             }
-            if ($main::ENABLE_FLOCK) { flock $f, LOCK_UN; }
+            if ($ENABLE_FLOCK) { flock $f, LOCK_UN; }
             close($f) || carp("Cannot close $destination.");
             $ret =
               !( $block_hard > 0 && $consumed + $block_curr >= $block_hard );
@@ -414,7 +411,7 @@ sub getLocalFilename {
 sub printFile {
     my ( $self, $file, $to, $pos, $count ) = @_;
     $to //= \*STDOUT;
-    my $bufsize = $main::BUFSIZE || 1_048_576;
+    my $bufsize = $BUFSIZE || 1_048_576;
     if ( defined $count && $count < $bufsize ) { $bufsize = $count; }
     if ( open my $fh, '<', $self->resolveVirt($file) ) {
         binmode $fh;
@@ -473,7 +470,7 @@ sub copy {
         $self->resolveVirt( $dst, 1 )
       )
     {
-        while ( read $srcfh, my $buffer, $main::BUFSIZE || 1_048_576 ) {
+        while ( read $srcfh, my $buffer, $READBUFSIZE ) {
             syswrite $dstfh, $buffer;
         }
         close($srcfh) || carp("Cannot close $src.");
@@ -486,9 +483,9 @@ sub copy {
 sub isVirtualLink {
     my ( $self, $fn ) = @_;
     return
-      exists $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}
+      exists $BACKEND_CONFIG{$BACKEND}{fsvlink}
       { $self->dirname($fn) . q{/} }
-      && exists $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}
+      && exists $BACKEND_CONFIG{$BACKEND}{fsvlink}
       { $self->dirname($fn) . q{/} }{ $self->basename($fn) };
 }
 
@@ -500,7 +497,7 @@ sub getVirtualLinkTarget {
     }
     if ( !exists $CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys} ) {
         my @fslinkkeys = reverse sort { $a cmp $b }
-          keys %{ $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink} };
+          keys %{ $BACKEND_CONFIG{$BACKEND}{fsvlink} };
         $CACHE{$self}{$src}{getVirtualLinkTarget}{sortedkeys} = \@fslinkkeys;
     }
 
@@ -509,7 +506,7 @@ sub getVirtualLinkTarget {
     {
         if ( !exists $CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir} ) {
             my @linkdirkeys =
-              keys %{ $main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$linkdir}
+              keys %{ $BACKEND_CONFIG{$BACKEND}{fsvlink}{$linkdir}
               };
             $CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir} =
               \@linkdirkeys;
@@ -517,8 +514,7 @@ sub getVirtualLinkTarget {
         foreach
           my $link ( @{ $CACHE{$self}{$src}{getVirtualLinkTarget}{$linkdir} } )
         {
-            $target =~
-s/^\Q$linkdir$link\E(\/?|\/.+)?$/$main::BACKEND_CONFIG{$main::BACKEND}{fsvlink}{$linkdir}{$link}$1/xms
+            $target =~ s{^\Q$linkdir$link\E(/?|/.+)?$}{$BACKEND_CONFIG{$BACKEND}{fsvlink}{$linkdir}{$link}$1}xms
               && last;
         }
     }

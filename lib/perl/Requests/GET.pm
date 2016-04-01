@@ -29,7 +29,8 @@ use CGI::Carp;
 use POSIX qw( strftime );
 
 use DefaultConfig
-  qw( $PATH_TRANSLATED $REQUEST_URI $VIRTUAL_BASE $VHTDOCS $DOCUMENT_ROOT $CHARSET $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
+  qw( $PATH_TRANSLATED $REQUEST_URI $VIRTUAL_BASE $VHTDOCS $DOCUMENT_ROOT $CHARSET
+  $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
 use HTTPHelper
   qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response
   get_mime_type );

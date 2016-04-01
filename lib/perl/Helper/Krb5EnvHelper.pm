@@ -29,6 +29,8 @@ use CGI::Carp;
 
 use base qw( Events::EventListener);
 
+use DefaultConfig qw ( $READBUFSIZE );
+
 sub new {
     my ($class) = @_;
     my $self = {};
@@ -73,10 +75,10 @@ sub init {
                 if ( flock $age, LOCK_EX | LOCK_NB ) {
                     binmode $in;
                     binmode $out;
-                    while ( read $in, my $buffer, $main::BUFSIZE || 1_048_576 )
+                    while ( read $in, my $buffer, $READBUFSIZE )
                     {
                         print {$out} $buffer
-                          || carp "Cannot write to tickent file $ticketfn";
+                          || carp "Cannot write to ticket file $ticketfn";
                     }
                     close $in  || carp "Cannot close $oldfilename.";
                     close $out || carp "Cannot close $ticketfn.";
@@ -100,7 +102,7 @@ q{Cannot read ticket file (don't use a setuid/setgid wrapper):}
     if ( $ENV{KRB5_CONFIG} ) {
         Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG} );
     }
-    return 1;
+    return $self;
 }
 
 sub register {
