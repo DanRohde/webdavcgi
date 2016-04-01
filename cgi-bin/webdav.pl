@@ -49,14 +49,23 @@ use IO::Handle;
 use Module::Load;
 use List::MoreUtils qw( any );
 
-use DefaultConfig qw( :all );
+use DefaultConfig qw(
+  init_defaults read_config
+  $CGI $POST_MAX_SIZE $ALLOW_POST_UPLOADS @FORBIDDEN_UID
+  $PATH_TRANSLATED $REQUEST_URI $REQUEST_METHOD $HTTP_HOST $REMOTE_USER
+  $RELEASE $DEBUG $LOGFILE @EVENTLISTENER
+  $TRASH_FOLDER $BUFSIZE $BACKEND $UMASK
+  $CONFIGFILE $DOCUMENT_ROOT $VIRTUAL_BASE
+  $ENABLE_LOCK $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE
+  $ENABLE_CARDDAV $ENABLE_GROUPDAV $ENABLE_BIND
+  $ENABLE_ACL $ENABLE_SEARCH
+);
 use DB::Driver;
 use DatabaseEventAdapter;
 use Backend::Manager;
-use HTTPHelper
-  qw( print_header_and_content print_compressed_header_and_content print_header_and_content get_mime_type );
+use HTTPHelper qw( print_header_and_content );
 
-$RELEASE = '1.1.1BETA20160401.3';
+$RELEASE = '1.1.1BETA20160401.4';
 
 use vars qw( %_CONFIG $_METHODS_RX %_REQUEST_HANDLERS %_CACHE );
 
@@ -168,15 +177,14 @@ sub handle_request {
     $_REQUEST_HANDLERS{$method}->init( \%_CONFIG )->handle();
     if ( $_CONFIG{backend} ) { $_CONFIG{backend}->finalize(); }
     $_CONFIG{event}->broadcast('FINALIZE');
-    debug( "Modules loaded:" . ( scalar keys %INC ) );
+    debug( 'Modules loaded:' . ( scalar keys %INC ) );
     return;
 }
 
 sub _debug_request_info {
     my ($method) = @_;
     if ( !$DEBUG ) { return; }
-    debug(
-        "####################################################################");
+    debug( q{#} x 10 );
     debug(
 "${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method"
     );

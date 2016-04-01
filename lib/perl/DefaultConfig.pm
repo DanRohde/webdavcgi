@@ -56,12 +56,12 @@ our @EXPORT_OK   = qw(
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
   $OPTIMIZERTMP $READBUFSIZE
 );
-{
-
-    foreach my $sym (@EXPORT_OK) {
-        push @{ $EXPORT_TAGS{all} }, $sym;
-    }
-}
+#{
+#
+#    foreach my $sym (@EXPORT_OK) {
+#        push @{ $EXPORT_TAGS{all} }, $sym;
+#    }
+#}
 
 use vars qw(
   $CGI $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_METHOD

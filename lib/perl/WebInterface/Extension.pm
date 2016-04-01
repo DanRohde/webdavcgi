@@ -26,6 +26,8 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Renderer );
 
+use DefaultConfig qw( $INSTALL_BASE $VHTDOCS %EXTENSION_CONFIG );
+
 sub new {
     my ( $class, $hookreg, $extensionname, $config ) = @_;
     my $self = {};
@@ -49,7 +51,7 @@ sub setExtension {
 sub getExtensionLocation {
     my ( $self, $extension, $file ) = @_;
     return
-        $main::INSTALL_BASE
+        $INSTALL_BASE
       . 'lib/perl/WebInterface/Extension/'
       . $extension . q{/}
       . $file;
@@ -59,7 +61,7 @@ sub getExtensionUri {
     my ( $self, $extension, $file ) = @_;
     my $vbase = $self->get_vbase();
     $vbase .= $vbase !~ /\/$/xms ? q{/} : q{};
-    return $vbase . $main::VHTDOCS . '_EXTENSION(' . $extension . ')_/' . $file;
+    return $vbase . $VHTDOCS . '_EXTENSION(' . $extension . ')_/' . $file;
 }
 
 sub handleJavascriptHook {
@@ -139,7 +141,7 @@ sub handle {
 
 sub config {
     my ( $self, $var, $default ) = @_;
-    return $main::EXTENSION_CONFIG{ ${$self}{EXTENSION} }{$var} // $default;
+    return $EXTENSION_CONFIG{ ${$self}{EXTENSION} }{$var} // $default;
 }
 
 sub read_template {
