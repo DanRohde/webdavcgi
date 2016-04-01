@@ -668,7 +668,7 @@ sub _exists_cache_entry {
 sub _get_path_info {
     my ($file) = @_;
     my ( $server, $share, $path, $shareidx ) = ( q{}, q{}, $file, undef );
-    if ( $file =~
+    if ( defined $file && $file =~
 m{^\Q$DOCUMENT_ROOT\E([^\Q$_SHARESEP\E]+)\Q$_SHARESEP\E([^/\Q$_SHARESEP\E]+)(\Q$_SHARESEP\E(\d+))?(.*)$}xms
       )
     {

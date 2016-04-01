@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
 # Written 2015 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
@@ -26,7 +25,7 @@ our $VERSION = '1.0';
 
 use base qw( Backend::Helper );
 
-use Carp;
+use CGI::Carp;
 use Amazon::S3;
 use Digest::SHA qw( sha512_base64 );
 use File::Temp qw( tempfile tempdir );
@@ -34,7 +33,8 @@ use Date::Parse;
 
 use Data::Dumper;
 
-use DefaultConfig qw( $BUFSIZE $DOCUMENT_ROOT $UMASK $BACKEND %BACKEND_CONFIG );
+use DefaultConfig
+  qw( $READBUFSIZE $DOCUMENT_ROOT $UMASK $BACKEND %BACKEND_CONFIG );
 use HTTPHelper qw( get_mime_type );
 
 use vars qw( $S3 %CACHE );
@@ -47,21 +47,19 @@ sub finalize {
 
 sub initialize {
     my ($self) = @_;
-    $S3 = Amazon::S3->new(
+    $S3 //= Amazon::S3->new(
         {
-            aws_access_key_id =>
-              $BACKEND_CONFIG{$BACKEND}{access_id},
-            aws_secret_access_key =>
-              $BACKEND_CONFIG{$BACKEND}{secret_key},
-            host   => $BACKEND_CONFIG{$BACKEND}{host},
-            secure => defined $BACKEND_CONFIG{$BACKEND}{secure}
+            aws_access_key_id     => $BACKEND_CONFIG{$BACKEND}{access_id},
+            aws_secret_access_key => $BACKEND_CONFIG{$BACKEND}{secret_key},
+            host                  => $BACKEND_CONFIG{$BACKEND}{host},
+            secure                => defined $BACKEND_CONFIG{$BACKEND}{secure}
             ? $BACKEND_CONFIG{S3B}{secure}
             : 1,
             retry   => $BACKEND_CONFIG{$BACKEND}{retry},
-            timeout => $BACKEND_CONFIG{$BACKEND}{timeout} || 60
+            timeout => $BACKEND_CONFIG{$BACKEND}{timeout} // 60
         }
-    ) unless defined $S3;
-    $$self{bucketprefix} = $BACKEND_CONFIG{$BACKEND}{bucketprefix};
+    );
+    $self->{bucketprefix} = $BACKEND_CONFIG{$BACKEND}{bucketprefix};
     return;
 }
 
@@ -69,23 +67,25 @@ sub readDir {
     my ( $self, $fn, $limit, $filter ) = @_;
     $self->initialize();
     my @list;
-    if ( $self->_isRoot($fn) ) {
+    if ( $self->_is_root($fn) ) {
         my $buckets = $S3->buckets();
-        foreach my $b ( @{ $$buckets{buckets} } ) {
-            my $bn = $$b{bucket};
-            $bn =~ s/^\Q$$self{bucketprefix}// if $$self{bucketprefix};
-            $self->_fillStatCache( $fn . $bn, $b );
+        foreach my $b ( @{ $buckets->{buckets} } ) {
+            my $bn = $b->{bucket};
+            if ( $self->{bucketprefix} ) {
+                $bn =~ s/^\Q$self->{bucketprefix}//xms;
+            }
+            $self->_fill_stat_cache( $fn . $bn, $b );
             push @list, $bn;
         }
     }
-    elsif ( $self->_isBucket($fn) && !$self->SUPER::isDir($fn) ) {
+    elsif ( $self->_is_bucket($fn) && !$self->SUPER::isDir($fn) ) {
         my $l =
-          $S3->list_bucket_all( { bucket => $self->_getBucketName($fn) } );
-        foreach my $key ( @{ $$l{keys} } ) {
-            my $file = $$key{key};
+          $S3->list_bucket_all( { bucket => $self->_get_bucket_name($fn) } );
+        foreach my $key ( @{ $l->{keys} } ) {
+            my $file = $key->{key};
             my $full = $fn . $file;
-            $self->_fillStatCache( $full, $key );
-            push @list, $$key{key};
+            $self->_fill_stat_cache( $full, $key );
+            push @list, $key->{key};
         }
     }
     return \@list;
@@ -96,14 +96,14 @@ sub unlinkFile {
     my $ret = 0;
     $self->initialize();
     $fn = $self->resolve($fn);
-    if ( $self->_isRoot($fn) ) {
+    if ( $self->_is_root($fn) ) {
         $ret = 0;
     }
-    elsif ( $self->_isBucket($fn) ) {
-        $ret = $S3->delete_bucket( { bucket => $self->_getBucketName($fn) } );
+    elsif ( $self->_is_bucket($fn) ) {
+        $ret = $S3->delete_bucket( { bucket => $self->_get_bucket_name($fn) } );
     }
     else {
-        my $bucket = $S3->bucket( $self->_getBucketName($fn) );
+        my $bucket = $S3->bucket( $self->_get_bucket_name($fn) );
         $ret = $bucket && $bucket->delete_key( $self->basename($fn) );
     }
     return $ret;
@@ -114,10 +114,10 @@ sub deltree {
     my $ret = 1;
     $self->initialize();
     $fn = $self->resolve($fn);
-    if ( $self->_isRoot($fn) || $self->_isBucket($fn) ) {
+    if ( $self->_is_root($fn) || $self->_is_bucket($fn) ) {
         my $list = $self->readDir($fn);
         foreach my $f ( @{$list} ) {
-            $ret &= $self->deltree( $fn . '/' . $f );
+            $ret &= $self->deltree( $fn . q{/} . $f );
         }
     }
     $ret &= $self->unlinkFile($fn);
@@ -129,7 +129,7 @@ sub isLink {
 }
 
 sub isDir {
-    return $_[0]->_isRoot( $_[1] ) || $_[0]->_isBucket( $_[1] );
+    return $_[0]->_is_root( $_[1] ) || $_[0]->_is_bucket( $_[1] );
 }
 
 sub isFile {
@@ -148,23 +148,23 @@ sub copy {
     my $ret = 1;
     $src = $self->resolve($src);
     $dst = $self->resolve($dst);
-    if ( $self->_isRoot($src) ) {
+    if ( $self->_is_root($src) ) {
         $ret = 0;
     }
-    elsif ( $self->_isBucket($src) ) {
-        if ( $self->_isRoot( $self->dirname($dst) ) ) {
+    elsif ( $self->_is_bucket($src) ) {
+        if ( $self->_is_root( $self->dirname($dst) ) ) {
             $self->mkcol($dst) || return 0;
         }
         my @list = $self->readDir($src);
         foreach my $f (@list) {
-            $ret &= $self->copy( $src . '/' . $f, $dst );
+            $ret &= $self->copy( $src . q{/} . $f, $dst );
         }
     }
-    elsif ( $self->_isBucket( $self->dirname($src) ) ) {
+    elsif ( $self->_is_bucket( $self->dirname($src) ) ) {
         $ret =
-          !$self->_isRoot($dst)
-          && ( $self->_isBucket($dst)
-            || $self->_isBucket( $self->dirname($dst) ) )
+          !$self->_is_root($dst)
+          && ( $self->_is_bucket($dst)
+            || $self->_is_bucket( $self->dirname($dst) ) )
           ? $self->saveData( $dst, $self->getFileContent($src) )
           : 0;
     }
@@ -175,9 +175,9 @@ sub mkcol {
     my ( $self, $fn ) = @_;
     $self->initialize();
     my $ret = 0;
-    if ( $self->_isRoot( $self->dirname($fn) ) ) {
-        $ret = $S3->add_bucket( { bucket => $self->_getBucketName($fn) } );
-        warn( $S3->err . ': ' . $S3->errstr ) unless $ret;
+    if ( $self->_is_root( $self->dirname($fn) ) ) {
+        $ret = $S3->add_bucket( { bucket => $self->_get_bucket_name($fn) } );
+        if ( !$ret ) { carp( $S3->err . ': ' . $S3->errstr ); }
     }
     return $ret;
 }
@@ -190,28 +190,29 @@ sub hasSetGidBit  { return 0; }
 sub changeMod     { return 0; }
 sub isBlockDevice { return 0; }
 sub isCharDevice  { return 0; }
-sub getLinkSrc    { $! = 'not supported'; return; }
+sub getLinkSrc    { return; }
 sub createSymLink { return 0; }
 sub hasStickyBit  { return 0; }
 
 sub exists {
     my ( $self, $fn ) = @_;
-    return 1 if $self->_isRoot($fn) || $self->_isBucket($fn);
+    return 1 if $self->_is_root($fn) || $self->_is_bucket($fn);
     $fn = $self->resolve($fn);
     $self->initialize();
-    my $bucket = $S3->bucket( $self->_getBucketName($fn) );
+    my $bucket = $S3->bucket( $self->_get_bucket_name($fn) );
     return $bucket->head_key( $self->basename($fn) );
 }
 
 sub stat {
     my ( $self, $fn ) = @_;
     return ( 0, 0, $UMASK, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
-      if $self->_isRoot($fn);
-    if ( !exists $CACHE{stat}{$fn} && !$self->_isBucket($fn) ) {
-        my $bucketdir = $self->_getBucketDirname($fn);
-        return $self->SUPER::stat($fn) if !$self->_isBucket($bucketdir);
-        my $bucket = $S3->bucket( $self->_getBucketName($fn) );
-        $self->_fillStatCache( $fn, $bucket->head_key( $self->basename($fn) ) );
+      if $self->_is_root($fn);
+    if ( !exists $CACHE{stat}{$fn} && !$self->_is_bucket($fn) ) {
+        my $bucketdir = $self->_get_bucket_dirname($fn);
+        return $self->SUPER::stat($fn) if !$self->_is_bucket($bucketdir);
+        my $bucket = $S3->bucket( $self->_get_bucket_name($fn) );
+        $self->_fill_stat_cache( $fn,
+            $bucket->head_key( $self->basename($fn) ) );
     }
     $fn = $self->resolve($fn);
     my $lm =
@@ -220,72 +221,81 @@ sub stat {
     return ( 0, 0, $UMASK, 0, 0, 0, 0, $size, $lm, $lm, $lm, 0, 0 );
 }
 
-sub _isRoot {
+sub _is_root {
     return $_[1] eq $DOCUMENT_ROOT;
 }
 
-sub _isBucket {
+sub _is_bucket {
     my ( $self, $bucketdirname ) = @_;
-    $_[0]->_readBuckets( $_[1] ) unless exists $CACHE{buckets};
+    if ( !exists $CACHE{buckets} ) { $_[0]->_read_buckets( $_[1] ); }
     my $bn = $self->basename($bucketdirname);
-    $bn = $$self{bucketprefix} . $bn
-      if $$self{bucketprefix} && $bn !~ /^\Q$$self{bucketprefix}\E/;
+    if ( $self->{bucketprefix} && $bn !~ /^\Q$self->{bucketprefix}\E/xms ) {
+        $bn = $self->{bucketprefix} . $bn;
+    }
     return $CACHE{buckets}{$bn}
-      && $self->_isRoot( $self->dirname($bucketdirname) );
+      && $self->_is_root( $self->dirname($bucketdirname) );
 }
 
-sub _readBuckets {
+sub _read_buckets {
     my ($self) = @_;
     $self->initialize();
     my $b = $S3->buckets();
-    foreach my $b ( @{ $$b{buckets} } ) {
-        my $bn = $$b{bucket};
+    foreach my $b ( @{ $b->{buckets} } ) {
+        my $bn = $b->{bucket};
         $CACHE{buckets}{$bn} = 1;
-        $bn =~ s/^\Q$$self{bucketprefix}\E// if $$self{bucketprefix};
-        $self->_fillStatCache( $DOCUMENT_ROOT . $bn, $b );
+        if ( $self->{bucketprefix} ) {
+            $bn =~ s/^\Q$self->{bucketprefix}\E//xms;
+        }
+        $self->_fill_stat_cache( $DOCUMENT_ROOT . $bn, $b );
     }
     return;
 }
 
-sub _fillStatCache {
+sub _fill_stat_cache {
     my ( $self, $fn, $v ) = @_;
     $CACHE{stat}{$fn} = {
-        content_type  => $$v{content_type},
-        size          => $$v{size} || $$v{content_length},
-        last_modified => str2time( $$v{last_modified} || $$v{creation_date} )
+        content_type  => $v->{content_type},
+        size          => $v->{size} // $v->{content_length},
+        last_modified => str2time( $v->{last_modified} || $v->{creation_date} )
     };
     return;
 }
 
-sub _getBucketDirname {
+sub _get_bucket_dirname {
     my ( $self, $fn ) = @_;
-    if ( $self->_isBucket($fn) ) {
-        return $self->dirname($fn) . $$self{bucketprefix} . $self->basename($fn)
-          if $$self{bucketprefix};
+    if ( $self->_is_bucket($fn) ) {
+        return
+            $self->dirname($fn)
+          . $self->{bucketprefix}
+          . $self->basename($fn)
+          if $self->{bucketprefix};
         return $fn;
     }
-    elsif ( $self->_isBucket( $self->dirname($fn) ) ) {
-        return $self->_getBucketDirname( $self->dirname($fn) );
+    elsif ( $self->_is_bucket( $self->dirname($fn) ) ) {
+        return $self->_get_bucket_dirname( $self->dirname($fn) );
     }
-    elsif ( $self->_isRoot( $self->dirname($fn) ) ) {
-        return $self->dirname($fn) . $$self{bucketprefix} . $self->basename($fn)
-          if $$self{bucketprefix};
+    elsif ( $self->_is_root( $self->dirname($fn) ) ) {
+        return
+            $self->dirname($fn)
+          . $self->{bucketprefix}
+          . $self->basename($fn)
+          if $self->{bucketprefix};
         return $fn;
     }
     return;
 }
 
-sub _getBucketName {
+sub _get_bucket_name {
     my ( $self, $fn ) = @_;
-    my $dn = $self->_getBucketDirname($fn);
+    my $dn = $self->_get_bucket_dirname($fn);
     return $self->basename( $dn ? $dn : $fn );
 }
 
 sub resolve {
     my ( $self, $fn ) = @_;
-    $fn =~ s/([^\/]*)\/\.\.(\/?.*)/$1/;
-    $fn =~ s/(.+)\/$/$1/;
-    $fn =~ s/\/\//\//g;
+    $fn =~ s{([^/]*)/[.]{2}(/?.*)}{$1}xms;
+    $fn =~ s{/$}{}xms;
+    $fn =~ s{//}{/}xmsg;
     return $fn;
 }
 
@@ -298,11 +308,11 @@ sub saveData {
     #my ($self, $path, $data, $append) = @_;
     my $fn = $_[0]->resolve( $_[1] );
     $_[0]->initialize();
-    my $bucket = $S3->bucket( $_[0]->_getBucketName($fn) );
+    my $bucket = $S3->bucket( $_[0]->_get_bucket_name($fn) );
     my $key    = $_[0]->basename($fn);
     my $mime   = get_mime_type($fn);
     my $ret    = $bucket->add_key( $key, $_[2], { content_type => $mime } );
-    warn( $bucket->err . ': ' . $bucket->errstr ) unless $ret;
+    if ( !$ret ) { carp( $bucket->err . ': ' . $bucket->errstr ); }
     return $ret;
 
 }
@@ -311,7 +321,7 @@ sub saveStream {
     my ( $self, $fn, $fh ) = @_;
     $fn = $self->resolve($fn);
     my $blob;
-    while ( read( $fh, my $buffer, $BUFSIZE || 1048576 ) ) {
+    while ( read $fh, my $buffer, $READBUFSIZE ) {
         $blob .= $buffer;
     }
     return $self->saveData( $fn, $blob );
@@ -321,15 +331,17 @@ sub printFile {
     my ( $self, $fn, $fh, $pos, $count ) = @_;
     $fn = $self->resolve($fn);
 
-    print $fh substr( $self->getFileContent($fn), $pos, $count ) if $pos;
-    print $fh $self->getFileContent($fn);
+    if ($pos) {
+        print( {$fh} substr $self->getFileContent($fn), $pos, $count )
+          || carp("Cannot write to $fn.");
+    }
+    print( {$fh} $self->getFileContent($fn) ) || carp("Cannot write to $fn.");
     return;
 }
 
 sub getLocalFilename {
     my ( $self, $fn ) = @_;
-    $fn =~ /(\.[^\.]+)$/;
-    my $suffix = $1;
+    my $suffix = $fn =~ /([.][^.]+)$/xms ? $1 : undef;
     my ( $fh, $filename ) = tempfile(
         TEMPLATE => '/tmp/webdavcgiXXXXX',
         CLEANUP  => 1,
@@ -343,8 +355,8 @@ sub getFileContent {
     my ( $self, $fn ) = @_;
     $self->initialize();
     $fn = $self->resolve($fn);
-    my $bucket = $S3->bucket( $self->_getBucketName($fn) );
+    my $bucket = $S3->bucket( $self->_get_bucket_name($fn) );
     my $v      = $bucket->get_key( $self->basename($fn) );
-    return $$v{value};
+    return $v->{value};
 }
 1;
