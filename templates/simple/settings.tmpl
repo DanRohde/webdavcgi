@@ -2,21 +2,21 @@
 <form id="settingsform">
 <table>
 $each#(confirm.upload,confirm.dnd,confirm.paste,confirm.rename,messages.warning,show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
-<!--IF($main::ENABLE_THUMBNAIL)-->
+<!--IF($ENABLE_THUMBNAIL)-->
 <tr><td>$tl(settings.enable.thumbnails)</td><td><input type="checkbox" name="settings.enable.thumbnails"/></td></tr>
 <!--ENDIF-->
 $extension(settings)
-<!--IF($#main::SUPPORTED_VIEWS>0)-->
+<!--IF(scalar @SUPPORTED_VIEWS > 1)-->
 <tr><td>$tl(settings.view)</td>
 <td>
 	<select name="settings.view">
 		<option value="$view" title="$view">$viewname</option>
-		$each#@main::SUPPORTED_VIEWS#'<option value="$v" title="$v">$tl(${v}view)</option>'#'$view'#
+		$each#@SUPPORTED_VIEWS#'<option value="$v" title="$v">$tl(${v}view)</option>'#'$view'#
 	</select>
 </td>
 </tr>
 <!--ENDIF-->
-<!--IF(scalar(keys %main::SUPPORTED_LANGUAGES) > 0)-->
+<!--IF(scalar(keys %SUPPORTED_LANGUAGES) > 0)-->
 <tr><td>$tl(settings.language)</td>
 <td>
 	<select name="settings.lang">

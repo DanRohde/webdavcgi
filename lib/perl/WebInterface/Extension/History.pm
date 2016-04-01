@@ -19,31 +19,39 @@
 # SETUP:
 # TODO: describe extension setup
 
-
 package WebInterface::Extension::History;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
 
-
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript','fileactionpopup');
-	$hookreg->register(\@hooks, $self);
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw(css locales javascript fileactionpopup);
+    $hookreg->register( \@hooks, $self );
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	
-	if ($hook eq 'fileactionpopup') {
-		#$ret = { title=>$self->tl('history'), subpopupmenu=>[ { label=>$self->tl('history.clear'), action=>'history-clear', classes=>'sep', type=>'li' } ], classes=>'history-popup', type=>'li' };
-		$ret = { title=>$self->tl('history'), subpopupmenu=>[], classes=>'history-popup', type=>'li' };
-	}
-	 
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
+    }
+
+    if ( $hook eq 'fileactionpopup' ) {
+
+#$ret = { title=>$self->tl('history'), subpopupmenu=>[ { label=>$self->tl('history.clear'), action=>'history-clear', classes=>'sep', type=>'li' } ], classes=>'history-popup', type=>'li' };
+        return {
+            title        => $self->tl('history'),
+            subpopupmenu => [],
+            classes      => 'history-popup',
+            type         => 'li'
+        };
+    }
+
+    return 0;
 }
 
 1;

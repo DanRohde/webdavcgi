@@ -27,21 +27,23 @@ use base qw( WebInterface::Extension );
 
 use Digest::MD5 qw(md5_hex);
 
+use DefaultConfig qw( $REMOTE_USER %EXTENSION_CONFIG );
+
 sub init_defaults {
     my ($self) = @_;
 
-    ${$self}{namespace} = $self->config( 'namespace',
+    $self->{namespace} = $self->config( 'namespace',
         '{http://webdavcgi.sf.net/extension/PublicUri/}' );
-    ${$self}{propname} = $self->config( 'propname', 'public_prop' );
-    ${$self}{seed}     = $self->config( 'seed',     'seed' );
-    ${$self}{orig}     = $self->config( 'orig',     'orig' );
-    ${$self}{prefix}   = $self->config( 'prefix',   q{} );
+    $self->{propname} = $self->config( 'propname', 'public_prop' );
+    $self->{seed}     = $self->config( 'seed',     'seed' );
+    $self->{orig}     = $self->config( 'orig',     'orig' );
+    $self->{prefix}   = $self->config( 'prefix',   q{} );
 
-    ${$self}{uribase} = $self->config( 'uribase',
+    $self->{uribase} = $self->config( 'uribase',
         'https://' . $ENV{HTTP_HOST} . '/public/' );
 
-    ${$self}{virtualbase} = $self->config( 'basepath', '/public/' );
-    ${$self}{allowedpostactions} = $self->config( 'allowedpostactions',
+    $self->{virtualbase} = $self->config( 'basepath', '/public/' );
+    $self->{allowedpostactions} = $self->config( 'allowedpostactions',
         '^(zipdwnload|diskusage|search|diff)$' );
 
     return;
@@ -50,24 +52,24 @@ sub init_defaults {
 sub config {
     my ( $self, $attr, $default ) = @_;
     return
-        exists $main::EXTENSION_CONFIG{PublicUri}{$attr}
-        ? $main::EXTENSION_CONFIG{PublicUri}
+        exists $EXTENSION_CONFIG{PublicUri}{$attr}
+        ? $EXTENSION_CONFIG{PublicUri}
         : $default;
 }
 
 sub get_property_name {
     my ($self) = @_;
-    return ${$self}{namespace} . ${$self}{propname};
+    return $self->{namespace} . $self->{propname};
 }
 
 sub get_seed_name {
     my ($self) = @_;
-    return ${$self}{namespace} . ${$self}{seed};
+    return $self->{namespace} . $self->{seed};
 }
 
 sub get_orig_name {
     my ($self) = @_;
-    return ${$self}{namespace} . ${$self}{orig};
+    return $self->{namespace} . $self->{orig};
 }
 
 sub get_file_from_code {
@@ -79,25 +81,25 @@ sub get_file_from_code {
 
 sub get_seed {
     my ( $self, $fn ) = @_;
-    return $self->{config}->{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
+    return $self->{config}->{db}->db_getProperty( $self->{backend}->resolveVirt($fn),
         $self->get_seed_name() );
 }
 
 sub get_orig {
     my ( $self, $fn ) = @_;
-    return $self->{config}->{db}->db_getProperty( ${$self}{backend}->resolveVirt($fn),
+    return $self->{config}->{db}->db_getProperty( $self->{backend}->resolveVirt($fn),
         $self->get_orig_name() );
 }
 
 sub get_digest {
     my ( $self, $fn, $seed ) = @_;
-    return ${$self}{prefix} . substr md5_hex( $fn . $seed ), 0, 16;
+    return $self->{prefix} . substr md5_hex( $fn . $seed ), 0, 16;
 }
 
 sub gen_url_hash {
     my ( $self, $fn ) = @_;
     my $seed
-        = time . int( rand time ) . md5_hex($main::REMOTE_USER) . $fn;
+        = time . int( rand time ) . md5_hex($REMOTE_USER) . $fn;
     my $digest = $self->get_digest( $fn, $seed );
     return $digest, $seed;
 }

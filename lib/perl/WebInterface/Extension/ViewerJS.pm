@@ -18,48 +18,71 @@
 #
 # SETUP:
 # disable_fileactionpopup - disables file action entry in popup menu
-# disable_fileaction - disables file action 
+# disable_fileaction - disables file action
 
 package WebInterface::Extension::ViewerJS;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
 
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
+use HTTPHelper qw( print_compressed_header_and_content );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'fileattr', 'gethandler');
-	push @hooks,'fileactionpopup' unless $self->config('disable_fileactionpopup',0);
-	push @hooks,'fileaction' unless $self->config('disable_fileaction',0);
-	$hookreg->register(\@hooks, $self);
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw( css locales javascript fileattr gethandler );
+    if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
+        push @hooks, 'fileactionpopup';
+    }
+    if ( !$self->config( 'disable_fileaction', 0 ) ) {
+        push @hooks, 'fileaction';
+    }
+    $hookreg->register( \@hooks, $self );
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	if ($hook eq 'fileattr') {
-		return { ext_classes=>'viewerjs-'.($$params{path}=~/\.(odt|odp|ods|pdf)$/i ? 'yes' : 'no')  };
-	} 
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	
-	if ($hook eq 'fileactionpopup') {
-		$ret =   { action=>'viewerjs', label=>'viewerjs.view', type=>'li'};
-	} elsif ($hook eq 'fileaction') {
-		$ret =   { action=>'viewerjs', label=>'viewerjs.view'};
-	} elsif ($hook eq 'gethandler') {
-		$ret = $self->handleGetRequest('view') if $$self{cgi}->param('action') eq 'viewerjs';
-	}
-	 
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( $hook eq 'fileattr' ) {
+        return {
+            ext_classes => 'viewerjs-'
+              . (
+                $params->{path} =~ /[.](?:odt|odp|ods|pdf)$/xmsi ? 'yes' : 'no'
+              )
+        };
+    }
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
+    }
+
+    if ( $hook eq 'fileactionpopup' ) {
+        return { action => 'viewerjs', label => 'viewerjs.view', type => 'li' };
+    }
+    if ( $hook eq 'fileaction' ) {
+        return { action => 'viewerjs', label => 'viewerjs.view' };
+    }
+    if ( $hook eq 'gethandler' ) {
+        if (defined $self->{cgi}->param('action') && $self->{cgi}->param('action') eq 'viewerjs') {
+            return $self->_handle_get_request('view')    
+        }
+    }
+    return 0;
 }
-sub handleGetRequest {
-	my ($self,$template) = @_;
-	my ($self) = @_;
-	my $file = $$self{cgi}->param('file');
-	my $fileuri = $main::REQUEST_URI.$$self{cgi}->escape($file);
-	my $tmpl = $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->read_template($template), { fileuri=>$fileuri, file=>$$self{cgi}->escapeHTML($file) });
-	main::print_compressed_header_and_content('200 OK', 'text/html', $tmpl, 'Cache-Control: no-cache, no-store');
-	return 1;
+
+sub _handle_get_request {
+    my ( $self, $template ) = @_;
+    my $file    = $self->{cgi}->param('file');
+    my $fileuri = $REQUEST_URI . $self->{cgi}->escape($file);
+    my $tmpl    = $self->render_template(
+        $PATH_TRANSLATED, $REQUEST_URI,
+        $self->read_template($template),
+        { fileuri => $fileuri, file => $self->{cgi}->escapeHTML($file) }
+    );
+    print_compressed_header_and_content( '200 OK', 'text/html', $tmpl,
+        'Cache-Control: no-cache, no-store' );
+    return 1;
 }
 1;

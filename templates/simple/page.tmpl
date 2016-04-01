@@ -35,18 +35,18 @@ $INCLUDE(htmlhead)</head>
 		$INCLUDE(nav)
 		<ul id="prefs">
 			$INCLUDE(pref)
-			<!--IF($#main::SUPPORTED_VIEWS>0)-->
+			<!--IF($#SUPPORTED_VIEWS>0)-->
 			<li title="$tl(viewoptions)"><div class="accordion">
 					<h3>$tl(viewoptions)</h3> 
 					<div>
-						<ul>$each#@main::SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
+						<ul>$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
 							<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o"><span class="label">$tl(filter.title)</span></a></li>
 						</ul>
 					</div>
 				</div>
 			</li>
 			<!--ENDIF-->
-			<!--IF($#main::SUPPORTED_VIEWS<1)-->
+			<!--IF($#SUPPORTED_VIEWS<1)-->
 				<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o"><span class="label">$tl(filter.title)</span></a></li>
 			<!--ENDIF-->
 			<li title="$tl(settings)"><a href="#" data-action="settings" class="dialog action settings"><span class="label">$tl(settings)</span></a></li>
@@ -92,12 +92,12 @@ $INCLUDE(htmlhead)</head>
 					</div>
 				</div>
 			<!--ENDIF-->
-			<!--IF(%main::AUTOREFRESH)-->
+			<!--IF(%AUTOREFRESH)-->
 				<div id="autorefresh" title="$tl(autorefresh.select.title)">
 					<a href="#" class="action autorefreshmenu" data-action="autorefreshmenu">&nbsp;</a>
 					<ul id="autorefreshmenulist" class="hidden">
 						<li class="action setautorefresh" tabindex="0" data-value="now">$tl(autorefresh.now)</li>
-						$each@%main::AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k">$v</li>'@
+						$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k">$v</li>'@
 						<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0">$tl(autorefresh.toggle)</li>
 						<li class="autorefreshrunning action autorefreshclear" tabindex="0">$tl(autorefresh.clear)</li>
 						<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
@@ -169,7 +169,7 @@ $INCLUDE(htmlhead)</head>
 	$INCLUDE(settings)
 	$extension(templates)
 </div>
-<!--IF(%main::AUTOREFRESH)-->
+<!--IF(%AUTOREFRESH)-->
 	<div id="autorefreshtimer">
 		<span class="autorefreshtimer" title="$tl(autorefresh.select.title)" data-template="$tl(autorefresh.format)"></span> 
 		<a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>

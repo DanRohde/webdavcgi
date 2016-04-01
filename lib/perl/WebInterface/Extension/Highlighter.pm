@@ -17,7 +17,7 @@
 #########################################################################
 # Simple CSS highlighting for file list entries
 # SETUP:
-# namespace - XML namespace for attributes (default: {http://webdavcgi.sf.net/extension/Highlighter/$main::REMOTE_USER})
+# namespace - XML namespace for attributes (default: {http://webdavcgi.sf.net/extension/Highlighter/$REMOTE_USER})
 # attributes - CSS attributes to change for a file list entry
 
 package WebInterface::Extension::Highlighter;
@@ -31,22 +31,25 @@ use base qw( WebInterface::Extension );
 
 use JSON;
 
-use vars qw(%CACHE);
+use DefaultConfig qw( $PATH_TRANSLATED $REMOTE_USER );
+use HTTPHelper qw( print_compressed_header_and_content );
+
+use vars qw(%_CACHE);
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks
-        = qw(css locales javascript posthandler fileattr fileactionpopup);
+    my @hooks = qw(css locales javascript posthandler fileattr fileactionpopup);
 
     $hookreg->register( \@hooks, $self );
 
-    ${$self}{namespace} = $self->config( 'namespace',
-              '{http://webdavcgi.sf.net/extension/Highlighter/'
-            . $main::REMOTE_USER
-            . '}' );
-    ${$self}{attributes} = $self->config(
+    $self->{namespace} = $self->config( 'namespace',
+            '{http://webdavcgi.sf.net/extension/Highlighter/'
+          . $REMOTE_USER
+          . '}' );
+    $self->{attributes} = $self->config(
         'attributes',
-        {   'color' => {
+        {
+            'color' => {
                 values      => '#FF0000,#008000,#0000FF,#FFA500,#800080',
                 labelstyle  => 'background-color',
                 colorpicker => 1,
@@ -62,7 +65,7 @@ sub init {
 #'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 },
         }
     );
-    ${$self}{json} = JSON->new();
+    $self->{json} = JSON->new();
     return $self;
 }
 
@@ -71,126 +74,130 @@ sub handle {
     if ( $hook eq 'fileattr' ) {
         return $self->get_file_attributes($params);
     }
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    if ( $hook eq 'javascript' ) {
-        $ret
-            .= $self->handleJavascriptHook( 'Highlighter',
-            'htdocs/contrib/iris.min.js' );
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        if ( $hook eq 'javascript' ) {
+            $ret .= $self->handleJavascriptHook( 'Highlighter',
+                'htdocs/contrib/iris.min.js' );
+        }
         return $ret;
     }
+
     if ( $hook eq 'fileactionpopup' ) {
         my @popups = ();
         foreach my $attribute (
             sort {
-                ${$self}{attributes}{$a}{order}
-                    <=> ${$self}{attributes}{$b}{order}
-            } keys %{ ${$self}{attributes} }
-            )
+                $self->{attributes}{$a}{order}
+                  <=> $self->{attributes}{$b}{order}
+            } keys %{ $self->{attributes} }
+          )
         {
             my @subpopup = map {
-                {   action => 'mark',
+                {
+                    action => 'mark',
                     attr   => {
                         style =>
-                            "${$self}{attributes}{$attribute}{labelstyle}: $_;"
+                          "$self->{attributes}{$attribute}{labelstyle}: $_;"
                     },
                     data  => { value => $_, style => $attribute },
                     label => sprintf(
-                        $self->tl( ${$self}{attributes}{$attribute}{label} // q{} ),
+                        $self->tl(
+                            $self->{attributes}{$attribute}{label} // q{}
+                        ),
                         $_
                     ),
                     title => $self->tl( "highlighter.$attribute.$_", $_ ),
                     type  => 'li'
                 }
-            } split( /,/xms, ${$self}{attributes}{$attribute}{values} );
-            if ( ${$self}{attributes}{$attribute}{colorpicker} ) {
+              } split( /,/xms, $self->{attributes}{$attribute}{values} )
+              ;
+            if ( $self->{attributes}{$attribute}{colorpicker} ) {
                 push @subpopup,
-                    {
+                  {
                     action  => 'markcolorpicker',
                     data    => { value => $_, style => $attribute },
                     label   => $self->tl('highlighter.colorpicker'),
                     classes => 'sep',
                     type    => 'li'
-                    };
+                  };
             }
             push @subpopup,
-                {
+              {
                 action  => 'removemark',
                 data    => { style => $attribute },
                 label   => $self->tl("highlighter.remove.$attribute"),
                 type    => 'li',
                 classes => 'sep'
-                };
+              };
 
             push @popups,
-                {
+              {
                 title        => $self->tl("highlighter.$attribute"),
                 subpopupmenu => \@subpopup,
                 classes      => "highlighter $attribute"
-                };
+              };
         }
 
-        $ret = {
+        return {
             title        => $self->tl('highlighter'),
             subpopupmenu => \@popups,
             classes      => 'highlighter-popup'
         };
     }
-    elsif ( $hook eq 'posthandler' ) {
-        my $action = ${$self}{cgi}->param('action') // q{};
+    if ( $hook eq 'posthandler' ) {
+        my $action = $self->{cgi}->param('action') // q{};
         if ( $action eq 'mark' ) {
-            $ret = $self->save_property();
+            return $self->save_property();
         }
         elsif ( $action eq 'removemark' ) {
-            $ret = $self->remove_property();
+            return $self->remove_property();
         }
     }
-    return $ret;
+    return 0;
 }
 
 sub get_file_attributes {
     my ( $self, $params ) = @_;
 
-    my $path   = ${$self}{backend}->resolveVirt( ${$params}{path} );
-    my $parent = ${$self}{backend}->getParent($path);
-    if ( !exists $CACHE{$self}{$parent} ) {
-        ${$self}{db}->db_getProperties($parent);    ## fills the cache
+    my $path   = $self->{backend}->resolveVirt( ${$params}{path} );
+    my $parent = $self->{backend}->getParent($path);
+    if ( !exists $_CACHE{$self}{$parent} ) {
+        $self->{db}->db_getProperties($parent);    ## fills the cache
     }
-    $CACHE{$self}{$parent} = 1;
+    $_CACHE{$self}{$parent} = 1;
     my %jsondata = ();
-    foreach my $prop ( keys %{ ${$self}{attributes} } ) {
-        if ( my $val
-            = ${$self}{db}
-            ->db_getPropertyFromCache( $path, ${$self}{namespace} . $prop ) )
+    foreach my $prop ( keys %{ $self->{attributes} } ) {
+        if ( my $val =
+            $self->{db}
+            ->db_getPropertyFromCache( $path, $self->{namespace} . $prop ) )
         {
             $jsondata{$prop} = $val;
         }
     }
 
     return scalar( keys %jsondata ) > 0
-        ? {
+      ? {
         'ext_classes'    => 'highlighter-highlighted',
         'ext_attributes' => 'data-highlighter="'
-            . ${$self}{cgi}
-            ->escapeHTML( ${$self}{json}->encode( \%jsondata ) ) . q{"}
-        }
-        : {};
+          . $self->{cgi}->escapeHTML( $self->{json}->encode( \%jsondata ) )
+          . q{"}
+      }
+      : {};
 }
 
 sub remove_property {
     my ($self) = @_;
     my %jsondata = ();
-    foreach my $file ( ${$self}{cgi}->param('files') ) {
-        ${$self}{db}->db_removeProperty(
-            ${$self}{backend}->resolveVirt(
-                $main::PATH_TRANSLATED . $self->strip_slash($file)
-            ),
-            ${$self}{namespace} . ${$self}{cgi}->param('style')
+    foreach my $file ( $self->{cgi}->param('files') ) {
+        $self->{db}->db_removeProperty(
+            $self->{backend}
+              ->resolveVirt( $PATH_TRANSLATED . $self->strip_slash($file) ),
+            $self->{namespace} . $self->{cgi}->param('style')
         );
     }
 
-    main::print_compressed_header_and_content(
+    print_compressed_header_and_content(
         '200 OK', 'application/json',
-        ${$self}{json}->encode( \%jsondata ),
+        $self->{json}->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;
@@ -199,30 +206,30 @@ sub remove_property {
 sub save_property {
     my ($self)   = @_;
     my %jsondata = ();
-    my $db       = ${$self}{db};
-    my $cgi      = ${$self}{cgi};
+    my $db       = $self->{db};
+    my $cgi      = $self->{cgi};
     my $style = $cgi->param('style') || 'color';
     my $value = $cgi->param('value') || 'black';
-    my $propname = ${$self}{namespace} . $style;
+    my $propname = $self->{namespace} . $style;
 
     foreach my $file ( $cgi->param('files') ) {
-        my $full = ${$self}{backend}->resolveVirt(
-            $main::PATH_TRANSLATED . $self->strip_slash($file) );
-        my $result
-            = $db->db_getProperty( $full, $propname )
-            ? $db->db_updateProperty( $full, $propname, $value )
-            : $db->db_insertProperty( $full, $propname, $value );
+        my $full = $self->{backend}
+          ->resolveVirt( $PATH_TRANSLATED . $self->strip_slash($file) );
+        my $result =
+            $db->db_getProperty( $full, $propname )
+          ? $db->db_updateProperty( $full, $propname, $value )
+          : $db->db_insertProperty( $full, $propname, $value );
         if ( !$result ) {
             $jsondata{error}
-                = sprintf $self->tl('highlighter.highlightingfailed'),
-                $file;
+              = sprintf $self->tl('highlighter.highlightingfailed'),
+              $file;
             last;
         }
     }
 
-    main::print_compressed_header_and_content(
+    print_compressed_header_and_content(
         '200 OK', 'application/json',
-        ${$self}{json}->encode( \%jsondata ),
+        $self->{json}->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;

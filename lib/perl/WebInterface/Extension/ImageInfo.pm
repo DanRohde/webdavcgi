@@ -22,121 +22,212 @@
 package WebInterface::Extension::ImageInfo;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension );
 
-use Image::ExifTool;
 use MIME::Base64;
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'posthandler', 'fileactionpopup','fileattr');
-	$hookreg->register(\@hooks, $self);
-	
-	my %ig = map { $_=>1 } @{$self->config('hidegroups', ['ExifTool'])};
-	$$self{hidegroups} = \%ig;
+use DefaultConfig qw( $LANG $PATH_TRANSLATED $REQUEST_URI );
+use HTTPHelper qw( get_mime_type print_header_and_content );
+
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw(css locales javascript posthandler fileactionpopup fileattr);
+    $hookreg->register( \@hooks, $self );
+
+    my %ig = map { $_ => 1 } @{ $self->config( 'hidegroups', ['ExifTool'] ) };
+    $self->{hidegroups} = \%ig;
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = 0;
-	if ($hook eq 'fileattr') {
-		my $mime = main::get_mime_type($$params{path});
-		my $isReadable = $$self{backend}->isReadable($$params{path});
-		my $classes = '';
-		foreach my $type (('image', 'audio', 'video')) {
-			$classes .= " imageinfo-$type-". ($isReadable && $mime =~ /^\Q$type\E\//i ? 'show' : 'hide'); 
-		}
-		$ret = { ext_classes => $classes };
-	} else {
-		$ret = $self->SUPER::handle($hook, $config, $params);
-	}
-	return $ret if $ret;
-	
-	if ($hook eq 'fileactionpopup') {
-		$ret= [];
-		my $isReadable = $$self{backend}->isReadable($main::PATH_TRANSLATED);
-		foreach my $type (('image','audio','video')) {
-			push @{$ret}, { action=>'imageinfo '.$type, disabled=>!$isReadable, label=>'imageinfo.'.$type, type=>'li'};	
-		}
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'imageinfo') {
-		my $file = $$self{cgi}->param('file');
-		main::print_header_and_content('200 OK','text/html', $self->renderImageInfo($file, $self->getImageInfo($$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$file))));
-		$ret=1;	
-	}
-	 
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    my $ret = 0;
+    if ( $hook eq 'fileattr' ) {
+        my $mime        = get_mime_type( $params->{path} );
+        my $is_readable = $self->{backend}->isReadable( $params->{path} );
+        my $classes     = q{};
+        foreach my $type (qw( image audio video )) {
+            $classes .=
+              " imageinfo-$type-"
+              . (    $is_readable
+                  && $mime =~ /^\Q$type\E\//xmsi ? 'show' : 'hide' );
+        }
+        $ret = { ext_classes => $classes };
+    }
+    else {
+        $ret = $self->SUPER::handle( $hook, $config, $params );
+    }
+    return $ret if $ret;
+
+    if ( $hook eq 'fileactionpopup' ) {
+        $ret = [];
+        my $is_readable = $self->{backend}->isReadable($PATH_TRANSLATED);
+        foreach my $type ( ( 'image', 'audio', 'video' ) ) {
+            push @{$ret},
+              {
+                action   => 'imageinfo ' . $type,
+                disabled => !$is_readable,
+                label    => 'imageinfo.' . $type,
+                type     => 'li'
+              };
+        }
+    }
+    elsif ($hook eq 'posthandler'
+        && $self->{cgi}->param('action') eq 'imageinfo' )
+    {
+        my $file = $self->{cgi}->param('file');
+        print_header_and_content(
+            '200 OK',
+            'text/html',
+            $self->_render_image_info(
+                $file,
+                $self->_get_image_info(
+                    $self->{backend}
+                      ->getLocalFilename( $PATH_TRANSLATED . $file )
+                )
+            )
+        );
+        $ret = 1;
+    }
+
+    return $ret;
 }
-sub renderImageInfo {
-	my ($self, $file, $ii) = @_;
-	my $c = $$self{cgi};
-	
-	my $pt = $main::PATH_TRANSLATED;
-	my $ru = $main::REQUEST_URI;
-	
-	my $tmppath = $$ii{_tmppath_};
-	my $tmpfile = $$self{backend}->basename($tmppath);
-	my $tmpdir = $$self{backend}->dirname($tmppath);
-	
-	my $dialogtmpl = $self->read_template('imageinfo');
-	my $groupcontenttmpl = $self->read_template('groupcontent');
-	my $grouptmpl = $self->read_template('group');
-	my $proptmpl = $self->read_template('prop');
-	
-	my $groups ="";
-	my $groupcontent = "";
-	
-	my $mime = main::get_mime_type($file);
-	my $type = $mime=~/^([^\/]+)/?$1:'image';
-	
-	foreach my $gr ( @{$$ii{_groups_}}) {
-		next if $$self{hidegroups}{$gr};
-		$groups.= $self->render_template($pt, $ru, $grouptmpl, { group=>$gr});
-		my $props = "";
-		foreach my $pr (sort keys %{$$ii{$gr}}) {
-			my $val = $$ii{$gr}{$pr};
-			$val=~s/\Q$tmpfile\E/$file/g;
-			$val=~s/\Q$tmpdir\E/$main::REQUEST_URI/g;
-			my $img = $$ii{_binarydata_}{$gr}{$pr} ? '<br>'.$c->img({-alt=>$pr, -title=>$pr, -src=>'data:'.$mime.';base64,'.$$ii{_binarydata_}{$gr}{$pr}}) : '';
-			$props.= $self->render_template($pt, $ru, $proptmpl, { propname=>$c->escapeHTML($pr), propvalue=>$c->escapeHTML($val), img=>$img});
-		}
-		$groupcontent .= $self->render_template($pt, $ru, $groupcontenttmpl, { group=>$gr, props => $props })
-	}
-	my $img = $$ii{_thumbnail_} 
-			? $c->img({-src=>'data:'.$mime.';base64,'.$$ii{_thumbnail_}, -alt=>'', -class=>'iithumbnail'}) 
-			: $self->has_thumb_support($mime) ? $c->img({-src=>$main::REQUEST_URI.$file.'?action=thumb', -class=>'iithumbnail',-alt=>''}) : '';
-	return $self->render_template($pt, $ru, $dialogtmpl, { dialogtitle=> sprintf($self->tl("imageinfo.$type.dialogtitle"), $c->escapeHTML($file)), groups=>$groups, groupcontent=>$groupcontent, img=>$img, imglink=>$main::REQUEST_URI.$file, type=>$type});
+
+sub _render_image_info {
+    my ( $self, $file, $ii ) = @_;
+    my $c = $self->{cgi};
+
+    my $pt = $PATH_TRANSLATED;
+    my $ru = $REQUEST_URI;
+
+    my $tmppath = $ii->{_tmppath_};
+    my $tmpfile = $self->{backend}->basename($tmppath);
+    my $tmpdir  = $self->{backend}->dirname($tmppath);
+
+    my $dialogtmpl       = $self->read_template('imageinfo');
+    my $groupcontenttmpl = $self->read_template('groupcontent');
+    my $grouptmpl        = $self->read_template('group');
+    my $proptmpl         = $self->read_template('prop');
+
+    my $groups       = q{};
+    my $groupcontent = q{};
+
+    my $mime = get_mime_type($file);
+    my $type = $mime =~ m{^([^/]+)}xms ? $1 : 'image';
+
+    foreach my $gr ( @{ $ii->{_groups_} } ) {
+        next if $self->{hidegroups}{$gr};
+        $groups .=
+          $self->render_template( $pt, $ru, $grouptmpl, { group => $gr } );
+        my $props = q{};
+        foreach my $pr ( sort keys %{ $ii->{$gr} } ) {
+            my $val = $ii->{$gr}{$pr};
+            $val =~ s/\Q$tmpfile\E/$file/xmsg;
+            $val =~ s/\Q$tmpdir\E/$REQUEST_URI/xmsg;
+            my $img =
+              $ii->{_binarydata_}{$gr}{$pr}
+              ? '<br>'
+              . $c->img(
+                {
+                    -alt   => $pr,
+                    -title => $pr,
+                    -src   => 'data:'
+                      . $mime
+                      . ';base64,'
+                      . $ii->{_binarydata_}{$gr}{$pr}
+                }
+              )
+              : q{};
+            $props .= $self->render_template(
+                $pt, $ru,
+                $proptmpl,
+                {
+                    propname  => $c->escapeHTML($pr),
+                    propvalue => $c->escapeHTML($val),
+                    img       => $img
+                }
+            );
+        }
+        $groupcontent .= $self->render_template( $pt, $ru, $groupcontenttmpl,
+            { group => $gr, props => $props } );
+    }
+    my $img =
+      $ii->{_thumbnail_} ? $c->img(
+        {
+            -src   => 'data:' . $mime . ';base64,' . $ii->{_thumbnail_},
+            -alt   => q{},
+            -class => 'iithumbnail'
+        }
+      )
+      : $self->has_thumb_support($mime) ? $c->img(
+        {
+            -src   => $REQUEST_URI . $file . '?action=thumb',
+            -class => 'iithumbnail',
+            -alt   => q{}
+        }
+      )
+      : q{};
+    return $self->render_template(
+        $pt, $ru,
+        $dialogtmpl,
+        {
+            dialogtitle => sprintf(
+                $self->tl("imageinfo.$type.dialogtitle"),
+                $c->escapeHTML($file)
+            ),
+            groups       => $groups,
+            groupcontent => $groupcontent,
+            img          => $img,
+            imglink      => $REQUEST_URI . $file,
+            type         => $type
+        }
+    );
 }
-sub getImageInfo {
-	my ($self, $file) = @_;
-	my %ret = (_tmppath_ => $file);
-	my $et = new Image::ExifTool();
-	$et->Options(Unknown=>1, Charset=>'UTF8', Lang => $main::LANG, DateFormat => $self->tl('lastmodifiedformat'));
-	my $info = $et->ImageInfo($file);
-	$ret{_thumbnail_} = $$info{ThumbnailImage} || $$info{PhotoshopThumbnail} ? encode_base64(${$$info{ThumbnailImage} || $$info{PhotoshopThumbnail}}) : undef;
-	
-	my $group = '';
-	foreach my $tag ($et->GetFoundTags('Group0')) {
-		if ($et->GetGroup($tag) ne $group) {
-			$group = $et->GetGroup($tag);
-			push @{$ret{_groups_}}, $group;
-		} 
-		my $val = $$info{$tag};
-		my $descr = $et->GetDescription($tag);
-		if (ref $val eq 'SCALAR') {
-			if ($$val =~ /^Binary data/) {
-				$val = "($$val)";	
-			} else {
-				my $b64 = encode_base64($$val);
-				$b64=~s/\s//smg;
-				$ret{_binarydata_}{$group}{$descr} = $b64;
-				my $len = length($$val);
-				$val = sprintf($self->tl('imageinfo.binarydata','(Binary data: %d bytes)'), $len); 
-				
-			}
-		}
-		$ret{$group}{$descr} = $val;
-	}
-	return \%ret;
+
+sub _get_image_info {
+    my ( $self, $file ) = @_;
+    my %ret = ( _tmppath_ => $file );
+    require Image::ExifTool;
+    my $et = Image::ExifTool->new();
+    $et->Options(
+        Unknown    => 1,
+        Charset    => 'UTF8',
+        Lang       => $LANG,
+        DateFormat => $self->tl('lastmodifiedformat')
+    );
+    my $info = $et->ImageInfo($file);
+    $ret{_thumbnail_} =
+      $info->{ThumbnailImage} || $info->{PhotoshopThumbnail}
+      ? encode_base64(
+        ${ $info->{ThumbnailImage} || $info->{PhotoshopThumbnail} } )
+      : undef;
+
+    my $group = q{};
+    foreach my $tag ( $et->GetFoundTags('Group0') ) {
+        if ( $et->GetGroup($tag) ne $group ) {
+            $group = $et->GetGroup($tag);
+            push @{ $ret{_groups_} }, $group;
+        }
+        my $val   = $info->{$tag};
+        my $descr = $et->GetDescription($tag);
+        if ( ref $val eq 'SCALAR' ) {
+            if ( ${$val} =~ /^Binary\sdata/xms ) {
+                $val = "(${$val})";
+            }
+            else {
+                my $b64 = encode_base64( ${$val} );
+                $b64 =~ s/\s//xmsg;
+                $ret{_binarydata_}{$group}{$descr} = $b64;
+                my $len = length ${$val};
+                $val = sprintf $self->tl( 'imageinfo.binarydata',
+                    '(Binary data: %d bytes)' ), $len;
+            }
+        }
+        $ret{$group}{$descr} = $val;
+    }
+    return \%ret;
 }
 1;

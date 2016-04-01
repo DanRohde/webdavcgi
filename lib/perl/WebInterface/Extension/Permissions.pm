@@ -22,100 +22,155 @@
 package WebInterface::Extension::Permissions;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'gethandler', 'posthandler');
-	push @hooks, 'fileactionpopup' unless $self->config('disable_fileactionpopup',0);
-	push @hooks, 'apps' unless $self->config('disable_apps',0);
-	
-	$hookreg->register(\@hooks, $self);
-}
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	if ($hook eq 'fileactionpopup') {
-		$ret = { action=>'permissions', label=>'mode', title=>'mode', accesskey=>'p', path=>$$params{path}, type=>'li', classes=>'sep', template=>$self->config('template','permissions')};
-	} elsif ($hook eq 'apps') {
-		$ret = $self->handleAppsHook($$self{cgi},'permissions sel-multi','mode','mode');
-	} elsif ($hook eq 'gethandler') {
-		if ($$self{cgi}->param('ajax') eq 'getPermissionsDialog') {
-			my $content = $self->renderPermissionsDialog($main::PATH_TRANSLATED,$main::REQUEST_URI, $$self{cgi}->param('template') || $self->config('template','permissions'));
-			main::print_compressed_header_and_content('200 OK','text/html',$content,'Cache-Control: no-cache, no-store');
-			$ret  = 1;
-		}
-	} elsif ($hook eq 'posthandler') {
-		my $ru = $main::REQUEST_URI;
-		$ru=~s/\?[^\?]+$//;
-		$ret=$self->changePermissions($ru);
-	}
-	return $ret;
-}
-sub checkPermAllowed {
-	my ($self,$p,$r) = @_;
-	my $perms;
-	$perms = join("",@{$self->config('user',['r','w','x','s'])}) if $p eq 'u';
-	$perms = join("",@{$self->config('group', ['r','w','x','s'])}) if $p eq 'g';
-	$perms = join("",@{$self->config('others', ['r','w','x','t'])}) if $p eq 'o';
-	return $perms =~ m/\Q$r\E/;
-}
-sub renderPermissionsDialog {
-	my ($self, $fn, $ru, $tmplfile) = @_;
-	my $content = $self->read_template($tmplfile);
-	$content =~ s/\$disabled\((\w)(\w)\)/$self->checkPermAllowed($1,$2) ? '' : 'disabled="disabled"'/egs;	
-	return $self->render_template($fn, $ru, $content);
-}
-sub changePermissions {
-	my($self) = @_;
-	
-	if ( $$self{cgi}->param('changeperm') ) {
-		my ($msg,$msgparam, $errmsg);
-		if ( $$self{cgi}->param('files[]') || $$self{cgi}->param('files') ) {
-			my $perm_user = join("", @{ $self->config('user',['r','w','x','s']) });
-			my $perm_group = join("", @{ $self->config('group',['r','w','x','s']) });
-			my $perm_others = join("", @{ $self->config('others',['r','w','x','t']) });
-			my $mode = 0000;
-			foreach my $userperm ( $$self{cgi}->param('fp_user') ) {
-				$mode = $mode | 0400  if $userperm eq 'r' && $perm_user=~/r/;
-				$mode = $mode | 0200  if $userperm eq 'w' && $perm_user=~/w/;
-				$mode = $mode | 0100  if $userperm eq 'x' && $perm_user=~/x/;
-				$mode = $mode | 04000 if $userperm eq 's' && $perm_user=~/s/;
-			}
-			foreach my $grpperm ( $$self{cgi}->param('fp_group') ) {
-				$mode = $mode | 0040  if $grpperm eq 'r' && $perm_group=~/r/;
-				$mode = $mode | 0020  if $grpperm eq 'w' && $perm_group=~/w/;
-				$mode = $mode | 0010  if $grpperm eq 'x' && $perm_group=~/x/;
-				$mode = $mode | 02000 if $grpperm eq 's' && $perm_group=~/s/;
-			}
-			foreach my $operm ( $$self{cgi}->param('fp_others') ) {
-				$mode = $mode | 0004  if $operm eq 'r' && $perm_others =~/r/;
-				$mode = $mode | 0002  if $operm eq 'w' && $perm_others =~/w/;
-				$mode = $mode | 0001  if $operm eq 'x' && $perm_others =~/x/;
-				$mode = $mode | 01000 if $operm eq 't' && $perm_others =~/t/;
-			}
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
+use HTTPHelper qw( print_compressed_header_and_content );
 
-			$msg = 'changeperm';
-			$msgparam = sprintf( "p1=%04o", $mode );
-			my @files = $$self{cgi}->param('files[]') ? $$self{cgi}->param('files[]') : $$self{cgi}->param('files') ;
-			foreach my $file ( @files ) {
-				$file = "" if $file eq '.';
-				$$self{backend}->changeFilePermissions($main::PATH_TRANSLATED . $file, $mode, $$self{cgi}->param('fp_type'), $self->config('allow_changepermrecursive',1) && $$self{cgi}->param('fp_recursive'));
-			}
-		}
-		else {
-			$errmsg = 'chpermnothingerr';
-		}
-		my %jsondata = ();
-		$jsondata{error} = sprintf($self->tl("msg_$errmsg"),$msgparam) if $errmsg;
-		$jsondata{message} = sprintf($self->tl("msg_$msg"), $msgparam) if $msg;	
-		my $json = new JSON();
-		main::print_compressed_header_and_content('200 OK','application/json',$json->encode(\%jsondata),'Cache-Control: no-cache, no-store');
-		return 1;
-	}
-	return 0;
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw( css locales javascript gethandler posthandler );
+    if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
+        push @hooks, 'fileactionpopup';
+    }
+    if ( !$self->config( 'disable_apps', 0 ) ) { push @hooks, 'apps'; }
+
+    $hookreg->register( \@hooks, $self );
+    return $self;
+}
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
+    }
+    if ( $hook eq 'fileactionpopup' ) {
+        return {
+            action    => 'permissions',
+            label     => 'mode',
+            title     => 'mode',
+            accesskey => 'p',
+            path      => $params->{path},
+            type      => 'li',
+            classes   => 'sep',
+            template  => $self->config( 'template', 'permissions' )
+        };
+    }
+    if ( $hook eq 'apps' ) {
+        return $self->handleAppsHook( $self->{cgi}, 'permissions sel-multi',
+            'mode', 'mode' );
+    }
+    if ( $hook eq 'gethandler' ) {
+        if ( $self->{cgi}->param('ajax') eq 'getPermissionsDialog' ) {
+            my $content = $self->_render_permissions_dialog(
+                $PATH_TRANSLATED,
+                $REQUEST_URI,
+                $self->{cgi}->param('template')
+                  || $self->config( 'template', 'permissions' )
+            );
+            print_compressed_header_and_content( '200 OK', 'text/html',
+                $content, 'Cache-Control: no-cache, no-store' );
+            return 1;
+        }
+    }
+    elsif ( $hook eq 'posthandler' ) {
+        my $ru = $REQUEST_URI;
+        $ru =~ s/[?][^?]+$//xms;
+        return $self->_change_permissions($ru);
+    }
+    return 0;
+}
+
+sub _check_perm_allowed {
+    my ( $self, $p, $r ) = @_;
+    my $perms;
+    if ( $p eq 'u' ) {
+        $perms = join q{}, @{ $self->config( 'user', [qw(r w x s)] ) };
+    }
+    if ( $p eq 'g' ) {
+        $perms = join q{}, @{ $self->config( 'group', [qw(r w x s)] ) };
+    }
+
+    if ( $p eq 'o' ) {
+        $perms = join q{}, @{ $self->config( 'others', [qw(r w x t)] ) };
+    }
+    return $perms =~ m/\Q$r\E/xms;
+}
+
+sub _render_permissions_dialog {
+    my ( $self, $fn, $ru, $tmplfile ) = @_;
+    my $content = $self->read_template($tmplfile);
+    $content =~
+s/\$disabled[(](\w)(\w)[)]/$self->_check_perm_allowed($1,$2) ? q{} : 'disabled="disabled"'/exmsg;
+    return $self->render_template( $fn, $ru, $content );
+}
+
+sub _change_permissions {
+    my ($self) = @_;
+
+    if ( $self->{cgi}->param('changeperm') ) {
+        my ( $msg, $msgparam, $errmsg );
+        if ( $self->{cgi}->param('files[]') || $self->{cgi}->param('files') ) {
+            my $p_u = join q{}, @{ $self->config( 'user',   [qw(r w x s)] ) };
+            my $p_g = join q{}, @{ $self->config( 'group',  [qw(r w x s)] ) };
+            my $p_o = join q{}, @{ $self->config( 'others', [qw(r w x t)] ) };
+            my $m   = 0;
+            foreach my $up ( $self->{cgi}->param('fp_user') ) {
+                if ( $up eq 'r' && $p_u =~ /r/xms ) { $m |= oct 400; }
+                if ( $up eq 'w' && $p_u =~ /w/xms ) { $m |= oct 200; }
+                if ( $up eq 'x' && $p_u =~ /x/xms ) { $m |= oct 100; }
+                if ( $up eq 's' && $p_u =~ /s/xms ) { $m |= oct 4000; }
+            }
+            foreach my $gp ( $self->{cgi}->param('fp_group') ) {
+                if ( $gp eq 'r' && $p_g =~ /r/xms ) { $m |= oct 40; }
+                if ( $gp eq 'w' && $p_g =~ /w/xms ) { $m |= oct 20; }
+                if ( $gp eq 'x' && $p_g =~ /x/xms ) { $m |= oct 10; }
+                if ( $gp eq 's' && $p_g =~ /s/xms ) { $m |= oct 2000; }
+            }
+            foreach my $op ( $self->{cgi}->param('fp_others') ) {
+                if ( $op eq 'r' && $p_o =~ /r/xms ) { $m |= 4; }
+                if ( $op eq 'w' && $p_o =~ /w/xms ) { $m |= 2; }
+                if ( $op eq 'x' && $p_o =~ /x/xms ) { $m |= 1; }
+                if ( $op eq 't' && $p_o =~ /t/xms ) { $m |= oct 1000; }
+            }
+
+            $msg = 'changeperm';
+            $msgparam = sprintf 'p1=%04o', $m;
+            my @files =
+                $self->{cgi}->param('files[]')
+              ? $self->{cgi}->param('files[]')
+              : $self->{cgi}->param('files');
+            foreach my $file (@files) {
+                if ( $file eq q{.} ) { $file = q{}; }
+                $self->{backend}->changeFilePermissions(
+                    $PATH_TRANSLATED . $file,
+                    $m,
+                    $self->{cgi}->param('fp_type'),
+                    $self->config( 'allow_changepermrecursive', 1 )
+                      && $self->{cgi}->param('fp_recursive')
+                );
+            }
+        }
+        else {
+            $errmsg = 'chpermnothingerr';
+        }
+        my %jsondata = ();
+        if ($errmsg) {
+            $jsondata{error} = sprintf $self->tl("msg_$errmsg"), $msgparam;
+        }
+        if ($msg) {
+            $jsondata{message} = sprintf $self->tl("msg_$msg"), $msgparam;
+        }
+        print_compressed_header_and_content(
+            '200 OK', 'application/json',
+            JSON::encode_json( \%jsondata ),
+            'Cache-Control: no-cache, no-store'
+        );
+        return 1;
+    }
+    return 0;
 }
 1;

@@ -27,8 +27,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Renderer );
 
 sub new {
-    my ( $this, $hookreg, $extensionname, $config ) = @_;
-    my $class = ref($this) || $this;
+    my ( $class, $hookreg, $extensionname, $config ) = @_;
     my $self = {};
     bless $self, $class;
     $self->{EXTENSION} = $extensionname;

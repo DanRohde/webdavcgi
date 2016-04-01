@@ -20,22 +20,25 @@ package WebInterface::Extension::PropertiesViewer;
 
 use strict;
 use warnings;
+our $VERSION = '2.0';
 
 use base 'WebInterface::Extension';
 
-use HTTPHelper qw( get_parent_uri get_base_uri_frag );
-use WebDAV::XMLHelper qw( create_xml nonamespace get_namespace_uri %NAMESPACEELEMENTS );
+use DefaultConfig
+  qw( $ENABLE_THUMBNAIL $PATH_TRANSLATED $REQUEST_URI $SIGNATURE $THUMBNAIL_WIDTH $TITLEPREFIX );
+use HTTPHelper
+  qw( get_mime_type print_compressed_header_and_content get_parent_uri get_base_uri_frag );
+use WebDAV::XMLHelper
+  qw( create_xml nonamespace get_namespace_uri %NAMESPACEELEMENTS );
 use WebDAV::Properties;
-use WebDAV::WebDAVProps qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS init_webdav_props );
+use WebDAV::WebDAVProps
+  qw( @KNOWN_COLL_PROPS @KNOWN_FILE_PROPS init_webdav_props );
 
 sub init {
     my ( $self, $hookreg ) = @_;
     $self->setExtension('PropertiesViewer');
     $hookreg->register(
-        [   'javascript',  'css',
-            'posthandler', 'fileaction',
-            'fileactionpopup'
-        ],
+        [ 'javascript', 'css', 'posthandler', 'fileaction', 'fileactionpopup' ],
         $self
     );
     init_webdav_props();
@@ -46,26 +49,26 @@ sub handle {
     my ( $self, $hook, $config, $params ) = @_;
     my $ret = $self->SUPER::handle( $hook, $config, $params );
     return $ret if $ret;
-    if ( $hook eq 'posthandler' && $$self{cgi}->param('action') eq 'props' ) {
-        $ret = $self->renderPropertiesViewer(
-            $main::PATH_TRANSLATED . $$self{cgi}->param('file'),
-            $main::REQUEST_URI . $$self{cgi}->param('file')
+    if ( $hook eq 'posthandler' && $self->{cgi}->param('action') eq 'props' ) {
+        $ret = $self->_render_viewer(
+            $PATH_TRANSLATED . $self->{cgi}->param('file'),
+            $REQUEST_URI . $self->{cgi}->param('file')
         );
     }
     elsif ( $hook eq 'fileaction' ) {
         $ret = {
             action   => 'props',
-            disabled => !$$self{backend}->isReadable( $$params{path} ),
+            disabled => !$self->{backend}->isReadable( $params->{path} ),
             label    => 'showproperties',
-            path     => $$params{path}
+            path     => $params->{path}
         };
     }
     elsif ( $hook eq 'fileactionpopup' ) {
         $ret = {
             action   => 'props',
-            disabled => !$$self{backend}->isReadable( $$params{path} ),
+            disabled => !$self->{backend}->isReadable( $params->{path} ),
             label    => 'showproperties',
-            path     => $$params{path},
+            path     => $params->{path},
             type     => 'li',
             classes  => 'sel-noneorone listaction'
         };
@@ -73,65 +76,65 @@ sub handle {
     return $ret;
 }
 
-sub renderPropertiesViewer {
+sub _render_viewer {
     my ( $self, $fn, $ru ) = @_;
     $self->set_locale();
-    my $content    = "";
-    my $fullparent = get_parent_uri($ru) . '/';
-    $fullparent = '/' if $fullparent eq '//' || $fullparent eq '';
-    $content .= $$self{cgi}->h2(
+    my $content    = q{};
+    my $fullparent = get_parent_uri($ru) . q{/};
+    if ( $fullparent eq q{//} || $fullparent eq q{} ) { $fullparent = q{/}; }
+    $content .= $self->{cgi}->h2(
         { -class => 'foldername' },
-        (     $$self{backend}->isDir($fn)
+        (
+              $self->{backend}->isDir($fn)
             ? $fn
-            : $$self{backend}->getParent($fn) . '/' . ' '
-                . $$self{cgi}
-                ->a( { -href => $ru }, get_base_uri_frag($ru) )
-            )
-            . $self->tl('properties')
+            : $self->{backend}->getParent($fn) . q{/} . q{ }
+              . $self->{cgi}->a( { -href => $ru }, get_base_uri_frag($ru) )
+          )
+          . $self->tl('properties')
     );
-    $content .= $$self{cgi}->br()
-        . $$self{cgi}->a(
+    $content .=
+        $self->has_thumb_support( get_mime_type($fn) )
+      ? $self->{cgi}->br()
+      . $self->{cgi}->a(
         { href => $ru, title => $self->tl('clickforfullsize') },
-        $$self{cgi}->img(
-            {   -src => $ru
-                    . ( $main::ENABLE_THUMBNAIL ? '?action=thumb' : '' ),
-                -alt   => 'image',
+        $self->{cgi}->img(
+            {
+                -src => $ru . ( $ENABLE_THUMBNAIL ? '?action=thumb' : q{} ),
+                -alt => 'image',
                 -class => 'thumb',
                 -style => 'width:'
-                    . (
-                    $main::ENABLE_THUMBNAIL ? $main::THUMBNAIL_WIDTH : 200
-                    )
+                  . ( $ENABLE_THUMBNAIL ? $THUMBNAIL_WIDTH : 200 )
             }
         )
-        ) if $self->has_thumb_support( main::get_mime_type($fn) );
-    my $table = $$self{cgi}->start_table( { -class => 'props' } );
-    local (%NAMESPACEELEMENTS) = %NAMESPACEELEMENTS;
-    my $dbprops
-        = $$self{db}->db_getProperties( $$self{backend}->resolveVirt($fn) );
-    my @bgstyleclasses = ( 'tr_odd', 'tr_even' );
+      )
+      : q{};
+    my $table = $self->{cgi}->start_table( { -class => 'props' } );
+    local %NAMESPACEELEMENTS = %NAMESPACEELEMENTS;
+    my $dbprops =
+      $self->{db}->db_getProperties( $self->{backend}->resolveVirt($fn) );
+    my @bgstyleclasses = qw( tr_odd tr_even );
     my (%visited);
-    $table .= $$self{cgi}->Tr(
+    $table .= $self->{cgi}->Tr(
         { -class => 'trhead' },
-        $$self{cgi}->th( { -class => 'thname' },  $self->tl('propertyname') ),
-        $$self{cgi}->th( { -class => 'thvalue' }, $self->tl('propertyvalue') )
+        $self->{cgi}->th( { -class => 'thname' },  $self->tl('propertyname') ),
+        $self->{cgi}->th( { -class => 'thvalue' }, $self->tl('propertyvalue') )
     );
-    my $pm = WebDAV::Properties->new($self->{config});
+    my $pm = WebDAV::Properties->new( $self->{config} );
+
     foreach my $prop (
-        sort { nonamespace( lc($a) ) cmp nonamespace( lc($b) ) }
+        sort { nonamespace( lc $a ) cmp nonamespace( lc $b ) }
         keys %{$dbprops},
-        $$self{backend}->isDir($fn)
+        $self->{backend}->isDir($fn)
         ? @KNOWN_COLL_PROPS
         : @KNOWN_FILE_PROPS
-        )
+      )
     {
         my (%r200);
         next
-            if exists $visited{$prop}
-            || exists $visited{ '{'
-                . get_namespace_uri($prop) . '}'
-                . $prop };
-        if ( exists $$dbprops{$prop} ) {
-            $r200{prop}{$prop} = $$dbprops{$prop};
+          if exists $visited{$prop}
+          || exists $visited{ '{' . get_namespace_uri($prop) . '}' . $prop };
+        if ( exists $dbprops->{$prop} ) {
+            $r200{prop}{$prop} = $dbprops->{$prop};
         }
         else {
             $pm->get_property( $fn, $ru, $prop, undef, \%r200, \my %r404 );
@@ -141,31 +144,34 @@ sub renderPropertiesViewer {
         my $title = create_xml( $r200{prop},        1 );
         my $value = create_xml( $r200{prop}{$prop}, 1 );
         my $namespace = get_namespace_uri($prop);
-        if ( $prop =~ /^\{([^\}]*)\}/xms ) {
+        if ( $prop =~ /^{([^}]*)}/xms ) {
             $namespace = $1;
         }
         push @bgstyleclasses, shift @bgstyleclasses;
-        $table .= $$self{cgi}->Tr(
+        $table .= $self->{cgi}->Tr(
             { -class => $bgstyleclasses[0] },
-            $$self{cgi}->td( { -title => $namespace, -class => 'tdname' },
+            $self->{cgi}->td( { -title => $namespace, -class => 'tdname' },
                 nonamespace($prop) )
-                . $$self{cgi}->td(
+              . $self->{cgi}->td(
                 { -title => $title, -class => 'tdvalue' },
-                $$self{cgi}->pre( $$self{cgi}->escapeHTML($value) )
-                )
+                $self->{cgi}->pre( $self->{cgi}->escapeHTML($value) )
+              )
         );
     }
-    $table   .= $$self{cgi}->end_table();
-    $content .= $$self{cgi}->div( { -class => "props content" }, $table );
-    $content .= $$self{cgi}->hr()
-        . $$self{cgi}->div( { -class => 'signature' },
-        $self->replace_vars($main::SIGNATURE) )
-        if defined $main::SIGNATURE;
-    $content = $$self{cgi}->div(
-        { -title => "$main::TITLEPREFIX $ru properties", -class => 'props' },
-        $content
-    );
-    main::print_compressed_header_and_content( '200 OK', 'text/html', $content,
+    $table .= $self->{cgi}->end_table();
+    $content .=
+      $self->{cgi}->div( { -class => 'props content' }, $table );
+    $content .=
+      defined $SIGNATURE
+      ? $self->{cgi}->hr()
+      . $self->{cgi}
+      ->div( { -class => 'signature' }, $self->replace_vars($SIGNATURE) )
+      : q{};
+    $content =
+      $self->{cgi}
+      ->div( { -title => "$TITLEPREFIX $ru properties", -class => 'props' },
+        $content );
+    print_compressed_header_and_content( '200 OK', 'text/html', $content,
         'Cache-Control: no-cache, no-store' );
     return 1;
 }

@@ -19,39 +19,62 @@
 # SETUP:
 # toggles - template file
 # disable_filterbox - disables filterbox entry
-# enable_apps - enables sidebar menu entry 
+# enable_apps - enables sidebar menu entry
 # enable_pref - enables sidebar menu entry (after preferences)
-# disable_statusbar - disables statusbar quick toggles 
+# disable_statusbar - disables statusbar quick toggles
 
 package WebInterface::Extension::QuickToggle;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
 
 use vars qw( $ACTION );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript');
-	push @hooks, 'filterbox' unless $main::EXTENSION_CONFIG{QuickToggle}{disable_filterbox};
-	push @hooks, 'apps' if $main::EXTENSION_CONFIG{QuickToggle}{enable_apps};
-	push @hooks, 'pref' if $main::EXTENSION_CONFIG{QuickToggle}{enable_pref};
-	push @hooks, 'statusbar' unless $main::EXTENSION_CONFIG{QuickToggle}{disable_statusbar};
-	$hookreg->register(\@hooks, $self);
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
+
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw( css locales javascript );
+    if ( !$EXTENSION_CONFIG{QuickToggle}{disable_filterbox} ) {
+        push @hooks, 'filterbox';
+    }
+    if ( $EXTENSION_CONFIG{QuickToggle}{enable_apps} ) {
+        push @hooks, 'apps';
+    }
+    if ( $EXTENSION_CONFIG{QuickToggle}{enable_pref} ) { push @hooks, 'pref'; }
+    if ( !$EXTENSION_CONFIG{QuickToggle}{disable_statusbar} ) {
+        push @hooks, 'statusbar';
+    }
+    $hookreg->register( \@hooks, $self );
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	
-	if ($hook eq 'filterbox' || $hook eq 'apps' || $hook eq 'pref' || $hook eq 'statusbar') {
-		$ret = $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->read_template($self->config('toggles','toggles')));
-		$ret = $$self{cgi}->li({-title=>$self->tl('quicktoggles')},$$self{cgi}->div({-class=>'action quicktoggle-button'}, $ret)) unless $hook eq 'filterbox' || $hook eq 'statusbar';
-	
-	}
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    my $ret = $self->SUPER::handle( $hook, $config, $params );
+    return $ret if $ret;
+
+    if (   $hook eq 'filterbox'
+        || $hook eq 'apps'
+        || $hook eq 'pref'
+        || $hook eq 'statusbar' )
+    {
+        $ret =
+          $self->render_template( $PATH_TRANSLATED, $REQUEST_URI,
+            $self->read_template( $self->config( 'toggles', 'toggles' ) ) );
+        if ( $hook ne 'filterbox' && $hook ne 'statusbar' ) {
+            $ret = $self->{cgi}->li(
+                { -title => $self->tl('quicktoggles') },
+                $self->{cgi}
+                  ->div( { -class => 'action quicktoggle-button' }, $ret )
+            );
+        }
+
+    }
+    return $ret;
 }
 
 1;

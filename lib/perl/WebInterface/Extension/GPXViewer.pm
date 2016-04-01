@@ -21,27 +21,54 @@
 package WebInterface::Extension::GPXViewer;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
 
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
+use HTTPHelper qw( print_header_and_content );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'fileactionpopup', 'posthandler');
-	$hookreg->register(\@hooks, $self);
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw(css locales javascript fileactionpopup posthandler);
+    $hookreg->register( \@hooks, $self );
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	if ($hook eq 'fileactionpopup') {
-		$ret ={ action=>'gpxviewer', label=>'gpxviewer', path=>$$params{path}, type=>'li'};
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'gpxviewer') {
-		main::print_header_and_content('200 OK','text/html', $self->render_template($main::PATH_TRANSLATED, $main::REQUEST_URI, $self->read_template('gpxviewer'), { file => $$self{cgi}->escapeHTML($$self{cgi}->param('file')) }), 'Cache-Control: no-cache, no-store');
-		$ret=1;	
-	} 
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
+    }
+
+    if ( $hook eq 'fileactionpopup' ) {
+        return {
+            action => 'gpxviewer',
+            label  => 'gpxviewer',
+            path   => $params->{path},
+            type   => 'li'
+        };
+    }
+    my $action = $self->{cgi}->param('action') // q{};
+    if ( $hook eq 'posthandler' && $action eq 'gpxviewer' ) {
+        print_header_and_content(
+            '200 OK',
+            'text/html',
+            $self->render_template(
+                $PATH_TRANSLATED,
+                $REQUEST_URI,
+                $self->read_template('gpxviewer'),
+                {
+                    file =>
+                      $self->{cgi}->escapeHTML( $self->{cgi}->param('file') )
+                }
+            ),
+            'Cache-Control: no-cache, no-store'
+        );
+        return 1;
+    }
+    return 0;
 }
 
 1;

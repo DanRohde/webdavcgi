@@ -28,6 +28,11 @@ use warnings;
 our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
+
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
+use HTTPHelper qw( print_header_and_content );
+#use FileUtils qw( );
+
 use vars qw( $ACTION );
 
 # TODO: define a ACTION name
@@ -43,26 +48,25 @@ sub init {
 
 sub handle {
     my ( $self, $hook, $config, $params ) = @_;
-    my $ret = 0;
 
     # TODO: handle hooks
-    if ( $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
         return $ret;
     }
-    elsif ( $hook eq 'fileactionpopup' ) {
-        $ret = {
+    if ( $hook eq 'fileactionpopup' ) {
+        return {
             action => $ACTION,
             label  => $ACTION,
             path   => ${$params}{path},
             type   => 'li'
         };
     }
-    elsif ($hook eq 'posthandler'
-        && ${$self}{cgi}->param('action') eq $ACTION )
+    if ($hook eq 'posthandler'
+        && $self->{cgi}->param('action') eq $ACTION )
     {
-        $ret = 1;
+        return 1;
     }
-    return $ret;
+    return 0;
 }
 
 1;

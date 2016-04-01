@@ -23,7 +23,6 @@
 # sizelimit - size limit for text files in bytes (default: 2097152 (=2MB))
 # template - template file (default: editform)
 
-
 package WebInterface::Extension::TextEditor;
 
 use strict;
@@ -35,85 +34,163 @@ use base qw( WebInterface::Extension  );
 
 use JSON;
 
+use DefaultConfig qw( $FILETYPES $PATH_TRANSLATED $REQUEST_URI );
+use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 use FileUtils qw( rcopy );
 
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw(
+      css         locales         javascript gethandler
+      posthandler fileactionpopup fileaction settings
+      fileattr
+    );
+    $hookreg->register( \@hooks, $self );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'gethandler', 'posthandler','fileactionpopup','fileaction', 'settings', 'fileattr');
-	$hookreg->register(\@hooks, $self);
-	
-	$$self{editablefiles} = $self->config('editablefiles', 
-		[ '\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$', 
- 		  '^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)' ]
- 	);
- 	$$self{editablefilesregex} = '(' . join('|', @{$$self{editablefiles}}) .')';
- 	$$self{editablecategories} = $self->config('editablecategories','(text|source|shell|config|markup)');
-	$$self{template} = $self->config('template','editform');
-	$$self{sizelimit} = $self->config('sizelimit',2097152 );
-	$$self{json} = new JSON();
+    $self->{editablefiles} = $self->config(
+        'editablefiles',
+        [
+'\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
+'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)'
+        ]
+    );
+    $self->{editablefilesregex} =
+      '(' . join( q{|}, @{ $self->{editablefiles} } ) . ')';
+    $self->{editablecategories} = $self->config( 'editablecategories',
+        '(text|source|shell|config|markup)' );
+    $self->{template}  = $self->config( 'template',  'editform' );
+    $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
+    $self->{json}      = JSON->new();
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	if ($hook eq 'fileattr') {
-		my $isEditable = $self->isEditable($$params{path});
-		return { ext_classes=>'iseditable-'. ( $isEditable ? 'yes' : 'no'), ext_iconclasses=> $isEditable ?  'category-text' : '' };
-	} 
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	return $ret if $ret;
-	
-	if ($hook eq 'settings') {
-		$ret = $self->handleSettingsHook('confirm.save') . $self->handleSettingsHook('texteditor.backup');
-	} elsif ($hook eq 'fileaction') {
-		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton' };
-	} elsif ($hook eq 'fileactionpopup') {
-		$ret = { action=>'edit', classes=>'access-readable', label=>'editbutton', type=>'li'};
-	} elsif ($hook eq 'gethandler' && $$self{cgi}->param('action') && $$self{cgi}->param('action') eq 'edit') {
-		$ret = $self->getEditForm(); 
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') && $$self{cgi}->param('action') eq 'savetextdata') {
-		$ret = $self->saveTextData();
-	}
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( $hook eq 'fileattr' ) {
+        my $is_editable = $self->_is_editable( $params->{path} );
+        return {
+            ext_classes => 'iseditable-' . ( $is_editable ? 'yes' : 'no' ),
+            ext_iconclasses => $is_editable ? 'category-text' : q{}
+        };
+    }
+    my $ret = $self->SUPER::handle( $hook, $config, $params );
+    return $ret if $ret;
+
+    if ( $hook eq 'settings' ) {
+        return $self->handleSettingsHook('confirm.save')
+          . $self->handleSettingsHook('texteditor.backup');
+    }
+    if ( $hook eq 'fileaction' ) {
+        return {
+            action  => 'edit',
+            classes => 'access-readable',
+            label   => 'editbutton'
+        };
+    }
+    if ( $hook eq 'fileactionpopup' ) {
+        return {
+            action  => 'edit',
+            classes => 'access-readable',
+            label   => 'editbutton',
+            type    => 'li'
+        };
+    }
+    if (   $hook eq 'gethandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'edit' )
+    {
+        return $self->_get_edit_form();
+    }
+    if (   $hook eq 'posthandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'savetextdata' )
+    {
+        return $self->_save_text_data();
+    }
+    return 0;
 }
-sub getEditForm {
-	my ($self) = @_;
-	my $filename = $$self{cgi}->param('filename');
-	my $full = "$main::PATH_TRANSLATED$filename";
-	my ($contenttype, $content) = ('text/plain', '' );
-	if ( ($$self{backend}->stat($full))[7] >$$self{sizelimit}) {
-		$content = $$self{json}-encode({ error=>sprintf($self->tl('msg_sizelimitexceeded'), $$self{cgi}->escapeHTML($filename), ($self->render_byte_val($$self{sizelimit}))[0])});
-		$contenttype='application/json';
-	} else {
-		$content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI, $self->read_template($$self{template}), { filename=>$$self{cgi}->escapeHTML($filename), textdata=>$$self{cgi}->escapeHTML($$self{backend}->getFileContent($full)), mime=>main::get_mime_type($full)});
-	}
-	main::print_compressed_header_and_content('200 OK',$contenttype, $content,'Cache-Control: no-cache, no-store');
-	return 1;
+
+sub _get_edit_form {
+    my ($self)   = @_;
+    my $filename = $self->{cgi}->param('filename');
+    my $full     = "$PATH_TRANSLATED$filename";
+    my ( $contenttype, $content ) = ( 'text/plain', q{} );
+    if ( ( $self->{backend}->stat($full) )[7] > $self->{sizelimit} ) {
+        $content = $self->{json} - encode(
+            {
+                error => sprintf(
+                    $self->tl('msg_sizelimitexceeded'),
+                    $self->{cgi}->escapeHTML($filename),
+                    ( $self->render_byte_val( $self->{sizelimit} ) )[0]
+                )
+            }
+        );
+        $contenttype = 'application/json';
+    }
+    else {
+        $content = $self->render_template(
+            $PATH_TRANSLATED,
+            $REQUEST_URI,
+            $self->read_template( $self->{template} ),
+            {
+                filename => $self->{cgi}->escapeHTML($filename),
+                textdata => $self->{cgi}
+                  ->escapeHTML( $self->{backend}->getFileContent($full) ),
+                mime => get_mime_type($full)
+            }
+        );
+    }
+    print_compressed_header_and_content( '200 OK', $contenttype, $content,
+        'Cache-Control: no-cache, no-store' );
+    return 1;
 }
-sub makeBackupCopy {
-	my ($self, $full) = @_;
-	return $$self{cgi}->cookie('settings.texteditor.backup') eq 'no' || ($$self{backend}->stat($full))[7] == 0 || rcopy($self->{config}, $full, "$full.backup");
+
+sub _make_backup_copy {
+    my ( $self, $full ) = @_;
+    return
+         $self->{cgi}->cookie('settings.texteditor.backup') eq 'no'
+      || ( $self->{backend}->stat($full) )[7] == 0
+      || rcopy( $self->{config}, $full, "$full.backup" );
 }
-sub saveTextData {
-	my ($self) = @_;
-	my $filename = $$self{cgi}->param('filename');
-	my $full = $main::PATH_TRANSLATED . $filename;
-	my $efilename = $$self{cgi}->escapeHTML($filename);
-	my %jsondata = ();
-	if ($self->{config}->{method}->is_locked($full)) {
-		$jsondata{error} = sprintf($self->tl('msg_locked'), $efilename);	
-	} elsif ( $$self{backend}->isFile($full) && $$self{backend}->isWriteable($full) && $self->makeBackupCopy($full) && $$self{backend}->saveData($full, $$self{cgi}->param('textdata') ) ) {
-		$jsondata{message} = sprintf($self->tl('msg_textsaved'), $efilename);
-	} else {
-		$jsondata{error} = sprintf($self->tl('msg_savetexterr'), $efilename);
-	}
-	main::print_compressed_header_and_content('200 OK', 'application/json', $$self{json}->encode(\%jsondata), 'Cache-Control: no-cache, no-store');
-	return 1;
+
+sub _save_text_data {
+    my ($self)    = @_;
+    my $filename  = $self->{cgi}->param('filename');
+    my $full      = $PATH_TRANSLATED . $filename;
+    my $efilename = $self->{cgi}->escapeHTML($filename);
+    my %jsondata  = ();
+    if ( $self->{config}->{method}->is_locked($full) ) {
+        $jsondata{error} = sprintf( $self->tl('msg_locked'), $efilename );
+    }
+    elsif ($self->{backend}->isFile($full)
+        && $self->{backend}->isWriteable($full)
+        && $self->_make_backup_copy($full)
+        && $self->{backend}->saveData( $full, $self->{cgi}->param('textdata') )
+      )
+    {
+        $jsondata{message} = sprintf $self->tl('msg_textsaved'), $efilename;
+    }
+    else {
+        $jsondata{error} = sprintf $self->tl('msg_savetexterr'), $efilename;
+    }
+    print_compressed_header_and_content(
+        '200 OK', 'application/json',
+        $self->{json}->encode( \%jsondata ),
+        'Cache-Control: no-cache, no-store'
+    );
+    return 1;
 }
-sub isEditable {
-	my ($self,$fn) = @_;
-	my $suffix = $fn=~/\.(\w+)$/ ? lc($1) : '___unknown___';
-	return ($$self{backend}->basename($fn) =~/$$self{editablefilesregex}/i || $main::FILETYPES =~/^$$self{editablecategories}\s+.*\b\Q$suffix\E\b/m) 
-		&& $$self{backend}->isFile($fn) && $$self{backend}->isReadable($fn) && $$self{backend}->isWriteable($fn);
+
+sub _is_editable {
+    my ( $self, $fn ) = @_;
+    my $suffix = $fn =~ /[.](\w+)$/xms ? lc($1) : '___unknown___';
+    return (
+        $self->{backend}->basename($fn) =~ /$self->{editablefilesregex}/xmsi
+          || $FILETYPES =~
+          /^$self->{editablecategories}\s+.*\b\Q$suffix\E\b/xmsi )
+      && $self->{backend}->isFile($fn)
+      && $self->{backend}->isReadable($fn)
+      && $self->{backend}->isWriteable($fn);
 }
 
 1;

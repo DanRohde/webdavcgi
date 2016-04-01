@@ -117,6 +117,7 @@ sub handle_get_request {
     }
 
     if ( ${$self}{backend}->isDir($PATH_TRANSLATED) ) {
+        $self->optimize_css_and_js();
         $self->get_renderer()
           ->render_web_interface( $PATH_TRANSLATED, $REQUEST_URI );
         return 1;
@@ -256,7 +257,7 @@ sub optimizer_get_filepath {
     my ( $self, $ft ) = @_;
     my $tmp = $OPTIMIZERTMP || $THUMBNAIL_CACHEDIR || '/var/tmp';
     my $optimizerbasefn = "${CONFIGFILE}_${RELEASE}_${REMOTE_USER}";
-    $optimizerbasefn =~ s/[\/.]/_/xmsg;
+    $optimizerbasefn =~ s{[/.]}{_}xmsg;
     my $optimizerbase = $tmp . q{/} . $optimizerbasefn;
     return "${optimizerbase}.$ft";
 }

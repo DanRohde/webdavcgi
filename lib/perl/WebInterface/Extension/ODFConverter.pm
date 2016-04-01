@@ -22,131 +22,190 @@
 package WebInterface::Extension::ODFConverter;
 
 use strict;
-#use warnings;
+use warnings;
 
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension  );
 
+use English qw( -no_match_vars );
 use File::Temp qw( tempdir );
 use JSON;
+use CGI::Carp;
 
+use DefaultConfig qw( $PATH_TRANSLATED $REMOTE_USER );
+use HTTPHelper qw( print_header_and_content );
 use FileUtils qw( rcopy );
 
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw(
+      css      locales javascript fileactionpopup
+      fileattr posthandler
+    );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript', 'fileactionpopup', 'fileattr', 'posthandler');
-	
-	$$self{ooffice} = $self->config('ooffice','/usr/bin/soffice');
-	
-	$hookreg->register(\@hooks, $self) if -x $$self{ooffice};
-	
-	
-	$$self{oofficeparams} = $self->config('oofficeparams', ['--headless', '--invisible','--convert-to','%targetformat','--outdir','%targetdir','%sourcefile']);
-	
-	$$self{types} = ['odt','odp','ods','doc','docx','ppt','pptx','xls','xlsx','csv','html','pdf','swf'];
-	$$self{typesregex} = '('.join('|',@{$$self{types}}).')';
-	$$self{groups} = {  t=> ['odt','doc','docx','pdf','html'], p=>['odp','ppt','pptx','pdf','swf'],s=>['ods','xls','xlsx','csv','pdf','html'] };
-	$$self{unconvertible} = qq@(swf)@;
-	
-	$$self{popupcss}='<style>';
-	foreach my $group ( keys  %{$$self{groups}}) {
-		my @d = map { $$self{memberof}{$_}.=" c-$group"  } @{$$self{groups}{$group}};
-		$$self{popupcss}.=".c-${group} .c-${group}\{display:list-item\} ";	
-	}
-	foreach my $suffix (@{$$self{types}}) {
-		$$self{popupcss}.=".cs-${suffix} .cs-${suffix}\{display:none\} ";
-	}
-	$$self{popupcss}.='</style>';
-	
+    $self->{ooffice} = $self->config( 'ooffice', '/usr/bin/soffice' );
+
+    if ( -x $self->{ooffice} ) { $hookreg->register( \@hooks, $self ); }
+
+    $self->{oofficeparams} = $self->config(
+        'oofficeparams',
+        [
+            '--headless', '--invisible', '--convert-to', '%targetformat',
+            '--outdir',   '%targetdir',  '%sourcefile'
+        ]
+    );
+
+    $self->{types} =
+      [qw(odt odp ods doc docx ppt pptx xls xlsx csv html pdf swf)];
+    $self->{typesregex} =
+      q{(} . join( q{|}, @{ $self->{types} } ) . q{)};
+    $self->{groups} = {
+        t => [qw(odt doc docx pdf html)],
+        p => [qw(odp ppt ptx pdf swf)],
+        s => [qw(ods xls xlsx csv pdf html)],
+    };
+    $self->{unconvertible} = q{(?:swf|unknown)};
+
+    $self->{popupcss} = '<style>';
+    foreach my $group ( keys %{ $self->{groups} } ) {
+        my @d = map { $self->{memberof}{$_} .= " c-$group" }
+          @{ $self->{groups}{$group} };
+        $self->{popupcss} .= ".c-${group} .c-${group}\{display:list-item\} ";
+    }
+    foreach my $suffix ( @{ $self->{types} } ) {
+        $self->{popupcss} .= ".cs-${suffix} .cs-${suffix}\{display:none\} ";
+    }
+    $self->{popupcss} .= '</style>';
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	if ($hook eq 'fileattr') {
-		my $suffix = $$params{path} =~ /\.(\w+)$/ ? $1 : 'unknown';
-		return { ext_classes=> ($suffix =~ /$$self{typesregex}/ ? 'c' : '')." $$self{memberof}{$suffix} cs-$suffix"} unless $suffix=~/$$self{unconvertible}/;
-	}
-	my $ret = $self->SUPER::handle($hook, $config, $params);
-	$ret.=$$self{popupcss} if ($hook eq 'css'); 
-	return $ret if $ret;
-	if ($hook eq 'fileactionpopup') {
-		my @subpopup = map { { action=>'odfconvert',  label=>$_, type=>'li', classes=>"access-writeable $$self{memberof}{$_} cs-$_", data=>{ ct=>$_ }  } } @{$$self{types} };
-		$ret = { title=>$self->tl('odfconverter'), classes=>'odfconverter',type=>'li', subpopupmenu =>\@subpopup };
-		
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'odfconvert') {
-		$ret=$self->convertFile();
-	}
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( $hook eq 'fileattr' ) {
+        my $suffix = $params->{path} =~ /[.](\w+)$/xms ? $1 : 'unknown';
+        return $suffix !~ /$self->{unconvertible}/xms && $self->{memberof}{$suffix}
+          ? { ext_classes => ( $suffix =~ /$self->{typesregex}/xms ? 'c' : q{} )
+              . " $self->{memberof}{$suffix} cs-$suffix" }
+          : 0;
+    }
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        $ret .= $hook eq 'css' ? $self->{popupcss} : q{};
+        return $ret;
+    }
+    if ( $hook eq 'fileactionpopup' ) {
+        my @subpopup = map {
+            {
+                action  => 'odfconvert',
+                label   => $_,
+                type    => 'li',
+                classes => 'access-writeable '.($self->{memberof}{$_}//q{}). "cs-$_",
+                data    => { ct => $_ }
+            }
+        } @{ $self->{types} };
+        return {
+            title        => $self->tl('odfconverter'),
+            classes      => 'odfconverter',
+            type         => 'li',
+            subpopupmenu => \@subpopup
+        };
+
+    }
+    if (   $hook eq 'posthandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'odfconvert' )
+    {
+        return $self->_convert_file();
+    }
+    return 0;
 }
-sub convertFile {
-	my ($self) = @_;
-	my $cgi = $$self{cgi};
-	my $targetformat = $cgi->param("ct");
-	return 0 unless $targetformat =~/$$self{typesregex}/;
-	my $file = $cgi->param("file");
-	return 0 unless $$self{backend}->exists($main::PATH_TRANSLATED.$file);
-	my $full = $$self{backend}->getLocalFilename($main::PATH_TRANSLATED.$file);
-	my $tmpdirn = tempdir(CLEANUP=>1);
-	my $tmpdir = $tmpdirn.'/';
-	mkdir $tmpdir;
-	
-	my $tmphomedir = "/tmp/_webdavcgi_odfconverter_$main::REMOTE_USER";
-	mkdir $tmphomedir unless -d $tmphomedir;
-	$ENV{HOME}=$tmphomedir;
-	
-	my @params = @{$$self{oofficeparams}};
-	for (my $i=0; $i<=$#params; $i++) {
-		$params[$i]=~s/\%targetformat/$targetformat/g;
-		$params[$i]=~s/\%sourcefile/$full/g;
-		$params[$i]=~s/\%targetdir/$tmpdirn/g;	
-	}
-	
-	my %jsondata;
-	if (open(my $fh, "-|",$$self{ooffice},@params)) {
-		my @output = <$fh>;
-		close($fh);
-		my $targetfile=($file=~/(^.*)\.\w+$/ ? $1 : $file).".$targetformat"; 
-		if ($self->saveAllLocal($tmpdir,$full,$targetfile)) {
-			$jsondata{message} = sprintf($self->tl('odfconverter.success'), $cgi->escapeHTML($file), $cgi->escapeHTML($targetfile));
-		} else {
-			$jsondata{error} = sprintf($self->tl('odfconverter.savefailed'), $targetfile);
-		}
-	} else {
-		warn($$self{ooffice}.' '.join(' ',@params).' failed.');
-		$jsondata{error} = sprintf($self->tl('odfconverter.failed'), $cgi->escapeHTML($file));
-	}
-	unlink($tmpdir);
-	my $json = new JSON();
-	main::print_header_and_content('200 OK', 'application/json', $json->encode(\%jsondata));
-	return 1;
+
+sub _convert_file {
+    my ($self)       = @_;
+    my $cgi          = $self->{cgi};
+    my $targetformat = $cgi->param('ct');
+    my $file         = $cgi->param('file');
+    if ( $targetformat !~ /$self->{typesregex}/xms
+        || !$self->{backend}->exists( $PATH_TRANSLATED . $file ) )
+    {
+        return 0;
+    }
+
+    my $full = $self->{backend}->getLocalFilename( $PATH_TRANSLATED . $file );
+    my $tmpdirn = tempdir( CLEANUP => 1 );
+    my $tmpdir  = $tmpdirn . q{/};
+    mkdir $tmpdir;
+
+    my $tmphomedir = "/tmp/_webdavcgi_odfconverter_$REMOTE_USER";
+    if ( !-d $tmphomedir ) { mkdir $tmphomedir; }
+    $ENV{HOME} = $tmphomedir;
+
+    my @params = @{ $self->{oofficeparams} };
+    for my $i ( 0 .. $#params ) {
+        $params[$i] =~ s/\%targetformat/$targetformat/xmsg;
+        $params[$i] =~ s/\%sourcefile/$full/xmsg;
+        $params[$i] =~ s/\%targetdir/$tmpdirn/xmsg;
+    }
+
+    my %jsondata;
+    if ( open my $fh, q{-|}, $self->{ooffice}, @params ) {
+        local $RS = undef;
+        my $output = <$fh>;
+        close($fh) || carp('Cannot close office command.');
+        my $targetfile =
+          ( $file =~ /(^.*)[.]\w+$/xms ? $1 : $file ) . ".$targetformat";
+        if ( $self->_save_all_local( $tmpdir, $full, $targetfile ) ) {
+            $jsondata{message} = sprintf
+              $self->tl('odfconverter.success'),
+              $cgi->escapeHTML($file),
+              $cgi->escapeHTML($targetfile);
+        }
+        else {
+            $jsondata{error} = sprintf $self->tl('odfconverter.savefailed'),
+              $targetfile;
+        }
+    }
+    else {
+        carp( "$self->{ooffice} " . join( q{ }, @params ) . ' failed.' );
+        $jsondata{error} = sprintf $self->tl('odfconverter.failed'),
+          $cgi->escapeHTML($file);
+    }
+    unlink $tmpdir;
+    print_header_and_content( '200 OK', 'application/json',
+        JSON::encode_json( \%jsondata ) );
+    return 1;
 }
-sub saveAllLocal {
-	my ($self, $tmpdir, $localfile, $targetfilename) = @_;
-	my $ret = 1;
-	my $count = 0;
-	my $localtargetfilename = $$self{backend}->basename($localfile);
-	$localtargetfilename=~s/\.\w+$//;
-	$localtargetfilename.='.'.$$self{cgi}->param('ct');
-	if (opendir(my $dir, $tmpdir)) {
-		while (my $file = readdir($dir) ) {
-			my $targetlocal = $tmpdir.$file;
-			next if $file=~/^\.{1,2}$/ || -d $targetlocal;
-			my $targetfull = $main::PATH_TRANSLATED. ($file eq $localtargetfilename ? $targetfilename : $file);
-			$ret = rcopy($self->{config},$targetfull, $targetfull.'.backup') if $$self{backend}->exists($targetfull);
-			
-			if ($ret && open(my $fh,"<",$targetlocal)) {
-				$ret = $$self{backend}->saveStream($targetfull, $fh);
-				$count++ if $ret;
-				close($fh);
-			} else {
-				$ret = 0;
-			}
-			unlink($targetlocal);
-			last if !$ret;
-		}
-		closedir($dir);
-	}	
-	return $count > 0;
+
+sub _save_all_local {
+    my ( $self, $tmpdir, $localfile, $targetfilename ) = @_;
+    my $ret                 = 1;
+    my $count               = 0;
+    my $localtargetfilename = $self->{backend}->basename($localfile);
+    $localtargetfilename =~ s/[.]\w+$//xms;
+    $localtargetfilename .= q{.} . $self->{cgi}->param('ct');
+    if ( opendir my $dir, $tmpdir ) {
+        while ( my $file = readdir $dir ) {
+            my $targetlocal = $tmpdir . $file;
+            if ( $file =~ /^[.]{1,2}$/xms || -d $targetlocal ) { next; }
+            my $targetfull = $PATH_TRANSLATED
+              . ( $file eq $localtargetfilename ? $targetfilename : $file );
+            if ( $self->{backend}->exists($targetfull) ) {
+                $ret = rcopy( $self->{config}, $targetfull,
+                    $targetfull . '.backup' );
+            }
+            if ( $ret && open my $fh, '<', $targetlocal ) {
+                $ret = $self->{backend}->saveStream( $targetfull, $fh );
+                if ($ret) { $count++; }
+                close($fh) || carp("Cannot close $targetlocal.");
+            }
+            else {
+                $ret = 0;
+            }
+            unlink $targetlocal;
+            if ( !$ret ) { last; }
+        }
+        closedir $dir;
+    }
+    return $count > 0;
 }
 1;

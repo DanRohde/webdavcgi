@@ -32,8 +32,9 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension  );
 
-use FileUtils qw( is_hidden );
-use HTTPHelper qw( print_file_header );
+use DefaultConfig qw( $PATH_TRANSLATED %EXTENSION_CONFIG );
+use HTTPHelper qw( print_file_header print_header_and_content );
+use FileUtils qw( get_error_document is_hidden );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -41,16 +42,16 @@ sub init {
     $self->setExtension('Download');
 
     my @hooks = qw( css locales javascript );
-    if ( !$main::EXTENSION_CONFIG{Download}{disable_fileaction} ) {
+    if ( !$EXTENSION_CONFIG{Download}{disable_fileaction} ) {
         push @hooks, 'fileaction';
     }
-    if ( !$main::EXTENSION_CONFIG{Download}{disable_fileactionpopup} ) {
+    if ( !$EXTENSION_CONFIG{Download}{disable_fileactionpopup} ) {
         push @hooks, 'fileactionpopup';
     }
-    if ( $main::EXTENSION_CONFIG{Download}{enable_apps} ) {
+    if ( $EXTENSION_CONFIG{Download}{enable_apps} ) {
         push @hooks, 'apps';
     }
-    if ( !$main::EXTENSION_CONFIG{Download}{disable_binarydownload} ) {
+    if ( !$EXTENSION_CONFIG{Download}{disable_binarydownload} ) {
         push @hooks, 'gethandler';
     }
     $hookreg->register( \@hooks, $self );
@@ -63,7 +64,7 @@ sub handle {
     return $ret if $ret;
 
     my $add_classes =
-      $main::EXTENSION_CONFIG{Download}{disable_binarydownload}
+      $EXTENSION_CONFIG{Download}{disable_binarydownload}
       ? 'disablebinarydownload'
       : q{};
     if ( $hook eq 'fileaction' ) {
@@ -89,13 +90,16 @@ sub handle {
             'listaction dwnload sel-one sel-file disabled ' . $add_classes,
             'dwnload', 'dwnload' );
     }
-    if ( $hook eq 'gethandler' && $self->{cgi}->param('action') && $self->{cgi}->param('action') eq 'dwnload' ) {
+    if (   $hook eq 'gethandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'dwnload' )
+    {
         my $fn   = $self->{cgi}->param('file');
-        my $file = $main::PATH_TRANSLATED . $fn;
+        my $file = $PATH_TRANSLATED . $fn;
         if ( $self->{backend}->exists($file) && !is_hidden($file) ) {
             if ( !$self->{backend}->isReadable($file) ) {
-                main::print_header_and_content(
-                    main::get_error_document(
+                print_header_and_content(
+                    get_error_document(
                         '403 Forbidden',
                         'text/plain',
                         '403 Forbidden'
@@ -117,8 +121,8 @@ sub handle {
             }
         }
         else {
-            main::print_header_and_content(
-                main::get_error_document(
+            print_header_and_content(
+                get_error_document(
                     '404 Not Found',
                     'text/plain', '404 - FILE NOT FOUND'
                 )

@@ -3,13 +3,13 @@
 <fieldset>
 <legend>$tl(tableconfig.tablecolumns)</legend>
 <ul>
-	$each#@main::ALLOWED_TABLE_COLUMNS#'<li><input type="checkbox" name="visiblecolumn" value="$v"/> $tl($v)</li>'#
+	$each#@ALLOWED_TABLE_COLUMNS#'<li><input type="checkbox" name="visiblecolumn" value="$v"/> $tl($v)</li>'#
 </ul>
 </fieldset>
 <fieldset>
 <legend>$tl(tableconfig.sortingcolumns)</legend>
 <ul>
-	$each#@main::ALLOWED_TABLE_COLUMNS#'<li><input type="radio" name="sortingcolumn" value="$v"/>$tl($v)</li>'#
+	$each#@ALLOWED_TABLE_COLUMNS#'<li><input type="radio" name="sortingcolumn" value="$v"/>$tl($v)</li>'#
 </ul>
 </fieldset>
 <fieldset>

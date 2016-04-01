@@ -66,7 +66,7 @@ sub init {
         push @hooks, 'filelistaction';
     }
     $hookreg->register( \@hooks, $self );
-    return 1;
+    return $self;
 }
 
 sub handle {

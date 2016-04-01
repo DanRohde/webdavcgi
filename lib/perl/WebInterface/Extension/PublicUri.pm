@@ -36,11 +36,13 @@ use base qw( WebInterface::Extension  );
 
 use Module::Load;
 
+use DefaultConfig qw( $BACKEND );
+
 sub init {
     my ( $self, $hookreg ) = @_;
 
     my $mode = $self->config( 'mode',
-        $main::BACKEND eq 'RO' ? 'public' : 'private' );
+        $BACKEND eq 'RO' ? 'public' : 'private' );
 
     my $handler
         = $mode eq 'private'

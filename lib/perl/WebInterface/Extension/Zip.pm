@@ -38,19 +38,23 @@ use CGI::Carp;
 
 use Archive::Zip;    # for zipinfo + www.jstree.com
 
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
+use HTTPHelper qw( print_compressed_header_and_content );
+
+
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw( css locales javascript posthandler body templates );
     push @hooks, 'fileaction'
-        unless $main::EXTENSION_CONFIG{Zip}{disable_fileaction};
+        unless $EXTENSION_CONFIG{Zip}{disable_fileaction};
     push @hooks, 'filelistaction'
-        unless $main::EXTENSION_CONFIG{Zip}{disable_filelistaction};
+        unless $EXTENSION_CONFIG{Zip}{disable_filelistaction};
     push @hooks, 'fileactionpopup'
-        unless $main::EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
+        unless $EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
     push @hooks, 'fileactionpopupnew'
-        unless $main::EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
-    push @hooks, 'apps' if $main::EXTENSION_CONFIG{Zip}{enable_apps};
-    push @hooks, 'new' unless $main::EXTENSION_CONFIG{Zip}{disable_fnew};
+        unless $EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
+    push @hooks, 'apps' if $EXTENSION_CONFIG{Zip}{enable_apps};
+    push @hooks, 'new' unless $EXTENSION_CONFIG{Zip}{disable_fnew};
 
     $hookreg->register( \@hooks, $self );
     return $self;
@@ -139,7 +143,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( ${$self}{cgi},
+        return $self->handleAppsHook( $self->{cgi},
             'listaction zipdwnload sel-multi disabled ',
             'zipdwnload', 'zipdwnload' );
     }
@@ -150,7 +154,7 @@ sub handle {
         return $self->renderMessageTemplate();
     }
     if ( $hook eq 'posthandler' ) {
-        my $action = ${$self}{cgi}->param('action');
+        my $action = $self->{cgi}->param('action');
         if (!defined $action) {
             return 0;
         }
@@ -184,23 +188,23 @@ sub handleZipUpload {
     my ($self) = @_;
     my @zipfiles;
     my ( $msg, $errmsg, $msgparam );
-    foreach my $fh ( ${$self}{cgi}->param('files') ) {
+    foreach my $fh ( $self->{cgi}->param('files') ) {
         my $rfn = $fh;
         $rfn =~ s/\\/\//xmsg;    # fix M$ Windows backslashes
-        $rfn = ${$self}{backend}->basename($rfn);
-        if ( $self->{config}->{method}->is_locked("$main::PATH_TRANSLATED$rfn") ) {
+        $rfn = $self->{backend}->basename($rfn);
+        if ( $self->{config}->{method}->is_locked("$PATH_TRANSLATED$rfn") ) {
             $errmsg   = 'locked';
             $msgparam = [$rfn];
             last;
         }
         elsif (
-            ${$self}{backend}->saveStream( "$main::PATH_TRANSLATED$rfn", $fh ) )
+            $self->{backend}->saveStream( "$PATH_TRANSLATED$rfn", $fh ) )
         {
             push @zipfiles, $rfn;
-            ${$self}{backend}->unlinkFile( $main::PATH_TRANSLATED . $rfn )
-                if ${$self}{backend}
-                ->uncompress_archive( "$main::PATH_TRANSLATED$rfn",
-                $main::PATH_TRANSLATED );
+            $self->{backend}->unlinkFile( $PATH_TRANSLATED . $rfn )
+                if $self->{backend}
+                ->uncompress_archive( "$PATH_TRANSLATED$rfn",
+                $PATH_TRANSLATED );
         }
     }
     if ( $#zipfiles > -1 ) {
@@ -213,10 +217,10 @@ sub handleZipUpload {
     }
     my %jsondata = ();
     my @params
-        = $msgparam ? map { ${$self}{cgi}->escapeHTML($_) } @{$msgparam} : ();
+        = $msgparam ? map { $self->{cgi}->escapeHTML($_) } @{$msgparam} : ();
     if ($errmsg) { $jsondata{error} = sprintf( $self->tl("msg_$errmsg"), @params ); }
     if ($msg) { $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params ); }
-    main::print_compressed_header_and_content(
+    print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON::encode_json( \%jsondata ),
         'Cache-Control: no-cache, no-store'
@@ -227,9 +231,9 @@ sub handleZipUpload {
 sub getZipFilename {
     my ( $self, $files ) = @_;
     my $time = strftime( '%Y-%m-%d-%H:%M:%S', localtime );
-    my $zipfilename = ${$self}{backend}->basename(
+    my $zipfilename = $self->{backend}->basename(
         scalar(@{$files}) > 1
-            || ${$files}[0] eq q{.} ? $main::REQUEST_URI : ${$files}[0],
+            || ${$files}[0] eq q{.} ? $REQUEST_URI : ${$files}[0],
         '.zip'
     ) . "-$time.zip";
     $zipfilename =~ s/[\/\ ]/_/xmsg;
@@ -238,21 +242,21 @@ sub getZipFilename {
 
 sub handleZipDownload {
     my $self  = shift;
-    my @files = ${$self}{cgi}->param('files');
+    my @files = $self->{cgi}->param('files');
     my $zfn   = $self->getZipFilename( \@files );
-    print ${$self}{cgi}->header(
+    print $self->{cgi}->header(
         -status              => '200 OK',
         -type                => 'application/zip',
         -Content_disposition => 'attachment; filename=' . $zfn
     );
-    ${$self}{backend}
-        ->compress_files( \*STDOUT, $main::PATH_TRANSLATED, @files );
+    $self->{backend}
+        ->compress_files( \*STDOUT, $PATH_TRANSLATED, @files );
     return 1;
 }
 
 sub handleZipCompress {
     my $self        = shift;
-    my @files       = ${$self}{cgi}->param('files');
+    my @files       = $self->{cgi}->param('files');
     my $zipfilename = $self->getZipFilename( \@files );
 
     my ( $zipfh, $zipfn ) = tempfile(
@@ -262,8 +266,8 @@ sub handleZipCompress {
     );
     my $error;
     if ( open( $zipfh, ">", "$zipfn" ) ) {
-        ${$self}{backend}
-            ->compress_files( $zipfh, $main::PATH_TRANSLATED, @files );
+        $self->{backend}
+            ->compress_files( $zipfh, $PATH_TRANSLATED, @files );
         close($zipfh) || carp("Cannot close $zipfn");
         if ( ( stat $zipfn )[7] > 0 ) {
             my ( $quotahrd, $quotacur ) = $self->{backend}->getQuota();
@@ -272,8 +276,8 @@ sub handleZipCompress {
             {
                 if ( open( $zipfh, '<', $zipfn ) ) {
                     ;
-                    ${$self}{backend}
-                        ->saveStream( $main::PATH_TRANSLATED . $zipfilename,
+                    $self->{backend}
+                        ->saveStream( $PATH_TRANSLATED . $zipfilename,
                         $zipfh );
                     close($zipfh) || carp("Cannot close $zipfn");
                 }
@@ -294,15 +298,15 @@ sub handleZipCompress {
     else {
         $jsondata{message} = sprintf(
             $self->tl('msg_zipcompress'),
-            ${$self}{cgi}->escapeHTML($zipfilename),
-            ${$self}{cgi}->escapeHTML(
+            $self->{cgi}->escapeHTML($zipfilename),
+            $self->{cgi}->escapeHTML(
                 scalar(@files) > 1 ? $files[0] . ",..." : $files[0]
             )
         );
     }
     unlink $zipfn;
 
-    main::print_compressed_header_and_content(
+    print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON::encode_json( \%jsondata ),
         'Cache-Control: no-cache, no-store'
@@ -312,17 +316,17 @@ sub handleZipCompress {
 
 sub handleZipUncompress {
     my ($self) = @_;
-    my @files = ${$self}{cgi}->param('files');
-    foreach my $file ( ${$self}{cgi}->param('files') ) {
-        ${$self}{backend}->uncompress_archive( $main::PATH_TRANSLATED . $file,
-            $main::PATH_TRANSLATED );
+    my @files = $self->{cgi}->param('files');
+    foreach my $file ( $self->{cgi}->param('files') ) {
+        $self->{backend}->uncompress_archive( $PATH_TRANSLATED . $file,
+            $PATH_TRANSLATED );
     }
     my %jsondata = ();
     $jsondata{message} = sprintf(
         $self->tl('msg_zipuncompress'),
-        ${$self}{cgi}->escapeHTML( join( ', ', @files ) )
+        $self->{cgi}->escapeHTML( join( ', ', @files ) )
     );
-    main::print_compressed_header_and_content(
+    print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON::encode_json( \%jsondata ),
         'Cache-Control: no-cache, no-store'
@@ -332,7 +336,7 @@ sub handleZipUncompress {
 
 sub handleZipInfo {
     my ($self) = @_;
-    my @files = ${$self}{cgi}->param('files');
+    my @files = $self->{cgi}->param('files');
     ## common:comment, compressionMethod, chunkSize  tree: filename, lastmodified, fileattributes, comments, uncompressedISize
     return;
 }

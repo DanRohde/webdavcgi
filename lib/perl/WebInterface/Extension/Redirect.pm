@@ -24,44 +24,63 @@
 package WebInterface::Extension::Redirect;
 
 use strict;
+use warnings;
+our $VERSION = '2.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
 
+use DefaultConfig qw( $PATH_TRANSLATED );
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	
-	$$self{redirect} = $self->config('redirect', undef); 
-	
-	my @hooks = ('css','javascript', 'fileprop');
-	push @hooks, 'gethandler' if $self->config('enable_directredirect', 0); 
-	$hookreg->register(\@hooks, $self) if defined $$self{redirect};
-	return $self;
+sub init {
+    my ( $self, $hookreg ) = @_;
+
+    $self->{redirect} = $self->config( 'redirect', undef );
+
+    my @hooks = qw( css javascript fileprop );
+    if ( $self->config( 'enable_directredirect', 0 ) ) {
+        push @hooks, 'gethandler';
+    }
+    if ( defined $self->{redirect} ) { $hookreg->register( \@hooks, $self ); }
+    return $self;
 }
-sub stripSlash {
-	my ($self, $path) = @_;
-	return $path=~/^(.*?)\/+$/ ? $1 : $path;
+
+sub _strip_slash {
+    my ( $self, $path ) = @_;
+    return $path =~ m{^(.*?)/+$}xms ? $1 : $path;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = 0;
-	if ($hook eq 'fileprop') {
-		my $c = $$self{redirect};
-		my $p = $self->stripSlash($$params{path});
-		$ret = { 'fileuri'=>$$c{$p}, ext_classes=>'redirect ', ext_attributes=>'', ext_styles=>'', isreadable=>'yes', unselectable=>'yes', iseditable=>'no', isviewable=>'no', writeable=>'no' } 
-			if $c && exists $$c{$p};
-	} elsif ($hook eq 'gethandler') {
-		my $c = $$self{redirect};
-		my $p = $self->stripSlash($main::PATH_TRANSLATED);
-		if ($c && exists $$c{$p}) {
-			print $$config{cgi}->redirect($$c{$p});
-			$ret = 1;
-		}
-	} else {
-		$ret = $self->SUPER::handle($hook, $config, $params);	
-	}
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( $hook eq 'fileprop' ) {
+        my $c = $self->{redirect};
+        my $p = $self->_strip_slash( $params->{path} );
+        return $c && exists $c->{$p}
+          ? {
+            'fileuri'      => $c->{$p},
+            ext_classes    => 'redirect ',
+            ext_attributes => q{},
+            ext_styles     => q{},
+            isreadable     => 'yes',
+            unselectable   => 'yes',
+            iseditable     => 'no',
+            isviewable     => 'no',
+            writeable      => 'no'
+          }
+          : 0;
+    }
+    if ( $hook eq 'gethandler' ) {
+        my $c = $self->{redirect};
+        my $p = $self->_strip_slash($PATH_TRANSLATED);
+        if ( $c && exists $c->{$p} ) {
+            print $config->{cgi}->redirect( $c->{$p} );
+            return 1;
+        }
+        return 0;
+    }
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
+    }
+    return 0;
 }
 
 1;

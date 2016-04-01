@@ -38,6 +38,7 @@
 package main;
 use strict;
 use warnings;
+our $VERSION = '2.0';    # only module version! release number is in $RELEASE
 
 use CGI;
 use CGI::Carp;
@@ -53,8 +54,7 @@ use Backend::Manager;
 use HTTPHelper
   qw( print_header_and_content print_compressed_header_and_content print_header_and_content get_mime_type );
 
-$RELEASE = '1.1.1BETA20160330.3';
-our $VERSION = '1.1.1BETA20160330.3';
+$RELEASE = '1.1.1BETA20160401.1';
 
 use vars qw( %_CONFIG $_METHODS_RX %_REQUEST_HANDLERS %_CACHE );
 
@@ -90,6 +90,7 @@ sub init {
     $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
     $REQUEST_URI     = $ENV{REQUEST_URI};
     $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // $UID;
+    $HTTP_HOST = $ENV{HTTP_HOST} // $ENV{REDIRECT_HTTP_HOST} // 'localhost';
 
     ## some must haves:
     $BUFSIZE //= 1_048_576;
@@ -165,12 +166,15 @@ sub handle_request {
     $_REQUEST_HANDLERS{$method}->init( \%_CONFIG )->handle();
     if ( $_CONFIG{backend} ) { $_CONFIG{backend}->finalize(); }
     $_CONFIG{event}->broadcast('FINALIZE');
-    debug("Modules loaded:".(scalar keys %INC));
+    debug( "Modules loaded:" . ( scalar keys %INC ) );
     return;
 }
 
 sub _debug_request_info {
     my ($method) = @_;
+    if ( !$DEBUG ) { return; }
+    debug(
+        "####################################################################");
     debug(
 "${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method"
     );

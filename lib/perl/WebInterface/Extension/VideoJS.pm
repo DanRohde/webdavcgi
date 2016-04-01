@@ -24,9 +24,13 @@
 package WebInterface::Extension::VideoJS;
 
 use strict;
+use warnings;
+our $VERSION = '1.0';
 
-use WebInterface::Extension;
-our @ISA = qw( WebInterface::Extension  );
+use base qw( WebInterface::Extension  );
+
+use DefaultConfig qw( $LANG $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
+use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 
 use vars qw( $ACTION );
 
@@ -35,8 +39,8 @@ $ACTION='videojs';
 sub init { 
 	my($self, $hookreg) = @_; 
 	my @hooks = ('css','locales','javascript','posthandler');
-	push @hooks, 'fileactionpopup' unless $main::EXTENSION_CONFIG{VideoJS}{disable_fileactionpopup};
-	push @hooks, 'fileaction' unless $main::EXTENSION_CONFIG{VideoJS}{disable_fileaction};
+	push @hooks, 'fileactionpopup' unless $EXTENSION_CONFIG{VideoJS}{disable_fileactionpopup};
+	push @hooks, 'fileaction' unless $EXTENSION_CONFIG{VideoJS}{disable_fileaction};
 	$hookreg->register(\@hooks, $self);
 }
 sub handle { 
@@ -48,16 +52,16 @@ sub handle {
 		$ret ={ action=>$ACTION, label=>$ACTION, path=>$$params{path}, type=>'li'};
 	} elsif ($hook eq 'fileaction') {
 		$ret = { action=>$ACTION, label=>$ACTION, path=>$$params{path}, classes=>'access-readable'};
-	} elsif ($hook eq 'posthandler' && $$self{cgi}->param('action') eq 'videojs') {
-		$ret = $self->renderViewerJS(scalar $$self{cgi}->param('file'));
+	} elsif ($hook eq 'posthandler' && $self->{cgi}->param('action') eq 'videojs') {
+		$ret = $self->renderViewerJS(scalar $self->{cgi}->param('file'));
 	}
 	return $ret;
 }
 sub renderViewerJS {
 	my ($self, $filename) =  @_;
-	my $vars = { filename => $main::REQUEST_URI.$filename, mime => main::get_mime_type($filename), lang => $main::LANG eq 'default' ? 'en' : $main::LANG };
-	my $content = $self->render_template($main::PATH_TRANSLATED,$main::REQUEST_URI,$self->read_template($self->config('template','videojs')), $vars);
-	main::print_compressed_header_and_content('200 OK', 'text/html', $content);
+	my $vars = { filename => $REQUEST_URI.$filename, mime => get_mime_type($filename), lang => $LANG eq 'default' ? 'en' : $LANG };
+	my $content = $self->render_template($PATH_TRANSLATED,$REQUEST_URI,$self->read_template($self->config('template','videojs')), $vars);
+	print_compressed_header_and_content('200 OK', 'text/html', $content);
 	return 1;
 }
 1;

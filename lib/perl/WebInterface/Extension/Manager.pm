@@ -21,11 +21,13 @@ package WebInterface::Extension::Manager;
 use strict;
 use warnings;
 
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 
 use Module::Load;
 use CGI::Carp;
-use English qw( -no_match_vars ) ;
+use English qw( -no_match_vars );
+
+use DefaultConfig qw( @EXTENSIONS );
 
 use vars qw( %HOOKS );
 
@@ -38,13 +40,14 @@ sub new {
 }
 
 sub init {
-    my ($self, $config) = @_;
+    my ( $self, $config ) = @_;
     $self->{config} = $config;
-    foreach my $extname (@main::EXTENSIONS) {
+    foreach my $extname (@EXTENSIONS) {
         eval {
             load "WebInterface::Extension::$extname";
             my $extension =
-              "WebInterface::Extension::$extname"->new( $self, $extname, $self->{config} );
+              "WebInterface::Extension::$extname"
+              ->new( $self, $extname, $self->{config} );
         } || carp("Can't load extension $extname: $EVAL_ERROR");
     }
     return $self;
@@ -72,7 +75,8 @@ sub register {
 
 sub handle {
     my ( $self, $hook, $params ) = @_;
-    if (!exists $HOOKS{$self}{$hook}) {;
+    if ( !exists $HOOKS{$self}{$hook} ) {
+        ;
         return;
     }
     my @ret;
