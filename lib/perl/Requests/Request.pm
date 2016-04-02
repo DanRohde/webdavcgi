@@ -26,7 +26,6 @@ use CGI::Carp;
 
 use DefaultConfig qw( $ENABLE_LOCK );
 use HTTPHelper qw( get_if_header_components );
-use CacheManager;
 
 sub new {
     my ($this) = @_;
@@ -90,7 +89,7 @@ sub is_locked {
 
 sub get_lock_module {
     my ($self) = @_;
-    my $cache  = CacheManager::getinstance();
+    my $cache  = $self->{cache};
     my $lm     = $cache->get_entry('lockmodule');
     if ( !$lm ) {
         require WebDAV::Lock;

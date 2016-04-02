@@ -44,6 +44,6 @@ sub handle {
 
     }
     $self->debug("HEAD: $PATH_TRANSLATED exists!");
-    return fix_mod_perl_response( print_file_header($PATH_TRANSLATED) );
+    return fix_mod_perl_response( print_file_header($backend, $PATH_TRANSLATED) );
 }
 1;

@@ -38,7 +38,7 @@ use DefaultConfig qw(
   $CGI $PATH_TRANSLATED
   $CHARSET %MIMETYPES $MIMEFILE $ENABLE_COMPRESSION $BUFSIZE
   $ENABLE_ACL $ENABLE_CALDAV $ENABLE_CARDDAV $ENABLE_CALDAV_SCHEDULE 
-  $ENABLE_LOCK $ENABLE_BIND $ENABLE_SEARCH
+  $ENABLE_LOCK $ENABLE_BIND $ENABLE_SEARCH $BACKEND_INSTANCE
 );
 
 require bytes;
@@ -138,9 +138,8 @@ sub print_local_file_header {
 }
 
 sub print_file_header {
-    my ( $fn, $addheader ) = @_;
+    my ( $backend, $fn, $addheader ) = @_;
     my $cgi     = $CGI;
-    my $backend = main::get_backend();
     my @stat    = $backend->stat($fn);
     no locale;
     my %header  = (
@@ -247,7 +246,7 @@ sub get_mime_type {
 sub get_etag {
     my ($file) = @_;
     $file //= $PATH_TRANSLATED;
-    my $backend = main::get_backend();
+    my $backend = $BACKEND_INSTANCE;
 
     my (
         $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,

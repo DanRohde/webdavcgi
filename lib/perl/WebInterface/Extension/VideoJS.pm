@@ -19,13 +19,13 @@
 # SETUP:
 # disable_fileactionpopup - disables file action entry in popup menu
 # disable_fileaction - disables file action
-# template - viewerjs template filename 
+# template - viewerjs template filename
 
 package WebInterface::Extension::VideoJS;
 
 use strict;
 use warnings;
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension  );
 
@@ -34,34 +34,62 @@ use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 
 use vars qw( $ACTION );
 
-$ACTION='videojs';
+$ACTION = 'videojs';
 
-sub init { 
-	my($self, $hookreg) = @_; 
-	my @hooks = ('css','locales','javascript','posthandler');
-	push @hooks, 'fileactionpopup' unless $EXTENSION_CONFIG{VideoJS}{disable_fileactionpopup};
-	push @hooks, 'fileaction' unless $EXTENSION_CONFIG{VideoJS}{disable_fileaction};
-	$hookreg->register(\@hooks, $self);
+sub init {
+    my ( $self, $hookreg ) = @_;
+    my @hooks = qw(css locales javascript posthandler);
+    if ( !$EXTENSION_CONFIG{VideoJS}{disable_fileactionpopup} ) {
+        push @hooks, 'fileactionpopup';
+    }
+    if ( !$EXTENSION_CONFIG{VideoJS}{disable_fileaction} ) {
+        push @hooks, 'fileaction';
+    }
+    $hookreg->register( \@hooks, $self );
+    return $self;
 }
-sub handle { 
-	my ($self, $hook, $config, $params) = @_;
-	my $ret = 0;
-	if ($ret = $self->SUPER::handle($hook, $config, $params)) {
-		return $ret;
-	} elsif ($hook eq 'fileactionpopup') {
-		$ret ={ action=>$ACTION, label=>$ACTION, path=>$$params{path}, type=>'li'};
-	} elsif ($hook eq 'fileaction') {
-		$ret = { action=>$ACTION, label=>$ACTION, path=>$$params{path}, classes=>'access-readable'};
-	} elsif ($hook eq 'posthandler' && $self->{cgi}->param('action') eq 'videojs') {
-		$ret = $self->renderViewerJS(scalar $self->{cgi}->param('file'));
-	}
-	return $ret;
+
+sub handle {
+    my ( $self, $hook, $config, $params ) = @_;
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
+    }
+    if ( $hook eq 'fileactionpopup' ) {
+        return {
+            action => $ACTION,
+            label  => $ACTION,
+            path   => $params->{path},
+            type   => 'li'
+        };
+    }
+    if ( $hook eq 'fileaction' ) {
+        return {
+            action  => $ACTION,
+            label   => $ACTION,
+            path    => $params->{path},
+            classes => 'access-readable'
+        };
+    }
+    if (   $hook eq 'posthandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'videojs' )
+    {
+        return $self->_render_viewerjs( scalar $self->{cgi}->param('file') );
+    }
+    return 0;
 }
-sub renderViewerJS {
-	my ($self, $filename) =  @_;
-	my $vars = { filename => $REQUEST_URI.$filename, mime => get_mime_type($filename), lang => $LANG eq 'default' ? 'en' : $LANG };
-	my $content = $self->render_template($PATH_TRANSLATED,$REQUEST_URI,$self->read_template($self->config('template','videojs')), $vars);
-	print_compressed_header_and_content('200 OK', 'text/html', $content);
-	return 1;
+
+sub _render_viewerjs {
+    my ( $self, $filename ) = @_;
+    my $vars = {
+        filename => $REQUEST_URI . $filename,
+        mime     => get_mime_type($filename),
+        lang     => $LANG eq 'default' ? 'en' : $LANG
+    };
+    my $content =
+      $self->render_template( $PATH_TRANSLATED, $REQUEST_URI,
+        $self->read_template( $self->config( 'template', 'videojs' ) ), $vars );
+    print_compressed_header_and_content( '200 OK', 'text/html', $content );
+    return 1;
 }
 1;

@@ -35,21 +35,21 @@ sub new {
     my ($class) = @_;
     my $self = {};
     bless $self, $class;
-    $self->init();
+    $self->init(shift);
     return $self;
 }
 
 sub init {
-    my $self            = shift;
-    my $REMOTE_USER     = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
-    my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
+    my ($self, $config) = @_;
+    my $REMOTE_USER     = $ENV{REMOTE_USER} // $ENV{REDIRECT_REMOTE_USER};
+    my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} // 300;
 
     my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
     my $agefile  = $ticketfn . '.age';
     if ( $ENV{KRB5CCNAME} ) {
         Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
     }
-    $self->register( main::get_event_channel() );
+    ## $self->register( main::get_event_channel() ); ## TODO: config and doc
     if ( $ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn ) {
 
         if (

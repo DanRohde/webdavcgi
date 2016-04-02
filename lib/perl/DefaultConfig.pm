@@ -54,7 +54,7 @@ our @EXPORT_OK   = qw(
   @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
   %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
-  $OPTIMIZERTMP $READBUFSIZE
+  $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE
 );
 #{
 #
@@ -92,7 +92,7 @@ use vars qw(
   @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
   %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
   @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
-  $OPTIMIZERTMP $READBUFSIZE
+  $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE
 );
 
 $VERSION = '2.0';
@@ -196,7 +196,6 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
         'hu'      => 'Magyar',
         'it'      => 'Italiano',
     );
-    %TRANSLATION = ( mylangcode => { cancel => 'Cancel' } );
     $ORDER       = 'name';
     $DBI_SRC     = 'dbi:SQLite:dbname=/tmp/webdav.'
       . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
@@ -291,12 +290,12 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
 }
 
 sub read_config {
-    my ($configfile) = @_;
+    my ($config, $configfile) = @_;
     if ( defined $configfile ) {
 
         # for compatibilty:
         our $cgi = $CGI;
-
+        our $CONFIG = $config;
         my $ret;
         if ( !( $ret = do($configfile) ) ) {
             if ($EVAL_ERROR) {

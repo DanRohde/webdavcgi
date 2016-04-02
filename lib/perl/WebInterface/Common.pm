@@ -37,6 +37,7 @@ use DefaultConfig qw(
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
   @ALLOWED_TABLE_COLUMNS);
 use HTTPHelper qw( get_mime_type );
+use WebInterface::Translations qw( read_all_tl  );
 
 use vars qw( %CACHE %BYTEUNITS @BYTEUNITORDER %STATIDX );
 
@@ -114,69 +115,20 @@ sub initialize {
     return $view;
 }
 
-sub _read_tl_file {
-    my ( $self, $fn, $dataref ) = @_;
-    if ( open my $fh, '<', $fn ) {
-        while (<$fh>) {
-            chomp;
-            if (/^\#/xms) { next; }
-            if (/^(\S.*?)\s+"(.*)"\s*$/xms) {
-                ${$dataref}{$1} = $2;
-            }
-        }
-        close($fh) || carp("Cannot close $fn.");
-    }
-    else { carp("Cannot read $fn!"); }
-    return;
-}
-
-sub _read_tl {
-    my ( $self, $l ) = @_;
-    my $fn = "${INSTALL_BASE}locale/webdav-ui_${l}.msg";
-    if ( -e $fn ) {
-        $self->_read_tl_file( $fn, $TRANSLATION{$l} );
-        $TRANSLATION{$l}{x__READ__x} = 1;
-    }
-    return;
-}
-
-sub _read_extensions_tl {
-    my ( $self, $l ) = @_;
-    my $locales = $self->{config}{extensions}->handle('locales') || [];
-    foreach my $lfn ( @{$locales} ) {
-        $self->{config}->{debug}->("_read_extensions_tl($l): $lfn");
-        foreach my $f ( ( 'default', $l ) ) {
-            my $fn = $lfn . '_' . $f . '.msg';
-            if ( -e $fn ) {
-                $self->_read_tl_file( $fn, $TRANSLATION{$l} );
-            }
-        }
-    }
-    $TRANSLATION{$l}{x__EXTENSIONSREAD__x} = 1;
-    return;
-}
 
 sub tl {
     my ( $self, $key, $default, @args ) = @_;
     if ( !defined $key ) { return $default; }
-    if ( defined $default && exists $CACHE{$self}{tl}{$key}{$default} ) {
-        return $CACHE{$self}{tl}{$key}{$default};
+    if ( defined $default && exists $CACHE{tl}{$key}{$default} ) {
+        return $CACHE{tl}{$key}{$default};
     }
-    if ( !exists $TRANSLATION{default}{x__READ__x} ) {
-        $self->_read_tl('default');
-    }
-    if ( !exists $TRANSLATION{$LANG}{x__READ__x} ) {
-        $self->_read_tl($LANG);
-    }
-    if ( !exists $TRANSLATION{$LANG}{x__EXTENSIONSREAD__x} ) {
-        $self->_read_extensions_tl($LANG);
-    }
+    read_all_tl($self->{config}{extensions}, $LANG);
     my $val =
          $TRANSLATION{$LANG}{$key}
-      || $TRANSLATION{default}{$key}
-      || $default
-      || $key;
-    return $CACHE{$self}{tl}{$key}{ $default // $key } =
+      // $TRANSLATION{default}{$key}
+      // $default
+      // $key;
+    return $CACHE{tl}{$key}{ $default // $key } =
       scalar( @args > 0 ) ? sprintf( $val, @args ) : $val;
 }
 

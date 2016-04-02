@@ -41,13 +41,13 @@ sub init {
     my $self = shift;
     if ( !$ENV{AUTHHEADER} ) { return 0; }
     my $ret             = 1;
-    my $REMOTE_USER     = $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER};
-    my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} || 300;
+    my $REMOTE_USER     = $ENV{REMOTE_USER} // $ENV{REDIRECT_REMOTE_USER};
+    my $TICKET_LIFETIME = $ENV{TICKET_LIFETIME} // 300;
 
     if ( $ENV{KRB5CCNAME} ) {
         Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
     }
-    $self->register( main::get_event_channel() );
+    ## $self->register( main::get_event_channel() ); ###TODO: config and doc
 
     my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
     $ENV{KRB5CCNAME} = "FILE:$ticketfn";

@@ -110,6 +110,7 @@ sub handle {
                 my $qfn = $fn;
                 $qfn =~ s/"/\\"/xmsg;
                 print_file_header(
+                    $self->{backend},
                     $file,
                     {
                         -Content_Disposition => 'attachment; filename="'

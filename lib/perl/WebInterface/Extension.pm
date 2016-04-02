@@ -34,6 +34,9 @@ sub new {
     bless $self, $class;
     $self->{EXTENSION} = $extensionname;
     $self->{config}    = $config;
+    $self->{backend}   = $config->{backend};
+    $self->{db}        = $config->{db};
+    $self->{cgi}       = $config->{cgi};
     return $self->init($hookreg);
 }
 

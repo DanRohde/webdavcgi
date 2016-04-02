@@ -69,7 +69,10 @@ sub handle {
             'listaction diff sel-oneormore disabled',
             'diff_short', 'diff' );
     }
-    if ( $hook eq 'posthandler' && $self->{cgi}->param('action') eq 'diff' ) {
+    if (   $hook eq 'posthandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'diff' )
+    {
         my %jsondata = ();
         my ( $content, $raw );
         my @files = $self->{cgi}->param('files');
@@ -130,7 +133,8 @@ sub _render_diff_output {
     my $diffsinglelinetmpl   = $self->read_template('diffsingleline');
     my $difffilenamelinetmpl = $self->read_template('difffilenameline');
     my $filename_rx          = q{"?(.*?)"?};
-    my $datetime_rx          = q{\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}[.]\d+\s(?:[+\-]\d+)};
+    my $datetime_rx =
+      q{\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}[.]\d+\s(?:[+\-]\d+)};
     my @fnstack;
 
     if (
@@ -150,9 +154,7 @@ sub _render_diff_output {
             chomp;
             my ( $tmpl, $text1, $text2, $text, $type, $linenumber1,
                 $linenumber2 );
-            if (/^-{3}\s+$filename_rx\s+$datetime_rx$/xms
-              )
-            {
+            if ( /^-{3}\s+$filename_rx\s+$datetime_rx$/xms ) {
                 my $f = $self->_subst_basepath($1);
                 if ( $f !~ /^\s*\Q$f1\E\s*$/xms && $f !~ m{^/tmp/}xms ) {
                     push @fnstack, $f;
@@ -256,7 +258,7 @@ sub _render_diff_output {
                     $self->tl('diff_nonewline'),
                   );
             }
-            elsif (/^\\\s(.*)/xms || /^(\w+.*)/xms ) {
+            elsif ( /^\\\s(.*)/xms || /^(\w+.*)/xms ) {
                 (
                     $type, $tmpl, $linenumber1, $text1, $linenumber2, $text2,
                     $text
@@ -288,8 +290,7 @@ sub _render_diff_output {
                 file1        => $cgi->escapeHTML($f1),
                 file2        => $cgi->escapeHTML($f2),
                 diffcounter =>
-                  sprintf( $self->tl('diff_nomorediffs'), $diffcounter )
-                ,
+                  sprintf( $self->tl('diff_nomorediffs'), $diffcounter ),
             }
         );
 

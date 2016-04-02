@@ -49,7 +49,7 @@ sub handle {
     my ( $self, $hook, $config, $params ) = @_;
     my $ret = $self->SUPER::handle( $hook, $config, $params );
     return $ret if $ret;
-    if ( $hook eq 'posthandler' && $self->{cgi}->param('action') eq 'props' ) {
+    if ( $hook eq 'posthandler'&& $self->{cgi}->param('action') && $self->{cgi}->param('action') eq 'props' ) {
         $ret = $self->_render_viewer(
             $PATH_TRANSLATED . $self->{cgi}->param('file'),
             $REQUEST_URI . $self->{cgi}->param('file')

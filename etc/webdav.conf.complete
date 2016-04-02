@@ -340,15 +340,6 @@ $LANG = 'default';
     'it'      => 'Italiano',
 );
 
-## -- TRANSLATION
-## DEPRECATED: use webdav-ui_${LANG}.msg files instead
-## defines text and tooltips for the Web interface
-## if you add your own translation you don't need to translate all text keys
-## (there is a fallback to the default)
-## Don't use entities like &auml; for buttons and table header (names, lastmodified, size, mimetype).
-## EXAMPLE: %TRANSLATION = ( de => { cancel => 'Abbrechen' } );
-%TRANSLATION = ( mylangcode => { cancel => 'Cancel' } );
-
 ## -- ORDER
 ##  sort order for a folder list (allowed values: name, lastmodified, size, mode, mime, and this values with a _desc suffix)
 ## DEFAULT: $ORDER = 'name';

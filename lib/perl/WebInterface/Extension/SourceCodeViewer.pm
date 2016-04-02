@@ -81,7 +81,10 @@ sub handle {
             type     => 'li'
         };
     }
-    if ( $hook eq 'posthandler' && $self->{cgi}->param('action') eq 'scv' ) {
+    if (   $hook eq 'posthandler'
+        && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'scv' )
+    {
         my $file = $self->{cgi}->param('files');
         if ( ( $self->{backend}->stat("$PATH_TRANSLATED$file") )[7] >
             $self->{sizelimit} )

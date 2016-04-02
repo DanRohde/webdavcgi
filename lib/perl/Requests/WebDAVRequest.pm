@@ -31,7 +31,6 @@ use DefaultConfig qw( $ENABLE_BIND %FILECOUNTPERDIRLIMIT );
 use WebDAV::XMLHelper qw( get_namespace_uri %NAMESPACES );
 use WebDAV::WebDAVProps;
 use FileUtils qw( is_hidden get_file_limit );
-use CacheManager;
 
 sub init {
     my ( $self, $config ) = @_;
@@ -260,7 +259,7 @@ sub read_dir_recursive {
 
 sub get_property_module {
     my ($self) = @_;
-    my $cache  = CacheManager::getinstance();
+    my $cache  = $self->{cache};
     my $pm     = $cache->get_entry('propertymodule');
     if ( !$pm ) {
         require WebDAV::Properties;

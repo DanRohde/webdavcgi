@@ -51,7 +51,8 @@ sub _strip_slash {
 
 sub _normalize {
     my ( $self, $file ) = @_;
-    return $self->_strip_slash( $self->{config}->{backend}->resolveVirt($file) );
+    return $self->_strip_slash(
+        $self->{config}->{backend}->resolveVirt($file) );
 }
 
 sub register {
@@ -110,8 +111,8 @@ sub receive {
     }
     else {
         $self->_handle_file_moved( $event, $data, $db )
-            || $self->_handle_deleted( $event, $data, $db )
-            || $self->_handle_file_copied( $event, $data, $db );
+          || $self->_handle_deleted( $event, $data, $db )
+          || $self->_handle_file_copied( $event, $data, $db );
     }
     return 1;
 }

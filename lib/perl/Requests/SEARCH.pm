@@ -51,7 +51,6 @@ use URI::Escape;
 
 use DefaultConfig qw( $REQUEST_URI $DOCUMENT_ROOT $VIRTUAL_BASE );
 use FileUtils;
-use CacheManager;
 use HTTPHelper qw( read_request_body print_header_and_content );
 use WebDAV::XMLHelper
   qw( create_xml handle_propfind_element simple_xml_parser );

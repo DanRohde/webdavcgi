@@ -34,7 +34,6 @@ use CGI::Carp;
 use English qw( -no_match_vars );
 
 use HTTPHelper qw( get_etag get_mime_type );
-use CacheManager;
 
 use DefaultConfig
   qw( $LIMIT_FOLDER_DEPTH $TRASH_FOLDER %FILEFILTERPERDIR $FILECOUNTLIMIT 
@@ -236,7 +235,7 @@ sub read_dir_by_suffix {
 
 sub get_dir_info {
     my ( $config, $fn, $prop, $filter, $limit, $max ) = @_;
-    my $cm = CacheManager::getinstance();
+    my $cm = $config->{cache};
     if ( $cm->exists_entry( [ 'get_dir_info', $fn, $prop ] ) ) {
         return $cm->get_entry( [ 'get_dir_info', $fn, $prop ] );
     }

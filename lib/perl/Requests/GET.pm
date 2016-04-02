@@ -87,7 +87,7 @@ sub handle {
 
     if ( !$self->_handle_compressed_file( $cgi, $backend ) ) {
         my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
-        my $headerref = print_file_header($PATH_TRANSLATED);
+        my $headerref = print_file_header($backend, $PATH_TRANSLATED);
         $backend->printFile( $PATH_TRANSLATED, \*STDOUT, $start, $count );
         fix_mod_perl_response($headerref);
 

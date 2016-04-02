@@ -82,6 +82,7 @@ sub handle_public_uri_access {
             my $bfn = $self->{backend}->basename($fn);
             $bfn =~ s/"/_/xmsg;
             print_file_header(
+                $self->{backend},
                 $fn,
                 {
                     'Content-Disposition' =>

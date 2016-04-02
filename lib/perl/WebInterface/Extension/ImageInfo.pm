@@ -75,8 +75,10 @@ sub handle {
               };
         }
     }
-    elsif ($hook eq 'posthandler'
-        && $self->{cgi}->param('action') eq 'imageinfo' )
+    elsif (
+        $hook eq 'posthandler' && $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'imageinfo'
+      )
     {
         my $file = $self->{cgi}->param('file');
         print_header_and_content(

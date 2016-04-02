@@ -25,18 +25,13 @@ our $VERSION = '1.0';
 
 use base qw( Requests::Request );
 
-use CacheManager;
+use vars qw( $WEBINTERFACE );
 
 sub get_webinterface {
     my ($self) = @_;
-    my $cache = CacheManager::getinstance();
-    my $wi = $cache->get_entry('webinterface', undef, $cache->get_app_context());
-    if (!$wi) {
-        require WebInterface;
-        $wi = WebInterface->new();
-        $cache->set_entry('webinterface', $wi, $cache->get_app_context());
-    }
-    return $wi->init($self->{config});
+    require WebInterface;
+    $WEBINTERFACE //= WebInterface->new();
+    return $WEBINTERFACE->init( $self->{config} );
 }
 
 1;
