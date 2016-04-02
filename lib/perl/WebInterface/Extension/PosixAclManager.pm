@@ -83,13 +83,19 @@ sub handle {
             'pacl listaction sel-noneorone disabled', 'pacl' );
     }
     if ( $hook eq 'posthandler' ) {
-        if ( $self->{cgi}->param('ajax') eq 'getPosixAclManager' ) {
+        if (   $self->{cgi}->param('ajax')
+            && $self->{cgi}->param('ajax') eq 'getPosixAclManager' )
+        {
             return $self->_render_posix_acl_manager();
         }
-        if ( $self->{cgi}->param('action') eq 'pacl_update' ) {
+        if (   $self->{cgi}->param('action')
+            && $self->{cgi}->param('action') eq 'pacl_update' )
+        {
             return $self->_handle_acl_update();
         }
-        if ( $self->{cgi}->param('ajax') eq 'searchUserOrGroupEntry' ) {
+        if (   $self->{cgi}->param('ajax')
+            && $self->{cgi}->param('ajax') eq 'searchUserOrGroupEntry' )
+        {
             return $self->_handle_user_or_group_entry_search();
         }
     }

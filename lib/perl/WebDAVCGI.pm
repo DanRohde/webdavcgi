@@ -55,9 +55,9 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160401.5';
+$RELEASE = '1.1.1BETA20160402.1';
 
-use vars qw( $_METHODS_RX %_REQUEST_HANDLERS %_CACHE );
+use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
 
 sub new {
     my $class = shift;
@@ -112,10 +112,9 @@ sub init {
     ## some config objects for the convinience:
     $self->{config} = $self;
     $self->{cgi}    = $CGI;
-    $self->{db}     = $_CACHE{ $ENV{REMOTE_USER} }{dbdriver} //=
-      DB::Driver->new($self);
-
-    DatabaseEventAdapter->new($self)->register( $self->{event} );
+    $self->{db} //= DB::Driver->new($self);
+    $_DB_EVENT_ADAPTER //=
+      DatabaseEventAdapter->new($self)->register( $self->{event} );
 
     $BACKEND_INSTANCE //=
       Backend::Manager::getinstance()->get_backend( $BACKEND, $self );

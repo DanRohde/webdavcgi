@@ -51,11 +51,11 @@ sub init {
 
     $config->{webinterface} = $self;
 
-    ${$self}{config}  = $config;
-    ${$self}{db}      = $config->{db};
-    ${$self}{cgi}     = $config->{cgi};
-    ${$self}{backend} = $config->{backend};
-    ${$self}{debug}   = $config->{debug};
+    $self->{config}  = $config;
+    $self->{db}      = $config->{db};
+    $self->{cgi}     = $config->{cgi};
+    $self->{backend} = $config->{backend};
+    $self->{debug}   = $config->{debug};
 
     return $self;
 }
@@ -66,22 +66,22 @@ sub handle_thumbnail_get_request {
         return 0;
     }
     if (   $action eq 'thumb'
-        && ${$self}{backend}->isReadable($PATH_TRANSLATED)
-        && ${$self}{backend}->isFile($PATH_TRANSLATED) )
+        && $self->{backend}->isReadable($PATH_TRANSLATED)
+        && $self->{backend}->isFile($PATH_TRANSLATED) )
     {
         return $self->get_thumbnail_renderer()
           ->print_thumbnail($PATH_TRANSLATED);
     }
     if (   $action eq 'mediarss'
-        && ${$self}{backend}->isDir($PATH_TRANSLATED)
-        && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
+        && $self->{backend}->isDir($PATH_TRANSLATED)
+        && $self->{backend}->isReadable($PATH_TRANSLATED) )
     {
         return $self->get_thumbnail_renderer()
           ->print_media_rss( $PATH_TRANSLATED, $REQUEST_URI );
     }
     if (   $action eq 'image'
-        && ${$self}{backend}->isFile($PATH_TRANSLATED)
-        && ${$self}{backend}->isReadable($PATH_TRANSLATED) )
+        && $self->{backend}->isFile($PATH_TRANSLATED)
+        && $self->{backend}->isReadable($PATH_TRANSLATED) )
     {
         return $self->get_thumbnail_renderer()->print_image($PATH_TRANSLATED);
     }
@@ -90,7 +90,7 @@ sub handle_thumbnail_get_request {
 
 sub handle_get_request {
     my ($self) = @_;
-    my $action = ${$self}{cgi}->param('action') // '_unknown_';
+    my $action = $self->{cgi}->param('action') // '_unknown_';
 
     if (   $PATH_TRANSLATED =~ m{\/webdav-ui(?:-[^./]+)?[.](?:js|css)/?$}xms
         || $PATH_TRANSLATED =~ /\Q$VHTDOCS\E(.*)$/xms )
@@ -104,19 +104,19 @@ sub handle_get_request {
     }
     if (   $ENABLE_DAVMOUNT
         && $action eq 'davmount'
-        && ${$self}{backend}->exists($PATH_TRANSLATED) )
+        && $self->{backend}->exists($PATH_TRANSLATED) )
     {
         return $self->_print_dav_mount($PATH_TRANSLATED);
     }
     my $ret_by_ext =
-      $self->get_extension_manager()->handle( 'gethandler', ${$self}{config} );
+      $self->get_extension_manager()->handle( 'gethandler', $self->{config} );
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
 
     if ( $handled_by_ext =~ /1/xms ) {
         return 1;
     }
 
-    if ( ${$self}{backend}->isDir($PATH_TRANSLATED) ) {
+    if ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
         $self->optimize_css_and_js();
         $self->get_renderer()
           ->render_web_interface( $PATH_TRANSLATED, $REQUEST_URI );
@@ -127,7 +127,7 @@ sub handle_get_request {
 
 sub handle_head_request {
     my ($self) = @_;
-    if ( ${$self}{backend}->isDir($PATH_TRANSLATED) ) {
+    if ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
         print_header_and_content( '200 OK', 'httpd/unix-directory' );
     }
     elsif ( $PATH_TRANSLATED =~ /\/webdav-ui[.](js|css)$/xms ) {
@@ -146,7 +146,7 @@ sub handle_head_request {
 sub handle_post_request {
     my ($self) = @_;
     my $ret_by_ext =
-      $self->get_extension_manager()->handle( 'posthandler', ${$self}{config} );
+      $self->get_extension_manager()->handle( 'posthandler', $self->{config} );
     my $handled_by_ext = $ret_by_ext ? join( q{}, @{$ret_by_ext} ) : q{};
 
     if (   $handled_by_ext =~ /1/xms
@@ -155,12 +155,12 @@ sub handle_post_request {
         return 1;
     }
     if ($ALLOW_POST_UPLOADS
-        && ${$self}{backend}->isDir($PATH_TRANSLATED)
-        && defined ${$self}{cgi}->param('filesubmit') )
+        && $self->{backend}->isDir($PATH_TRANSLATED)
+        && defined $self->{cgi}->param('filesubmit') )
     {
         $self->get_functions()->handle_post_upload();
     }
-    elsif ( $ENABLE_CLIPBOARD && ${$self}{cgi}->param('action') ) {
+    elsif ( $ENABLE_CLIPBOARD && $self->{cgi}->param('action') ) {
         $self->get_functions()->handle_clipboard_action();
     }
     else {
@@ -179,13 +179,13 @@ sub get_thumbnail_renderer {
 sub get_functions {
     my $self = shift;
     require WebInterface::Functions;
-    return WebInterface::Functions->new( ${$self}{config} );
+    return WebInterface::Functions->new( $self->{config} );
 }
 
 sub get_renderer {
     my $self = shift;
     require WebInterface::Renderer;
-    return WebInterface::Renderer->new( ${$self}{config} );
+    return WebInterface::Renderer->new( $self->{config} );
 }
 
 sub get_extension_manager {
@@ -200,7 +200,7 @@ sub print_styles_vhtdocs_files {
     my $file =
         $fn =~ /\Q$VHTDOCS\E(.*)/xms
       ? $INSTALL_BASE . 'htdocs/' . $1
-      : $INSTALL_BASE . 'lib/' . ${$self}{backend}->basename($fn);
+      : $INSTALL_BASE . 'lib/' . $self->{backend}->basename($fn);
     if ( $fn =~ /\Q$VHTDOCS\E_EXTENSION[(]([^)]+)[)]_(.*)/xms ) {
         $file = $INSTALL_BASE . 'lib/perl/WebInterface/Extension/' . $1 . $2;
     }
@@ -237,9 +237,9 @@ sub print_styles_vhtdocs_files {
 sub _print_dav_mount {
     my ( $self, $fn ) = @_;
     my $su = $ENV{REDIRECT_SCRIPT_URI} || $ENV{SCRIPT_URI};
-    my $bn = ${$self}{backend}->basename($fn);
+    my $bn = $self->{backend}->basename($fn);
     $su =~ s/\Q$bn\E\/?//xms;
-    $bn .= ${$self}{backend}->isDir($fn) && $bn !~ /\/$/xms ? q{/} : q{};
+    $bn .= $self->{backend}->isDir($fn) && $bn !~ /\/$/xms ? q{/} : q{};
     print_header_and_content(
         '200 OK',
         'application/davmount+xml',
@@ -250,7 +250,7 @@ qq@<dm:mount xmlns:dm="http://purl.org/NET/webdav/mount"><dm:url>$su</dm:url><dm
 
 sub optimizer_is_optimized {
     my ($self) = @_;
-    return ${$self}{isoptimized};
+    return $self->{isoptimized};
 }
 
 sub optimizer_get_filepath {
@@ -264,15 +264,15 @@ sub optimizer_get_filepath {
 
 sub optimize_css_and_js {
     my ($self) = @_;
-    return if ${$self}{isoptimized} || ${$self}{notoptimized};
-    ${$self}{isoptimized} = 0;
+    return if $self->{isoptimized} || $self->{notoptimized};
+    $self->{isoptimized} = 0;
 
     my $csstargetfile = $self->optimizer_get_filepath('css') . '.gz';
     my $jstargetfile  = $self->optimizer_get_filepath('js') . '.gz';
     if (   ( -e $csstargetfile && !-w $csstargetfile )
         || ( -e $jstargetfile && !-w $jstargetfile ) )
     {
-        ${$self}{notoptimized} = 1;
+        $self->{notoptimized} = 1;
         carp(
 "Cannot write optimized CSS and JavaScript to $csstargetfile and/or $jstargetfile"
         );
@@ -282,7 +282,7 @@ sub optimize_css_and_js {
         && -r $csstargetfile
         && ( stat $jstargetfile )[10] > ( stat $CONFIGFILE )[10] )
     {
-        ${$self}{isoptimized} = 1;
+        $self->{isoptimized} = 1;
         return;
     }
 
@@ -304,7 +304,7 @@ sub optimize_css_and_js {
         $self->optimizer_write_content2zip( $jstargetfile, \$content );
     }
 
-    return ${$self}{isoptimized} = 1;
+    return $self->{isoptimized} = 1;
 }
 
 sub optimizer_write_content2zip {

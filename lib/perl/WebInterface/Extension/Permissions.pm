@@ -63,7 +63,7 @@ sub handle {
         return $self->handleAppsHook( $self->{cgi}, 'permissions sel-multi',
             'mode', 'mode' );
     }
-    if ( $hook eq 'gethandler' ) {
+    if ( $hook eq 'gethandler' && $self->{cgi}->param('ajax') ) {
         if ( $self->{cgi}->param('ajax') eq 'getPermissionsDialog' ) {
             my $content = $self->_render_permissions_dialog(
                 $PATH_TRANSLATED,

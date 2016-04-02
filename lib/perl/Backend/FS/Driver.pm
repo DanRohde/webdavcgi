@@ -45,7 +45,6 @@ use vars qw( %CACHE );
 sub finalize {
     my ($self) = @_;
     %CACHE = ();
-    ${$self}{cache} = \%CACHE;
     return;
 }
 

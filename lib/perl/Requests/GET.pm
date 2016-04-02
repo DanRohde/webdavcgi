@@ -38,7 +38,7 @@ use FileUtils qw( get_error_document is_hidden stat2h );
 
 use vars qw( $MIN_COMPRESSABLE_FILESIZE $MAX_COMPRESSABLE_FILESIZE );
 
-BEGIN {
+{
     $MIN_COMPRESSABLE_FILESIZE = 1_024;
     $MAX_COMPRESSABLE_FILESIZE = 1_073_741_824;
 }

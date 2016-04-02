@@ -34,7 +34,6 @@ use vars qw( %_FILESREAD );
 
 sub _read_tl_file {
     my ( $fn, $dataref ) = @_;
-    print STDERR "_read_tl_file($fn)\n";
     if ( open my $fh, '<', $fn ) {
         while (<$fh>) {
             chomp;
