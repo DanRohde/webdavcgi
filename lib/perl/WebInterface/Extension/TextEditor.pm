@@ -50,14 +50,14 @@ sub init {
     $self->{editablefiles} = $self->config(
         'editablefiles',
         [
-'\.(txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
-'^(\.ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)'
+'[.](?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
+'^(?:[.]ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)'
         ]
     );
     $self->{editablefilesregex} =
-      '(' . join( q{|}, @{ $self->{editablefiles} } ) . ')';
+      '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . ')';
     $self->{editablecategories} = $self->config( 'editablecategories',
-        '(text|source|shell|config|markup)' );
+        '(?:text|source|shell|config|markup)' );
     $self->{template}  = $self->config( 'template',  'editform' );
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
     $self->{json}      = JSON->new();
@@ -187,7 +187,7 @@ sub _is_editable {
     return (
         $self->{backend}->basename($fn) =~ /$self->{editablefilesregex}/xmsi
           || $FILETYPES =~
-          /^$self->{editablecategories}\s+.*\b\Q$suffix\E\b/xmsi )
+          /^$self->{editablecategories}\s+.*?\b\Q$suffix\E\b/xmsi )
       && $self->{backend}->isFile($fn)
       && $self->{backend}->isReadable($fn)
       && $self->{backend}->isWriteable($fn);

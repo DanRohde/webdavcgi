@@ -216,7 +216,7 @@ sub _render_posix_acl_manager {
 #$content.= $c->Tr($c->th($self->tl('pacl_entry')).$c->th($self->tl('pacl_rights')));
     foreach my $e ( @{ $self->_get_acl_entries($fn) } ) {
         my $row = q{};
-
+        $e->{uid} //= q{};
         $row .= $c->td( $e->{type} . q{:} . $e->{uid} );
         my $permentry = q{};
         my @perms = $e->{permission} eq '---' ? ('---') : split //xms,

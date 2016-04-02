@@ -59,7 +59,7 @@ sub init {
     $self->{types} =
       [qw(odt odp ods doc docx ppt pptx xls xlsx csv html pdf swf)];
     $self->{typesregex} =
-      q{(} . join( q{|}, @{ $self->{types} } ) . q{)};
+      q{(?:} . join( q{|}, @{ $self->{types} } ) . q{)};
     $self->{groups} = {
         t => [qw(odt doc docx pdf html)],
         p => [qw(odp ppt ptx pdf swf)],
@@ -69,8 +69,9 @@ sub init {
 
     $self->{popupcss} = '<style>';
     foreach my $group ( keys %{ $self->{groups} } ) {
-        my @d = map { $self->{memberof}{$_} .= " c-$group" }
-          @{ $self->{groups}{$group} };
+        foreach ( @{ $self->{groups}{$group} } ) {
+            $self->{memberof}{$_} .= " c-$group";
+        }
         $self->{popupcss} .= ".c-${group} .c-${group}\{display:list-item\} ";
     }
     foreach my $suffix ( @{ $self->{types} } ) {
@@ -84,7 +85,8 @@ sub handle {
     my ( $self, $hook, $config, $params ) = @_;
     if ( $hook eq 'fileattr' ) {
         my $suffix = $params->{path} =~ /[.](\w+)$/xms ? $1 : 'unknown';
-        return $suffix !~ /$self->{unconvertible}/xms && $self->{memberof}{$suffix}
+        return $suffix !~ /$self->{unconvertible}/xms
+          && $self->{memberof}{$suffix}
           ? { ext_classes => ( $suffix =~ /$self->{typesregex}/xms ? 'c' : q{} )
               . " $self->{memberof}{$suffix} cs-$suffix" }
           : 0;
@@ -99,8 +101,9 @@ sub handle {
                 action  => 'odfconvert',
                 label   => $_,
                 type    => 'li',
-                classes => 'access-writeable '.($self->{memberof}{$_}//q{}). "cs-$_",
-                data    => { ct => $_ }
+                classes => 'access-writeable '
+                  . ( $self->{memberof}{$_} // q{} ) . "cs-$_",
+                data => { ct => $_ }
             }
         } @{ $self->{types} };
         return {
