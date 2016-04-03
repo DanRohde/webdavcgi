@@ -26,6 +26,7 @@ our @EXPORT_OK = qw( read_all_tl );
 
 use CGI::Carp;
 use Fcntl qw(:flock);
+use English qw( -no_match_vars );
 
 use DefaultConfig
   qw( $INSTALL_BASE %TRANSLATION $OPTIMIZERTMP $CONFIGFILE $RELEASE $REMOTE_USER );
@@ -35,14 +36,16 @@ use vars qw( %_FILESREAD );
 sub _read_tl_file {
     my ( $fn, $dataref ) = @_;
     if ( open my $fh, '<', $fn ) {
-        while (<$fh>) {
+        local $RS = undef;
+        my $content = <$fh>;
+        close($fh) || carp("Cannot close $fn.");
+        foreach ( split /\r?\n/xms, $content ) {
             chomp;
-            if (/^\#/xms) { next; }
-            if (/^(\S.*?)\s+"(.*)"\s*$/xms) {
+            if ( /^\#/xms || /^\s*$/xms ) { next; }
+            if (/^(\S+)\s+"(.*)"\s*$/xms) {
                 $dataref->{$1} = $2;
             }
         }
-        close($fh) || carp("Cannot close $fn.");
     }
     else { carp("Cannot read $fn!"); }
     return;
@@ -76,14 +79,14 @@ sub _save_translation {
     if ( $lang ne 'default' && !-e _get_translation_tmpfilename('default') ) {
         _save_translation('default');
     }
-    my $fn = _get_translation_tmpfilename($lang);
+    my $fn      = _get_translation_tmpfilename($lang);
+    my $content = q{};
+    foreach my $k ( keys %{ $TRANSLATION{$lang} } ) {
+        $content .= qq{$k "$TRANSLATION{$lang}{$k}"\n};
+    }
     if ( open my $fh, '>', $fn ) {
         if ( flock $fh, LOCK_EX ) {
-            foreach ( keys %{ $TRANSLATION{$lang} } ) {
-                print( {$fh} sprintf qq{%s "%s"\n},
-                    $_, $TRANSLATION{$lang}{$_} )
-                  || carp("Cannot write $fn.");
-            }
+            print( {$fh} $content ) || carp("Cannot write $fn.");
             flock $fh, LOCK_UN;
         }
         close($fh) || carp("Cannot close $fn.");

@@ -24,7 +24,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( WebInterface::Renderer );
+use base qw( WebInterface::Common );
 
 use DefaultConfig qw( $INSTALL_BASE $VHTDOCS %EXTENSION_CONFIG );
 

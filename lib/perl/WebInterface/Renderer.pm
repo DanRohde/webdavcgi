@@ -23,13 +23,19 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use base qw( WebInterface::Common );
-
 use Module::Load;
 use CGI::Carp;
 
 use DefaultConfig qw( $INSTALL_BASE $VIEW @SUPPORTED_VIEWS );
 use vars qw( %_RENDERER );
+
+sub new {
+    my $class = shift;
+    my $self = {};
+    bless $self, $class;
+    $self->{config} = shift;
+    return $self;
+}
 
 sub _get_renderer {
     my ($self) = @_;

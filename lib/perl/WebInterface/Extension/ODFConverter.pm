@@ -92,7 +92,7 @@ sub handle {
           : 0;
     }
     if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        $ret .= $hook eq 'css' ? $self->{popupcss} : q{};
+        if ($hook eq 'css') { $ret .= $self->{popupcss} };
         return $ret;
     }
     if ( $hook eq 'fileactionpopup' ) {
@@ -102,7 +102,7 @@ sub handle {
                 label   => $_,
                 type    => 'li',
                 classes => 'access-writeable '
-                  . ( $self->{memberof}{$_} // q{} ) . "cs-$_",
+                  . ( $self->{memberof}{$_} // q{} ) . " cs-$_",
                 data => { ct => $_ }
             }
         } @{ $self->{types} };
