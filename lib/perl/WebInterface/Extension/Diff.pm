@@ -95,7 +95,7 @@ sub handle {
         }
         print_compressed_header_and_content(
             '200 OK', 'application/json',
-            JSON::encode_json( \%jsondata ),
+            JSON->new()->encode( \%jsondata ),
             'Cache-Control: no-cache, no-store'
         );
         return 1;

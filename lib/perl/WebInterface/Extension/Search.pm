@@ -217,67 +217,68 @@ sub _get_result_template {
       $self->read_template($tmplname);
 }
 
+sub _render_search_result {
+    my ( $self, $base, $file, $counter ) = @_;
+    my $filename =
+      $file eq q{}
+      ? q{.}
+      : $self->{cgi}
+      ->escapeHTML( $self->{backend}->getDisplayName( $base . $file ) );
+    my $full = $base . $file;
+    my @stat = $self->{backend}->stat($full);
+    my $uri  = $REQUEST_URI . $self->{cgi}->escape($file);
+    $uri =~ s/\%2f/\//xmsig;
+    my $mime =
+      $self->{backend}->isDir($full)
+      ? '<folder>'
+      : get_mime_type($full);
+    my $suffix =
+      $file eq q{..} ? 'folderup'
+      : (
+        $self->{backend}->isDir($full) ? 'folder'
+        : ( $file =~ /[.]([\w?]+)$/xmsi ? lc($1) : 'unknown' )
+      );
+    my $category = $CACHE{categories}{$suffix} //=
+        $mime eq '<folder>' ? 'category-folder'
+      : $suffix ne 'unknown'
+      && $FILETYPES =~ /^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/xms ? "category-$1"
+      : q{};
+    return $self->render_template(
+        $PATH_TRANSLATED,
+        $REQUEST_URI,
+        $self->_get_result_template(
+            $self->config( 'resulttemplate', 'result' )
+        ),
+        {
+            fileuri   => $self->{cgi}->escapeHTML($uri),
+            filename  => $filename,
+            qfilename => $self->quote_ws($filename),
+            dirname =>
+              $self->{cgi}->escapeHTML( $self->{backend}->dirname($uri) ),
+            iconurl => $self->{backend}->isDir($full) ? $self->get_icon($mime)
+            : $self->can_create_thumb($full)
+              && ( $self->{cgi}->cookie('settings.enable.thumbnails') // q{} )
+              ne 'no' ? $self->{cgi}->escapeHTML($uri) . '?action=thumb'
+            : $self->get_icon($mime),
+            iconclass => "icon $category suffix-$suffix "
+              . ( $self->can_create_thumb($full) ? 'thumbnail' : q{} ),
+            mime         => $self->{cgi}->escapeHTML($mime),
+            type         => $mime eq '<folder>' ? 'folder' : 'file',
+            parentfolder => $self->{cgi}
+              ->escapeHTML( $self->{backend}->dirname( $base . $file ) ),
+            lastmodified => $self->{backend}->isReadable($full)
+            ? strftime( $self->tl('lastmodifiedformat'), localtime $stat[9] )
+            : q{-},
+            size => ( $self->render_byte_val( $stat[7] ) )[0]
+        }
+    );
+}
+
 sub _add_search_result {
     my ( $self, $base, $file, $counter ) = @_;
+    my $result = $self->_render_search_result( $base, $file, $counter );
     if ( open my $fh, '>>', $self->_get_temp_filename('result') ) {
-        my $filename =
-          $file eq q{}
-          ? q{.}
-          : $self->{cgi}
-          ->escapeHTML( $self->{backend}->getDisplayName( $base . $file ) );
-        my $full = $base . $file;
-        my @stat = $self->{backend}->stat($full);
-        my $uri  = $REQUEST_URI . $self->{cgi}->escape($file);
-        $uri =~ s/\%2f/\//xmsig;
-        my $mime =
-          $self->{backend}->isDir($full)
-          ? '<folder>'
-          : get_mime_type($full);
-        my $suffix =
-          $file eq q{..} ? 'folderup'
-          : (
-            $self->{backend}->isDir($full) ? 'folder'
-            : ( $file =~ /[.]([\w?]+)$/xmsi ? lc($1) : 'unknown' )
-          );
-        my $category = $CACHE{categories}{$suffix} ||=
-             $suffix ne 'unknown'
-          && $FILETYPES =~ /^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/xms
-          ? "category-$1"
-          : q{};
-        print(
-            {$fh} $self->render_template(
-                $PATH_TRANSLATED,
-                $REQUEST_URI,
-                $self->_get_result_template(
-                    $self->config( 'resulttemplate', 'result' )
-                ),
-                {
-                    fileuri   => $self->{cgi}->escapeHTML($uri),
-                    filename  => $filename,
-                    qfilename => $self->quote_ws($filename),
-                    dirname   => $self->{cgi}
-                      ->escapeHTML( $self->{backend}->dirname($uri) ),
-                    iconurl => $self->{backend}->isDir($full)
-                    ? $self->get_icon($mime)
-                    : $self->can_create_thumb($full)
-                      && ($self->{cgi}->cookie('settings.enable.thumbnails') // q{}) ne
-                      'no' ? $self->{cgi}->escapeHTML($uri) . '?action=thumb'
-                    : $self->get_icon($mime),
-                    iconclass => "icon $category suffix-$suffix "
-                      . ( $self->can_create_thumb($full) ? 'thumbnail' : q{} ),
-                    mime         => $self->{cgi}->escapeHTML($mime),
-                    type         => $mime eq '<folder>' ? 'folder' : 'file',
-                    parentfolder => $self->{cgi}->escapeHTML(
-                        $self->{backend}->dirname( $base . $file )
-                    ),
-                    lastmodified => $self->{backend}->isReadable($full)
-                    ? strftime( $self->tl('lastmodifiedformat'),
-                        localtime $stat[9] )
-                    : q{-},
-                    size => ( $self->render_byte_val( $stat[7] ) )[0]
-                }
-            )
-          )
+        print( {$fh} $result )
           || carp('Cannot write result to temporary file.');
         $counter->{results}++;
         close($fh) || carp('Cannot closet temporary file.');
@@ -288,7 +289,7 @@ sub _add_search_result {
 sub _strptime {
     my ( $self, $str, $offset ) = @_;
     $offset //= 0;
-    if ( !defined $str || $str =~/^\s*$/xms) {
+    if ( !defined $str || $str =~ /^\s*$/xms ) {
         return;
     }
     my $ret;
@@ -314,8 +315,7 @@ sub _filter_files {
     my $mstartdate = $CACHE{$self}{search}{mstartdate} //=
       $self->_strptime( scalar $self->{cgi}->param('mstartdate') );
     my $menddate = $CACHE{$self}{search}{menddate} //=
-      $self->_strptime( scalar $self->{cgi}->param('menddate'), 86_399_999 )
-      ;
+      $self->_strptime( scalar $self->{cgi}->param('menddate'), 86_399_999 );
     my $cstartdate = $CACHE{$self}{search}{cstartdate} //=
       $self->_strptime( scalar $self->{cgi}->param('cstartdate') );
     my $cenddate = $CACHE{$self}{search}{cenddate} //=
@@ -325,13 +325,14 @@ sub _filter_files {
     my @stat = $self->{backend}->stat($full);
     my $now  = time;
 
-    $ret =
-         defined $query
-      && $searchin eq 'filename'
-      && $self->{backend}->basename($file) !~ /$query/xmsi;
-
     $ret |=
          defined $query
+      && $query !~ /^\s*$/xmsi
+      && $searchin eq 'filename'
+      && $self->{backend}->basename($file) !~ /$query/xmsi;
+    $ret |=
+         defined $query
+      && $query !~ /^\s*$/xmsi
       && $self->config( 'allow_contentsearch', 0 )
       && $searchin eq 'content'
       && ( !$self->{backend}->isReadable($full)
@@ -357,23 +358,25 @@ sub _filter_files {
               !$self->_compare_vals( $filesize, $sizecomparator, $realsize );
         }
     }
+
     if ( defined $time && $time =~ /^[\d.,]+$/xms ) {
         my $timecomparator = $self->{cgi}->param('timecomparator');
         my $timeunits      = $self->{cgi}->param('timeunits');
         if ( $timecomparator =~ /^[<>=]{1,2}$/xms
             && exists $TIMEUNITS{$timeunits} )
         {
-            $time=~s/,/./xmsg;
+            $time =~ s/,/./xmsg;
             $ret |= $self->{backend}->isDir($full)
               || !$self->_compare_vals( $now - $stat[9],
                 $timecomparator, $time * $TIMEUNITS{$timeunits} );
         }
     }
+
     $ret |= defined $mstartdate && $stat[9] <= $mstartdate;
-    $ret |= defined $menddate && $stat[9] >= $menddate;
+    $ret |= defined $menddate   && $stat[9] >= $menddate;
     $ret |= defined $cstartdate && $stat[10] <= $cstartdate;
-    $ret |= defined $cenddate && $stat[10] >= $cenddate;
-    
+    $ret |= defined $cenddate   && $stat[10] >= $cenddate;
+
     if (  !$self->config( 'disable_dupsearch', 0 )
         && $self->{cgi}->param('dupsearch') )
     {
@@ -411,7 +414,7 @@ sub _compare_vals {
 sub _limits_reached {
     my ( $self, $counter ) = @_;
     $counter->{results} //= 0;
-    $counter->{level} //= 0;
+    $counter->{level}   //= 0;
     return
          $counter->{results} >= $self->{resultlimit}
       || ( time - $counter->{started} ) > $self->{searchtimeout}
@@ -531,7 +534,7 @@ sub _add_duplicate_cluster_result {
 sub _add_duplicate_savings {
     my ( $self, $data ) = @_;
     $data->{dupsearch}{savings} //= 0;
-    if ($data->{dupsearch}{savings} == 0) {
+    if ( $data->{dupsearch}{savings} == 0 ) {
         return;
     }
     if ( open my $fh, '>>', $self->_get_temp_filename('result') ) {
@@ -623,10 +626,9 @@ sub _handle_search {
 
         $self->{query} =~
           s/([.][*][?]){2,}/$1/xmsg;    ## replace .*? sequence with one .*?
-        if ( eval { "super"=~/$self->{query}/xms } ) {
+        if ( eval { 'super' =~ /$self->{query}/xms } ) {
             $self->{query} = quotemeta $self->{cgi}->param('query');
         }
-
     }
 
     #carp("query=$self->{query}");
@@ -686,8 +688,9 @@ sub _get_search_result {
         }
     }
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ),
+        '200 OK',
+        'application/json',
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;

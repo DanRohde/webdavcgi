@@ -122,7 +122,7 @@ sub search_address {
         $jsondata{result} = $addressbook->get_mail_addresses( $self,
             scalar $self->{cgi}->param('query') );
     }
-    my $content = JSON::encode_json( \%jsondata );
+    my $content = JSON->new()->encode( \%jsondata );
     print_header_and_content(
         '200 OK',
         'application/json',
@@ -325,7 +325,7 @@ sub send_mail {
         }
         $jsondata{field} = join q{,}, @fields;
     }
-    my $content = JSON::encode_json( \%jsondata );
+    my $content = JSON->new()->encode( \%jsondata );
     print_header_and_content(
         $status, $mime, $content,
         {

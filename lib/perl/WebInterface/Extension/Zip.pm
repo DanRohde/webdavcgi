@@ -222,7 +222,7 @@ sub handleZipUpload {
     if ($msg) { $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params ); }
     print_compressed_header_and_content(
         '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ),
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;
@@ -308,7 +308,7 @@ sub handleZipCompress {
 
     print_compressed_header_and_content(
         '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ),
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;
@@ -328,7 +328,7 @@ sub handleZipUncompress {
     );
     print_compressed_header_and_content(
         '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ),
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;

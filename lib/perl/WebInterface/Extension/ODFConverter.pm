@@ -175,7 +175,7 @@ sub _convert_file {
     }
     unlink $tmpdir;
     print_header_and_content( '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ) );
+        JSON->new()->encode( \%jsondata ) );
     return 1;
 }
 

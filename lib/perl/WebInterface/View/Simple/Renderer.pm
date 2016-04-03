@@ -140,7 +140,7 @@ sub _render_msg_response {
     if ($errmsg) {
         $jsondata{error} = sprintf $self->tl( 'msg_' . $errmsg ), @params;
     }
-    return ( JSON::encode_json( \%jsondata ), 'application/json' );
+    return ( JSON->new()->encode( \%jsondata ), 'application/json' );
 }
 
 sub _get_quota_data {

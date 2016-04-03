@@ -176,7 +176,7 @@ sub _handle_acl_update {
     }
     print_compressed_header_and_content(
         '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ),
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;
@@ -342,7 +342,7 @@ sub _handle_user_or_group_entry_search {
     }
     print_compressed_header_and_content(
         '200 OK', 'application/json',
-        JSON::encode_json( { result => $result } ),
+        JSON->new()->encode( { result => $result } ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;

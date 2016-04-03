@@ -146,7 +146,7 @@ sub _search_afs_user_or_group_entry {
       };
     if ( $#{$result} + $#groups >= 10 ) { splice @groups, 9 - $#{$result}; }
     push @{$result}, sort @groups;
-    return JSON::encode_json( { result => $result } );
+    return JSON->new()->encode( { result => $result } );
 }
 
 #sub searchAFSUser {
@@ -383,7 +383,7 @@ sub _do_afs_save_acl {
 
     return print_compressed_header_and_content(
         '200 OK', 'application/json',
-        JSON::encode_json( \%jsondata ),
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store',
         $self->get_cookies()
     );
