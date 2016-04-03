@@ -164,6 +164,7 @@ sub _change_permissions {
         if ($msg) {
             $jsondata{message} = sprintf $self->tl("msg_$msg"), $msgparam;
         }
+        require JSON;
         print_compressed_header_and_content(
             '200 OK', 'application/json',
             JSON->new()->encode( \%jsondata ),

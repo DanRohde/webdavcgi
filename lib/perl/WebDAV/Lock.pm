@@ -25,7 +25,7 @@ use base qw( WebDAV::Common );
 
 our $VERSION = '2.0';
 
-use Date::Parse;
+#use Date::Parse;
 use UUID::Tiny;
 
 use DefaultConfig
@@ -166,10 +166,11 @@ sub _check_timed_out {
     $DBI_TIMEZONE //=
       $DBI_SRC =~ /dbi:SQLite/xmsi ? 'GMT' : 'localtime';
     $DEFAULT_LOCK_TIMEOUT //= 3_600;
+    require Date::Parse;
     while ( my $row = shift @{$rows} ) {
         my ( $token, $timeout, $timestamp ) = (
             ${$row}[4], ${$row}[6],
-            int( str2time( ${$row}[8], $DBI_TIMEZONE ) ),
+            int( Date::Parse::str2time( ${$row}[8], $DBI_TIMEZONE ) ),
         );
         if ( !defined $timeout || $timeout =~ /^\s*$/xms ) {
             $timeout = "Second-$DEFAULT_LOCK_TIMEOUT";

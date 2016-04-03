@@ -32,7 +32,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use CGI::Carp;
-use JSON;
+#use JSON;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
 use HTTPHelper qw( print_compressed_header_and_content );
@@ -93,6 +93,7 @@ sub handle {
         else {
             $jsondata{content} = $content;
         }
+        require JSON;
         print_compressed_header_and_content(
             '200 OK', 'application/json',
             JSON->new()->encode( \%jsondata ),

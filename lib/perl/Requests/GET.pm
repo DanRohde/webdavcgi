@@ -85,9 +85,9 @@ sub handle {
     $self->debug('GET: DOWNLOAD');
     binmode(STDOUT) || carp('Cannot set binmode for STDOUT.');
 
-    if ( !$self->_handle_compressed_file( $cgi, $backend ) ) {
-        my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
-        my $headerref = print_file_header($backend, $PATH_TRANSLATED);
+    if ( !$self->_handle_compressed_file() ) {
+        my ( $start, $end, $count ) = get_byte_ranges();
+        my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
         $backend->printFile( $PATH_TRANSLATED, \*STDOUT, $start, $count );
         fix_mod_perl_response($headerref);
 
@@ -104,10 +104,10 @@ sub handle {
 }
 
 sub _compressable {
-    my ( $self, $cgi, $backend ) = @_;
-    my $enc  = $cgi->http('Accept-Encoding');
-    my $mime = get_mime_type($PATH_TRANSLATED);
-    my $stat = stat2h( $backend->stat($PATH_TRANSLATED) );
+    my ($self) = @_;
+    my $enc    = $self->{cgi}->http('Accept-Encoding');
+    my $mime   = get_mime_type($PATH_TRANSLATED);
+    my $stat   = stat2h( $self->{backend}->stat($PATH_TRANSLATED) );
 
     return
          $ENABLE_COMPRESSION
@@ -119,17 +119,18 @@ sub _compressable {
 }
 
 sub _handle_compressed_file {
-    my ( $self, $cgi, $backend ) = @_;
-    if ( !$self->_compressable( $cgi, $backend ) ) {
+    my ($self) = @_;
+    if ( !$self->_compressable() ) {
         return 0;
     }
 
-    my $enc  = $cgi->http('Accept-Encoding');
+    my $enc  = $self->{cgi}->http('Accept-Encoding');
     my $mime = get_mime_type($PATH_TRANSLATED);
-    my $stat = stat2h( $backend->stat($PATH_TRANSLATED) );
+    my $stat = stat2h( $self->{backend}->stat($PATH_TRANSLATED) );
 
-    my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
+    my ( $start, $end, $count ) = get_byte_ranges();
 
+    no locale;
     my %header = (
         -status => '200 OK',
         -type   => $mime,
@@ -146,7 +147,8 @@ sub _handle_compressed_file {
           $stat->{size};
         $header{-Content_Length} = $count;
     }
-    print( $cgi->header( \%header ) ) || carp('Cannot print HTTP header.');
+    print( $self->{cgi}->header( \%header ) )
+      || carp('Cannot print HTTP header.');
     my $c;
     if ( $enc =~ /gzip/xmsi ) {
         require IO::Compress::Gzip;
@@ -159,7 +161,8 @@ sub _handle_compressed_file {
     my $bufsize = $BUFSIZE;
     if ( defined $count && $count < $bufsize ) { $bufsize = $count; }
     my $bytecount = 0;
-    if ( open my $F, '<', $backend->getLocalFilename($PATH_TRANSLATED) ) {
+    if ( open my $F, '<', $self->{backend}->getLocalFilename($PATH_TRANSLATED) )
+    {
         if ( defined $start ) {
             seek( $F, $start, 0 )
               || carp(

@@ -32,7 +32,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use CGI::Carp;
-use JSON;
+#use JSON;
 
 use DefaultConfig
   qw( $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $BACKEND %BACKEND_CONFIG );
@@ -190,6 +190,7 @@ sub _print_json {
         $jsondata{error} = sprintf $self->tl("msg_$errmsg"), @params;
     }
     if ($msg) { $jsondata{message} = sprintf $self->tl("msg_$msg"), @params; }
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),

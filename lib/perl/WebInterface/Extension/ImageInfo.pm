@@ -27,7 +27,7 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension );
 
-use MIME::Base64;
+#use MIME::Base64;
 
 use DefaultConfig qw( $LANG $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( get_mime_type print_header_and_content );
@@ -192,6 +192,7 @@ sub _render_image_info {
 sub _get_image_info {
     my ( $self, $file ) = @_;
     my %ret = ( _tmppath_ => $file );
+    require MIME::Base64;
     require Image::ExifTool;
     my $et = Image::ExifTool->new();
     $et->Options(
@@ -203,7 +204,7 @@ sub _get_image_info {
     my $info = $et->ImageInfo($file);
     $ret{_thumbnail_} =
       $info->{ThumbnailImage} || $info->{PhotoshopThumbnail}
-      ? encode_base64(
+      ? MIME::Base64::encode_base64(
         ${ $info->{ThumbnailImage} || $info->{PhotoshopThumbnail} } )
       : undef;
 
@@ -220,7 +221,7 @@ sub _get_image_info {
                 $val = "(${$val})";
             }
             else {
-                my $b64 = encode_base64( ${$val} );
+                my $b64 = MIME::Base64::encode_base64( ${$val} );
                 $b64 =~ s/\s//xmsg;
                 $ret{_binarydata_}{$group}{$descr} = $b64;
                 my $len = length ${$val};

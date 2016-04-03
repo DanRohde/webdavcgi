@@ -27,7 +27,7 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension );
 
-use JSON;
+#use JSON;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
 use HTTPHelper qw( print_compressed_header_and_content );
@@ -174,6 +174,7 @@ sub _handle_acl_update {
           $self->tl('pacl_msg_success'),
           $c->escapeHTML( scalar $c->param('filename') );
     }
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),
@@ -340,6 +341,7 @@ sub _handle_user_or_group_entry_search {
             )
           };
     }
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( { result => $result } ),

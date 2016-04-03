@@ -34,7 +34,7 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension  );
 
-use JSON;
+#use JSON;
 use POSIX qw(strftime);
 
 use DefaultConfig qw( $LANG $PATH_TRANSLATED $REQUEST_URI );
@@ -119,7 +119,7 @@ sub _render_diskusage_template {
     
     require DateTime;
     require DateTime::Format::Human::Duration;
-    
+    require JSON;
     
     my $cgi     = $self->{cgi};
     my $counter = { start => time };

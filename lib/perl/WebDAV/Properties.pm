@@ -26,7 +26,7 @@ our $VERSION = '2.0';
 use base 'WebDAV::Common';
 
 use POSIX qw(strftime);
-use Date::Parse;
+#use Date::Parse;
 use List::MoreUtils qw(any);
 use English qw ( -no_match_vars );
 use CGI;
@@ -96,7 +96,8 @@ sub _set_lastmodified {
     my $lastaccesstime =
       ${$element_parent_ref}{'{urn:schemas-microsoft-com:}Win32LastAccessTime'};
     if ( defined $getlastmodified ) {
-        my $mtime = str2time($getlastmodified);
+        require Date::Parse;
+        my $mtime = Date::Parse::str2time($getlastmodified);
         my $atime =
           defined $lastaccesstime
           ? str2time($lastaccesstime)

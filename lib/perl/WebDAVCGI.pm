@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160403.5';
+$RELEASE = '1.1.1BETA20160403.7';
 
 use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
 
@@ -139,7 +139,7 @@ sub init {
 
     $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
     $REQUEST_URI .= $BACKEND_INSTANCE->isDir($PATH_TRANSLATED)
-      && $REQUEST_URI !~ /\/$/xms ? q{/} : q{};
+      && $REQUEST_URI !~ m{/$}xms ? q{/} : q{};
     $REQUEST_URI =~ s/&/%26/xmsg;     ## bug fix (Mac Finder and &)
 
     umask($UMASK) || croak("Cannot set umask $UMASK.");

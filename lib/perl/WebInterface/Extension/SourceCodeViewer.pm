@@ -27,7 +27,7 @@ use warnings;
 our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
-use JSON;
+#use JSON;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( print_header_and_content );
@@ -48,7 +48,6 @@ sub init {
     );
     $self->{supportedsuffixes} = \%sf;
     $self->{sizelimit}         = $self->config( 'sizelimit', 2_097_152 );
-    $self->{json}              = JSON->new();
     return $self;
 }
 
@@ -89,10 +88,11 @@ sub handle {
         if ( ( $self->{backend}->stat("$PATH_TRANSLATED$file") )[7] >
             $self->{sizelimit} )
         {
+            require JSON;
             print_header_and_content(
                 '200 OK',
                 'application/json',
-                $self->{json}->encode(
+                JSON->new()->encode(
                     {
                         error => sprintf $self->tl('scvsizelimitexceeded'),
                         $self->{cgi}->escapeHTML($file),
@@ -124,10 +124,11 @@ sub handle {
             );
         }
         else {
+            require JSON;
             print_header_and_content(
                 '200 OK',
                 'application/json',
-                $self->{json}
+                JSON->new()
                   ->encode( { error => $self->tl('scvunsupportedfiletype') } )
             );
         }

@@ -54,9 +54,9 @@ sub _get_renderer {
 }
 
 sub render_web_interface {
-    my ( $self, $fn, $ru ) = @_;
+    my ( $self ) = @_;
     my $_RENDERER = $self->_get_renderer();
-    return $_RENDERER->render( $fn, $ru );
+    return $_RENDERER->render();
 }
 
 1;

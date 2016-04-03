@@ -71,7 +71,7 @@ use warnings;
 our $VERSION = '2.0';
 
 use base qw( Exporter );
-our @EXPORT = qw(
+our @EXPORT_OK = qw(
   init_webdav_props
   @UNSUPPORTED_PROPS @PROTECTED_PROPS @KNOWN_COLL_PROPS @KNOWN_ACL_PROPS
   @KNOWN_CALDAV_COLL_PROPS @KNOWN_CALDAV_FILE_PROPS @KNOWN_CARDDAV_COLL_PROPS

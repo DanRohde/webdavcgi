@@ -31,12 +31,12 @@ use warnings;
 our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
-use JSON;
+#use JSON;
 use File::Temp qw(tempfile);
 use POSIX qw(strftime);
 use CGI::Carp;
 
-use Archive::Zip;    # for zipinfo + www.jstree.com
+#use Archive::Zip;    # for zipinfo + www.jstree.com
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
 use HTTPHelper qw( print_compressed_header_and_content );
@@ -220,6 +220,7 @@ sub handleZipUpload {
         = $msgparam ? map { $self->{cgi}->escapeHTML($_) } @{$msgparam} : ();
     if ($errmsg) { $jsondata{error} = sprintf( $self->tl("msg_$errmsg"), @params ); }
     if ($msg) { $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params ); }
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),
@@ -305,7 +306,7 @@ sub handleZipCompress {
         );
     }
     unlink $zipfn;
-
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),
@@ -326,6 +327,7 @@ sub handleZipUncompress {
         $self->tl('msg_zipuncompress'),
         $self->{cgi}->escapeHTML( join( ', ', @files ) )
     );
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),

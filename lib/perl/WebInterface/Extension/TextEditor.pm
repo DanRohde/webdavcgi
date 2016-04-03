@@ -32,7 +32,7 @@ our $VERSION = '1.0';
 
 use base qw( WebInterface::Extension  );
 
-use JSON;
+#use JSON;
 
 use DefaultConfig qw( $FILETYPES $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
@@ -60,7 +60,6 @@ sub init {
         '(?:text|source|shell|config|markup)' );
     $self->{template}  = $self->config( 'template',  'editform' );
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
-    $self->{json}      = JSON->new();
     return $self;
 }
 
@@ -116,7 +115,8 @@ sub _get_edit_form {
     my $full     = "$PATH_TRANSLATED$filename";
     my ( $contenttype, $content ) = ( 'text/plain', q{} );
     if ( ( $self->{backend}->stat($full) )[7] > $self->{sizelimit} ) {
-        $content = $self->{json} - encode(
+        require JSON;
+        $content = JSON->new()->encode(
             {
                 error => sprintf(
                     $self->tl('msg_sizelimitexceeded'),
@@ -173,9 +173,10 @@ sub _save_text_data {
     else {
         $jsondata{error} = sprintf $self->tl('msg_savetexterr'), $efilename;
     }
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
-        $self->{json}->encode( \%jsondata ),
+        JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
     return 1;

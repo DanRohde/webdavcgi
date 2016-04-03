@@ -29,7 +29,9 @@ use List::MoreUtils qw( any );
 
 use DefaultConfig qw( $ENABLE_BIND %FILECOUNTPERDIRLIMIT );
 use WebDAV::XMLHelper qw( get_namespace_uri %NAMESPACES );
-use WebDAV::WebDAVProps;
+use WebDAV::WebDAVProps
+  qw(@KNOWN_COLL_LIVE_PROPS @KNOWN_FILE_LIVE_PROPS %UNSUPPORTED_PROPS_HASH
+  @PROTECTED_PROPS %KNOWN_COLL_PROPS_HASH %KNOWN_FILE_PROPS_HASH);
 use FileUtils qw( is_hidden get_file_limit );
 
 sub init {

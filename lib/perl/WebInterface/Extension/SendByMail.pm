@@ -43,9 +43,9 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Extension );
 
-use MIME::Entity;
-use Net::SMTP;
-use JSON;
+#use MIME::Entity;
+#use Net::SMTP;
+#use JSON;
 use File::Temp qw( tempfile );
 use Module::Load;
 use CGI::Carp;
@@ -122,6 +122,7 @@ sub search_address {
         $jsondata{result} = $addressbook->get_mail_addresses( $self,
             scalar $self->{cgi}->param('query') );
     }
+    require JSON;
     my $content = JSON->new()->encode( \%jsondata );
     print_header_and_content(
         '200 OK',
@@ -137,6 +138,7 @@ sub search_address {
 
 sub build_mail_file {
     my ( $self, $limit, $filehandle ) = @_;
+    require MIME::Entity;
     my $body = MIME::Entity->build( 'Type' => 'multipart/mixed' );
     $body->attach(
         Data => $self->{cgi}->param('message') // q{},
@@ -283,6 +285,7 @@ sub send_mail {
             $jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
         }
         else {
+            require Net::SMTP;
             my $smtp = Net::SMTP->new(
                 $self->config( 'mailrelay', 'localhost' ),
                 Timeout => $self->config( 'timeout', 2 )
@@ -325,6 +328,7 @@ sub send_mail {
         }
         $jsondata{field} = join q{,}, @fields;
     }
+    require JSON;
     my $content = JSON->new()->encode( \%jsondata );
     print_header_and_content(
         $status, $mime, $content,

@@ -79,7 +79,8 @@ sub init {
                 print {$kinit} (
                     split /:/xms,
                     decode_base64( ( split /\s+/xms, $ENV{AUTHHEADER} )[1] )
-                )[1] || carp 'Cannot write login:passwort to kinit.';
+                  )[1]
+                  || carp 'Cannot write login:passwort to kinit.';
                 close $kinit || carp 'Cannot close kinit call.';
 
                 flock $lfh, LOCK_UN;
@@ -106,9 +107,10 @@ sub register {
 
 sub receive {
     my ( $self, $event, $data ) = @_;
-    if (defined Env::C::getenv('KRB5CCNAMEORIG') ) { 
-        Env::C::setenv( 'KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG') ); 
-    } else {
+    if ( defined Env::C::getenv('KRB5CCNAMEORIG') ) {
+        Env::C::setenv( 'KRB5CCNAME', Env::C::getenv('KRB5CCNAMEORIG') );
+    }
+    else {
         Env::C::unsetenv('KRB5CCNAME');
     }
     return 1;

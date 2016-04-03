@@ -25,7 +25,7 @@ our $VERSION = '2.0';
 use base qw(WebInterface::Common);
 
 use English qw(-no_match_vars);
-use JSON;
+#use JSON;
 
 use DefaultConfig qw( $PATH_TRANSLATED $VIRTUAL_BASE $DOCUMENT_ROOT
   $ALLOW_SYMLINK $ENABLE_TRASH );
@@ -57,6 +57,7 @@ sub _print_json_response {
     if ($msg) {
         $jsondata{message} = sprintf $self->tl("msg_$msg"), @params;
     }
+    require JSON;
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),

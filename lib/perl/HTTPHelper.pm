@@ -157,7 +157,7 @@ sub print_file_header {
     if ( defined $cgi->http('Translate') ) {
         $header{'Translate'} = 'f';
     }
-    my ( $start, $end, $count ) = get_byte_ranges( $cgi, $backend );
+    my ( $start, $end, $count ) = get_byte_ranges();
     if ( defined $start ) {
         $header{-status} = '206 Partial Content';
         $header{-Content_Range} = sprintf 'bytes %s-%s/%s', $start, $end,
@@ -200,14 +200,14 @@ sub read_request_body {
 }
 
 sub get_byte_ranges {
-    my ( $cgi, $backend ) = @_;
+    my () = @_;
     no locale;
     my $etag = get_etag($PATH_TRANSLATED);
     my $lm   = strftime( '%a, %d %b %Y %T GMT',
-        gmtime( ( $backend->stat($PATH_TRANSLATED) )[9] ) );
-    my $ifrange = $cgi->http('If-Range') || $etag;
+        gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] ) );
+    my $ifrange = $CGI->http('If-Range') || $etag;
     return if $ifrange ne $etag && $ifrange ne $lm;
-    my $range = $cgi->http('Range');
+    my $range = $CGI->http('Range');
     if ( $range && $range =~ /bytes=(\d+)\-(\d+)/xms ) {
         return ( $1, $2, $2 - $1 + 1 ) if $1 < $2;
     }

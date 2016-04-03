@@ -32,7 +32,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use CGI::Carp;
-use JSON;
+#use JSON;
 
 use DefaultConfig
   qw( $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $BACKEND %BACKEND_CONFIG %EXTENSION_CONFIG );
@@ -146,6 +146,7 @@ sub _search_afs_user_or_group_entry {
       };
     if ( $#{$result} + $#groups >= 10 ) { splice @groups, 9 - $#{$result}; }
     push @{$result}, sort @groups;
+    require JSON;
     return JSON->new()->encode( { result => $result } );
 }
 
@@ -380,7 +381,7 @@ sub _do_afs_save_acl {
         $jsondata{message} = sprintf $self->tl( 'msg_' . $msg ),
           $msgparam ? @{$msgparam} : q{};
     }
-
+    require JSON;
     return print_compressed_header_and_content(
         '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ),

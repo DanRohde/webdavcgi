@@ -30,7 +30,7 @@ use base qw( WebInterface::Extension  );
 
 use English qw( -no_match_vars );
 use File::Temp qw( tempdir );
-use JSON;
+#use JSON;
 use CGI::Carp;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REMOTE_USER );
@@ -174,6 +174,7 @@ sub _convert_file {
           $cgi->escapeHTML($file);
     }
     unlink $tmpdir;
+    require JSON;
     print_header_and_content( '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ) );
     return 1;

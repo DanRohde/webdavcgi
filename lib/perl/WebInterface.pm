@@ -91,7 +91,6 @@ sub handle_thumbnail_get_request {
 sub handle_get_request {
     my ($self) = @_;
     my $action = $self->{cgi}->param('action') // '_unknown_';
-
     if (   $PATH_TRANSLATED =~ m{\/webdav-ui(?:-[^./]+)?[.](?:js|css)/?$}xms
         || $PATH_TRANSLATED =~ /\Q$VHTDOCS\E(.*)$/xms )
     {
@@ -118,8 +117,7 @@ sub handle_get_request {
 
     if ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
         $self->optimize_css_and_js();
-        $self->get_renderer()
-          ->render_web_interface( $PATH_TRANSLATED, $REQUEST_URI );
+        $self->get_renderer()->render_web_interface();
         return 1;
     }
     return 0;
@@ -154,7 +152,7 @@ sub handle_post_request {
     {
         return 1;
     }
-    if ($ALLOW_POST_UPLOADS
+    if (   $ALLOW_POST_UPLOADS
         && $self->{backend}->isDir($PATH_TRANSLATED)
         && defined $self->{cgi}->param('filesubmit') )
     {
@@ -211,6 +209,7 @@ sub print_styles_vhtdocs_files {
     my $compression = !-e $file && -e "$file.gz";
     my $nfile = $file;
     if ($compression) { $file = "$nfile.gz"; }
+    no locale;
     my $header = {
         -Expires => strftime( '%a, %d %b %Y %T GMT', gmtime( time + 604_800 ) ),
         -Vary    => 'Accept-Encoding'
