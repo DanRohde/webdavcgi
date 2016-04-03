@@ -266,7 +266,7 @@ sub _build_afs_setacl_param {
     my ( $pacls, $nacls ) = ( q{}, q{} );
     my $adp = $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals};
     foreach my $param ( $self->{cgi}->param() ) {
-        my $value = join q{}, $self->{cgi}->param($param);
+        my $value = join q{}, $self->get_cgi_multi_param($param);
         if ( $param =~ /^up(?:\[([^\]]+)\])?$/xms ) {
             my $u = $1 // $self->{cgi}->param('up_add');
             if (

@@ -284,7 +284,7 @@ sub _do_afs_addusr {
     }
     my $adp = $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals};
     my @users = ();
-    foreach ( split /\s+/xms, $self->{cgi}->param('afsaddusers') ) {
+    foreach ( split /\s+/xms, $self->get_cgi_multi_param('afsaddusers') ) {
         if (   is_valid_afs_username($_, $adp) || is_valid_afs_group_name($_, $adp ) ) {
             push @users, $_;
         }

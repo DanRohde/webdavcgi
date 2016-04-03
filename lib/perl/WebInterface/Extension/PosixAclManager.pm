@@ -113,10 +113,10 @@ sub _handle_acl_update {
     my $c = $self->{cgi};
     my $qfn =
       $self->_quote_param( $self->{backend}->resolveVirt($PATH_TRANSLATED) );
-    my $recursive = $c->param('recursive') eq 'yes' ? '-R' : q{};
+    my $recursive = scalar $c->param('recursive') eq 'yes' ? '-R' : q{};
     my $output = q{};
     foreach my $param ( $c->param() ) {
-        my $val = join q{}, $c->param($param);
+        my $val = join q{}, $self->get_cgi_multi_param($param);
         my $cmd = undef;
         if (   $val =~ /^[rwxM\-]+$/xms
             && $param =~ /^acl:([[:lower:]]+:[^"\s]*)$/xmsi )
@@ -146,7 +146,7 @@ sub _handle_acl_update {
         }
         elsif ( $param eq 'newacl' && $val =~ /^[[:lower:]]+:[^"\s]*$/xmsi ) {
             my $e =
-              $self->_quote_param( join q{}, $c->param('newaclpermissions') );
+              $self->_quote_param( join q{}, $self->get_cgi_multi_param('newaclpermissions') );
             if ( $e && $e =~ /^[rwx\-]+$/xms ) {
                 if ( $e =~ /---/xms ) {
                     $cmd = sprintf '%s %s -m "%s:-" -- "%s"',
@@ -172,7 +172,7 @@ sub _handle_acl_update {
     else {
         $jsondata{msg} = sprintf
           $self->tl('pacl_msg_success'),
-          $c->escapeHTML( $c->param('filename') );
+          $c->escapeHTML( scalar $c->param('filename') );
     }
     print_compressed_header_and_content(
         '200 OK', 'application/json',

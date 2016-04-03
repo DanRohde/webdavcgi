@@ -220,7 +220,7 @@ sub _handle_rename_action {
         elsif ( defined $self->{cgi}->param('newname') ) {
             my $newname = $self->{cgi}->param('newname');
             $newname =~ s/\/$//xms;
-            my @files = $self->{cgi}->param('file');
+            my @files = $self->get_cgi_multi_param('file');
             if (   ( $#files > 0 )
                 && ( !$self->{backend}->isDir( $PATH_TRANSLATED . $newname ) )
               )
