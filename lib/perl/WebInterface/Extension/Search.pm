@@ -330,7 +330,7 @@ sub _filter_files {
       && $searchin eq 'filename'
       && $self->{backend}->basename($file) !~ /$query/xmsi;
 
-    $ret =
+    $ret |=
          defined $query
       && $self->config( 'allow_contentsearch', 0 )
       && $searchin eq 'content'
@@ -623,13 +623,13 @@ sub _handle_search {
 
         $self->{query} =~
           s/([.][*][?]){2,}/$1/xmsg;    ## replace .*? sequence with one .*?
-        if ( eval { /$self->{query}/xms } ) {
+        if ( eval { "super"=~/$self->{query}/xms } ) {
             $self->{query} = quotemeta $self->{cgi}->param('query');
         }
 
     }
 
-    #warn("query=$self->{query}");
+    #carp("query=$self->{query}");
     foreach my $file (@files) {
         last if $self->_limits_reached( \%counter );
         $self->_do_search( $PATH_TRANSLATED, $file, \%counter );
