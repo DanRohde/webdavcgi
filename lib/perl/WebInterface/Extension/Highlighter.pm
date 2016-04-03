@@ -187,7 +187,7 @@ sub get_file_attributes {
 sub remove_property {
     my ($self) = @_;
     my %jsondata = ();
-    foreach my $file ( $self->{cgi}->param('files') ) {
+    foreach my $file ( $self->get_cgi_multi_param('files') ) {
         $self->{db}->db_removeProperty(
             $self->{backend}
               ->resolveVirt( $PATH_TRANSLATED . $self->strip_slash($file) ),
@@ -212,7 +212,7 @@ sub save_property {
     my $value = $cgi->param('value') || 'black';
     my $propname = $self->{namespace} . $style;
 
-    foreach my $file ( $cgi->param('files') ) {
+    foreach my $file ( $self->get_cgi_multi_param('files') ) {
         my $full = $self->{backend}
           ->resolveVirt( $PATH_TRANSLATED . $self->strip_slash($file) );
         my $result =

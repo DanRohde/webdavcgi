@@ -75,7 +75,7 @@ sub handle {
     {
         my %jsondata = ();
         my ( $content, $raw );
-        my @files = $self->{cgi}->param('files');
+        my @files = $self->get_cgi_multi_param('files');
         if ( scalar(@files) == 2 && $self->_check_files_only(@files) ) {
             $content = $self->_render_diff_output(@files);
         }
@@ -86,7 +86,7 @@ sub handle {
             else {
                 $jsondata{error} = sprintf
                   $self->tl('diff_msg_differror'),
-                  $self->{cgi}->param('files');
+                  $self->get_cgi_multi_param('files');
             }
 
         }

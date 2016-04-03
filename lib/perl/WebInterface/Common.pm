@@ -23,6 +23,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
+use CGI;
 use CGI::Carp;
 use POSIX qw( strftime ceil locale_h );
 use List::MoreUtils qw( any );
@@ -115,18 +116,15 @@ sub initialize {
     return $view;
 }
 
-
 sub tl {
     my ( $self, $key, $default, @args ) = @_;
     if ( !defined $key ) { return $default; }
     if ( defined $default && exists $CACHE{tl}{$key}{$default} ) {
         return $CACHE{tl}{$key}{$default};
     }
-    read_all_tl($self->{config}{extensions}, $LANG);
+    read_all_tl( $self->{config}{extensions}, $LANG );
     my $val =
-         $TRANSLATION{$LANG}{$key}
-      // $TRANSLATION{default}{$key}
-      // $default
+      $TRANSLATION{$LANG}{$key} // $TRANSLATION{default}{$key} // $default
       // $key;
     return $CACHE{tl}{$key}{ $default // $key } =
       scalar( @args > 0 ) ? sprintf( $val, @args ) : $val;
@@ -699,5 +697,19 @@ sub stat_matchcount {
 sub is_in {
     my ( $self, $string, $value ) = @_;
     return $string =~ m/\Q$value\E/xms;
+}
+
+# f...... workaround for older CGI versions:
+sub get_cgi_multi_param {
+    my ( $self, $param ) = @_;
+    if ( !wantarray ) { return scalar $self->{cgi}->param($param); }
+    my @vals;
+    if ( defined $CGI::{multi_param} ) {
+        @vals = $self->{cgi}->multi_param($param);
+    }
+    else {
+        @vals = $self->{cgi}->param($param);
+    }
+    return @vals;
 }
 1;

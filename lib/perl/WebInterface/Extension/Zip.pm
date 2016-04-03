@@ -188,7 +188,7 @@ sub handleZipUpload {
     my ($self) = @_;
     my @zipfiles;
     my ( $msg, $errmsg, $msgparam );
-    foreach my $fh ( $self->{cgi}->param('files') ) {
+    foreach my $fh ( $self->get_cgi_multi_param('files') ) {
         my $rfn = $fh;
         $rfn =~ s/\\/\//xmsg;    # fix M$ Windows backslashes
         $rfn = $self->{backend}->basename($rfn);
@@ -242,7 +242,7 @@ sub getZipFilename {
 
 sub handleZipDownload {
     my $self  = shift;
-    my @files = $self->{cgi}->param('files');
+    my @files = $self->get_cgi_multi_param('files');
     my $zfn   = $self->getZipFilename( \@files );
     print $self->{cgi}->header(
         -status              => '200 OK',
@@ -256,7 +256,7 @@ sub handleZipDownload {
 
 sub handleZipCompress {
     my $self        = shift;
-    my @files       = $self->{cgi}->param('files');
+    my @files       = $self->get_cgi_multi_param('files');
     my $zipfilename = $self->getZipFilename( \@files );
 
     my ( $zipfh, $zipfn ) = tempfile(
@@ -316,8 +316,8 @@ sub handleZipCompress {
 
 sub handleZipUncompress {
     my ($self) = @_;
-    my @files = $self->{cgi}->param('files');
-    foreach my $file ( $self->{cgi}->param('files') ) {
+    my @files = $self->get_cgi_multi_param('files');
+    foreach my $file ( @files ) {
         $self->{backend}->uncompress_archive( $PATH_TRANSLATED . $file,
             $PATH_TRANSLATED );
     }
@@ -334,9 +334,10 @@ sub handleZipUncompress {
     return 1;
 }
 
+# TODO: implement zip info dialog
 sub handleZipInfo {
     my ($self) = @_;
-    my @files = $self->{cgi}->param('files');
+    my @files = $self->get_cgi_multi_param('files');
     ## common:comment, compressionMethod, chunkSize  tree: filename, lastmodified, fileattributes, comments, uncompressedISize
     return;
 }

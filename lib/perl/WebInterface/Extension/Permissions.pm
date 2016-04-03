@@ -118,19 +118,19 @@ sub _change_permissions {
             my $p_g = join q{}, @{ $self->config( 'group',  [qw(r w x s)] ) };
             my $p_o = join q{}, @{ $self->config( 'others', [qw(r w x t)] ) };
             my $m   = 0;
-            foreach my $up ( $self->{cgi}->param('fp_user') ) {
+            foreach my $up ( $self->get_cgi_multi_param('fp_user') ) {
                 if ( $up eq 'r' && $p_u =~ /r/xms ) { $m |= oct 400; }
                 if ( $up eq 'w' && $p_u =~ /w/xms ) { $m |= oct 200; }
                 if ( $up eq 'x' && $p_u =~ /x/xms ) { $m |= oct 100; }
                 if ( $up eq 's' && $p_u =~ /s/xms ) { $m |= oct 4000; }
             }
-            foreach my $gp ( $self->{cgi}->param('fp_group') ) {
+            foreach my $gp ( $self->get_cgi_multi_param('fp_group') ) {
                 if ( $gp eq 'r' && $p_g =~ /r/xms ) { $m |= oct 40; }
                 if ( $gp eq 'w' && $p_g =~ /w/xms ) { $m |= oct 20; }
                 if ( $gp eq 'x' && $p_g =~ /x/xms ) { $m |= oct 10; }
                 if ( $gp eq 's' && $p_g =~ /s/xms ) { $m |= oct 2000; }
             }
-            foreach my $op ( $self->{cgi}->param('fp_others') ) {
+            foreach my $op ( $self->get_cgi_multi_param('fp_others') ) {
                 if ( $op eq 'r' && $p_o =~ /r/xms ) { $m |= 4; }
                 if ( $op eq 'w' && $p_o =~ /w/xms ) { $m |= 2; }
                 if ( $op eq 'x' && $p_o =~ /x/xms ) { $m |= 1; }
@@ -141,16 +141,16 @@ sub _change_permissions {
             $msgparam = sprintf 'p1=%04o', $m;
             my @files =
                 $self->{cgi}->param('files[]')
-              ? $self->{cgi}->param('files[]')
-              : $self->{cgi}->param('files');
+              ? $self->get_cgi_multi_param('files[]')
+              : $self->get_cgi_multi_param('files');
             foreach my $file (@files) {
                 if ( $file eq q{.} ) { $file = q{}; }
                 $self->{backend}->changeFilePermissions(
                     $PATH_TRANSLATED . $file,
                     $m,
-                    $self->{cgi}->param('fp_type'),
+                    scalar $self->{cgi}->param('fp_type'),
                     $self->config( 'allow_changepermrecursive', 1 )
-                      && $self->{cgi}->param('fp_recursive')
+                      && scalar $self->{cgi}->param('fp_recursive')
                 );
             }
         }

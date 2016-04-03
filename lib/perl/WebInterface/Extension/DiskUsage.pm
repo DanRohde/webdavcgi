@@ -128,7 +128,7 @@ sub _render_diskusage_template {
     $self->{counter} = $counter;
     $self->{json}    = $json;
 
-    foreach my $file ( $cgi->param('file') ) {
+    foreach my $file ( $self->get_cgi_multi_param('file') ) {
         $self->_get_disk_usage( $PATH_TRANSLATED, $file, $counter );
     }
     if (
@@ -184,7 +184,7 @@ sub _render_diskusage_template {
     my $hdr = DateTime::Format::Human::Duration->new();
 
     my @pbvsum = $self->render_byte_val( $counter->{size}{all} );
-    my $filenamelist = join ', ', $cgi->param('file');
+    my $filenamelist = join ', ', $self->get_cgi_multi_param('file');
     if ( $filenamelist eq q{} ) { $filenamelist = q{.}; }
     if ( length $filenamelist > $_MAX_FILENAMELIST_LENGTH ) {
         $filenamelist =

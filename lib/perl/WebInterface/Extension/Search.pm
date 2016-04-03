@@ -151,7 +151,7 @@ sub _get_search_form {
       $self->{cgi}->param('files')
       ? join( ', ',
         map { $self->{backend}->getDisplayName( $PATH_TRANSLATED . $_ ) }
-          $self->{cgi}->param('files') )
+          $self->get_cgi_multi_param('files') )
       : $self->tl('search.currentfolder');
     my $dfmt = langinfo(D_FMT);
     $dfmt =~ s/\%(.)/\L$1$1\E/xmsg;
@@ -603,7 +603,7 @@ sub _do_dup_search {
 sub _handle_search {
     my ($self) = @_;
 
-    my @files = $self->{cgi}->param('files');
+    my @files = $self->get_cgi_multi_param('files');
     if ( scalar(@files) == 0 ) { @files = (q{}) }
     my @results = ();
     unlink $self->_get_temp_filename('result');
@@ -699,7 +699,7 @@ sub _get_search_result {
 sub _render_selected_files {
     my ( $self, $format ) = @_;
     my $ret = q{};
-    foreach my $file ( $self->{cgi}->param('files') ) {
+    foreach my $file ( $self->get_cgi_multi_param('files') ) {
         my $f = $format;
         $f =~ s/\$v/$self->{cgi}->escapeHTML($file)/exmsg;
         $ret .= $f;

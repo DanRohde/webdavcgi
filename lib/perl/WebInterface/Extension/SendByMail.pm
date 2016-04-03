@@ -152,7 +152,7 @@ sub build_mail_file {
             SUFFIX   => '.zip'
         );
         $self->{backend}->compress_files( $zipfh, $PATH_TRANSLATED,
-            $self->{cgi}->param('files') );
+            $self->get_cgi_multi_param('files') );
         close($zipfh) || carp("Cannot close $zipfn.");
         if ( $limit &&  (stat $zipfn )[7] > $limit ) {
             unlink $zipfn;
@@ -170,7 +170,7 @@ sub build_mail_file {
     }
     else {
         my $sumsizes = 0;
-        foreach my $fn ( $self->{cgi}->param('files') ) {
+        foreach my $fn ( $self->get_cgi_multi_param('files') ) {
             my $file =
               $self->{backend}->getLocalFilename( $PATH_TRANSLATED . $fn );
             my $filesize = (stat $file)[7];
@@ -353,7 +353,7 @@ sub render_mail_dialog {
 
     my $FILES        = q{};
     my $sumfilesizes = 0;
-    foreach my $fn ( $self->{cgi}->param('files') ) {
+    foreach my $fn ( $self->get_cgi_multi_param('files') ) {
         my $f = "${PATH_TRANSLATED}${fn}";
 
       #next if $self->{backend}->isDir($f) || !$self->{backend}->isReadable($f);
