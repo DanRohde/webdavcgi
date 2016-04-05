@@ -37,25 +37,25 @@ sub add {
           or croak "I need a Events::EventListener for $event";
     }
 
-    if ( !${$self}{ $event || 'ALL' } ) { ${$self}{ $event || 'ALL' } = []; }
+    if ( !$self->{ $event || 'ALL' } ) { $self->{ $event || 'ALL' } = []; }
 
     if ( !defined $event ) {
-        push @{ ${$self}{ALL} }, $listener;
+        push @{ $self->{ALL} }, $listener;
     }
     elsif ( ref($event) eq 'ARRAY' ) {
         foreach my $e ( @{$event} ) {
-            push @{ ${$self}{$e} }, $listener;
+            push @{ $self->{$e} }, $listener;
         }
     }
     else {
-        push @{ ${$self}{$event} }, $listener;
+        push @{ $self->{$event} }, $listener;
     }
     return 1;
 }
 
 sub broadcast {
     my ( $self, $event, @data ) = @_;
-    my @listeners = ( @{ ${$self}{$event} // [] }, @{ ${$self}{ALL} // [] } );
+    my @listeners = ( @{ $self->{$event} // [] }, @{ $self->{ALL} // [] } );
     foreach my $listener (@listeners) {
         $listener->receive( $event, @data );
     }

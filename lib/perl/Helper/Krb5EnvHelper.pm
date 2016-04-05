@@ -29,7 +29,7 @@ use CGI::Carp;
 
 use base qw( Events::EventListener);
 
-use DefaultConfig qw ( $READBUFSIZE );
+use DefaultConfig qw ( $READBUFSIZE $EVENT_CHANNEL );
 
 sub new {
     my ($class) = @_;
@@ -49,7 +49,7 @@ sub init {
     if ( $ENV{KRB5CCNAME} ) {
         Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
     }
-    ## $self->register( main::get_event_channel() ); ## TODO: config and doc
+    $self->register( $EVENT_CHANNEL );
     if ( $ENV{KRB5CCNAME} && $ENV{KRB5CCNAME} ne $ticketfn ) {
 
         if (

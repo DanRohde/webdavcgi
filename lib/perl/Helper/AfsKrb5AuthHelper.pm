@@ -25,16 +25,31 @@ our $VERSION = '2.0';
 
 use base qw( Helper::Krb5AuthHelper );
 
-use AFS::PAG qw( setpag unlog );
+use AFS::PAG qw( setpag unlog haspag );
 use CGI::Carp;
+use English qw(-no_match_vars );
 
 sub init {
     my ($self) = @_;
-    my $ret = 1;
-
+    my $ret;
     if ( $ret = $self->SUPER::init() ) {
-        setpag();
-        confess("aklog failed for $ENV{REMOTE_USER}") if system('aklog') > 0;
+        if ( haspag() ) {
+            unlog();
+        }
+        else {
+            setpag()
+                || confess(
+                "setpag failed  (pid=$PID, user=$ENV{REMOTE_USER})");
+        }
+        if ( open my $aklog, q{-|}, 'aklog 2>&1' ) {
+            local $RS = undef;
+            my $output = <$aklog>;
+            if ( $output && $output ne q{} ) { carp("aklog: $output"); }
+            close($aklog) || carp(q{Cannot close 'aklog 2>&2'});
+        }
+        else {
+            confess("Cannot execute 'aklog 2>&1': $ERRNO");
+        }
     }
     return $ret;
 }

@@ -29,6 +29,8 @@ use Env::C;
 
 use base qw(Events::EventListener);
 
+use DefaultConfig qw( $EVENT_CHANNEL );
+
 sub new {
     my ($class) = @_;
     my $self = {};
@@ -47,7 +49,7 @@ sub init {
     if ( $ENV{KRB5CCNAME} ) {
         Env::C::setenv( 'KRB5CCNAMEORIG', $ENV{KRB5CCNAME} );
     }
-    ## $self->register( main::get_event_channel() ); ###TODO: config and doc
+    $self->register($EVENT_CHANNEL);
 
     my $ticketfn = "/tmp/krb5cc_webdavcgi_$REMOTE_USER";
     $ENV{KRB5CCNAME} = "FILE:$ticketfn";
@@ -60,11 +62,10 @@ sub init {
 
     my $agefile = "$ticketfn.age";
 
-    if (
-        -e $ticketfn
+    if (-e $ticketfn
         && ( time - ( stat $agefile )[9] >= $TICKET_LIFETIME
             || !-s $ticketfn )
-      )
+        )
     {
         unlink $ticketfn;
     }
@@ -75,12 +76,12 @@ sub init {
                 print {$lfh} time || carp "Cannot write time to $agefile.";
                 open( my $kinit, q{|-},
                     "kinit '$REMOTE_USER' 1>/dev/null 2>&1" )
-                  || croak "Cannot execute kinit $REMOTE_USER";
+                    || croak "Cannot execute kinit $REMOTE_USER";
                 print {$kinit} (
                     split /:/xms,
                     decode_base64( ( split /\s+/xms, $ENV{AUTHHEADER} )[1] )
-                  )[1]
-                  || carp 'Cannot write login:passwort to kinit.';
+                    )[1]
+                    || carp 'Cannot write login:passwort to kinit.';
                 close $kinit || carp 'Cannot close kinit call.';
 
                 flock $lfh, LOCK_UN;

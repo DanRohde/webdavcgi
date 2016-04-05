@@ -47,7 +47,7 @@ use DefaultConfig qw(
   $CONFIGFILE $DOCUMENT_ROOT $VIRTUAL_BASE
   $ENABLE_LOCK $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE
   $ENABLE_CARDDAV $ENABLE_GROUPDAV $ENABLE_BIND
-  $ENABLE_ACL $ENABLE_SEARCH $BACKEND_INSTANCE
+  $ENABLE_ACL $ENABLE_SEARCH $BACKEND_INSTANCE $EVENT_CHANNEL
 );
 use DB::Driver;
 use DatabaseEventAdapter;
@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160403.7';
+$RELEASE = '1.1.1BETA20160405.1';
 
 use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
 
@@ -90,7 +90,7 @@ sub init {
     ## some config independent objects for convinience:
     $self->{debug}  //= \&debug;
     $self->{logger} //= \&logger;
-    $self->{event}  //= $self->_get_event_channel();
+    $self->{event}  //= $EVENT_CHANNEL = $self->_get_event_channel();
     $self->{cache} = CacheManager->new();    # every request needs a fresh cache
 
     ## read config file:

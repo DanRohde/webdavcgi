@@ -26,6 +26,7 @@ our $VERSION = '2.0';
 use base qw( Backend::FS::Driver );
 
 use CGI::Carp;
+use English qw( -no_match_vars );
 
 use DefaultConfig qw( %BACKEND_CONFIG $BACKEND );
 
@@ -137,9 +138,10 @@ sub _get_caller_access {
     my $cmd = sprintf '%s getcalleraccess "%s" 2>/dev/null',
       $BACKEND_CONFIG{$BACKEND}{fscmd}, $fn;
     if ( open my $cmdfh, q{-|}, $cmd ) {
-        my @lines = <$cmdfh>;
+        local $RS = undef;
+        my $lines = <$cmdfh>;
         close $cmdfh;
-        if ( $#lines >=0 && $lines[-1] =~ /^[rlidwka]{1,7}$/xms ) { $access = $lines[-1]; }
+        if ( $lines && $lines =~ / ([rlidwka]{1,7})$/xms ) { $access = $1; }
     }
     return $self->{cache}{$fn}{_get_caller_access} = $access;
 }
