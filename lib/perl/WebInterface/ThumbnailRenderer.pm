@@ -42,9 +42,24 @@ sub new {
     return $self;
 }
 
+sub _create_empty_thumbnail {
+    my ( $filename, $outputfilename ) = @_;
+    require Graphics::Magick;
+    my $image = Graphics::Magick->new( size => '1x1' );
+    $image->Read('xc:white');
+    #$image->Transparent(color=>'white');
+    $image->Write($outputfilename);
+    return;
+}
+
 sub _create_thumbnail {
     my ( $self, $filename, $outputfilename ) = @_;
     require Graphics::Magick;
+
+    if ( $self->{backend}->isEmpty($filename) ) {
+        return _create_empty_thumbnail( $filename, $outputfilename );
+    }
+
     my $image = Graphics::Magick->new();
     my $width = $THUMBNAIL_WIDTH // $ICON_WIDTH // 18;
     my $lfn   = $self->{backend}->getLocalFilename($filename);
@@ -52,7 +67,9 @@ sub _create_thumbnail {
     my ( $w, $h, $s, $f ) = $image->Ping($lfn);
     $w //= 0;
     $h //= 0;
-    $x = $image->Read($lfn) && carp($x);
+    if ( $image->Read($lfn) ) {
+        return _create_empty_thumbnail( $filename, $outputfilename );
+    }
     $image->Set( delay => 200 );
 
     if ( $h > $width && $w < $width ) {
@@ -77,7 +94,7 @@ sub print_thumbnail {
 
     if ($ENABLE_THUMBNAIL_CACHE) {
         my $uniqname = $fn;
-        $uniqname =~ s/\//_/xmsg;
+        $uniqname =~ s{/}{_}xmsg;
         my $cachefile = "$THUMBNAIL_CACHEDIR/$uniqname.thumb.gif";
         if ( !-e $THUMBNAIL_CACHEDIR ) {
             mkdir($THUMBNAIL_CACHEDIR)
@@ -119,7 +136,8 @@ sub print_media_rss {
     my $renderer = $self->{config}{webinterface}->get_renderer();
     my $content =
 qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
-    foreach my $file ( sort { $a cmp $b }@{ $self->{backend}->readDir( $fn, get_file_limit($fn), $renderer ) } )
+    foreach my $file ( sort { $a cmp $b }
+        @{ $self->{backend}->readDir( $fn, get_file_limit($fn), $renderer ) } )
     {
         my $mime = get_mime_type($file);
         if ( $renderer->has_thumb_support($mime) && $mime !~ /^image/xmsi ) {

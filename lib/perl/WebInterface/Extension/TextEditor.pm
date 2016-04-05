@@ -147,8 +147,9 @@ sub _get_edit_form {
 
 sub _make_backup_copy {
     my ( $self, $full ) = @_;
+    my $cookie = $self->{cgi}->cookie('settings.texteditor.backup') // q{};
     return
-         $self->{cgi}->cookie('settings.texteditor.backup') eq 'no'
+         $cookie eq 'no'
       || ( $self->{backend}->stat($full) )[7] == 0
       || rcopy( $self->{config}, $full, "$full.backup" );
 }
@@ -165,7 +166,7 @@ sub _save_text_data {
     elsif ($self->{backend}->isFile($full)
         && $self->{backend}->isWriteable($full)
         && $self->_make_backup_copy($full)
-        && $self->{backend}->saveData( $full, $self->{cgi}->param('textdata') )
+        && $self->{backend}->saveData( $full, scalar $self->{cgi}->param('textdata') )
       )
     {
         $jsondata{message} = sprintf $self->tl('msg_textsaved'), $efilename;

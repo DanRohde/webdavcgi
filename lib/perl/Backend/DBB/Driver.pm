@@ -30,7 +30,7 @@ use English qw( -no_match_vars );
 use CGI::Carp;
 use DBI qw( :sql_types );
 
-use DefaultConfig qw( $BUFSIZE $DOCUMENT_ROOT $UMASK $BACKEND %BACKEND_CONFIG );
+use DefaultConfig qw( $BUFSIZE $DOCUMENT_ROOT $UMASK $BACKEND %BACKEND_CONFIG $PATH_TRANSLATED );
 use File::Temp qw( tempfile tempdir );
 
 use constant {
@@ -49,21 +49,20 @@ sub finalize {
     return;
 }
 
-sub initialize {
+sub _initialize {
     my ($self) = @_;
-
     if ( !defined $DB ) {
         my $dsn = $BACKEND_CONFIG{$BACKEND}{dsn}
-          || 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'
+          // 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'
           . $ENV{REMOTE_USER} . '.db';
         my @parm = split /:/xms, $dsn;
         if ( scalar(@parm) == 3
             && ( ( uc( $parm[0] ) eq 'DBI' ) && ( $parm[1] eq 'SQLite' ) ) )
         {
-            foreach my $tag ( split /;/xms, $parm[2] ) {
-                if ( $tag =~ /^dbname=/xms ) {
-                    $tag =~ s/dbname=//xms;
-                    if ( $tag ne q{} and ( !-e $tag ) ) {
+            foreach my $tag ( split /[;]/xms, $parm[2] ) {
+                if ( $tag =~ /^dbname=(.*)/xms ) {
+                    $tag = $1;
+                    if ( $tag ne q{} && ( !-e $tag ) ) {
                         open( my $FH, '>', $tag )
                           || croak "Can't create $tag: $ERRNO";
                         close($FH) || carp "Cannot close $tag.";
@@ -73,30 +72,31 @@ sub initialize {
         }
         $DB = DBI->connect(
             $dsn,
-            $BACKEND_CONFIG{$BACKEND}{user}     // {},
-            $BACKEND_CONFIG{$BACKEND}{password} // {},
-            { RaiseError => 0, AutoCommit => 0 }
+            $BACKEND_CONFIG{$BACKEND}{user}     // q{},
+            $BACKEND_CONFIG{$BACKEND}{password} // q{},
+            { RaiseError => 0, AutoCommit => 1 }
         );
         if ( defined $DB ) {
             my $sth = $DB->prepare('SELECT name FROM objects');
             if ( !defined $sth ) {
-                $DB->rollback();
+                #$DB->rollback();
                 $sth = $DB->prepare(
 'CREATE TABLE objects (name varchar(255) NOT NULL, parent varchar(255) NOT NULL, type int NOT NULL, owner VARCHAR(255) NOT NULL, created timestamp NOT NULL, modified timestamp NOT NULL, size int NOT NULL, permissions int NOT NULL, data blob)'
                 );
                 $sth->execute();
-                $DB->commit();
+                ##$DB->commit();
             }
         }
     }
-    return;
+    return $self;
 }
 
 sub readDir {
     my ( $self, $fn, $limit, $filter ) = @_;
-    $self->initialize();
+    $self->_initialize();
     my @list;
     my $sth = $DB->prepare('SELECT name FROM objects WHERE parent = ?');
+    print STDERR "readDir($fn) resolve($fn)".$self->resolve($fn)."\n";
     if ( $sth && $sth->execute( $self->resolve($fn) ) ) {
         my $data = $sth->fetchall_arrayref();
         foreach my $e ( @{$data} ) {
@@ -106,30 +106,30 @@ sub readDir {
         }
     }
     else {
-        $DB->rollback();
+        #$DB->rollback();
     }
     return \@list;
 }
 
 sub unlinkFile {
     my ( $self, $fn ) = @_;
-    $self->initialize();
+    $self->_initialize();
     $fn = $self->resolve($fn);
     my $sth = $DB->prepare('DELETE FROM objects WHERE name = ? AND parent = ?');
     if ( $sth && $sth->execute( $self->basename($fn), $self->getParent($fn) ) )
     {
-        $DB->commit();
+        #$DB->commit();
         return 1;
     }
     else {
-        $DB->rollback();
+        #$DB->rollback();
     }
     return 0;
 }
 
 sub deltree {
     my ( $self, $fn ) = @_;
-    $self->initialize();
+    $self->_initialize();
     $fn = $self->resolve($fn);
     my $sth =
       $DB->prepare('DELETE FROM objects WHERE parent = ? OR parent like ?');
@@ -140,14 +140,14 @@ sub deltree {
             $sth->execute( $self->basename($fn), $self->getParent($fn) );
         }
         if ( $sth && !$sth->err ) {
-            $DB->commit();
+            #$DB->commit();
             return 1;
         }
         else {
-            $DB->rollback();
+            #$DB->rollback();
         }
     }
-    $DB->rollback();
+    #$DB->rollback();
     return 0;
 }
 
@@ -182,11 +182,11 @@ sub rename {
         )
       )
     {
-        $DB->commit();
+        #$DB->commit();
         return 1;
     }
     else {
-        $DB->rollback();
+        #$DB->rollback();
     }
     return 0;
 }
@@ -256,7 +256,7 @@ sub _get_db_value {
 
 sub _add_db_entry {
     my ( $self, $name, $type ) = @_;
-    $self->initialize();
+    $self->_initialize();
     my $parent  = $self->getParent($name);
     my $created = time;
     $name = $self->basename($name);
@@ -279,16 +279,16 @@ sub _add_db_entry {
         $ret &= $self->_change_db_entry($parent);
     }
     if ($ret) {
-        $DB->commit();
+        #$DB->commit();
         return $ret;
     }
-    $DB->rollback();
+    #$DB->rollback();
     return $ret;
 }
 
 sub _change_db_entry {
     my ( $self, $name ) = @_;
-    $self->initialize();
+    $self->_initialize();
     $name = $self->resolve($name);
     my $sel = 'UPDATE objects SET modified = ?';
     $sel .= defined $_[2] ? ', data = ?' : q{};
@@ -306,16 +306,16 @@ sub _change_db_entry {
     $sth->bind_param( ++$i, $self->getParent($name) );
 
     if ( $sth->execute() ) {
-        $DB->commit();
+        #$DB->commit();
         return 1;
     }
-    $DB->rollback();
+    #$DB->rollback();
     return 0;
 }
 
 sub _get_db_entry {
     my ( $self, $fn, $withdata ) = @_;
-    $self->initialize();
+    $self->_initialize();
     my $sel =
       'SELECT name, parent, type, created, modified, size, permissions, owner';
     $sel .= $withdata ? ',data' : q{};
@@ -329,15 +329,16 @@ sub _get_db_entry {
 }
 
 sub _is_root {
-    return $_[1] eq $DOCUMENT_ROOT;
+    return $_[1] ? $_[1] eq $DOCUMENT_ROOT : $PATH_TRANSLATED eq $DOCUMENT_ROOT;
 }
 
 sub resolve {
     my ( $self, $fn ) = @_;
+    $fn //= $PATH_TRANSLATED;
     $fn =~ s{([^/]*)/[.]{2}(?:/?.*)}{$1}xms;
     $fn =~ s{/$}{}xms;
     $fn =~ s{//}{/}xmsg;
-    return $fn;
+    return $fn eq q{} ? q{/} : $fn;
 }
 
 sub isEmpty {
@@ -350,7 +351,7 @@ sub saveData {
     #my ($self, $path, $data, $append) = @_;
     my $fn = $_[0]->resolve( $_[1] );
     my $data;
-    $_[0]->initialize();
+    $_[0]->_initialize();
     if ( $_[0]->exists( $_[1] ) ) {
         if ( $_[3] ) {
             my $v = _get_db_entry( $fn, 1 );
