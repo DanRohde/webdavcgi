@@ -169,10 +169,10 @@ sub _render_afs_group_manager {
             $self->tl('afsgroups'),
             $self->{cgi}->escapeHTML($REMOTE_USER)
         ),
-        afsmembereditorhead => $self->{cgi}->param('afsgrp')
+        afsmembereditorhead => scalar $self->{cgi}->param('afsgrp')
         ? sprintf(
             $self->tl('afsgrpusers'),
-            $self->{cgi}->escapeHTML( $self->{cgi}->param('afsgrp') )
+            $self->{cgi}->escapeHTML( scalar $self->{cgi}->param('afsgrp') )
           )
         : q{},
         user => $REMOTE_USER,

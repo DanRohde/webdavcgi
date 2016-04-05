@@ -129,7 +129,7 @@ sub exec_template_function {
         $content = $self->_render_afs_acl_list( $fn, $ru, 0, $param );
     }
     elsif ( $func eq 'checkAFSCallerAccess' ) {
-        $content = $self->{backend}->_checkCallerAccess( $fn, $param );
+        $content = $self->{backend}->_check_caller_access( $fn, $param );
     }
     return $content
       // $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
@@ -197,9 +197,9 @@ sub _read_afs_acls {
     $fn = $self->{backend}->resolveVirt($fn);
     $fn =~ s/(["\$\\])/\\$1/xmsg;
 
-    my @lines = exec_ptscmd( sprintf q{%s listacl "%s"},
-        $BACKEND_CONFIG{$BACKEND}{fscmd}, $fn );
-
+    my @lines = @{ exec_ptscmd( sprintf q{%s listacl "%s"},
+        $BACKEND_CONFIG{$BACKEND}{fscmd}, $fn ) };
+    shift @lines;
     my @entries;
     my $ispositive = 1;
     foreach my $line (@lines) {
@@ -252,7 +252,7 @@ sub _render_afs_acl_list {
             $self->_read_afs_acls( $fn, $ru ),
             $positive,
             $self->read_template($tmplfile),
-            !$self->{backend}->_checkCallerAccess( $fn, 'a' )
+            !$self->{backend}->_check_caller_access( $fn, 'a' )
         )
     );
 }
@@ -346,7 +346,7 @@ sub _do_afs_fs_setacl_cmd_recursive {
         my $nf = "$fn$f";
         if (   $self->{backend}->isDir($nf)
             && !$self->{backend}->isLink($nf)
-            && $self->{backend}->_checkCallerAccess( $nf, 'a', 'a' ) )
+            && $self->{backend}->_check_caller_access( $nf, 'a', 'a' ) )
         {
             $nf .= q{/};
             ( $msg, $errmsg, $msgparam ) =
