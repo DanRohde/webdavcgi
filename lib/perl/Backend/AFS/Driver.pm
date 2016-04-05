@@ -28,13 +28,14 @@ use base qw( Backend::FS::Driver );
 use CGI::Carp;
 use English qw( -no_match_vars );
 
-use DefaultConfig qw( %BACKEND_CONFIG $BACKEND );
+use DefaultConfig qw( %BACKEND_CONFIG $BACKEND $PATH_TRANSLATED );
 
 sub isFile {
     return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
       ? $_[0]->SUPER::isFile( $_[1] )
       : 1;
 }
+
 sub isLink {
     return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
       ? $_[0]->SUPER::isLink( $_[1] )
@@ -86,9 +87,9 @@ sub isCharDevice {
 }
 
 sub exists {
-    return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
+    return $_[0]->_check_caller_access( $_[1], 'l', 'r', 1 )
       ? $_[0]->SUPER::exists( $_[1] )
-      : 1;
+      : 0;
 }
 
 sub isEmpty {
@@ -105,6 +106,7 @@ sub stat {
 
 sub getQuota {
     my ( $self, $fn ) = @_;
+    $fn //= $PATH_TRANSLATED;
     $fn =~ s/(["\$\\])/\\$1/xmsg;
     if ( !defined $BACKEND_CONFIG{$BACKEND}{quota} ) {
         return ( 0, 0 );
@@ -113,15 +115,15 @@ sub getQuota {
       $self->resolveVirt($fn);
     if ( open my $cmdfh, q{-|}, $cmd ) {
         my @lines = <$cmdfh>;
-        close($cmdfh) || carp("Cannot close cmd $cmd\n");
-        my @vals = $#lines >=1 ? split /\s+/xms, $lines[1] : (0,0,0);
+        close $cmdfh;
+        my @vals = $#lines >= 1 ? split /\s+/xms, $lines[1] : ( 0, 0, 0 );
         return ( $vals[1] * 1024, $vals[2] * 1024 );
     }
     return ( 0, 0 );
 }
 
 sub _get_caller_access {
-    my ( $self, $fn ) = @_;
+    my ( $self, $fn, $ignoreparent ) = @_;
     $fn = $self->resolveVirt($fn);
     $fn =~ s{/$}{}xms;                # remove trailing slash
     $fn =~ s{/[^/]+/[.]{2}$}{}xms;    # eliminate ../
@@ -129,10 +131,9 @@ sub _get_caller_access {
     if ( exists $self->{cache}{$fn}{_get_caller_access} ) {
         return $self->{cache}{$fn}{_get_caller_access};
     }
-###  checks on files working too
-#    if ( !$self->isDir($fn) ) {
-#        return $self->_get_caller_access( $self->dirname($fn) );
-#    }
+    if ( !$ignoreparent && !$self->isDir($fn) ) {
+        return $self->_get_caller_access( $self->dirname($fn) );
+    }
     my $access = q{};
 
     my $cmd = sprintf '%s getcalleraccess "%s" 2>/dev/null',
@@ -143,15 +144,24 @@ sub _get_caller_access {
         close $cmdfh;
         if ( $lines && $lines =~ / ([rlidwka]{1,7})$/xms ) { $access = $1; }
     }
-    return $self->{cache}{$fn}{_get_caller_access} = $access;
+    return !$ignoreparent
+      ? $self->{cache}{$fn}{_get_caller_access} = $access
+      : $access;
 }
 
 sub _check_caller_access {
-    my ( $self, $fn, $dright, $fright ) = @_;
+    my ( $self, $fn, $dright, $fright, $ignoreparent ) = @_;
     $fright //= $dright;
+    my $ca = $self->_get_caller_access( $fn, $ignoreparent );
+    if ( $ca eq {} ) { return 0; }
     my $aright =
       $dright eq $fright || $self->SUPER::isDir($fn) ? $dright : $fright;
-    return $self->_get_caller_access($fn) =~ /\Q$aright\E/xms;
+    return $ca =~ /\Q$aright\E/xms;
 }
-
+sub finalize {
+    my ($self) = @_;
+    $self->SUPER::finalize();
+    delete $self->{cache};
+    return 1;
+}
 1;

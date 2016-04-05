@@ -69,7 +69,7 @@ sub handle {
         $self->debug('MKCOL: parent is not writeable (403 Forbidden)!');
         return print_header_and_content('403 Forbidden');
     }
-    if ( !$self->is_allowed($pt) ) {
+    if ( !$self->is_allowed($backend->getParent($pt)) ) {
         $self->debug('MKCOL: not allowed!');
         return print_header_and_content('423 Locked');
     }
@@ -81,7 +81,7 @@ sub handle {
     }
 
     if ( !$backend->isDir( $backend->getParent($pt) ) ) {
-        $self->debug('MKCOL: parent direcory does not exists');
+        $self->debug('MKCOL: parent directory does not exists');
         return print_header_and_content('409 Conflict');
     }
 
