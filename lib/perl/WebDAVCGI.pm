@@ -39,15 +39,15 @@ use Module::Load;
 use List::MoreUtils qw( any );
 
 use DefaultConfig qw(
-  init_defaults read_config
-  $CGI $POST_MAX_SIZE $ALLOW_POST_UPLOADS @FORBIDDEN_UID
-  $PATH_TRANSLATED $REQUEST_URI $REQUEST_METHOD $HTTP_HOST $REMOTE_USER
-  $RELEASE $DEBUG $LOGFILE @EVENTLISTENER
-  $TRASH_FOLDER $BUFSIZE $BACKEND $UMASK
-  $CONFIGFILE $DOCUMENT_ROOT $VIRTUAL_BASE
-  $ENABLE_LOCK $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE
-  $ENABLE_CARDDAV $ENABLE_GROUPDAV $ENABLE_BIND
-  $ENABLE_ACL $ENABLE_SEARCH $BACKEND_INSTANCE $EVENT_CHANNEL
+    init_defaults read_config
+    $CGI $POST_MAX_SIZE $ALLOW_POST_UPLOADS @FORBIDDEN_UID
+    $PATH_TRANSLATED $REQUEST_URI $REQUEST_METHOD $HTTP_HOST $REMOTE_USER
+    $RELEASE $DEBUG $LOGFILE @EVENTLISTENER
+    $TRASH_FOLDER $BUFSIZE $BACKEND $UMASK
+    $CONFIGFILE $DOCUMENT_ROOT $VIRTUAL_BASE
+    $ENABLE_LOCK $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE
+    $ENABLE_CARDDAV $ENABLE_GROUPDAV $ENABLE_BIND
+    $ENABLE_ACL $ENABLE_SEARCH $BACKEND_INSTANCE $EVENT_CHANNEL
 );
 use DB::Driver;
 use DatabaseEventAdapter;
@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160406.1';
+$RELEASE = '1.1.1BETA20160406.2';
 
 use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
 
@@ -82,7 +82,7 @@ sub init {
 
     ## before 'new CGI' to read POST requests:
     $REQUEST_METHOD = $ENV{REDIRECT_REQUEST_METHOD} // $ENV{REQUEST_METHOD}
-      // 'GET';
+        // 'GET';
 
     ## create CGI instance:
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
@@ -91,7 +91,7 @@ sub init {
     $self->{debug}  //= \&debug;
     $self->{logger} //= \&logger;
     $self->{event}  //= $EVENT_CHANNEL = $self->_get_event_channel();
-    $self->{cache} = CacheManager->new();    # every request needs a fresh cache
+    $self->{cache} = CacheManager->new();  # every request needs a fresh cache
 
     ## read config file:
     read_config( $self, $CONFIGFILE );
@@ -102,7 +102,7 @@ sub init {
 
     $PATH_TRANSLATED = $ENV{PATH_TRANSLATED};
     $REQUEST_URI     = $ENV{REQUEST_URI};
-    $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // $UID;
+    $REMOTE_USER = $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // $UID;
     $HTTP_HOST = $ENV{HTTP_HOST} // $ENV{REDIRECT_HTTP_HOST} // 'localhost';
 
     ## some must haves:
@@ -113,11 +113,11 @@ sub init {
     $self->{config} = $self;
     $self->{cgi}    = $CGI;
     $self->{db} //= DB::Driver->new($self);
-    $_DB_EVENT_ADAPTER //=
-      DatabaseEventAdapter->new($self)->register( $self->{event} );
+    $_DB_EVENT_ADAPTER
+        //= DatabaseEventAdapter->new($self)->register( $self->{event} );
 
-    $BACKEND_INSTANCE //=
-      Backend::Manager::getinstance()->get_backend( $BACKEND, $self );
+    $BACKEND_INSTANCE
+        //= Backend::Manager::getinstance()->get_backend( $BACKEND, $self );
     $self->{backend} = $BACKEND_INSTANCE;
 
     # 404/rewrite/redirect handling:
@@ -130,16 +130,16 @@ sub init {
             my $su = $ENV{SCRIPT_URL} || $ENV{REDIRECT_URL};
             $su =~ s/^$VIRTUAL_BASE//xms;
             $PATH_TRANSLATED = $DOCUMENT_ROOT . $su;
-            $PATH_TRANSLATED .=
-                 $BACKEND_INSTANCE->isDir($PATH_TRANSLATED)
-              && $PATH_TRANSLATED !~ m{/$}xms
-              && $PATH_TRANSLATED ne q{} ? q{/} : q{};
+            $PATH_TRANSLATED
+                .= $BACKEND_INSTANCE->isDir($PATH_TRANSLATED)
+                && $PATH_TRANSLATED !~ m{/$}xms
+                && $PATH_TRANSLATED ne q{} ? q{/} : q{};
         }
     }
 
     $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
     $REQUEST_URI .= $BACKEND_INSTANCE->isDir($PATH_TRANSLATED)
-      && $REQUEST_URI !~ m{/$}xms ? q{/} : q{};
+        && $REQUEST_URI !~ m{/$}xms ? q{/} : q{};
     $REQUEST_URI =~ s/&/%26/xmsg;     ## bug fix (Mac Finder and &)
 
     umask($UMASK) || croak("Cannot set umask $UMASK.");
@@ -162,7 +162,7 @@ sub handle_request {
 
     $self->_debug_request_info($method);
 
-    if ( any { /^\Q${UID}\E$/xms } @FORBIDDEN_UID ) {
+    if ( any {/^\Q${UID}\E$/xms} @FORBIDDEN_UID ) {
         carp("Forbidden UID ${UID}!");
         return print_header_and_content('403 Forbidden');
     }
@@ -179,35 +179,38 @@ sub handle_request {
     $_REQUEST_HANDLERS{$method}->init($self)->handle();
     $self->{backend}->finalize();
     $self->{event}->broadcast('FINALIZE');
-    $self->debug( 'Modules loaded:' . ( scalar keys %INC ) );
+    debug( 'Modules loaded:' . ( scalar keys %INC ) );
     return $self;
 }
 
 sub _debug_request_info {
     my ( $self, $method ) = @_;
     if ( !$DEBUG ) { return; }
-    $self->debug( q{#} x 10 );
-    $self->debug(
-"${PROGRAM_NAME} called with UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}' method=$method"
-    );
-    $self->debug( sprintf "Worker %s %s time(s) used.\n",
-        $PID, ++$self->{runcounter} );
-    $self->debug("User-Agent: $ENV{HTTP_USER_AGENT}");
-    $self->debug("CGI-Version: $CGI::VERSION");
+    debug("########## $method ##########");
+    debug("URI: $REQUEST_URI");
+    debug("UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}'");
+    debug("CONFIGFILE=$CONFIGFILE");
+    if ( $ENV{MOD_PERL} ) {
+        debug( sprintf "WORKER %s %s time(s) used.\n",
+            $PID, ++$self->{runcounter} );
+    }
+    debug("AGENT: $ENV{HTTP_USER_AGENT}");
     if ( defined $CGI->http('X-Litmus') ) {
-        $self->debug( "${PROGRAM_NAME}: X-Litmus: " . $CGI->http('X-Litmus') );
+        debug( 'LITMUS: X-Litmus: ' . $CGI->http('X-Litmus') );
     }
     if ( defined $CGI->http('X-Litmus-Second') ) {
-        $self->debug( "${PROGRAM_NAME}: X-Litmus-Second: "
-              . $CGI->http('X-Litmus-Second') );
+        debug(
+            'LITMUS: X-Litmus-Second: '
+                . $CGI->http('X-Litmus-Second')
+        );
     }
-    $self->debug("METHODS_RX: $_METHODS_RX");
+    debug("METHODS_RX: $_METHODS_RX");
     return $self;
 }
 
 sub _get_methods_rx {
-    my @methods =
-      qw( GET HEAD POST OPTIONS PUT PROPFIND PROPPATCH MKCOL COPY MOVE DELETE GETLIB );
+    my @methods
+        = qw( GET HEAD POST OPTIONS PUT PROPFIND PROPPATCH MKCOL COPY MOVE DELETE GETLIB );
     if ($ENABLE_LOCK)   { push @methods, qw( LOCK UNLOCK ); }
     if ($ENABLE_SEARCH) { push @methods, 'SEARCH'; }
     if ( $ENABLE_ACL || $ENABLE_CALDAV || $ENABLE_CARDDAV ) {
@@ -231,13 +234,13 @@ sub _get_methods_rx {
 sub logger {
     if ( defined $LOGFILE && open my $LOG, '>>', $LOGFILE ) {
         print {$LOG} localtime()
-          . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n"
-          || carp("Cannot write log entry to $LOGFILE: @_");
+            . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n"
+            || carp("Cannot write log entry to $LOGFILE: @_");
         close($LOG) || carp("Cannot close filehandle for '$LOGFILE'");
     }
     else {
         print {*STDERR} "${PROGRAM_NAME}: @_\n"
-          || carp("Cannot print log entry to STDERR: @_");
+            || carp("Cannot print log entry to STDERR: @_");
     }
     return;
 }
@@ -246,7 +249,7 @@ sub debug {
     my ($text) = @_;
     if ($DEBUG) {
         print {*STDERR} "${PROGRAM_NAME}: $text\n"
-          || carp("Cannot print debug output to STDERR: $text");
+            || carp("Cannot print debug output to STDERR: $text");
     }
     return;
 }

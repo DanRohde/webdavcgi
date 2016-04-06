@@ -20,14 +20,12 @@ package WebInterface::Common;
 
 use strict;
 use warnings;
-
 our $VERSION = '2.0';
 
 use CGI;
 use CGI::Carp;
 use POSIX qw( strftime ceil locale_h );
 use List::MoreUtils qw( any );
-use FileUtils;
 use English qw(-no_match_vars);
 
 use DefaultConfig qw(
@@ -39,6 +37,7 @@ use DefaultConfig qw(
   @ALLOWED_TABLE_COLUMNS);
 use HTTPHelper qw( get_mime_type );
 use WebInterface::Translations qw( read_all_tl  );
+use FileUtils;
 
 use vars qw( %CACHE %BYTEUNITS @BYTEUNITORDER %STATIDX );
 

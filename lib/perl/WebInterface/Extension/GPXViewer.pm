@@ -61,7 +61,7 @@ sub handle {
                 $self->read_template('gpxviewer'),
                 {
                     file =>
-                      $self->{cgi}->escapeHTML( $self->{cgi}->param('file') )
+                      $self->{cgi}->escapeHTML( scalar $self->{cgi}->param('file') )
                 }
             ),
             'Cache-Control: no-cache, no-store'
