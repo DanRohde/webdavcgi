@@ -514,11 +514,7 @@ sub _render_file_list_entry {
         ${$self}{backend}->isDir($full) ? 'folder'
         : ( $file =~ /[.]([\w?]+)$/xms ? lc($1) : 'unknown' )
       );
-    my $category = $CACHE{category}{$suffix} ||=
-         $suffix ne 'unknown'
-      && $FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
-      ? 'category-' . $1
-      : q{};
+    my $category = $self->get_category_class($suffix);
     my $is_locked =
       $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
     my $displayname =

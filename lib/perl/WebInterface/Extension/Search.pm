@@ -238,11 +238,7 @@ sub _render_search_result {
         $self->{backend}->isDir($full) ? 'folder'
         : ( $file =~ /[.]([\w?]+)$/xmsi ? lc($1) : 'unknown' )
       );
-    my $category = $CACHE{categories}{$suffix} //=
-        $mime eq '<folder>' ? 'category-folder'
-      : $suffix ne 'unknown'
-      && $FILETYPES =~ /^(\w+).*(?<=\s)\Q$suffix\E(?=\s)/xms ? "category-$1"
-      : q{};
+    my $category = $self->get_category_class($suffix);
     return $self->render_template(
         $PATH_TRANSLATED,
         $REQUEST_URI,

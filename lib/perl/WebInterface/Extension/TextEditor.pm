@@ -189,7 +189,7 @@ sub _is_editable {
     return (
         $self->{backend}->basename($fn) =~ /$self->{editablefilesregex}/xmsi
           || $FILETYPES =~
-          /^$self->{editablecategories}\s+.*?\b\Q$suffix\E\b/xmsi )
+          /^$self->{editablecategories}\s+[^\n]*\b\Q$suffix\E\b/xmsi )
       && $self->{backend}->isFile($fn)
       && $self->{backend}->isReadable($fn)
       && $self->{backend}->isWriteable($fn);

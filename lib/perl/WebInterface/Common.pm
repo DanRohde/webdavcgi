@@ -32,7 +32,7 @@ use English qw(-no_match_vars);
 
 use DefaultConfig qw(
   $CHARSET $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_PDFPS $INSTALL_BASE $LANG $ORDER
-  $PATH_TRANSLATED $POST_MAX_SIZE
+  $PATH_TRANSLATED $POST_MAX_SIZE $FILETYPES
   $RELEASE $REMOTE_USER $REQUEST_URI $SHOWDOTFILES $SHOWDOTFOLDERS $VHTDOCS $VIEW
   $VIRTUAL_BASE %ICONS %TRANSLATION @ALLOWED_TABLE_COLUMNS @SUPPORTED_VIEWS
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
@@ -711,5 +711,10 @@ sub get_cgi_multi_param {
         @vals = $self->{cgi}->param($param);
     }
     return @vals;
+}
+sub get_category_class {
+    my ($self, $suffix ) = @_;
+    return $CACHE{category}{$suffix} //=
+        $FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms  ? 'category-' . $1 : q{}
 }
 1;
