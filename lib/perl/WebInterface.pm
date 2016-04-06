@@ -29,6 +29,7 @@ use IO::Compress::Gzip;
 use MIME::Base64;
 use CGI::Carp;
 use POSIX qw(strftime);
+use Module::Load;
 
 use HTTPHelper
   qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type fix_mod_perl_response );
@@ -37,6 +38,7 @@ use DefaultConfig qw(
   $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
   $ENABLE_THUMBNAIL $ENABLE_DAVMOUNT $ALLOW_POST_UPLOADS $ENABLE_CLIPBOARD
   $OPTIMIZERTMP $THUMBNAIL_CACHEDIR $RELEASE $CONFIGFILE $READBUFSIZE
+  $VIEW @SUPPORTED_VIEWS 
 );
 
 sub new {
@@ -117,7 +119,7 @@ sub handle_get_request {
 
     if ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
         $self->optimize_css_and_js();
-        $self->get_renderer()->render_web_interface();
+        $self->render_web_interface();
         return 1;
     }
     return 0;
@@ -180,11 +182,23 @@ sub get_functions {
     return WebInterface::Functions->new( $self->{config} );
 }
 
-sub get_renderer {
-    my $self = shift;
-    require WebInterface::Renderer;
-    return WebInterface::Renderer->new( $self->{config} );
+sub _get_renderer {
+    my ($self) = @_;
+    my $view = "WebInterface::View::\u${VIEW}::Renderer";
+    $view =~ s/[.\/]+//xmsg;
+    if ( !-f "${INSTALL_BASE}lib/perl/WebInterface/View/\u${VIEW}/Renderer.pm" )
+    {
+        $view = "WebInterface::View::\u$SUPPORTED_VIEWS[0]::Renderer";
+    }
+    load $view;
+    return $view->new( ${$self}{config} );
 }
+
+sub render_web_interface {
+    my ( $self ) = @_;
+    return $self->_get_renderer()->render();
+}
+
 
 sub get_extension_manager {
     my ($self) = @_;
