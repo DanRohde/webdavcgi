@@ -147,7 +147,7 @@ sub print_file_header {
         -type           => get_mime_type($fn),
         -Content_Length => $stat[7],
         -ETag           => get_etag($fn),
-        -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime $stat[9] // scalar time  ),
+        -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime($stat[9] // scalar time) ),
         -charset        => $CHARSET,
         -Cache_Control  => 'no-cache, no-store',
         'MS-Author-Via' => 'DAV',
