@@ -147,7 +147,7 @@ sub print_file_header {
         -type           => get_mime_type($fn),
         -Content_Length => $stat[7],
         -ETag           => get_etag($fn),
-        -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime $stat[9] ),
+        -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime $stat[9] // time  ),
         -charset        => $CHARSET,
         -Cache_Control  => 'no-cache, no-store',
         'MS-Author-Via' => 'DAV',
@@ -203,7 +203,7 @@ sub get_byte_ranges {
     no locale;
     my $etag = get_etag($PATH_TRANSLATED);
     my $lm   = strftime( '%a, %d %b %Y %T GMT',
-        gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] ) );
+        gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] // time ) );
     my $ifrange = $CGI->http('If-Range') || $etag;
     return if $ifrange ne $etag && $ifrange ne $lm;
     my $range = $CGI->http('Range');
