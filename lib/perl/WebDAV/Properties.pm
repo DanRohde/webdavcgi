@@ -100,7 +100,7 @@ sub _set_lastmodified {
         my $mtime = Date::Parse::str2time($getlastmodified);
         my $atime =
           defined $lastaccesstime
-          ? str2time($lastaccesstime)
+          ? Date::Parse::str2time($lastaccesstime)
           : $mtime;
         utime $atime, $mtime, $fn
           or croak("Cannot set utime($atime,$mtime,$fn).");
