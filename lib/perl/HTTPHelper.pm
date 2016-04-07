@@ -200,7 +200,6 @@ sub read_request_body {
 }
 
 sub get_byte_ranges {
-    my () = @_;
     no locale;
     my $etag = get_etag($PATH_TRANSLATED);
     my $lm   = strftime( '%a, %d %b %Y %T GMT',
