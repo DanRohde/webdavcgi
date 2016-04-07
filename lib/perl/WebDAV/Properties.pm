@@ -406,9 +406,9 @@ sub _get_webdav_props {
     my $fn       = $params{fn};
     my $uri      = $params{uri};
     my $is_dir   = $params{is_dir};
-    my $size     = $params{size};
-    my $ctime    = $params{ctime};
-    my $mtime    = $params{mtime};
+    my $size     = $params{size} // 0;
+    my $ctime    = $params{ctime} // time;
+    my $mtime    = $params{mtime} // time;
 
     no locale;
 
