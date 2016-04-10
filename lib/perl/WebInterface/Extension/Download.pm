@@ -39,8 +39,6 @@ use FileUtils qw( get_error_document is_hidden );
 sub init {
     my ( $self, $hookreg ) = @_;
 
-    $self->setExtension('Download');
-
     my @hooks = qw( css locales javascript );
     if ( !$EXTENSION_CONFIG{Download}{disable_fileaction} ) {
         push @hooks, 'fileaction';
@@ -86,7 +84,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi},
+        return $self->handle_apps_hook( $self->{cgi},
             'listaction dwnload sel-one sel-file disabled ' . $add_classes,
             'dwnload', 'dwnload' );
     }

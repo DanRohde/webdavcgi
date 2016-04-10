@@ -100,7 +100,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi}, 'search access-readable ',
+        return $self->handle_apps_hook( $self->{cgi}, 'search access-readable ',
             'search', 'search' );
     }
     if ( $hook eq 'gethandler' ) {
@@ -733,9 +733,9 @@ sub _print_open_search {
       . qq{<Description>WebDAV CGI $type search in $REQUEST_URI</Description>}
       . qq{<InputEncoding>utf-8</InputEncoding><Url type="text/html" template="$template" />}
       . qq{<Image height="16" width="16" type="image/x-icon">https://$HTTP_HOST}
-      . $self->getExtensionUri( 'Search', 'htdocs/search.ico' )
+      . $self->get_uri( 'Search', 'htdocs/search.ico' )
       . qq@</Image><Image height="64" width="64" type="image/png">https://$ENV{HTTP_HOST}@
-      . $self->getExtensionUri( 'Search', 'htdocs/search64x64.png' )
+      . $self->get_uri( 'Search', 'htdocs/search64x64.png' )
       . q@</Image></OpenSearchDescription>@;
     print_header_and_content( '200 OK', 'text/xml', $content );
     return 1;

@@ -76,8 +76,8 @@ sub handle {
     return $ret if $ret;
 
     if ( $hook eq 'settings' ) {
-        return $self->handleSettingsHook('confirm.save')
-          . $self->handleSettingsHook('texteditor.backup');
+        return $self->handle_settings_hook('confirm.save')
+          . $self->handle_settings_hook('texteditor.backup');
     }
     if ( $hook eq 'fileaction' ) {
         return {

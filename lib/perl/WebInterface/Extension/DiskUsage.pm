@@ -93,7 +93,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi},
+        return $self->handle_apps_hook( $self->{cgi},
             'listaction diskusage sel-noneormulti sel-dir disabled',
             'du_diskusage_short', 'du_diskusage' );
     }

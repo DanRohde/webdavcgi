@@ -76,7 +76,7 @@ sub handle {
     }
     if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
         if ( $hook eq 'javascript' ) {
-            $ret .= $self->handleJavascriptHook( 'Highlighter',
+            $ret .= $self->handle_javascript_hook( 'Highlighter',
                 'htdocs/contrib/iris.min.js' );
         }
         return $ret;

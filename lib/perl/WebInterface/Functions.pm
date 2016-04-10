@@ -37,13 +37,9 @@ sub new {
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
-    $self->{config}   = $config;
-    $self->{db}       = $config->{db};
-    $self->{cgi}      = $config->{cgi};
-    $self->{backend}  = $config->{backend};
+    $self->{config} = $config;
     $self->{msglimit} = 150;
-    $self->initialize();
-    return $self;
+    return $self->init();
 }
 
 sub _print_json_response {

@@ -78,14 +78,13 @@ sub render {
 sub _get_web_renderer {
     my ($self) = @_;
     require WebInterface::View::Simple::RenderWeb;
-    return WebInterface::View::Simple::RenderWeb->new( $self->{config} );
+    return $self->{config}->{wr} //= WebInterface::View::Simple::RenderWeb->new();
 }
 
 sub _get_file_list_renderer {
     my ($self) = @_;
     require WebInterface::View::Simple::RenderFileListTable;
-    return WebInterface::View::Simple::RenderFileListTable->new(
-        $self->{config} );
+    return $self->{config}->{flr} //= WebInterface::View::Simple::RenderFileListTable->new();
 }
 
 sub _render_ajax_response {

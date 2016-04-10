@@ -60,7 +60,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi}, 'permissions sel-multi',
+        return $self->handle_apps_hook( $self->{cgi}, 'permissions sel-multi',
             'mode', 'mode' );
     }
     if ( $hook eq 'gethandler' && $self->{cgi}->param('ajax') ) {

@@ -74,7 +74,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi}, 'afsgroupmngr', 'afsgroup',
+        return $self->handle_apps_hook( $self->{cgi}, 'afsgroupmngr', 'afsgroup',
             'afsgroup' );
     }
     if ( $hook eq 'gethandler' ) {

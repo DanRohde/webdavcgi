@@ -65,7 +65,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi},
+        return $self->handle_apps_hook( $self->{cgi},
             'listaction diff sel-oneormore disabled',
             'diff_short', 'diff' );
     }

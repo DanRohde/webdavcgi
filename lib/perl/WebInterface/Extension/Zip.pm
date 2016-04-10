@@ -143,7 +143,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi},
+        return $self->handle_apps_hook( $self->{cgi},
             'listaction zipdwnload sel-multi disabled ',
             'zipdwnload', 'zipdwnload' );
     }

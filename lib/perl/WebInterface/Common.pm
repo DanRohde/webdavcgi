@@ -1,6 +1,6 @@
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2011 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@ use English qw(-no_match_vars);
 
 use DefaultConfig qw(
   $CHARSET $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_PDFPS $INSTALL_BASE $LANG $ORDER
-  $PATH_TRANSLATED $POST_MAX_SIZE $FILETYPES
+  $PATH_TRANSLATED $POST_MAX_SIZE $FILETYPES $CGI $BACKEND_INSTANCE
   $RELEASE $REMOTE_USER $REQUEST_URI $SHOWDOTFILES $SHOWDOTFOLDERS $VHTDOCS $VIEW
   $VIRTUAL_BASE %ICONS %TRANSLATION @ALLOWED_TABLE_COLUMNS @SUPPORTED_VIEWS
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
-  @ALLOWED_TABLE_COLUMNS);
+  @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG);
 use HTTPHelper qw( get_mime_type );
 use WebInterface::Translations qw( read_all_tl  );
 use FileUtils;
@@ -72,20 +72,26 @@ BEGIN {
 }
 
 sub new {
-    my ( $this, $config ) = @_;
+    my ($this) = @_;
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
-    $self->{config}  = $config;
-    $self->{db}      = $config->{db};
-    $self->{cgi}     = $config->{cgi};
-    $self->{backend} = $config->{backend};
-    $self->initialize();
-    return $self;
+    $self->{config} = $CONFIG;
+    return $self->init();
+}
+
+sub init {
+    my ($self) = @_;
+    $self->{config}  = $CONFIG;
+    $self->{db}      = $DB;
+    $self->{cgi}     = $CGI;
+    $self->{backend} = $BACKEND_INSTANCE;
+    $self->{cache}   = $CM;
+    return $self->initialize();
 }
 
 sub initialize {
-    my $self = shift;
+    my ($self) = @_;
 
     $self->{BYTEUNITS}     = \%BYTEUNITS;
     $self->{BYTEUNITORDER} = \@BYTEUNITORDER;
@@ -112,7 +118,7 @@ sub initialize {
     if ( $view ne $VIEW && $view =~ /$svregex/xms ) {
         $VIEW = $view;
     }
-    return $view;
+    return $self;
 }
 
 sub tl {
@@ -711,9 +717,12 @@ sub get_cgi_multi_param {
     }
     return @vals;
 }
+
 sub get_category_class {
-    my ($self, $suffix ) = @_;
+    my ( $self, $suffix ) = @_;
     return $CACHE{category}{$suffix} //=
-        $FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms  ? 'category-' . $1 : q{}
+      $FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
+      ? 'category-' . $1
+      : q{};
 }
 1;

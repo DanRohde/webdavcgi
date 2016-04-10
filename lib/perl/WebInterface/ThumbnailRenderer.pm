@@ -30,15 +30,15 @@ use HTTPHelper qw( get_mime_type get_etag print_header_and_content );
 use FileUtils qw( get_file_limit );
 
 use DefaultConfig
-  qw( $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $THUMBNAIL_WIDTH $ICON_WIDTH );
+  qw( $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $THUMBNAIL_WIDTH $ICON_WIDTH $CGI $BACKEND_INSTANCE );
 
 sub new {
     my $class = shift;
     my $self  = {};
     bless $self, $class;
     $self->{config}  = shift;
-    $self->{backend} = $self->{config}->{backend};
-    $self->{cgi}     = $self->{config}->{cgi};
+    $self->{backend} = $BACKEND_INSTANCE;
+    $self->{cgi}     = $CGI;
     return $self;
 }
 

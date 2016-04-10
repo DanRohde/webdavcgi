@@ -1,7 +1,6 @@
-#!/usr/bin/perl
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,32 +25,25 @@ our $VERSION = '2.0';
 
 use base qw( WebInterface::Common );
 
-use DefaultConfig qw( $INSTALL_BASE $VHTDOCS %EXTENSION_CONFIG );
+use DefaultConfig qw( $INSTALL_BASE $VHTDOCS %EXTENSION_CONFIG $CONFIG );
 
 sub new {
-    my ( $class, $hookreg, $extensionname, $config ) = @_;
+    my ( $class, $hookreg, $extensionname ) = @_;
     my $self = {};
     bless $self, $class;
     $self->{EXTENSION} = $extensionname;
-    $self->{config}    = $config;
-    $self->{backend}   = $config->{backend};
-    $self->{db}        = $config->{db};
-    $self->{cgi}       = $config->{cgi};
+    $self->{config}    = $CONFIG;
+    $self->SUPER::init();
     return $self->init($hookreg);
 }
 
 sub init {
     my ( $self, $hookreg ) = @_;
+    $self->SUPER::init();
     return $self;
 }
 
-sub setExtension {
-    my ( $self, $extension ) = @_;
-    ${$self}{EXTENSION} = $extension;
-    return;
-}
-
-sub getExtensionLocation {
+sub get_location {
     my ( $self, $extension, $file ) = @_;
     return
         $INSTALL_BASE
@@ -60,35 +52,34 @@ sub getExtensionLocation {
       . $file;
 }
 
-sub getExtensionUri {
+sub get_uri {
     my ( $self, $extension, $file ) = @_;
     my $vbase = $self->get_vbase();
     $vbase .= $vbase !~ /\/$/xms ? q{/} : q{};
     return $vbase . $VHTDOCS . '_EXTENSION(' . $extension . ')_/' . $file;
 }
 
-sub handleJavascriptHook {
+sub handle_javascript_hook {
     my ( $self, $extension, $file ) = @_;
     return
         q@<script src="@
-      . $self->getExtensionUri( $extension, $file || 'htdocs/script.min.js' )
+      . $self->get_uri( $extension, $file || 'htdocs/script.min.js' )
       . q@"></script>@;
 }
 
-sub handleCssHook {
+sub handle_css_hook {
     my ( $self, $extension, $file ) = @_;
     return
-        q@<link rel="stylesheet" type="text/css" href="@
-      . $self->getExtensionUri( $extension, $file || 'htdocs/style.min.css' )
-      . q@">@;
+      q@<link rel="stylesheet" type="text/css" href="@
+      . $self->get_uri( $extension, $file || 'htdocs/style.min.css' ) . q@">@;
 }
 
-sub handleLocalesHook {
+sub handle_locale_hook {
     my ( $self, $extension, $file ) = @_;
-    return $self->getExtensionLocation( $extension, $file || 'locale/locale' );
+    return $self->get_location( $extension, $file || 'locale/locale' );
 }
 
-sub handleAppsHook {
+sub handle_apps_hook {
     my ( $self, @args ) = @_;
     my ( $cgi, $action, $label, $title, $href ) = @args;
     return $cgi->li(
@@ -100,12 +91,12 @@ sub handleAppsHook {
     );
 }
 
-sub handleSettingsHook {
+sub handle_settings_hook {
     my ( $self, $settings ) = @_;
     my $ret = q{};
     if ( ref($settings) eq 'ARRAY' ) {
         foreach my $setting ( @{$settings} ) {
-            $ret .= $self->handleSettingsHook($setting);
+            $ret .= $self->handle_settings_hook($setting);
         }
     }
     else {
@@ -131,13 +122,13 @@ sub handle {
     $self->initialize();    ## Common::initialize to set correct LANG, ...
     $self->set_locale();    ## Common:set_locale to set right locale
     if ( $hook eq 'css' ) {
-        return $self->handleCssHook( ${$self}{EXTENSION} );
+        return $self->handle_css_hook( ${$self}{EXTENSION} );
     }
     elsif ( $hook eq 'javascript' ) {
-        return $self->handleJavascriptHook( ${$self}{EXTENSION} );
+        return $self->handle_javascript_hook( ${$self}{EXTENSION} );
     }
     elsif ( $hook eq 'locales' ) {
-        return $self->handleLocalesHook( ${$self}{EXTENSION} );
+        return $self->handle_locale_hook( ${$self}{EXTENSION} );
     }
     return 0;
 }
@@ -150,7 +141,7 @@ sub config {
 sub read_template {
     my ( $self, $filename ) = @_;
     return $self->SUPER::read_template( $filename,
-        $self->getExtensionLocation( ${$self}{EXTENSION}, 'templates/' ) );
+        $self->get_location( ${$self}{EXTENSION}, 'templates/' ) );
 }
 
 sub exec_template_function {

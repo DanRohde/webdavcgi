@@ -42,9 +42,9 @@ use DefaultConfig qw(
     init_defaults read_config
     $CGI $POST_MAX_SIZE $ALLOW_POST_UPLOADS @FORBIDDEN_UID
     $PATH_TRANSLATED $REQUEST_URI $REQUEST_METHOD $HTTP_HOST $REMOTE_USER
-    $RELEASE $DEBUG $LOGFILE @EVENTLISTENER
+    $RELEASE $DEBUG $LOGFILE @EVENTLISTENER $DB $CM $CONFIG
     $TRASH_FOLDER $BUFSIZE $BACKEND $UMASK
-    $CONFIGFILE $DOCUMENT_ROOT $VIRTUAL_BASE
+    $CONFIGFILE $DOCUMENT_ROOT $VIRTUAL_BASE $D $L
     $ENABLE_LOCK $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE
     $ENABLE_CARDDAV $ENABLE_GROUPDAV $ENABLE_BIND
     $ENABLE_ACL $ENABLE_SEARCH $BACKEND_INSTANCE $EVENT_CHANNEL
@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160406.3';
+$RELEASE = '1.1.1BETA20160410.1';
 
 use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
 
@@ -88,10 +88,10 @@ sub init {
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
 
     ## some config independent objects for convinience:
-    $self->{debug}  //= \&debug;
-    $self->{logger} //= \&logger;
-    $self->{event}  //= $EVENT_CHANNEL = $self->_get_event_channel();
-    $self->{cache} = CacheManager->new();  # every request needs a fresh cache
+    $self->{debug}  = $D //= \&debug;
+    $self->{logger} = $L //= \&logger;
+    $self->{event}  = $EVENT_CHANNEL //= $self->_get_event_channel();
+    $self->{cache} = $CM = CacheManager->new();  # every request needs a fresh cache
 
     ## read config file:
     read_config( $self, $CONFIGFILE );
@@ -110,9 +110,9 @@ sub init {
     $TRASH_FOLDER .= $TRASH_FOLDER !~ m{/$}xms ? q{/} : q{};
 
     ## some config objects for the convinience:
-    $self->{config} = $self;
+    $self->{config} = $CONFIG = $self;
     $self->{cgi}    = $CGI;
-    $self->{db} //= DB::Driver->new($self);
+    $self->{db}     = $DB //= DB::Driver->new($self);
     $_DB_EVENT_ADAPTER
         //= DatabaseEventAdapter->new($self)->register( $self->{event} );
 

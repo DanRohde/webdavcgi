@@ -38,7 +38,7 @@ use DefaultConfig qw(
   $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
   $ENABLE_THUMBNAIL $ENABLE_DAVMOUNT $ALLOW_POST_UPLOADS $ENABLE_CLIPBOARD
   $OPTIMIZERTMP $THUMBNAIL_CACHEDIR $RELEASE $CONFIGFILE $READBUFSIZE
-  $VIEW @SUPPORTED_VIEWS 
+  $VIEW @SUPPORTED_VIEWS  $DB $CGI $BACKEND_INSTANCE $D $L
 );
 
 sub new {
@@ -54,10 +54,11 @@ sub init {
     $config->{webinterface} = $self;
 
     $self->{config}  = $config;
-    $self->{db}      = $config->{db};
-    $self->{cgi}     = $config->{cgi};
-    $self->{backend} = $config->{backend};
-    $self->{debug}   = $config->{debug};
+    $self->{db}      = $DB;
+    $self->{cgi}     = $CGI;
+    $self->{backend} = $BACKEND_INSTANCE;
+    $self->{debug}   = $D;
+    $self->{logger}  = $L;
 
     return $self;
 }
@@ -179,7 +180,8 @@ sub get_thumbnail_renderer {
 sub get_functions {
     my $self = shift;
     require WebInterface::Functions;
-    return WebInterface::Functions->new( $self->{config} );
+    $self->{config}->{functions} //= WebInterface::Functions->new( $self->{config} );
+    return $self->{config}->{functions}->init();
 }
 
 sub _get_renderer {
@@ -191,7 +193,8 @@ sub _get_renderer {
         $view = "WebInterface::View::\u$SUPPORTED_VIEWS[0]::Renderer";
     }
     load $view;
-    return $view->new( ${$self}{config} );
+    $self->{config}->{view} //= $view->new( ${$self}{config} );
+    return $self->{config}->{view}->init();
 }
 
 sub render_web_interface {

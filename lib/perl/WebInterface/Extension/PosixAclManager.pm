@@ -35,15 +35,13 @@ use HTTPHelper qw( print_compressed_header_and_content );
 sub init {
     my ( $self, $hookreg ) = @_;
 
-    $self->setExtension('PosixAclManager');
-
     $hookreg->register(
-        [
-            'css',        'javascript',
-            'gethandler', 'fileactionpopup',
-            'apps',       'locales',
-            'posthandler'
-        ],
+        [qw(
+            css        javascript
+            gethandler fileactionpopup
+            apps       locales
+            posthandler
+        )],
         $self
     );
 
@@ -79,7 +77,7 @@ sub handle {
         };
     }
     if ( $hook eq 'apps' ) {
-        return $self->handleAppsHook( $self->{cgi},
+        return $self->handle_apps_hook( $self->{cgi},
             'pacl listaction sel-noneorone disabled', 'pacl' );
     }
     if ( $hook eq 'posthandler' ) {

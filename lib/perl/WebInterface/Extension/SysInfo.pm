@@ -34,8 +34,7 @@ use HTTPHelper qw( print_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    $self->setExtension('SysInfo');
-    $hookreg->register( [ 'gethandler', 'apps' ], $self );
+    $hookreg->register( [qw( gethandler apps)], $self );
     return $self;
 }
 

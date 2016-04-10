@@ -41,7 +41,7 @@ sub init {
         push @hooks, 'fileaction';
     }
     $hookreg->register( \@hooks, $self );
-    return $self;
+    return $self->SUPER::init($hookreg);
 }
 
 sub handle {

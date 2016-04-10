@@ -27,27 +27,27 @@ use Module::Load;
 use CGI::Carp;
 use English qw( -no_match_vars );
 
-use DefaultConfig qw( @EXTENSIONS );
+use DefaultConfig qw( @EXTENSIONS $CONFIG );
 
 use vars qw( %HOOKS );
 
 sub new {
-    my ( $this, $config ) = @_;
+    my ( $this ) = @_;
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
-    return $self->init($config);
+    return $self->init();
 }
 
 sub init {
-    my ( $self, $config ) = @_;
-    $self->{config} = $config;
+    my ( $self ) = @_;
+    $self->{config} = $CONFIG;
     foreach my $extname (@EXTENSIONS) {
         eval {
             load "WebInterface::Extension::$extname";
             my $extension =
               "WebInterface::Extension::$extname"
-              ->new( $self, $extname, $self->{config} );
+              ->new( $self, $extname );
         } || carp("Can't load extension $extname: $EVAL_ERROR");
     }
     return $self;

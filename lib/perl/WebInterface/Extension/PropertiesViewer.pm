@@ -36,7 +36,6 @@ use WebDAV::WebDAVProps
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    $self->setExtension('PropertiesViewer');
     $hookreg->register(
         [ 'javascript', 'css', 'posthandler', 'fileaction', 'fileactionpopup' ],
         $self
