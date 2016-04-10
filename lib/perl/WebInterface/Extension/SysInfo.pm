@@ -26,7 +26,6 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use English qw( -no_match_vars ) ;
-use Data::Dumper;
 
 
 use DefaultConfig qw{ $TITLEPREFIX };
@@ -64,6 +63,9 @@ sub handle {
 sub render_sys_info {
     my ($self) = @_;
     my $i    = q{};
+
+
+    require Data::Dumper;
 
     my $cgi = $self->{cgi};
 
@@ -128,9 +130,9 @@ sub render_sys_info {
         if (defined ${$val} ) {
             $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( ${$val} ) );
         } elsif (@{$val}) {
-            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( Dumper(\@{$val}) ) );
+            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( Data::Dumper::Dumper(\@{$val}) ) );
         } elsif (%{$val}) {
-            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( Dumper(\%{$val}) ) );
+            $i .= $cgi->Tr( $cgi->td($cfg) . $cgi->td( Data::Dumper::Dumper(\%{$val}) ) );
         }
     }
     $i .= $cgi->end_table();

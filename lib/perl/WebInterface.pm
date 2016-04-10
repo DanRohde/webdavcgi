@@ -25,8 +25,8 @@ our $VERSION = '2.0';
 
 # for optimizing css/js:
 use Fcntl qw (:flock);
-use IO::Compress::Gzip;
-use MIME::Base64;
+#use IO::Compress::Gzip;
+#use MIME::Base64;
 use CGI::Carp;
 use POSIX qw(strftime);
 use Module::Load;
@@ -327,6 +327,7 @@ sub optimizer_write_content2zip {
     my ( $self, $file, $contentref ) = @_;
     if ( open my $fh, '>', $file ) {
         flock( $fh, LOCK_EX ) || carp("Cannot get exclusive lock for $file.");
+        require IO::Compress::Gzip;
         my $z = IO::Compress::Gzip->new($fh);
         $z->print( ${$contentref} );
         $z->close();
@@ -351,11 +352,12 @@ sub optimizer_encode_image {
             $image .= $buffer;
         }
         close($ih) || carp("Cannot close filehandle for $ifn.");
+        require MIME::Base64;
         return
             'url(data:'
           . $mime
           . ';base64,'
-          . encode_base64( $image, q{} ) . ')';
+          . MIME::Base64::encode_base64( $image, q{} ) . ')';
     }
     else {
         carp("Cannot read $ifn.");
