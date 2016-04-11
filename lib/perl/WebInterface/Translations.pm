@@ -53,7 +53,7 @@ sub _read_tl_file {
 
 sub _replace_syms {
     my ($str) = @_;
-    $str =~ s{[/.\-]}{_}xmsg;
+    $str =~ s{[/.]}{_}xmsg;
     return $str;
 }
 
@@ -118,7 +118,7 @@ sub _handle_default_and_lang {
 sub _read_tl {
     my ($lang)    = @_;
     my $fn        = "${INSTALL_BASE}locale/webdav-ui_${lang}.msg";
-    my $fndefault = "${INSTALL_BASE}locale/webdav-ui_${lang}.msg";
+    my $fndefault = "${INSTALL_BASE}locale/webdav-ui_default.msg";
     _handle_default_and_lang( $lang, $fndefault, $fn );
     return;
 }
