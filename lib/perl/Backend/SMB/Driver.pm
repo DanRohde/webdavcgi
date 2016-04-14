@@ -436,7 +436,7 @@ sub getLocalFilename {
 }
 
 sub getFileContent {
-    my $content;
+    my $content = q{};
     if ( my $fh =
         $_[0]->getSmbClient()->open( q{<} . $_[0]->_get_smb_url( $_[1] ) ) )
     {
