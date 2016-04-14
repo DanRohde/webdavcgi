@@ -193,7 +193,7 @@ sub _get_renderer {
         $view = "WebInterface::View::\u$SUPPORTED_VIEWS[0]::Renderer";
     }
     load $view;
-    $self->{config}->{view} //= $view->new( ${$self}{config} );
+    $self->{config}->{view} = $view->new( ${$self}{config} );
     return $self->{config}->{view}->init();
 }
 
