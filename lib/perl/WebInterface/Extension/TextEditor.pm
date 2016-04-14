@@ -41,21 +41,20 @@ use FileUtils qw( rcopy );
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw(
-      css         locales         javascript gethandler
-      posthandler fileactionpopup fileaction settings
-      fileattr
+        css         locales         javascript gethandler
+        posthandler fileactionpopup fileaction settings
+        fileattr
     );
     $hookreg->register( \@hooks, $self );
 
     $self->{editablefiles} = $self->config(
         'editablefiles',
-        [
-'[.](?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
-'^(?:[.]ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)'
+        [   '[.](?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
+            '^(?:[.]ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)'
         ]
     );
-    $self->{editablefilesregex} =
-      '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . ')';
+    $self->{editablefilesregex}
+        = '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . ')';
     $self->{editablecategories} = $self->config( 'editablecategories',
         '(?:text|source|shell|config|markup)' );
     $self->{template}  = $self->config( 'template',  'editform' );
@@ -77,7 +76,7 @@ sub handle {
 
     if ( $hook eq 'settings' ) {
         return $self->handle_settings_hook('confirm.save')
-          . $self->handle_settings_hook('texteditor.backup');
+            . $self->handle_settings_hook('texteditor.backup');
     }
     if ( $hook eq 'fileaction' ) {
         return {
@@ -117,8 +116,7 @@ sub _get_edit_form {
     if ( ( $self->{backend}->stat($full) )[7] > $self->{sizelimit} ) {
         require JSON;
         $content = JSON->new()->encode(
-            {
-                error => sprintf(
+            {   error => sprintf(
                     $self->tl('msg_sizelimitexceeded'),
                     $self->{cgi}->escapeHTML($filename),
                     ( $self->render_byte_val( $self->{sizelimit} ) )[0]
@@ -132,10 +130,10 @@ sub _get_edit_form {
             $PATH_TRANSLATED,
             $REQUEST_URI,
             $self->read_template( $self->{template} ),
-            {
-                filename => $self->{cgi}->escapeHTML($filename),
+            {   filename => $self->{cgi}->escapeHTML($filename),
                 textdata => $self->{cgi}
-                  ->escapeHTML( $self->{backend}->getFileContent($full) ),
+                    ->escapeHTML( $self->{backend}->getFileContent($full) // q{} )
+                ,
                 mime => get_mime_type($full)
             }
         );
@@ -149,9 +147,9 @@ sub _make_backup_copy {
     my ( $self, $full ) = @_;
     my $cookie = $self->{cgi}->cookie('settings.texteditor.backup') // q{};
     return
-         $cookie eq 'no'
-      || ( $self->{backend}->stat($full) )[7] == 0
-      || rcopy( $self->{config}, $full, "$full.backup" );
+           $cookie eq 'no'
+        || ( $self->{backend}->stat($full) )[7] == 0
+        || rcopy( $self->{config}, $full, "$full.backup" );
 }
 
 sub _save_text_data {
@@ -166,8 +164,8 @@ sub _save_text_data {
     elsif ($self->{backend}->isFile($full)
         && $self->{backend}->isWriteable($full)
         && $self->_make_backup_copy($full)
-        && $self->{backend}->saveData( $full, scalar $self->{cgi}->param('textdata') )
-      )
+        && $self->{backend}
+        ->saveData( $full, scalar $self->{cgi}->param('textdata') ) )
     {
         $jsondata{message} = sprintf $self->tl('msg_textsaved'), $efilename;
     }
@@ -176,7 +174,8 @@ sub _save_text_data {
     }
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
@@ -188,11 +187,11 @@ sub _is_editable {
     my $suffix = $fn =~ /[.](\w+)$/xms ? lc($1) : '___unknown___';
     return (
         $self->{backend}->basename($fn) =~ /$self->{editablefilesregex}/xmsi
-          || $FILETYPES =~
-          /^$self->{editablecategories}\s+[^\n]*\b\Q$suffix\E\b/xmsi )
-      && $self->{backend}->isFile($fn)
-      && $self->{backend}->isReadable($fn)
-      && $self->{backend}->isWriteable($fn);
+            || $FILETYPES =~
+            /^$self->{editablecategories}\s+[^\n]*\b\Q$suffix\E\b/xmsi )
+        && $self->{backend}->isFile($fn)
+        && $self->{backend}->isReadable($fn)
+        && $self->{backend}->isWriteable($fn);
 }
 
 1;
