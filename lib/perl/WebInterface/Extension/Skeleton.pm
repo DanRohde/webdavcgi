@@ -1,6 +1,6 @@
 #########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2015 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ use warnings;
 our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
-
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( print_header_and_content );
 #use FileUtils qw( );
@@ -40,8 +39,7 @@ $ACTION = '_REPLACE_ME_WITH_A_ACTION_NAME_';
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks
-        = qw( css locales javascript fileactionpopup posthandler );
+    my @hooks = qw( css locales javascript fileactionpopup posthandler );
     $hookreg->register( \@hooks, $self );
     return;
 }
@@ -61,10 +59,13 @@ sub handle {
             type   => 'li'
         };
     }
-    if ($hook eq 'posthandler'
-        && $self->{cgi}->param('action') eq $ACTION )
-    {
-        return 1;
+    if ( $hook eq 'posthandler' ) {
+        my $action = $self->{cgi}->param('action') // q{};
+        if ( $action eq $ACTION ) {
+            print_header_and_content( '200 OK', 'text/html',
+                '<!DOCTYPE html><html><head></head><body></body></html>' );
+            return 1;
+        }
     }
     return 0;
 }

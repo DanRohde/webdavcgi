@@ -29,10 +29,10 @@ use URI::Escape;
 
 use HTTPHelper qw( print_compressed_header_and_content );
 use DefaultConfig qw(
-  $PATH_TRANSLATED $REQUEST_URI
-  $INSTALL_BASE $VHTDOCS $VIRTUAL_BASE
-  @ALLOWED_TABLE_COLUMNS @VISIBLE_TABLE_COLUMNS @EXTENSIONS
-  $DOCUMENT_ROOT $MAXNAVPATHSIZE $MAXFILENAMESIZE);
+    $PATH_TRANSLATED $REQUEST_URI
+    $INSTALL_BASE $VHTDOCS $VIRTUAL_BASE
+    @ALLOWED_TABLE_COLUMNS @VISIBLE_TABLE_COLUMNS @EXTENSIONS
+    $DOCUMENT_ROOT $MAXNAVPATHSIZE $MAXFILENAMESIZE);
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 sub render {
@@ -57,8 +57,8 @@ sub render {
         || $self->{cgi}->param('afsmsg')
         || $self->{cgi}->param('afserrmsg') )
     {
-        ( $content, $contenttype ) =
-          $self->_get_web_renderer()->render_msg_response();
+        ( $content, $contenttype )
+            = $self->_get_web_renderer()->render_msg_response();
     }
     else {
         $content = $self->minify_html(
@@ -75,16 +75,26 @@ sub render {
         $self->get_cookies() );
 }
 
+sub get_cookies {
+    my ($self) = @_;
+    my @cookies = @{ $self->SUPER::get_cookies() };
+    $self->{config}->{extensions}
+        ->handle( 'cookies', { cookies => \@cookies } );
+    return \@cookies;
+}
+
 sub _get_web_renderer {
     my ($self) = @_;
     require WebInterface::View::Simple::RenderWeb;
-    return $self->{config}->{wr} //= WebInterface::View::Simple::RenderWeb->new();
+    return $self->{config}->{wr}
+        //= WebInterface::View::Simple::RenderWeb->new();
 }
 
 sub _get_file_list_renderer {
     my ($self) = @_;
     require WebInterface::View::Simple::RenderFileListTable;
-    return $self->{config}->{flr} //= WebInterface::View::Simple::RenderFileListTable->new();
+    return $self->{config}->{flr}
+        //= WebInterface::View::Simple::RenderFileListTable->new();
 }
 
 sub _render_ajax_response {
@@ -100,11 +110,12 @@ sub _render_ajax_response {
     }
     if ( $ajax eq 'getViewFilterDialog' ) {
         return $self->_get_web_renderer()
-          ->render_viewfilter_dialog( scalar $self->{cgi}->param('template') );
+            ->render_viewfilter_dialog(
+            scalar $self->{cgi}->param('template') );
     }
     if ( $ajax eq 'getTableConfigDialog' ) {
         return $self->_get_web_renderer()
-          ->render_template( $PATH_TRANSLATED, $REQUEST_URI,
+            ->render_template( $PATH_TRANSLATED, $REQUEST_URI,
             $self->read_template( scalar $self->{cgi}->param('template') ) );
     }
     if ( $ajax eq 'getFileListEntry' ) {
@@ -127,21 +138,20 @@ sub _render_extension_element {
     if ( ref($a) eq 'HASH' ) {
         if ( ${$a}{subpopupmenu} ) {
             return $self->{cgi}->li(
-                {
-                    -class => 'subpopupmenu extension '
-                      . ( ${$a}{classes} || q{} )
+                {   -class => 'subpopupmenu extension '
+                        . ( ${$a}{classes} || q{} )
                 },
                 ( ${$a}{title} || q{} )
-                  . $self->{cgi}->ul(
+                    . $self->{cgi}->ul(
                     { -class => 'subpopupmenu extension' },
                     $self->_render_extension_element( ${$a}{subpopupmenu} )
-                  )
+                    )
             );
         }
         my %params = ( -class => q{} );
         $params{-class} .= ${$a}{action} ? ' action ' . ${$a}{action} : q{};
-        $params{-class} .=
-          ${$a}{listaction} ? ' listaction ' . ${$a}{listaction} : q{};
+        $params{-class}
+            .= ${$a}{listaction} ? ' listaction ' . ${$a}{listaction} : q{};
         $params{-class} .= ${$a}{classes}  ? q{ } . ${$a}{classes} : q{};
         $params{-class} .= ${$a}{disabled} ? ' hidden'             : q{};
         if ( ${$a}{accesskey} ) { $params{-accesskey} = ${$a}{accesskey}; }
@@ -162,25 +172,32 @@ sub _render_extension_element {
             }
         }
         if ( ${$a}{type} && ${$a}{type} eq 'li' ) {
-            $content .= $self->{cgi}->li( \%params,
-                $self->{cgi}
-                  ->span( { -class => 'label' }, $self->tl( ${$a}{label} ) ) );
+            $content .= $self->{cgi}->li(
+                \%params,
+                $self->{cgi}->span(
+                    { -class => 'label' }, $self->tl( ${$a}{label} )
+                )
+            );
         }
         else {
             $params{-href} = q{#};
             $params{-data_action} = ${$a}{action} || ${$a}{listaction};
-            $content .= $self->{cgi}->a( \%params,
-                $self->{cgi}
-                  ->span( { -class => 'label' }, $self->tl( ${$a}{label} ) ) );
+            $content .= $self->{cgi}->a(
+                \%params,
+                $self->{cgi}->span(
+                    { -class => 'label' }, $self->tl( ${$a}{label} )
+                )
+            );
             if ( ${$a}{type} && ${$a}{type} eq 'li-a' ) {
                 $content = $self->{cgi}
-                  ->li( { -class => ${$a}{liclasses} || q{} }, $content );
+                    ->li( { -class => ${$a}{liclasses} || q{} }, $content );
             }
         }
         $content .= ${$a}{posthtml} ? ${$a}{posthtml} : q{};
     }
     elsif ( ref($a) eq 'ARRAY' ) {
-        $content = join q{}, map { $self->_render_extension_element($_) } @{$a};
+        $content = join q{},
+            map { $self->_render_extension_element($_) } @{$a};
     }
     else {
         $content .= $a;
@@ -195,34 +212,34 @@ sub _render_extension {
         if ( $self->{config}->{webinterface}->optimizer_is_optimized() ) {
             my $vbase = $self->get_vbase();
             return
-q@<script>$(document).ready(function() { $(document.createElement("script")).attr("src","@
-              . "${vbase}${VHTDOCS}_OPTIMIZED(js)_"
-              . q@").appendTo($("body")); });</script>@;
+                q@<script>$(document).ready(function() { $(document.createElement("script")).attr("src","@
+                . "${vbase}${VHTDOCS}_OPTIMIZED(js)_"
+                . q@").appendTo($("body")); });</script>@;
         }
         else {
             return q@<script>$(document).ready(function() {var l=new Array(@
-              . join(
+                . join(
                 q{,},
                 map { q{'} . $self->{cgi}->escape($_) . q{'} } @{
                     $self->{config}{extensions}
-                      ->handle( $hook, { path => $PATH_TRANSLATED } )
+                        ->handle( $hook, { path => $PATH_TRANSLATED } )
                 }
-              )
-              . q@);$("<div/>").html($.map(l,function(v,i){return decodeURIComponent(v);}).join("")).appendTo($("body"));});</script>@;
+                )
+                . q@);$("<div/>").html($.map(l,function(v,i){return decodeURIComponent(v);}).join("")).appendTo($("body"));});</script>@;
         }
     }
     elsif ( $hook eq 'css' ) {
         if ( $self->{config}->{webinterface}->optimizer_is_optimized() ) {
             my $vbase = $self->get_vbase();
             return
-qq@<link rel="stylesheet" href="${vbase}${VHTDOCS}_OPTIMIZED(css)_"/>@;
+                qq@<link rel="stylesheet" href="${vbase}${VHTDOCS}_OPTIMIZED(css)_"/>@;
         }
     }
 
     return join q{},
-      map { $self->_render_extension_element($_) }
-      @{ $self->{config}{extensions}
-          ->handle( $hook, { path => $PATH_TRANSLATED } ) // [] };
+        map { $self->_render_extension_element($_) }
+        @{ $self->{config}{extensions}
+            ->handle( $hook, { path => $PATH_TRANSLATED } ) // [] };
 }
 
 sub read_template {
@@ -266,10 +283,10 @@ sub render_quicknav_path {
         $path .= uri_escape($pe) . q{/};
         if ( $path eq q{//} ) { $path = q{/}; }
         my $dn = "$pe/";
-        $dn =
-          $fnc eq $DOCUMENT_ROOT
-          ? "$pe/"
-          : $self->{backend}->getDisplayName($fnc);
+        $dn
+            = $fnc eq $DOCUMENT_ROOT
+            ? "$pe/"
+            : $self->{backend}->getDisplayName($fnc);
         $lastignorepe = $ignorepe;
         $ignorepe     = 0;
         if (   defined $MAXNAVPATHSIZE
@@ -295,28 +312,28 @@ sub render_quicknav_path {
         }
         $ignoredpes .= $ignorepe ? "$pe/" : q{};
         if ( !$ignorepe && $lastignorepe ) {
-            $content .=
-              $self->{cgi}
-              ->a( { -href => $lastignoredpath, -title => $ignoredpes },
+            $content
+                .= $self->{cgi}
+                ->a( { -href => $lastignoredpath, -title => $ignoredpes },
                 ' [...]/ ' );
             $ignoredpes = q{};
         }
         $content .=
-          !$ignorepe
-          ? $self->{cgi}->a(
-            {
-                -href => "$base$path" . ( defined $query ? "?$query" : q{} ),
-                -title => $self->{cgi}->escapeHTML( uri_unescape("$base$path") )
+            !$ignorepe
+            ? $self->{cgi}->a(
+            {   -href => "$base$path" . ( defined $query ? "?$query" : q{} ),
+                -title =>
+                    $self->{cgi}->escapeHTML( uri_unescape("$base$path") )
             },
             $self->{cgi}->escapeHTML(" $dn ")
-          )
-          : q{};
+            )
+            : q{};
         if ( scalar @fna > 0 ) { $fnc .= shift(@fna) . q{/}; }
     }
     $content .=
-        $content eq q{}
-      ? $self->{cgi}->a( { -href => q{/}, -title => q{/} }, q{/} )
-      : q{};
+          $content eq q{}
+        ? $self->{cgi}->a( { -href => q{/}, -title => q{/} }, q{/} )
+        : q{};
 
     return $content;
 }

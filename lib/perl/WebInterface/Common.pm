@@ -157,21 +157,25 @@ sub set_locale {
 
 sub get_cookies {
     my ($self) = @_;
+    my $path = $self->get_vbase();
     my @cookies = (
         $self->{cgi}->cookie(
             -name    => 'lang',
             -value   => $LANG,
-            -expires => '+10y'
+            -expires => '+10y',
+            -path    => $path
         ),
         $self->{cgi}->cookie(
             -name    => 'order',
             -value   => $ORDER,
-            -expires => '+10y'
+            -expires => '+10y',
+            -path    => $path
         ),
         $self->{cgi}->cookie(
             -name    => 'view',
             -value   => $VIEW,
-            -expires => '+10y'
+            -expires => '+10y',
+            -path    => $path
         ),
     );
 
@@ -179,19 +183,21 @@ sub get_cookies {
         push @cookies,
           $self->{cgi}->cookie(
             -name  => 'settings.show.dotfiles',
-            -value => $self->{cgi}->cookie('settings.show.dotfiles') || 'no'
+            -value => $self->{cgi}->cookie('settings.show.dotfiles') || 'no',
+            -path  => $path
           );
         push @cookies, $self->{cgi}
-          ->cookie( -name => 'settings.show.dotfiles.keep', -value => 1 );
+          ->cookie( -name => 'settings.show.dotfiles.keep', -value => 1, -path => $path );
     }
     if ( !$SHOWDOTFOLDERS ) {
         push @cookies,
           $self->{cgi}->cookie(
             -name  => 'settings.show.dotfolders',
-            -value => $self->{cgi}->cookie('settings.show.dotfolders') || 'no'
+            -value => $self->{cgi}->cookie('settings.show.dotfolders') || 'no',
+            -path  => $path
           );
         push @cookies, $self->{cgi}
-          ->cookie( -name => 'settings.show.dotfolders.keep', -value => 1 );
+          ->cookie( -name => 'settings.show.dotfolders.keep', -value => 1, -path => $path );
     }
 
     return \@cookies;

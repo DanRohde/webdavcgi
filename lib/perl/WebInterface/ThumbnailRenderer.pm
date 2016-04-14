@@ -49,6 +49,7 @@ sub _create_empty_thumbnail {
     $image->Read('xc:white');
     #$image->Transparent(color=>'white');
     $image->Write($outputfilename);
+    undef $image;
     return;
 }
 
@@ -86,6 +87,7 @@ sub _create_thumbnail {
         fill   => 'black'
     );
     $x = $image->Write($outputfilename) && carp($x);
+    undef $image;
     return;
 }
 

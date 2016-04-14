@@ -453,11 +453,19 @@ function initSettingsDialog() {
 		});
 		$("select[name^='settings.']", settings)
 			.change(function(){
-				cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
-				window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
+				if ($(this).prop("name") == "settings.lang") {
+					cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
+					window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
+				} else {
+					cookie($(this).prop("name"), $("option:selected",$(this)).val(),1);
+					$("body").trigger("settingchanged", { setting: $(this).prop("name"), value: $("option:selected",$(this)).val()});
+				}
 			})
 			.each(function(i,v) {
-				$("option[value='"+cookie($(v).prop("name").replace(/^settings\./,""))+"']",$(v)).prop("selected",true);	
+				var s = $(v);
+				var name = s.prop("name");
+				if (name == "settings.lang") name = name.replace(/^settings\./,"");
+				$("option[value='"+cookie(name)+"']", s).prop("selected",true);
 			});
 	}});
 }
