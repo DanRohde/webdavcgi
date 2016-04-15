@@ -29,7 +29,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-use utf8;
+#use utf8;
 
 use CGI;
 use CGI::Carp;
@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160414.4';
+$RELEASE = '1.1.1BETA20160415.1';
 
 use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
 
@@ -88,10 +88,11 @@ sub init {
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
 
     ## some config independent objects for convinience:
-    $self->{debug}  = $D //= \&debug;
-    $self->{logger} = $L //= \&logger;
+    $self->{debug}  = $D             //= \&debug;
+    $self->{logger} = $L             //= \&logger;
     $self->{event}  = $EVENT_CHANNEL //= $self->_get_event_channel();
-    $self->{cache} = $CM = CacheManager->new();  # every request needs a fresh cache
+    $self->{cache}  = $CM
+        = CacheManager->new();    # every request needs a fresh cache
 
     ## read config file:
     read_config( $self, $CONFIGFILE );
@@ -111,8 +112,8 @@ sub init {
 
     ## some config objects for the convinience:
     $self->{config} = $CONFIG = $self;
-    $self->{cgi}    = $CGI;
-    $self->{db}     = $DB //= DB::Driver->new($self);
+    $self->{cgi} = $CGI;
+    $self->{db} = $DB //= DB::Driver->new($self);
     $_DB_EVENT_ADAPTER
         //= DatabaseEventAdapter->new($self)->register( $self->{event} );
 
@@ -199,10 +200,7 @@ sub _debug_request_info {
         debug( 'LITMUS: X-Litmus: ' . $CGI->http('X-Litmus') );
     }
     if ( defined $CGI->http('X-Litmus-Second') ) {
-        debug(
-            'LITMUS: X-Litmus-Second: '
-                . $CGI->http('X-Litmus-Second')
-        );
+        debug( 'LITMUS: X-Litmus-Second: ' . $CGI->http('X-Litmus-Second') );
     }
     debug("METHODS_RX: $_METHODS_RX");
     return $self;
@@ -233,13 +231,13 @@ sub _get_methods_rx {
 
 sub logger {
     if ( defined $LOGFILE && open my $LOG, '>>', $LOGFILE ) {
-        print {$LOG} localtime()
-            . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n"
+        print( {$LOG} localtime()
+                . " - ${UID}($REMOTE_USER)\@$ENV{REMOTE_ADDR}: @_\n" )
             || carp("Cannot write log entry to $LOGFILE: @_");
         close($LOG) || carp("Cannot close filehandle for '$LOGFILE'");
     }
     else {
-        print {*STDERR} "${PROGRAM_NAME}: @_\n"
+        print( {*STDERR} "${PROGRAM_NAME}: @_\n" )
             || carp("Cannot print log entry to STDERR: @_");
     }
     return;
@@ -248,7 +246,7 @@ sub logger {
 sub debug {
     my ($text) = @_;
     if ($DEBUG) {
-        print {*STDERR} "${PROGRAM_NAME}: $text\n"
+        print( {*STDERR} "${PROGRAM_NAME}: $text\n" )
             || carp("Cannot print debug output to STDERR: $text");
     }
     return;

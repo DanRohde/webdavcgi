@@ -206,7 +206,7 @@ sub _handle_other_directory {
         }
         if (/^($REGEX_DRIVE)?\\\\($REGEX_DOMAIN)\\([^\\]+)(\\.*)?$/xms) {
             my ( $drive, $server, $share, $directory ) =
-              ( uc($1), $2, $3, $4 );
+              ( uc($1 // q{?:} ), $2, $3, $4 );
             $directory //= q{};
             $directory =~ s{\\}{/}xmsg;    # umwandeln von \ nach /
             $directory =~ s{/$}{/}xms;     # / am Ende entfernen

@@ -224,7 +224,7 @@ sub _read_mime_types {
         close($f) || carp("Cannot close filehandle for '$mimefile'.");
     }
     else {
-        carp "Cannot open $mimefile";
+        carp "Cannot open $mimefile (please set \$MIMEFILE in your webdav.conf).";
     }
     $MIMETYPES{default} = 'application/octet-stream';
     return;
@@ -239,7 +239,7 @@ sub get_mime_type {
     if ( $filename =~ /[.]([^.]+)$/xms ) {
         $extension = lc $1;
     }
-    return $MIMETYPES{$extension} || $MIMETYPES{default};
+    return $MIMETYPES{$extension} // $MIMETYPES{default};
 }
 
 sub get_etag {

@@ -25,37 +25,38 @@ our $VERSION = '2.0';
 use base qw{ Exporter };
 our %EXPORT_TAGS = ();
 our @EXPORT_OK   = qw(
-  init_defaults read_config
-  $CGI $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_METHOD $HTTP_HOST
-  $RELEASE $VERSION $VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
-  @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
-  $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
-  $ALLOW_INFINITE_PROPFIND
-  $CHARSET $LOGFILE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE
-  $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
-  $ENABLE_CALDAV_SCHEDULE
-  $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
-  %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
-  $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
-  $ENABLE_SEARCH $ENABLE_GROUPDAV
-  @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
-  $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
-  $ENABLE_BIND $LANGSWITCH
-  $DBI_PERSISTENT $DB $CM $CONFIG $D $L
-  $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR
-  $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
-  $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
-  $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
-  $AFS_PTSCMD
-  $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
-  $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
-  $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
-  @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
-  @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-  %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-  @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
-  $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL
+    init_defaults read_config
+    $CGI $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_METHOD $HTTP_HOST
+    $RELEASE $VERSION $VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
+    @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
+    $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
+    $ALLOW_INFINITE_PROPFIND
+    $CHARSET $LOGFILE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE
+    $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
+    $ENABLE_CALDAV_SCHEDULE
+    $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
+    %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
+    $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
+    $ENABLE_SEARCH $ENABLE_GROUPDAV
+    @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
+    $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
+    $ENABLE_BIND $LANGSWITCH
+    $DBI_PERSISTENT $DB $CM $CONFIG $D $L
+    $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR
+    $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
+    $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
+    $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
+    $AFS_PTSCMD
+    $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
+    $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
+    $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
+    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
+    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
+    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
+    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
+    $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL
 );
+
 #{
 #
 #    foreach my $sym (@EXPORT_OK) {
@@ -64,35 +65,35 @@ our @EXPORT_OK   = qw(
 #}
 
 use vars qw(
-  $CGI $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_METHOD
-  $RELEASE $VERSION $VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
-  @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
-  $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
-  $ALLOW_INFINITE_PROPFIND
-  $CHARSET $LOGFILE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE
-  $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
-  $ENABLE_CALDAV_SCHEDULE
-  $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
-  %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
-  $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
-  $ENABLE_SEARCH $ENABLE_GROUPDAV
-  @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
-  $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
-  $ENABLE_BIND $LANGSWITCH
-  $DBI_PERSISTENT $DB $CM $CONFIG
-  $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR
-  $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
-  $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
-  $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
-  $AFS_PTSCMD
-  $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
-  $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
-  $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
-  @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
-  @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
-  %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
-  @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
-  $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL
+    $CGI $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_METHOD
+    $RELEASE $VERSION $VIRTUAL_BASE $DOCUMENT_ROOT $UMASK %MIMETYPES $FANCYINDEXING %ICONS @FORBIDDEN_UID
+    @HIDDEN $ALLOW_POST_UPLOADS $BUFSIZE $MAXFILENAMESIZE $DEBUG
+    $DBI_SRC $DBI_USER $DBI_PASS $DBI_INIT $DBI_TIMEZONE $DEFAULT_LOCK_OWNER $ALLOW_FILE_MANAGEMENT
+    $ALLOW_INFINITE_PROPFIND
+    $CHARSET $LOGFILE $SHOW_QUOTA $SIGNATURE $POST_MAX_SIZE
+    $ENABLE_ACL $ENABLE_CALDAV $ENABLE_LOCK
+    $ENABLE_CALDAV_SCHEDULE
+    $ENABLE_CARDDAV $CURRENT_USER_PRINCIPAL
+    %ADDRESSBOOK_HOME_SET %CALENDAR_HOME_SET $PRINCIPAL_COLLECTION_SET
+    $ENABLE_TRASH $TRASH_FOLDER $SHOW_STAT $HEADER $CONFIGFILE
+    $ENABLE_SEARCH $ENABLE_GROUPDAV
+    @DB_SCHEMA $CREATE_DB %TRANSLATION $LANG $MAXNAVPATHSIZE
+    $THUMBNAIL_WIDTH $ENABLE_THUMBNAIL $ENABLE_THUMBNAIL_CACHE $THUMBNAIL_CACHEDIR $ICON_WIDTH
+    $ENABLE_BIND $LANGSWITCH
+    $DBI_PERSISTENT $DB $CM $CONFIG
+    $FILECOUNTLIMIT %FILECOUNTPERDIRLIMIT %FILEFILTERPERDIR
+    $MIMEFILE $CSS $ENABLE_THUMBNAIL_PDFPS
+    $ENABLE_FLOCK  $AFSQUOTA $CSSURI $HTMLHEAD $ENABLE_CLIPBOARD
+    $LIMIT_FOLDER_DEPTH @PROHIBIT_AFS_ACL_CHANGES_FOR
+    $AFS_PTSCMD
+    $ENABLE_BOOKMARKS $ORDER $ENABLE_NAMEFILTER
+    $VIEW $SHOW_CURRENT_FOLDER $SHOW_CURRENT_FOLDER_ROOTONLY $SHOW_PARENT_FOLDER $SHOW_LOCKS
+    $SHOW_FILE_ACTIONS $REDIRECT_TO $INSTALL_BASE $ENABLE_DAVMOUNT $VHTDOCS $ENABLE_COMPRESSION
+    @UNSELECTABLE_FOLDERS $TITLEPREFIX $FILE_ACTIONS_TYPE $BACKEND %BACKEND_CONFIG $ALLOW_SYMLINK
+    @VISIBLE_TABLE_COLUMNS @ALLOWED_TABLE_COLUMNS %QUOTA_LIMITS @EXTENSIONS %EXTENSION_CONFIG @SUPPORTED_VIEWS %ERROR_DOCS %AUTOREFRESH
+    %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
+    @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
+    $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL
 );
 
 $VERSION = '2.0';
@@ -104,7 +105,7 @@ sub init_defaults {
     $ENV{PATH} = '/bin:/usr/bin:/sbin/:/usr/local/bin:/usr/sbin';
     $INSTALL_BASE = $ENV{INSTALL_BASE}        // q{/etc/webdavcgi/};
     $CONFIGFILE   = $ENV{REDIRECT_WEBDAVCONF} // $ENV{WEBDAVCONF}
-      // 'webdav.conf';
+        // 'webdav.conf';
     $VIRTUAL_BASE       = qr{/}xms;
     $DOCUMENT_ROOT      = $ENV{DOCUMENT_ROOT} . q{/};
     $UMASK              = oct 22;
@@ -141,7 +142,7 @@ config	cf cnf conf exrc gvimrc gxt inf ini manifest muttrc pif pinerc pref prefe
 gis	axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
 crypt	cer cert crl crt csr der gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
 EOF
-      ;
+        ;
     $ICON_WIDTH              = 18;
     $TITLEPREFIX             = 'WebDAV CGI:';
     $CSS                     = q{};
@@ -166,13 +167,19 @@ EOF
     $SHOW_QUOTA              = 1;
     %QUOTA_LIMITS            = (
         'warn' => { limit => 0.02, background => 'yellow', },
-        'critical' => { limit => 0.01, color => 'yellow', background => 'red' }
+        'critical' =>
+            { limit => 0.01, color => 'yellow', background => 'red' }
     );
-    @ALLOWED_TABLE_COLUMNS =
-      qw( name size lastmodified created mode mime uid gid );
-    if ($ALLOW_FILE_MANAGEMENT) { push @ALLOWED_TABLE_COLUMNS, 'fileactions'; }
+    @ALLOWED_TABLE_COLUMNS
+        = qw( name size lastmodified created mode mime uid gid );
+
+    if ($ALLOW_FILE_MANAGEMENT) {
+        push @ALLOWED_TABLE_COLUMNS, 'fileactions';
+    }
     @VISIBLE_TABLE_COLUMNS = qw( name size lastmodified );
-    if ($ALLOW_FILE_MANAGEMENT) { push @VISIBLE_TABLE_COLUMNS, 'fileactions'; }
+    if ($ALLOW_FILE_MANAGEMENT) {
+        push @VISIBLE_TABLE_COLUMNS, 'fileactions';
+    }
     $SHOW_FILE_ACTIONS                                        = 1;
     $FILE_ACTIONS_TYPE                                        = 'icons';
     $SHOW_CURRENT_FOLDER                                      = 0;
@@ -182,12 +189,12 @@ EOF
     $EXTENSION_CONFIG{Permissions}{user}   = [ 'r', 'w', 'x', 's' ];
     $EXTENSION_CONFIG{Permissions}{group}  = [ 'r', 'w', 'x', 's' ];
     $EXTENSION_CONFIG{Permissions}{others} = [ 'r', 'w', 'x', 't' ];
-    $LANGSWITCH =
-q{<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
-    $HEADER =
-q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>};
-    $SIGNATURE =
-q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
+    $LANGSWITCH
+        = q{<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
+    $HEADER
+        = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>};
+    $SIGNATURE
+        = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
     $LANG                = 'default';
     %SUPPORTED_LANGUAGES = (
         'default' => 'English',
@@ -196,26 +203,26 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
         'hu'      => 'Magyar',
         'it'      => 'Italiano',
     );
-    $ORDER       = 'name';
-    $DBI_SRC     = 'dbi:SQLite:dbname=/tmp/webdav.'
-      . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
+    $ORDER   = 'name';
+    $DBI_SRC = 'dbi:SQLite:dbname=/tmp/webdav.'
+        . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
     $DBI_USER       = q{};
     $DBI_PASS       = q{};
     $DBI_PERSISTENT = 1;
     $CREATE_DB      = 1;
     @DB_SCHEMA      = (
-'CREATE TABLE IF NOT EXISTS webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, type VARCHAR(255), scope VARCHAR(255), token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, timeout VARCHAR(255) NULL, owner TEXT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
-'CREATE TABLE IF NOT EXISTS webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT)',
+        'CREATE TABLE IF NOT EXISTS webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, type VARCHAR(255), scope VARCHAR(255), token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, timeout VARCHAR(255) NULL, owner TEXT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)',
+        'CREATE TABLE IF NOT EXISTS webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT)',
         'CREATE INDEX IF NOT EXISTS webdav_locks_idx1 ON webdav_locks (fn)',
         'CREATE INDEX IF NOT EXISTS webdav_locks_idx2 ON webdav_locks (basefn)',
-'CREATE INDEX IF NOT EXISTS webdav_locks_idx3 ON webdav_locks (fn,basefn)',
-'CREATE INDEX IF NOT EXISTS webdav_locks_idx4 ON webdav_locks (fn,basefn,token)',
+        'CREATE INDEX IF NOT EXISTS webdav_locks_idx3 ON webdav_locks (fn,basefn)',
+        'CREATE INDEX IF NOT EXISTS webdav_locks_idx4 ON webdav_locks (fn,basefn,token)',
         'CREATE INDEX IF NOT EXISTS webdav_props_idx1 ON webdav_props (fn)',
-'CREATE INDEX IF NOT EXISTS webdav_props_idx2 ON webdav_props (fn,propname)',
+        'CREATE INDEX IF NOT EXISTS webdav_props_idx2 ON webdav_props (fn,propname)',
     );
-    $DEFAULT_LOCK_OWNER =
-      { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{@}
-          . $ENV{REMOTE_ADDR} };
+    $DEFAULT_LOCK_OWNER
+        = { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{@}
+            . $ENV{REMOTE_ADDR} };
     $DEFAULT_LOCK_TIMEOUT                       = 3600;
     $CHARSET                                    = 'utf-8';
     $BUFSIZE                                    = 1_048_576;
@@ -231,9 +238,8 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
     $EXTENSION_CONFIG{AFSGroupManager}{ptscmd} = '/usr/bin/pts';
     $ENABLE_LOCK                               = 1;
     $ENABLE_ACL                                = 0;
-    $CURRENT_USER_PRINCIPAL =
-      q{/principals/}
-      . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{/};
+    $CURRENT_USER_PRINCIPAL                    = q{/principals/}
+        . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{/};
     $PRINCIPAL_COLLECTION_SET = q{/directory/};
     $ENABLE_CALDAV            = 0;
     %CALENDAR_HOME_SET        = ( default => q{/}, );
@@ -255,8 +261,8 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
         '/afs/.cms.hu-berlin.de/user/'         => -1,
         '/usr/local/www/htdocs/rohdedan/test/' => 2
     );
-    my $_ru =
-      ( split /\@/xms, ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) )[0];
+    my $_ru = ( split /\@/xms,
+        ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) )[0];
     %FILEFILTERPERDIR = (
         '/afs/.cms.hu-berlin.de/user/'          => "^$_ru\$",
         '/usr/local/www/htdocs/rohdedan/links/' => '^loop[1-4]$'
@@ -274,10 +280,10 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
     $BACKEND            = 'FS';
     $DEBUG              = 0;
     @DEFAULT_EXTENSIONS = qw(
-      History     VideoJS   ViewerJS     TextEditor
-      Highlighter Download  Zip          Search
-      Diff        DiskUsage ODFConverter ImageInfo
-      QuickToggle
+        History     VideoJS   ViewerJS     TextEditor
+        Highlighter Download  Zip          Search
+        Diff        DiskUsage ODFConverter ImageInfo
+        QuickToggle
     );
     @AFS_EXTENSIONS   = qw( AFSACLManager AFSGroupManager );
     @EXTRA_EXTENSIONS = qw( GPXViewer SourceCodeViewer HexDump SendByMail );
@@ -286,15 +292,22 @@ q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a h
     @EXTENSIONS       = @DEFAULT_EXTENSIONS;
     @EVENTLISTENER    = ();
     $OPTIMIZERTMP     = $THUMBNAIL_CACHEDIR;
+    %MIMETYPES        = (
+        css     => 'text/css',
+        js      => 'application/javascript',
+        gif     => 'image/gif',
+        png     => 'image/png',
+        default => 'application/octet-stream',
+    );
     return 1;
 }
 
 sub read_config {
-    my ($config, $configfile) = @_;
+    my ( $config, $configfile ) = @_;
     if ( defined $configfile ) {
 
         # for compatibilty:
-        our $cgi = $CGI;
+        our $cgi    = $CGI;
         our $CONFIG = $config;
         my $ret;
         if ( !( $ret = do($configfile) ) ) {
