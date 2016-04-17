@@ -173,14 +173,14 @@ sub handle_post_request {
 sub get_thumbnail_renderer {
     my ($self) = @_;
     require WebInterface::ThumbnailRenderer;
-    return $self->{config}->{thumbnailrender} //=
+    return $self->{config}->{thumbnailrender} =
       WebInterface::ThumbnailRenderer->new( $self->{config} );
 }
 
 sub get_functions {
     my $self = shift;
     require WebInterface::Functions;
-    $self->{config}->{functions} //= WebInterface::Functions->new( $self->{config} );
+    $self->{config}->{functions} = WebInterface::Functions->new( $self->{config} );
     return $self->{config}->{functions}->init();
 }
 
@@ -206,7 +206,7 @@ sub render_web_interface {
 sub get_extension_manager {
     my ($self) = @_;
     require WebInterface::Extension::Manager;
-    return $self->{config}->{extensions} //=
+    return $self->{config}->{extensions} =
       WebInterface::Extension::Manager->new( $self->{config} );
 }
 

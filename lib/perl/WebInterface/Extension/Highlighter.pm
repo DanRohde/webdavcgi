@@ -38,7 +38,8 @@ use vars qw(%_CACHE);
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript posthandler fileattr fileactionpopup);
+    my @hooks =
+      qw(css locales javascript posthandler fileattr fileactionpopup);
 
     $hookreg->register( \@hooks, $self );
 
@@ -67,11 +68,11 @@ sub init {
     return $self;
 }
 
-
 sub handle_hook_javascript {
     my ( $self, $config, $params ) = @_;
     if ( my $ret = $self->SUPER::handle_hook_javascript( $config, $params ) ) {
-        $ret .= $self->SUPER::handle_hook_javascript($config, { file => 'htdocs/contrib/iris.min.js'} );
+        $ret .= $self->SUPER::handle_hook_javascript( $config,
+            { file => 'htdocs/contrib/iris.min.js' } );
         return $ret;
     }
     return 0;
