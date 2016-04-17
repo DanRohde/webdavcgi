@@ -135,5 +135,23 @@ sub uncompress_archive {
     __deltree("$tempdir/");    # fixes Speedy bug
     return $ret;
 }
+sub getLocalFilename {
+    my ( $self, $file ) = @_;
+    if ( $self->exists($file) ) {
+        my $suffix = $file =~ m{([.][^./]+)$}xms ? $1 : undef;
+        require File::Temp; 
+        my ( $fh, $filename ) = File::Temp::tempfile(
+            TEMPLATE => '/tmp/webdavcgiXXXXX',
+            CLEANUP  => 1,
+            SUFFIX   => $suffix
+        );
+        $self->printFile( $file, $fh );
+        close($fh) || carp("Cannot close $file.");
+        my $stat = stat2h( $self->stat($file) );
+        utime $stat->{atime}, $stat->{mtime}, $filename;
+        return $filename;
+    }
+    return $file;
+}
 
 1;

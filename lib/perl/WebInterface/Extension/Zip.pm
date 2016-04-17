@@ -41,18 +41,17 @@ use CGI::Carp;
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
 use HTTPHelper qw( print_compressed_header_and_content );
 
-
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw( css locales javascript posthandler body templates );
     push @hooks, 'fileaction'
-        unless $EXTENSION_CONFIG{Zip}{disable_fileaction};
+      unless $EXTENSION_CONFIG{Zip}{disable_fileaction};
     push @hooks, 'filelistaction'
-        unless $EXTENSION_CONFIG{Zip}{disable_filelistaction};
+      unless $EXTENSION_CONFIG{Zip}{disable_filelistaction};
     push @hooks, 'fileactionpopup'
-        unless $EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
+      unless $EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
     push @hooks, 'fileactionpopupnew'
-        unless $EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
+      unless $EXTENSION_CONFIG{Zip}{disable_fileactionpopup};
     push @hooks, 'apps' if $EXTENSION_CONFIG{Zip}{enable_apps};
     push @hooks, 'new' unless $EXTENSION_CONFIG{Zip}{disable_fnew};
 
@@ -60,120 +59,141 @@ sub init {
     return $self;
 }
 
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action    => 'zipdwnload',
+        accesskey => 'z',
+        label     => 'zipdwnload',
+        path      => $params->{path},
+        classes   => 'access-readable'
+    };
+}
+
+sub handle_hook_filelistaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        listaction => 'zipdwnload',
+        label      => 'zipdwnload',
+        title      => 'zipdwnloadtext',
+        path       => ${$params}{path},
+        classes    => 'sel-multi uibutton'
+    };
+
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        title        => $self->tl('zip.menu'),
+        classes      => 'zip-popup',
+        subpopupmenu => [
+            {
+                action  => 'zipup',
+                label   => 'zipup',
+                title   => 'zipup',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'access-writeable sep'
+            },
+            {
+                action  => 'zipdwnload',
+                label   => 'zipdwnload',
+                title   => 'zipdwnloadtext',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'listaction'
+            },
+            {
+                action  => 'zipcompress',
+                label   => 'zip.compress',
+                title   => 'zip.compress.title',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'access-writeable'
+            },
+            {
+                action  => 'zipuncompress',
+                label   => 'zip.uncompress',
+                title   => 'zip.uncompress.title',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'access-writeable'
+            }
+        ]
+    };
+}
+
+sub handle_hook_fileactionpopupnew {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'zipup',
+        label   => 'zipup',
+        title   => 'zipup',
+        path    => ${$params}{path},
+        type    => 'li',
+        classes => 'access-writeable sep'
+    };
+}
+
+sub handle_hook_new {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action    => 'zipup',
+        label     => 'zipup',
+        title     => 'zipup',
+        path      => ${$params}{path},
+        classes   => 'access-writeable',
+        type      => 'li-a',
+        liclasses => 'sep',
+        accesskey => 'w'
+    };
+}
+
+sub handle_hook_apps {
+    my ($self) = @_;
+    return $self->handle_apps_hook( $self->{cgi},
+        'listaction zipdwnload sel-multi disabled ',
+        'zipdwnload', 'zipdwnload' );
+}
+
+sub handle_hook_body {
+    my ($self) = @_;
+    return $self->renderUploadFormTemplate();
+}
+
+sub handle_hook_templates {
+    my ($self) = @_;
+    return $self->renderMessageTemplate();
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    my $action = $self->{cgi}->param('action');
+    if ( !defined $action ) {
+        return 0;
+    }
+    if ( $action eq 'zipdwnload' ) {
+        return $self->handleZipDownload();
+    }
+    if ( $action eq 'zipup' ) {
+        return $self->handleZipUpload();
+    }
+    if ( $action eq 'zipcompress' ) {
+        return $self->handleZipCompress();
+    }
+    if ( $action eq 'zipuncompress' ) {
+        return $self->handleZipUncompress();
+    }
+}
+
 sub handle {
     my ( $self, $hook, $config, $params ) = @_;
-    if (my $ret = $self->SUPER::handle( $hook, $config, $params )) {
-        return $ret;    
-    }
-
-    if ( $hook eq 'fileaction' ) {
-        return {
-            action    => 'zipdwnload',
-            accesskey => 'z',
-            label     => 'zipdwnload',
-            path      => ${$params}{path},
-            classes   => 'access-readable'
-        };
-    }
-    if ( $hook eq 'filelistaction' ) {
-        return {
-            listaction => 'zipdwnload',
-            label      => 'zipdwnload',
-            title      => 'zipdwnloadtext',
-            path       => ${$params}{path},
-            classes    => 'sel-multi uibutton'
-        };
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            title        => $self->tl('zip.menu'),
-            classes      => 'zip-popup',
-            subpopupmenu => [
-                {   action  => 'zipup',
-                    label   => 'zipup',
-                    title   => 'zipup',
-                    path    => ${$params}{path},
-                    type    => 'li',
-                    classes => 'access-writeable sep'
-                },
-                {   action  => 'zipdwnload',
-                    label   => 'zipdwnload',
-                    title   => 'zipdwnloadtext',
-                    path    => ${$params}{path},
-                    type    => 'li',
-                    classes => 'listaction'
-                },
-                {   action  => 'zipcompress',
-                    label   => 'zip.compress',
-                    title   => 'zip.compress.title',
-                    path    => ${$params}{path},
-                    type    => 'li',
-                    classes => 'access-writeable'
-                },
-                {   action  => 'zipuncompress',
-                    label   => 'zip.uncompress',
-                    title   => 'zip.uncompress.title',
-                    path    => ${$params}{path},
-                    type    => 'li',
-                    classes => 'access-writeable'
-                }
-            ]
-        };
-    }
-    if ( $hook eq 'fileactionpopupnew' ) {
-        return {
-            action  => 'zipup',
-            label   => 'zipup',
-            title   => 'zipup',
-            path    => ${$params}{path},
-            type    => 'li',
-            classes => 'access-writeable sep'
-        };
-    }
-    if ( $hook eq 'new' ) {
-        return {
-            action    => 'zipup',
-            label     => 'zipup',
-            title     => 'zipup',
-            path      => ${$params}{path},
-            classes   => 'access-writeable',
-            type      => 'li-a',
-            liclasses => 'sep',
-            accesskey => 'w'
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'listaction zipdwnload sel-multi disabled ',
-            'zipdwnload', 'zipdwnload' );
-    }
-    if ( $hook eq 'body' ) {
-        return $self->renderUploadFormTemplate();
-    }
-    if ( $hook eq 'templates' ) {
-        return $self->renderMessageTemplate();
-    }
-    if ( $hook eq 'posthandler' ) {
-        my $action = $self->{cgi}->param('action');
-        if (!defined $action) {
-            return 0;
-        }
-        if ( $action eq 'zipdwnload' ) {
-            return $self->handleZipDownload();
-        }
-        if ( $action eq 'zipup' ) {
-            return $self->handleZipUpload();
-        }
-        if ( $action eq 'zipcompress' ) {
-            return $self->handleZipCompress();
-        }
-        if ( $action eq 'zipuncompress' ) {
-            return $self->handleZipUncompress();
-        }
+    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
+        return $ret;
     }
     return 0;
 }
-
 sub renderUploadFormTemplate {
     my ($self) = @_;
     return $self->replace_vars( $self->read_template('zipfileuploadform') );
@@ -197,32 +217,34 @@ sub handleZipUpload {
             $msgparam = [$rfn];
             last;
         }
-        elsif (
-            $self->{backend}->saveStream( "$PATH_TRANSLATED$rfn", $fh ) )
-        {
+        elsif ( $self->{backend}->saveStream( "$PATH_TRANSLATED$rfn", $fh ) ) {
             push @zipfiles, $rfn;
             $self->{backend}->unlinkFile( $PATH_TRANSLATED . $rfn )
-                if $self->{backend}
-                ->uncompress_archive( "$PATH_TRANSLATED$rfn",
-                $PATH_TRANSLATED );
+              if $self->{backend}
+              ->uncompress_archive( "$PATH_TRANSLATED$rfn", $PATH_TRANSLATED );
         }
     }
     if ( $#zipfiles > -1 ) {
         $msg = ( $#zipfiles > 0 ) ? 'zipupmulti' : 'zipupsingle';
-        $msgparam = [ scalar(@zipfiles),
-            substr( join( ', ', @zipfiles ), 0, 150 ) ];
+        $msgparam =
+          [ scalar(@zipfiles), substr( join( ', ', @zipfiles ), 0, 150 ) ];
     }
     else {
         $errmsg = 'zipupnothingerr';
     }
     my %jsondata = ();
-    my @params
-        = $msgparam ? map { $self->{cgi}->escapeHTML($_) } @{$msgparam} : ();
-    if ($errmsg) { $jsondata{error} = sprintf( $self->tl("msg_$errmsg"), @params ); }
-    if ($msg) { $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params ); }
+    my @params =
+      $msgparam ? map { $self->{cgi}->escapeHTML($_) } @{$msgparam} : ();
+    if ($errmsg) {
+        $jsondata{error} = sprintf( $self->tl("msg_$errmsg"), @params );
+    }
+    if ($msg) {
+        $jsondata{message} = sprintf( $self->tl("msg_$msg"), @params );
+    }
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
@@ -233,8 +255,8 @@ sub getZipFilename {
     my ( $self, $files ) = @_;
     my $time = strftime( '%Y-%m-%d-%H:%M:%S', localtime );
     my $zipfilename = $self->{backend}->basename(
-        scalar(@{$files}) > 1
-            || ${$files}[0] eq q{.} ? $REQUEST_URI : ${$files}[0],
+        scalar( @{$files} ) > 1
+          || ${$files}[0] eq q{.} ? $REQUEST_URI : ${$files}[0],
         '.zip'
     ) . "-$time.zip";
     $zipfilename =~ s/[\/\ ]/_/xmsg;
@@ -250,8 +272,7 @@ sub handleZipDownload {
         -type                => 'application/zip',
         -Content_disposition => 'attachment; filename=' . $zfn
     );
-    $self->{backend}
-        ->compress_files( \*STDOUT, $PATH_TRANSLATED, @files );
+    $self->{backend}->compress_files( \*STDOUT, $PATH_TRANSLATED, @files );
     return 1;
 }
 
@@ -267,8 +288,7 @@ sub handleZipCompress {
     );
     my $error;
     if ( open( $zipfh, ">", "$zipfn" ) ) {
-        $self->{backend}
-            ->compress_files( $zipfh, $PATH_TRANSLATED, @files );
+        $self->{backend}->compress_files( $zipfh, $PATH_TRANSLATED, @files );
         close($zipfh) || carp("Cannot close $zipfn");
         if ( ( stat $zipfn )[7] > 0 ) {
             my ( $quotahrd, $quotacur ) = $self->{backend}->getQuota();
@@ -278,8 +298,7 @@ sub handleZipCompress {
                 if ( open( $zipfh, '<', $zipfn ) ) {
                     ;
                     $self->{backend}
-                        ->saveStream( $PATH_TRANSLATED . $zipfilename,
-                        $zipfh );
+                      ->saveStream( $PATH_TRANSLATED . $zipfilename, $zipfh );
                     close($zipfh) || carp("Cannot close $zipfn");
                 }
             }
@@ -308,7 +327,8 @@ sub handleZipCompress {
     unlink $zipfn;
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
@@ -318,9 +338,9 @@ sub handleZipCompress {
 sub handleZipUncompress {
     my ($self) = @_;
     my @files = $self->get_cgi_multi_param('files');
-    foreach my $file ( @files ) {
-        $self->{backend}->uncompress_archive( $PATH_TRANSLATED . $file,
-            $PATH_TRANSLATED );
+    foreach my $file (@files) {
+        $self->{backend}
+          ->uncompress_archive( $PATH_TRANSLATED . $file, $PATH_TRANSLATED );
     }
     my %jsondata = ();
     $jsondata{message} = sprintf(
@@ -329,7 +349,8 @@ sub handleZipUncompress {
     );
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );

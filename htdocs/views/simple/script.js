@@ -1255,7 +1255,7 @@ function addMissingSlash(base) {
 }
 function handleFileDelete(row) {
 	row.fadeTo('slow',0.5);
-	confirmDialog($('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(row.attr('data-file')))),{
+	confirmDialog($('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(row.attr('data-displayname')))),{
 		confirm: function() {
 			var file = row.attr('data-file');
 			removeFileListRow(row);
@@ -1313,7 +1313,7 @@ function doRename(row, file, newname) {
 }
 function handleFileRename(row) {
 	var tdfilename = row.find('td.filename');
-	var filename = row.attr('data-file');
+	var filename = row.attr('data-displayname');
 	// fixes accesskey bug: multiple calls with on shurtcut usage:
 	if ($(".renamefield",tdfilename).length>0) return;
 	

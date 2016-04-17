@@ -81,7 +81,12 @@ sub handle {
     }
     my @ret;
     foreach my $handler ( @{ $HOOKS{$self}{$hook} } ) {
-        push @ret, $handler->handle( $hook, $self->{config}, $params );
+        my $method = "handle_hook_${hook}";
+        if ($handler->can($method)) {
+            push @ret, $handler->$method($self->{config}, $params);
+        } else {
+            push @ret, $handler->handle( $hook, $self->{config}, $params );
+        }
     }
     return \@ret;
 }
