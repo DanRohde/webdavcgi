@@ -42,43 +42,39 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    my $ret = 0;
-    if ( $hook eq 'fileattr' ) {
-        my $mime        = get_mime_type( $params->{path} );
-        my $is_readable = $self->{backend}->isReadable( $params->{path} );
-        my $classes     = q{};
-        foreach my $type (qw( image audio video )) {
-            $classes .=
-              " imageinfo-$type-"
-              . (    $is_readable
-                  && $mime =~ /^\Q$type\E\//xmsi ? 'show' : 'hide' );
-        }
-        $ret = { ext_classes => $classes };
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
+    my $mime        = get_mime_type( $params->{path} );
+    my $is_readable = $self->{backend}->isReadable( $params->{path} );
+    my $classes     = q{};
+    foreach my $type (qw( image audio video )) {
+        $classes .=
+          " imageinfo-$type-"
+          . ( $is_readable && $mime =~ /^\Q$type\E\//xmsi ? 'show' : 'hide' );
     }
-    else {
-        $ret = $self->SUPER::handle( $hook, $config, $params );
-    }
-    return $ret if $ret;
+    return { ext_classes => $classes };
+}
 
-    if ( $hook eq 'fileactionpopup' ) {
-        $ret = [];
-        my $is_readable = $self->{backend}->isReadable($PATH_TRANSLATED);
-        foreach my $type ( ( 'image', 'audio', 'video' ) ) {
-            push @{$ret},
-              {
-                action   => 'imageinfo ' . $type,
-                disabled => !$is_readable,
-                label    => 'imageinfo.' . $type,
-                type     => 'li'
-              };
-        }
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    my $ret         = [];
+    my $is_readable = $self->{backend}->isReadable($PATH_TRANSLATED);
+    foreach my $type ( ( 'image', 'audio', 'video' ) ) {
+        push @{$ret},
+          {
+            action   => 'imageinfo ' . $type,
+            disabled => !$is_readable,
+            label    => 'imageinfo.' . $type,
+            type     => 'li'
+          };
     }
-    elsif (
-        $hook eq 'posthandler' && $self->{cgi}->param('action')
-        && $self->{cgi}->param('action') eq 'imageinfo'
-      )
+    return $ret;
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'imageinfo' )
     {
         my $file = $self->{cgi}->param('file');
         print_header_and_content(
@@ -92,10 +88,10 @@ sub handle {
                 )
             )
         );
-        $ret = 1;
+        return 1;
     }
 
-    return $ret;
+    return 0;
 }
 
 sub _render_image_info {

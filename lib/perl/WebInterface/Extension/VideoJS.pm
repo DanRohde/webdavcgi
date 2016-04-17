@@ -49,36 +49,35 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action => $ACTION,
-            label  => $ACTION,
-            path   => $params->{path},
-            type   => 'li'
-        };
-    }
-    if ( $hook eq 'fileaction' ) {
-        return {
-            action  => $ACTION,
-            label   => $ACTION,
-            path    => $params->{path},
-            classes => 'access-readable'
-        };
-    }
-    if (   $hook eq 'posthandler'
-        && $self->{cgi}->param('action')
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action => $ACTION,
+        label  => $ACTION,
+        path   => $params->{path},
+        type   => 'li'
+    };
+}
+
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => $ACTION,
+        label   => $ACTION,
+        path    => $params->{path},
+        classes => 'access-readable'
+    };
+}
+
+sub handle_hook_posthandler {
+    my ($self) = @_;
+    if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'videojs' )
     {
         return $self->_render_viewerjs( scalar $self->{cgi}->param('file') );
     }
     return 0;
 }
-
 sub _render_viewerjs {
     my ( $self, $filename ) = @_;
     my $vars = {

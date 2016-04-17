@@ -32,6 +32,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use CGI::Carp;
+
 #use JSON;
 
 use DefaultConfig
@@ -60,61 +61,62 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'afsaclmanager',
+        label    => 'afs',
+        title    => 'afs',
+        path     => $params->{path},
+        type     => 'li',
+        classes  => 'sel-noneorone sel-dir sep',
+        template => $self->config( 'template', 'afsaclmanager' )
+    };
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi},
+        'afsaclmanager sel-noneorone sel-dir',
+        'afs', 'afs' );
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    my $ajax = $self->{cgi}->param('ajax') // q{};
+    my $content;
+    my $contenttype = 'text/html';
+    if ( $ajax eq 'getAFSACLManager' ) {
+        $content = $self->_render_afs_acl_manager(
+            $PATH_TRANSLATED,
+            $REQUEST_URI,
+            $self->{cgi}->param('template')
+              || $self->config( 'template', 'afsaclmanager' )
+        );
+    }
+    elsif ( $ajax eq '_search_afs_user_or_group_entry' ) {
+        $content =
+          $self->_search_afs_user_or_group_entry( $self->{cgi}->param('term') );
+        $contenttype = 'application/json';
+
+    }
+    if ($content) {
+        delete $_CACHE{$self}{$PATH_TRANSLATED};
+        print_compressed_header_and_content( '200 OK', $contenttype,
+            $content, 'Cache-Control: no-cache, no-store',
+            $self->get_cookies() );
+        return 1;
     }
 
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action   => 'afsaclmanager',
-            label    => 'afs',
-            title    => 'afs',
-            path     => $params->{path},
-            type     => 'li',
-            classes  => 'sel-noneorone sel-dir sep',
-            template => $self->config( 'template', 'afsaclmanager' )
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'afsaclmanager sel-noneorone sel-dir',
-            'afs', 'afs' );
-    }
-    if ( $hook eq 'gethandler' ) {
-        my $ajax = $self->{cgi}->param('ajax') // q{};
-        my $content;
-        my $contenttype = 'text/html';
-        if ( $ajax eq 'getAFSACLManager' ) {
-            $content = $self->_render_afs_acl_manager(
-                $PATH_TRANSLATED,
-                $REQUEST_URI,
-                $self->{cgi}->param('template')
-                  || $self->config( 'template', 'afsaclmanager' )
-            );
-        }
-        elsif ( $ajax eq '_search_afs_user_or_group_entry' ) {
-            $content =
-              $self->_search_afs_user_or_group_entry(
-                $self->{cgi}->param('term') );
-            $contenttype = 'application/json';
+    return 0;
+}
 
-        }
-        if ($content) {
-            delete $_CACHE{$self}{$PATH_TRANSLATED};
-            print_compressed_header_and_content( '200 OK', $contenttype,
-                $content, 'Cache-Control: no-cache, no-store',
-                $self->get_cookies() );
-            return 1;
-        }
-    }
-    if ( $hook eq 'posthandler' ) {
-        if (   $self->config( 'allow_afsaclchanges', 1 )
-            && $self->{cgi}->param('saveafsacl') )
-        {
-            return $self->_do_afs_save_acl();
-        }
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->config( 'allow_afsaclchanges', 1 )
+        && $self->{cgi}->param('saveafsacl') )
+    {
+        return $self->_do_afs_save_acl();
     }
     return 0;
 }
@@ -197,11 +199,16 @@ sub _read_afs_acls {
     $fn = $self->{backend}->resolveVirt($fn);
     $fn =~ s/(["\$\\])/\\$1/xmsg;
 
-    my @lines = @{ exec_ptscmd( sprintf q{%s listacl "%s"},
-        $BACKEND_CONFIG{$BACKEND}{fscmd}, $fn ) };
+    my @lines = @{
+        exec_ptscmd(
+            sprintf q{%s listacl "%s"}, $BACKEND_CONFIG{$BACKEND}{fscmd},
+            $fn
+        )
+    };
     shift @lines;
     my @entries;
     my $ispositive = 1;
+
     foreach my $line (@lines) {
         next if $line =~ /^\s*$/xms;    # skip empty lines
         if ( $line =~ /^(Normal|Negative) rights:/xms ) {

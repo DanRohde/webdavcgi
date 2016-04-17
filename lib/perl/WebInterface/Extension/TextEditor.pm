@@ -61,53 +61,52 @@ sub init {
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
     return $self;
 }
-
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileattr' ) {
-        my $is_editable = $self->_is_editable( $params->{path} );
-        return {
-            ext_classes => 'iseditable-' . ( $is_editable ? 'yes' : 'no' ),
-            ext_iconclasses => $is_editable ? 'category-text' : q{}
-        };
-    }
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    return $ret if $ret;
-
-    if ( $hook eq 'settings' ) {
-        return $self->handle_settings_hook('confirm.save')
-            . $self->handle_settings_hook('texteditor.backup');
-    }
-    if ( $hook eq 'fileaction' ) {
-        return {
-            action  => 'edit',
-            classes => 'access-readable',
-            label   => 'editbutton'
-        };
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action  => 'edit',
-            classes => 'access-readable',
-            label   => 'editbutton',
-            type    => 'li'
-        };
-    }
-    if (   $hook eq 'gethandler'
-        && $self->{cgi}->param('action')
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
+    my $is_editable = $self->_is_editable( $params->{path} );
+    return {
+        ext_classes => 'iseditable-' . ( $is_editable ? 'yes' : 'no' ),
+        ext_iconclasses => $is_editable ? 'category-text' : q{}
+    };
+}
+sub handle_hook_settings {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_settings_hook('confirm.save')
+         . $self->handle_settings_hook('texteditor.backup');
+}
+sub handle_hook_fileaction {
+    return {
+        action  => 'edit',
+        classes => 'access-readable',
+        label   => 'editbutton'
+    };
+}
+sub handle_hook_fileactionpopup {
+    return {
+        action  => 'edit',
+        classes => 'access-readable',
+        label   => 'editbutton',
+        type    => 'li'
+    };
+}
+sub handle_hook_gethandler {
+    my ($self) = @_;
+    if(    $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'edit' )
     {
         return $self->_get_edit_form();
     }
-    if (   $hook eq 'posthandler'
-        && $self->{cgi}->param('action')
+    return 0;
+}
+sub handle_hook_posthandler {
+    my ($self) = @_;
+    if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'savetextdata' )
     {
         return $self->_save_text_data();
     }
     return 0;
 }
-
 sub _get_edit_form {
     my ($self)   = @_;
     my $filename = $self->{cgi}->param('filename');

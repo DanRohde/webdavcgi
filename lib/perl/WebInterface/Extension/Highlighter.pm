@@ -61,102 +61,98 @@ sub init {
                 colorpicker => 1,
                 order       => 1
             },
-
-#'font-weight' => { values=>'lighter,bold,bolder', label=>'highlighter.font-weight', labelstyle=>'font-weight', order=>3 },
         }
     );
     $self->{json} = JSON->new();
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileattr' ) {
-        return $self->get_file_attributes($params);
-    }
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        if ( $hook eq 'javascript' ) {
-            $ret .= $self->handle_javascript_hook( 'Highlighter',
-                'htdocs/contrib/iris.min.js' );
-        }
+
+sub handle_hook_javascript {
+    my ( $self, $config, $params ) = @_;
+    if ( my $ret = $self->SUPER::handle( 'javascript', $config, $params ) ) {
+        $ret .= $self->handle_javascript_hook( 'Highlighter',
+            'htdocs/contrib/iris.min.js' );
+
         return $ret;
-    }
-
-    if ( $hook eq 'fileactionpopup' ) {
-        my @popups = ();
-        foreach my $attribute (
-            sort {
-                $self->{attributes}{$a}{order}
-                  <=> $self->{attributes}{$b}{order}
-            } keys %{ $self->{attributes} }
-          )
-        {
-            my @subpopup = map {
-                {
-                    action => 'mark',
-                    attr   => {
-                        style =>
-                          "$self->{attributes}{$attribute}{labelstyle}: $_;"
-                    },
-                    data  => { value => $_, style => $attribute },
-                    label => sprintf(
-                        $self->tl(
-                            $self->{attributes}{$attribute}{label} // q{}
-                        ),
-                        $_
-                    ),
-                    title => $self->tl( "highlighter.$attribute.$_", $_ ),
-                    type  => 'li'
-                }
-              } split( /,/xms, $self->{attributes}{$attribute}{values} )
-              ;
-            if ( $self->{attributes}{$attribute}{colorpicker} ) {
-                push @subpopup,
-                  {
-                    action  => 'markcolorpicker',
-                    data    => { value => $_, style => $attribute },
-                    label   => $self->tl('highlighter.colorpicker'),
-                    classes => 'sep',
-                    type    => 'li'
-                  };
-            }
-            push @subpopup,
-              {
-                action  => 'removemark',
-                data    => { style => $attribute },
-                label   => $self->tl("highlighter.remove.$attribute"),
-                type    => 'li',
-                classes => 'sep'
-              };
-
-            push @popups,
-              {
-                title        => $self->tl("highlighter.$attribute"),
-                subpopupmenu => \@subpopup,
-                classes      => "highlighter $attribute"
-              };
-        }
-
-        return {
-            title        => $self->tl('highlighter'),
-            subpopupmenu => \@popups,
-            classes      => 'highlighter-popup'
-        };
-    }
-    if ( $hook eq 'posthandler' ) {
-        my $action = $self->{cgi}->param('action') // q{};
-        if ( $action eq 'mark' ) {
-            return $self->save_property();
-        }
-        elsif ( $action eq 'removemark' ) {
-            return $self->remove_property();
-        }
     }
     return 0;
 }
 
-sub get_file_attributes {
-    my ( $self, $params ) = @_;
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    my $action = $self->{cgi}->param('action') // q{};
+    if ( $action eq 'mark' ) {
+        return $self->_save_property();
+    }
+    elsif ( $action eq 'removemark' ) {
+        return $self->_remove_property();
+    }
+    return 0;
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+
+    my @popups = ();
+    foreach my $attribute (
+        sort {
+            $self->{attributes}{$a}{order} <=> $self->{attributes}{$b}{order}
+        } keys %{ $self->{attributes} }
+      )
+    {
+        my @subpopup = map {
+            {
+                action => 'mark',
+                attr   => {
+                    style => "$self->{attributes}{$attribute}{labelstyle}: $_;"
+                },
+                data  => { value => $_, style => $attribute },
+                label => sprintf(
+                    $self->tl( $self->{attributes}{$attribute}{label} // q{} ),
+                    $_
+                ),
+                title => $self->tl( "highlighter.$attribute.$_", $_ ),
+                type  => 'li'
+            }
+        } split( /,/xms, $self->{attributes}{$attribute}{values} );
+        if ( $self->{attributes}{$attribute}{colorpicker} ) {
+            push @subpopup,
+              {
+                action  => 'markcolorpicker',
+                data    => { value => $_, style => $attribute },
+                label   => $self->tl('highlighter.colorpicker'),
+                classes => 'sep',
+                type    => 'li'
+              };
+        }
+        push @subpopup,
+          {
+            action  => 'removemark',
+            data    => { style => $attribute },
+            label   => $self->tl("highlighter.remove.$attribute"),
+            type    => 'li',
+            classes => 'sep'
+          };
+
+        push @popups,
+          {
+            title        => $self->tl("highlighter.$attribute"),
+            subpopupmenu => \@subpopup,
+            classes      => "highlighter $attribute"
+          };
+    }
+
+    return {
+        title        => $self->tl('highlighter'),
+        subpopupmenu => \@popups,
+        classes      => 'highlighter-popup'
+    };
+
+}
+
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
 
     my $path   = $self->{backend}->resolveVirt( ${$params}{path} );
     my $parent = $self->{backend}->getParent($path);
@@ -184,13 +180,13 @@ sub get_file_attributes {
       : {};
 }
 
-sub remove_property {
+sub _remove_property {
     my ($self) = @_;
     my %jsondata = ();
     foreach my $file ( $self->get_cgi_multi_param('files') ) {
         $self->{db}->db_removeProperty(
             $self->{backend}
-              ->resolveVirt( $PATH_TRANSLATED . $self->strip_slash($file) ),
+              ->resolveVirt( $PATH_TRANSLATED . $self->_strip_slash($file) ),
             $self->{namespace} . $self->{cgi}->param('style')
         );
     }
@@ -203,7 +199,7 @@ sub remove_property {
     return 1;
 }
 
-sub save_property {
+sub _save_property {
     my ($self)   = @_;
     my %jsondata = ();
     my $db       = $self->{db};
@@ -214,7 +210,7 @@ sub save_property {
 
     foreach my $file ( $self->get_cgi_multi_param('files') ) {
         my $full = $self->{backend}
-          ->resolveVirt( $PATH_TRANSLATED . $self->strip_slash($file) );
+          ->resolveVirt( $PATH_TRANSLATED . $self->_strip_slash($file) );
         my $result =
             $db->db_getProperty( $full, $propname )
           ? $db->db_updateProperty( $full, $propname, $value )
@@ -235,7 +231,7 @@ sub save_property {
     return 1;
 }
 
-sub strip_slash {
+sub _strip_slash {
     my ( $self, $file ) = @_;
     $file =~ s/\/$//xms;
     return $file;

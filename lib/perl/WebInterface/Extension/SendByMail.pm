@@ -69,51 +69,53 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    return $ret if $ret;
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action => 'sendbymail',
-            label  => 'sendbymail',
-            path   => $params->{path},
-            type   => 'li'
-        };
-    }
-    if ( $hook eq 'filelistaction' ) {
-        return {
-            listaction => 'sendbymail',
-            label      => '&nbsp;',
-            title      => $self->tl('sendbymail'),
-            path       => $params->{path},
-            classes    => 'uibutton'
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'listaction sendbymail sel-multi disabled',
-            'sendbymail_short', 'sendbymail' );
-    }
-    if (   $hook eq 'posthandler'
-        && defined $self->{cgi}->param('action')
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action => 'sendbymail',
+        label  => 'sendbymail',
+        path   => $params->{path},
+        type   => 'li'
+    };
+}
+
+sub handle_hook_filelistaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        listaction => 'sendbymail',
+        label      => '&nbsp;',
+        title      => $self->tl('sendbymail'),
+        path       => $params->{path},
+        classes    => 'uibutton'
+    };
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi},
+        'listaction sendbymail sel-multi disabled',
+        'sendbymail_short', 'sendbymail' );
+
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if ( defined $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'sendbymail' )
     {
         if ( $self->{cgi}->param('ajax') eq 'preparemail' ) {
-            return $self->render_mail_dialog();
+            return $self->_render_mail_dialog();
         }
         elsif ( $self->{cgi}->param('ajax') eq 'send' ) {
-            return $self->send_mail();
+            return $self->_send_mail();
         }
         elsif ( $self->{cgi}->param('ajax') eq 'addressbooksearch' ) {
-            return $self->search_address();
+            return $self->_search_address();
         }
     }
-
     return 0;
 }
-
-sub search_address {
+sub _search_address {
     my ($self) = @_;
     my %jsondata = ( result => [] );
     if ( $self->config('addressbook') ) {
@@ -136,7 +138,7 @@ sub search_address {
     return 1;
 }
 
-sub build_mail_file {
+sub _build_mail_file {
     my ( $self, $limit, $filehandle ) = @_;
     require MIME::Entity;
     my $body = MIME::Entity->build( 'Type' => 'multipart/mixed' );
@@ -156,7 +158,7 @@ sub build_mail_file {
         $self->{backend}->compress_files( $zipfh, $PATH_TRANSLATED,
             $self->get_cgi_multi_param('files') );
         close($zipfh) || carp("Cannot close $zipfn.");
-        if ( $limit &&  (stat $zipfn )[7] > $limit ) {
+        if ( $limit && ( stat $zipfn )[7] > $limit ) {
             unlink $zipfn;
             return;
         }
@@ -175,7 +177,7 @@ sub build_mail_file {
         foreach my $fn ( $self->get_cgi_multi_param('files') ) {
             my $file =
               $self->{backend}->getLocalFilename( $PATH_TRANSLATED . $fn );
-            my $filesize = (stat $file)[7];
+            my $filesize = ( stat $file )[7];
             return if $limit && $filesize > $limit;
             $body->attach(
                 Path        => $file,
@@ -201,7 +203,7 @@ sub build_mail_file {
     return ( $bodyfn, $zipfn );
 }
 
-sub check_mail_addresses {
+sub _check_mail_addresses {
     my ( $self, @addr ) = @_;
     return 0 if scalar(@addr) < 0;
     foreach my $a (@addr) {
@@ -215,7 +217,7 @@ sub check_mail_addresses {
     return 1;
 }
 
-sub download_mail {
+sub _download_mail {
     my ( $self,   %header ) = @_;
     my ( $mailfh, $mailfn ) = tempfile(
         TEMPLATE => '/tmp/webdavcgi-SendByMail-XXXXX',
@@ -226,7 +228,7 @@ sub download_mail {
           . ( $header{cc} ? "Cc: $header{cc}\n" : q{} )
           . "From: $header{from}\nSubject: $header{subject}\nX-Mailer: WebDAV CGI\n"
     ) || carp("Cannot write date to $mailfn.");
-    my ( $tmpfh, $zipfile ) = $self->build_mail_file( 0, $mailfh );
+    my ( $tmpfh, $zipfile ) = $self->_build_mail_file( 0, $mailfh );
     close($mailfh) || carp("Canot close $mailfn.");
 
     print_local_file_header(
@@ -251,23 +253,23 @@ sub download_mail {
     return 1;
 }
 
-sub send_mail {
+sub _send_mail {
     my ($self) = @_;
     my ( $status, $mime ) = ( '200 OK', 'application/json' );
     my %jsondata = ();
     my $cgi      = $self->{cgi};
     my $limit    = $self->config( 'sizelimit', 20_971_520 );
-    my ($from)   = $self->sanitize( scalar $cgi->param('from') );
-    my @to = $self->sanitize( split /\s*,\s*/xms, scalar $cgi->param('to') );
-    my ($strto) = $self->sanitize( scalar $cgi->param('to') );
-    my @cc = $self->sanitize( split /\s*,\s+/xms, scalar $cgi->param('cc') );
-    my ($strcc)   = $self->sanitize( scalar $cgi->param('cc') );
-    my @bcc       = $self->sanitize( scalar $cgi->param('bcc') );
-    my ($subject) = $self->sanitize( $cgi->param('subject')
+    my ($from)   = $self->_sanitize( scalar $cgi->param('from') );
+    my @to = $self->_sanitize( split /\s*,\s*/xms, scalar $cgi->param('to') );
+    my ($strto) = $self->_sanitize( scalar $cgi->param('to') );
+    my @cc = $self->_sanitize( split /\s*,\s+/xms, scalar $cgi->param('cc') );
+    my ($strcc)   = $self->_sanitize( scalar $cgi->param('cc') );
+    my @bcc       = $self->_sanitize( scalar $cgi->param('bcc') );
+    my ($subject) = $self->_sanitize( $cgi->param('subject')
           || $self->config( 'defaultsubject', q{} ) );
 
     if ( $cgi->param('download') && $cgi->param('download') eq 'yes' ) {
-        return $self->download_mail(
+        return $self->_download_mail(
             to      => $strto,
             cc      => $strcc,
             from    => $from,
@@ -275,13 +277,13 @@ sub send_mail {
         );
     }
 
-    if (   $self->check_mail_addresses(@to)
-        && $self->check_mail_addresses($from)
-        && ( !@cc  || $self->check_mail_addresses(@cc) )
-        && ( !@bcc || $self->check_mail_addresses(@bcc) ) )
+    if (   $self->_check_mail_addresses(@to)
+        && $self->_check_mail_addresses($from)
+        && ( !@cc  || $self->_check_mail_addresses(@cc) )
+        && ( !@bcc || $self->_check_mail_addresses(@bcc) ) )
     {
-        my ( $mailfile, $zipfile ) = $self->build_mail_file($limit);
-        if ( !$mailfile || (stat $mailfile )[7] > $limit ) {
+        my ( $mailfile, $zipfile ) = $self->_build_mail_file($limit);
+        if ( !$mailfile || ( stat $mailfile )[7] > $limit ) {
             $jsondata{error} = $self->tl('sendbymail_msg_sizelimitexceeded');
         }
         else {
@@ -320,10 +322,10 @@ sub send_mail {
     else {
         $jsondata{error} = $self->tl('sendbymail_msg_illegalemail');
         my @fields = ();
-        if ( !$self->check_mail_addresses(@to) )   { push @fields, 'to'; }
-        if ( !$self->check_mail_addresses($from) ) { push @fields, 'from'; }
-        if ( @cc && !$self->check_mail_addresses(@cc) ) { push @fields, 'cc'; }
-        if ( @bcc && !$self->check_mail_addresses(@bcc) ) {
+        if ( !$self->_check_mail_addresses(@to) )   { push @fields, 'to'; }
+        if ( !$self->_check_mail_addresses($from) ) { push @fields, 'from'; }
+        if ( @cc && !$self->_check_mail_addresses(@cc) ) { push @fields, 'cc'; }
+        if ( @bcc && !$self->_check_mail_addresses(@bcc) ) {
             push @fields, 'bcc';
         }
         $jsondata{field} = join q{,}, @fields;
@@ -340,7 +342,7 @@ sub send_mail {
     return 1;
 }
 
-sub sanitize {
+sub _sanitize {
     my ( $self, @params ) = @_;
     my @ret = ();
     while ( my $param = shift @params ) {
@@ -350,7 +352,7 @@ sub sanitize {
     return @ret;
 }
 
-sub render_mail_dialog {
+sub _render_mail_dialog {
     my ($self) = @_;
     my $content = $self->replace_vars( $self->read_template('mailform') );
     my $fntmpl = $content =~ s/<!--FILES\[(.*?)\]-->//xmsg ? $1 : q{};
@@ -363,7 +365,7 @@ sub render_mail_dialog {
       #next if $self->{backend}->isDir($f) || !$self->{backend}->isReadable($f);
         next if !$self->{backend}->isReadable($f);
         my $s  = $fntmpl;
-        my $fa = $self->render_file_attributes($fn);
+        my $fa = $self->_render_file_attributes($fn);
         $s =~ s/\$(\w+)/$$fa{$1}/xmsg;
         $FILES .= $s;
         $sumfilesizes += $fa->{bytesize};
@@ -393,9 +395,9 @@ sub render_mail_dialog {
     return 1;
 }
 
-sub render_file_attributes {
+sub _render_file_attributes {
     my ( $self, $fn ) = @_;
-    my $bytesize = ($self->{backend}->stat( $PATH_TRANSLATED . $fn ) )[7];
+    my $bytesize = ( $self->{backend}->stat( $PATH_TRANSLATED . $fn ) )[7];
     my ( $s, $st ) = $self->render_byte_val($bytesize);
     my %attr = (
         filename       => $self->{cgi}->escapeHTML($fn),

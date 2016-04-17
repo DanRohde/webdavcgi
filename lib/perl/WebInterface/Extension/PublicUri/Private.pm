@@ -79,123 +79,136 @@ sub init {
     return;
 }
 
-#Show icons and handle actions
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileattr' ) {
-        my $prop = $self->get_public_uri( ${$params}{path} );
-        my ( $attr, $classes );
-        if ( !defined $prop ) {
-            ( $classes, $attr ) = qw( unshared no );
-        }
-        else {
-            ( $classes, $attr ) = ( 'shared', $prop );
-        }
-        return {
-            ext_classes    => $classes,
-            ext_attributes => sprintf 'data-puri="%s"',
-            ${$self}{cgi}->escapeHTML($attr),
-        };
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
+    my $prop = $self->get_public_uri( ${$params}{path} );
+    my ( $attr, $classes );
+    if ( !defined $prop ) {
+        ( $classes, $attr ) = qw( unshared no );
     }
-    elsif ( $hook eq 'fileprop' ) {
-        my $publicuridigest = $self->get_public_uri( ${$params}{path} ) || q{};
-        my $publicuri =
-          ${$self}{cgi}->escapeHTML( ${$self}{uribase} . $publicuridigest );
-        return {
-            publicuridigest => $publicuridigest,
-            publicurititle  => $publicuri,
-            publicuri       => $publicuri
-        };
+    else {
+        ( $classes, $attr ) = ( 'shared', $prop );
     }
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    return $ret if $ret;
+    return {
+        ext_classes    => $classes,
+        ext_attributes => sprintf 'data-puri="%s"',
+        ${$self}{cgi}->escapeHTML($attr),
+    };
 
-    if ( $hook eq 'posthandler' ) {
+}
 
-        #handle actions
-        if ( ${$self}{cgi}->param('puri') ) {
-            enable_puri($self);
-        }
-        elsif ( ${$self}{cgi}->param('depuri') ) {
-            disable_puri($self);
-        }
-        elsif ( ${$self}{cgi}->param('spuri') ) {
-            show_puri($self);
-        }
-        else {
-            return 0;    #not handled
-        }
-        return 1;
+sub handle_hook_prop {
+    my ( $self, $config, $params ) = @_;
+    my $publicuridigest = $self->get_public_uri( ${$params}{path} ) || q{};
+    my $publicuri =
+      ${$self}{cgi}->escapeHTML( ${$self}{uribase} . $publicuridigest );
+    return {
+        publicuridigest => $publicuridigest,
+        publicurititle  => $publicuri,
+        publicuri       => $publicuri
+    };
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+
+    #handle actions
+    if ( ${$self}{cgi}->param('puri') ) {
+        enable_puri($self);
     }
-    if ( $hook eq 'fileaction' ) {
-        return [
-            {
-                action   => 'puri',
-                disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
-                label    => 'purifilesbutton',
-                path     => ${$params}{path}
-            },
-            {
-                action   => 'spuri',
-                disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
-                label    => 'spurifilesbutton',
-                path     => ${$params}{path}
-            },
-            {
-                action   => 'depuri',
-                disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
-                label    => 'depurifilesbutton',
-                path     => ${$params}{path}
-            },
-        ];
+    elsif ( ${$self}{cgi}->param('depuri') ) {
+        disable_puri($self);
     }
-    if ( $hook eq 'fileactionpopup' ) {
-        return [
-            {
-                action   => 'puri',
-                disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
-                label    => 'purifilesbutton',
-                path     => ${$params}{path},
-                type     => 'li'
-            },
-            {
-                action   => 'spuri',
-                disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
-                label    => 'spurifilesbutton',
-                path     => ${$params}{path},
-                type     => 'li'
-            },
-            {
-                action   => 'depuri',
-                disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
-                label    => 'depurifilesbutton',
-                path     => ${$params}{path},
-                type     => 'li'
-            },
-        ];
+    elsif ( ${$self}{cgi}->param('spuri') ) {
+        show_puri($self);
     }
-    if ( $hook eq 'fileactionpopupnew' ) {
-        return {
+    else {
+        return 0;    #not handled
+    }
+
+    return 1;
+}
+
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return [
+        {
+            action   => 'puri',
+            disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+            label    => 'purifilesbutton',
+            path     => ${$params}{path}
+        },
+        {
+            action   => 'spuri',
+            disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+            label    => 'spurifilesbutton',
+            path     => ${$params}{path}
+        },
+        {
+            action   => 'depuri',
+            disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+            label    => 'depurifilesbutton',
+            path     => ${$params}{path}
+        },
+    ];
+
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return [
+        {
             action   => 'puri',
             disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
             label    => 'purifilesbutton',
             path     => ${$params}{path},
             type     => 'li'
-        };
-    }
-    if ( $hook eq 'templates' ) {
-        return
+        },
+        {
+            action   => 'spuri',
+            disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+            label    => 'spurifilesbutton',
+            path     => ${$params}{path},
+            type     => 'li'
+        },
+        {
+            action   => 'depuri',
+            disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+            label    => 'depurifilesbutton',
+            path     => ${$params}{path},
+            type     => 'li'
+        },
+    ];
+}
+
+sub handle_hook_fileactionpopupnew {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'puri',
+        disabled => !${$self}{backend}->isReadable( ${$params}{path} ),
+        label    => 'purifilesbutton',
+        path     => ${$params}{path},
+        type     => 'li'
+    };
+
+}
+
+sub handle_hook_templates {
+    my ( $self, $config, $params ) = @_;
+    return
 q{<div id="purifileconfirm"><div class="purifileconfirm">$tl(purifileconfirm)</div></div><div id="depurifileconfirm"><div class="depurifileconfirm">$tl(depurifileconfirm)</div></div>};
-    }
-    if ( $hook eq 'columnhead' ) {
-        return
+}
+
+sub handle_hook_columnhead {
+    my ( $self, $config, $params ) = @_;
+    return
 q{<!--TEMPLATE(publicuri)[<th id="headerPublicUri" data-name="publicuri" data-sort="data-puri" class="dragaccept -hidden">$tl(publicuri)</th>]-->};
-    }
-    if ( $hook eq 'column' ) {
-        return
+}
+
+sub handle_hook_column {
+    my ( $self, $config, $params ) = @_;
+    return
 q{<!--TEMPLATE(publicuri)[<td class="publicuri -hidden"><a href="$publicuri" title="$publicurititle">$publicuridigest</a></td>]-->};
-    }
-    return 0;    #not handled
 }
 
 sub get_shared_message {

@@ -32,6 +32,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use CGI::Carp;
+
 #use JSON;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI %EXTENSION_CONFIG );
@@ -48,29 +49,29 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action  => 'diff',
-            label   => 'diff',
-            path    => $params->{path},
-            type    => 'li',
-            classes => $self->config( 'files_only', 0 )
-            ? 'sel-multi sel-file'
-            : 'sel-multi'
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'listaction diff sel-oneormore disabled',
-            'diff_short', 'diff' );
-    }
-    if (   $hook eq 'posthandler'
-        && $self->{cgi}->param('action')
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'diff',
+        label   => 'diff',
+        path    => $params->{path},
+        type    => 'li',
+        classes => $self->config( 'files_only', 0 )
+        ? 'sel-multi sel-file'
+        : 'sel-multi'
+    };
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi},
+        'listaction diff sel-oneormore disabled',
+        'diff_short', 'diff' );
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'diff' )
     {
         my %jsondata = ();
@@ -95,7 +96,8 @@ sub handle {
         }
         require JSON;
         print_compressed_header_and_content(
-            '200 OK', 'application/json',
+            '200 OK',
+            'application/json',
             JSON->new()->encode( \%jsondata ),
             'Cache-Control: no-cache, no-store'
         );
@@ -155,7 +157,7 @@ sub _render_diff_output {
             chomp;
             my ( $tmpl, $text1, $text2, $text, $type, $linenumber1,
                 $linenumber2 );
-            if ( /^-{3}\s+$filename_rx\s+$datetime_rx$/xms ) {
+            if (/^-{3}\s+$filename_rx\s+$datetime_rx$/xms) {
                 my $f = $self->_subst_basepath($1);
                 if ( $f !~ /^\s*\Q$f1\E\s*$/xms && $f !~ m{^/tmp/}xms ) {
                     push @fnstack, $f;

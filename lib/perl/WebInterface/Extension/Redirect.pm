@@ -49,36 +49,32 @@ sub _strip_slash {
     return $path =~ m{^(.*?)/+$}xms ? $1 : $path;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileprop' ) {
-        my $c = $self->{redirect};
-        my $p = $self->_strip_slash( $params->{path} );
-        return $c && exists $c->{$p}
-          ? {
-            'fileuri'      => $c->{$p},
-            ext_classes    => 'redirect ',
-            ext_attributes => q{},
-            ext_styles     => q{},
-            isreadable     => 'yes',
-            unselectable   => 'yes',
-            iseditable     => 'no',
-            isviewable     => 'no',
-            writeable      => 'no'
-          }
-          : 0;
-    }
-    if ( $hook eq 'gethandler' ) {
-        my $c = $self->{redirect};
-        my $p = $self->_strip_slash($PATH_TRANSLATED);
-        if ( $c && exists $c->{$p} ) {
-            print $config->{cgi}->redirect( $c->{$p} );
-            return 1;
-        }
-        return 0;
-    }
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
+sub handle_hook_fileprop {
+    my ( $self, $config, $params ) = @_;
+    my $c = $self->{redirect};
+    my $p = $self->_strip_slash( $params->{path} );
+    return $c && exists $c->{$p}
+      ? {
+        'fileuri'      => $c->{$p},
+        ext_classes    => 'redirect ',
+        ext_attributes => q{},
+        ext_styles     => q{},
+        isreadable     => 'yes',
+        unselectable   => 'yes',
+        iseditable     => 'no',
+        isviewable     => 'no',
+        writeable      => 'no'
+      }
+      : 0;
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    my $c = $self->{redirect};
+    my $p = $self->_strip_slash($PATH_TRANSLATED);
+    if ( $c && exists $c->{$p} ) {
+        print $config->{cgi}->redirect( $c->{$p} );
+        return 1;
     }
     return 0;
 }

@@ -30,6 +30,7 @@ use base qw( WebInterface::Extension  );
 
 use English qw( -no_match_vars );
 use File::Temp qw( tempdir );
+
 #use JSON;
 use CGI::Carp;
 
@@ -81,41 +82,50 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileattr' ) {
-        my $suffix = $params->{path} =~ /[.](\w+)$/xms ? $1 : 'unknown';
-        return $suffix !~ /$self->{unconvertible}/xms
-          && $self->{memberof}{$suffix}
-          ? { ext_classes => ( $suffix =~ /$self->{typesregex}/xms ? 'c' : q{} )
-              . " $self->{memberof}{$suffix} cs-$suffix" }
-          : 0;
-    }
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        if ($hook eq 'css') { $ret .= $self->{popupcss} };
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
+    my $suffix = $params->{path} =~ /[.](\w+)$/xms ? $1 : 'unknown';
+    return $suffix !~ /$self->{unconvertible}/xms
+      && $self->{memberof}{$suffix}
+      ? { ext_classes => ( $suffix =~ /$self->{typesregex}/xms ? 'c' : q{} )
+          . " $self->{memberof}{$suffix} cs-$suffix" }
+      : 0;
+
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    my @subpopup = map {
+        {
+            action  => 'odfconvert',
+            label   => $_,
+            type    => 'li',
+            classes => 'access-writeable '
+              . ( $self->{memberof}{$_} // q{} )
+              . " cs-$_",
+            data => { ct => $_ }
+        }
+    } @{ $self->{types} };
+    return {
+        title        => $self->tl('odfconverter'),
+        classes      => 'odfconverter',
+        type         => 'li',
+        subpopupmenu => \@subpopup
+    };
+}
+
+sub handle_hook_css {
+    my ( $self, $config, $params ) = @_;
+    if ( my $ret = $self->SUPER::handle( 'css', $config, $params ) ) {
+        $ret .= $self->{popupcss};
         return $ret;
     }
-    if ( $hook eq 'fileactionpopup' ) {
-        my @subpopup = map {
-            {
-                action  => 'odfconvert',
-                label   => $_,
-                type    => 'li',
-                classes => 'access-writeable '
-                  . ( $self->{memberof}{$_} // q{} ) . " cs-$_",
-                data => { ct => $_ }
-            }
-        } @{ $self->{types} };
-        return {
-            title        => $self->tl('odfconverter'),
-            classes      => 'odfconverter',
-            type         => 'li',
-            subpopupmenu => \@subpopup
-        };
+    return 0;
+}
 
-    }
-    if (   $hook eq 'posthandler'
-        && $self->{cgi}->param('action')
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'odfconvert' )
     {
         return $self->_convert_file();

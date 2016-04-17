@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-#
-# SETUP:
-# TODO: describe extension setup
 
 package WebInterface::Extension::History;
 
@@ -34,24 +31,14 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
-
-    if ( $hook eq 'fileactionpopup' ) {
-
-#$ret = { title=>$self->tl('history'), subpopupmenu=>[ { label=>$self->tl('history.clear'), action=>'history-clear', classes=>'sep', type=>'li' } ], classes=>'history-popup', type=>'li' };
-        return {
-            title        => $self->tl('history'),
-            subpopupmenu => [],
-            classes      => 'history-popup',
-            type         => 'li'
-        };
-    }
-
-    return 0;
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        title        => $self->tl('history'),
+        subpopupmenu => [],
+        classes      => 'history-popup',
+        type         => 'li'
+    };
 }
 
 1;

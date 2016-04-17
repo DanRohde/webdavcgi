@@ -47,7 +47,7 @@ sub init {
       xsl
     );
     $self->{supportedsuffixes} = \%sf;
-    $self->{sizelimit}         = $self->config( 'sizelimit', 2_097_152 );
+    $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
     return $self;
 }
 
@@ -59,9 +59,9 @@ sub _get_file_suffix {
     return q{};
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileattr' && $self->{backend}->isFile( $params->{path} ) ) {
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
+    if ( $self->{backend}->isFile( $params->{path} ) ) {
         return {
             ext_classes => $self->{supportedsuffixes}
               { $self->_get_file_suffix( $params->{path} ) }
@@ -69,19 +69,23 @@ sub handle {
             : 'scv-nosource'
         };
     }
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action   => 'scv',
-            disabled => !$self->{backend}->isReadable($PATH_TRANSLATED),
-            label    => 'scv',
-            type     => 'li'
-        };
-    }
-    if (   $hook eq 'posthandler'
-        && $self->{cgi}->param('action')
+    return 0;
+
+}
+
+sub handle_hook_fileactionpopup {
+    my ($self) = @_;
+    return {
+        action   => 'scv',
+        disabled => !$self->{backend}->isReadable($PATH_TRANSLATED),
+        label    => 'scv',
+        type     => 'li'
+    };
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'scv' )
     {
         my $file = $self->{cgi}->param('files');

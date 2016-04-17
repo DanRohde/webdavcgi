@@ -43,6 +43,7 @@ use POSIX qw(strftime);
 use I18N::Langinfo
   qw (langinfo MON_1 MON_2 MON_3 MON_4 MON_5 MON_6 MON_7 MON_8 MON_9 MON_10 MON_11 MON_12 ABMON_1  ABMON_2 ABMON_3 ABMON_4 ABMON_5 ABMON_6 ABMON_7 ABMON_8 ABMON_9 ABMON_10 ABMON_11 ABMON_12
   DAY_1 DAY_2 DAY_3 DAY_4 DAY_5 DAY_6 DAY_7 ABDAY_1 ABDAY_2 ABDAY_3 ABDAY_4 ABDAY_5 ABDAY_6 ABDAY_7 D_FMT);
+
 #use Time::Piece;
 use CGI::Carp;
 use English qw( -no_match_vars );
@@ -83,59 +84,62 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'search',
+        label   => 'search',
+        path    => $params->{path},
+        type    => 'li',
+        classes => 'access-readable sel-dir'
+    };
+}
 
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
+sub handle_hook_apps {
+    my ($self) = @_;
+    return $self->handle_apps_hook( $self->{cgi}, 'search access-readable ',
+        'search', 'search' );
+}
 
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action  => 'search',
-            label   => 'search',
-            path    => $params->{path},
-            type    => 'li',
-            classes => 'access-readable sel-dir'
-        };
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    my $action = $self->{cgi}->param('action') // q{};
+    if ( $action eq 'getSearchForm' ) {
+        return $self->_get_search_form();
     }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi}, 'search access-readable ',
-            'search', 'search' );
+    elsif ( $action eq 'getSearchResult' ) {
+        return $self->_get_search_result();
     }
-    if ( $hook eq 'gethandler' ) {
-        my $action = $self->{cgi}->param('action') // q{};
-        if ( $action eq 'getSearchForm' ) {
-            return $self->_get_search_form();
-        }
-        elsif ( $action eq 'getSearchResult' ) {
-            return $self->_get_search_result();
-        }
-        elsif ( $action eq 'opensearch' ) {
-            return $self->_print_open_search();
-        }
+    elsif ( $action eq 'opensearch' ) {
+        return $self->_print_open_search();
     }
-    if ( $hook eq 'posthandler' ) {
-        my $action = $self->{cgi}->param('action') // q{};
-        if ( $action eq 'search' ) {
-            return $self->_handle_search();
-        }
-    }
-    if ( $hook eq 'link' ) {
-        my $ret =
-'<link rel="search" href="?action=opensearch&amp;searchin=filename" type="application/opensearchdescription+xml" title="WebDAV CGI '
-          . $self->tl('search.opensearch.filename') . q{ }
-          . $REQUEST_URI . '"/>';
-        if ( $self->config( 'allow_contentsearch', 0 ) ) {
-            $ret .=
-'<link rel="search" href="?action=opensearch&amp;searchin=content" type="application/opensearchdescription+xml" title="WebDAV CGI '
-              . $self->tl('search.opensearch.content') . q{ }
-              . $REQUEST_URI . '"/>';
-        }
-        return $ret;
+    return 0;
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    my $action = $self->{cgi}->param('action') // q{};
+    if ( $action eq 'search' ) {
+        return $self->_handle_search();
     }
 
     return 0;
+}
+
+sub handle_hook_link {
+    my ( $self, $config, $params ) = @_;
+
+    my $ret =
+'<link rel="search" href="?action=opensearch&amp;searchin=filename" type="application/opensearchdescription+xml" title="WebDAV CGI '
+      . $self->tl('search.opensearch.filename') . q{ }
+      . $REQUEST_URI . '"/>';
+    if ( $self->config( 'allow_contentsearch', 0 ) ) {
+        $ret .=
+'<link rel="search" href="?action=opensearch&amp;searchin=content" type="application/opensearchdescription+xml" title="WebDAV CGI '
+          . $self->tl('search.opensearch.content') . q{ }
+          . $REQUEST_URI . '"/>';
+    }
+    return $ret;
 }
 
 sub _cut_long_string {

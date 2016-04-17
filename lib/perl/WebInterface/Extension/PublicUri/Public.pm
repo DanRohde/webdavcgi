@@ -41,22 +41,15 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    $self->SUPER::handle( $hook, $config, $params );
-    if ( $hook eq 'posthandler' ) {
-        return $self->handle_public_uri_access()
-          if $self->{cgi}->param('action') =~ /$self->{allowedpostactions}/xms;
-        print_header_and_content( get_error_document('404 Not Found') );
-        return 1;
-    }
-    elsif ( $hook eq 'gethandler' ) {
-        return $self->handle_public_uri_access();
-    }
-    return 0;    #not handled
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_public_uri_access()
+      if $self->{cgi}->param('action') =~ /$self->{allowedpostactions}/xms;
+    print_header_and_content( get_error_document('404 Not Found') );
+    return 1;
 }
 
-sub handle_public_uri_access {
+sub handle_hook_gethandler {
     my ($self) = @_;
     if ( $PATH_TRANSLATED =~ /^$DOCUMENT_ROOT([^\/]+)(.*)?$/xms ) {
         my ( $code, $path ) = ( $1, $2 );
@@ -96,11 +89,9 @@ sub handle_public_uri_access {
 
         return 0;
     }
-    else {
-        print_header_and_content( get_error_document('404 Not Found') )
-          ;
-        return 1;
-    }
+    print_header_and_content( get_error_document('404 Not Found') );
+    return 1;
+
 }
 
 1;

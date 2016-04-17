@@ -43,22 +43,21 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'hexdump',
+        label   => 'hexdump',
+        classes => 'access-readable',
+        type    => 'li'
+    };
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
     my $cgi = $self->{cgi};
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action  => 'hexdump',
-            label   => 'hexdump',
-            classes => 'access-readable',
-            type    => 'li'
-        };
-    }
     my $action = $cgi->param('action') // q{};
-    if ( $hook eq 'gethandler' && $action eq 'hexdump' ) {
+    if ( $action eq 'hexdump' ) {
         my $content = $cgi->div(
             { title => $self->tl('hexdump') },
             $cgi->div(
@@ -78,7 +77,6 @@ sub handle {
             $content, 'Cache-Control: no-cache, no-store' );
         return 1;
     }
-
     return 0;
 }
 

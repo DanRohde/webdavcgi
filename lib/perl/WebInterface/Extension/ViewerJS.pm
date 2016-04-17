@@ -44,30 +44,27 @@ sub init {
     return $self->SUPER::init($hookreg);
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( $hook eq 'fileattr' ) {
-        return {
-            ext_classes => 'viewerjs-'
-              . (
-                $params->{path} =~ /[.](?:odt|odp|ods|pdf)$/xmsi ? 'yes' : 'no'
-              )
-        };
-    }
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
+sub handle_hook_fileattr {
+    my ( $self, $config, $params ) = @_;
+    return { ext_classes => 'viewerjs-'
+          . ( $params->{path} =~ /[.](?:odt|odp|ods|pdf)$/xmsi ? 'yes' : 'no' )
+    };
+}
 
-    if ( $hook eq 'fileactionpopup' ) {
-        return { action => 'viewerjs', label => 'viewerjs.view', type => 'li' };
-    }
-    if ( $hook eq 'fileaction' ) {
-        return { action => 'viewerjs', label => 'viewerjs.view' };
-    }
-    if ( $hook eq 'gethandler' ) {
-        if (defined $self->{cgi}->param('action') && $self->{cgi}->param('action') eq 'viewerjs') {
-            return $self->_handle_get_request('view')    
-        }
+sub handle_hook_fileactionpopup {
+    return { action => 'viewerjs', label => 'viewerjs.view', type => 'li' };
+}
+
+sub handle_hook_fileaction {
+    return { action => 'viewerjs', label => 'viewerjs.view' };
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    if ( defined $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'viewerjs' )
+    {
+        return $self->_handle_get_request('view');
     }
     return 0;
 }

@@ -53,43 +53,50 @@ sub init {
         push @hooks, 'gethandler';
     }
     $hookreg->register( \@hooks, $self );
-    return $self;
-}
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    return $ret if $ret;
-
-    my $add_classes =
+    $self->{add_classes} =
       $EXTENSION_CONFIG{Download}{disable_binarydownload}
       ? 'disablebinarydownload'
       : q{};
-    if ( $hook eq 'fileaction' ) {
-        return {
-            action  => 'dwnload',
-            label   => 'dwnload',
-            path    => $params->{path},
-            classes => 'access-readable is-file ' . $add_classes
-        };
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            accesskey => 's',
-            action    => 'dwnload',
-            label     => 'dwnload',
-            path      => $params->{path},
-            type      => 'li',
-            classes   => $add_classes
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'listaction dwnload sel-one sel-file disabled ' . $add_classes,
-            'dwnload', 'dwnload' );
-    }
-    if (   $hook eq 'gethandler'
-        && $self->{cgi}->param('action')
+
+    return $self;
+}
+
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'dwnload',
+        label   => 'dwnload',
+        path    => $params->{path},
+        classes => 'access-readable is-file ' . $self->{add_classes}
+    };
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        accesskey => 's',
+        action    => 'dwnload',
+        label     => 'dwnload',
+        path      => $params->{path},
+        type      => 'li',
+        classes   => $self->{add_classes}
+    };
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook(
+        $self->{cgi},
+        'listaction dwnload sel-one sel-file disabled ' . $self->{add_classes},
+        'dwnload',
+        'dwnload'
+    );
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'dwnload' )
     {
         my $fn   = $self->{cgi}->param('file');

@@ -170,7 +170,7 @@ sub handle_hook_templates {
 sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action');
-    if ( !defined $action ) {
+    if ( !defined $action || $action !~ /^(?:zipdwnload|zipup|zipcompress|zipuncompress)$/xms) {
         return 0;
     }
     if ( $action eq 'zipdwnload' ) {
@@ -185,15 +185,9 @@ sub handle_hook_posthandler {
     if ( $action eq 'zipuncompress' ) {
         return $self->handleZipUncompress();
     }
-}
-
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
     return 0;
 }
+
 sub renderUploadFormTemplate {
     my ($self) = @_;
     return $self->replace_vars( $self->read_template('zipfileuploadform') );

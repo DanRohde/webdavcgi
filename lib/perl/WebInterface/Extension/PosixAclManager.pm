@@ -36,12 +36,14 @@ sub init {
     my ( $self, $hookreg ) = @_;
 
     $hookreg->register(
-        [qw(
-            css        javascript
-            gethandler fileactionpopup
-            apps       locales
-            posthandler
-        )],
+        [
+            qw(
+              css        javascript
+              gethandler fileactionpopup
+              apps       locales
+              posthandler
+              )
+        ],
         $self
     );
 
@@ -53,49 +55,51 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'pacl',
+        disabled => 0,
+        label    => 'pacl',
+        path     => $params->{path}
+    };
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'pacl',
+        disabled => 0,
+        label    => 'pacl',
+        path     => $params->{path},
+        type     => 'li',
+        classes  => 'sel-noneorone'
+    };
+
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi},
+        'pacl listaction sel-noneorone disabled', 'pacl' );
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('ajax')
+        && $self->{cgi}->param('ajax') eq 'getPosixAclManager' )
+    {
+        return $self->_render_posix_acl_manager();
     }
-    if ( $hook eq 'fileaction' ) {
-        return {
-            action   => 'pacl',
-            disabled => 0,
-            label    => 'pacl',
-            path     => $params->{path}
-        };
+    if (   $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'pacl_update' )
+    {
+        return $self->_handle_acl_update();
     }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action   => 'pacl',
-            disabled => 0,
-            label    => 'pacl',
-            path     => $params->{path},
-            type     => 'li',
-            classes  => 'sel-noneorone'
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'pacl listaction sel-noneorone disabled', 'pacl' );
-    }
-    if ( $hook eq 'posthandler' ) {
-        if (   $self->{cgi}->param('ajax')
-            && $self->{cgi}->param('ajax') eq 'getPosixAclManager' )
-        {
-            return $self->_render_posix_acl_manager();
-        }
-        if (   $self->{cgi}->param('action')
-            && $self->{cgi}->param('action') eq 'pacl_update' )
-        {
-            return $self->_handle_acl_update();
-        }
-        if (   $self->{cgi}->param('ajax')
-            && $self->{cgi}->param('ajax') eq 'searchUserOrGroupEntry' )
-        {
-            return $self->_handle_user_or_group_entry_search();
-        }
+    if (   $self->{cgi}->param('ajax')
+        && $self->{cgi}->param('ajax') eq 'searchUserOrGroupEntry' )
+    {
+        return $self->_handle_user_or_group_entry_search();
     }
     return 0;
 }
@@ -144,7 +148,8 @@ sub _handle_acl_update {
         }
         elsif ( $param eq 'newacl' && $val =~ /^[[:lower:]]+:[^"\s]*$/xmsi ) {
             my $e =
-              $self->_quote_param( join q{}, $self->get_cgi_multi_param('newaclpermissions') );
+              $self->_quote_param( join q{},
+                $self->get_cgi_multi_param('newaclpermissions') );
             if ( $e && $e =~ /^[rwx\-]+$/xms ) {
                 if ( $e =~ /---/xms ) {
                     $cmd = sprintf '%s %s -m "%s:-" -- "%s"',
@@ -174,7 +179,8 @@ sub _handle_acl_update {
     }
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
@@ -341,7 +347,8 @@ sub _handle_user_or_group_entry_search {
     }
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( { result => $result } ),
         'Cache-Control: no-cache, no-store'
     );

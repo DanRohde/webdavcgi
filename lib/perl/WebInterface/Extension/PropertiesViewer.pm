@@ -44,35 +44,39 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    return $ret if $ret;
-    if ( $hook eq 'posthandler'&& $self->{cgi}->param('action') && $self->{cgi}->param('action') eq 'props' ) {
-        $ret = $self->_render_viewer(
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
+    if (   $self->{cgi}->param('action')
+        && $self->{cgi}->param('action') eq 'props' )
+    {
+        return $self->_render_viewer(
             $PATH_TRANSLATED . $self->{cgi}->param('file'),
             $REQUEST_URI . $self->{cgi}->param('file')
         );
     }
-    elsif ( $hook eq 'fileaction' ) {
-        $ret = {
-            action   => 'props',
-            disabled => !$self->{backend}->isReadable( $params->{path} ),
-            label    => 'showproperties',
-            path     => $params->{path}
-        };
-    }
-    elsif ( $hook eq 'fileactionpopup' ) {
-        $ret = {
-            action   => 'props',
-            disabled => !$self->{backend}->isReadable( $params->{path} ),
-            label    => 'showproperties',
-            path     => $params->{path},
-            type     => 'li',
-            classes  => 'sel-noneorone listaction'
-        };
-    }
-    return $ret;
+    return 0;
+}
+
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'props',
+        disabled => !$self->{backend}->isReadable( $params->{path} ),
+        label    => 'showproperties',
+        path     => $params->{path}
+    };
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'props',
+        disabled => !$self->{backend}->isReadable( $params->{path} ),
+        label    => 'showproperties',
+        path     => $params->{path},
+        type     => 'li',
+        classes  => 'sel-noneorone listaction'
+    };
 }
 
 sub _render_viewer {

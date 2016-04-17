@@ -52,27 +52,36 @@ sub init {
     return $self;
 }
 
-sub handle {
+sub handle_hook_filterbox {
+    my ( $self, $config, $params ) = @_;
+    return $self->_handle( 'filterbox', $config, $params );
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->_handle( 'apps', $config, $params );
+}
+
+sub handle_hook_pref {
+    my ( $self, $config, $params ) = @_;
+    return $self->_handle( 'pref', $config, $params );
+}
+
+sub handle_hook_statusbar {
+    my ( $self, $config, $params ) = @_;
+    return $self->_handle( 'statusbar', $config, $params );
+}
+
+sub _handle {
     my ( $self, $hook, $config, $params ) = @_;
-    my $ret = $self->SUPER::handle( $hook, $config, $params );
-    return $ret if $ret;
-
-    if (   $hook eq 'filterbox'
-        || $hook eq 'apps'
-        || $hook eq 'pref'
-        || $hook eq 'statusbar' )
-    {
-        $ret =
-          $self->render_template( $PATH_TRANSLATED, $REQUEST_URI,
-            $self->read_template( $self->config( 'toggles', 'toggles' ) ) );
-        if ( $hook ne 'filterbox' && $hook ne 'statusbar' ) {
-            $ret = $self->{cgi}->li(
-                { -title => $self->tl('quicktoggles') },
-                $self->{cgi}
-                  ->div( { -class => 'action quicktoggle-button' }, $ret )
-            );
-        }
-
+    my $ret =
+      $self->render_template( $PATH_TRANSLATED, $REQUEST_URI,
+        $self->read_template( $self->config( 'toggles', 'toggles' ) ) );
+    if ( $hook ne 'filterbox' && $hook ne 'statusbar' ) {
+        $ret = $self->{cgi}->li(
+            { -title => $self->tl('quicktoggles') },
+            $self->{cgi}->div( { -class => 'action quicktoggle-button' }, $ret )
+        );
     }
     return $ret;
 }

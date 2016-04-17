@@ -36,30 +36,26 @@ sub init {
     $hookreg->register( [qw( gethandler apps)], $self );
     return $self;
 }
-
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    my $handled = $self->SUPER::handle( $hook, $config, $params );
-    my $cgi = $self->{cgi};
-
-    if ( $hook eq 'gethandler' && $cgi->request_uri() =~ /\/sysinfo.html$/xms )
+sub handle_hook_gethandler {
+    my ($self) = @_;
+    if ($self->{cgi}->request_uri() =~ /\/sysinfo.html$/xms )
     {
         $self->render_sys_info();
-        $handled = 1;
+        return 1;
     }
-    elsif ( $hook eq 'apps' ) {
-        return $cgi->li(
-            { -title => $self->tl('SysInfo') },
-            $cgi->a(
-                { -class => 'action sysinfo', -href => 'sysinfo.html' },
-                $self->tl('SysInfo')
-            )
-        );
-    }
-
-    return $handled;
+    return 0;
 }
-
+sub handle_hook_apps {
+    my ($self) = @_;
+    my $cgi = $self->{cgi};
+    return $cgi->li(
+        { -title => $self->tl('SysInfo') },
+        $cgi->a(
+            { -class => 'action sysinfo', -href => 'sysinfo.html' },
+            $self->tl('SysInfo')
+        )
+    );
+}
 sub render_sys_info {
     my ($self) = @_;
     my $i    = q{};

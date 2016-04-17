@@ -42,28 +42,29 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action    => 'permissions',
-            label     => 'mode',
-            title     => 'mode',
-            accesskey => 'p',
-            path      => $params->{path},
-            type      => 'li',
-            classes   => 'sep',
-            template  => $self->config( 'template', 'permissions' )
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi}, 'permissions sel-multi',
-            'mode', 'mode' );
-    }
-    if ( $hook eq 'gethandler' && $self->{cgi}->param('ajax') ) {
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action    => 'permissions',
+        label     => 'mode',
+        title     => 'mode',
+        accesskey => 'p',
+        path      => $params->{path},
+        type      => 'li',
+        classes   => 'sep',
+        template  => $self->config( 'template', 'permissions' )
+    };
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi}, 'permissions sel-multi',
+        'mode', 'mode' );
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    if ( $self->{cgi}->param('ajax') ) {
         if ( $self->{cgi}->param('ajax') eq 'getPermissionsDialog' ) {
             my $content = $self->_render_permissions_dialog(
                 $PATH_TRANSLATED,
@@ -75,11 +76,6 @@ sub handle {
                 $content, 'Cache-Control: no-cache, no-store' );
             return 1;
         }
-    }
-    elsif ( $hook eq 'posthandler' ) {
-        my $ru = $REQUEST_URI;
-        $ru =~ s/[?][^?]+$//xms;
-        return $self->_change_permissions($ru);
     }
     return 0;
 }
@@ -108,7 +104,7 @@ s/\$disabled[(](\w)(\w)[)]/$self->_check_perm_allowed($1,$2) ? q{} : 'disabled="
     return $self->render_template( $fn, $ru, $content );
 }
 
-sub _change_permissions {
+sub handle_hook_posthandler {
     my ($self) = @_;
 
     if ( $self->{cgi}->param('changeperm') ) {
@@ -166,7 +162,8 @@ sub _change_permissions {
         }
         require JSON;
         print_compressed_header_and_content(
-            '200 OK', 'application/json',
+            '200 OK',
+            'application/json',
             JSON->new()->encode( \%jsondata ),
             'Cache-Control: no-cache, no-store'
         );

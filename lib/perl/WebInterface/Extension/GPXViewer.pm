@@ -36,22 +36,20 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action => 'gpxviewer',
+        label  => 'gpxviewer',
+        path   => $params->{path},
+        type   => 'li'
+    };
+}
 
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action => 'gpxviewer',
-            label  => 'gpxviewer',
-            path   => $params->{path},
-            type   => 'li'
-        };
-    }
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
-    if ( $hook eq 'posthandler' && $action eq 'gpxviewer' ) {
+    if ( $action eq 'gpxviewer' ) {
         print_header_and_content(
             '200 OK',
             'text/html',
@@ -60,8 +58,8 @@ sub handle {
                 $REQUEST_URI,
                 $self->read_template('gpxviewer'),
                 {
-                    file =>
-                      $self->{cgi}->escapeHTML( scalar $self->{cgi}->param('file') )
+                    file => $self->{cgi}
+                      ->escapeHTML( scalar $self->{cgi}->param('file') )
                 }
             ),
             'Cache-Control: no-cache, no-store'

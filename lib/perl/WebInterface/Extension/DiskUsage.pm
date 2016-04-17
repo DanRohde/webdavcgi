@@ -65,40 +65,41 @@ sub init {
     return $self;
 }
 
-sub handle {
+sub handle_hook_fileaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'diskusage',
+        disabled => !$self->{backend}->isDir( $params->{path} )
+          || !$self->{backend}->isReadable( $params->{path} ),
+        label => 'du_diskusage',
+        path  => $params->{path}
+    };
+}
+
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'diskusage',
+        disabled => !$self->{backend}->isDir( $params->{path} )
+          || !$self->{backend}->isReadable( $params->{path} ),
+        label   => 'du_diskusage',
+        path    => $params->{path},
+        type    => 'li',
+        classes => 'listaction sel-noneormulti sel-dir'
+    };
+}
+
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi},
+        'listaction diskusage sel-noneormulti sel-dir disabled',
+        'du_diskusage_short', 'du_diskusage' );
+}
+
+sub handle_hook_posthandler {
     my ( $self, $hook, $config, $params ) = @_;
-
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
-
-    if ( $hook eq 'fileaction' ) {
-        return {
-            action   => 'diskusage',
-            disabled => !$self->{backend}->isDir( $params->{path} )
-              || !$self->{backend}->isReadable( $params->{path} ),
-            label => 'du_diskusage',
-            path  => $params->{path}
-        };
-    }
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action   => 'diskusage',
-            disabled => !$self->{backend}->isDir( $params->{path} )
-              || !$self->{backend}->isReadable( $params->{path} ),
-            label   => 'du_diskusage',
-            path    => $params->{path},
-            type    => 'li',
-            classes => 'listaction sel-noneormulti sel-dir'
-        };
-    }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi},
-            'listaction diskusage sel-noneormulti sel-dir disabled',
-            'du_diskusage_short', 'du_diskusage' );
-    }
     my $action = $config->{cgi}->param('action') // q{};
-    if ( $hook eq 'posthandler' && $action eq 'diskusage' ) {
+    if ( $action eq 'diskusage' ) {
         print_compressed_header_and_content(
             '200 OK', 'text/html',
             $self->_render_diskusage_template() // q{},
@@ -116,11 +117,11 @@ sub _get_abs_uri {
 
 sub _render_diskusage_template {
     my ($self) = @_;
-    
+
     require DateTime;
     require DateTime::Format::Human::Duration;
     require JSON;
-    
+
     my $cgi     = $self->{cgi};
     my $counter = { start => time };
     my $json    = JSON->new();
@@ -155,7 +156,7 @@ sub _render_diskusage_template {
     my $filecountall = $counter->{count}{all}{files};
     my @folders      = reverse sort {
         $counter->{size}{path}{$a} <=> $counter->{size}{path}{$b}
-          || -($a cmp $b)
+          || -( $a cmp $b )
     } keys %{ $counter->{size}{path} };
 
     my $maxfilesizesum = $counter->{size}{allmaxsum};
@@ -415,9 +416,9 @@ sub _render_disk_usage_details {
         my $title = sprintf
           '%.2f%%, ' . $statfstring,
           $perc,
-          $counter->{count}{files}{$folder} // 0,
+          $counter->{count}{files}{$folder}   // 0,
           $counter->{count}{folders}{$folder} // 0,
-          $counter->{count}{sum}{$folder} // 0;
+          $counter->{count}{sum}{$folder}     // 0;
         my @pbv = $self->render_byte_val( $counter->{size}{path}{$folder} );
         my $foldername = $self->_get_folder_name($folder);
         my $uri        = $self->_get_uri($foldername);
@@ -476,7 +477,7 @@ sub _collect_suffix_data {
         }
       } reverse sort {
         $counter->{suffixes}{$key}{$a} <=> $counter->{suffixes}{$key}{$b}
-          || -($a cmp $b)
+          || -( $a cmp $b )
       } keys %{ $counter->{suffixes}{$key} };
     if ( scalar(@data) > $_MAX_SUFFIXES ) {
         my @deleted = splice @data, $_MAX_SUFFIXES;
@@ -522,7 +523,7 @@ sub _collect_treemap_data {
         my @childmapdata = ();
         my $foldersize   = $counter->{size}{path}{$folder};
         my @files =
-          reverse sort { $files->{$a} cmp $files->{$b} || -($a cmp $b) }
+          reverse sort { $files->{$a} cmp $files->{$b} || -( $a cmp $b ) }
           keys %{$files};
         my $foldername = $self->_get_folder_name($folder);
         my $uri        = $self->_get_uri($foldername);
@@ -533,9 +534,9 @@ sub _collect_treemap_data {
         my $title = sprintf
           '%.2f%%, ' . $statfstring,
           $perc,
-          $counter->{count}{files}{$folder} // 0,
+          $counter->{count}{files}{$folder}   // 0,
           $counter->{count}{folders}{$folder} // 0,
-          $counter->{count}{sum}{$folder} // 0;
+          $counter->{count}{sum}{$folder}     // 0;
         my @pbv = $self->render_byte_val( $counter->{size}{path}{$folder} );
 
         # limit files for treemap and fix foldersize:
@@ -549,7 +550,8 @@ sub _collect_treemap_data {
         }
         foreach my $file (@files) {
             my @pbvfile = $self->render_byte_val( $files->{$file} );
-            my $_perc = $foldersize > 0 ? ( $files->{$file} // 0) / $foldersize : 0;
+            my $_perc =
+              $foldersize > 0 ? ( $files->{$file} // 0 ) / $foldersize : 0;
 
             my $_uri = $self->_get_uri($foldername);
             push @childmapdata,
@@ -699,7 +701,7 @@ sub _get_disk_usage {
         }
 
         if (  !$counter->{age}{lastmodified}
-            || $age > ( $counter->{age}{lastmodified}{$path} // 0) )
+            || $age > ( $counter->{age}{lastmodified}{$path} // 0 ) )
         {
             $counter->{age}{lastmodified}{$path} = $age;
 

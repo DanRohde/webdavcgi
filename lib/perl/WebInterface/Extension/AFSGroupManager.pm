@@ -32,6 +32,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use CGI::Carp;
+
 #use JSON;
 
 use DefaultConfig
@@ -39,8 +40,8 @@ use DefaultConfig
 use HTTPHelper qw( print_compressed_header_and_content );
 
 use WebInterface::Extension::AFSHelper
-  qw( read_afs_group_list exec_ptscmd exec_cmd 
-      is_valid_afs_group_name is_valid_afs_username );
+  qw( read_afs_group_list exec_ptscmd exec_cmd
+  is_valid_afs_group_name is_valid_afs_username );
 
 use vars qw( %_CACHE );
 
@@ -56,45 +57,47 @@ sub init {
     return $self;
 }
 
-sub handle {
-    my ( $self, $hook, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( $hook, $config, $params ) ) {
-        return $ret;
-    }
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action   => 'afsgroupmngr',
+        classes  => 'listaction',
+        label    => 'afsgroup',
+        title    => 'afsgroup',
+        path     => $params->{path},
+        type     => 'li',
+        template => $self->config( 'template', 'afsgroupmanager' )
+    };
+}
 
-    if ( $hook eq 'fileactionpopup' ) {
-        return {
-            action   => 'afsgroupmngr',
-            classes  => 'listaction',
-            label    => 'afsgroup',
-            title    => 'afsgroup',
-            path     => $params->{path},
-            type     => 'li',
-            template => $self->config( 'template', 'afsgroupmanager' )
-        };
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_apps_hook( $self->{cgi}, 'afsgroupmngr', 'afsgroup',
+        'afsgroup' );
+}
+
+sub handle_hook_gethandler {
+    my ( $self, $config, $params ) = @_;
+    my $ajax = $self->{cgi}->param('ajax') // q{};
+    if ( $ajax eq 'getAFSGroupManager' ) {
+        my $content = $self->_render_afs_group_manager(
+            $PATH_TRANSLATED,
+            $REQUEST_URI,
+            $self->{cgi}->param('template')
+              || $self->config( 'template', 'afsgroupmanager' )
+        );
+        print_compressed_header_and_content( '200 OK', 'text/html',
+            $content, 'Cache-Control: no-cache, no-store' );
+        delete $_CACHE{$self}{$PATH_TRANSLATED};
+        return 1;
     }
-    if ( $hook eq 'apps' ) {
-        return $self->handle_apps_hook( $self->{cgi}, 'afsgroupmngr', 'afsgroup',
-            'afsgroup' );
-    }
-    if ( $hook eq 'gethandler' ) {
-        my $ajax = $self->{cgi}->param('ajax') // q{};
-        if ( $ajax eq 'getAFSGroupManager' ) {
-            my $content = $self->_render_afs_group_manager(
-                $PATH_TRANSLATED,
-                $REQUEST_URI,
-                $self->{cgi}->param('template')
-                  || $self->config( 'template', 'afsgroupmanager' )
-            );
-            print_compressed_header_and_content( '200 OK', 'text/html',
-                $content, 'Cache-Control: no-cache, no-store' );
-            delete $_CACHE{$self}{$PATH_TRANSLATED};
-            return 1;
-        }
-    }
+    return 0;
+}
+
+sub handle_hook_posthandler {
+    my ( $self, $config, $params ) = @_;
     if (
-        $hook eq 'posthandler'
-        && $self->_check_cgi_param_list(
+        $self->_check_cgi_param_list(
             qw(afschgrp afscreatenewgrp afsdeletegrp afsrenamegrp afsaddusr afsremoveusr)
         )
       )
@@ -192,7 +195,8 @@ sub _print_json {
     if ($msg) { $jsondata{message} = sprintf $self->tl("msg_$msg"), @params; }
     require JSON;
     print_compressed_header_and_content(
-        '200 OK', 'application/json',
+        '200 OK',
+        'application/json',
         JSON->new()->encode( \%jsondata ),
         'Cache-Control: no-cache, no-store'
     );
@@ -201,7 +205,12 @@ sub _print_json {
 
 sub _do_afs_deletegrp {
     my ( $self, $grp ) = @_;
-    if ( !is_valid_afs_group_name($grp,$BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}) ) {
+    if (
+        !is_valid_afs_group_name(
+            $grp, $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}
+        )
+      )
+    {
         return $self->_print_json( undef, undef, 'afsgrpnothingsel' );
     }
     my $output = exec_cmd(qq{$self->{ptscmd} delete "$grp" 2>&1});
@@ -216,7 +225,12 @@ sub _do_afs_createnewgrp {
     my ($self) = @_;
     my $grp = $self->{cgi}->param('afsnewgrp');
     $grp =~ s/(?:^\s+|\s+$)//xmsg;
-    if ( !is_valid_afs_group_name($grp,$BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}) ) {
+    if (
+        !is_valid_afs_group_name(
+            $grp, $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}
+        )
+      )
+    {
         return $self->_print_json( undef, undef, 'afsgrpnogroupnamegiven' );
     }
     my $output = exec_cmd(qq{$self->{ptscmd} creategroup "$grp" 2>&1});
@@ -230,10 +244,20 @@ sub _do_afs_createnewgrp {
 sub _do_afs_renamegrp {
     my ( $self, $grp ) = @_;
     my $ngrp = $self->{cgi}->param('afsnewgrpname') || q{};
-    if ( !is_valid_afs_group_name($grp,$BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}) ) {
+    if (
+        !is_valid_afs_group_name(
+            $grp, $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}
+        )
+      )
+    {
         return $self->_print_json( undef, [$ngrp], 'afsgrpnothingsel' );
     }
-    if ( !is_valid_afs_group_name($ngrp,$BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}) ) {
+    if (
+        !is_valid_afs_group_name(
+            $ngrp, $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}
+        )
+      )
+    {
         return $self->_print_json( undef, [$grp], 'afsnonewgroupnamegiven' );
     }
     my $output = exec_cmd(
@@ -248,7 +272,12 @@ sub _do_afs_renamegrp {
 sub _do_afs_removeusr {
     my ($self) = @_;
     my $grp = $self->{cgi}->param('afsselgrp') || q{};
-    if ( !is_valid_afs_group_name($grp,$BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}) ) {
+    if (
+        !is_valid_afs_group_name(
+            $grp, $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}
+        )
+      )
+    {
         return $self->_print_json( undef, undef, 'afsgrpnothingsel' );
     }
     my @users = ();
@@ -258,7 +287,9 @@ sub _do_afs_removeusr {
       : $self->{cgi}->param('afsusr');
     my $adp = $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals};
     foreach (@afsusr) {
-        if (   is_valid_afs_username($_, $adp) || is_valid_afs_group_name($_, $adp) ) {
+        if (   is_valid_afs_username( $_, $adp )
+            || is_valid_afs_group_name( $_, $adp ) )
+        {
             push @users, $_;
         }
     }
@@ -280,13 +311,20 @@ sub _do_afs_removeusr {
 sub _do_afs_addusr {
     my ($self) = @_;
     my $grp = $self->{cgi}->param('afsselgrp') || q{};
-    if ( !is_valid_afs_group_name($grp,$BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}) ) {
+    if (
+        !is_valid_afs_group_name(
+            $grp, $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals}
+        )
+      )
+    {
         return $self->_print_json( undef, undef, 'afsgrpnothingsel' );
     }
-    my $adp = $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals};
+    my $adp   = $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals};
     my @users = ();
     foreach ( split /\s+/xms, $self->get_cgi_multi_param('afsaddusers') ) {
-        if (   is_valid_afs_username($_, $adp) || is_valid_afs_group_name($_, $adp ) ) {
+        if (   is_valid_afs_username( $_, $adp )
+            || is_valid_afs_group_name( $_, $adp ) )
+        {
             push @users, $_;
         }
     }
@@ -309,10 +347,13 @@ sub _do_afs_chgrp {
     if ( !$self->{cgi}->param('afsgrp') ) {
         return $self->_print_json( undef, undef, 'afsgrpnothingsel' );
     }
-    return $self->_print_json( q{},
-        is_valid_afs_group_name( $self->{cgi}->param('afsgrp'), $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals} )
+    return $self->_print_json(
+        q{},
+        is_valid_afs_group_name( $self->{cgi}->param('afsgrp'),
+            $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals} )
         ? [ $self->{cgi}->param('afsgrp') ]
-        : undef );
+        : undef
+    );
 }
 
 sub _do_afs_group_actions {
