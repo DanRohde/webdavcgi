@@ -70,10 +70,8 @@ sub init {
 
 sub handle_hook_javascript {
     my ( $self, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( 'javascript', $config, $params ) ) {
-        $ret .= $self->handle_javascript_hook( 'Highlighter',
-            'htdocs/contrib/iris.min.js' );
-
+    if ( my $ret = $self->SUPER::handle_hook_javascript( $config, $params ) ) {
+        $ret .= $self->SUPER::handle_hook_javascript($config, { file => 'htdocs/contrib/iris.min.js'} );
         return $ret;
     }
     return 0;

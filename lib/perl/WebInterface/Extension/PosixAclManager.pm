@@ -36,14 +36,8 @@ sub init {
     my ( $self, $hookreg ) = @_;
 
     $hookreg->register(
-        [
-            qw(
-              css        javascript
-              gethandler fileactionpopup
-              apps       locales
-              posthandler
-              )
-        ],
+        [qw( css javascript fileactionpopup apps locales posthandler )]
+        ,
         $self
     );
 

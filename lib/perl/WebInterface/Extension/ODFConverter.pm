@@ -116,7 +116,7 @@ sub handle_hook_fileactionpopup {
 
 sub handle_hook_css {
     my ( $self, $config, $params ) = @_;
-    if ( my $ret = $self->SUPER::handle( 'css', $config, $params ) ) {
+    if ( my $ret = $self->SUPER::handle_hook_css( $config, $params ) ) {
         $ret .= $self->{popupcss};
         return $ret;
     }

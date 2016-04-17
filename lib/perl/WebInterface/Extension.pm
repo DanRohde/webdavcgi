@@ -46,10 +46,10 @@ sub init {
 sub get_location {
     my ( $self, $extension, $file ) = @_;
     return
-          $INSTALL_BASE
-        . 'lib/perl/WebInterface/Extension/'
-        . $extension . q{/}
-        . $file;
+        $INSTALL_BASE
+      . 'lib/perl/WebInterface/Extension/'
+      . $extension . q{/}
+      . $file;
 }
 
 sub get_uri {
@@ -59,25 +59,24 @@ sub get_uri {
     return $vbase . $VHTDOCS . '_EXTENSION(' . $extension . ')_/' . $file;
 }
 
-sub handle_javascript_hook {
-    my ( $self, $extension, $file ) = @_;
+sub handle_hook_javascript {
+    my ( $self, $config, $params ) = @_;
     return
-          q@<script src="@
-        . $self->get_uri( $extension, $file || 'htdocs/script.min.js' )
-        . q@"></script>@;
+        q@<script src="@
+      . $self->get_uri( $self->{EXTENSION}, $params->{file} // 'htdocs/script.min.js' )
+      . q@"></script>@;
 }
 
-sub handle_css_hook {
-    my ( $self, $extension, $file ) = @_;
+sub handle_hook_css {
+    my ( $self, $config, $params ) = @_;
     return
-          q@<link rel="stylesheet" type="text/css" href="@
-        . $self->get_uri( $extension, $file || 'htdocs/style.min.css' )
-        . q@">@;
+      q@<link rel="stylesheet" type="text/css" href="@
+      . $self->get_uri( $self->{EXTENSION}, $params->{file} // 'htdocs/style.min.css' ) . q@">@;
 }
 
-sub handle_locale_hook {
-    my ( $self, $extension, $file ) = @_;
-    return $self->get_location( $extension, $file || 'locale/locale' );
+sub handle_hook_locales {
+    my ( $self, $config, $params) = @_;
+    return $self->get_location( $self->{EXTENSION}, $params->{file} // 'locale/locale' );
 }
 
 sub handle_apps_hook {
@@ -104,36 +103,38 @@ sub handle_settings_hook {
         foreach my $setting (
             sort {
                 defined $settings->{$a}{order}
-                    ? $settings->{$a}{order} <=> $settings->{$b}{order}
-                    : $a cmp $b
+                  ? $settings->{$a}{order} <=> $settings->{$b}{order}
+                  : $a cmp $b
             } keys %{$settings}
-            )
+          )
         {
-            my $ar = $settings->{$setting};
-            my $s =  'settings.'.$setting;
+            my $ar     = $settings->{$setting};
+            my $s      = 'settings.' . $setting;
             my %labels = map { $_ => $self->tl($_) } @{$ar};
             $ret .= $self->{cgi}->Tr(
                 $self->{cgi}->td( $self->tl($s) )
-                    . $self->{cgi}->td(
+                  . $self->{cgi}->td(
                     $self->{cgi}->popup_menu(
                         -name    => $s,
                         -values  => $ar,
-                        -labels  => {map { $_ => $self->tl($_) } @{$ar}},
-                        -default => $self->{cgi}->cookie($s) // $EXTENSION_CONFIG{$self->{EXTENSION}}{$s} // $ar->[0]
+                        -labels  => { map { $_ => $self->tl($_) } @{$ar} },
+                        -default => $self->{cgi}->cookie($s)
+                          // $EXTENSION_CONFIG{ $self->{EXTENSION} }{$s}
+                          // $ar->[0]
                     )
-                    )
+                  )
             );
         }
     }
     else {
         $ret .= $self->{cgi}->Tr(
             $self->{cgi}->td( $self->tl("settings.$settings") )
-                . $self->{cgi}->td(
+              . $self->{cgi}->td(
                 $self->{cgi}->checkbox(
                     -name  => "settings.$settings",
                     -label => q{}
                 )
-                )
+              )
         );
     }
     return $ret;
@@ -141,21 +142,8 @@ sub handle_settings_hook {
 
 sub handle {
     my ( $self, $hook, $config, $params ) = @_;
-    $self->{cgi}     = ${$config}{cgi};
-    $self->{backend} = ${$config}{backend};
-    $self->{config}  = $config;
-    $self->{db}      = ${$config}{db};
-    $self->initialize();    ## Common::initialize to set correct LANG, ...
-    $self->set_locale();    ## Common:set_locale to set right locale
-    if ( $hook eq 'css' ) {
-        return $self->handle_css_hook( $self->{EXTENSION} );
-    }
-    elsif ( $hook eq 'javascript' ) {
-        return $self->handle_javascript_hook( $self->{EXTENSION} );
-    }
-    elsif ( $hook eq 'locales' ) {
-        return $self->handle_locale_hook( $self->{EXTENSION} );
-    }
+    require CGI::Carp;
+    CGI::Carp::carp("Missing handler for $hook in $self->{EXTENSION}.");
     return 0;
 }
 
@@ -176,8 +164,8 @@ sub exec_template_function {
     if ( $func eq 'extconfig' ) {
         $content = $self->config( $param, 0 ) // q{};
     }
-    $content
-        //= $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
+    $content //=
+      $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
     return $content;
 }
 1;
