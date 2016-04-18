@@ -32,7 +32,7 @@ use DefaultConfig qw( @EXTENSIONS $CONFIG );
 use vars qw( %HOOKS );
 
 sub new {
-    my ( $this ) = @_;
+    my ($this) = @_;
     my $class = ref($this) || $this;
     my $self = {};
     bless $self, $class;
@@ -40,15 +40,11 @@ sub new {
 }
 
 sub init {
-    my ( $self ) = @_;
+    my ($self) = @_;
     $self->{config} = $CONFIG;
     foreach my $extname (@EXTENSIONS) {
-        eval {
-            load "WebInterface::Extension::$extname";
-            my $extension =
-              "WebInterface::Extension::$extname"
-              ->new( $self, $extname );
-        } || carp("Can't load extension $extname: $EVAL_ERROR");
+        load "WebInterface::Extension::$extname";
+        "WebInterface::Extension::$extname"->new( $self, $extname );
     }
     return $self;
 }
@@ -76,17 +72,15 @@ sub register {
 sub handle {
     my ( $self, $hook, $params ) = @_;
     if ( !exists $HOOKS{$self}{$hook} ) {
-        ;
         return;
     }
     my @ret;
+    my $method = "handle_hook_${hook}";
     foreach my $handler ( @{ $HOOKS{$self}{$hook} } ) {
-        my $method = "handle_hook_${hook}";
-        if ($handler->can($method)) {
-            push @ret, $handler->$method($self->{config}, $params);
-        } else {
-            push @ret, $handler->handle( $hook, $self->{config}, $params );
-        }
+        push @ret,
+            $handler->can($method)
+            ? $handler->$method( $self->{config}, $params )
+            : $handler->handle( $hook, $self->{config}, $params );
     }
     return \@ret;
 }
