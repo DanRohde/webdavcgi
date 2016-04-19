@@ -41,7 +41,13 @@ sub new {
     $self->{cgi}     = $CGI;
     return $self;
 }
-
+sub free {
+    my ($self) = @_;
+    delete $self->{config};
+    delete $self->{backend};
+    delete $self->{cgi};
+    return $self;
+}
 sub _create_empty_thumbnail {
     my ( $filename, $outputfilename ) = @_;
     require Graphics::Magick;
@@ -168,7 +174,7 @@ sub print_image {
     }
     $fn = $self->{backend}->getLocalFilename($fn);
     require Graphics::Magick;
-    my $image = Graphics::Magick->new;
+    my $image = Graphics::Magick->new();
     my $x     = $image->Read($fn);
     carp "$x" if "$x";
     $image->Set( delay => 200 );
@@ -180,6 +186,7 @@ sub print_image {
     );
     $x = $image->Write('gif:-');
     carp "$x" if "$x";
+    undef $image;
     return 1;
 }
 

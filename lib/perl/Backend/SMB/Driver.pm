@@ -754,9 +754,10 @@ sub getQuota {
       ? "/usr/bin/smbclient '//$server/$share' '$ENV{SMBPASSWORD}' -U '$ENV{SMBUSER}' -W '$ENV{SMBWORKGROUP}' -D '$path' -c du"
       : "/usr/bin/smbclient -k '//$server/$share' -D '$path' -c du";
     if ( $server && open my $c, q{-|}, "$smbclient 2>/dev/null" ) {
-        my @l = <$c>;
+        local $RS = undef;
+        my $l = <$c>;
         close($c) || carp("Cannot close $smbclient handle.");
-        if ( @l && $l[1] =~ /^\D+(\d+)\D+(\d+)\D+(\d+)/xms ) {
+        if ( $l && $l =~ /^\s+\D+(\d+)\D+(\d+)\D+(\d+)\D+$/xms ) {
             my ( $b, $s, $a ) = ( $1, $2, $3 );
             return ( $b * $s, ( $b - $a ) * $s );
         }

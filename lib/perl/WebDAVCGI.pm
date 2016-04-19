@@ -55,9 +55,9 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160418.1';
+$RELEASE = '1.1.1BETA20160419.1';
 
-use vars qw( $_METHODS_RX %_REQUEST_HANDLERS $_DB_EVENT_ADAPTER);
+use vars qw( $_METHODS_RX );
 
 sub new {
     my $class = shift;
@@ -71,6 +71,7 @@ sub run {
     $self->init_defaults();
     $self->init();
     $self->handle_request();
+    $self->free();
     return $self;
 }
 
@@ -88,11 +89,10 @@ sub init {
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
 
     ## some config independent objects for convinience:
-    $self->{debug}  = $D             //= \&debug;
-    $self->{logger} = $L             //= \&logger;
-    $self->{event}  = $EVENT_CHANNEL //= $self->_get_event_channel();
-    $self->{cache}  = $CM
-        = CacheManager->new();    # every request needs a fresh cache
+    $self->{debug}  = $D             = \&debug;
+    $self->{logger} = $L             = \&logger;
+    $self->{event}  = $EVENT_CHANNEL = $self->_get_event_channel();
+    $self->{cache}  = $CM            = CacheManager->new();
 
     ## read config file:
     read_config( $self, $CONFIGFILE );
@@ -113,12 +113,10 @@ sub init {
     ## some config objects for the convinience:
     $self->{config} = $CONFIG = $self;
     $self->{cgi} = $CGI;
-    $self->{db} = $DB //= DB::Driver->new($self);
-    $_DB_EVENT_ADAPTER
-        //= DatabaseEventAdapter->new($self)->register( $self->{event} );
+    $self->{db} = $DB = DB::Driver->new($self);
+    $self->{dbea} = DatabaseEventAdapter->new($self)->register( $self->{event} );
 
-    $BACKEND_INSTANCE
-        //= Backend::Manager::getinstance()->get_backend( $BACKEND, $self );
+    $BACKEND_INSTANCE = Backend::Manager::getinstance()->get_backend( $BACKEND, $self );
     $self->{backend} = $BACKEND_INSTANCE;
 
     # 404/rewrite/redirect handling:
@@ -171,13 +169,10 @@ sub handle_request {
         carp("Method not allowed: $method");
         return print_header_and_content('405 Method Not Allowed');
     }
-    if ( !$_REQUEST_HANDLERS{$method} ) {
-        my $module = "Requests::${method}";
-        load($module);
-        $_REQUEST_HANDLERS{$method} = $module->new();
-    }
-    $self->{method} = $_REQUEST_HANDLERS{$method};
-    $_REQUEST_HANDLERS{$method}->init($self)->handle();
+    my $module = "Requests::${method}";
+    load($module);
+    $self->{method} = $module->new();
+    $self->{method}->init($self)->handle();
     $self->{backend}->finalize();
     $self->{event}->broadcast('FINALIZE');
     debug( 'Modules loaded:' . ( scalar keys %INC ) );
@@ -262,5 +257,19 @@ sub _get_event_channel {
     }
     return $ec;
 }
-
+sub free {
+    my ($self) = @_;
+    foreach my $k ( qw(method cache db dbea event backend) ) {
+        $self->{$k}->free();
+        delete $self->{$k};
+    }
+    undef $CM;
+    undef $DB;
+    undef $BACKEND_INSTANCE;
+    delete $self->{cgi};
+    undef $CGI;
+    delete $self->{debug};
+    delete $self->{logger};
+    return $self;
+}
 1;

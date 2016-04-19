@@ -37,7 +37,15 @@ sub new {
     }
     return $_MANAGER;
 }
-
+sub free {
+    my ($self) = @_;
+    foreach my $b ( keys %_BACKENDS ) {
+        $_BACKENDS{$b}->free();
+        delete $_BACKENDS{$b};
+    }
+    undef %_BACKENDS;
+    return $self;
+}
 sub getinstance {
     return __PACKAGE__->new();
 }

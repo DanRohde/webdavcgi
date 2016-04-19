@@ -43,7 +43,14 @@ sub init {
 
     return $self;
 }
-
+sub free {
+    my ($self) = @_;
+    delete $self->{config};
+    delete $self->{db};
+    delete $self->{method};
+    delete $self->{cgi};
+    return $self;
+}
 sub finalize {
     confess('implement finalize!');
 }

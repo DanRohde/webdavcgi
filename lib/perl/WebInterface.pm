@@ -47,6 +47,18 @@ sub new {
     bless $self, $class;
     return $self;
 }
+sub free {
+    my ($self) = @_;
+    foreach my $c ( qw(functions view thumbnailrenderer extensions) ) {
+        if (!$self->{config}->{$c}) { next; }
+        $self->{config}->{$c}->free();
+        delete $self->{config}->{$c};
+    }
+    foreach my $k ( qw(webinterface config db cgi backend debug logger) ) {
+      delete $self->{$k};
+    }
+    return $self;
+}
 
 sub init {
     my ( $self, $config ) = @_;

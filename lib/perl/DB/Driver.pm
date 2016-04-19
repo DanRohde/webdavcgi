@@ -34,6 +34,8 @@ use DefaultConfig
   qw( $DBI_SRC $DBI_USER $DBI_PASS $CREATE_DB @DB_SCHEMA $DBI_PERSISTENT );
 use HTTPHelper qw( get_parent_uri );
 
+use vars qw( $DBI_INIT );
+
 sub new {
     my $this  = shift;
     my $class = ref($this) || $this;
@@ -43,12 +45,17 @@ sub new {
     $self->{cache}  = $self->{config}->{cache};
     return $self;
 }
-
+sub free {
+    my ($self) = @_;
+    delete $self->{config};
+    delete $self->{cache};
+    return $self;
+}
 sub finalize {
     my $self = shift;
-    if ( !$DBI_PERSISTENT && $self->{DBI_INIT} ) {
-        $self->{DBI_INIT}->disconnect();
-        delete $self->{DBI_INIT};
+    if ( !$DBI_PERSISTENT && $DBI_INIT ) {
+        $DBI_INIT->disconnect();
+        undef $DBI_INIT;
     }
     return;
 }
@@ -485,7 +492,7 @@ sub db_table_exists {
 
 sub db_init {
     my $self = shift;
-    return $self->{DBI_INIT} if defined $self->{DBI_INIT};
+    return $DBI_INIT if defined $DBI_INIT;
 
     my $dbh =
       DBI->connect( $DBI_SRC, $DBI_USER, $DBI_PASS,
@@ -511,7 +518,7 @@ sub db_init {
             }
         }
     }
-    $self->{DBI_INIT} = $dbh;
+    $DBI_INIT = $dbh;
     return $dbh;
 }
 

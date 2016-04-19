@@ -25,14 +25,17 @@ our $VERSION = '2.0';
 use CGI::Carp;
 
 sub new {
-    my $this  = shift;
-    my $class = ref($this) || $this;
+    my $class = shift;
     my $self  = {};
     bless $self, $class;
     $self->{config} = shift;
     return $self;
 }
-
+sub free {
+    my ($self) = @_;
+    delete $self->{config};
+    return $self;
+}
 sub register {
 
     # my ($self, $channel) = @_;

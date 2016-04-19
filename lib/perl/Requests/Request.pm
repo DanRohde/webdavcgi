@@ -35,8 +35,18 @@ sub new {
     return $self;
 }
 
+sub free {
+    my ($self) = @_;
+    foreach my $k (keys %{$self->{config}} ) {
+        delete $self->{$k};
+    }
+    delete $self->{config};
+    return $self;
+}
+
 sub init {
     my ( $self, $config ) = @_;
+    $self->{config} = $config;
     foreach my $k ( keys %{$config} ) {
         $self->{$k} = $config->{$k};
     }

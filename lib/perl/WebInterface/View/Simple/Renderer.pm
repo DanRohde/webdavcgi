@@ -74,7 +74,13 @@ sub render {
         $content, 'Cache-Control: no-cache, no-store',
         $self->get_cookies() );
 }
-
+sub free {
+    my ($self) = @_;
+    delete $self->{config}->{wr};
+    delete $self->{config}->{flr};
+    $self->SUPER::free();
+    return $self;
+}
 sub get_cookies {
     my ($self) = @_;
     my @cookies = @{ $self->SUPER::get_cookies() };
@@ -86,15 +92,13 @@ sub get_cookies {
 sub _get_web_renderer {
     my ($self) = @_;
     require WebInterface::View::Simple::RenderWeb;
-    return $self->{config}->{wr}
-        //= WebInterface::View::Simple::RenderWeb->new();
+    return $self->{config}->{wr} = WebInterface::View::Simple::RenderWeb->new();
 }
 
 sub _get_file_list_renderer {
     my ($self) = @_;
     require WebInterface::View::Simple::RenderFileListTable;
-    return $self->{config}->{flr}
-        //= WebInterface::View::Simple::RenderFileListTable->new();
+    return $self->{config}->{flr} = WebInterface::View::Simple::RenderFileListTable->new();
 }
 
 sub _render_ajax_response {

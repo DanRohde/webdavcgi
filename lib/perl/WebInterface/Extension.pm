@@ -36,7 +36,13 @@ sub new {
     $self->SUPER::init();
     return $self->init($hookreg);
 }
-
+sub free {
+    my ($self) = @_;
+    $self->SUPER::free();
+    delete $self->{EXTENSION};
+    delete $self->{config};
+    return $self;
+}
 sub init {
     my ( $self, $hookreg ) = @_;
     $self->SUPER::init();

@@ -79,7 +79,13 @@ sub new {
     $self->{config} = $CONFIG;
     return $self->init();
 }
-
+sub free {
+    my ($self) = @_;
+    foreach my $k (qw(config db cgi backend cache BYTEUNITS BYTEUNITORDER STATIDX WEB_ID)) {
+        delete $self->{$k};
+    }
+    return $self;
+}
 sub init {
     my ($self) = @_;
     $self->{config}  = $CONFIG;

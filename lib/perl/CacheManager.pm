@@ -30,6 +30,11 @@ sub new {
     $self->{cache} = {};
     return $self;
 }
+sub free {
+    my ($self) = @_;
+    delete $self->{cache};
+    return $self;
+}
 
 sub _exists_entry_arrayref {
     my ( $self, $cache, $key ) = @_;

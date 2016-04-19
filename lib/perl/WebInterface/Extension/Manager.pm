@@ -29,16 +29,25 @@ use English qw( -no_match_vars );
 
 use DefaultConfig qw( @EXTENSIONS $CONFIG );
 
-use vars qw( %HOOKS );
-
 sub new {
-    my ($this) = @_;
-    my $class = ref($this) || $this;
+    my ($class) = @_;
     my $self = {};
     bless $self, $class;
     return $self->init();
 }
-
+sub free {
+    my ($self) = @_;
+    delete $self->{config};
+    foreach my $hook ( keys %{$self->{hooks}}) {
+        foreach my $handler ( @{$self->{hook}->{$hook}}) {
+            if ($handler->can('free')) {
+                $handler->free();
+            }
+        }
+    }
+    delete $self->{hooks};
+    return $self;
+}
 sub init {
     my ($self) = @_;
     $self->{config} = $CONFIG;
@@ -63,20 +72,20 @@ sub register {
         }
     }
     else {
-        $HOOKS{$self}{$hook} //= [];
-        push @{ $HOOKS{$self}{$hook} }, $handler;
+        $self->{hooks}{$hook} //= [];
+        push @{ $self->{hooks}{$hook} }, $handler;
     }
     return 1;
 }
 
 sub handle {
     my ( $self, $hook, $params ) = @_;
-    if ( !exists $HOOKS{$self}{$hook} ) {
+    if ( !exists $self->{hooks}{$hook} ) {
         return;
     }
     my @ret;
     my $method = "handle_hook_${hook}";
-    foreach my $handler ( @{ $HOOKS{$self}{$hook} } ) {
+    foreach my $handler ( @{ $self->{hooks}{$hook} } ) {
         push @ret,
             $handler->can($method)
             ? $handler->$method( $self->{config}, $params )

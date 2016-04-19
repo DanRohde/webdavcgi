@@ -41,6 +41,13 @@ sub new {
     $self->{msglimit} = 150;
     return $self->init();
 }
+sub free {
+    my ($self) = @_;
+    $self->SUPER::free();
+    delete $self->{config};
+    delete $self->{msglimit};
+    return $self;
+}
 
 sub _print_json_response {
     my ( $self, $msg, $errmsg, $msgparam ) = @_;

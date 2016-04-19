@@ -26,10 +26,18 @@ use CGI::Carp;
 
 sub new {
     my $class = shift;
-    my $self  = {};
-    return bless $self, $class;
+    return bless {}, $class;
 }
-
+sub free {
+    my ($self) = @_;
+    foreach my $ls (keys %{$self->{event}}) {
+        foreach my $l (@{$self->{event}->{$ls}}) {
+            if ($l->can('free')) { $l->free(); }
+        }
+        delete $self->{event}->{$ls};
+    }
+    return $self;
+}
 sub add {
     my ( $self, $event, $listener ) = @_;
     if ( defined $listener ) {
@@ -37,25 +45,25 @@ sub add {
           or croak "I need a Events::EventListener for $event";
     }
 
-    if ( !$self->{ $event || 'ALL' } ) { $self->{ $event || 'ALL' } = []; }
+    if ( !$self->{event}->{ $event || 'ALL' } ) { $self->{event}->{ $event || 'ALL' } = []; }
 
     if ( !defined $event ) {
-        push @{ $self->{ALL} }, $listener;
+        push @{ $self->{event}->{ALL} }, $listener;
     }
     elsif ( ref($event) eq 'ARRAY' ) {
         foreach my $e ( @{$event} ) {
-            push @{ $self->{$e} }, $listener;
+            push @{ $self->{event}->{$e} }, $listener;
         }
     }
     else {
-        push @{ $self->{$event} }, $listener;
+        push @{ $self->{event}->{$event} }, $listener;
     }
     return 1;
 }
 
 sub broadcast {
     my ( $self, $event, @data ) = @_;
-    my @listeners = ( @{ $self->{$event} // [] }, @{ $self->{ALL} // [] } );
+    my @listeners = ( @{ $self->{event}->{$event} // [] }, @{ $self->{event}->{ALL} // [] } );
     foreach my $listener (@listeners) {
         $listener->receive( $event, @data );
     }

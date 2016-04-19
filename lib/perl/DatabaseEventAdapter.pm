@@ -25,24 +25,6 @@ our $VERSION = '2.1';
 
 use base qw(Events::EventListener );
 
-use vars qw( $_INSTANCE );
-
-sub new {
-    my $this  = shift;
-    my $class = ref($this) || $this;
-    my $self  = {};
-    if ( !$_INSTANCE ) {
-        bless $self, $class;
-        $_INSTANCE = $self;
-    }
-    $self->{config} = shift;
-    return $_INSTANCE;
-}
-
-sub getinstance {
-    return __PACKAGE__->new();
-}
-
 sub _strip_slash {
     my ( $self, $file ) = @_;
     $file =~ s/\/$//xms;
@@ -60,7 +42,7 @@ sub register {
     $channel->add(
         [ 'FINALIZE', 'FILEMOVED', 'FILECOPIED', 'DELETED', 'WEB-DELETED' ],
         $self );
-    return 1;
+    return $self;
 }
 
 sub _handle_file_moved {

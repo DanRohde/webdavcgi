@@ -30,8 +30,18 @@ use vars qw( $WEBINTERFACE );
 sub get_webinterface {
     my ($self) = @_;
     require WebInterface;
-    $WEBINTERFACE //= WebInterface->new();
+    $WEBINTERFACE = WebInterface->new();
     return $WEBINTERFACE->init( $self->{config} );
+}
+
+sub free {
+    my ($self) = @_;
+    if ( defined $WEBINTERFACE ) {
+        $WEBINTERFACE->free();
+        undef $WEBINTERFACE;
+    }
+    $self->SUPER::free();
+    return $self;
 }
 
 1;
