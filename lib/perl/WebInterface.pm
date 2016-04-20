@@ -54,8 +54,9 @@ sub free {
         $self->{config}->{$c}->free();
         delete $self->{config}->{$c};
     }
-    foreach my $k ( qw(webinterface config db cgi backend debug logger) ) {
-      delete $self->{$k};
+    delete $self->{config}->{webinterface};
+    foreach my $k ( qw(webinterface config db cgi backend debug logger isoptimized notoptimized) ) {
+        delete $self->{$k};
     }
     return $self;
 }

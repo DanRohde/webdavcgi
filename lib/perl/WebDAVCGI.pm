@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160419.1';
+$RELEASE = '1.1.1BETA20160420.1';
 
 use vars qw( $_METHODS_RX );
 
@@ -263,13 +263,17 @@ sub free {
         $self->{$k}->free();
         delete $self->{$k};
     }
+    delete $self->{config};
+    undef $CONFIG;
     undef $CM;
     undef $DB;
     undef $BACKEND_INSTANCE;
+    undef $EVENT_CHANNEL;
     delete $self->{cgi};
     undef $CGI;
     delete $self->{debug};
     delete $self->{logger};
+    DefaultConfig::free();
     return $self;
 }
 1;

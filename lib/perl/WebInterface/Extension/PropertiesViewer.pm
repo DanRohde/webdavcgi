@@ -178,4 +178,9 @@ sub _render_viewer {
         'Cache-Control: no-cache, no-store' );
     return 1;
 }
+sub free {
+    my ($self) = @_;
+    WebDAVProps::free();
+    return $self->SUPER::free();
+}
 1;

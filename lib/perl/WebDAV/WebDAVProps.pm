@@ -94,8 +94,13 @@ use vars
   %UNSUPPORTED_PROPS_HASH
 );
 
-BEGIN {
+use DefaultConfig qw(
+  $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE $ENABLE_CARDDAV $ENABLE_ACL
+  $ENABLE_BIND $ENABLE_GROUPDAV
+);
 
+
+sub init_webdav_props {
     @UNSUPPORTED_PROPS = qw(
       checked-in checked-out xmpp-uri dropbox-home-URL
       parent-set directory-gateway
@@ -232,14 +237,8 @@ BEGIN {
 
     @KNOWN_FILE_PROPS = ( @KNOWN_COLL_PROPS, 'getcontentlength', 'executable' );
 
-}
 
-use DefaultConfig qw(
-  $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE $ENABLE_CARDDAV $ENABLE_ACL
-  $ENABLE_BIND $ENABLE_GROUPDAV
-);
 
-sub init_webdav_props {
     if (   $ENABLE_CALDAV
         || $ENABLE_CALDAV_SCHEDULE
         || $ENABLE_CARDDAV )
@@ -289,5 +288,13 @@ sub init_webdav_props {
 
     return;
 }
-
+sub free {
+    undef @KNOWN_COLL_PROPS;
+    undef @KNOWN_FILE_PROPS;
+    undef %KNOWN_COLL_PROPS_HASH;
+    undef %KNOWN_FILECOLL_PROPS_HASH;
+    undef %KNOWN_FILE_PROPS_HASH;
+    undef %UNSUPPORTED_PROPS_HASH;
+    return;
+}
 1;

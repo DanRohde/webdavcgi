@@ -168,15 +168,15 @@ EOF
     %QUOTA_LIMITS            = (
         'warn' => { limit => 0.02, background => 'yellow', },
         'critical' =>
-            { limit => 0.01, color => 'yellow', background => 'red' }
+            { limit => 0.01, color => 'yellow', background => 'red', }
     );
     @ALLOWED_TABLE_COLUMNS
-        = qw( name size lastmodified created mode mime uid gid );
+        = qw( selector name size lastmodified created mode mime uid gid );
 
     if ($ALLOW_FILE_MANAGEMENT) {
         push @ALLOWED_TABLE_COLUMNS, 'fileactions';
     }
-    @VISIBLE_TABLE_COLUMNS = qw( name size lastmodified );
+    @VISIBLE_TABLE_COLUMNS = qw( selector name size lastmodified );
     if ($ALLOW_FILE_MANAGEMENT) {
         push @VISIBLE_TABLE_COLUMNS, 'fileactions';
     }
@@ -185,10 +185,11 @@ EOF
     $SHOW_CURRENT_FOLDER                                      = 0;
     $SHOW_CURRENT_FOLDER_ROOTONLY                             = 0;
     $SHOW_PARENT_FOLDER                                       = 1;
-    $EXTENSION_CONFIG{Permissions}{allow_changepermrecursive} = 1;
-    $EXTENSION_CONFIG{Permissions}{user}   = [ 'r', 'w', 'x', 's' ];
-    $EXTENSION_CONFIG{Permissions}{group}  = [ 'r', 'w', 'x', 's' ];
-    $EXTENSION_CONFIG{Permissions}{others} = [ 'r', 'w', 'x', 't' ];
+    $EXTENSION_CONFIG{Permissions} = {
+        allow_changepermrecursive => 1,
+        user    => [qw(r w x s)],
+        group   => [qw(r w x s)],
+        others  => [qw(r w x t)], };
     $LANGSWITCH
         = q{<div style="font-size:0.6em;text-align:right;border:0px;padding:0px;"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
     $HEADER
@@ -320,5 +321,31 @@ sub read_config {
         return 1;
     }
     return 0;
+}
+sub free {
+    undef $DEFAULT_LOCK_OWNER;
+    undef @ALLOWED_TABLE_COLUMNS;
+    undef @DB_SCHEMA;
+    undef @EVENTLISTENER;
+    undef @EXTENSIONS;
+    undef @FORBIDDEN_UID;
+    undef @HIDDEN;
+    undef @PROHIBIT_AFS_ACL_CHANGES_FOR;
+    undef @SUPPORTED_VIEWS;
+    undef @UNSELECTABLE_FOLDERS;
+    undef @VISIBLE_TABLE_COLUMNS;
+    undef %ADDRESSBOOK_HOME_SET;
+    undef %AUTOREFRESH;
+    undef %BACKEND_CONFIG;
+    undef %CALENDAR_HOME_SET;
+    undef %ERROR_DOCS;
+    undef %EXTENSION_CONFIG;
+    undef %FILEFILTERPERDIR;
+    undef %ICONS;
+    #undef %MIMETYPES;
+    undef %QUOTA_LIMITS;
+    undef %SUPPORTED_LANGUAGES;
+    #undef %TRANSLATION;
+    return;
 }
 1;

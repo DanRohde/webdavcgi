@@ -31,11 +31,14 @@ sub new {
 sub free {
     my ($self) = @_;
     foreach my $ls (keys %{$self->{event}}) {
-        foreach my $l (@{$self->{event}->{$ls}}) {
+        foreach my $i (0 .. $#{$self->{event}->{$ls}}) {
+            my $l = $self->{event}->{$ls}->[$i];
             if ($l->can('free')) { $l->free(); }
+            $self->{event}->{$ls}->[$i] = undef;
         }
         delete $self->{event}->{$ls};
     }
+    delete $self->{event};
     return $self;
 }
 sub add {

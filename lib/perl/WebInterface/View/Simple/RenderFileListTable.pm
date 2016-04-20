@@ -367,7 +367,7 @@ sub _render_file_list_entry {
     }
     ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
     $e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
-    return $self->render_template( $PATH_TRANSLATED, $REQUEST_URI, $e );
+    return $self->SUPER::render_template( $PATH_TRANSLATED, $REQUEST_URI, $e );
 }
 
 sub _render_filter_info {

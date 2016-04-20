@@ -41,6 +41,12 @@ sub init {
     return $self;
 }
 
+sub free {
+    my ($self) = @_;
+    WebDAV::WebDAVProps::free();
+    return $self->SUPER::free();
+}
+
 sub handle_property_request {
     my ( $self, $xml, $dataref, $resp_200, $resp_403 ) = @_;
     my $pm = $self->get_property_module();
@@ -115,11 +121,11 @@ sub get_prop_stat {
 
     $self->debug("get_prop_stat($fn,$uri,...)");
 
-    my $isReadable = $backend->isReadable($fn);
+    my $is_readable = $backend->isReadable($fn);
 
-    my $nfn = $isReadable ? $backend->resolve($fn) : $fn;
+    my $nfn = $is_readable ? $backend->resolve($fn) : $fn;
 
-    my @stat = $isReadable ? $backend->stat($fn) : ();
+    my @stat = $is_readable ? $backend->stat($fn) : ();
     my %resp_200 = ( status => 'HTTP/1.1 200 OK' );
     my %resp_404 = ( status => 'HTTP/1.1 404 Not Found' );
 
@@ -191,8 +197,8 @@ sub get_prop_stat {
         }
     }    # foreach
 
-    push @propstat, \%resp_200 if exists $resp_200{prop};
-    push @propstat, \%resp_404 if exists $resp_404{prop};
+    if ( exists $resp_200{prop} ) { push @propstat, \%resp_200; }
+    if ( exists $resp_404{prop} ) { push @propstat, \%resp_404; }
     return \@propstat;
 }
 
@@ -211,7 +217,7 @@ sub read_dir_recursive {
         $response{href} = $ru;
         $response{propstat} =
           $self->get_prop_stat( $nfn, $ru, $props, $all, $noval );
-        if ( $#{ $response{propstat} } == -1 ) {
+        if ( scalar @{ $response{propstat} } == 0 ) {
             $response{status} = 'HTTP/1.1 200 OK';
             delete $response{propstat};
         }
