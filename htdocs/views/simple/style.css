@@ -1525,7 +1525,7 @@ img {
 }
 .tabsel {
 	cursor: pointer;
-	border: 1px solid #444444;
+	border: 1px solid #888;
 	border-radius: 4px;
 	margin-bottom: 5px;
 	padding: 4px;
@@ -1536,6 +1536,7 @@ img {
 .tabsel:hover, .tabsel:focus, .tabsel.activetabsel {
 	border-color: black;
 	background-color: #eaeaea;
+	outline: none;
 }
 .tabs {
 	vertical-align: top;

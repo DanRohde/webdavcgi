@@ -52,6 +52,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="extension-publicuri.html">PublicUri</a> - share files and folders with a public link (own page)</li>
 <li><a href="#QuickToggle">QuickToggle</a> - adds a toolbar for toggling some preferences</li>
 <li><a href="#Redirect">Redirect</a> - redirects folders to any web page</li>
+<li><a href="#SaveSettings">SaveSettings</a> - saves web interface settings into properties database</li>
 <li><a href="#Search">Search</a> - searches file/folders by name or content including duplicate file search</li>
 <li><a href="#SendByMail">SendByMail</a> - sends mails with attached files/folders </li>
 <li><a href="#TextEditor">TextEditor</a> - offers a simple text editor with integrated CKEditor&trade; for HTML editing</li>
@@ -285,6 +286,21 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # redirect - sets folder/files for a redirect
 #             format: { '/full/file/path' =&gt; 'url' , ... }
 # enable_directredirect - enables redirects of direct calls to redirected pathes (default: off)
+</pre></td>
+
+</tr>
+</table>
+</tr>
+</table>
+<h2 id="SaveSettings">SaveSettings</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+# SETUP:
+# settings.savesettings - default behavior
+#     (one of savesettings.dontsave, savesettings.saveall, 
+#      savesettings.savesettingsonly, savesettings.savebookmarksonly)
 </pre></td>
 
 </tr>

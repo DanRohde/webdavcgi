@@ -410,6 +410,11 @@ $CHARSET = 'utf-8';
 # EXAMPLE: $BUFSIZE = 1_073_741_824;
 $BUFSIZE = 1_048_576;
 
+## -- READBUFSIZE
+## buffer size for local file read and write operations
+## (best value depends on your local file system)
+$READBUFSIZE = 65536;
+
 ## -- LOGFILE
 ## simple log for file/folder modifications (PUT/MKCOL/DELETE/COPY/MOVE)
 ## EXAMPLE: $LOGFILE='/tmp/webdavcgi.log';
@@ -565,6 +570,10 @@ $THUMBNAIL_WIDTH = 110;
 ## this is neccessary if you enable the thumbnail cache ($ENABLE_THUMBNAIL_CACHE)
 ## EXAMPLE: $THUMBNAIL_CACHEDIR=".thumbs";
 $THUMBNAIL_CACHEDIR = '/tmp';
+
+## -- OPTIMIZERTMP
+## defines absolute path to a cache directory
+$OPTIMIZERTMP = '/tmp';
 
 ## -- ENABLE_BIND
 ## enables BIND/UNBIND/REBIND methods defined in http://tools.ietf.org/html/draft-ietf-webdav-bind-27

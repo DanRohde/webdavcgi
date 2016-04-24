@@ -284,7 +284,7 @@ EOF
         History     VideoJS   ViewerJS     TextEditor
         Highlighter Download  Zip          Search
         Diff        DiskUsage ODFConverter ImageInfo
-        QuickToggle
+        QuickToggle SaveSettings
     );
     @AFS_EXTENSIONS   = qw( AFSACLManager AFSGroupManager );
     @EXTRA_EXTENSIONS = qw( GPXViewer SourceCodeViewer HexDump SendByMail );

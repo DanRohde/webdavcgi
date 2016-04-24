@@ -226,6 +226,16 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 1.1.0 to 1.1.1</h3>
+<ul>
+<li> SaveSettings extension was added.</li>
+<li> Some config variables were added:
+	<ul>
+	<li><code>$OPTIMIZERTMP</code> - contains absolute path for caches: message, CSS, JS (default: /tmp)</li>
+	<li><code>$READBUFSIZE</code> - contains buffer size for local file reads (default: 65536)</li>
+	</ul>
+</li>
+</ul>
 <h3>Upgrading from 1.0.0 to 1.1.0</h3>
 <ul>
 <li> A new Perl module is required: List::MoreUtils (Debian/Ubuntu: <code>apt-get install liblist-moreutils-perl</code>)</li>
