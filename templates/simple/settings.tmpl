@@ -1,11 +1,21 @@
 <div id="settings" title="$tl(settings)">
 <form id="settingsform">
-<table>
-$each#(confirm.upload,confirm.dnd,confirm.paste,confirm.rename,messages.warning,show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
+
+<table class="settingstable">
+<tr> 
+<td class="tabsels">
+	<div class="tabsel" data-group="settings_view" tabindex="0">$tl(settings.view)</div>
+	<div class="tabsel" data-group="settings_dialogs" tabindex="0">$tl(settings.dialogs)</div>
+	<div class="tabsel" data-group="settings_extensions" tabindex="0">$tl(settings.extensions)</div>
+	$extension(settings_tabsels)
+</td>
+<td class="tabs">
+<table class="tab showtab settings_view">
+<tr><td colspan="2" class="tabhead">$tl(settings.view)</td></tr>
+$each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
 <!--IF($ENABLE_THUMBNAIL)-->
 <tr><td>$tl(settings.enable.thumbnails)</td><td><input type="checkbox" name="settings.enable.thumbnails"/></td></tr>
 <!--ENDIF-->
-$extension(settings)
 <!--IF(scalar @SUPPORTED_VIEWS > 1)-->
 <tr><td>$tl(settings.view)</td>
 <td>
@@ -25,6 +35,19 @@ $extension(settings)
 </td>
 </tr>
 <!--ENDIF-->
+$extensions(settings_view)
+</table>
+<table class="tab settings_dialogs">
+<tr><td colspan="2" class="tabhead">$tl(settings.dialogs)</td></tr>
+$each#(messages.warning,confirm.upload,confirm.dnd,confirm.paste,confirm.rename)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
+$extensions(settings_dialogs)
+</table>
+$extensions(settings_tabs)
+<table class="tab settings_extensions">
+<tr><td colspan="2" class="tabhead">$tl(settings.extensions)</td></tr>
+$extension(settings_extensions)
+$extension(settings)
+</table>
 
 </table>
 </form>

@@ -252,14 +252,8 @@ sub _render_file_list_entry {
     my $now = $self->{c}{_render_file_list_entry}{now}{$lang}
         //= DateTime->now( locale => $lang );
     my $cct = $self->can_create_thumb($full);
-    my $u   = $uid
-        ? $self->{c}{_render_file_list_entry}{uid}{$uid} //=
-        scalar getpwuid( $uid // 0 ) || $uid
-        : 'unknown';
-    my $g = $gid
-        ? $self->{c}{_render_file_list_entry}{gid}{$gid} //=
-        scalar getgrgid( $gid // 0 ) || $gid
-        : 'unknown';
+    my $u   = $self->{c}{_render_file_list_entry}{uid}{$uid // 'unknown'} //= $uid && $uid=~/^\d+$/xms ? scalar getpwuid( $uid ) : $uid ? $uid : 'unknown';
+    my $g   = $self->{c}{_render_file_list_entry}{gid}{$gid // 'unknown'} //= $gid && $gid=~/^\d+$/xms ? scalar getgrgid( $gid ) : $gid ? $gid : 'unknown';
     my $icon = $self->{c}{_render_file_list_entry}{icon}{$mime}
         //= $self->get_icon($mime);
     my $enthumb = $self->{c}{_render_file_list_entry}{cookie}{thumbnails}

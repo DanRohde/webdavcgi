@@ -74,6 +74,8 @@ $(document).ready(function() {
 	
 	initStatusbar();
 	
+	initTabs()
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -89,7 +91,19 @@ $(document).ready(function() {
 	$.ajaxPrefilter('script',function( options, originalOptions, jqXHR ) { options.cache = true; });
 	
 	updateFileList($("#flt").attr("data-uri"));
-	
+function initTabs(el) {
+	if (!el) el=$(document);
+	$('.tabsel',el).on("click keyup", function(ev) {
+		if (ev.type == 'keyup' && ev.keyCode != '32') return;
+		ToolBox.preventDefault(ev);
+		var self = $(this);
+		$('.tabsel.activetabsel',el).removeClass('activetabsel');
+		self.addClass('activetabsel');
+		$('.tab.showtab',el).removeClass('showtab');
+		var tab = $('.tab.'+self.data('group'),el).addClass('showtab');
+		$(":focusable:visible:first", tab).focus();
+	});
+}
 function initStatusbar() {
 	if (!cookie("settings.show.statusbar")) {
 		cookie("settings.show.statusbar","no");
@@ -2258,6 +2272,7 @@ function initToolBox() {
 			handleWindowResize : handleWindowResize,
 			hidePopupMenu : hidePopupMenu,
 			initFileList: initFileList,
+			initTabs : initTabs,
 			initUpload : initUpload,
 			isFullscreen : isFullscreen,
 			notify : notify,
