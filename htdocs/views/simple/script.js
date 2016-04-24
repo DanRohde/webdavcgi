@@ -94,7 +94,7 @@ $(document).ready(function() {
 function initTabs(el) {
 	if (!el) el=$(document);
 	$('.tabsel',el).on("click keyup", function(ev) {
-		if (ev.type == 'keyup' && ev.keyCode != '32') return;
+		if (ev.type == 'keyup' && ev.keyCode != 32 && ev.keyCode != 13) return;
 		ToolBox.preventDefault(ev);
 		var self = $(this);
 		$('.tabsel.activetabsel',el).removeClass('activetabsel');

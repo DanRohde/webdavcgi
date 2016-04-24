@@ -195,7 +195,7 @@ EOF
     $HEADER
         = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div style="float:right;font-size:0.8em;">$NOW</div></div>};
     $SIGNATURE
-        = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
+        = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2016 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
     $LANG                = 'default';
     %SUPPORTED_LANGUAGES = (
         'default' => 'English',
