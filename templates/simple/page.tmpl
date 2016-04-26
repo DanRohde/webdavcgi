@@ -28,7 +28,7 @@ $INCLUDE(htmlhead)</head>
 	</div>
 	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible">
 		<ul id="apps">
-			<li title="$tl(files)"><a href="$uri" class="action refresh" title="$tl(files.title)" data-action="refresh"><span class="label">$tl(files)</span></a></li>
+			<li title="$tl(files)"><a href="$uri" class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" data-action="refresh"><span class="label">$tl(files)</span></a></li>
 			$INCLUDE(apps)
 			$extension(apps)
 		</ul>
@@ -39,20 +39,19 @@ $INCLUDE(htmlhead)</head>
 			<li title="$tl(viewoptions)"><div class="accordion">
 					<h3>$tl(viewoptions)</h3> 
 					<div>
-						<ul>$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v">$tl(${v}view)</a></li>'#'$view'#
-							<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o"><span class="label">$tl(filter.title)</span></a></li>
+						<ul>$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v" aria-label="$v">$tl(${v}view)</a></li>'#'$view'#
+							<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)"><span class="label">$tl(filter.title)</span></a></li>
 						</ul>
 					</div>
 				</div>
 			</li>
+			<!--ELSE-->
+				<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)"><span class="label">$tl(filter.title)</span></a></li>
 			<!--ENDIF-->
-			<!--IF($#SUPPORTED_VIEWS<1)-->
-				<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o"><span class="label">$tl(filter.title)</span></a></li>
-			<!--ENDIF-->
-			<li title="$tl(settings)"><a href="#" data-action="settings" class="dialog action settings"><span class="label">$tl(settings)</span></a></li>
+			<li title="$tl(settings)"><a href="#" data-action="settings" class="dialog action settings" aria-label="$tl(settings)"><span class="label">$tl(settings)</span></a></li>
 			$extension(pref)
 			$INCLUDE(help)
-			<li title="$tl(about)"><a href="#" data-action="about" class="dialog action about" accesskey="8"><span class="label">$tl(about)</span></a></li>
+			<li title="$tl(about)"><a href="#" data-action="about" class="dialog action about" accesskey="8" aria-label="$tl(about)"><span class="label">$tl(about)</span></a></li>
 		</ul>
 	</div>
 <div id="content" class="collapse-head-listener collapse-sidebar-listener">
@@ -60,10 +59,10 @@ $INCLUDE(htmlhead)</head>
 		<div id="new">
 			<a href="#" class="action new" data-action="new" accesskey="n">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" class="action upload uibutton access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
+				<a href="#" class="action upload uibutton access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction paste uibutton" href="#" data-action="paste" title="$tl(paste)" accesskey="v">&nbsp;</a>
+				<a class="listaction paste uibutton" href="#" data-action="paste" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v">&nbsp;</a>
 			<!--ENDIF-->			
 			<ul class="new popup hidden">
 			<li><a href="#" class="action create-folder access-writeable" data-action="create-folder" accesskey="r">$tl(createfolderbutton)</a></li>
@@ -77,14 +76,14 @@ $INCLUDE(htmlhead)</head>
 		<div id="path" class="sel-none hideit">
 			<span id="quicknav" class="ws">$[quicknavpath]</span>
 			<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><a href="#" data-action="chdir">$tl(go)</a></span></form>
-			<a href="#" class="action changedir" data-action="changedir" title="$tl(changedir)">&nbsp;</a>
+			<a href="#" class="action changedir" data-action="changedir" title="$tl(changedir)" aria-label="$tl(changedir)">&nbsp;</a>
 			<!--IF($config(ENABLE_BOOKMARKS))-->
 				<div id="bookmarks">
-					<a href="#" class="action addbookmark" data-action="addbookmark" title="$tl(addbookmarktitle)">&nbsp;</a>
+					<a href="#" class="action addbookmark" data-action="addbookmark" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)">&nbsp;</a>
 					<div id="bookmarksmenu">
-					<a href="#" class="action bookmarkmenu" data-action="bookmarkmenu" title="$tl(bookmarks)">&nbsp;</a>
+					<a href="#" class="action bookmarkmenu" data-action="bookmarkmenu" title="$tl(bookmarks)" aria-label="$tl(bookmarks)">&nbsp;</a>
 					<ul id="bookmarksmenulist" class="hidden">
-						<li id="bookmarktemplate" class="hidden">$bookmarktext<img tabindex="0" class="action rmsinglebookmark right neverdisabled" alt="$tl(rmbookmark)" title="$tl(rmbookmark)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
+						<li id="bookmarktemplate" class="hidden">$bookmarktext<img tabindex="0" class="action rmsinglebookmark right neverdisabled" alt="$tl(rmbookmark)" title="$tl(rmbookmark)" aria-label="$tl(rmbookmark)" data-action="rmsinglebookmark" data-bookmark="$bookmarkpath" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII="/></li>
 						<li class="sep link action bookmarksortpath" data-action="bookmarksortpath">$tl(sortbookmarkbypath)<span class="path right">&uarr;</span><span class="path-desc right">&darr;</span></li>
 						<li class="link action bookmarksorttime" data-action="bookmarksorttime">$tl(sortbookmarkbytime)<span class="time right">&uarr;</span><span class="time-desc right">&darr;</span></li>
 						<li class="sep link action rmallbookmarks" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
@@ -94,12 +93,12 @@ $INCLUDE(htmlhead)</head>
 			<!--ENDIF-->
 			<!--IF(%AUTOREFRESH)-->
 				<div id="autorefresh" title="$tl(autorefresh.select.title)">
-					<a href="#" class="action autorefreshmenu" data-action="autorefreshmenu">&nbsp;</a>
+					<a href="#" class="action autorefreshmenu" data-action="autorefreshmenu" aria-label="$tl(autorefresh.select.title)">&nbsp;</a>
 					<ul id="autorefreshmenulist" class="hidden">
-						<li class="action setautorefresh" tabindex="0" data-value="now">$tl(autorefresh.now)</li>
-						$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k">$v</li>'@
-						<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0">$tl(autorefresh.toggle)</li>
-						<li class="autorefreshrunning action autorefreshclear" tabindex="0">$tl(autorefresh.clear)</li>
+						<li class="action setautorefresh" tabindex="0" data-value="now" aria-label="$tl(autorefresh.now)">$tl(autorefresh.now)</li>
+						$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k" aria-label="$tl(autorefresh.select.title) $v">$v</li>'@
+						<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0" aria-label="$tl(autorefresh.toggle)">$tl(autorefresh.toggle)</li>
+						<li class="autorefreshrunning action autorefreshclear" tabindex="0" aria-label="$tl(autorefresh.clear)">$tl(autorefresh.clear)</li>
 						<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
 					</ul>
 				</div>
@@ -108,8 +107,8 @@ $INCLUDE(htmlhead)</head>
 		<div id="filelistactions" class="sel-multi hideit">
 			<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
-				<a class="listaction copy sel-multi uibutton" href="#" title="$tl(copytooltip)" data-action="copy" accesskey="c">&nbsp;</a>
-				<a class="listaction cut sel-multi access-writeable hideit uibutton" href="#" title="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
+				<a class="listaction copy sel-multi uibutton" href="#" title="$tl(copytooltip)" aria-label="$tl(copytooltip)" data-action="copy" accesskey="c">&nbsp;</a>
+				<a class="listaction cut sel-multi access-writeable hideit uibutton" href="#" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" data-action="cut" accesskey="x">&nbsp;</a>
 			<!--ENDIF-->		
 			$extension(filelistaction)	
 			<a class="listaction delete sel-multi access-writeable hideit uibutton" href="#" title="$tl(deletefilestext)" data-action="delete" >$tl(deletefilesbutton)</a>
@@ -118,8 +117,8 @@ $INCLUDE(htmlhead)</head>
 		<div class="filterbox">
 			$extension(filterbox)
 			<form id="filterbox" method="post" action="#">
-			$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" accesskey="i"/>
-			<img class="action clearfilter" data-action="clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)"/>
+			$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" aria-label="$tl(namefiltertooltip)" accesskey="i"/>
+			<img class="action clearfilter" data-action="clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)" aria-label="$tl(filter.reset)"/>
 			</form>
 		</div>
 		<!--ENDIF-->

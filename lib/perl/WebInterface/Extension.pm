@@ -91,7 +91,7 @@ sub handle_apps_hook {
     return $cgi->li(
         { -title => $self->tl( $title // $label ) },
         $cgi->a(
-            { -class => "action $action", -href => $href ? $href : q{#} },
+            { -class => "action $action", -href => $href ? $href : q{#}, , -aria_label=> $self->tl( $title // $label ) },
             $cgi->span( { -class => 'label' }, $self->tl($label) )
         )
     );
@@ -116,7 +116,6 @@ sub handle_settings_hook {
         {
             my $ar     = $settings->{$setting};
             my $s      = 'settings.' . $setting;
-            my %labels = map { $_ => $self->tl($_) } @{$ar};
             $ret .= $self->{cgi}->Tr(
                 $self->{cgi}->td( $self->tl($s) )
                   . $self->{cgi}->td(

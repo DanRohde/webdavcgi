@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160424.3';
+$RELEASE = '1.1.1BETA20160426.1';
 
 use vars qw( $_METHODS_RX );
 
@@ -126,7 +126,7 @@ sub init {
         if ( !defined $PATH_TRANSLATED
             && ( defined $ENV{SCRIPT_URL} || defined $ENV{REDIRECT_URL} ) )
         {
-            my $su = $ENV{SCRIPT_URL} || $ENV{REDIRECT_URL};
+            my $su = $ENV{SCRIPT_URL} // $ENV{REDIRECT_URL};
             $su =~ s/^$VIRTUAL_BASE//xms;
             $PATH_TRANSLATED = $DOCUMENT_ROOT . $su;
             $PATH_TRANSLATED
@@ -155,21 +155,19 @@ sub handle_request {
         return print_header_and_content('404 Not Found');
     }
 
-    my $method = $CGI->request_method();
-
     $_METHODS_RX //= _get_methods_rx();
 
-    $self->_debug_request_info($method);
+    $self->_debug_request_info();
 
     if ( any {/^\Q${UID}\E$/xms} @FORBIDDEN_UID ) {
         carp("Forbidden UID ${UID}!");
         return print_header_and_content('403 Forbidden');
     }
-    if ( $method !~ /$_METHODS_RX/xms ) {
-        carp("Method not allowed: $method");
+    if ( $REQUEST_METHOD !~ /$_METHODS_RX/xms ) {
+        carp("Method not allowed: $REQUEST_METHOD");
         return print_header_and_content('405 Method Not Allowed');
     }
-    my $module = "Requests::${method}";
+    my $module = "Requests::${REQUEST_METHOD}";
     load($module);
     $self->{method} = $module->new();
     $self->{method}->init($self)->handle();
@@ -180,10 +178,12 @@ sub handle_request {
 }
 
 sub _debug_request_info {
-    my ( $self, $method ) = @_;
+    my ($self) = @_;
     if ( !$DEBUG ) { return; }
-    debug("########## $method ##########");
+    debug("########## $REQUEST_METHOD ##########");
     debug("URI: $REQUEST_URI");
+    debug("PATH_TRANSLATED: $PATH_TRANSLATED");
+    debug("REMOTE_USER: $REMOTE_USER");
     debug("UID='${UID}' EUID='${EUID}' GID='${GID}' EGID='${EGID}'");
     debug("CONFIGFILE=$CONFIGFILE");
     if ( $ENV{MOD_PERL} ) {
