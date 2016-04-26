@@ -117,10 +117,11 @@ sub handle_settings_hook {
             my $ar     = $settings->{$setting};
             my $s      = 'settings.' . $setting;
             $ret .= $self->{cgi}->Tr(
-                $self->{cgi}->td( $self->tl($s) )
+                $self->{cgi}->td( $self->{cgi}->label({-for=>$s}, $self->tl($s) ))
                   . $self->{cgi}->td(
                     $self->{cgi}->popup_menu(
                         -name    => $s,
+                        -id      => $s,
                         -values  => $ar,
                         -labels  => { map { $_ => $self->tl($_) } @{$ar} },
                         -default => $self->{cgi}->cookie($s)
@@ -132,11 +133,13 @@ sub handle_settings_hook {
         }
     }
     else {
+        my $id = "settings.$settings";
         $ret .= $self->{cgi}->Tr(
-            $self->{cgi}->td( $self->tl("settings.$settings") )
+            $self->{cgi}->td( $self->{cgi}->label({-for=>$id }, $self->tl($id) ) )
               . $self->{cgi}->td(
                 $self->{cgi}->checkbox(
-                    -name  => "settings.$settings",
+                    -name  => $id,
+                    -id    => $id,
                     -label => q{}
                 )
               )

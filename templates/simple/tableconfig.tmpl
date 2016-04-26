@@ -3,25 +3,25 @@
 <fieldset>
 <legend>$tl(tableconfig.tablecolumns)</legend>
 <ul>
-	$each#@ALLOWED_TABLE_COLUMNS#'<li><input type="checkbox" name="visiblecolumn" value="$v"/> $tl($v)</li>'#
+	$each#@ALLOWED_TABLE_COLUMNS#'<li><input type="checkbox" name="visiblecolumn" value="$v" id="tableconfig.column.$v"/><label for="tableconfig.column.$v">$tl($v)</label> </li>'#
 </ul>
 </fieldset>
 <fieldset>
 <legend>$tl(tableconfig.sortingcolumns)</legend>
 <ul>
-	$each#@ALLOWED_TABLE_COLUMNS#'<li><input type="radio" name="sortingcolumn" value="$v"/>$tl($v)</li>'#
+	$each#@ALLOWED_TABLE_COLUMNS#'<li><input type="radio" name="sortingcolumn" value="$v" id="tableconfig.sort.$v"/><label for="tableconfig.sort.$v">$tl($v)</label></li>'#
 </ul>
 </fieldset>
 <fieldset>
 <legend>$tl(tableconfig.sortingorder)</legend>
 <ul>
-	<li><input type="radio" value="asc" name="sortingorder"/> $tl(tableconfig.ascending)</li>
-	<li><input type="radio" value="desc" name="sortingorder"/> $tl(tableconfig.descending)</li>
+	<li><input type="radio" value="asc" name="sortingorder" id="tableconfig.ascending"/><label for="tableconfig.ascending">$tl(tableconfig.ascending)</label></li>
+	<li><input type="radio" value="desc" name="sortingorder" id="tableconfig.descending"/><label for="tableconfig.descending">$tl(tableconfig.descending)</label> </li>
 </ul>
 </fieldset>
 <div class="tableconfigactions">
-	<input type="submit" value="$tl(cancel)" name="cancel"/>
-	<input type="submit" value="$tl(savebutton)" name="save"/>
+	<input type="submit" value="$tl(cancel)" name="cancel" aria-label="$tl(cancel) $tl(tableconfig.button.title)"/>
+	<input type="submit" value="$tl(savebutton)" name="save" aria-label="$tl(save) $tl(tableconfig.button.title)"/>
 </div>
 </form>
 </div>

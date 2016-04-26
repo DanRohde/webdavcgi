@@ -12,24 +12,24 @@
 <td class="tabs">
 <table class="tab showtab settings_view">
 <tr><td colspan="2" class="tabhead">$tl(settings.view)</td></tr>
-$each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
+$each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" id="settigns.$v" name="settings.$v"/></td></tr>'#
 <!--IF($ENABLE_THUMBNAIL)-->
-<tr><td>$tl(settings.enable.thumbnails)</td><td><input type="checkbox" name="settings.enable.thumbnails"/></td></tr>
+<tr><td><label for="settings.enable.thumbnails">$tl(settings.enable.thumbnails)</label></td><td><input type="checkbox" id="settings.enable.thumbnails" name="settings.enable.thumbnails"/></td></tr>
 <!--ENDIF-->
 <!--IF(scalar @SUPPORTED_VIEWS > 1)-->
-<tr><td>$tl(settings.view)</td>
+<tr><td><label for="settings.view">$tl(settings.view)</label></td>
 <td>
-	<select name="settings.view">
-		<option value="$view" title="$view">$viewname</option>
-		$each#@SUPPORTED_VIEWS#'<option value="$v" title="$v">$tl(${v}view)</option>'#'$view'#
+	<select name="settings.view" id="settings.view">
+		<option value="$view" title="$view" aria-label="$tl(settings.view) $viewname">$viewname</option>
+		$each#@SUPPORTED_VIEWS#'<option value="$v" title="$v" aria-label="$tl(settings.view) $tl(${v}view)">$tl(${v}view)</option>'#'$view'#
 	</select>
 </td>
 </tr>
 <!--ENDIF-->
 <!--IF(scalar(keys %SUPPORTED_LANGUAGES) > 0)-->
-<tr><td>$tl(settings.language)</td>
+<tr><td><label for="settings.language">$tl(settings.language)</label></td>
 <td>
-	<select name="settings.lang">
+	<select name="settings.lang" id="settings.language">
 		$langList('<option value="$lang">$langname</option>')
 	</select>
 </td>
@@ -39,7 +39,7 @@ $extensions(settings_view)
 </table>
 <table class="tab settings_dialogs">
 <tr><td colspan="2" class="tabhead">$tl(settings.dialogs)</td></tr>
-$each#(messages.warning,confirm.upload,confirm.dnd,confirm.paste,confirm.rename)#'<tr><td>$tl(settings.$v)</td><td><input type="checkbox" name="settings.$v"/></td></tr>'#
+$each#(messages.warning,confirm.upload,confirm.dnd,confirm.paste,confirm.rename)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" name="settings.$v" id="settings.$v"/></td></tr>'#
 $extensions(settings_dialogs)
 </table>
 $extensions(settings_tabs)

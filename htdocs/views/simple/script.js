@@ -1966,7 +1966,8 @@ function renderAccessKeyDetails() {
 		return aa < bb ? -1 : aa > bb ? 1 : 0; 
 	});
 	$.each(refs, function(i,v) {
-		text += "<li>"+$(v).attr("accesskey")+": "+( $(v).attr("title") || $(v).attr("data-tooltip") || $(v).html())+"</li>";
+		var qv = $(v);
+		text += "<li>"+qv.attr("accesskey")+": "+( qv.attr("aria-label") || qv.attr("title") || qv.attr("data-tooltip") || qv.html() )+"</li>";
 	});
 	$('<div id="accesskeydetails"/>')
 		.html('<ul class="accesskeydetails">'+text+"</ul>")
