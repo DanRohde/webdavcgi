@@ -122,8 +122,9 @@ sub _get_setup {
 sub _is_allowed_setting {
     my ( $self, $ss, $allowsettings, $allowbookmarks, $cookie ) = @_;
     if ( $ss eq 'savesettings.dontsave' ) { return 0; }
-    return ( $allowbookmarks && $cookie =~ /^bookmark/xms )
-      || ( $allowsettings && $cookie !~ /^bookmark/xms );
+    my $brx = $allowbookmarks ? qr{^bookmark}xms : qr{_doesntmatch_}xms;
+    my $srx = $allowsettings ? qr{^settings[.]}xms : qr{_doesntmatch_}xms;
+    return $cookie =~ /(?:$brx|$srx)/xms;
 }
 
 sub _get_cookies_json {
