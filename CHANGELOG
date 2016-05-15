@@ -14,7 +14,8 @@
      - added missing redirect after direct redirected folder call
      - added profile tab to GPXViewer extension
      - added cookies hook for web interface extensions
-     - added new settings hooks for settings dialog 
+     - added new settings hooks for settings dialog
+     - added Feedback extension
      - added SaveSettings extension
      - disabled CalDAV, CalDAV Schedule, CardDAV, GroupDAV, ACL, BIND, SEARCH support by default
      - improved Diff extension dialog layout

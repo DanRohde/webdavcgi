@@ -1,0 +1,58 @@
+/*********************************************************************
+(C) ZE CMS, Humboldt-Universitaet zu Berlin
+Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+
+.action.feedback {
+	background-image: url(feedback.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
+}
+.action.feedback:focus, .action.feedback:hover {
+	background-image: url(feedback-hover.png);
+}
+.feedbackdialog.ui-dialog .ui-dialog-title {
+	background-image: url(feedback.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}
+#popupmenu .action.feedback {
+	background-position: 4px 8px;
+}
+#feedbackmsg {
+	width: 320px;
+	height: 160px;
+}
+#feedbackmsg.missing {
+	border: 1px solid red;
+}
+#feedbackcontact a {
+	text-decoration: underline;
+}
+#feedbackcontact {
+	text-align: center;
+	width: 100%;
+	border-top: 1px solid #999;
+	margin-top: 5px;
+}
+#feedback_screenshot_preview {
+	max-width: 100px;
+	vertical-align: top;
+	padding: 2px;
+}
+#feedbackemail {
+	width: 320px;
+}

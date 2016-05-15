@@ -328,6 +328,30 @@ sub _render_file_list_entry {
         : q{},
     );
 
+    $self->_call_fileattr_hook(\%stdvars, $full);
+    $self->_call_fileprop_hook(\%stdvars, $full);
+
+    ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
+    $e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
+    return $self->SUPER::render_template( $PATH_TRANSLATED, $REQUEST_URI, $e );
+}
+sub _call_fileprop_hook {
+    my ($self, $stdvars, $full) = @_;
+    # fileprop hook by Harald Strack <hstrack@ssystems.de>
+    # overwrites all stdvars including ext_...
+    my $fileprop_extensions = $self->{config}{extensions}
+        ->handle( 'fileprop', { path => $full } );
+    if ( defined $fileprop_extensions ) {
+        foreach my $ret ( @{$fileprop_extensions} ) {
+            if ( ref $ret eq 'HASH' ) {
+                $stdvars->{ keys %{$ret} } = values %{$ret};
+            }
+        }
+    }
+    return $stdvars;
+}
+sub _call_fileattr_hook {
+    my ($self, $stdvars, $full) = @_;
     # fileattr hook: collect and concatenate attribute values
     my $fileattr_extensions = $self->{config}{extensions}
         ->handle( 'fileattr', { path => $full } );
@@ -340,30 +364,15 @@ sub _render_file_list_entry {
                 )
                 )
             {
-                $stdvars{$supported_file_attr} .=
+                $stdvars->{$supported_file_attr} .=
                     ${$attr_hashref}{$supported_file_attr}
                     ? q{ } . ${$attr_hashref}{$supported_file_attr}
                     : q{};
             }
         }
     }
-
-    # fileprop hook by Harald Strack <hstrack@ssystems.de>
-    # overwrites all stdvars including ext_...
-    my $fileprop_extensions = $self->{config}{extensions}
-        ->handle( 'fileprop', { path => $full } );
-    if ( defined $fileprop_extensions ) {
-        foreach my $ret ( @{$fileprop_extensions} ) {
-            if ( ref $ret eq 'HASH' ) {
-                @stdvars{ keys %{$ret} } = values %{$ret};
-            }
-        }
-    }
-    ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-    $e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
-    return $self->SUPER::render_template( $PATH_TRANSLATED, $REQUEST_URI, $e );
+    return $stdvars;
 }
-
 sub _render_filter_info {
     my ($self) = @_;
     my @filter;

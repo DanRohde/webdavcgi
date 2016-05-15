@@ -41,6 +41,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#Diff">Diff</a> - compares files/folders</li>
 <li><a href="#DiskUsage">DiskUsage</a> - collects disk usage data</li>
 <li><a href="#Download">Download</a> - offers a download button to force download instead of view</li>
+<li><a href="#Feedback">Feedback</a> - adds a feedback dialog</li>
 <li><a href="#GPXViewer">GPXViewer</a> - shows GPX tracks with Google maps</li>
 <li><a href="#HexDump">HexDump</a> - shows a hexdump of a file</li> 
 <li><a href="#Highlighter">Highlighter</a> - colorizes files/folders</li>
@@ -144,6 +145,24 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 
 </tr>
 </table>
+
+<h2 id="Feedback">Feedback</h2>
+
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-feedback.png"><img alt="Web interface Feedback" class="screenshot" src="images/webdavcgi-webinterface-feedback.png"/></a></td>
+<td><pre>
+# SETUP:
+# contact - recipient address (default: d.rohde@cms.hu-berlin.de)
+# subject - email subject (default: "WebDAV CGI")
+# clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
+# mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
+# timeout - mailrelay timeout in seconds (default: 2)
+</pre></td>
+
+</tr>
+</table>
+
 
 <h2 id="GPXViewer">GPX Viewer</h2>
 

@@ -284,7 +284,7 @@ EOF
         History     VideoJS   ViewerJS     TextEditor
         Highlighter Download  Zip          Search
         Diff        DiskUsage ODFConverter ImageInfo
-        QuickToggle SaveSettings
+        QuickToggle SaveSettings           Feedback
     );
     @AFS_EXTENSIONS   = qw( AFSACLManager AFSGroupManager );
     @EXTRA_EXTENSIONS = qw( GPXViewer SourceCodeViewer HexDump SendByMail );
@@ -300,6 +300,7 @@ EOF
         png     => 'image/png',
         default => 'application/octet-stream',
     );
+    $EXTENSION_CONFIG{Feedback}{contact} = 'd.rohde@cms.hu-berlin.de';
     return 1;
 }
 

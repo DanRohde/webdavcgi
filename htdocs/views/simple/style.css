@@ -1555,3 +1555,38 @@ img {
 	min-width: 600px;
 	min-height: 220px;
 }
+.dtable {
+	display: table;
+	width: auto;
+	padding: 0;
+} 
+.drow {
+	display: table-row;
+	width: auto;
+	padding: 0;
+}
+.drowg {
+	display: table-row-group;
+	border-color: black;
+}
+.dcell {
+	display: table-cell;
+	vertical-align: top;
+	margin: 2px;
+	padding: 0px;
+}
+.dcellr {
+	display: table-cell;
+	text-align: right;
+	vertical-align: top;
+	margin: 2px;
+	padding: 0px;
+}
+.dhcell {
+	display: table-cell;
+	text-align: left;
+	vertical-align: top;
+	margin: 2px;
+	padding: 0;
+	font-weight: bold;
+}

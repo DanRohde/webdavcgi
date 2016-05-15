@@ -27,8 +27,8 @@ use base qw( WebInterface::View::Simple::Renderer );
 use POSIX qw(strftime ceil);
 
 use DefaultConfig
-    qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $VIEW $VIRTUAL_BASE $POST_MAX_SIZE
-    $FILETYPES @EXTENSIONS $LANG $VHTDOCS %SUPPORTED_LANGUAGES
+  qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $VIEW $VIRTUAL_BASE $POST_MAX_SIZE
+  $FILETYPES @EXTENSIONS $LANG $VHTDOCS %SUPPORTED_LANGUAGES
 );
 
 use vars qw(%CACHE);
@@ -41,50 +41,51 @@ sub render_template {
     my %stdvars = (
         uri          => $ru,
         baseuri      => $self->{cgi}->escapeHTML($vbase),
-        quicknavpath => $self->{c}{render_template}{quicknavpath}
-            //= $self->render_quicknav_path(),
+        quicknavpath => $self->{c}{render_template}{quicknavpath} //=
+          $self->render_quicknav_path(),
         maxuploadsize   => $POST_MAX_SIZE,
-        maxuploadsizehr => $self->{c}{render_template}{maxuploadsizehr}
-            //= ( $self->render_byte_val( $POST_MAX_SIZE, 2, 2 ) )[0],
-        stat_filetypes => $CACHE{render_template}{stat_filetypes}
-            //= $self->stat_matchcount( $FILETYPES, '^\S+' ),
-        stat_suffixes => $CACHE{render_template}{stat_suffixes}
-            //= $self->stat_matchcount( $FILETYPES, '\S+' )
-            - $self->stat_matchcount( $FILETYPES, '^\S+' ),
+        maxuploadsizehr => $self->{c}{render_template}{maxuploadsizehr} //=
+          ( $self->render_byte_val( $POST_MAX_SIZE, 2, 2 ) )[0],
+        stat_filetypes => $CACHE{render_template}{stat_filetypes} //=
+          $self->stat_matchcount( $FILETYPES, '^\S+' ),
+        stat_suffixes => $CACHE{render_template}{stat_suffixes} //=
+          $self->stat_matchcount( $FILETYPES, '\S+' ) -
+          $self->stat_matchcount( $FILETYPES, '^\S+' ),
         stat_extensions    => $#EXTENSIONS + 1,
-        stat_filetypeicons => $CACHE{render_template}{stat_filetypeicons}
-            //= join(
+        stat_filetypeicons => $CACHE{render_template}{stat_filetypeicons} //=
+          join(
             q{},
             map {
                 $self->{cgi}->img(
-                    {   -class => /^(\S+)/xms ? "icon category-$1" : q{},
+                    {
+                        -class => /^(\S+)/xms ? "icon category-$1" : q{},
                         -src =>
-                            'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
                         -style =>
-                            'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',
+'margin: 0 auto 0 auto;border:0;padding: 2px 0 2px 0;height:24px;width:20px;',
                         -alt => /^(\S+)/xms ? "Category \u$1" : q{},
                         -title => /^(\S+)/xms
                         ? "\u$1: "
-                            . ( scalar( () = /\S+/xmsg ) - 1 )
-                            . ' suffixes'
+                          . ( scalar( () = /\S+/xmsg ) - 1 )
+                          . ' suffixes'
                         : q{},
                     }
-                    )
+                  )
             } $FILETYPES =~ /^\S+[^\n]+/xmsg
-            ),
-        stat_extensionlist => $CACHE{render_template}{stat_extensionlist}
-            //= join( ', ', sort @EXTENSIONS ),
+          ),
+        stat_extensionlist => $CACHE{render_template}{stat_extensionlist} //=
+          join( ', ', sort @EXTENSIONS ),
         stat_loadedperlmodules =>
-            $CACHE{render_template}{stat_loadedperlmodules}
-            //= keys(%INC) + 1,
-        stat_perlmodulelist => $CACHE{render_template}{stat_perlmodulelist}
-            //= join( ', ', sort keys %INC ),
+          $CACHE{render_template}{stat_loadedperlmodules} //= keys(%INC) + 1,
+        stat_perlmodulelist => $CACHE{render_template}{stat_perlmodulelist} //=
+          join( ', ', sort keys %INC ),
         stat_perlversionnumber => $],
         view                   => $VIEW,
         viewname               => $self->tl("${VIEW}view"),
         USER                   => $REMOTE_USER,
         CLOCK                  => $self->{cgi}->span(
-            {   id            => 'clock',
+            {
+                id            => 'clock',
                 'data-format' => $self->tl('vartimeformat')
             },
             strftime( $self->tl('vartimeformat'), localtime )
@@ -101,15 +102,15 @@ sub render_template {
 
 sub _render_language_list {
     my ( $self, $tmplfile ) = @_;
-    my $tmpl
-        = $tmplfile =~ /^'(.*)'$/xms
-        ? $1
-        : $self->read_template($tmplfile);
+    my $tmpl =
+        $tmplfile =~ /^'(.*)'$/xms
+      ? $1
+      : $self->read_template($tmplfile);
     my $content = q{};
     foreach my $lang (
         sort { $SUPPORTED_LANGUAGES{$a} cmp $SUPPORTED_LANGUAGES{$b} }
         keys %SUPPORTED_LANGUAGES
-        )
+      )
     {
         my $l = $tmpl;
         $l =~ s/\$langname/$SUPPORTED_LANGUAGES{$lang}/xmsg;
@@ -130,10 +131,10 @@ sub exec_template_function {
 sub render_viewfilter_dialog {
     my ( $self, $tmplfile ) = @_;
     my $content = $self->read_template($tmplfile);
-    my @filtername
-        = $self->{cgi}->cookie('filter.name')
-        ? split( /\s/xms, $self->{cgi}->cookie('filter.name') )
-        : ( q{}, q{} );
+    my @filtername =
+      $self->{cgi}->cookie('filter.name')
+      ? split( /\s/xms, $self->{cgi}->cookie('filter.name') )
+      : ( q{}, q{} );
     my @filtersize = ( q{}, q{}, q{} );
     if (   $self->{cgi}->cookie('filter.size')
         && $self->{cgi}->cookie('filter.size') =~
@@ -153,23 +154,23 @@ sub render_viewfilter_dialog {
     );
 
     $content =~
-        s/[\$](selected|checked)[(]([^:)]+):([^)]+)[)]/$params{$2} eq $3 || $self->is_in($params{$2},$3) ? "$1=\"$1\"" : ""/xmegs;
+s/[\$](selected|checked)[(]([^:)]+):([^)]+)[)]/$params{$2} eq $3 || $self->is_in($params{$2},$3) ? "$1=\"$1\"" : ""/xmegs;
 
     $content =~
-        s/[\$]([\w.]+)/exists $params{$1} ? $self->{cgi}->escapeHTML($params{$1}) : "\$$1"/xmegs;
+s/[\$]([\w.]+)/exists $params{$1} ? $self->{cgi}->escapeHTML($params{$1}) : "\$$1"/xmegs;
     return $self->render_template( $PATH_TRANSLATED, $REQUEST_URI, $content );
 }
 
 sub render_msg_response {
     my ($self) = @_;
-    my $msg
-        = $self->{cgi}->param('msg')
-        || $self->{cgi}->param('aclmsg')
-        || $self->{cgi}->param('afsmsg');
-    my $errmsg
-        = $self->{cgi}->param('errmsg')
-        || $self->{cgi}->param('aclerrmsg')
-        || $self->{cgi}->param('afserrmsg');
+    my $msg =
+         $self->{cgi}->param('msg')
+      || $self->{cgi}->param('aclmsg')
+      || $self->{cgi}->param('afsmsg');
+    my $errmsg =
+         $self->{cgi}->param('errmsg')
+      || $self->{cgi}->param('aclerrmsg')
+      || $self->{cgi}->param('afserrmsg');
     my %jsondata = ();
     my $p        = 1;
     my @params   = ();
