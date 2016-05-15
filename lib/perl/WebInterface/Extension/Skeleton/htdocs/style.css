@@ -1,6 +1,6 @@
 /*********************************************************************
 (C) ZE CMS, Humboldt-Universitaet zu Berlin
-Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+Written 2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 **********************************************************************
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,3 +14,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
+.action.skeleton {
+	background-image: url(skeleton.png);
+	background-repeat: no-repeat;
+	background-position: 4px center;
+}
+.action.skeleton:focus, .action.skeleton:hover {
+	background-image: url(skeleton-hover.png);
+}
+.skeletondialog.ui-dialog .ui-dialog-title {
+	background-image: url(skeleton.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}

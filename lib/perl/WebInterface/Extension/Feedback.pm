@@ -18,6 +18,7 @@
 #
 # SETUP:
 # contact - recipient address (default: d.rohde@cms.hu-berlin.de)
+# domain - mail domain for from address
 # subject - email subject (default: "WebDAV CGI")
 # clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
 # mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
@@ -31,7 +32,8 @@ use warnings;
 our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
-use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
+use DefaultConfig
+  qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_URI $HTTP_HOST);
 use HTTPHelper qw( print_header_and_content );
 
 use vars qw( $ACTION );
@@ -112,8 +114,9 @@ sub _send_feedback {
     if ( $self->config( 'clientinfo', 1 ) ) {
         $body->attach(
             Data => sprintf(
-                "URI: %s\nUser Agent: %s\nIP: %s\nCookies: %s\n",
-                "https://$ENV{HTTP_HOST}$ENV{REQUEST_URI}",
+                "User: %s\nURI: %s\nUser Agent: %s\nIP: %s\nCookies: %s\n",
+                $REMOTE_USER,
+                "https://${HTTP_HOST}${REQUEST_URI}",
                 $ENV{HTTP_USER_AGENT},
                 $ENV{REMOTE_ADDR},
                 join ', ',
@@ -169,7 +172,7 @@ sub handle_hook_posthandler {
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {
         my %resp;
-        if ( $self->{cgi}->param('message') =~ m{^/s*$} ) {
+        if ( $self->{cgi}->param('message') =~ m{^/s*$}xms ) {
             $resp{error}    = $self->tl('feedback.missing.message');
             $resp{required} = 1;
         }
@@ -209,6 +212,14 @@ sub handle_hook_gethandler {
                     feedback_error => sprintf(
                         $self->tl('feedback.error'),
                         $self->{cgi}->escapeHTML( $self->config('contact') )
+                    ),
+                    email => $self->{cgi}->escapeHTML(
+                          $REMOTE_USER =~ /\@/xms ? $REMOTE_USER
+                        : $self->config('domain')
+                        ? $REMOTE_USER . q{@} . $self->config('domain')
+                        : $HTTP_HOST =~ /([^.]+[.][^.]+$)/xms
+                        ? "$REMOTE_USER\@$1"
+                        : q{}
                     ),
                 }
             )

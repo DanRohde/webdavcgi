@@ -127,7 +127,7 @@ function initStatusbar() {
 	renderStatusbarTemplate();
 	$("#flt").on("counterUpdated", renderStatusbarTemplate).on("fileListChanged", renderStatusbarTemplate).on("selectionCounterUpdated", renderStatusbarTemplate);
 	$("body").on("notify",function(ev,data) {
-		$("#statusbar .notify").attr("title",simpleEscape(data.msg)).removeClass("error message warning").addClass(data.type).html(simpleEscape(data.msg)).MyTooltip();
+		$("#statusbar .notify").attr("title",data.msg).removeClass("error message warning").addClass(data.type).html(data.msg).MyTooltip();
 	});
 	$("body").on("settingchanged",function(ev,data) {
 		if (data.setting == "settings.show.statusbar") {
