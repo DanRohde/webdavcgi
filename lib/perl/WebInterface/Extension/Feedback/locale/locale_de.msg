@@ -15,3 +15,4 @@ feedback.contact			"Oder senden Sie uns eine <a href="mailto:%s?subject=%s">E-Ma
 feedback.response			"Vielen Dank f&uuml;r Ihr Feedback."
 feedback.error				"Entschuldigung, die Feedback-Funktion ist defekt. Bitte senden Sie uns eine E-mail an %s." 
 feedback.missing.message	"Bitte geben Sie die notwendige Nachricht ein."
+feedback.sizelimit.exceeded	"Enstschuldigung, die Gr&ouml;&szlig;engrenze von %s (%s) f&uuml;r Ihr Feedback ist &uuml;berschritten. Bitte reduzieren Sie Ihre Nachricht (Screenshot entfernen ...)."

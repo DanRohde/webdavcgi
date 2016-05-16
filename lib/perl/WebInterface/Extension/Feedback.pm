@@ -24,6 +24,7 @@
 # clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
 # mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
 # timeout - mailrelay timeout in seconds (default: 2)
+# sizelimit - defines the mail size limit excepted by your mail relay (default: 20971520 [=20MB])
 
 package WebInterface::Extension::Feedback;
 
@@ -49,6 +50,7 @@ sub init {
     my @hooks =
       qw( css locales javascript gethandler posthandler fileactionpopup pref );
     $hookreg->register( \@hooks, $self );
+    $self->{sizelimit} = $self->config( 'sizelimit', 20_971_520 );
     return;
 }
 
@@ -92,6 +94,37 @@ sub _get_email {
     return $email;
 }
 
+sub _get_clientinfo {
+    my ($self) = @_;
+    return sprintf
+      "User: %s\nURI: %s\nUser Agent: %s\nIP: %s\nCookies: %s\n",
+      $REMOTE_USER,
+      "https://${HTTP_HOST}${REQUEST_URI}",
+      $ENV{HTTP_USER_AGENT},
+      $ENV{REMOTE_ADDR},
+      join ', ',
+      map { $_ . q{=} . $self->{cgi}->cookie($_) } $self->{cgi}->cookie();
+}
+
+sub _check_data_size {
+    my ($self) = @_;
+    if ( $self->{sizelimit} <= 0 ) { return 1; }
+    my $size = 0;
+    $size +=
+      $self->{cgi}->param('message')
+      ? length $self->{cgi}->param('message')
+      : 0;
+    $size +=
+      $self->{cgi}->param('screenshot')
+      ? length $self->{cgi}->param('screenshot')
+      : 0;
+    $size +=
+      $self->config( 'clientinfo', 1 )
+      ? length $self->_get_clientinfo()
+      : 0;
+    return $size <= $self->{sizelimit};
+}
+
 sub _send_feedback {
     my ($self) = @_;
     require Net::SMTP;
@@ -123,16 +156,7 @@ sub _send_feedback {
     );
     if ( $self->config( 'clientinfo', 1 ) ) {
         $body->attach(
-            Data => sprintf(
-                "User: %s\nURI: %s\nUser Agent: %s\nIP: %s\nCookies: %s\n",
-                $REMOTE_USER,
-                "https://${HTTP_HOST}${REQUEST_URI}",
-                $ENV{HTTP_USER_AGENT},
-                $ENV{REMOTE_ADDR},
-                join ', ',
-                map { $_ . q{=} . $self->{cgi}->cookie($_) }
-                  $self->{cgi}->cookie()
-            ),
+            Data        => $self->_get_clientinfo(),
             Type        => 'text/plain; charset=UTF-8',
             Disposition => 'attachment',
             Filename    => 'clientinfo.txt',
@@ -168,7 +192,11 @@ sub handle_hook_posthandler {
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {
         my %resp;
-        if ( $self->{cgi}->param('message') =~ m{^/s*$}xms ) {
+        if ( !$self->_check_data_size() ) {
+            $resp{error} = sprintf $self->tl('feedback.sizelimit.exceeded'),
+              $self->render_byte_val( $self->{sizelimit} );
+        }
+        elsif ( $self->{cgi}->param('message') =~ m{^/s*$}xms ) {
             $resp{error}    = $self->tl('feedback.missing.message');
             $resp{required} = 1;
         }
