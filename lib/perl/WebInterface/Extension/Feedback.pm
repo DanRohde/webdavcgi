@@ -18,6 +18,7 @@
 #
 # SETUP:
 # contact - recipient address (default: d.rohde@cms.hu-berlin.de)
+# emailallowed - enables email field in feedback form (default: 0 [disabled])
 # domain - mail domain for from address
 # subject - email subject (default: "WebDAV CGI")
 # clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
@@ -76,10 +77,19 @@ sub handle_hook_pref {
     );
 }
 
-sub _sanitize {
-    my ( $self, $param ) = @_;
-    $param =~ s/[\r\n]//xmsg;
-    return $param;
+sub _get_email {
+    my ($self) = @_;
+    my $email =
+        $self->config( 'emailallowed', 0 )
+      ? $self->{cgi}->param('email')
+      : undef;
+    $email //=
+        $REMOTE_USER =~ /\@/xms ? $REMOTE_USER
+      : $self->config('domain') ? $REMOTE_USER . q{@} . $self->config('domain')
+      : $HTTP_HOST =~ /([^.]+[.][^.]+$)/xms ? "$REMOTE_USER\@$1"
+      :                                       $REMOTE_USER;
+    $email =~ s/[\r\n]//xmsg;
+    return $email;
 }
 
 sub _send_feedback {
@@ -91,7 +101,7 @@ sub _send_feedback {
     );
 
     my $to      = $self->config('contact');
-    my $from    = $self->_sanitize( $self->{cgi}->param('email') // 'unknown' );
+    my $from    = $self->_get_email();
     my $subject = $self->config('subject') // 'WebDAV CGI';
 
     if ( !$smtp->mail($to) || !$smtp->to($to) ) {
@@ -129,20 +139,6 @@ sub _send_feedback {
             Encoding    => '8bit'
         );
     }
-
-    #    if ( $self->{cgi}->param('tel') || $self->{cgi}->param('email') ) {
-    #        $body->attach(
-    #            Data => sprintf(
-    #                "begin:vcard\nemail;internet:%s\ntel;home: %s\nend:vcard",
-    #                $self->{cgi}->escapeHTML($from),
-    #                $self->{cgi}->escapeHTML($tel)
-    #            ),
-    #            Type        => 'text/x-vcard; charset=UTF-8',
-    #            Encoding    => '8bit',
-    #            Disposition => 'attachment',
-    #            Filename    => 'contact.vcf'
-    #        );
-    #    }
     my $ss;
     if ( ( $ss = $self->{cgi}->param('screenshot') )
         && $ss =~ m{^data:(image/(?:gif|png));base64,(.*)$}xms )
@@ -213,14 +209,8 @@ sub handle_hook_gethandler {
                         $self->tl('feedback.error'),
                         $self->{cgi}->escapeHTML( $self->config('contact') )
                     ),
-                    email => $self->{cgi}->escapeHTML(
-                          $REMOTE_USER =~ /\@/xms ? $REMOTE_USER
-                        : $self->config('domain')
-                        ? $REMOTE_USER . q{@} . $self->config('domain')
-                        : $HTTP_HOST =~ /([^.]+[.][^.]+$)/xms
-                        ? "$REMOTE_USER\@$1"
-                        : q{}
-                    ),
+                    email => $self->{cgi}->escapeHTML( $self->_get_email() ),
+                    emailallowed => $self->config( 'emailallowed', 0 ),
                 }
             )
         );
