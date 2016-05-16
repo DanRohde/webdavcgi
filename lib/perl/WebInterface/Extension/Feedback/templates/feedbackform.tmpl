@@ -5,26 +5,34 @@
 <input type="hidden" name="action" value="feedback"/>
 <div class="drow">
 	<label class="dhcell" for="feedbackmsg">$tl(feedback.message):</label>
+</div>
+<div class="drow">
 	<textarea name="message" class="dcell" id="feedbackmsg" title="$tl(feedback.enter.message)"></textarea>
 </div>
 <div class="drow">
 	<label class="dcell" for="feedback_take_screenshot">$tl(feedback.screenshot):</label>
+</div>
+<div class="drow">	
 	<div class="dcell">
-		<input id="feedback_take_screenshot" type="button" value="$tl(feedback.screenshot.take)"/>
+		<input id="feedback_take_screenshot" type="button" value="$tl(feedback.screenshot.take)" title="$tl(feedback.screenshot.take)"/>
 		<input id="feedback_screenshot_img" type="hidden" name="screenshot" value=""/>
 		<a id="feedback_screenshot_preview_link" href="#" target="_blank" tabindex="-1"><img id="feedback_screenshot_preview" title="$tl(feedback.screenshot.preview)" alt="$tl(feedback.screenshot.preview)" data-src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"/></a>
-		<input id="feedback_screenshot_reset" type="button" value="$tl(feedback.screenshot.reset)"/>
+		<input id="feedback_screenshot_reset" type="button" value="$tl(feedback.screenshot.reset)" title="$tl(feedback.screenshot.reset)"/>
 	</div>
 </div>
 <!--IF($emailallowed)-->
 <div class="drow">
 	<label class="dcell" for="feedbackemail">$tl(feedback.email):</label>
+</div>
+<div class="drow">
 	<input class="dcell" id="feedbackemail" type="email" name="email" value="$email" title="$tl(feedback.enter.email)"/>
 </div>
 <!--ENDIF-->
 <div class="drow">
-	<div class="dcell"><input type="button" id="feedback_cancel" name="feedbackcancel" value="$tl(cancel)" title="$tl(cancel)"></div>
-	<div class="dcellr"><input type="button" id="feedback_submit" name="feedbacksubmit" value="$tl(feedback.submit)" title="$tl(feedback.submit)"></div>
+	<div class="dcell">
+		<input type="button" id="feedback_cancel" name="feedbackcancel" value="$tl(cancel)" title="$tl(cancel)">
+		<input type="button" id="feedback_submit" name="feedbacksubmit" value="$tl(feedback.submit)" title="$tl(feedback.submit)" class="right">
+	</div>
 </div>
 </form>
 <div id="feedbackcontact" title="$tl(feedback)">
