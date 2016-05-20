@@ -153,9 +153,11 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <td><a class="screenshot" href="images/webdavcgi-webinterface-feedback.png"><img alt="Web interface Feedback" class="screenshot" src="images/webdavcgi-webinterface-feedback.png"/></a></td>
 <td><pre>
 # SETUP:
-# contact - recipient address (default: d.rohde@cms.hu-berlin.de)
+# contact - TO recipient address[es] (default: d.rohde@cms.hu-berlin.de)
+# contact_cc - CC recipient address[es] (default: undef)
+# contact_bcc - BCC recipient address[es] (default: undef)
 # emailallowed - enables email field in feedback form (default: 0 [disabled])
-# domain - mail domain for from address
+# domain - mail domain for 'from' address (only used if a REMOTE_USER doesn't contain a domain)
 # subject - email subject (default: "WebDAV CGI")
 # clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
 # mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
