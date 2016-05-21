@@ -1,6 +1,10 @@
 <div id="feedbackdialog" title="$tl(feedback)">
 <script type="text/javascript" src="${VHTDOCS}_EXTENSION(Feedback)_/htdocs/contrib/html2canvas.min.js"></script>
-
+<audio class="feedback-shutter" preload="none">
+	<source src="${VHTDOCS}_EXTENSION(Feedback)_/htdocs/audio/shutter.ogg">
+	<source src="${VHTDOCS}_EXTENSION(Feedback)_/htdocs/audio/shutter.mp3">
+	<source src="${VHTDOCS}_EXTENSION(Feedback)_/htdocs/audio/shutter.wav">
+</audio>
 <form action="#" method="post" class="dtable" id="feedbackform">
 <input type="hidden" name="action" value="feedback"/>
 <div class="drow">
