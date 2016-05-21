@@ -23,7 +23,7 @@
 # emailallowed - enables email field in feedback form (default: 0 [disabled])
 # domain - mail domain for 'from' address (only used if a REMOTE_USER doesn't contain a domain)
 # subject - email subject (default: "WebDAV CGI")
-# body - email body (default: "\n\n%s\n" [%s will be replaced by client info data])
+# body - email body (default: "\$msg\n\n%s\n" [%s - client info data, \$msg - message])
 # clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
 # mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
 # timeout - mailrelay timeout in seconds (default: 2)
@@ -253,7 +253,8 @@ sub handle_hook_gethandler {
                         $self->{cgi}
                           ->escape( $self->config( 'subject', 'WebDAV CGI' ) ),
                         $self->{cgi}->escape(
-                            sprintf $self->config( 'body', "\n\n%s\n" ),
+                            sprintf $self->config( 'body', "\$msg\n\n%s\n" )
+                            ,
                             $self->config( 'clientinfo', 1 )
                             ? $self->_get_clientinfo()
                             : q{}
