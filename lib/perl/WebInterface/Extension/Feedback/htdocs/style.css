@@ -73,3 +73,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .feedback-wait.flash {
 	background-color: white;
 }
+.feedback-button {
+	position: fixed;
+	bottom: 100px;
+	right:-85px;
+	transform: rotate(90deg);
+	transform-origin: left top 0;
+	padding: 2px 4px 2px 20px;
+	background-color: #ffcccc;
+	z-index: 999999;
+	cursor: pointer;
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-color: rgb(211,211,211); 
+}
+.feedback-button.disabled  {
+	display: none;
+}

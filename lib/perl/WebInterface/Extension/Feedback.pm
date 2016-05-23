@@ -51,7 +51,8 @@ sub init {
         return;
     }
     my @hooks =
-      qw( css locales javascript gethandler posthandler fileactionpopup pref );
+      qw( css locales javascript gethandler posthandler 
+          fileactionpopup pref body );
     $hookreg->register( \@hooks, $self );
     $self->{sizelimit} = $self->config( 'sizelimit', 20_971_520 );
     return;
@@ -81,7 +82,10 @@ sub handle_hook_pref {
         )
     );
 }
-
+sub handle_hook_body {
+    my ($self) = @_;
+    return $self->{cgi}->div( { class=>'feedback-button action feedback' }, $self->tl('feedback') );
+}
 sub _get_email {
     my ($self) = @_;
     my $email =
