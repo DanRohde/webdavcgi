@@ -84,7 +84,7 @@ sub handle_hook_pref {
 }
 sub handle_hook_body {
     my ($self) = @_;
-    return $self->{cgi}->div( { class=>'feedback-button action feedback' }, $self->tl('feedback') );
+    return $self->{cgi}->div( { class=>'feedback-button action feedback', accesskey=>'f', title=>$self->tl('feedback'), aria_label=>$self->tl('feedback'), tabindex=>0 }, $self->tl('feedback') );
 }
 sub _get_email {
     my ($self) = @_;
