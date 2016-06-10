@@ -38,7 +38,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use DefaultConfig
-  qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_URI $HTTP_HOST);
+    qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_URI $HTTP_HOST);
 use HTTPHelper qw( print_header_and_content );
 
 use vars qw( $ACTION );
@@ -50,9 +50,8 @@ sub init {
     if ( !$self->config('contact') ) {
         return;
     }
-    my @hooks =
-      qw( css locales javascript gethandler posthandler 
-          fileactionpopup pref body );
+    my @hooks = qw( css locales javascript gethandler posthandler
+        fileactionpopup pref body );
     $hookreg->register( \@hooks, $self );
     $self->{sizelimit} = $self->config( 'sizelimit', 20_971_520 );
     return;
@@ -72,8 +71,7 @@ sub handle_hook_pref {
     my ( $self, $config, $params ) = @_;
     return $self->{cgi}->li(
         $self->{cgi}->a(
-            {
-                -href       => q{#},
+            {   -href       => q{#},
                 -class      => 'action ' . $ACTION,
                 -title      => $self->tl('feedback'),
                 -aria_label => $self->tl('feedback')
@@ -82,21 +80,32 @@ sub handle_hook_pref {
         )
     );
 }
+
 sub handle_hook_body {
     my ($self) = @_;
-    return $self->{cgi}->div( { class=>'feedback-button action feedback', accesskey=>'f', title=>$self->tl('feedback'), aria_label=>$self->tl('feedback'), tabindex=>0 }, $self->tl('feedback') );
+    return $self->{cgi}->div(
+        {   class      => 'feedback-button action feedback',
+            accesskey  => 'f',
+            title      => $self->tl('feedback'),
+            aria_label => $self->tl('feedback'),
+            tabindex   => 0
+        },
+        $self->tl('feedback')
+    );
 }
+
 sub _get_email {
     my ($self) = @_;
-    my $email =
-        $self->config( 'emailallowed', 0 )
-      ? $self->{cgi}->param('email')
-      : undef;
+    my $email
+        = $self->config( 'emailallowed', 0 )
+        ? $self->{cgi}->param('email')
+        : undef;
     $email //=
-        $REMOTE_USER =~ /\@/xms ? $REMOTE_USER
-      : $self->config('domain') ? $REMOTE_USER . q{@} . $self->config('domain')
-      : $HTTP_HOST =~ /([^.]+[.][^.]+$)/xms ? "$REMOTE_USER\@$1"
-      :                                       $REMOTE_USER;
+          $REMOTE_USER =~ /\@/xms ? $REMOTE_USER
+        : $self->config('domain')
+        ? $REMOTE_USER . q{@} . $self->config('domain')
+        : $HTTP_HOST =~ /([^.]+[.][^.]+$)/xms ? "$REMOTE_USER\@$1"
+        :                                       $REMOTE_USER;
     $email =~ s/[\r\n]//xmsg;
     return $email;
 }
@@ -104,13 +113,13 @@ sub _get_email {
 sub _get_clientinfo {
     my ($self) = @_;
     return sprintf
-      "User: %s\nURI: %s\nUser Agent: %s\nIP: %s\nCookies: %s\n",
-      $REMOTE_USER,
-      "https://${HTTP_HOST}${REQUEST_URI}",
-      $ENV{HTTP_USER_AGENT},
-      $ENV{REMOTE_ADDR},
-      join ', ',
-      map { $_ . q{=} . $self->{cgi}->cookie($_) } $self->{cgi}->cookie();
+        "User: %s\nURI: %s\nUser Agent: %s\nIP: %s\nCookies: %s\n",
+        $REMOTE_USER,
+        "https://${HTTP_HOST}${REQUEST_URI}",
+        $ENV{HTTP_USER_AGENT},
+        $ENV{REMOTE_ADDR},
+        join ', ',
+        map { $_ . q{=} . $self->{cgi}->cookie($_) } $self->{cgi}->cookie();
 }
 
 sub _check_data_size {
@@ -118,26 +127,26 @@ sub _check_data_size {
     if ( $self->{sizelimit} <= 0 ) { return 1; }
     my $size = 0;
     $size +=
-      $self->{cgi}->param('message')
-      ? length $self->{cgi}->param('message')
-      : 0;
+        $self->{cgi}->param('message')
+        ? length $self->{cgi}->param('message')
+        : 0;
     $size +=
-      $self->{cgi}->param('screenshot')
-      ? length $self->{cgi}->param('screenshot')
-      : 0;
+        $self->{cgi}->param('screenshot')
+        ? length $self->{cgi}->param('screenshot')
+        : 0;
     $size +=
-      $self->config( 'clientinfo', 1 )
-      ? length $self->_get_clientinfo()
-      : 0;
+        $self->config( 'clientinfo', 1 )
+        ? length $self->_get_clientinfo()
+        : 0;
     return $size <= $self->{sizelimit};
 }
 
 sub _get_recipients {
     my ( $self, $email ) = @_;
     return
-      defined $email && ref \$email eq 'SCALAR'
-      ? [ split /,\s*/xms, $email ]
-      : $email;
+        defined $email && ref \$email eq 'SCALAR'
+        ? [ split /,\s*/xms, $email ]
+        : $email;
 }
 
 sub _send_feedback {
@@ -199,7 +208,7 @@ sub _send_feedback {
             Disposition => 'attachment',
             Encoding    => 'base64',
             Filename    => 'screenshot.'
-              . ( $type =~ m{^image/(gif|png)$}xms ? $1 : 'png' ),
+                . ( $type =~ m{^image/(gif|png)$}xms ? $1 : 'png' ),
         );
     }
 
@@ -218,7 +227,7 @@ sub handle_hook_posthandler {
         my %resp;
         if ( !$self->_check_data_size() ) {
             $resp{error} = sprintf $self->tl('feedback.sizelimit.exceeded'),
-              $self->render_byte_val( $self->{sizelimit} );
+                $self->render_byte_val( $self->{sizelimit} );
         }
         elsif ( $self->{cgi}->param('message') =~ m{^/s*$}xms ) {
             $resp{error}    = $self->tl('feedback.missing.message');
@@ -229,7 +238,7 @@ sub handle_hook_posthandler {
         }
         else {
             $resp{error} = sprintf $self->tl('feedback.error'),
-              $self->config('contact');
+                $self->config('contact');
         }
         require JSON;
         print_header_and_content( '200 OK', 'application/json',
@@ -250,19 +259,18 @@ sub handle_hook_gethandler {
                 $PATH_TRANSLATED,
                 $REQUEST_URI,
                 $self->read_template('feedbackform'),
-                {
-                    feedback_contact => sprintf(
+                {   feedback_contact => sprintf(
                         $self->tl('feedback.contact'),
                         $self->{cgi}->escape( $self->config('contact') ),
-                        $self->{cgi}
-                          ->escape( $self->config( 'subject', 'WebDAV CGI' ) ),
                         $self->{cgi}->escape(
-                            sprintf $self->config( 'body', "\$msg\n\n%s\n" )
-                            ,
+                            $self->config( 'subject', 'WebDAV CGI' )
+                        ),
+                        $self->{cgi}->escape(
+                            sprintf $self->config( 'body', "\$msg\n\n%s\n" ),
                             $self->config( 'clientinfo', 1 )
                             ? $self->_get_clientinfo()
                             : q{}
-                          )
+                            )
 
                     ),
                     feedback_error => sprintf(

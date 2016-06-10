@@ -27,7 +27,7 @@ use Module::Load;
 use CGI::Carp;
 use English qw( -no_match_vars );
 
-use DefaultConfig qw( @EXTENSIONS $CONFIG );
+use DefaultConfig qw( @EXTENSIONS $CONFIG %EXTENSION_CONFIG );
 
 sub new {
     my ($class) = @_;
@@ -35,12 +35,13 @@ sub new {
     bless $self, $class;
     return $self->init();
 }
+
 sub free {
     my ($self) = @_;
     delete $self->{config};
-    foreach my $hook ( keys %{$self->{hooks}}) {
-        foreach my $handler ( @{$self->{hook}->{$hook}}) {
-            if ($handler->can('free')) {
+    foreach my $hook ( keys %{ $self->{hooks} } ) {
+        foreach my $handler ( @{ $self->{hook}->{$hook} } ) {
+            if ( $handler->can('free') ) {
                 $handler->free();
             }
         }
@@ -48,10 +49,16 @@ sub free {
     delete $self->{hooks};
     return $self;
 }
+
 sub init {
     my ($self) = @_;
     $self->{config} = $CONFIG;
     foreach my $extname (@EXTENSIONS) {
+        if ( defined $EXTENSION_CONFIG{$extname}
+            && $EXTENSION_CONFIG{$extname}{dontregister} )
+        {
+            next;
+        }
         load "WebInterface::Extension::$extname";
         "WebInterface::Extension::$extname"->new( $self, $extname );
     }

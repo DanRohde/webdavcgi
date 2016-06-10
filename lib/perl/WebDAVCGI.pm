@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.1BETA20160524.3';
+$RELEASE = '1.1.1BETA20160610.1';
 
 use vars qw( $_METHODS_RX );
 
@@ -151,7 +151,7 @@ sub init {
 sub handle_request {
     my ($self) = @_;
 
-    # protect against direct CGI script call:
+    # protection against direct CGI script calls:
     if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
         carp('FORBIDDEN DIRECT CALL!');
         return print_header_and_content('404 Not Found');

@@ -17,6 +17,7 @@
      - added new settings hooks for settings dialog
      - added Feedback extension
      - added SaveSettings extension
+     - added feature 'dontregister' for all extensions
      - disabled CalDAV, CalDAV Schedule, CardDAV, GroupDAV, ACL, BIND, SEARCH support by default
      - improved Diff extension dialog layout
      - improved performance

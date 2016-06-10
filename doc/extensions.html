@@ -32,7 +32,12 @@
 $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 </pre>
 </li>
-<li>You can use some lists for easier upgrades: <code>@EXTENSIONS=(@DEFAULT_EXTENSIONS,@EXTRA_EXTENSIONS,@AFS_EXTENSIONS,@PUB_EXTENSIONS,@DEV_EXTENSIONS)</code></li>
+<li>You can use some lists for easier upgrades: 
+<pre>
+@EXTENSIONS=(@DEFAULT_EXTENSIONS,@EXTRA_EXTENSIONS,
+             @AFS_EXTENSIONS,@PUB_EXTENSIONS,@DEV_EXTENSIONS)
+</pre></li>
+<li>If an extension is to be disabled, you can set the option 'dontregister', for example: <pre>$EXTENSION_CONFIG{DiskUsage}{dontregister}=1;</pre></li>
 </ul>
 <h2>Supported Extensions</h2>
 <ul>
