@@ -243,6 +243,7 @@ sub _render_search_result {
         : ( $file =~ /[.]([\w?]+)$/xmsi ? lc($1) : 'unknown' )
       );
     my $category = $self->get_category_class($suffix);
+    my $has_thumb = $self->can_create_thumb($full) && ($self->{cgi}->cookie('settings.enable.thumbnails') // q{}) ne 'no';
     return $self->render_template(
         $PATH_TRANSLATED,
         $REQUEST_URI,
@@ -256,12 +257,10 @@ sub _render_search_result {
             dirname =>
               $self->{cgi}->escapeHTML( $self->{backend}->dirname($uri) ),
             iconurl => $self->{backend}->isDir($full) ? $self->get_icon($mime)
-            : $self->can_create_thumb($full)
-              && ( $self->{cgi}->cookie('settings.enable.thumbnails') // q{} )
-              ne 'no' ? $self->{cgi}->escapeHTML($uri) . '?action=thumb'
+            : $has_thumb ? $self->{cgi}->escapeHTML($uri) . '?action=thumb'
             : $self->get_icon($mime),
             iconclass => "icon $category suffix-$suffix "
-              . ( $self->can_create_thumb($full) ? 'thumbnail' : q{} ),
+              . ( $has_thumb ? 'thumbnail' : q{} ),
             mime         => $self->{cgi}->escapeHTML($mime),
             type         => $mime eq '<folder>' ? 'folder' : 'file',
             parentfolder => $self->{cgi}
