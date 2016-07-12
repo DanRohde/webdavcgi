@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: center center;
 	background-color: transparent;
 	outline: none;
+    padding: 1px;
 }
 .quicktoggle:focus {
 	outline: none;
@@ -53,6 +54,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .quicktoggle.bars.off {
 	background-image: url(bars-off.png);
+}
+.quicktoggle:hover, .quicktoggle.focus {
+    background-repeat: no-repeat;
 }
 .quicktoggle.fullscreen:hover, .quicktoggle.fullscreen:focus {
 	background-image: url(fullscreen-on-hover.png);

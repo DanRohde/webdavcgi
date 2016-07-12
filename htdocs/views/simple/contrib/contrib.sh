@@ -1,6 +1,6 @@
 #!/bin/bash
 #set -e
-JS="jquery.js jquery-ui.js jquery.fileupload.js jquery.fancybox.js jquery.fancybox-thumbs.js jquery.fancybox-buttons.js js.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js jquery.hoverIntent.js"
+JS="jquery.js jquery-migrate.js jquery-ui.js jquery.fileupload.js jquery.fancybox.js jquery.fancybox-thumbs.js jquery.fancybox-buttons.js js.cookie.js multidraggable.js jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js jquery.hoverIntent.js"
 
 CSS="jquery-ui.css jquery.fancybox.css jquery.fancybox-thumbs.css jquery.fancybox-buttons.css"
 

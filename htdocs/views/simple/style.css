@@ -377,8 +377,8 @@ tr.isreadable-no:hover {
 	visibility: hidden;
 }
 .listaction {
-	padding-left: 1em;
-	padding-right: 0em;
+	padding-left: 22px;
+	padding-right: 6px;
 }
 #selstats { 
 	padding-right: 1em;
@@ -393,6 +393,7 @@ tr.isreadable-no:hover {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: left -220px;
+    padding-left: 22px;
 	color: black;
 }
 .action.delete:hover, .listaction.delete:hover,
@@ -932,10 +933,14 @@ img {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: left -536px;
-	padding-left: 8px;
+	padding-left: 22px;
 }
 .action.upload:hover, .action.upload:focus {
 	background-image: url(images/sprite-hover.png);
+}
+.uploaddialog.ui-dialog .ui-dialog-title {
+    background: url(images/sprite.png) no-repeat 0px -540px;
+    padding-left: 22px;
 }
 .logout-button {
 	padding-left: 22px;
@@ -1506,7 +1511,10 @@ img {
 :focus {
 	outline: black solid 1px;
 }
-.ui-state-default {
+.ui-widget button:focus, .ui-widget.ui-widget-content:focus {
+    outline: none;
+}
+.ui-state-default, .ui-button {
 	background-color: transparent;
 }
 .ui-state-hover {

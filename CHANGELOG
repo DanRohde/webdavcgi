@@ -25,6 +25,7 @@
      - refactored Perl code for request handling, web interface
      - reformatted Perl code with tidy
      - fixed memory leaks
+     - updated JS libraries (JQuery, JQuery-UI)
      
 1.1.0: 2015/9/9
      - fixed wrong date format in getlastmodified property using mod_perl/Speedy CGI bug

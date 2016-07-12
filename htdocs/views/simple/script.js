@@ -15,7 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 var ToolBox = new Object();
-$(document).ready(function() {
+/*$(document).ready(function() {*/
+$(function() {
 	initPlugins();
 	
 	initUIEffects();
@@ -415,7 +416,7 @@ function initAutoRefresh() {
 	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
 	
 	$("#autorefreshtimer").draggable({ stop: function(e,ui) { cookie("autorefreshtimerpos", JSON.stringify(fixElementPosition("#autorefreshtimer",ui.offset))); }});	
-	if (cookie("autorefreshtimerpos")) fixElementPosition("#autorefreshtimer",$.parseJSON(cookie("autorefreshtimerpos")));
+	if (cookie("autorefreshtimerpos")) fixElementPosition("#autorefreshtimer",JSON.parse(cookie("autorefreshtimerpos")));
 }
 function fixElementPosition(id, position) {
 	var e = $(id);
@@ -487,7 +488,7 @@ function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
 	
 	$("#flt").on("fileListChanged", function() {
-		$(".dropdown-hover").off("hover focus keyup").hover(
+		$(".dropdown-hover").off("mouseenter focus keyup").hover(
 			function() {
 				$(".dropdown-menu",$(this)).show();
 			},
@@ -889,7 +890,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				});
 				uploadState.transports = [];
 			}});
-			$('#progress').dialog({ modal:true, title: dialogtitle, height: 370 , width: 500, buttons: buttons, beforeClose: function() { return false;} });
+			$('#progress').dialog({ modal:true, title: dialogtitle, height: 370 , width: 500, buttons: buttons, dialogClass: "uploaddialog", beforeClose: function() { return false;} });
 			$('#progress').show().each(function() {
 				$(this).find('.bar').css('width','0%').html('0%');
 				$(this).find('.info').html('');
@@ -927,11 +928,11 @@ function initFileUpload() {
 		$("#file-upload-form input[type=file]").trigger('click'); 
 	});
 	
-	$(document).bind('dragenter', function (e) {
+	$(document).on('dragenter', function (e) {
 		$("#fileList").addClass('draghover');
-	}).bind('dragleave', function(e) {
+	}).on('dragleave', function(e) {
 		$("#fileList").removeClass('draghover');
-	}).bind('drop', function(e) {
+	}).on('drop', function(e) {
 		$("#fileList").removeClass('hover');
 	});
 
@@ -1375,7 +1376,7 @@ function notify(type,msg) {
 	$("body").trigger("notify",{type:type,msg:msg});
 // var notification = $("#notification");
 // notification.removeClass().hide();
-// notification.unbind('click').click(function() { $(this).hide().removeClass();
+// notification.off('click').click(function() { $(this).hide().removeClass();
 // }).addClass(type).html('<span>'+simpleEscape(msg)+'</span>').show();
 	// .fadeOut(30000,function() { $(this).removeClass(type).html("");});
 }
@@ -1500,10 +1501,10 @@ function updateFileListCounters() {
 function getFolderStatistics() {
 	var stats = new Array();
 
-	stats["dircounter"] =  $("#fileList tr[data-mime='<folder>']:visible").length;
+	stats["dircounter"] =  $("#fileList tr[data-mime='&lt;folder&gt;']:visible").length;
 	stats["filecounter"] = $("#fileList tr[data-type!='dir']:visible").length;
 	stats["sumcounter"] = stats["dircounter"]+stats["filecounter"];
-	stats["dirselcounter"] = $("#fileList tr.selected[data-mime='<folder>']:visible").length;
+	stats["dirselcounter"] = $("#fileList tr.selected[data-mime='&lt;folder&gt;']:visible").length;
 	stats["fileselcounter"] = $("#fileList tr.selected[data-type!='dir']:visible").length;
 	stats["sumselcounter"] = stats["dirselcounter"]+stats["fileselcounter"];
 
@@ -2100,7 +2101,7 @@ function initThumbnailSwitch() {
 	});
 	$("#flt").on("fileListChanged", function() {
 		// fix broken thumbnails bug
-		$("#flt img.icon.thumbnail").error(function(){ 
+		$("#flt img.icon.thumbnail").on("error", function(){ 
 			var self=$(this);
 			var icon = self.data("icon");
 			self.removeClass("thumbnail").attr("src", icon !='' ? icon : $("#emptyimage").attr("src"));
