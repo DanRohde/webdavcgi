@@ -4,14 +4,48 @@
 <script src="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/contrib/ckeditor/adapters/jquery.js"></script>
 <script>
 $(document).ready(function() {
+    $(".textdata").ckeditor({ fullPage : true, language: '$LANG', removePlugins: 'save', baseFloatZIndex: 10000 });
 	$(".textdata")
 		.on("editstart", function() {
-			$(".textdata").ckeditor({ fullPage : true, language: '$LANG', removePlugins: 'save', baseFloatZIndex: 10000 });
+			//$(".textdata").ckeditor({ fullPage : true, language: '$LANG', removePlugins: 'save', baseFloatZIndex: 10000 });
 		}).on("editsubmit", function() {
 			for (var name in CKEDITOR.instances) CKEDITOR.instances[name].updateElement();
 		}).on("editdone", function() {
 			for (var name in CKEDITOR.instances) CKEDITOR.instances[name].destroy();
 		});
+});
+</script>
+<!--ENDIF-->
+<!--IF( "$filename" =~ /[.](?:md|markdown)$/xmsi )-->
+<link rel="stylesheet" type="text/css" href="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/markdown/style.css">
+<link rel="stylesheet" type="text/css" href="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/markdown/images/buttons.css">
+<script src="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/markdown/script.js"></script>
+<script>
+$(".textdata").markdownEditor({
+	locale : {
+		heading : "$tl(editor.heading)",
+		bold: "$tl(editor.bold)",
+		italic: "$tl(editor.italic)",
+		ol : "$tl(editor.ol)",
+        ul : "$tl(editor.ul)",
+        code: "$tl(editor.code)",
+        codeblock : "$tl(editor.codeblock)",
+        quote: "$tl(editor.quote)",
+        link : "$tl(editor.link)",
+        image : "$tl(editor.image)",
+        preview : "$tl(editor.preview)",
+        fullscreen: "$tl(editor.fullscreen)",
+        br: "$tl(editor.br)",
+        p: "$tl(editor.p)",
+        hr : "$tl(editor.hr)",
+        split: "$tl(editor.split)",
+        url : "$tl(editor.url)",
+        imagesrc : "$tl(editor.imagesrc)",
+        linktext : "$tl(editor.linktext)",
+        alttext : "$tl(editor.alttext)",
+        title : "$tl(editor.title)",
+        strikethrough : "$tl(editor.strikethrough)"
+	},
 });
 </script>
 <!--ENDIF-->

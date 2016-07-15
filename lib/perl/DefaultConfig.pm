@@ -120,7 +120,7 @@ sub init_defaults {
 unknown unknown
 folder  folder
 folderup folderup
-text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs
+text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs md markdown
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv
 image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf

@@ -28,9 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	outline: none;
     padding: 1px;
 }
-.quicktoggle:focus {
-	outline: none;
-}
 .quicktoggle.fullscreen {
 	background-image: url(fullscreen-on.png);
 }
@@ -92,17 +89,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(quicktoggle-hover.png);
 }
 .sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover,
-.sidebar-iconsonly #nav .action.quicktoggle-button:focus .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:focus
+.sidebar-iconsonly #nav .action.quicktoggle-button:focus .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:focus, 
+.sidebar-iconsonly .quicktoggles.show-toggles 
  {
-	width: auto;
 	position:fixed;
 	display: block;
-	overflow: visible;
 	background-color: #ddd;
-	left: 24px;
-	text-align: center;
 	box-shadow: 0 -3px 7px #000;
-	padding-left: 1px;
+    left: 24px;
 }
 .filterbox .quicktoggles {
 	width: 24px;

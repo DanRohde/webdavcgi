@@ -1,0 +1,137 @@
+/*********************************************************************
+(C) ZE CMS, Humboldt-Universitaet zu Berlin
+Written 2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+.markdown-editor {
+    height: 100%;
+}
+.markdown-editor.fullscreen {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	z-index: 1;
+}
+.markdown-textarea {
+    display: inline-block;
+    width: 98%;
+    vertical-align: top;
+    height: 100%;
+    padding: 0;
+    font-family: monospace;
+}
+ .ui-widget textarea.markdown-textarea {
+    font-family: monospace;
+ }
+.split .markdown-textarea {
+	width: 47%;
+}
+.markdown-preview {
+    display: none;
+    width: 98%;
+    vertical-align: top;
+    padding: 0;
+    overflow: scroll;
+    height: 100%;
+    padding-left: 1ex;
+    border: 2px solid #eee;
+    border-radius: 8px;
+}
+.markdown-preview.display {
+	display: inline-block;
+}
+.split .markdown-preview {
+	width: 45%;
+}
+.markdown-toolbar {
+    display: block;
+    width: 100%;
+    clear: both;
+    height: 20px;
+    padding: 2px 0px 2px 0px;
+    margin: 5px 0px 5px 0px;
+}
+.markdown-bold {
+    font-weight: bold;
+}
+.markdown-italic {
+    font-style: italic;
+}
+.markdown-quote {
+    border-left: 1ex solid #eee;
+    padding-left: 2ex;
+}
+.markdown-code {
+    font-family: monospace;
+    border: 1px solid #eee;
+    padding: 2px;
+    white-space: pre;
+}
+.markdown-codeblock {
+    font-family: monospace;
+    margin-left: 2ex;
+    border: 1px solid #eee;
+    white-space: pre;
+}
+.markdown-link {
+    font-style: italic;
+    text-decoration: underline;
+}
+.markdown-strikethrough {
+    text-decoration: line-through;
+}
+.markdown-image {
+    display: inline-block;
+    vertical-align: middle;
+}
+.markdown-paragraph {
+    display: block;
+    height: 1.25em;
+}
+.markdown-ul {
+    list-style-type: square;
+}
+ul .markdown-ul, ol .markdown-ul  {
+    list-style-type: circle;
+}
+.markdown-toolbar-button, .markdown-toolbar-sep {
+	display: inline-block;
+	width: 22px;
+	height: 22px;
+	border: 1px dotted #aaa;
+	padding: 0;
+	margin: 1px;
+}
+
+.markdown-toolbar-sep {
+	border: 0;
+}
+.markdown-toolbar-button:focus, .markdown-toolbar-button:hover {
+	background-color: #eee;
+	border: 1px outset #999;
+}
+.markdown-toolbar-button.clicked {
+	border: 1px inset #ddd;
+}
+.markdown-toolbar-button.disabled,
+.markdown-toolbar-button.disabled:hover,
+.markdown-toolbar-button.disabled:focus,
+.markdown-toolbar-button.disabled.clicked {
+    border: 1px solid white;
+    opacity: 0.5;
+    filter: Alpha(opacity: 50);
+}
