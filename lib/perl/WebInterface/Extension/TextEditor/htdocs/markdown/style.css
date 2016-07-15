@@ -80,12 +80,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     border: 1px solid #eee;
     padding: 2px;
     white-space: pre;
+    color: #6e0000;
 }
 .markdown-codeblock {
     font-family: monospace;
     margin-left: 2ex;
-    border: 1px solid #eee;
+    border-width: 0px 1px 0px 1px;
+    border-style: solid;
+    border-color: #eee;
     white-space: pre;
+    color: #6e0000;
 }
 .markdown-link {
     font-style: italic;
