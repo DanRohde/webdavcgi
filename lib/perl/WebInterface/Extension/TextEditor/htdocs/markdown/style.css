@@ -85,8 +85,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     font-style: italic;
 }
 .markdown-quote {
-    border-left: 1ex solid #eee;
-    padding-left: 2ex;
+    border-left: 0.5ex solid #ddd;
+    padding: 2px 2px 4px 4px;
 }
 .markdown-code {
     font-family: monospace;
