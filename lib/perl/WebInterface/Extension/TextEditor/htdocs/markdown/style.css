@@ -15,8 +15,33 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 .markdown-editor {
-    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
+.markdown-editorpane {
+	display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 300px;
+}
+.markdown-preview, .markdown-textarea {
+	flex-grow: 1;
+    flex-basis: auto;
+    justify-content: flex-start;
+    align-content: flex-start;
+    width: 98%;
+    height: auto;
+}
+.split .markdown-textarea, .split .markdown-preview { 
+    width: 45%;
+}
+.fullscreen .markdown-editorpane {
+	height: 100%;
+}
+.markdown-preview.display {
+    display: inline-block;
+}
+
 .markdown-editor.fullscreen {
 	position: fixed;
 	top: 0;
@@ -27,38 +52,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	z-index: 1;
 }
 .markdown-textarea {
-    display: inline-block;
-    width: 98%;
-    vertical-align: top;
-    height: 100%;
+	display: inline-block;
     padding: 0;
     font-family: monospace;
+    resize: none;
 }
  .ui-widget textarea.markdown-textarea {
     font-family: monospace;
  }
-.split .markdown-textarea {
-	width: 47%;
-}
 .markdown-preview {
-    display: none;
-    width: 98%;
-    vertical-align: top;
+	display: none;
     padding: 0;
     overflow: scroll;
-    height: 100%;
     padding-left: 1ex;
     border: 2px solid #eee;
     border-radius: 8px;
 }
-.markdown-preview.display {
-	display: inline-block;
-}
-.split .markdown-preview {
-	width: 45%;
-}
 .markdown-toolbar {
-    display: block;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     width: 100%;
     clear: both;
     height: 20px;
@@ -112,17 +125,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ul .markdown-ul, ol .markdown-ul  {
     list-style-type: circle;
 }
-.markdown-toolbar-button, .markdown-toolbar-sep {
+.markdown-toolbar-button, .markdown-toolbar-sep, .markdown-toolbar-sepflex {
 	display: inline-block;
 	width: 22px;
 	height: 22px;
 	border: 1px dotted #aaa;
 	padding: 0;
 	margin: 1px;
+	flex-grow: 0;
+	flex-shrink: 0;
 }
-
-.markdown-toolbar-sep {
+.markdown-toolbar-sep, .markdown-toolbar-sepflex {
 	border: 0;
+	width: 11px;
+}
+.markdown-toolbar-sepflex {
+	flex-grow: 2;
+	flex-shring: 2;
 }
 .markdown-toolbar-button:focus, .markdown-toolbar-button:hover {
 	background-color: #eee;
