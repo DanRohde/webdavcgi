@@ -35,14 +35,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .split .markdown-textarea, .split .markdown-preview { 
     width: 45%;
 }
-.fullscreen .markdown-editorpane {
-    height: 90%;
+.fullscreen .markdown-editor, .fullscreen .markdown-editorpane {
+    height: 95%;
 }
 .markdown-preview.display {
     display: inline-block;
 }
 
-.markdown-editor.fullscreen {
+.fullscreen {
+    display: block;
     position: fixed;
     top: 0;
     left: 0;
@@ -201,4 +202,10 @@ ul > li.markdown-hiddenitem {
 #markdown-editor-scroll-to-me {
     border: 1px solid black;
     margin-left: 2px;
+}
+.fullscreen .markdown-toolbar-fullscreen {
+    background-color: #eee;
+}
+.fullscreen .markdown-toolbar-fullscreen:hover {
+    background-color: #ddd;
 }

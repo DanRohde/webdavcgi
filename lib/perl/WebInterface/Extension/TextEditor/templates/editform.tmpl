@@ -5,14 +5,14 @@
 <script>
 $(document).ready(function() {
     $(".textdata").ckeditor({ fullPage : true, language: '$LANG', removePlugins: 'save', baseFloatZIndex: 10000 });
-	$(".textdata")
-		.on("editstart", function() {
-			//$(".textdata").ckeditor({ fullPage : true, language: '$LANG', removePlugins: 'save', baseFloatZIndex: 10000 });
-		}).on("editsubmit", function() {
-			for (var name in CKEDITOR.instances) CKEDITOR.instances[name].updateElement();
-		}).on("editdone", function() {
-			for (var name in CKEDITOR.instances) CKEDITOR.instances[name].destroy();
-		});
+    $(".textdata")
+        .on("editstart", function() {
+            //$(".textdata").ckeditor({ fullPage : true, language: '$LANG', removePlugins: 'save', baseFloatZIndex: 10000 });
+        }).on("editsubmit", function() {
+            for (var name in CKEDITOR.instances) CKEDITOR.instances[name].updateElement();
+        }).on("editdone", function() {
+            for (var name in CKEDITOR.instances) CKEDITOR.instances[name].destroy();
+        });
 });
 </script>
 <!--ENDIF-->
@@ -22,11 +22,12 @@ $(document).ready(function() {
 <script src="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/markdown/script.js"></script>
 <script>
 $(".textdata").markdownEditor({
-	locale : {
-		heading : "$tl(editor.heading)",
-		bold: "$tl(editor.bold)",
-		italic: "$tl(editor.italic)",
-		ol : "$tl(editor.ol)",
+    fullscreenElement : "#edittextdataform",
+    locale : {
+        heading : "$tl(editor.heading)",
+        bold: "$tl(editor.bold)",
+        italic: "$tl(editor.italic)",
+        ol : "$tl(editor.ol)",
         ul : "$tl(editor.ul)",
         code: "$tl(editor.code)",
         codeblock : "$tl(editor.codeblock)",
@@ -45,17 +46,17 @@ $(".textdata").markdownEditor({
         alttext : "$tl(editor.alttext)",
         title : "$tl(editor.title)",
         strikethrough : "$tl(editor.strikethrough)"
-	},
+    },
 });
 </script>
 <!--ENDIF-->
-	<form id="edittextdataform" method="post" action="#">
-		<textarea class="textdata" name="textdata" rows="15" cols="70" data-file="$filename">$textdata</textarea>
-		<div><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div>
-	</form>
-	<div class="template">
-		<div id="canceledit">$tl(canceledit)</div>
-		<div id="confirmsavetextdata">$tl(confirmsavetextdata)</div>
-		<div id="beforeunload">$tl(beforeunload)</div>
-	</div>
+    <form id="edittextdataform" method="post" action="#">
+        <textarea class="textdata" name="textdata" rows="15" cols="70" data-file="$filename">$textdata</textarea>
+        <div><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div>
+    </form>
+    <div class="template">
+        <div id="canceledit">$tl(canceledit)</div>
+        <div id="confirmsavetextdata">$tl(confirmsavetextdata)</div>
+        <div id="beforeunload">$tl(beforeunload)</div>
+    </div>
 </div>
