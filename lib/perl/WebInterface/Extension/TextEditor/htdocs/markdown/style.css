@@ -71,10 +71,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .markdown-toolbar {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     width: 100%;
     clear: both;
-    height: 20px;
     padding: 2px 0px 2px 0px;
     margin: 5px 0px 5px 0px;
 }
@@ -138,10 +137,18 @@ ul .markdown-ul, ol .markdown-ul  {
 .markdown-toolbar-sep, .markdown-toolbar-sepflex {
     border: 0;
     width: 11px;
+    flex-shrink: 2;
 }
 .markdown-toolbar-sepflex {
     flex-grow: 2;
-    flex-shring: 2;
+}
+.markdown-toolbar-sepfsflex {
+    display: none;
+}
+.fullscreen .markdown-toolbar-sepfsflex {
+    display: inline-block;
+    flex-grow: 2;
+    flex-shrink: 2;
 }
 .markdown-toolbar-button:focus, .markdown-toolbar-button:hover {
     background-color: #eee;
@@ -172,7 +179,7 @@ ul > li.markdown-hiddenitem {
     border-collapse: collapse;
 }
 .markdown-tr:nth-child(even) {
-    background-color: #fefefe;
+    background-color: #f0f0f0;
 }
 .markdown-tr:hover {
     background-color: #eee;
@@ -190,4 +197,8 @@ ul > li.markdown-hiddenitem {
 }
 .markdown-td-right {
     text-align: right;
+}
+#markdown-editor-scroll-to-me {
+    border: 1px solid black;
+    margin-left: 2px;
 }
