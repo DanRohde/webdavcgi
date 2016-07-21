@@ -55,6 +55,33 @@ $(document).ready(function() {
 });
 </script>
 <!--ENDIF-->
+<!--IF( "$filename" =~ /[.](?:bash|css|dtd|js|pl|pm|php|py|sh|tcl|vbs|xml|yaml)$/xmsi )-->
+<link rel="stylesheet" href="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/contrib/codemirror/lib/codemirror.css">
+<style>
+.CodeMirror { min-width: 600px; }
+</style>
+<script src="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/contrib/codemirror/lib/codemirror.js"></script>
+<script src="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/contrib/codemirror-modes.js"></script>
+<script>
+$(document).ready(function() {
+    // modemap maps only suffixes to mode names where the suffix is not equal to the mode name:
+    var modemap = { bash: "shell", css: "stylesheet", js : "javascript", pm : "perl", 
+                    pl : "perl", py : "python", sh : "shell", vbs : "vbscript" };
+    var filename="$filename";
+    var suffix = filename.replace(/^.*[.]([^.]+)$/,"$1");
+    var editor = CodeMirror.fromTextArea($(".textdata")[0], {
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        mode: modemap[suffix] || suffix
+    });
+    $(".textdata").on("editsubmit",function() { 
+        editor.save();
+    });
+});
+</script>
+<!--ENDIF-->
+
     <form id="edittextdataform" method="post" action="#">
         <textarea class="textdata" name="textdata" rows="15" cols="70" data-file="$filename">$textdata</textarea>
         <div class="edittextbuttonpanel"><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div>

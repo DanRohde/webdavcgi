@@ -19,6 +19,7 @@
      - added SaveSettings extension
      - added feature 'dontregister' for all extensions
      - added markdown support to TextEditor extension
+     - added CodeMirror editor to TextEditor extension
      - disabled CalDAV, CalDAV Schedule, CardDAV, GroupDAV, ACL, BIND, SEARCH support by default
      - improved Diff extension dialog layout
      - improved performance
