@@ -42,3 +42,18 @@ tr.iswriteable-no .action.edit,
 	padding-left: 20px;
 	white-space: pre;
 }
+
+#edittextdataform {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.textdata {
+    flex-grow: 1;
+    flex-shrink: 1;
+    resize: none;
+}
+.edittextbuttonpane {
+    flex-grow: 0;
+    flex-shrink: 0;
+}

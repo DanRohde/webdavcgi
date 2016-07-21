@@ -21,38 +21,43 @@ $(document).ready(function() {
 <link rel="stylesheet" type="text/css" href="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/markdown/images/buttons.css">
 <script src="${VHTDOCS}_EXTENSION(TextEditor)_/htdocs/markdown/script.js"></script>
 <script>
-$(".textdata").markdownEditor({
-    fullscreenElement : "#edittextdataform",
-    locale : {
-        heading : "$tl(editor.heading)",
-        bold: "$tl(editor.bold)",
-        italic: "$tl(editor.italic)",
-        ol : "$tl(editor.ol)",
-        ul : "$tl(editor.ul)",
-        code: "$tl(editor.code)",
-        codeblock : "$tl(editor.codeblock)",
-        quote: "$tl(editor.quote)",
-        link : "$tl(editor.link)",
-        image : "$tl(editor.image)",
-        preview : "$tl(editor.preview)",
-        fullscreen: "$tl(editor.fullscreen)",
-        br: "$tl(editor.br)",
-        p: "$tl(editor.p)",
-        hr : "$tl(editor.hr)",
-        split: "$tl(editor.split)",
-        url : "$tl(editor.url)",
-        imagesrc : "$tl(editor.imagesrc)",
-        linktext : "$tl(editor.linktext)",
-        alttext : "$tl(editor.alttext)",
-        title : "$tl(editor.title)",
-        strikethrough : "$tl(editor.strikethrough)"
-    },
+$(document).ready(function() {
+    $(".textdata").markdownEditor({
+        fullscreenElement : "#edittextdataform",
+        locale : {
+            heading : "$tl(editor.heading)",
+            bold: "$tl(editor.bold)",
+            italic: "$tl(editor.italic)",
+            ol : "$tl(editor.ol)",
+            ul : "$tl(editor.ul)",
+            code: "$tl(editor.code)",
+            codeblock : "$tl(editor.codeblock)",
+            quote: "$tl(editor.quote)",
+            link : "$tl(editor.link)",
+            image : "$tl(editor.image)",
+            preview : "$tl(editor.preview)",
+            fullscreen: "$tl(editor.fullscreen)",
+            br: "$tl(editor.br)",
+            p: "$tl(editor.p)",
+            hr : "$tl(editor.hr)",
+            split: "$tl(editor.split)",
+            url : "$tl(editor.url)",
+            imagesrc : "$tl(editor.imagesrc)",
+            linktext : "$tl(editor.linktext)",
+            alttext : "$tl(editor.alttext)",
+            title : "$tl(editor.title)",
+            strikethrough : "$tl(editor.strikethrough)"
+        },
+    });
+    $("#edittextdata").on("dialogresize", function() { 
+        $(".markdown-editorpane").height($(this).height() - 50 - $(".markdown-toolbar").height() - $(".edittextbuttonpanel").height());
+    });
 });
 </script>
 <!--ENDIF-->
     <form id="edittextdataform" method="post" action="#">
         <textarea class="textdata" name="textdata" rows="15" cols="70" data-file="$filename">$textdata</textarea>
-        <div><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div>
+        <div class="edittextbuttonpanel"><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div>
     </form>
     <div class="template">
         <div id="canceledit">$tl(canceledit)</div>
