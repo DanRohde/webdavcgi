@@ -76,6 +76,12 @@
     background-position: center center;
 }
 
+.markdown-toolbar-print {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AcZEAMyun3UFAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABnSURBVDjLrZFLDgAhCEOp8eDv5s6GScYJIfjpSjG2tDU7hKIhYNW5godRFQWsr2wWkbfTDFrkEZhsfe//HN4Mxo46oLsWdnDcQk/IR4W0ZQH5J/l5ycLUjFenjEDB6qrko0w5sXYPDzCTIylb4vJZAAAAAElFTkSuQmCC);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
 .markdown-toolbar-quote {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AcNDRMHbYnyjQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAmSURBVDjLY2AYPqChoeF/Q0PDf1x8XICJUosH3oBhEDujsTAYAABEABQFCiJQOAAAAABJRU5ErkJggg==);
     background-repeat: no-repeat;

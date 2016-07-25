@@ -209,3 +209,24 @@ ul > li.markdown-hiddenitem {
 .fullscreen .markdown-toolbar-fullscreen:hover {
     background-color: #ddd;
 }
+
+.markdown-preview.print {
+    display: none;
+}
+@media print {
+    body > * { display: none; }
+    a.markdown-link:after {
+        content: " [" attr(href) "] "; 
+    }
+    .markdown-preview.print{
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: white;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        z-index: 1;
+    }
+}
