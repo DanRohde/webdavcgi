@@ -49,7 +49,7 @@ $(document).ready(function() {
             strikethrough : "$tl(editor.strikethrough)",
             print : "$tl(editor.print)"
         },
-    });
+    }).on("editdone", function() { $(".markdown-preview.print").remove(); });
     $("#edittextdata").on("dialogresize", function() { 
         $(".markdown-editorpane").height($(this).height() - 50 - $(".markdown-toolbar").height() - $(".edittextbuttonpanel").height());
     });
