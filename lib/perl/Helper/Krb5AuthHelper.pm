@@ -77,11 +77,15 @@ sub init {
                 open( my $kinit, q{|-},
                     "kinit '$REMOTE_USER' 1>/dev/null 2>&1" )
                     || croak "Cannot execute kinit $REMOTE_USER";
-                print {$kinit} (
-                    split /:/xms,
-                    decode_base64( ( split /\s+/xms, $ENV{AUTHHEADER} )[1] )
+                print(
+                    {$kinit} (
+                        split /:/xms,
+                        decode_base64(
+                            ( split /\s+/xms, $ENV{AUTHHEADER} )[1]
+                        ),
+                        2
                     )[1]
-                    || carp 'Cannot write login:passwort to kinit.';
+                ) || carp 'Cannot write login:passwort to kinit.';
                 close $kinit || carp 'Cannot close kinit call.';
 
                 flock $lfh, LOCK_UN;
