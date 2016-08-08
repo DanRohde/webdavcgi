@@ -302,7 +302,7 @@ sub _render_file_list_entry {
         'isempty'  => $id        ? 'unknown' : ( defined $size )
             && $size == 0 ? 'yes' : 'no',
         'type' => $file =~ /^[.]{1,2}$/xms
-            || $id ? 'dir' : ( $il ? 'link' : 'file' ),
+            || $id ? 'dir' : 'file',
         'fileuri'      => $fulle,
         'unselectable' => $file eq q{..}
             || $self->is_unselectable($full) ? 'yes' : 'no',
@@ -312,6 +312,7 @@ sub _render_file_list_entry {
         'uid'       => $u,
         'gidNumber' => $gid // 0,
         'gid'       => $g,
+        'subdir' => $id  && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
         'isdotfile' => $file =~ /^[.]/xms
             && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
         'suffix' => $file =~ /[.]([^.]+)$/xms ? $self->{cgi}->escapeHTML($1)

@@ -1501,11 +1501,11 @@ function updateFileListCounters() {
 function getFolderStatistics() {
 	var stats = new Array();
 
-	stats["dircounter"] =  $("#fileList tr[data-mime='&lt;folder&gt;']:visible").length;
-	stats["filecounter"] = $("#fileList tr[data-type!='dir']:visible").length;
+	stats["dircounter"] =  $("#fileList tr.is-subdir-yes:visible").length;
+	stats["filecounter"] = $("#fileList tr.is-file:visible").length;
 	stats["sumcounter"] = stats["dircounter"]+stats["filecounter"];
-	stats["dirselcounter"] = $("#fileList tr.selected[data-mime='&lt;folder&gt;']:visible").length;
-	stats["fileselcounter"] = $("#fileList tr.selected[data-type!='dir']:visible").length;
+	stats["dirselcounter"] = $("#fileList tr.selected.is-subdir-yes:visible").length;
+	stats["fileselcounter"] = $("#fileList tr.selected.is-file:visible").length;
 	stats["sumselcounter"] = stats["dirselcounter"]+stats["fileselcounter"];
 
 	var foldersize = 0;
