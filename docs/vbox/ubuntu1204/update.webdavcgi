@@ -1,2 +1,2 @@
 cd /etc/webdavcgi
-svn up
+git pull
