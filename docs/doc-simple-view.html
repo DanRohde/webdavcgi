@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="keywords" content="WebDAV CGI wrapper UID" />
+  <meta name="author" content="Daniel Rohde" />
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <title>WebDAV CGI - The Simple View Documentation</title>
+</head>
+
+<body>
+<div id="content">
+<div style="text-align: right; font-size:0.8em;">
+<a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a></div>
+<h1>WebDAV CGI - The Simple View Documentation</h1>
+<div id="toc">
+Content of this topic:
+<ul>
+	<li><a href="#about">About: The Simple View</a></li>
+	<li><a href="#hooks">Template Hooks: Add Your Own Sidebar Entries</a></li>
+	<li><a href="#overlay">Template Overlay: Modify Templates</a></li>
+	<li><a href="#templates">Templates: The Features</a></li>
+	<li><a href="#css">Styles: Modify CSS Styles</a></li>	
+	<li><a href="extensions.html">Extensions</a>
+	<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+<a href="doc.html"><br/>Back to the WebDAV Documentation page.</a>
+</div>
+<h2 id="about">About: The Simple View</h2>
+This is the new default view for the WebDAV CGI web interface. The Simple view uses jQuery and a lot of jQuery plugins for a more convenience user interface. It supports some new interesting features:
+<ul>
+<li>Drag&amp;Drop support: drag and drop files from a window manager to the web interface or files and folders inside the file list.</li>
+<li>AJAX based file actions and folder navigation.</li>
+<li>Simplifies customization of menus and templates.</li>
+<li>Fast client site file list sorting.</li>
+<li><a href="extensions.html">Extension</a> support</li>
+</ul>
+
+<h2 id="hooks">Template Hooks: Add Your Own Sidebar Entries</h2>
+You can add your own menu entries in the sidebar menu if you create some custom template files. 
+Look for include statements in the page template (<code>templates/simple/page.tmpl</code>), e.g.: <code>$INCLUDE(apps)</code>
+<ol>
+<li> Create a custom template <code>templates/simple/apps.custom.tmpl</code> to add a new menu entry </li>
+<li> and add a list item to the custom template (see <code>page.tmpl</code> for examples):
+<pre>
+&lt;li title="Home"&gt;
+  &lt;a class="home-button action changeuri" href="/afs/.cms.hu-berlin.de/user/$eval@substr($REMOTE_USER,0,1)@/$USER/" accesskey="1"&gt;
+    &lt;span class="label"&gt;Home&lt;/span&gt;
+  &lt;/a&gt;
+&lt;/li&gt;
+</pre>
+</li>
+</ol> 
+Overview of existing page template hooks (template file name pattern: <code>templates/simple/[hook name].custom.tmpl</code>):
+<ul>
+<li><code>htmlhead</code> - included in the HTML head tag (for your own script or CSS tags)</li>
+<li><code>header</code>  - included in the page header</li>
+<li><code>apps</code> - included after the Files/Folders menu item</li>
+<li><code>nav</code> - included between application and preferences menu</li>
+<li><code>pref</code> - included before views option menu items</li>
+<li><code>help</code> - included before about menu item</li>
+</ul>
+<h3>Example 1: Add a Home Button</h3>
+<ol>
+<li> Create a custom template: <code>vi templates/simple/apps.custom.tmpl</code></li>
+<li> Add HTML code to the new template (change href value to your preferred URL):
+<pre>
+&lt;li title="Home"&gt;
+  &lt;a class="home-button action changeuri" href="/.cms.hu-berlin.de/user/$eval@substr($REMOTE_USER,0,1)@/$USER/" accesskey="1"&gt;
+    &lt;span class="label"&gt;Home&lt;/span&gt;
+  &lt;/a&gt;
+&lt;/li&gt;
+</pre>
+</li>
+</ol>
+<h3>Example 2: Add a Logout Button, a Contact Button, and a Help Button</h3>
+<ol>
+<li> Create a custom template: <code>vi templates/simple/help.custom.tmpl</code></li>
+<li> Add HTTML code to the new template (change href values to your preferred URLs):
+<pre>
+&lt;li title="Help"&gt;
+  &lt;a class="help-button" target="_blank" href="link_to_my_help" aria-label="Get Help" accesskey="6"&gt;
+    &lt;span class="label"&gt;Help&lt;/span&gt;
+  &lt;/a&gt;
+&lt;/li&gt;
+&lt;li title="Logout"&gt;
+  &lt;a class="logout-button" aria-label="Logout" href="/logout"&gt;
+    &lt;span class="label"&gt;Logout&lt;/span&gt;
+  &lt;/a&gt;
+&lt;/li&gt;
+&lt;li title="Contact"&gt;
+  &lt;a class="contact-button" href="mailto:contact@mydomain.org?subject=WebDAV%20CGI" aria-label="E-Mail Contact" accesskey="9"&gt;
+    &lt;span class="label"&gt;Contact&lt;/span&gt;
+  &lt;/a&gt;
+&lt;/li&gt;
+</pre>
+</li>
+</ol>
+<h2 id="overlay">Template Overlay: Modify Templates</h2>
+You should not modify an existing view template to simplify version upgrades of WebDAV CGI. It is possible to overlay an existing template file by adding a custom template file.
+<ol>
+<li> Copy the template file, e.g. <code>cp templates/simple/page.tmpl templates/simple/page.custom.tmpl</code></li>
+<li> Modify the new template file, e.g. <code>vi templates/simple/page.custom.tmpl</code> </li>
+</ol>
+<h2 id="css">Styles: Modify CSS Styles</h2>
+The preferred way to change CSS styles:
+<ol>
+<li>Create the custom template <code>header</code>: <code>templates/simple/header.custom.tmpl</code> </li>
+<li>Add a style tag to the custom template:<pre>&lt;style&gt;&lt;/style&gt;</pre></li>
+<li>Add your style changes ...</li>
+</ol>
+<h2 id="templates">Templates: The Features</h2>
+Take a look at the Simple view templates for examples (<code>templates/simple/*.tmpl</code>).
+<ul>
+<li>Include other templates: <code>$INCLUDE([template name])</code> (replace <code>[template name]</code> with the template name without .custom or .tmpl suffixes)</li>
+<li>Functions:
+<ul>
+<li><code>$config([param])</code> - include the value of the WebDAV CGI configuration parameter</li>
+<li><code>$eval[sep][Perl code][sep]</code> - replaced by the return value of the executed Perl code  </li>
+<li><code>$cgiparam([param])</code> - replaced by CGI query parameter values </li>
+<li><code>$env([variable])</code> - replaced by environment variable value</li>
+<li><code>$each[sep][hash|array variable][sep][template (file)][sep][filter][sep]</code> - iterates over the given hash/array elements and renders the template for each element ($v, $k can be used in the template for hash keys and hash values)</li>
+<li>... take a look at the template files for all others.</li>
+</ul></li>
+<li>Variables:<ul>
+<li>... take a look at the template files for variables or into the <code>renderTemplate</code> subroutine of the Renderer module (<code>lib/perl/WebInterface/View/simple/Renderer.pm</code>)</li>
+</ul></li>
+<li>IF statement: <code>&lt;!--IF([Perl expression])--&gt; [HTML] &lt;!--ELSE--&gt; [HTML] &lt;!--ENDIF--&gt;</code></li>
+<li>IF statements inside IF statements:<code>&lt;!--IF#[level]([Perl expression])--&gt; [HTML] &lt;--ELSE#[level]--&gt; [HTML] &lt;--ENDIF#[level]--&gt;</code>  (replace <code>[level]</code> by a unique number)</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ol>
+<li>Take a look at your Apache error log.</li>
+<li>Open the Web console and/or the error console of your Web browser. </li>
+<li>Use the <a target="_blank" href="http://validator.w3.org/">W3C<sup>&reg;</sup> Markup Validation Service</a> to check the HTML output.</li>
+<li>Use the <a target="_blank" href="http://jigsaw.w3.org/css-validator/">W3C<sup>&reg;</sup> CSS Validation Servcie</a> to check your CSS styles.</li>
+<li><a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI%20-%20Simple%20View%20Trouble">Ask the author</a></li>
+</ol>
+<div id="contact">
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2015 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
+</div>
+</body>
+</html>

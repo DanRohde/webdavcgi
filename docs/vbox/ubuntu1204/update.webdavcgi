@@ -1,0 +1,2 @@
+cd /etc/webdavcgi
+svn up

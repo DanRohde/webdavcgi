@@ -1,0 +1,28 @@
+#!/bin/bash
+##########################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin
+# Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+# removes:
+#   project directory
+#   LDAP group entry 
+
+if [ $# = 0 ] ; then
+        echo "Usage: $0 project [project2 [project3 ...]]"
+        exit 1
+fi
+
+. $(dirname $0)/config
+
+while (( "$#" )) ; do
+	project=$1
+	pdir=$PROJECTBASE/$project
+
+	if [ -d $pdir ] ; then
+		sudo -A rmdir $pdir || echo "Please remove/backup $pdir content before you call this script."
+	fi
+	if [ "$(getent group $project)" != "" ] ; then
+		$(dirname $0)/removegroup $project
+	fi
+	shift
+done

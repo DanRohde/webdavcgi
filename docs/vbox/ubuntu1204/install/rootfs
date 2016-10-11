@@ -1,0 +1,4 @@
+## 1. add quota to root
+mount -o quota,remount
+quotacheck -umf /
+quotaon /

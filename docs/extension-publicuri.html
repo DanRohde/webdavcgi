@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="keywords" content="WebDAV CGI wrapper UID" />
+  <meta name="author" content="Daniel Rohde" />
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox.min.css"/>
+  <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox-buttons.min.css"/>
+  <link rel="stylesheet" type="text/css" href="style.min.css"/>
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="fancybox/jquery.fancybox.min.js"></script>
+  <script type="text/javascript" src="fancybox/jquery.fancybox-buttons.min.js"></script>
+  <script type="text/javascript" src="script.min.js"></script>	
+  <title>WebDAV CGI - Documentation: PublicUri Extensions</title>
+</head>
+
+<body>
+<div id="content">
+<div style="text-align: right; font-size:0.8em;">
+<a href="http://sourceforge.net/projects/webdavcgi"><img style="border:0px;" src="http://sflogo.sourceforge.net/sflogo.php?group_id=385775&amp;type=10" width="80" height="15" alt="Get WebDAV CGI at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+</div>
+<h1>PublicUri Extension</h1>
+<div>
+<p>... allows users to share files and folders. A public link is salted with a hash value, which makes it difficult to guess it. 
+</p>
+</div>
+<div>
+<p>Instructions:</p>
+<ol>
+<li> <a href="#fs">Prepare filesytem</a></li>
+<li> <a href="#webdavcgi">Configure WebDAV CGI</a></li>
+<li> <a href="#apache">Configure webserver</a></li>
+</ol>
+</div>
+<table class="screenshottable">
+<tr>
+<td><a class="screenshot" rel="puburi" href="images/webdavcgi-webinterface-publicuri-share.png" title="Share button"><img class="screenshot" alt="Public Uri share button" src="images/webdavcgi-webinterface-publicuri-share.png"/></a></td>
+<td><a class="screenshot" rel="puburi" href="images/webdavcgi-webinterface-publicuri-shared.png" title="Shared folder"><img class="screenshot" alt="Public Uri shared folder" src="images/webdavcgi-webinterface-publicuri-shared.png"/></a></td>
+<td><a class="screenshot" rel="puburi" href="images/webdavcgi-webinterface-publicuri-public.png" title="Public view of a shared folder"><img class="screenshot" alt="Public Uri public view of a shared folder" src="images/webdavcgi-webinterface-publicuri-public.png"/></a></td>
+</tr>
+<tr>
+<td class="screenshottitle">Share button</td>
+<td class="screenshottitle">Shared folder</td>
+<td class="screenshottitle">Public view</td>
+</tr>
+</table>
+
+<h2 id="fs">Prepare filesystem</h2>
+
+<div>
+<b>The main problem:</b> You need a user with read access to all files and additional execute (lookup) rights to all folders. 
+</div>
+<div>There are different solutions to do that and it depends on your filesystem. To get an idea of how you can do this:
+<ol>
+<li> POSIX/AFS ACLs: 
+	<ol>
+	<li>activate ACLs if you don't have it yet. EXT3/4 needs a mount flag 'acl'. Change your /etc/fstab entry and remount your filesystem: <code> mount -o acl,remount /myfilesystem</code></li>
+	<li>create a user 'public' and a group 'public'</li>
+	<li>add a default ACL to all files/folders to permit read access to files/folders: 
+<pre>
+# POSIX:
+	setfacl -m -R group:public:r /mydatadir
+	find /mydatadir -type d -exec setfacl -d -m group:public:rx {} \;
+	find /mydatadir -type d -exec setfacl -m group:public:rx {} \;
+    
+# AFS:
+	find /mydatadir -type d -exec fs setacl -dir {} -acl public:public lr \;
+</pre> </li> 
+	</ol>
+</li>   
+<li> POSIX permissions:
+	<ol>
+	<li> create a user 'public' and a group 'public' with user 'public' in this group</li>
+	<li> change group for all files and folders: <code>chgrp -R public /mydatadir</code></li>
+	<li> add read access to all files: <code>find /mydatadir -type f -exec chmod g+r {} \;</code></li>
+	<li> add read, execute, and setuid flag for the group to all folders: <code>find /mydatadir -type d -exec chmod g+rxs {} \;</code></li>
+	<li> add <code>$UMASK=0027;</code> to your webdav.conf</li>
+	</ol>
+</li>
+
+</ol>
+</div>
+<h2 id="webdavcgi">Configure WebDAV CGI</h2>
+
+<ol>
+<li> Enable 'PublicUri' extension: add 'PublicUri' to your <code>@EXTENSIONS</code> list:
+	<pre>@EXTENSIONS{'PublicUri', 'Highlighter', 'Download', 'Zip', 'Search', 'Diff', 'DiskUsage' );</pre>
+<li> and enable event listener:
+	<pre>@EVENTLISTENER = ('WebInterface::Extension::PublicUri::EventListener');</pre>
+<li> Make a copy of your webdav.conf: <code>cp /etc/webdav.conf /etc/webdav-public.conf</code></li>
+<li> <b>Append</b> some parameters to your copy:
+<pre>
+cat - &gt;&gt;/etc/webdav-public.conf &lt;&lt;EOF
+
+$BACKEND_CONFIG{RO}{backend}=$BACKEND;
+$BACKEND='RO';
+
+$DOCUMENT_ROOT='/_does_not_exists/';
+
+$VIRTUAL_BASE='/public/?';
+
+@EXTENSIONS=('PublicUri','Download','Zip','Search','Diff','DiskUsage');
+@EVENTLISTENER = ('WebInterface::Extension::PublicUri::EventListener');
+$EXTENSION_CONFIG{PublicUri}={
+		uribase=&gt;"https://$ENV{HTTP_HOST}/public/",
+		virtualbase=&gt;$VIRTUAL_BASE
+};
+# PublicUri extension parameters:
+# virtualbase - virtual base URI for the public link (default: /public/)
+# uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
+# propname - property name for the share digest (default: public_prop)
+# seed - property name for digest seed (default: seed)
+# namespace - XML namespace for propname and seed (default: {http://webdavcgi.sf.net/extension/PublicUri/})
+# prefix - a prefix for URI digest (default: empty string)
+# allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
+
+# [optional] add a table column with the digest to the file list table:
+#  @ALLOWED_TABLE_COLUMNS = ('name','size','lastmodified','created','mode','mime','uid','gid', 'publicuri');
+#  @VISIBLE_TABLE_COLUMNS = ('name', 'size', 'lastmodified', 'publicuri');
+
+EOF
+
+</pre>
+</li> 
+</ol> 
+
+
+<h2 id="apache">Configure webserver</h2>
+The following must be in the Apache configuration above your WebDAV CGI rewrite rules:
+<pre>
+
+
+ScriptAlias /_pfs /etc/webdavcgi/cgi-bin/webdavwrapper
+
+&lt;Location /_pfs&gt;
+	# Apache &gt;=2.4:
+	Require All Granted
+	
+	# Apache &lt;2.4:
+	# Order Allow,Deny
+	# Allow From All
+&lt;/Location&gt;
+
+### modify '/public' URL and WEBDAV_USER according to your needs:
+ 
+RewriteRule ^/public /_pfs	[E=WEBDAVCONF:/etc/webdav-public.conf,E=REMOTE_USER:public,E=PERLLIB:/etc/webdavcgi/lib/perl,L,PT]
+
+## AFS and SMB users need a AUTHHEADER parameter with a base64 encoded username:password string (<code>echo -n 'username:password'|base64</code>) for kinit:
+## E=AUTHHEADER:dXNlcm5hbWU6cGFzc3dvcmQK
+
+# ... WebDAV CGI Rewrite Rules 
+</pre>
+<div id="contact">
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2015 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
+</div>
+</body>
+</html>
