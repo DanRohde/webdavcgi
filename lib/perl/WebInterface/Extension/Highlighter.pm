@@ -17,7 +17,7 @@
 #########################################################################
 # Simple CSS highlighting for file list entries
 # SETUP:
-# namespace - XML namespace for attributes (default: {http://webdavcgi.sf.net/extension/Highlighter/$REMOTE_USER})
+# namespace - XML namespace for attributes (default: {https://DanRohde.github.io/webdavcgi/extension/Highlighter/$REMOTE_USER})
 # attributes - CSS attributes to change for a file list entry
 
 package WebInterface::Extension::Highlighter;
@@ -44,7 +44,7 @@ sub init {
     $hookreg->register( \@hooks, $self );
 
     $self->{namespace} = $self->config( 'namespace',
-            '{http://webdavcgi.sf.net/extension/Highlighter/'
+            '{https://DanRohde.github.io/webdavcgi/extension/Highlighter/'
           . $REMOTE_USER
           . '}' );
     $self->{attributes} = $self->config(

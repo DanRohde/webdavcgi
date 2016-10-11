@@ -36,7 +36,7 @@ sub init {
     my @hooks = qw( javascript locales gethandler settings cookies );
     $hookreg->register( \@hooks, $self );
     $self->{settingsproperty} =
-      '{http://webdavcgi.sf.net/[REMOTE_USER]}settings';
+      '{https://DanRohde.github.io/webdavcgi/[REMOTE_USER]}settings';
     $self->{settingspath} = $self->{backend}->resolveVirt($DOCUMENT_ROOT);
     return $self;
 }

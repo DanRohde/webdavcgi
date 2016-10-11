@@ -25,13 +25,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 # REQUIREMENTS:
-#    - see http://webdavcgi.sf.net/doc.html#requirements
+#    - see https://DanRohde.github.io/webdavcgi/doc.html#requirements
 # INSTALLATION:
-#    - see http://webdavcgi.sf.net/doc.html#installation
+#    - see https://DanRohde.github.io/webdavcgi/doc.html#installation
 # CHANGES:
 #    - see CHANGELOG
 # KNOWN PROBLEMS:
-#    - see http://webdavcgi.sf.net/
+#    - see https://DanRohde.github.io/webdavcgi/
 # CONFIG OPTIONS (OLD SETUP SECTION):
 #    - see etc/webdav.conf.complete
 #########################################################################

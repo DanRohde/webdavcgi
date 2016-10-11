@@ -321,7 +321,7 @@ q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<
 ## for fancy indexing
 ## EXAMPLE: $SIGNATURE=$ENV{SERVER_SIGNATURE};
 $SIGNATURE =
-q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="http://webdavcgi.sf.net/">Daniel Rohde</a>};
+q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2013 by <a href="https://DanRohde.github.io/webdavcgi/">Daniel Rohde</a>};
 
 ## -- LANG
 ## defines the default language for the Web interface

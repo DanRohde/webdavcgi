@@ -21,7 +21,7 @@
 # uribase - base URI for the public link (default: https://$ENV{HTTP_HOST}/public/)
 # propname - property name for the share digest (default: public_prop)
 # seed - property name for digest seed (default: seed)
-# namespace - XML namespace for propname and seed (default: {http://webdavcgi.sf.net/extension/PublicUri/})
+# namespace - XML namespace for propname and seed (default: {https://DanRohde.github.io/webdavcgi/extension/PublicUri/})
 # prefix - a prefix for URI digest (default: empty string)
 # allowedpostactions - allowed actions regex, default: ^(zipdwnload|diskusage|search|diff)$
 # mode - public or private (default: "public" if $BACKEND is 'RO' else "private" )

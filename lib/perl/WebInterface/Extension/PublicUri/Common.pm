@@ -33,7 +33,7 @@ sub init_defaults {
     my ($self) = @_;
 
     $self->{namespace} = $self->config( 'namespace',
-        '{http://webdavcgi.sf.net/extension/PublicUri/}' );
+        '{https://DanRohde.github.io/webdavcgi/extension/PublicUri/}' );
     $self->{propname} = $self->config( 'propname', 'public_prop' );
     $self->{seed}     = $self->config( 'seed',     'seed' );
     $self->{orig}     = $self->config( 'orig',     'orig' );
