@@ -69,6 +69,17 @@ sub _print_json_response {
     return;
 }
 
+sub mkdirhier {
+    my ($self, $path) = @_;
+    if ($self->{backend}->exists($path)) {
+        return 1;
+    } 
+    if (!$self->{backend}->exists($self->{backend}->getParent($path))) {
+        $self->mkdirhier($self->{backend}->getParent($path));
+    }
+    return $self->{backend}->mkcol($path);
+}
+
 sub handle_post_upload {
     my ($self) = @_;
     my @filelist;
@@ -81,6 +92,15 @@ sub handle_post_upload {
         $rfn =~ s{\\}{/}xmsg;    # fix M$ Windows backslashes
         my $destination =
           $PATH_TRANSLATED . $self->{backend}->basename($rfn);
+
+        if (my $relapath = $self->{cgi}->param('relapath')) {
+            $relapath =~ s{\\}{/}xmsg;
+            if ($relapath ne q{}) {
+                $self->mkdirhier($PATH_TRANSLATED.$relapath);
+                $destination = $PATH_TRANSLATED . $relapath . $self->{backend}->basename($rfn);
+            }
+        }
+
         push @filelist, $self->{backend}->basename($rfn);
         if ( $self->{config}->{method}->is_locked("$destination$filename") ) {
             $errmsg   = 'locked';

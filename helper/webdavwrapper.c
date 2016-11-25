@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 				if (setuid(pw->pw_uid)==0) execv("webdav.pl",argv);
 				else printf("Status: 500 Internal Server Error: setuid failed for %s",pw->pw_name);
 			else printf("Status: 500 Internal Server Error: setgid failed for %s",pw->pw_name);
-		else printf("Status: 500 Internal Sever Error: initgroups failed for %s (errno=%d,%s)",pw->pw_name,errno,strerror(errno));
+		else printf("Status: 500 Internal Server Error: initgroups failed for %s (errno=%d,%s)",pw->pw_name,errno,strerror(errno));
 	} else {
 		printf("Status: 404 Not Found\r\n");
 		printf("Content-Type: text/plain\r\n\r\n");

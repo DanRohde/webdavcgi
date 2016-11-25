@@ -908,6 +908,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		},
 		submit: function(e,data) {
 			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
+			$("#file-upload-form-relapath").val(data.files[0].relativePath);
 			return $(this).data('ask.confirm');
 		}
 	});	

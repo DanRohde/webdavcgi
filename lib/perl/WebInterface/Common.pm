@@ -212,24 +212,23 @@ sub get_cookies {
 sub replace_vars {
     my ( $self, $t, $v ) = @_;
     my $lt = localtime;
-    $t =~ s/\${?NOW}?/strftime $self->tl('varnowformat'),$lt/exmsg;
-    $t =~ s/\${?TIME}?/strftime $self->tl('vartimeformat'), $lt/exmsg;
-    $t =~ s/\${?USER}?/$REMOTE_USER/xmsg;
-    $t =~ s/\${?REQUEST_URI}?/$REQUEST_URI/xmsg;
-    $t =~ s/\${?PATH_TRANSLATED}?/$PATH_TRANSLATED/xmsg;
-    $t =~ s/\${?ENV{([^}]+?)}}?/$ENV{$1}/exmsg;
+    $t =~ s/\$\{?NOW}?/strftime $self->tl('varnowformat'),$lt/exmsg;
+    $t =~ s/\$\{?TIME}?/strftime $self->tl('vartimeformat'), $lt/exmsg;
+    $t =~ s/\$\{?USER}?/$REMOTE_USER/xmsg;
+    $t =~ s/\$\{?REQUEST_URI}?/$REQUEST_URI/xmsg;
+    $t =~ s/\$\{?PATH_TRANSLATED}?/$PATH_TRANSLATED/xmsg;
+    $t =~ s/\$\{?ENV\{([^}]+?)}}?/$ENV{$1}/exmsg;
     my $clockfmt = $self->tl('vartimeformat');
-    $t =~
-s{\${?CLOCK}?}{<span id="clock"></span><script>startClock('clock','$clockfmt');</script>}xmsg;
-    $t =~ s/\${?LANG}?/$LANG/xmsg;
-    $t =~ s/\${?TL{([^}]+)}}?/$self->tl($1)/exmsg;
+    $t =~ s{\$\{?CLOCK\}?}{<span id="clock"></span><script>startClock('clock','$clockfmt');</script>}xmsg;
+    $t =~ s/\$\{?LANG}?/$LANG/xmsg;
+    $t =~ s/\$\{?TL\{([^}]+)}}?/$self->tl($1)/exmsg;
     my $vbase = $self->get_vbase();
-    $t =~ s/\${?VBASE}?/$vbase/xmsg;
-    $t =~ s/\${?VHTDOCS}?/$vbase$VHTDOCS/xmsg;
+    $t =~ s/\$\{?VBASE}?/$vbase/xmsg;
+    $t =~ s/\$\{?VHTDOCS}?/$vbase$VHTDOCS/xmsg;
 
     if ($v) {
         $t =~ s{\$\[(\w+)\]}{ $$v{$1} // "\$$1"}exmsg;
-        $t =~ s{\${?(\w+)}?}{ $$v{$1} // "\$$1"}exmsg;
+        $t =~ s{\$\{?(\w+)\}?}{ $$v{$1} // "\$$1"}exmsg;
     }
     return $t;
 }
@@ -548,9 +547,9 @@ sub render_each {
             next if defined $filter && $hashref->{$key} =~ $filter;
             my $t = $tmpl;
             $t =~ s/\$k/$key/xmsg;
-            $t =~ s/\${k}/$key/xmsg;
+            $t =~ s/\$\{k\}/$key/xmsg;
             $t =~ s/\$v/$hashref->{$key}/xmsg;
-            $t =~ s/\${v}/$hashref->{$key}/xmsg;
+            $t =~ s/\$\{v\}/$hashref->{$key}/xmsg;
             $content .= $t;
         }
     }
@@ -569,7 +568,7 @@ sub render_each {
             next if defined $filter && $val =~ $filter;
             my $t = $tmpl;
             $t =~ s/\$[kv]/$val/xmsg;
-            $t =~ s/\${[kv]}/$val/xmsg;
+            $t =~ s/\$\{[kv]\}/$val/xmsg;
             $content .= $t;
         }
     }
@@ -617,8 +616,8 @@ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
     {
     }
 
-    $content =~ s/\${?ENV{([^}]+?)}}?/$ENV{$1}/exmsg;
-    $content =~ s/\${?TL{([^}]+)}}?/$self->tl($1)/exmsg;
+    $content =~ s/\$\{ENV\{([^}]+?)\}\}?/$ENV{$1}/exmsg;
+    $content =~ s/\$\{?TL\{([^}]+)\}\}?/$self->tl($1)/exmsg;
 
     my $vbase = $self->get_vbase();
 
@@ -643,7 +642,7 @@ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
     };
 
     $content =~ s{\$\[([\w.]+)\]}{$vars->{$1} // "\$$1"}exmsg;
-    $content =~ s{\${?([\w.]+)}?}{$vars->{$1} // "\$$1"}exmsg;
+    $content =~ s{\$[{]?([\w.]+)[}]?}{$vars->{$1} // "\$$1"}exmsg;
     $content =~
 s{<!--IF${cond_rx}-->${anyng_rx}((<!--ELSE-->)${anyng_rx})?<!--ENDIF-->}{eval($1)? ( $2 // q{} ): ($5 // q{})}exmsg;
     $content =~
