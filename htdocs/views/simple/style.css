@@ -938,6 +938,18 @@ img {
 .action.upload:hover, .action.upload:focus {
 	background-image: url(images/sprite-hover.png);
 }
+.action.uploaddir {
+    background-image: url(images/sprite.png);
+    background-repeat: no-repeat;
+    background-position: left -1621px;
+    padding-left: 22px;	
+}
+.action.uploaddir:hover, .action.uploaddir:focus {
+	background-image: url(images/sprite-hover.png);
+}
+#popupmenu .uploaddir {
+	background-position: left -1616px;
+}
 .uploaddialog.ui-dialog .ui-dialog-title {
     background: url(images/sprite.png) no-repeat 0px -540px;
     padding-left: 22px;

@@ -94,6 +94,7 @@ use vars qw(
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL
+    $ALLOW_FOLDERUPLOAD
 );
 
 $VERSION = '2.0';
@@ -133,14 +134,14 @@ adobe   ai eps flv ind indt pdf prn ps psd swf
 markup  dtd htm html opml rdf rss sgml xml xsl xslt
 archive ??_ ?q? ?z? 7z apk arc arj bz2 cpio deb egg f gz jar kgb lbr lz lzma lzo mar par par2 pea pim rar rpm rz s7z sda sfx shar sit sitx sqx sz tar tgz tlz war xpi xz z zz zip 
 binary  a bin class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
-shell   alias bat bash bash_history bashrc bash_login logout bsh bshrc csh cshrc env history jsh ksh kshrc lesshst login mysql_history netrwhist profile ps1 selected_editor sqlite_history sh tcsh tcshrc 
+shell   alias bat bash bash_history bashrc bash_login bash_profile bash_logout logout bsh bshrc csh cshrc env history jsh ksh kshrc lesshst login mysql_history netrwhist profile ps1 selected_editor sqlite_history sh tcsh tcshrc 
 tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
 font    afm fnt fon mf otf tfm ttc ttf 
 ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
 db      accdb accde accdr accdt accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 tmd usr wmdb xld
-config	cf cnf conf exrc gvimrc gxt inf ini manifest muttrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
+config	cf cnf conf exrc gitconfig gvimrc gxt inf ini manifest muttrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
 gis	axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
-crypt	cer cert crl crt csr der gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
+crypt	cer cert crl crt csr der eslock gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
 EOF
         ;
     $ICON_WIDTH              = 18;
@@ -153,6 +154,7 @@ EOF
     @UNSELECTABLE_FOLDERS    = ();
     $ALLOW_INFINITE_PROPFIND = 1;
     $ALLOW_FILE_MANAGEMENT   = 1;
+    $ALLOW_FOLDERUPLOAD      = 1;
     $ALLOW_SYMLINK           = 1;
     $ENABLE_CLIPBOARD        = 1;
     $ENABLE_NAMEFILTER       = 1;

@@ -231,6 +231,11 @@ $ALLOW_POST_UPLOADS = 1;
 ## EXAMPLE: $POST_MAX_SIZE = 1_073_741_824; # 1GB
 $POST_MAX_SIZE = 1_073_741_824;
 
+## -- ALLOW_FOLDERUPLOAD
+## enables folder upload for browser access
+## DEFAULT $ALLOW_FOLDERUPLOAD = 1;
+$ALLOW_FOLDERUPLOAD = 1;
+
 ## -- SHOW_QUOTA
 ## enables/disables quota information for fancy indexing
 ## DEFAULT: $SHOW_QUOTA = 0;

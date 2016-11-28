@@ -73,7 +73,7 @@ sub mkdirhier {
     my ($self, $path) = @_;
     if ($self->{backend}->exists($path)) {
         return 1;
-    } 
+    }
     if (!$self->{backend}->exists($self->{backend}->getParent($path))) {
         $self->mkdirhier($self->{backend}->getParent($path));
     }

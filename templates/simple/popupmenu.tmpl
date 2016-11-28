@@ -6,6 +6,9 @@
 <!--IF($config(ALLOW_SYMLINK))-->
 	<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
 <!--ENDIF--> 
+<!--IF($config(ALLOW_FOLDERUPLOAD))-->
+<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+<!--ENDIF-->
 $extension(fileactionpopupnew)
 </ul>
 </li>

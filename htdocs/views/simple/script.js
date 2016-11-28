@@ -908,19 +908,21 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		},
 		submit: function(e,data) {
 			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
-			$("#file-upload-form-relapath").val(data.files[0].relativePath);
+			$("#file-upload-form-relapath").val(data.files[0].relativePath || (data.files[0].webkitRelativePath && data.files[0].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join('/')+'/') || '');
 			return $(this).data('ask.confirm');
 		}
 	});	
 }
 function checkUploadedFilesExist(data) {
 	for (var i=0; i<data.files.length; i++) {
+		var relaPath;
 		if (data.files[i].relativePath && data.files[i].relativePath !="") {
-			var d = data.files[i].relativePath.split(/[\\\/]/)[0] + '/';
-			if ($("#fileList tr[data-file='"+simpleEscape(d)+"']").length>0) return true;	
-		} else {
-			if ($("#fileList tr[data-file='"+simpleEscape(data.files[i].name)+"']").length>0) return true;
+			relaPath = data.files[i].relativePath.split(/[\\\/]/)[0] + '/';
+		} else if (data.files[i].webkitRelativePath && data.files[i].webkitRelativePath != "") {
+			relaPath = data.files[i].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join('/') + '/';
 		}
+		if (relaPath && $("#fileList tr[data-file='"+simpleEscape(relaPath)+"']").length>0) return true;
+		else if ($("#fileList tr[data-file='"+simpleEscape(data.files[i].name)+"']").length>0) return true;
 	}
 	return false;
 }
@@ -931,9 +933,14 @@ function initFileUpload() {
 	$(".action.upload").click(function(event) { 
 		preventDefault(event); 
 		if ($(this).hasClass("disabled")) return;
-		$("#file-upload-form input[type=file]").trigger('click'); 
+		$("#file-upload-form input[type=file]").removeAttr("directory webkitdirectory mozdirectory").trigger('click'); 
 	});
-	
+	$(".action.uploaddir.uibutton").button();
+	$(".action.uploaddir").click(function(event) {
+		preventDefault(event);
+		if ($(this).hasClass("disabled")) return;
+		$("#file-upload-form input[type=file]").attr({"directory":"directory","webkitdirectory":"webkitdirectory","mozdirectory":"mozdirectory"}).trigger('click');
+	});
 	$(document).on('dragenter', function (e) {
 		$("#fileList").addClass('draghover');
 	}).on('dragleave', function(e) {
