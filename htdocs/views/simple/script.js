@@ -915,7 +915,12 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 }
 function checkUploadedFilesExist(data) {
 	for (var i=0; i<data.files.length; i++) {
-		if ($("#fileList tr[data-file='"+simpleEscape(data.files[i].name)+"']").length>0) return true;
+		if (data.files[i].relativePath && data.files[i].relativePath !="") {
+			var d = data.files[i].relativePath.split(/[\\\/]/)[0] + '/';
+			if ($("#fileList tr[data-file='"+simpleEscape(d)+"']").length>0) return true;	
+		} else {
+			if ($("#fileList tr[data-file='"+simpleEscape(data.files[i].name)+"']").length>0) return true;
+		}
 	}
 	return false;
 }

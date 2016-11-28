@@ -79,7 +79,14 @@ sub mkdirhier {
     }
     return $self->{backend}->mkcol($path);
 }
-
+sub _normalize {
+    my ($self, $path) = @_;
+    if (!$path) { return $path };
+    $path =~ s{\\}{/}xmsg;
+    $path =~ s{//}{/}xmsg;
+    $path =~ s{/[^/]+/[.][.]/?}{/}xmsg;
+    return $path;
+}
 sub handle_post_upload {
     my ($self) = @_;
     my @filelist;
@@ -93,12 +100,10 @@ sub handle_post_upload {
         my $destination =
           $PATH_TRANSLATED . $self->{backend}->basename($rfn);
 
-        if (my $relapath = $self->{cgi}->param('relapath')) {
-            $relapath =~ s{\\}{/}xmsg;
-            if ($relapath ne q{}) {
-                $self->mkdirhier($PATH_TRANSLATED.$relapath);
-                $destination = $PATH_TRANSLATED . $relapath . $self->{backend}->basename($rfn);
-            }
+        my $relapath = $self->_normalize($self->{cgi}->param('relapath')); 
+        if ( $relapath  && $relapath ne q{}) {
+            $self->mkdirhier($PATH_TRANSLATED.$relapath);
+            $destination = $PATH_TRANSLATED . $relapath . $self->{backend}->basename($rfn);
         }
 
         push @filelist, $self->{backend}->basename($rfn);

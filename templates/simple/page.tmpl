@@ -59,7 +59,7 @@ $INCLUDE(htmlhead)</head>
 		<div id="new">
 			<a href="#" class="action new" data-action="new" accesskey="n">$tl(new)</a> 
 			<!--IF($config(ALLOW_POST_UPLOADS))-->
-				<a href="#" class="action upload uibutton access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr"><input type="hidden" name="filesubmit" value="yes"/><input id="file-upload-form-relapath" type="hidden" name="relapath" value=""/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
+				<a href="#" class="action upload uibutton access-writeable hideit" id="fileuploadbutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</a><form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr" multiple directory webkitdirectory mozdirectory><input type="hidden" name="filesubmit" value="yes"/><input id="file-upload-form-relapath" type="hidden" name="relapath" value=""/><input class="file-upload" type="file" name="file_upload" multiple="multiple"/></form>
 			<!--ENDIF-->
 			<!--IF($config(ENABLE_CLIPBOARD))-->			
 				<a class="listaction paste uibutton" href="#" data-action="paste" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v">&nbsp;</a>
