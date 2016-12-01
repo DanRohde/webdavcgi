@@ -36,11 +36,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.zipdwnload:hover, .action.zipdwnload:focus {
 	background-image: url(zipdwnload-hover.png);
 }
-.listaction.zipdwnload {
+.listaction.zipdwnload, .ui-button.listaction.zipdwnload {
 	background-image: url(zipdwnload.png);
 	background-repeat: no-repeat;
 	background-position: 4px center;
-	background-color: inherit;
 }
 .listaction.zipdwnload:hover, .listaction.zipdwnload:focus {
 	background-image: url(zipdwnload-hover.png);

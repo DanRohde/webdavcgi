@@ -177,13 +177,45 @@ table,th,td {
 	height: 20px;
 }
 .toggleselection, .selectall, .selectnone {
-	width: 20px;
-	height: 22px;
-	margin-left: 4px;
-	margin-bottom: 3px; 
-	border: 0;
-	cursor: pointer;
+    width: 24px;
+    height: 24px;
+    margin: 2px;
+    /*margin-left: 4px;
+    margin-bottom: 3px;*/ 
+    border: 0;
+    cursor: pointer;
+    background-image: url(images/sprite.png);
+    background-color: white;
+    background-repeat: no-repeat;
 }
+.toggleselection {
+    background-position: center -898px;
+}
+.selectall {
+    background-position: center -1298px;
+}
+.selectnone {
+    background-position: center -1338px;
+}
+#popupmenu .toggleselection {
+	background-position: -2px -896px;
+}
+#popupmenu .selectall {
+	background-position: -2px -1296px; 
+}
+#popupmenu .selectnone {
+	background-position: -2px -1336px;
+}
+
+.toggleselection:hover, .toggleselection:focus, 
+.selectall:hover, .selectall:focus,
+.selectnone:hover, .selectnone:focus {
+    background-image: url(images/sprite-hover.png);
+    background-color: #ededed;
+    opacity: 1;
+    filter: Alpha(opacity=100);
+}
+
 #popupmenu .toggleselection, #popupmenu .selectall, #popupmenu .selectnone, #popupmenu .select {
 	padding-left: 22px;
 }
@@ -201,27 +233,20 @@ table,th,td {
 	background-position: left -895px, right 2px center;
 	background-color: #f9f9f9;
 }
-.toggleselection {
-	background: white url(images/sprite.png) no-repeat -2px -895px;
+.action, .listaction, .ui-button.action, .ui-button.listaction {
+    background-image: url(images/sprite.png);
+    background-repeat: no-repeat;
+    background-color: transparent;
 }
-.toggleselection:hover {
-	background: white url(images/sprite-hover.png) no-repeat -2px -895px;
+.action:focus, .action:hover, .listaction:focus, .listaction:hover,
+.ui-button.action:focus, .ui-button.action:hover, .ui-button.listaction:focus, .ui-button.listaction:hover,
+.ui-button.action:active, .ui-button.istaction:active {
+    background-image: url(images/sprite-hover.png);
+    background-repeat: no-repeat;
+    background-color: #ddd;
 }
-.selectall {
-	background: white url(images/sprite.png) no-repeat -2px -1295px;
-}
-.selectall:hover {
-	background: white url(images/sprite-hover.png) no-repeat -2px -1295px;
-}
-.selectnone {
-	background: white url(images/sprite.png) no-repeat -2px -1335px;
-}
-.selectnone:hover {
-	background: white url(images/sprite-hover.png) no-repeat -2px -1335px;
-}
-.toggleselection:hover, .selectall:hover, .selectnone:hover {
-	opacity: 1;
-	filter: Alpha(opacity=100);
+.new.popup .action:hover, .new.popup .action:focus {
+	background-color: transparent;
 }
 #headerSize {
 	width: 8em;
@@ -364,11 +389,8 @@ tr.isreadable-no:hover {
 	z-index: 80;
 }
 .filterbox .action.clearfilter {
-	background: url(images/sprite.png) no-repeat left -694px;
+	background-position: left -694px;
 	width: 22px;
-}
-.filterbox .action.clearfilter:hover {
-	background: url(images/sprite-hover.png) no-repeat left -694px;
 }
 .filterbox input:focus {
 	width: 15em;
@@ -384,47 +406,26 @@ tr.isreadable-no:hover {
 	padding-right: 1em;
 }
 .action.rename {
-	background: url(images/sprite.png) no-repeat left -500px;
-}
-.action.rename:hover {
-	background: url(images/sprite-hover.png) no-repeat left -500px;
+	background-position: left -500px;
 }
 .action.delete, .listaction.delete {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: left -220px;
     padding-left: 22px;
 	color: black;
 }
-.action.delete:hover, .listaction.delete:hover,
-.action.delete:focus, .listaction.delete:focus {
-	background-image: url(images/sprite-hover.png);
-}
 .action.props {
-	background: url(images/sprite.png) no-repeat 2px -21px;
+	background-position: 2px -21px;
 }
-.action.props:hover {
-	background: url(images/sprite-hover.png) no-repeat 2px -21px;
+.listaction.delete, .ui-button.listaction.delete {
+	background-position: 4px -216px;
 }
-.listaction.delete {
-	background-position: 4px -214px;
-}
-
-.listaction.copy, .listaction.paste, .listaction.cut {
-	background-image: url(images/sprite.png);
-    background-repeat: no-repeat;
-}
-.listaction.copy:hover, .listaction.paste:hover, .listaction.cut:hover,
-.listaction.copy:focus, .listaction.paste:focus, .listaction.cut:focus {
-    background-image: url(images/sprite-hover.png);
-}
-.listaction.copy {
+.listaction.copy,.ui-button.listaction.copy {
 	background-position: center -134px;
 }
-.listaction.cut {
+.listaction.cut,.ui-button.listaction.cut {
 	background-position: center -174px;
 }
-.listaction.paste {
+.listaction.paste, .ui-button.listaction.paste {
 	background-position: center -374px;
 }
 .icon {
@@ -463,13 +464,8 @@ tr.isreadable-no:hover {
 	text-shadow: 0 1px 0 #f8f8f8;
 	font-size: 100%;
 }
-.action.changedir {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
+.action.changedir, .ui-button.action.changedir {
 	background-position: center -856px;
-}
-.action.changedir:hover, .action.changedir:focus {
-	background-image: url(images/sprite-hover.png);
 }
 #pathinput {
 	z-index: 70;
@@ -530,15 +526,6 @@ tr.isreadable-no:hover {
 }
 #new ul li a, #bookmarks ul li a  {
 	padding: 0.2em 0.5em 0.2em 22px ;
-}
-.action.create-folder, .action.create-file, .action.create-symlink {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-}
-.action.create-folder:hover, .action.create-file:hover, .action.create-symlink:hover,
-.action.create-folder:focus, .action.create-file:focus, .action.create-symlink:focus
-{
-    background-image: url(images/sprite-hover.png);
 }
 .action.create-folder {
 	background-position: left -740px;
@@ -721,30 +708,15 @@ li.sep {
 	display: inline;
 	position: absolute;
 }
-.action.addbookmark {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
+.action.addbookmark, .ui-button.action.addbookmark {
 	background-position: center -54px;
 }
-.action.addbookmark:hover,.action.addbookmark:focus {
-	background-image: url(images/sprite-hover.png);
-}
-.action.bookmarkmenu {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
+.action.bookmarkmenu, .ui-button.action.bookmarkmenu {
 	background-position: center -94px;
 }
-.action.bookmarkmenu:hover,.action.bookmarkmenu:focus {
-	background-image: url(images/sprite-hover.png); 
-}
 .action.rmsinglebookmark {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: left -220px;
 	width: 22px;
-}
-.action.rmsinglebookmark:hover, .action.rmsinglebookmark:focus {
-	background-image: url(images/sprite-hover.png);
 }
 .time.right, .time-desc.right, .path.right, .path-desc.right {
 	margin-right: 7px;
@@ -761,24 +733,14 @@ li.sep {
 	margin:0;
 }
 .action.rmbookmark {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -212px;
 	background-color: white;
 	padding-left: 24px;
 }
-.action.rmbookmark:hover, .action.rmbookmark:focus  {
-	background-image: url(images/sprite-hover.png);
-}
 .action.rmallbookmarks {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -218px;
 	background-color: white;
 	padding-left: 24px;
-}
-.action.rmallbookmarks:hover, .action.rmallbookmarks:focus {
-	background-image: url(images/sprite-hover.png);
 }
 .action.gotobookmark, .dyn-bookmark {
 	background-image: url(images/sprite.png);
@@ -787,8 +749,7 @@ li.sep {
 	background-color: white;
 	padding-left: 24px;
 }
-.action.gotobookmark:hover, .dyn-bookmark:hover,
-.action.gotobookmark:focus, .dyn-bookmark:focus {
+.dyn-bookmark:hover, .dyn-bookmark:focus {
 	background-image: url(images/sprite-hover.png);
 }
 #quota {
@@ -838,36 +799,16 @@ td.center {
 	text-align: center;
 }
 #nav .action.refresh {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -410px;
 }
-#nav .action.refresh:hover, #nav .action.refresh:focus {
-	background-image: url(images/sprite-hover.png);
-}
 #nav .action.viewfilter {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -651px;
 }
-#nav .action.viewfilter:hover, #nav .action.viewfilter:focus {
-	background-image: url(images/sprite-hover.png);
-}
 #nav .action.settings {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -1132px;
 }
-#nav .action.settings:hover, #nav .action.settings:focus {
-	background-image: url(images/sprite-hover.png);
-}
 #nav .action.about {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -12px;
-}
-#nav .action.about:hover, #nav .action.about:focus {
-	background-image: url(images/sprite-hover.png);
 }
 .viewfilterdialog.ui-dialog .ui-dialog-title {
 	background: url(images/sprite.png) no-repeat 0 -660px;
@@ -929,23 +870,13 @@ input[readonly=readonly] {
 img {
 	border: 0;
 }
-.action.upload {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
+.action.upload, .ui-button.action.upload {
 	background-position: left -536px;
 	padding-left: 22px;
 }
-.action.upload:hover, .action.upload:focus {
-	background-image: url(images/sprite-hover.png);
-}
 .action.uploaddir {
-    background-image: url(images/sprite.png);
-    background-repeat: no-repeat;
     background-position: left -1621px;
     padding-left: 22px;	
-}
-.action.uploaddir:hover, .action.uploaddir:focus {
-	background-image: url(images/sprite-hover.png);
 }
 #popupmenu .uploaddir {
 	background-position: left -1616px;
@@ -1047,19 +978,11 @@ img {
 }
 .action.setautorefresh {
 	padding-left: 24px;
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -420px;
 	height: 24px;
 }
-.action.setautorefresh:hover, .action.setautorefresh:focus {
-	background-image: url(images/sprite-hover.png);
-}
-.action.autorefreshmenu {
-	background: url(images/sprite.png) no-repeat center -414px;
-}
-.action.autorefreshmenu:hover, .action.autorefreshmenu:focus {
-	background: url(images/sprite-hover.png) no-repeat center -414px;
+.action.autorefreshmenu, .ui-button.action.autorefreshmenu {
+	background-position: center -414px;
 }
 #autorefreshtimer {
 	display: none;
@@ -1077,34 +1000,19 @@ img {
 	cursor: move;
 }
 .action.autorefreshtoggle {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -1180px;
 	padding-left: 24px;
 	height: 24px;
 }
-.action.autorefreshtoggle:hover, .action.autorefreshtoggle:focus {
-	background-image: url(images/sprite-hover.png);
-}
 .action.autorefreshtoggle.running {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -1220px;
 	padding-left: 24px;
 	height: 24px;
 }
-.action.autorefreshtoggle.running:hover {
-	background-image: url(images/sprite-hover.png);
-}
 .action.autorefreshclear {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
 	background-position: 2px -1259px;
 	padding-left: 24px;
 	height: 24px;
-}
-.action.autorefreshclear {
-	background-image: url(images/sprite-hover.png);
 }
 #autorefreshtimer .action.autorefreshtoggle {
 	background-position: center -1182px;
@@ -1277,9 +1185,14 @@ img {
 	position: absolute;
 	background: white;
 	border: 1px solid #dddddd;
+	padding: 2px 0 0 0;
+	margin: -4px 0 0 0;
+	box-shadow: 3px 0 7px #dddddd;
+}
+.dropdown-menu-item {
 	padding: 0;
 	margin: 0;
-	box-shadow: 3px 0 7px #dddddd;
+	border: 0;
 }
 .accesskeydetails {
 	font-family: monospace;
@@ -1317,35 +1230,19 @@ img {
 	background-repeat: no-repeat;
 }
 #popupmenu .listaction.copy {
-	background-image: url(images/sprite.png);
 	background-position: left -134px;
 }
-#popupmenu .listaction.copy:hover {
-	background-image: url(images/sprite-hover.png);
-}
 #popupmenu .listaction.cut {
-	background-image: url(images/sprite.png);
 	background-position: left -174px;
 }
-#popupmenu .listaction.cut:hover {
-	background-image: url(images/sprite-hover.png);
-}
 #popupmenu .listaction.paste {
-	background-image: url(images/sprite.png);
 	background-position: left -374px;
-}
-#popupmenu .listaction.paste:hover {
-	background-image: url(images/sprite-hover.png);
 }
 #popupmenu .listaction.delete {
 	background-position: left -216px;
 }
 #popupmenu .action.rename {
-	background-image: url(images/sprite.png);
 	background-position: left -495px;
-}
-#popupmenu .action.rename:hover {
-	background-image: url(images/sprite-hover.png);
 }
 #popupmenu ul {
 	display: none;
@@ -1609,4 +1506,13 @@ img {
 	margin: 2px;
 	padding: 0;
 	font-weight: bold;
+}
+.action.new {
+	background-image: none;
+}
+.action.new:focus, .action.new:hover, .ui-button.action.new:focus, .ui-button.action.new:hover {
+	background-image: none;
+}
+.action.changeUri:focus, .action.changeUri:hover  {
+	background-image: url(icons/sprite.png);
 }
