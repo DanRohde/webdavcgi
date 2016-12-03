@@ -237,6 +237,7 @@ table,th,td {
     background-image: url(images/sprite.png);
     background-repeat: no-repeat;
     background-color: transparent;
+    cursor: pointer;
 }
 .action:focus, .action:hover, .listaction:focus, .listaction:hover,
 .ui-button.action:focus, .ui-button.action:hover, .ui-button.listaction:focus, .ui-button.listaction:hover,
@@ -300,6 +301,7 @@ table,th,td {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: center -1658px;
+	cursor: pointer;
 }
 .fileactions-dropdown:focus, .fileactions-dropdown:hover {
 	background-image: url(images/sprite-hover.png);
