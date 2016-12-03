@@ -143,9 +143,14 @@ $INCLUDE(htmlhead)</head>
 	<img id="emptyimage" src="${VHTDOCS}views/simple/icons/blank.png">
 	<div id="confirmdialog" data-title="$tl(confirm)"></div>
 	<div id="fileactions">
-		<a class="action rename access-writeable" href="#" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></a>
-		$extension(fileaction)
-		<a class="action delete" href="#" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></a>
+		<ul class="dropdown">
+			<li class="dropdown-click"><span class="fileactions-dropdown" title="$tl(fileactions)" tabindex="0"></span><ul class="dropdown-menu">
+				<li class="dropdown-menu-item action rename access-writeable" href="#" tabindex="0" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></li>
+				$extension(fileaction)
+				<li class="dropdown-menu-item action delete" href="#" tabindex="0" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
+				</ul>
+			</li> 
+		</ul>
 	</div>
 	<div id="renamefield">
 		<div class="renamefield"> <input type="text" size="50" name="newfilename" value="$filename"/> </div>

@@ -388,7 +388,7 @@ sub _render_mail_dialog {
             $self->{backend}->basename($PATH_TRANSLATED) . '.zip'
         ),
     );
-    $content =~ s/\${?(\w+)}?/exists $vars{$1} ? $vars{$1} : q{}/exmsg;
+    $content =~ s/\$[{]?(\w+)[}]?/exists $vars{$1} ? $vars{$1} : q{}/exmsg;
 
     print_compressed_header_and_content( '200 OK', 'text/html', $content,
         'Cache-Control: no-cache, no-store' );

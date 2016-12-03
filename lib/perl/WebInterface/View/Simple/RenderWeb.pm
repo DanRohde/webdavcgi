@@ -127,7 +127,20 @@ sub exec_template_function {
     }
     return $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
 }
-
+sub render_extension_element {
+    my ( $self, $hook, $params ) = @_;
+    if ($hook =~ /^(?:new)$/xms) {
+        $params->{type} = 'li-a';
+            }
+    if ($hook =~ /^(?:fileaction|fileactionpopupnew)$/xms) {
+        $params->{type} = 'li';
+        if ($hook eq 'fileaction') {
+            $params->{classes} .= 'dropdown-menu-item';
+        }
+        
+    }
+    return $self->SUPER::render_extension_element($hook, $params);
+}
 sub render_viewfilter_dialog {
     my ( $self, $tmplfile ) = @_;
     my $content = $self->read_template($tmplfile);

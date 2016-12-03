@@ -24,7 +24,7 @@ tr.iswriteable-no .action.edit,
 .action.edit {
 	background-image: url(edit.png);
 	background-repeat: no-repeat;
-	background-position: left center;
+	background-position: 2px center;
 }
 .action.edit:hover, .action.edit:focus {
 	background-image: url(edit-hover.png);
@@ -32,8 +32,24 @@ tr.iswriteable-no .action.edit,
 #popupmenu .action.edit {
 	background-position: 2px center;
 }
-#edittextdata .action.savetextdata { display: block; width: 40%; float: right;}
-#edittextdata .action.cancel-edit { display: block; width: 40%;  float: left; }
+#edittextdata .action.savetextdata { 
+	display: block;
+	float: right;
+	background-position: 20px -1696px;
+	padding-left: 42px;
+	padding-right: 22px;
+	margin-left: 10%;
+	margin-right: 10%;
+}
+#edittextdata .action.cancel-edit { 
+	display: block;
+	float: left;
+	background-position: 20px -696px;
+	padding-left: 42px;
+	padding-right: 22px;
+	margin-left: 10%;
+	margin-right: 10%;
+}
 
 .edittextdata.ui-dialog .ui-dialog-title {
 	background-image: url(edit.png);

@@ -136,8 +136,8 @@ sub exec_template_function {
     return $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
 }
 
-sub _render_extension_element {
-    my ( $self, $a ) = @_;
+sub render_extension_element {
+    my ( $self, $hook, $a ) = @_;
     my $content = q{};
     if ( ref($a) eq 'HASH' ) {
         if ( ${$a}{subpopupmenu} ) {
@@ -148,7 +148,7 @@ sub _render_extension_element {
                 ( ${$a}{title} || q{} )
                     . $self->{cgi}->ul(
                     { -class => 'subpopupmenu extension' },
-                    $self->_render_extension_element( ${$a}{subpopupmenu} )
+                    $self->render_extension_element( $hook, ${$a}{subpopupmenu} )
                     )
             );
         }
@@ -201,7 +201,7 @@ sub _render_extension_element {
     }
     elsif ( ref($a) eq 'ARRAY' ) {
         $content = join q{},
-            map { $self->_render_extension_element($_) } @{$a};
+            map { $self->render_extension_element($hook, $_) } @{$a};
     }
     else {
         $content .= $a;
@@ -241,7 +241,7 @@ sub _render_extension {
     }
 
     return join q{},
-        map { $self->_render_extension_element($_) }
+        map { $self->render_extension_element($hook, $_) }
         @{ $self->{config}{extensions}
             ->handle( $hook, { path => $PATH_TRANSLATED } ) // [] };
 }

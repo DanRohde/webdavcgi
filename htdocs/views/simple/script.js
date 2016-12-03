@@ -497,6 +497,11 @@ function initUIEffects() {
 			}
 		).on("focus", function() { $(".dropdown-menu",$(this)).show(); } )
 		.on("keyup", function(e) { if (e.keyCode==13 || e.keyCode == 32) $(".dropdown-menu" , $(this)).hide(); } );
+		$(".dropdown-click")
+			.off("click keyup")
+			.on("click", function(e) { preventDefault(e); $(".dropdown-menu",$(this)).toggle(); })
+			.on("keyup", function(e) { if (e.keyCode==13 || e.keyCoce == 32) $(".dropdown-men",$(this)).toggle(); })
+			;
 	});
 }
 function initWindowResize() {
