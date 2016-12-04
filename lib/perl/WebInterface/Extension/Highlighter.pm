@@ -93,7 +93,7 @@ sub init {
                         order  => 1,
                     },
                     'font-style' => {
-                        values   => 'lighter,bold,bolder,italic,oblique,serif,sans-serif,cursive,fantasy,monospace',
+                        values   => 'lighter,bold,bolder,italic,oblique',
                         styles   => { italic  => 'font-style', oblique => 'font-style', _default => 'font-weight' },
                         order      => 2,
                     },
