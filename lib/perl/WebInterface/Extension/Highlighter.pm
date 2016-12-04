@@ -118,7 +118,7 @@ sub init {
                 subpopupmenu => {
                     'text-decoration' => {
                         values        => 'underline,overline,line-through,underline overline,overline underline line-through,underline line-through,overline line-through',
-                        style         => 'text-decoration-line',
+                        style         => 'text-decoration',
                         order         => 3,
                     },
                     'text-decoration-color' => {
@@ -132,7 +132,7 @@ sub init {
                     'text-decoration-style' => {
                         values              => 'solid,double,dotted,dashed,wavy',
                         style               => 'text-decoration-style',
-                        labelcss            => 'text-decoration: underline;',
+                        labelcss            => 'text-decoration-line: underline;',
                         order               => 5,
                     },
                 },
