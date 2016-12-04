@@ -51,14 +51,14 @@ sub init {
         'attributes',
         {
             'color' => {
-                values      => '#FF0000,#008000,#0000FF,#FFA500,#800080',
+                values      => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
                 style  => 'color',
                 labelstyle => 'background-color',
                 colorpicker => 1,
                 order       => 2,
             },
             'background-color' => {
-                values      => '#F08080,#ADFF2F,#ADD8E6,#FFFF00,#DDA0DD',
+                values      => '#F07E50,#ADFF2F,#ADD8E6,#FFFF00,#EE82EE',
                 style  => 'background-color',
                 colorpicker => 1,
                 order       => 1,
@@ -66,7 +66,7 @@ sub init {
             'border' => {
                 subpopupmenu => {
                    'border-color'   => {
-                        values      => '#FF0000,#008000,#0000FF,#FFA500,#800080',
+                        values      => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
                         style       => 'border-color',
                         labelstyle  => 'background-color',
                         colorpicker => 1,
@@ -118,7 +118,7 @@ sub init {
                         order         => 3,
                     },
                     'text-decoration-color' => {
-                        values              => '#FF0000,#008000,#0000FF,#FFA500,#800080',
+                        values              => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
                         style               => 'text-decoration-color',
                         labelstyle          => 'background-color',
                         colorpicker         => 1,
