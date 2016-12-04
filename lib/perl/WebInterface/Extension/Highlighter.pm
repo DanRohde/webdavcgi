@@ -52,8 +52,9 @@ sub init {
         {
             'color' => {
                 values      => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
-                style  => 'color',
-                labelstyle => 'background-color',
+                style       => 'color',
+                labelcss    => 'color: white; font-weight: bold;',
+                labelstyle  => 'background-color',
                 colorpicker => 1,
                 order       => 2,
             },
@@ -69,17 +70,20 @@ sub init {
                         values      => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
                         style       => 'border-color',
                         labelstyle  => 'background-color',
+                        labelcss    => 'border-style: solid; border-width: 1px;color: white; font-weight: bold;',
                         colorpicker => 1,
                         order       => 1,
                     },
                     'border-width' => {
                         values     => 'thin,medium,thick',
                         style      => 'border-width',
+                        labelcss   => 'border-style: solid; border-color: black;',
                         order      => 2,
                     },
                     'border-style' => {
-                        values     => 'hidden,dotted,dashed,solid,double,groove,ridge,inset,outset',
+                        values     => 'dotted,dashed,solid,double,groove,ridge,inset,outset',
                         style      => 'border-style',
+                        labelcss   => 'border-color: gray; border-width: 3px;',
                         order      => 3,
                     }
                 },
@@ -114,19 +118,21 @@ sub init {
                 subpopupmenu => {
                     'text-decoration' => {
                         values        => 'underline,overline,line-through,underline overline,overline underline line-through,underline line-through,overline line-through',
-                        style         => 'text-decoration',
+                        style         => 'text-decoration-line',
                         order         => 3,
                     },
                     'text-decoration-color' => {
                         values              => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
                         style               => 'text-decoration-color',
                         labelstyle          => 'background-color',
+                        labelcss            => 'color: white; font-weight: bold;',
                         colorpicker         => 1,
                         order               => 4,
                     },
                     'text-decoration-style' => {
-                        values              => 'solid,double,dotted,dashed',
+                        values              => 'solid,double,dotted,dashed,wavy',
                         style               => 'text-decoration-style',
+                        labelcss            => 'text-decoration: underline;',
                         order               => 5,
                     },
                 },
@@ -179,7 +185,10 @@ sub _create_subpopup {
         @subpopup = map {
             {
                 action => 'mark',
-                attr   => { style => ( $attribute->{labelstyle} // $self->_get_style($attribute, $_) ) . ": $_;" },
+                attr   => { style =>   ( $attribute->{labelcss} // '' ) 
+                                     . ( $attribute->{labelstyle} // $self->_get_style($attribute, $_) ) . ": $_;" 
+                                    ,             
+                },
                 data  => { value => $_, style => $self->_get_style($attribute, $_) },
                 label => $self->tl( $attribute->{label} // "highlighter.$attrname.".$self->_quote($_), $_ ),
                 title => $self->tl( "highlighter.$attrname.title.".$self->_quote($_), $_ ),
