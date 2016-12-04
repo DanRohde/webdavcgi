@@ -198,6 +198,27 @@ sub db_insertProperty {
     }
     return $ret;
 }
+sub db_insertProperties {
+    my ( $self, @triplets) = @_;
+    my $ret = 0;
+    my $dbh = $self->db_init();
+    my $tc = ($#triplets+1) / 3;
+    foreach my $i (1..$tc) {
+        my $j = ($i-1) * 3;
+        $triplets[$j] = $PREFIX . $triplets[$j];
+        $self->{cache}->set_entry( [ 'Properties', $triplets[$j], $triplets[$j + 1] ], $triplets[$j + 2] );
+    }
+    my $sth = $dbh->prepare(
+        'INSERT INTO webdav_props (fn, propname, value) VALUES ( ?, ?, ? ) '
+        . (  ' , ( ?, ?, ? )' x ($tc - 1) )
+        );
+    if ( defined $sth ) {
+        $sth->execute( @triplets );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+    }
+    return $ret;
+}
 
 sub db_updateProperty {
     my ( $self, $fn, $propname, $value ) = @_;

@@ -163,6 +163,9 @@ sub handle_hook_posthandler {
     elsif ( $action eq 'removemarks') {
         return $self->_remove_all_properties();
     }
+    elsif ( $action eq 'transfermarks') {
+        return $self->_replace_properties();
+    }
     return 0;
 }
 sub _quote {
@@ -185,9 +188,9 @@ sub _create_subpopup {
         @subpopup = map {
             {
                 action => 'mark',
-                attr   => { style =>   ( $attribute->{labelcss} // '' ) 
-                                     . ( $attribute->{labelstyle} // $self->_get_style($attribute, $_) ) . ": $_;" 
-                                    ,             
+                attr   => { style =>   ( $attribute->{labelcss} // q{} )
+                                     . ( $attribute->{labelstyle} // $self->_get_style($attribute, $_) ) . ": $_;"
+                                    ,
                 },
                 data  => { value => $_, style => $self->_get_style($attribute, $_) },
                 label => $self->tl( $attribute->{label} // "highlighter.$attrname.".$self->_quote($_), $_ ),
@@ -218,7 +221,7 @@ sub _create_subpopup {
     return \@subpopup;
 }
 sub _create_popups {
-    my ( $self, $attributes ) = @_;
+    my ( $self, $attributes, $top ) = @_;
     my @popups = ();
     foreach my $attribute (
         sort {
@@ -233,13 +236,21 @@ sub _create_popups {
             classes      => "highlighter $attribute"
           };
     }
+    if ($top) {
+        push @popups,
+             {
+                action => 'transfermarks',
+                data   => { styles => join q{,},@{$self->_get_all_propnames($attributes)} },
+                label  => $self->tl('highlighter.transfermarks'),
+                type   => 'li', classes=> 'sep',
+            };
+    }
     push @popups,
          {
-            action => 'removemarks',
-            data => { styles => join q{,},@{$self->_get_all_propnames($attributes)} },
-            label => $self->tl('highlighter.removeallmarks'),
-            type   => 'li',
-            classes => 'sep',
+            action  => 'removemarks',
+            data    => { styles => join q{,},@{$self->_get_all_propnames($attributes)} },
+            label   => $self->tl('highlighter.removeallmarks'),
+            type    => 'li', classes => 'sep',
         };
     return \@popups;
 }
@@ -247,18 +258,25 @@ sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
         title        => $self->tl('highlighter'),
-        subpopupmenu => $self->_create_popups($self->{attributes}),
+        subpopupmenu => $self->_create_popups($self->{attributes}, 1),
         classes      => 'highlighter-popup'
     };
 }
 sub _get_all_propnames {
     my ( $self, $attributes ) = @_;
     my @propnames = ();
+    my %propexists = ();
     foreach my $attr ( keys %{ $attributes } )  {
         if ($attributes->{$attr}{subpopupmenu}) {
             push @propnames, @{ $self->_get_all_propnames($attributes->{$attr}{subpopupmenu}) };
         } else {
-            push @propnames, $attributes->{$attr}{styles} ? values %{$attributes->{$attr}->{styles}} : $attributes->{$attr}{style};
+            my @allnames = $attributes->{$attr}{styles} ? values %{$attributes->{$attr}->{styles}} : $attributes->{$attr}{style};
+            foreach my $propname (@allnames) {
+                if ( ! $propexists{$propname}) {
+                    push @propnames, $propname;
+                    $propexists{$propname} = 1;
+                }
+            }
         }
     }
     return \@propnames;
@@ -341,7 +359,36 @@ sub _save_property {
     );
     return 1;
 }
-
+sub _replace_properties {
+    my ($self) = @_;
+    my $db = $self->{db};
+    my %jsondata = ();
+    my $data = $self->{json}->decode(scalar $self->{cgi}->param('data'));
+    my @allpropnames = @{ $self->_get_all_propnames($self->{attributes}) };
+    my @props = ();
+    foreach my $file ( $self->get_cgi_multi_param('files') ) {
+        my $full = $self->{backend}->resolveVirt($PATH_TRANSLATED . $self->_strip_slash($file));
+        $db->db_removeProperties($full,  map { $self->{namespace} . $_ }  @allpropnames);
+        foreach my $date (@allpropnames) {
+            if (my $value = $data->{$date}) {
+                my $propname = $self->{namespace} . $date;
+                push @props, $full, $propname, $value;
+            }
+        }
+    }
+    if ($#props >= 0 ) {
+        my $result = $db->db_insertProperties(@props);
+        if (!$result) {
+            $jsondata{error} = sprintf $self->tl('highlighter.highlightingfailed'), q{};
+        }
+    }
+    print_compressed_header_and_content(
+        '200 OK', 'application/json',
+        $self->{json}->encode( \%jsondata ),
+        'Cache-Control: no-cache, no-store'
+    );
+    return 1;
+}
 sub _strip_slash {
     my ( $self, $file ) = @_;
     $file =~ s/\/$//xms;
