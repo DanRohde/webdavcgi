@@ -163,7 +163,7 @@ EOF
     $SHOW_LOCKS              = 1;
     $ENABLE_BOOKMARKS        = 1;
     $VIEW                    = 'simple';
-    @SUPPORTED_VIEWS         = ('simple');
+    @SUPPORTED_VIEWS         = qw( simple );
     $ALLOW_POST_UPLOADS      = 1;
     $POST_MAX_SIZE           = 1_073_741_824;
     $SHOW_QUOTA              = 1;

@@ -33,7 +33,7 @@ use HTTPHelper qw( print_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    $hookreg->register( [qw( gethandler apps)], $self );
+    $hookreg->register( [qw( gethandler apps css )], $self );
     return $self;
 }
 sub handle_hook_gethandler {

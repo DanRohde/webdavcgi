@@ -52,16 +52,86 @@ sub init {
         {
             'color' => {
                 values      => '#FF0000,#008000,#0000FF,#FFA500,#800080',
-                labelstyle  => 'background-color',
+                style  => 'color',
+                labelstyle => 'background-color',
                 colorpicker => 1,
-                order       => 2
+                order       => 2,
             },
             'background-color' => {
-                values      => '#F08080,#ADFF2f,#ADD8E6,#FFFF00,#DDA0DD',
-                labelstyle  => 'background-color',
+                values      => '#F08080,#ADFF2F,#ADD8E6,#FFFF00,#DDA0DD',
+                style  => 'background-color',
                 colorpicker => 1,
-                order       => 1
+                order       => 1,
             },
+            'border' => {
+                subpopupmenu => {
+                   'border-color'   => {
+                        values      => '#FF0000,#008000,#0000FF,#FFA500,#800080',
+                        style       => 'border-color',
+                        labelstyle  => 'background-color',
+                        colorpicker => 1,
+                        order       => 1,
+                    },
+                    'border-width' => {
+                        values     => 'thin,medium,thick',
+                        style      => 'border-width',
+                        order      => 2,
+                    },
+                    'border-style' => {
+                        values     => 'hidden,dotted,dashed,solid,double,groove,ridge,inset,outset',
+                        style      => 'border-style',
+                        order      => 3,
+                    }
+                },
+                order => 3,
+            },
+            'font' => {
+                subpopupmenu => {
+                   'font-size' => {
+                        values => 'xx-large,x-large,larger,large,medium,small,smaller,x-small,xx-small',
+                        style  => 'font-size',
+                        order  => 1,
+                    },
+                    'font-style' => {
+                        values   => 'lighter,bold,bolder,italic,oblique,serif,sans-serif,cursive,fantasy,monospace',
+                        styles   => { italic  => 'font-style', oblique => 'font-style', _default => 'font-weight' },
+                        order      => 2,
+                    },
+                    'font-family' => {
+                        values    => 'serif,sans-serif,cursive,fantasy,monospace',
+                        style     => 'font-family',
+                        order     => 2,
+                    },
+                    'text-transform' => {
+                        values       => 'lowercase,uppercase,capitalize,small-caps',
+                        styles       => { _default => 'text-transform', 'small-caps' => 'font-variant' },
+                        order        => 6,
+                    },
+                },
+                order => 10,
+            },
+            'text' => {
+                subpopupmenu => {
+                    'text-decoration' => {
+                        values        => 'underline,overline,line-through,underline overline,overline underline line-through,underline line-through,overline line-through',
+                        style         => 'text-decoration',
+                        order         => 3,
+                    },
+                    'text-decoration-color' => {
+                        values              => '#FF0000,#008000,#0000FF,#FFA500,#800080',
+                        style               => 'text-decoration-color',
+                        labelstyle          => 'background-color',
+                        colorpicker         => 1,
+                        order               => 4,
+                    },
+                    'text-decoration-style' => {
+                        values              => 'solid,double,dotted,dashed',
+                        style               => 'text-decoration-style',
+                        order               => 5,
+                    },
+                },
+                order => 15,
+             },
         }
     );
     $self->{json} = JSON->new();
@@ -84,42 +154,44 @@ sub handle_hook_posthandler {
     if ( $action eq 'mark' ) {
         return $self->_save_property();
     }
-    elsif ( $action eq 'removemark' ) {
-        return $self->_remove_property();
+    elsif ( $action eq 'removemarks') {
+        return $self->_remove_all_properties();
     }
     return 0;
 }
-
-sub handle_hook_fileactionpopup {
-    my ( $self, $config, $params ) = @_;
-
-    my @popups = ();
-    foreach my $attribute (
-        sort {
-            $self->{attributes}{$a}{order} <=> $self->{attributes}{$b}{order}
-        } keys %{ $self->{attributes} }
-      )
-    {
-        my @subpopup = map {
+sub _quote {
+    my ($self,$s) =@_;
+    $s=~s/\s+/_/xmsg;
+    return $s;
+}
+sub _get_style {
+    my ($self, $attribute, $val) = @_;
+    return $attribute->{styles}
+                ? $attribute->{styles}{$val} // $attribute->{styles}{_default}
+                : $attribute->{style};
+}
+sub _create_subpopup {
+    my ($self,$attrname, $attribute) = @_;
+    my @subpopup = ();
+    if ($attribute->{subpopupmenu}) {
+        return $self->_create_popups($attribute->{subpopupmenu});
+    } else {
+        @subpopup = map {
             {
                 action => 'mark',
-                attr   => {
-                    style => "$self->{attributes}{$attribute}{labelstyle}: $_;"
-                },
-                data  => { value => $_, style => $attribute },
-                label => sprintf(
-                    $self->tl( $self->{attributes}{$attribute}{label} // q{} ),
-                    $_
-                ),
-                title => $self->tl( "highlighter.$attribute.$_", $_ ),
-                type  => 'li'
+                attr   => { style => ( $attribute->{labelstyle} // $self->_get_style($attribute, $_) ) . ": $_;" },
+                data  => { value => $_, style => $self->_get_style($attribute, $_) },
+                label => $self->tl( $attribute->{label} // "highlighter.$attrname.".$self->_quote($_), $_ ),
+                title => $self->tl( "highlighter.$attrname.title.".$self->_quote($_), $_ ),
+                type  => 'li',
+                classes => $attrname,
             }
-        } split( /,/xms, $self->{attributes}{$attribute}{values} );
-        if ( $self->{attributes}{$attribute}{colorpicker} ) {
+        } split(/,/xms, $attribute->{values} );
+        if ( $attribute->{colorpicker} ) {
             push @subpopup,
               {
                 action  => 'markcolorpicker',
-                data    => { value => $_, style => $attribute },
+                data    => { value => $_, style => $attrname },
                 label   => $self->tl('highlighter.colorpicker'),
                 classes => 'sep',
                 type    => 'li'
@@ -127,29 +199,61 @@ sub handle_hook_fileactionpopup {
         }
         push @subpopup,
           {
-            action  => 'removemark',
-            data    => { style => $attribute },
-            label   => $self->tl("highlighter.remove.$attribute"),
+            action  => 'removemarks',
+            data    => { styles => $attribute->{styles} ? join(q{,}, values %{$attribute->{styles}}) : $attribute->{style} // $attrname },
+            label   => $self->tl("highlighter.remove.$attrname"),
             type    => 'li',
             classes => 'sep'
           };
-
+    }
+    return \@subpopup;
+}
+sub _create_popups {
+    my ( $self, $attributes ) = @_;
+    my @popups = ();
+    foreach my $attribute (
+        sort {
+            $attributes->{$a}{order} <=> $attributes->{$b}{order}
+        } keys %{ $attributes }
+      )
+    {
         push @popups,
           {
             title        => $self->tl("highlighter.$attribute"),
-            subpopupmenu => \@subpopup,
+            subpopupmenu => $self->_create_subpopup($attribute, $attributes->{$attribute}),
             classes      => "highlighter $attribute"
           };
     }
-
+    push @popups,
+         {
+            action => 'removemarks',
+            data => { styles => join q{,},@{$self->_get_all_propnames($attributes)} },
+            label => $self->tl('highlighter.removeallmarks'),
+            type   => 'li',
+            classes => 'sep',
+        };
+    return \@popups;
+}
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
     return {
         title        => $self->tl('highlighter'),
-        subpopupmenu => \@popups,
+        subpopupmenu => $self->_create_popups($self->{attributes}),
         classes      => 'highlighter-popup'
     };
-
 }
-
+sub _get_all_propnames {
+    my ( $self, $attributes ) = @_;
+    my @propnames = ();
+    foreach my $attr ( keys %{ $attributes } )  {
+        if ($attributes->{$attr}{subpopupmenu}) {
+            push @propnames, @{ $self->_get_all_propnames($attributes->{$attr}{subpopupmenu}) };
+        } else {
+            push @propnames, $attributes->{$attr}{styles} ? values %{$attributes->{$attr}->{styles}} : $attributes->{$attr}{style};
+        }
+    }
+    return \@propnames;
+}
 sub handle_hook_fileattr {
     my ( $self, $config, $params ) = @_;
 
@@ -160,7 +264,7 @@ sub handle_hook_fileattr {
     }
     $_CACHE{$self}{$parent} = 1;
     my %jsondata = ();
-    foreach my $prop ( keys %{ $self->{attributes} } ) {
+    foreach my $prop ( @{$self->_get_all_propnames($self->{attributes})} ) {
         if ( my $val =
             $self->{db}
             ->db_getPropertyFromCache( $path, $self->{namespace} . $prop ) )
@@ -179,17 +283,17 @@ sub handle_hook_fileattr {
       : {};
 }
 
-sub _remove_property {
+sub _remove_all_properties {
     my ($self) = @_;
     my %jsondata = ();
+    my @styles = map { $self->{namespace}.$_ } split /,/xms, $self->{cgi}->param('styles');
     foreach my $file ( $self->get_cgi_multi_param('files') ) {
-        $self->{db}->db_removeProperty(
+        $self->{db}->db_removeProperties(
             $self->{backend}
               ->resolveVirt( $PATH_TRANSLATED . $self->_strip_slash($file) ),
-            $self->{namespace} . $self->{cgi}->param('style')
+            @styles
         );
     }
-
     print_compressed_header_and_content(
         '200 OK', 'application/json',
         $self->{json}->encode( \%jsondata ),
@@ -197,14 +301,13 @@ sub _remove_property {
     );
     return 1;
 }
-
 sub _save_property {
     my ($self)   = @_;
     my %jsondata = ();
     my $db       = $self->{db};
     my $cgi      = $self->{cgi};
-    my $style = $cgi->param('style') || 'color';
-    my $value = $cgi->param('value') || 'black';
+    my $style = $cgi->param('style') // 'color';
+    my $value = $cgi->param('value') // 'black';
     my $propname = $self->{namespace} . $style;
 
     foreach my $file ( $self->get_cgi_multi_param('files') ) {

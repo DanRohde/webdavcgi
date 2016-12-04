@@ -260,8 +260,8 @@ sub cmp_files {
     if ( $ORDER =~ /^(lastmodified|created|size|mode)/xms ) {
         my $idx = $STATIDX{$1};
         return $factor * (
-            ( $self->{backend}->stat($fp_a) )[$idx]
-              <=> ( $self->{backend}->stat($fp_b) )[$idx]
+            ( ($self->{backend}->stat($fp_a) )[$idx] // 0 )
+              <=> (( $self->{backend}->stat($fp_b) )[$idx] // 0 )
               || $self->cmp_strings(
                 $self->{backend}->getDisplayName($fp_a),
                 $self->{backend}->getDisplayName($fp_b)

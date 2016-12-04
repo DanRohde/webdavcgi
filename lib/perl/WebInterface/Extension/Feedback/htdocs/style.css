@@ -91,6 +91,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .feedback-button:focus, .feedback-button:hover {
 	right: -102px;
+	background-color: #ec0;
 }
 .feedback-button.disabled  {
 	display: none;

@@ -374,6 +374,27 @@ sub db_removeProperty {
     }
     return $ret;
 }
+sub db_removeProperties {
+    my ($self, $fn, @propertynames ) = @_;
+    if ($#propertynames < 0) {
+        return 0;
+    }
+    my $dbh = $self->db_init();
+    my $sth = $dbh->prepare(
+        'DELETE FROM webdav_props WHERE (fn = ? OR fn = ?) AND ( propname = ?'
+        . ( ' OR propname = ? ' x $#propertynames ) . ' )'
+        );
+    my $ret = 0;
+    if ( defined $sth ) {
+        $sth->execute( $fn, $PREFIX . $fn, @propertynames );
+        $ret = ( $sth->rows > 0 ) ? 1 : 0;
+        $self->db_handleUpdates( $dbh, $sth );
+        foreach my $propname ( @propertynames) {
+            $self->{cache}->remove_entry( [ 'Properties', $fn, $propname ] );
+        }
+    }
+    return $ret;
+}
 
 sub db_getPropertyFnByValue {
     my ( $self, $propname, $value ) = @_;

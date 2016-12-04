@@ -2,6 +2,7 @@
      - moved source code from sourceforge to github
      - added folder upload support via folder drag and drop and menu dialog
      - changed file/folder action dialog
+     - improved Highlighter extension
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension
