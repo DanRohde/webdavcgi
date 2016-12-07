@@ -39,7 +39,7 @@ $INCLUDE(htmlhead)</head>
 			<li title="$tl(viewoptions)"><div class="accordion">
 					<h3>$tl(viewoptions)</h3> 
 					<div>
-						<ul>$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v" aria-label="$v">$tl(${v}view)</a></li>'#'$view'#
+						<ul>$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v" aria-label="$v">$tl(${v}view)</a></li>'#'^$view$'#
 							<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)"><span class="label">$tl(filter.title)</span></a></li>
 						</ul>
 					</div>

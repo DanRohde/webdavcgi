@@ -21,7 +21,7 @@ $each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show
 <td>
 	<select name="settings.view" id="settings.view">
 		<option value="$view" title="$view" aria-label="$tl(settings.view) $viewname">$viewname</option>
-		$each#@SUPPORTED_VIEWS#'<option value="$v" title="$v" aria-label="$tl(settings.view) $tl(${v}view)">$tl(${v}view)</option>'#'$view'#
+		$each#@SUPPORTED_VIEWS#'<option value="$v" title="$v" aria-label="$tl(settings.view) $tl(${v}view)">$tl(${v}view)</option>'#'^$view$'#
 	</select>
 </td>
 </tr>
