@@ -101,3 +101,4 @@ highlighter.savepresetfailed        "Entschuldigung, die Voreinstellung %s konnt
 highlighter.deletepreset            "Voreinstellung löschen"
 highlighter.confirmdeletepreset     "Wollen Sie wirklich die Voreinstellung '%s' löschen?"
 highlighter.nopresets               "Keine Voreinstellungen vorhanden"
+highlighter.morepresets             "Mehr ..."

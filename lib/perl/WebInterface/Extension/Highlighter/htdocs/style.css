@@ -230,6 +230,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.markwithpreset, #popupmenu .action.managepresets {
 	background-image: url(preset.png);
 	background-position: left center;
+	max-width: 200px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 #popupmenu .action.savemarksaspreset {
 	background-position: left -1696px;
@@ -244,11 +248,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(preset.png);
 	background-repeat: no-repeat;
 	background-position: left center;
-	width: 90%;
+	width: 330px;
 	clear: both;
+	border: 1px solid white;
+}
+.highlighter-preset-entry:hover {
+	border: 1px solid gray;
 }
 .highlighter-preset-entry-name {
 	display: inline-block;
+	width: 300px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 .highlighter-preset-entry-delete {
 	background-position: center -698px;
@@ -258,4 +270,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	float: right;
 	width: 22px;
 	height: 22px;
+}
+.managepresets.ui-dialog .ui-dialog-title {
+	background-image: url(preset.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
 }

@@ -19,6 +19,7 @@
 # SETUP:
 # namespace - XML namespace for attributes (default: {https://DanRohde.github.io/webdavcgi/extension/Highlighter/$REMOTE_USER})
 # attributes - CSS attributes to change for a file list entry
+# maxpresetentries - number of entries in the preset entry menu (default: 5)
 
 package WebInterface::Extension::Highlighter;
 
@@ -49,19 +50,11 @@ sub init {
             . '}' );
     $self->{presets}
         = { name => $self->{namespace} . 'presets', root => $DOCUMENT_ROOT };
-    $self->{preset} = { name => $self->{namespace} . 'preset' };
+    $self->{maxpresetentries} = $self->config('maxpresetentries', 5);
     $self->{style}  = { name => $self->{namespace} . 'style' };
     $self->{attributes} = $self->config(
         'attributes',
-        {   'color' => {
-                values => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
-                style  => 'color',
-                labelcss =>
-                    'color: white; font-weight: bold; font-size: 8px; line-height: 10px;',
-                labelstyle  => 'background-color',
-                colorpicker => 1,
-                order       => 2,
-            },
+        {
             'background-color' => {
                 values => '#F07E50,#ADFF2F,#ADD8E6,#FFFF00,#EE82EE',
                 style  => 'background-color',
@@ -69,6 +62,16 @@ sub init {
                     'font-size: 8px; height: 12px; line-height: 10px;',
                 colorpicker => 1,
                 order       => 1,
+                classes     => 'sep',
+            },
+            'color' => {
+                values => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
+                style  => 'color',
+                labelcss =>
+                    'color: white; font-weight: bold; font-size: 8px; line-height: 10px;',
+                labelstyle  => 'background-color',
+                colorpicker => 1,
+                order       => 2,
             },
             'border' => {
                 subpopupmenu => {
@@ -348,10 +351,24 @@ sub _create_preset_popup {
             };
     }
     else {
+        my $count = 0;
+        my $p = \@popup;
         foreach my $preset (@presetkeys) {
+            $count++;
             my $styles = $self->{json}->decode( $presets->{$preset} );
             my $style = join q{;}, map {"$_ : $styles->{$_}"} keys %{$styles};
-            push @popup,
+            if ($count > $self->{maxpresetentries}) {
+                my @sp = ();
+                push @{$p}, {
+                    subpopupmenu => \@sp,
+                    title        => $self->tl('highlighter.morepresets'),
+                    type         => 'li',
+                    classes      => 'sep',
+                };
+                $p = \@sp;
+                $count = 1;
+            }
+            push @{$p},
                 {
                 action => 'markwithpreset',
                 data =>
@@ -405,7 +422,7 @@ sub _create_popups {
             subpopupmenu => $self->_create_subpopup(
                 $attribute, $attributes->{$attribute}
             ),
-            classes => "highlighter $attribute"
+            classes => "highlighter $attribute ". ( $attributes->{$attribute}->{classes} // q{} ),
             };
     }
     if ($top) {
