@@ -206,18 +206,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .highlighter.text .action.removemarks:hover {
 	background-image: url(text-hover.png),url(remove-hover.png);
 }
-#popupmenu .action.transfermarks {
+#popupmenu .action.replacemarks {
 	background-image: url(transfer.png);
 	background-position: 2px center;
 }
-#popupmenu .action.transfermarks:hover {
+#popupmenu .action.replacemarks:hover {
 	background-image: url(transfer-hover.png);
 }
-#popupmenu .action.transfermarks.active {
+#popupmenu .action.replacemarks.active {
 	background-image: url(transferactive.png);
 	background-color: yellow;
 }
-#popupmenu .action.transfermarks.active:hover {
+#popupmenu .action.replacemarks.active:hover {
 	background-image: url(transferactive-hover.png);
 }
 #popupmenu .highlighter.preset {

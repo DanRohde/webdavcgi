@@ -1998,7 +1998,7 @@ function hidePopupMenu() {
 	$("#popupmenu:visible").hide().appendTo("body");
 }
 function initPopupMenu() {
-	$("#popupmenu .action").click(function(event) {
+	$("#popupmenu .action").off("click.popup").on("click.popup", function(event) {
 		handleFileActionEvent.call(this,event);
 		//handleFileListActionEvent.call(this,event);
 	});
@@ -2031,8 +2031,8 @@ function initPopupMenu() {
 		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
 	});
 	*/
-	$("#popupmenu .action, #popupmenu .listaction").dblclick(function(event) { preventDefault(event);});
-	$("#popupmenu .subpopupmenu").click(function(event) { preventDefault(event); }).dblclick(function(event) { preventDefault(event);});	
+	$("#popupmenu .action, #popupmenu .listaction").off("dblclick.popup").on("dblclick.popup", function(event) { preventDefault(event);});
+	$("#popupmenu .subpopupmenu").off("click.popup dblclick.popup").on("click.popup dblclick.popup", function(event) { preventDefault(event); });
 	function adjustPopupPosition(pageX,pageY) {
 		var popup = $("#popupmenu");
 		var offset = $("#content").position();
@@ -2046,10 +2046,12 @@ function initPopupMenu() {
 		popup.css({"top":top+"px","left":left+"px"});
 	}
 	$("#flt")
-		.on("beforeFileListChange", function() {
+		.off("beforeFileListChange.popup")
+		.on("beforeFileListChange.popup", function() {
 			$("#popupmenu").appendTo("body").hide();
 		})
-		.on("fileListChanged", function(){
+		.off("fileListChanged.popup")
+		.on("fileListChanged.popup", function(){
 			$("#fileList tr").off("contextmenu").on("contextmenu", function(event) {
 				if (event.which==3) {
 					preventDefault(event);
@@ -2063,7 +2065,8 @@ function initPopupMenu() {
 				}
 			});
 		});
-	$("body").click(function() { hidePopupMenu(); }).on("keydown", function(e) { if (e.which == 27) hidePopupMenu(); });
+	$("body").off("click.popup").on("click.popup",function() { hidePopupMenu(); })
+			 .off("keydown.popup").on("keydown.popup", function(e) { if (e.which == 27) hidePopupMenu(); });
 	$("#filler").on("contextmenu", function() { hidePopupMenu() });
 }
 function refreshFileListEntry(filename) {
@@ -2292,6 +2295,7 @@ function initToolBox() {
 			handleWindowResize : handleWindowResize,
 			hidePopupMenu : hidePopupMenu,
 			initFileList: initFileList,
+			initPopupMenu : initPopupMenu,
 			initTabs : initTabs,
 			initUpload : initUpload,
 			isFullscreen : isFullscreen,

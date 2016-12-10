@@ -186,7 +186,7 @@ sub _handle_mark_requests {
     elsif ( $action eq 'removemarks' ) {
         return $self->_remove_all_properties();
     }
-    elsif ( $action eq 'transfermarks' ) {
+    elsif ( $action eq 'replacemarks' ) {
         return $self->_replace_properties();
     }
 }
@@ -252,7 +252,9 @@ sub _save_preset {
         );
     }
     my %jsondata = ();
-    if ( !$ret ) {
+    if ( $ret ) {
+        $jsondata{message} = sprintf $self->tl('highlighter.presetsaved'), $name;
+    } else {
         $jsondata{error} = sprintf $self->tl(
             'highlighter.savepresetfailed'
         ), $name;
@@ -429,9 +431,9 @@ sub _create_popups {
         my @propnames = @{ $self->_get_all_propnames($attributes) };
         push @popups,
             {
-            action  => 'transfermarks',
+            action  => 'replacemarks',
             data    => { styles => join q{,}, @propnames },
-            label   => $self->tl('highlighter.transfermarks'),
+            label   => $self->tl('highlighter.replacemarks'),
             type    => 'li',
             classes => 'sep',
             },
