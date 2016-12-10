@@ -235,6 +235,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
+#popupmenu .action.markwithpreset:hover, #popupmenu .action.managepresets:hover {
+	background-image: url(preset-hover.png);
+}
 #popupmenu .action.savemarksaspreset {
 	background-position: left -1696px;
 }
@@ -276,4 +279,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
+}
+#popupmenu .subpopupmenu.highlighter.preset:hover {
+	background-image: url(preset-hover.png),
+		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
+	background-repeat: no-repeat, no-repeat;
+	background-position: 2px center, right 2px center;
+	padding-left: 22px; 
 }
