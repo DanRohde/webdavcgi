@@ -398,7 +398,7 @@ tr.isreadable-no:hover {
 .filterbox {
 	position: absolute;
 	top: 3px;
-	right: 2em;
+	right: 3em;
 	color: #888888;
 	background-color: #F7F7F7;
 	font-weight: bold;
@@ -1191,12 +1191,6 @@ img {
 	height: auto;
 	color: black;
 }
-#popupmenu_unused li:hover > ul {
-	display: block;
-}
-#popupmenu_unused li > ul:hover {
-	display: block;
-}
 #popupmenu li.subpopupmenu {
 	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat  right 2px center;
 	cursor: pointer;
@@ -1468,12 +1462,11 @@ img {
 .toolbar ul {
 	display: none;
 	position: absolute;
-	top: 37px;
 	left: 0px;
 	background-color: white;
 	box-shadow: 3px 0 7px #dddddd;
 	padding: 0;
-	margin: 0;
+	margin: 10px 0 0 0;
 	border: 1px solid #ddd;
 	text-align: left;
 	z-index: 2;
@@ -1481,7 +1474,9 @@ img {
 .toolbar ul li {
 	background-color: white;
 	margin: 0.5em;
-	padding: 2px 7px 2px 22px;
+	padding: 1px 7px 3px 22px;
+	min-width: 150px;
+	height: 1.2em;
 }
 .toolbar ul li.sep {
 	border-top: 1px solid #999;
@@ -1492,6 +1487,8 @@ img {
 .toolbar > li.toolbar-spacer {
 	margin-left: 8px;
 }
-.disabled.dis-hide {
-	display: none;
+.toolbar ul li:hover > ul, .toolbar ul li:focus > ul {
+	display: block;
+	left: 150px;
+	margin-top: -1.3em;
 }

@@ -134,7 +134,7 @@ sub render_extension_element {
         if ($hook eq 'fileaction') {
             $params->{classes} .= ' dropdown-menu-item';
         } elsif ( $hook eq 'filelistaction') {
-            $params->{classes} .= ' sel-multi hideit';
+            $params->{classes} .= ' sel-multi hideit hidden';
         }
     }
     return $self->SUPER::render_extension_element($hook, $params);

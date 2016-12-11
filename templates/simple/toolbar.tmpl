@@ -1,5 +1,5 @@
 <ul class="toolbar">
-<li class="access-writeable uibutton" accesskey="n" title="$tl(new)" aria-label="$tl(new)">$tl(new)
+<li class="access-writeable uibutton" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)">$tl(new)
 	<ul>
 		<li class="action create-folder access-writeable" accesskey="r">$tl(createfolderbutton)</li>
 		<li class="action create-file access-writeable" accesskey="e">$tl(createnewfilebutton)</li>
@@ -25,6 +25,7 @@
 <!--IF($config(ENABLE_BOOKMARKS))-->
 <li class="toolbar-spacer action addbookmark sel-none hideit uibutton" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)"></li>
 <li class="action bookmarkmenu sel-none hideit uibutton" id="bookmarks" data-action="bookmarkmenu" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
+	&nbsp;
 	<ul id="bookmarksmenulist">
 		<li id="bookmarktemplate" class="hidden">
 			<div class="bookmarklabel">$bookmarktext</div>
@@ -38,7 +39,8 @@
 <!--ENDIF-->
 <!--IF(%AUTOREFRESH)-->
 <li id="autorefresh" title="$tl(autorefresh.select.title)" class="toolbar-spacer action autorefreshmenu sel-none hideit uibutton" aria-label="$tl(autorefresh.select.title)" accesskey="a">
-	<ul id="autorefreshmenulist" class="hidden">
+	&nbsp;
+	<ul id="autorefreshmenulist">
 		<li class="action setautorefresh" tabindex="0" data-value="now" aria-label="$tl(autorefresh.now)">$tl(autorefresh.now)</li>
 		$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k" aria-label="$tl(autorefresh.select.title) $v">$v</li>'@
 		<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0" aria-label="$tl(autorefresh.toggle)">$tl(autorefresh.toggle)</li>
@@ -46,15 +48,15 @@
 		<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
 	</ul>
 <!--ENDIF-->
-<li class="sel-multi hideit">
+<li class="sel-multi hideit hidden">
 	<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
 </li>
 <!--IF($config(ENABLE_CLIPBOARD))-->			
-<li class="listaction copy sel-multi hideit uibutton"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
-<li class="listaction cut sel-multi hideit access-writeable uibutton" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" accesskey="x"></li>
+<li class="listaction copy sel-multi hideit hidden uibutton"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
+<li class="listaction cut sel-multi hideit access-writeable hidden uibutton" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" accesskey="x"></li>
 <!--ENDIF-->		
 $extension(filelistaction)	
-<li class="listaction delete sel-multi hideit access-writeable uibutton" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
+<li class="listaction delete sel-multi hideit hidden access-writeable uibutton" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 <!--IF($config(ENABLE_NAMEFILTER))-->
 <li class="filterbox sel-none hideit">
 	$extension(filterbox)

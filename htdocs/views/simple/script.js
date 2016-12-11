@@ -913,15 +913,12 @@ function checkUploadedFilesExist(data) {
 }
 function initFileUpload() {
 	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'), $(document));
-	$(".action.upload").off("click").on("click", function(event) { 
-		preventDefault(event); 
+	$(".action.upload").off("click.upload").on("click.upload", function(event) {
 		if ($(this).hasClass("disabled")) return;
 		$("#file-upload-form input[type=file]").removeAttr("directory webkitdirectory mozdirectory").trigger('click'); 
-		return true;
 	});
 	$(".action.uploaddir.uibutton").button();
-	$(".action.uploaddir").click(function(event) {
-		preventDefault(event);
+	$(".action.uploaddir").off("click.uploaddir").on("click.uploaddir", function(event) {
 		if ($(this).hasClass("disabled")) return;
 		$("#file-upload-form input[type=file]").attr({"directory":"directory","webkitdirectory":"webkitdirectory","mozdirectory":"mozdirectory"}).trigger('click');
 	});
@@ -1830,10 +1827,8 @@ function handleInplaceInput(target, defval) {
 function initToolbarActions() {
 	$(".toolbar li.uibutton").button();
 	$(".toolbar > li").off("click.toolbar").on("click.toolbar", function() {
-		if ($("ul",this).is(":hidden")) {
-			$("ul",$(this).siblings()).hide();
-		}
-		$("ul", this).toggle();
+		$("ul:visible",$(this).siblings()).hide();
+		$("ul", this).first().toggle();
 		$("ul li:visible",this).first().focus();
 	});
 	$(".toolbar ul").off("keydown.toolbar").on("keydown.toolbar", function(event) {
