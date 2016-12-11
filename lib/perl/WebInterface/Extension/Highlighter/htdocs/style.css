@@ -257,6 +257,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .highlighter-preset-entry:hover {
 	border: 1px solid gray;
+	background-image: url(preset-hover.png);
 }
 .highlighter-preset-entry-name {
 	display: inline-block;

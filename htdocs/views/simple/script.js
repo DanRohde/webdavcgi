@@ -31,7 +31,7 @@ $(function() {
 
 	initFolderStatistics();
 
-	initNewActions();
+	initToolbarActions();
 
 	initChangeDir();
 
@@ -140,7 +140,7 @@ function initStatusbar() {
 }
 function initTooltips() {
 	$("#flt").on("fileListChanged", function() {
-		$("#flt,#bookmarks,#filelistactions").MyTooltip(500);
+		$("#flt,#bookmarks").MyTooltip(500);
 	}).on("bookmarksChanged",function() {
 		$("#bookmarks").MyTooltip(500);
 	});
@@ -353,16 +353,10 @@ function initCollapsible() {
 }
 
 function initAutoRefresh() {
-	$(".action.autorefreshmenu").button().click(function(event) {
-		preventDefault(event);
-		$("#autorefresh ul").toggle();
-	}).dblclick(function(event) {
+	$(".action.autorefreshmenu").dblclick(function(event) {
 		preventDefault(event);
 		updateFileList();
 	});
-	$("body").click(function(){ $("#autorefresh ul:visible").hide()});
-	/* $(".action.autorefreshrunning").addClass("disabled");
-	$(".autorefreshtimer").addClass("disabled"); */
 	toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), true);
 	$("#autorefresh").on("started", function() {
 		
@@ -574,28 +568,15 @@ function initClock() {
     }, fmt.match(/%S/) ? 1000 : 60000);
 }
 function initBookmarks() {
-	var bookmarks = $("#bookmarks");
-	$(".action.addbookmark", bookmarks).button();
 	$("#flt").on("bookmarksChanged", buildBookmarkList)
 	.on("bookmarksChanged",toggleBookmarkButtons)
 	.on("fileListChanged", function() {
 		buildBookmarkList();
 		toggleBookmarkButtons();	
 	});
-	
 	// register bookmark actions:
-	$(".action.addbookmark,.action.rmbookmark,.action.rmallbookmarks,.action.bookmarksortpath,.action.bookmarksorttime,.action.gotobookmark",bookmarks)
+	$(".action.addbookmark,.action.rmbookmark,.action.rmallbookmarks,.action.bookmarksortpath,.action.bookmarksorttime,.action.gotobookmark")
 		.click(handleBookmarkActions);
-	// enable bookmark menu button:
-	$(".action.bookmarkmenu", bookmarks).click(
-		function(event) {
-			preventDefault(event);
-			$("#bookmarksmenu ul").toggle();
-		}
-	).button();
-	$("body").click(function() { $("#bookmarksmenu ul:visible").hide();});
-	
-
 }
 function toggleButton(button, disabled) {
 	$.each(button, function(i,v) { 
@@ -616,7 +597,7 @@ function toggleBookmarkButtons() {
 		if (cookie("bookmark"+i) != "-") count++;
 		i++;
 	}
-	toggleButton($(".action.addbookmark"), isCurrentPathBookmarked);
+	$(".action.addbookmark").button("option","disabled", isCurrentPathBookmarked);
 	toggleButton($(".action.rmbookmark"), !isCurrentPathBookmarked);
 	toggleButton($(".action.bookmarksortpath"), count<2);
 	toggleButton($(".action.bookmarksorttime"), count<2);
@@ -659,8 +640,7 @@ function buildBookmarkList() {
 		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val["path"]).replace(/\$bookmarktext/,quoteWhiteSpaces(simpleEscape(trimString(epath,20)))) + "</li>")
 			.insertAfter($("#bookmarktemplate"))
 			.click(handleBookmarkActions).on("keyup", function(e) { if (e.keyCode == 13 || e.keyCode == 32) { $(this).trigger("click"); $("#bookmarksmenulist").hide(); } })
-			.addClass("link dyn-bookmark")
-			.attr('data-action','gotobookmark')
+			.addClass("action dyn-bookmark")
 			.attr('data-bookmark',val["path"])
 			.attr("title",simpleEscape(epath)+" ("+(new Date(parseInt(val["time"])))+")")
 			.attr("tabindex", val["path"] == currentPath ? -1 : 0)
@@ -677,32 +657,32 @@ function removeBookmark(path) {
 function handleBookmarkActions(event) {
 	preventDefault(event);
 	if ($(this).hasClass("disabled")) return;
-	var action = $(this).attr('data-action');
+	var self = $(this);
 	var uri = $("#fileList").attr('data-uri');
-	if (action == 'addbookmark') {
+	if (self.hasClass('addbookmark')) {
 		var i = 0;
 	        while (cookie('bookmark'+i)!=null && cookie('bookmark'+i)!= "-" && cookie('bookmark'+i) != "" && cookie('bookmark'+i)!=uri) i++;
 		cookie('bookmark'+i, uri, 1);
 		cookie('bookmark'+i+'time', (new Date()).getTime(), 1);
 		$("#flt").trigger("bookmarksChanged");
-	} else if (action == 'gotobookmark') {
-		changeUri($(this).attr('data-bookmark'));	
-		$("#bookmarksmenu ul").toggleClass("hidden");
-	} else if (action == 'rmbookmark') {
+	} else if (self.hasClass('dyn-bookmark')) {
+		changeUri(self.attr('data-bookmark'));	
+		self.closest("ul").hide();
+	} else if (self.hasClass('rmbookmark')) {
 		removeBookmark(uri);
-	} else if (action == 'rmallbookmarks') {
+	} else if (self.hasClass('rmallbookmarks')) {
 		var i = 0;
 		while (cookie('bookmark'+i)!=null) {
 			rmcookies('bookmark'+i, 'bookmark'+i+'time');
 			i++;
 		}
 		$('#flt').trigger("bookmarksChanged");
-	} else if (action == 'rmsinglebookmark') {
+	} else if (self.hasClass('rmsinglebookmark')) {
 		removeBookmark($(this).attr("data-bookmark"));
-	} else if (action == 'bookmarksortpath') {
+	} else if (self.hasClass('bookmarksortpath')) {
 		cookie("bookmarksort", cookie("bookmarksort")=="path" || cookie("bookmarksort") == null ? "path-desc" : "path");
 		$("#flt").trigger("bookmarksChanged");
-	} else if (action == 'bookmarksorttime') {
+	} else if (self.hasClass('bookmarksorttime')) {
 		cookie("bookmarksort", cookie("bookmarksort")=="time" ? "time-desc" : "time");
 		$("#flt").trigger("bookmarksChanged");
 	}
@@ -933,12 +913,11 @@ function checkUploadedFilesExist(data) {
 }
 function initFileUpload() {
 	initUpload($("#file-upload-form"),$('#fileuploadconfirm').html(), $("#progress").attr('data-title'), $(document));
-	
-	$(".action.upload.uibutton").button();
-	$(".action.upload").click(function(event) { 
+	$(".action.upload").off("click").on("click", function(event) { 
 		preventDefault(event); 
 		if ($(this).hasClass("disabled")) return;
 		$("#file-upload-form input[type=file]").removeAttr("directory webkitdirectory mozdirectory").trigger('click'); 
+		return true;
 	});
 	$(".action.uploaddir.uibutton").button();
 	$(".action.uploaddir").click(function(event) {
@@ -1807,7 +1786,7 @@ function handleInplaceInput(target, defval) {
 	target.click(function(event) {
 		preventDefault(event);
 		var self = $(this);
-		self.closest(".popup.hidden").show();
+		self.closest("ul:hidden").show();
 		if (self.hasClass("disabled")) return;
 		if (self.data('is-active')) return;
 		self.data('is-active', true);
@@ -1848,19 +1827,21 @@ function handleInplaceInput(target, defval) {
 	});
 	return target;
 }
-function initNewActions() {
-	$(".action.new").button().click(function(event) {
-		preventDefault(event);
-		$(".new.popup").toggle();
-		if ($(".new.popup").is(":visible")) $(".new.popup .action").first().focus();
+function initToolbarActions() {
+	$(".toolbar li.uibutton").button();
+	$(".toolbar > li").off("click.toolbar").on("click.toolbar", function() {
+		if ($("ul",this).is(":hidden")) {
+			$("ul",$(this).siblings()).hide();
+		}
+		$("ul", this).toggle();
+		$("ul li:visible",this).first().focus();
 	});
-	$("body").on("click", function() { $(".new.popup:visible").hide(); });
-	$(".new.popup").keydown(function(event) {
+	$(".toolbar ul").off("keydown.toolbar").on("keydown.toolbar", function(event) {
 		if (event.keyCode == 27) $(this).hide();
-	});
+	})
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
 		var self = $(this);
-		self.closest(".popup.hidden").hide();
+		self.closest("ul").hide();
 		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : self.data('value') }, function(response) {
 			if (!response.error && response.message) {
 				//updateFileList();
@@ -1872,7 +1853,7 @@ function initNewActions() {
 
 	handleInplaceInput($('.action.create-file')).on('changed', function(event) {
 		var self = $(this);
-		self.closest(".popup.hidden").hide();
+		self.closest("ul").hide();
 		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : self.data('value') }, function(response) {
 			if (!response.error && response.message) {
 				//updateFileList();
@@ -1883,7 +1864,7 @@ function initNewActions() {
 	});
 
 	handleInplaceInput($('.action.create-symlink')).on('changed', function(event) {
-		$(this).closest(".popup.hidden").hide();
+		$(this).closest("ul").hide();
 		var row = $('#fileList tr.selected');
 		$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: $(this).data('value'), file: row.attr('data-file') }, function(response) {
 			if (!response.error && response.message) updateFileList();

@@ -17,7 +17,7 @@
 addbookmark                    "Ajout"
 addbookmarktitle               "Ajouter le rértoire courant aux favoris"
 autorefresh.select             "Rafraichir"
-bookmarks                      "-- Favoris --"
+bookmarks                      "Favoris"
 cancel                         "Annuler"
 changedir                      "Changer de rértoire"
 clickchangessort               "cliquer ici pour changer le tri."

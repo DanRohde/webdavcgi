@@ -143,9 +143,7 @@ sub handle_hook_new {
         label     => 'zipup',
         title     => 'zipup',
         path      => ${$params}{path},
-        classes   => 'access-writeable',
-        type      => 'li-a',
-        liclasses => 'sep',
+        classes   => 'access-writeable sep',
         accesskey => 'w'
     };
 }

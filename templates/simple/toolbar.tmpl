@@ -1,0 +1,72 @@
+<ul class="toolbar">
+<li class="access-writeable uibutton" accesskey="n" title="$tl(new)" aria-label="$tl(new)">$tl(new)
+	<ul>
+		<li class="action create-folder access-writeable" accesskey="r">$tl(createfolderbutton)</li>
+		<li class="action create-file access-writeable" accesskey="e">$tl(createnewfilebutton)</li>
+		<!--IF($config(ALLOW_SYMLINK))-->
+		<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</li>
+		<!--ENDIF-->
+		<!--IF($config(ALLOW_FOLDERUPLOAD))-->
+		<li class="sep action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+		<!--ENDIF-->
+		$extension(new)
+	</ul>
+</li>
+<!--IF($config(ALLOW_POST_UPLOADS))-->
+<li class="action upload access-writeable uibutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</li>
+<!--ENDIF-->
+<!--IF($config(ENABLE_CLIPBOARD))-->			
+<li class="listaction paste uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
+<!--ENDIF-->
+<li class="sel-none hideit"><span id="quicknav" class="ws">$[quicknavpath]</span>
+	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
+</li>
+<li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
+<!--IF($config(ENABLE_BOOKMARKS))-->
+<li class="toolbar-spacer action addbookmark sel-none hideit uibutton" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)"></li>
+<li class="action bookmarkmenu sel-none hideit uibutton" id="bookmarks" data-action="bookmarkmenu" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
+	<ul id="bookmarksmenulist">
+		<li id="bookmarktemplate" class="hidden">
+			<div class="bookmarklabel">$bookmarktext</div>
+			<div tabindex="0" class="action rmsinglebookmark" title="$tl(rmbookmark)" aria-label="$tl(rmbookmark)" data-bookmark="$bookmarkpath"></div>
+		</li>
+		<li class="sep action bookmarksortpath" data-action="bookmarksortpath"><div class="bookmarksortlabel">$tl(sortbookmarkbypath)</div><div class="path right">&uarr;</div><div class="path-desc right">&darr;</div></li>
+		<li class="action bookmarksorttime" data-action="bookmarksorttime"><div class="bookmarksortlabel">$tl(sortbookmarkbytime)</div><div class="time right">&uarr;</div><div class="time-desc right">&darr;</div></li>
+		<li class="sep action rmallbookmarks" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
+	</ul>
+</li>
+<!--ENDIF-->
+<!--IF(%AUTOREFRESH)-->
+<li id="autorefresh" title="$tl(autorefresh.select.title)" class="toolbar-spacer action autorefreshmenu sel-none hideit uibutton" aria-label="$tl(autorefresh.select.title)" accesskey="a">
+	<ul id="autorefreshmenulist" class="hidden">
+		<li class="action setautorefresh" tabindex="0" data-value="now" aria-label="$tl(autorefresh.now)">$tl(autorefresh.now)</li>
+		$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k" aria-label="$tl(autorefresh.select.title) $v">$v</li>'@
+		<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0" aria-label="$tl(autorefresh.toggle)">$tl(autorefresh.toggle)</li>
+		<li class="autorefreshrunning action autorefreshclear" tabindex="0" aria-label="$tl(autorefresh.clear)">$tl(autorefresh.clear)</li>
+		<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
+	</ul>
+<!--ENDIF-->
+<li class="sel-multi hideit">
+	<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
+</li>
+<!--IF($config(ENABLE_CLIPBOARD))-->			
+<li class="listaction copy sel-multi hideit uibutton"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
+<li class="listaction cut sel-multi hideit access-writeable uibutton" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" accesskey="x"></li>
+<!--ENDIF-->		
+$extension(filelistaction)	
+<li class="listaction delete sel-multi hideit access-writeable uibutton" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
+<!--IF($config(ENABLE_NAMEFILTER))-->
+<li class="filterbox sel-none hideit">
+	$extension(filterbox)
+	<form id="filterbox" method="post" action="#">
+		$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" aria-label="$tl(namefiltertooltip)" accesskey="i"/>
+		<img class="action clearfilter" data-action="clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)" aria-label="$tl(filter.reset)"/>
+	</form>
+</li>
+<!--ENDIF-->
+</ul>
+<form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr">
+	<input type="hidden" name="filesubmit" value="yes"/>
+	<input id="file-upload-form-relapath" type="hidden" name="relapath" value=""/>
+	<input class="file-upload" type="file" name="file_upload" multiple/>
+</form>

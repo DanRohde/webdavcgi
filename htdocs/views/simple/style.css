@@ -246,9 +246,6 @@ table,th,td {
     background-repeat: no-repeat;
     background-color: #ddd;
 }
-.new.popup .action:hover, .new.popup .action:focus {
-	background-color: transparent;
-}
 #headerSize {
 	width: 8em;
 }
@@ -493,59 +490,6 @@ tr.isreadable-no:hover {
 	height: 2.4em;
 	padding-top: 5px;
 }
-#filelistactions {
-	display: none;
-/*
-	position: absolute;
-	left: 18em; 
-	top: 0em;
-	z-index: 70;
-*/
-	padding-left: 1em;
-	padding-top: 0.2em;
-	background-color: inherit;
-	width: 100%;
-	white-space: nowrap;
-	height: 2.6em;
-}
-#new {
-/*	position: absolute;
-	left: 0em;
-	top: 0em;
-	background-color: inherit;
-	padding-left: 1em;
-*/
-	float:left;
-	padding-top: 3px;
-	z-index: 50;
-	white-space: nowrap;
-	padding-right: 1em;
-}
-#new ul, #bookmarks ul  {
-	border: 1px solid #dddddd;
-	box-shadow: 3px 0 7px #dddddd;
-	padding: 0;
-	margin: 0;
-	background-color: white;
-	position: absolute;
-}
-#new ul li, #bookmarks ul li  {
-	padding: 0.4em;
-
-	background-color: white;
-	border: 1px solid white;
-}
-#new ul li.sep, #bookmarks ul li.sep {
-	border-top: 1px solid #999999;
-}
-#new ul li:hover, #bookmarks ul li:hover, #autorefresh ul li.action:hover,
-#new ul li:focus, #bookmarks ul li:focus, #autorefresh ul li.action:focus  {
-	background-color: #f0f0f0;
-	border: 1px dotted #dddddd;
-}
-#new ul li a, #bookmarks ul li a  {
-	padding: 0.2em 0.5em 0.2em 22px ;
-}
 .action.create-folder {
 	background-position: left -740px;
 }
@@ -720,13 +664,7 @@ li.sep {
 #content.hover {
 	border: 5px solid green;
 }
-#bookmarks {
-	width: 100px;
-}
-#bookmarks,#bookmarksmenu {
-	display: inline;
-	position: absolute;
-}
+/* #### BOOKMARKS ### */
 .action.addbookmark, .ui-button.action.addbookmark {
 	background-position: center -54px;
 }
@@ -734,43 +672,36 @@ li.sep {
 	background-position: center -94px;
 }
 .action.rmsinglebookmark {
-	background-position: left -220px;
+	background-position: center -220px;
+	height: 22px;
 	width: 22px;
 }
 .time.right, .time-desc.right, .path.right, .path-desc.right {
 	margin-right: 7px;
-}
-#bookmarksmenu ul {
-	padding: 0;
-	margin: 0;
-}
-#bookmarksmenu ul li{
-	background-color: white;
-	width: 30ex;
-	z-index: 100;
-	padding: 2px 2px 2px 22px;
-	margin:0;
-}
-.action.rmbookmark {
-	background-position: 2px -212px;
-	background-color: white;
-	padding-left: 24px;
 }
 .action.rmallbookmarks {
 	background-position: 2px -218px;
 	background-color: white;
 	padding-left: 24px;
 }
-.action.gotobookmark, .dyn-bookmark {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
+.action.gotobookmark, .action.dyn-bookmark {
 	background-position: 2px -1578px;
-	background-color: white;
-	padding-left: 24px;
+	display: flex;
+	flex-flow: row nowrap;
+	width: 220px;
+}
+.action.bookmarksortpath, .action.bookmarksorttime {
+	display: flex;
+	flex-flow: row nowrap;
+	width: 220px;
+}
+.bookmarklabel, .bookmarksortlabel {
+	flex: 1 1;
 }
 .dyn-bookmark:hover, .dyn-bookmark:focus {
 	background-image: url(images/sprite-hover.png);
 }
+/* --- BOOKMARKS --- */
 #quota {
 	text-decoration: none;
 	font-weight: normal;
@@ -971,26 +902,6 @@ img {
 	opacity: 0.7;
 	filter: Alpha(opacity=50); 
 
-}
-#autorefresh {
-	display: inline;
-	position: absolute;
-	margin-left: 100px;
-	top: 2px;
-}
-#autorefresh ul {
-	margin: 0;
-	padding: 2px;
-	background-color: white;
-	border: 1px solid #DDDDDD;
-	box-shadow: 3px 0 7px #DDDDDD;
-}
-#autorefresh ul li {
-	border: 1px solid white;
-	cursor: pointer;
-}
-#autorefresh ul li.sep {
-	border-top: 1px solid #999999;
 }
 .autorefreshtimer {
 	text-align: center;
@@ -1534,4 +1445,53 @@ img {
 }
 .action.changeUri:focus, .action.changeUri:hover  {
 	background-image: url(icons/sprite.png);
+}
+
+.toolbar {
+	margin: 0;
+	border: none;
+	padding: 3px 1em 0 0;
+	white-space: nowrap;
+	position: absolute;
+	width: 100%;
+	z-index: 1;
+}
+.toolbar > li {
+	margin: 0;
+	display: inline-block;
+	min-width: 8px;
+	min-height: 22px;
+}
+.toolbar > li:focus {
+	outline: none;
+}
+.toolbar ul {
+	display: none;
+	position: absolute;
+	top: 37px;
+	left: 0px;
+	background-color: white;
+	box-shadow: 3px 0 7px #dddddd;
+	padding: 0;
+	margin: 0;
+	border: 1px solid #ddd;
+	text-align: left;
+	z-index: 2;
+}
+.toolbar ul li {
+	background-color: white;
+	margin: 0.5em;
+	padding: 2px 7px 2px 22px;
+}
+.toolbar ul li.sep {
+	border-top: 1px solid #999;
+}
+.toolbar ul li:hover, .toolbar ul li:focus {
+	background-color: #f0f0f0;
+}
+.toolbar > li.toolbar-spacer {
+	margin-left: 8px;
+}
+.disabled.dis-hide {
+	display: none;
 }

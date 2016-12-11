@@ -127,6 +127,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	padding: 1px 1px 1px 4px;
 	left: -34px;
 	top: 6px;
+	white-space: normal;
 }
 #statusbar .quicktoggles {
 	float: left;
