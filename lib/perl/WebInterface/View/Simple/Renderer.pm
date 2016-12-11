@@ -148,7 +148,7 @@ sub render_extension_element {
                 },
                 ( ${$a}{title} || q{} )
                     . $self->{cgi}->ul(
-                    { -class => 'subpopupmenu extension' },
+                    { -class => 'subpopupmenu extension '.($a->{subclasses}//q{}) },
                     $self->render_extension_element( $hook, ${$a}{subpopupmenu} )
                     )
             );

@@ -358,7 +358,7 @@ sub _create_preset_popup {
         foreach my $preset (@presetkeys) {
             $count++;
             my $styles = $self->{json}->decode( $presets->{$preset} );
-            my $style = join q{;}, map {"$_ : $styles->{$_}"} keys %{$styles};
+            my $style = join q{;}, map {"$_:$styles->{$_}"} keys %{$styles};
             if ($count > $self->{maxpresetentries}) {
                 my @sp = ();
                 push @{$p}, {
@@ -411,7 +411,8 @@ sub _create_popups {
             title => $self->tl('highlighter.preset'),
             subpopupmenu =>
                 $self->_create_preset_popup( $self->_get_presets() ),
-            classes => 'highlighter preset'
+            classes => 'highlighter preset',
+            subclasses => 'highlighter subpreset',
             };
     }
     foreach my $attribute (
