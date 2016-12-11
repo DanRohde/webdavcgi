@@ -6,8 +6,11 @@
 		<!--IF($config(ALLOW_SYMLINK))-->
 		<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</li>
 		<!--ENDIF-->
-		<!--IF($config(ALLOW_FOLDERUPLOAD))-->
-		<li class="sep action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+		<!--IF($config(ALLOW_POST_UPLOADS))-->
+		<li class="sep action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)">$tl(upload)</li>
+		<!--IF#2($config(ALLOW_FOLDERUPLOAD))-->
+		<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+		<!--ENDIF#2-->
 		<!--ENDIF-->
 		$extension(new)
 	</ul>

@@ -1829,7 +1829,7 @@ function initToolbarActions() {
 	$(".toolbar > li").off("click.toolbar").on("click.toolbar", function() {
 		$("ul:visible",$(this).siblings()).hide();
 		$("ul", this).first().toggle();
-		$("ul li:visible",this).first().focus();
+		//$("ul li:visible",this).first().focus();
 	});
 	$(".toolbar ul").off("keydown.toolbar").on("keydown.toolbar", function(event) {
 		if (event.keyCode == 27) $(this).hide();

@@ -6,8 +6,11 @@
 <!--IF($config(ALLOW_SYMLINK))-->
 	<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
 <!--ENDIF--> 
-<!--IF($config(ALLOW_FOLDERUPLOAD))-->
-<li class="action uploaddir access-writeable sep" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+<!--IF($config(ALLOW_POST_UPLOADS))-->
+	<li class="action upload access-writeable sep" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
+	<!--IF#2($config(ALLOW_FOLDERUPLOAD))-->
+	<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+	<!--ENDIF#2-->
 <!--ENDIF-->
 $extension(fileactionpopupnew)
 </ul>
@@ -21,7 +24,6 @@ $extension(fileactionpopupnew)
 <li class="subpopupmenu extension sep select" title="$tl(select)">$tl(select)
 <ul class="subpopupmenu extension"><li class="toggleselection" title="$tl(togglealltooltip)">$tl(togglealltooltip)</li><li class="selectall" title="$tl(selectall)">$tl(selectall)</li><li class="selectnone" title="$tl(selectnone)">$tl(selectnone)</li></ul>
 </li>
-
 <li class="action rename sep" title="$tl(movefilesbutton)">$tl(movefilesbutton)</li>
 $extension(fileactionpopup)
 <li class="listaction delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>

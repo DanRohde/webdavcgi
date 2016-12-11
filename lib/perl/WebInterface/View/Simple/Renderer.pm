@@ -143,7 +143,8 @@ sub render_extension_element {
         if ( ${$a}{subpopupmenu} ) {
             return $self->{cgi}->li(
                 {   -class => 'subpopupmenu extension '
-                        . ( ${$a}{classes} || q{} )
+                        . ( ${$a}{classes} || q{} ),
+                    -title => $a->{label} // $a->{title} // q{},
                 },
                 ( ${$a}{title} || q{} )
                     . $self->{cgi}->ul(

@@ -14,12 +14,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#popupmenu .action.removemarks {
+.action.removemarks {
 	background-image: url(hl.png), url(remove.png);
 	background-position: 2px center, 2px center;
 	background-repeat: no-repeat, no-repeat;
 }
-#popupmenu .action.removemarks:hover {
+.action.removemarks:hover {
 	background-image: url(hl-hover.png), url(remove-hover.png);
 }
 #popupmenu li.subpopupmenu.highlighter-popup {
@@ -36,198 +36,207 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat, no-repeat;
 	background-color: #f9f9f9;
 }
-#popupmenu .action.markcolorpicker {
+.highlighter-popup {
+	background-image: url(hl.png);
+	background-position:  center center;
+	background-repeat: no-repeat;
+	padding: 0.4em 0.4em 0.4em 22px ;
+}
+.highlighter-popup:hover, .highlighter-popup:focus {
+	background-image: url(hl-hover.png);
+	background-repeat: no-repeat;
+}
+.action.markcolorpicker {
 	background-image: url(hl.png);
 	background-repeat: no-repeat;
 	background-position: 2px center;
 }
-#popupmenu .action.markcolorpicker:hover {
+.action.markcolorpicker:hover {
 	background-image: url(hl-hover.png);
 	background-repeat: no-repeat;
 	background-position: 2px center;
 	background-color: #f9f9f9;
 }
-#popupmenu .subpopupmenu.highlighter.color {
+#popupmenu .subpopupmenu.highlighter.color, .highlighter.color {
 	background-image: url(fg.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-position:2px 6px, right 2px center;
 	background-repeat: no-repeat, no-repeat;
 	padding-left: 22px;
 }
-#popupmenu .subpopupmenu.highlighter.color:hover {
+#popupmenu .subpopupmenu.highlighter.color:hover, .highlighter.color:hover {
 	background-image: url(fg-hover.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-position:2px 6px, right 2px center;
 	background-repeat: no-repeat, no-repeat;
 	background-color: #f9f9f9;
 }
-#popupmenu .subpopupmenu.highlighter.background-color {
+#popupmenu .subpopupmenu.highlighter.background-color, .highlighter.background-color {
 	background-image: url(bg.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-position:2px 6px, right 2px center;
 	background-repeat: no-repeat, no-repeat;
 	padding-left: 22px;
 }
-#popupmenu .subpopupmenu.highlighter.background-color:hover {
+#popupmenu .subpopupmenu.highlighter.background-color:hover, .highlighter.background-color:hover {
 	background-image: url(bg-hover.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-position:2px 6px, right 2px center;
 	background-repeat: no-repeat, no-repeat;
 	background-color: #f9f9f9;
 }
-#popupmenu .subpopupmenu.highlighter.border,
-#popupmenu .subpopupmenu.highlighter.border-color,
-#popupmenu .subpopupmenu.highlighter.border-width,
-#popupmenu .subpopupmenu.highlighter.border-style {
+#popupmenu .subpopupmenu.highlighter.border, .highlighter.border,
+#popupmenu .subpopupmenu.highlighter.border-color, .highlighter.border-color,
+#popupmenu .subpopupmenu.highlighter.border-width, .highlighter.border-width,
+#popupmenu .subpopupmenu.highlighter.border-style, .highlighter.border-style {
 	background-image: url(border.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
 	background-position: 2px center, right 2px center;
 	padding-left: 22px; 
 }
-#popupmenu .subpopupmenu.highlighter.border:hover,
-#popupmenu .subpopupmenu.highlighter.border-color:hover,
-#popupmenu .subpopupmenu.highlighter.border-width:hover,
-#popupmenu .subpopupmenu.highlighter.border-style:hover {
+#popupmenu .subpopupmenu.highlighter.border:hover, .highlighter.border:hover,
+#popupmenu .subpopupmenu.highlighter.border-color:hover, .highlighter.border-color:hover,
+#popupmenu .subpopupmenu.highlighter.border-width:hover, .highlighter.border-width:hover,
+#popupmenu .subpopupmenu.highlighter.border-style:hover, .highlighter.border-style:hover {
 	background-image: url(border-hover.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
 	background-position: 2px center, right 2px center;
 	padding-left: 22px; 
 }
-#popupmenu .subpopupmenu.highlighter.font,
-#popupmenu .subpopupmenu.highlighter.font-size,
-#popupmenu .subpopupmenu.highlighter.font-style,
-#popupmenu .subpopupmenu.highlighter.font-family,
-#popupmenu .subpopupmenu.highlighter.text-transform {
+#popupmenu .subpopupmenu.highlighter.font, .highlighter.font,
+#popupmenu .subpopupmenu.highlighter.font-size, .highlighter.font-size,
+#popupmenu .subpopupmenu.highlighter.font-style, .highlighter.font-style,
+#popupmenu .subpopupmenu.highlighter.font-family, .highlighter.font-family,
+#popupmenu .subpopupmenu.highlighter.text-transform, .highlighter.text-transform {
 	background-image: url(font.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
 	background-position: 2px center, right 2px center;
 	padding-left: 22px; 
 }
-#popupmenu .subpopupmenu.highlighter.font:hover,
-#popupmenu .subpopupmenu.highlighter.font-size:hover,
-#popupmenu .subpopupmenu.highlighter.font-style:hover,
-#popupmenu .subpopupmenu.highlighter.font-family:hover,
-#popupmenu .subpopupmenu.highlighter.text-transform:hover {
+#popupmenu .subpopupmenu.highlighter.font:hover, .highlighter.font:hover,
+#popupmenu .subpopupmenu.highlighter.font-size:hover,  .highlighter.font-size:hover,
+#popupmenu .subpopupmenu.highlighter.font-style:hover, .highlighter.font-style:hover,
+#popupmenu .subpopupmenu.highlighter.font-family:hover, .highlighter.font-family:hover,
+#popupmenu .subpopupmenu.highlighter.text-transform:hover, .highlighter.text-transform:hover {
 	background-image: url(font-hover.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
 	background-position: 2px center, right 2px center;
 	padding-left: 22px; 
 }
-#popupmenu .subpopupmenu.highlighter.text,
-#popupmenu .subpopupmenu.highlighter.text-decoration,
-#popupmenu .subpopupmenu.highlighter.text-decoration-color,
-#popupmenu .subpopupmenu.highlighter.text-decoration-style {
+#popupmenu .subpopupmenu.highlighter.text, .highlighter.text,
+#popupmenu .subpopupmenu.highlighter.text-decoration, .highlighter.text-decoration,
+#popupmenu .subpopupmenu.highlighter.text-decoration-color, .highlighter.text-decoration-color,
+#popupmenu .subpopupmenu.highlighter.text-decoration-style, .highlighter.text-decoration-style {
 	background-image: url(text.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
 	background-position: 2px center, right 2px center;
 	padding-left: 22px; 
 }
-#popupmenu .subpopupmenu.highlighter.text:hover,
-#popupmenu .subpopupmenu.highlighter.text-decoration:hover,
-#popupmenu .subpopupmenu.highlighter.text-decoration-color:hover,
-#popupmenu .subpopupmenu.highlighter.text-decoration-style:hover {
+#popupmenu .subpopupmenu.highlighter.text:hover,  .highlighter.text:hover,
+#popupmenu .subpopupmenu.highlighter.text-decoration:hover, .highlighter.text-decoration:hover,
+#popupmenu .subpopupmenu.highlighter.text-decoration-color:hover, .highlighter.text-decoration-color:hover
+#popupmenu .subpopupmenu.highlighter.text-decoration-style:hover, .highlighter.text-decoration-style:hover {
 	background-image: url(text-hover.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
 	background-position: 2px center, right 2px center;
 	padding-left: 22px; 
 }
-#popupmenu .action.mark {
+.action.mark {
 	background-image: url(hl.png);
 	background-repeat: no-repeat;
 	background-position: 2px center;
 }
-#popupmenu .action.mark:hover {
+.action.mark:hover {
 	background-image: url(hl-hover.png);
 }
-#popupmenu .highlighter.background-color .action.mark {
+.highlighter.background-color .action.mark {
 	background-image: url(bg.png);
 }
-#popupmenu .highlighter.background-color .action.mark:hover {
+.highlighter.background-color .action.mark:hover {
 	background-image: url(bg-hover.png);
 }
-#popupmenu .highlighter.background-color .action.removemarks {
+.highlighter.background-color .action.removemarks {
 	background-image: url(bg.png), url(remove.png);
 }
-#popupmenu .highlighter.background-color .action.removemarks:hover {
+.highlighter.background-color .action.removemarks:hover {
 	background-image: url(bg-hover.png), url(remove-hover.png);
 }
-#popupmenu .highlighter.color .action.mark {
+.highlighter.color .action.mark {
 	background-image: url(fg.png);
 }
-#popupmenu .highlighter.color .action.mark:hover {
+.highlighter.color .action.mark:hover {
 	background-image: url(fg-hover.png);
 }
-#popupmenu .highlighter.color .action.removemarks {
+.highlighter.color .action.removemarks {
 	background-image: url(fg.png),url(remove.png);
 }
-#popupmenu .highlighter.color .action.removemarks:hover {
+.highlighter.color .action.removemarks:hover {
 	background-image: url(fg-hover.png),url(remove-hover.png);
 }
-
-#popupmenu .highlighter.border .action.mark {
+.highlighter.border .action.mark {
 	background-image: url(border.png);
 }
-#popupmenu .highlighter.border .action.mark:hover {
+.highlighter.border .action.mark:hover {
 	background-image: url(border-hover.png);
 }
-#popupmenu .highlighter.border .action.removemarks {
+.highlighter.border .action.removemarks {
 	background-image: url(border.png),url(remove.png);
 }
-#popupmenu .highlighter.border .action.removemarks:hover {
+.highlighter.border .action.removemarks:hover {
 	background-image: url(border-hover.png),url(remove-hover.png);
 }
-#popupmenu .highlighter.font .action.mark {
+.highlighter.font .action.mark {
 	background-image: url(font.png);
 }
-#popupmenu .highlighter.font .action.mark:hover {
+.highlighter.font .action.mark:hover {
 	background-image: url(font-hover.png);
 }
-#popupmenu .highlighter.font .action.removemarks {
+.highlighter.font .action.removemarks {
 	background-image: url(font.png),url(remove.png);
 }
-#popupmenu .highlighter.font .action.removemarks:hover {
+.highlighter.font .action.removemarks:hover {
 	background-image: url(font-hover.png),url(remove-hover.png);
 }
-#popupmenu .highlighter.text .action.mark {
+.highlighter.text .action.mark {
 	background-image: url(text.png);
 }
-#popupmenu .highlighter.text .action.mark:hover {
+.highlighter.text .action.mark:hover {
 	background-image: url(text-hover.png);
 }
-#popupmenu .highlighter.text .action.removemarks {
+.highlighter.text .action.removemarks {
 	background-image: url(text.png),url(remove.png);
 }
-#popupmenu .highlighter.text .action.removemarks:hover {
+.highlighter.text .action.removemarks:hover {
 	background-image: url(text-hover.png),url(remove-hover.png);
 }
-#popupmenu .action.replacemarks {
+.action.replacemarks {
 	background-image: url(transfer.png);
 	background-position: 2px center;
 }
-#popupmenu .action.replacemarks:hover {
+.action.replacemarks:hover {
 	background-image: url(transfer-hover.png);
 }
-#popupmenu .action.replacemarks.active {
+.action.replacemarks.active {
 	background-image: url(transferactive.png);
 	background-color: yellow;
 }
-#popupmenu .action.replacemarks.active:hover {
+.action.replacemarks.active:hover {
 	background-image: url(transferactive-hover.png);
 }
-#popupmenu .highlighter.preset {
+#popupmenu .highlighter.preset, .highlighter.preset {
 	background-image: url(preset.png),
 	   url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
     background-repeat: no-repeat, no-repeat;
     background-position: 2px center, right 2px center;
     padding-left: 22px;
 }
-#popupmenu .action.markwithpreset, #popupmenu .action.managepresets {
+.action.markwithpreset, .action.managepresets {
 	background-image: url(preset.png);
 	background-position: left center;
 	max-width: 200px;
@@ -235,13 +244,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
-#popupmenu .action.markwithpreset:hover, #popupmenu .action.managepresets:hover {
+.action.markwithpreset:hover, .action.managepresets:hover {
 	background-image: url(preset-hover.png);
 }
-#popupmenu .action.savemarksaspreset {
+.action.savemarksaspreset {
 	background-position: left -1696px;
 }
-#popupmenu .action.hlnopresets {
+.action.hlnopresets {
 	background-image: none;
 	padding: 0;
 	font-style: italic;;
@@ -281,7 +290,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: left center;
 	padding-left: 20px;
 }
-#popupmenu .subpopupmenu.highlighter.preset:hover {
+#popupmenu .subpopupmenu.highlighter.preset:hover, .highlighter.preset:hover {
 	background-image: url(preset-hover.png),
 		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;

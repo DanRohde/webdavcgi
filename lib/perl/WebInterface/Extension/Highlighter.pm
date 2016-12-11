@@ -40,7 +40,7 @@ use vars qw(%_CACHE);
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks
-        = qw(css locales javascript posthandler fileattr fileactionpopup);
+        = qw(css locales javascript posthandler fileattr fileactionpopup filelistaction);
 
     $hookreg->register( \@hooks, $self );
 
@@ -467,6 +467,15 @@ sub handle_hook_fileactionpopup {
         title        => $self->tl('highlighter'),
         subpopupmenu => $self->_create_popups( $self->{attributes}, 1 ),
         classes      => 'highlighter-popup'
+    };
+}
+sub handle_hook_filelistaction {
+    my ( $self, $config, $params ) = @_;
+    return {
+        title        => '&nbsp;',
+        label        => $self->tl("highlighter"),
+        subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
+        classes      => 'highlighter-popup uibutton',
     };
 }
 

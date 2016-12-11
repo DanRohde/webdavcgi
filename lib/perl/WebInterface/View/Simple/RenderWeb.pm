@@ -130,11 +130,14 @@ sub exec_template_function {
 sub render_extension_element {
     my ( $self, $hook, $params ) = @_;
     if ($hook =~ /^(?:new|fileaction|fileactionpopupnew|filelistaction)$/xms) {
+        print STDERR "render_extension_element($hook,".ref($params)."\n";
+        if (ref($params) eq 'HASH') {
         $params->{type} = 'li';
         if ($hook eq 'fileaction') {
             $params->{classes} .= ' dropdown-menu-item';
         } elsif ( $hook eq 'filelistaction') {
             $params->{classes} .= ' sel-multi hideit hidden';
+        }
         }
     }
     return $self->SUPER::render_extension_element($hook, $params);
