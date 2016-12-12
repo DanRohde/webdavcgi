@@ -300,6 +300,15 @@ table,th,td {
 	background-position: center -1658px;
 	cursor: pointer;
 }
+#fileactions li {
+	max-height: 15px !important;
+	line-height: 15px;
+	font-size: small !important;
+}
+#fileactions .label  {
+	font-size: small !important;
+	color: black !important;
+}
 .fileactions-dropdown:focus, .fileactions-dropdown:hover {
 	background-image: url(images/sprite-hover.png);
 }
@@ -425,7 +434,7 @@ tr.isreadable-no:hover {
 	background-position: left -500px;
 }
 .action.delete, .listaction.delete {
-	background-position: left -215px;
+	background-position: 2px -221px;
     padding-left: 22px;
 	color: black;
 }
@@ -433,7 +442,7 @@ tr.isreadable-no:hover {
 	background-position: 2px -21px;
 }
 .listaction.delete, .ui-button.listaction.delete {
-	background-position: 4px -215px;
+	background-position: 4px -217px;
 }
 .listaction.copy,.ui-button.listaction.copy {
 	background-position: center -134px;
