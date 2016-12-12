@@ -1457,7 +1457,7 @@ img {
 	margin: 0;
 	display: inline-block;
 	min-width: 8px;
-	min-height: 22px;
+	min-height: 18px;
 }
 .toolbar > li:focus {
 	outline: none;
