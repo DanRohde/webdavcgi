@@ -1227,7 +1227,10 @@ img {
 	position: fixed;
 	bottom: 0px;
 	left: 160px;
-	height: 1.8em;
+	height: 25px;
+	font-size: 15px;
+	line-height: 1;
+	vertical-align: middle;
 	background-color: #f7f7f7;
 	width: 100%;
 	padding: 1px 10px 1px 10px;
@@ -1273,9 +1276,7 @@ img {
 }
 #statusbar .files-stats, #statusbar .selected-files-stats  {
 	display: inline-block;
-	margin: 1px 0 1px 1ex;
-	padding: 0 10px;
-	vertical-align: top;
+	padding: 3px;
 }
 #statusbar .selected-files-stats 
 {
@@ -1434,6 +1435,7 @@ img {
 	margin-top: 8px;
 	font-size: 15px;
 	line-height: 1;
+	vertical-align: middle;
 }
 .toolbar > li:focus {
 	outline: none;
@@ -1480,4 +1482,7 @@ img {
 .flex-row {
 	display: flex;
 	flex-flow: row nowrap;
+}
+#popupmenu .new {
+	padding-left: 6px;
 }

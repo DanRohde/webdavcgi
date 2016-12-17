@@ -46,7 +46,7 @@ sub init {
     }
     if ( $EXTENSION_CONFIG{QuickToggle}{enable_pref} ) { push @hooks, 'pref'; }
     if ( !$EXTENSION_CONFIG{QuickToggle}{disable_statusbar} ) {
-        push @hooks, 'statusbar';
+        push @hooks, 'statusbarleft';
     }
     $hookreg->register( \@hooks, $self );
     return $self;
@@ -67,7 +67,7 @@ sub handle_hook_pref {
     return $self->_handle( 'pref', $config, $params );
 }
 
-sub handle_hook_statusbar {
+sub handle_hook_statusbarleft {
     my ( $self, $config, $params ) = @_;
     return $self->_handle( 'statusbar', $config, $params );
 }

@@ -80,12 +80,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(bars-off-hover.png);
 }
 
-#nav .action.quicktoggle-button {
+.action.quicktoggle-button {
 	background-image: url(quicktoggle.png);
-	background-repeat: no-repeat;
 	background-position: 2px center;
 }
-#nav .action.quicktoggle-button:hover, #nav .action.quicktoggle-button:focus {
+.action.quicktoggle-button:hover, .action.quicktoggle-button:focus {
 	background-image: url(quicktoggle-hover.png);
 }
 .sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover,
@@ -130,8 +129,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	left: -34px;
 	top: 6px;
 	white-space: normal;
-}
-#statusbar .quicktoggles {
-	float: left;
-	padding-right:10px;
 }

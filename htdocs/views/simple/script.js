@@ -2184,7 +2184,7 @@ function initPlugins() {
 			handleTitleAttribute(el);
 			if (isBlocked(el)) return;
 			blockParentElements(el);
-			tooltip.text(el.data("tooltip"));
+			tooltip.text(el.attr("data-tooltip"));
 			if (delay) {
 				setDelayTimeout(e,el);
 			} else {
@@ -2204,8 +2204,7 @@ function initPlugins() {
 			unblockParentElements($(this));
 		}
 		function handleTitleAttribute(el) {
-			if (el.data("tooltip") != undefined) return el;
-			return el.attr("data-tooltip", el.attr("title")).removeAttr("title");
+			return el.attr("data-tooltip", el.attr("title") != undefined ? el.attr("title") : el.attr("data-tooltip")).removeAttr("title");
 		}
 		function cleanupMouseHandler(el) {
 			return el.off(".tooltip");
