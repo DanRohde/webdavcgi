@@ -1717,6 +1717,8 @@ function handleFileListActionEvent(event) {
 					.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
 			confirmDialog(msg, { confirm: function() { doPasteAction(action,srcuri,dsturi,files); }, setting: "settings.confirm.paste" });
 		} else doPasteAction(action,srcuri,dsturi,files);
+	} else if (self.attr("href") != undefined && self.attr("href") != "#") {
+		window.location.href=self.attr("href");
 	} else {
 		var row = self.closest("tr");
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });
