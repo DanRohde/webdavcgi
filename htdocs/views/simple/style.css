@@ -40,17 +40,17 @@ a {
 }
 #top {
 	position: fixed;
-	height: 32px;
-	padding: 0.5em;
 	left: 0;
 	right: 0;
 	top:0;
+	height: 39px;
+	padding: 6px 0px 0px 25px;
 	z-index: 100;
 	color: white;
 	background-color: #1d2d44;
 	box-shadow: 0 0 10px rgba(0,0,0,0.5),0 -2px 10px #222222 inset;
-	line-height: 32px;
-	padding: 0.5em;
+	font-size: 15px;
+	vertical-align: middle;
 }
 #nav {
 	position: fixed;
@@ -115,7 +115,7 @@ a {
 	background-color: #f7f7f7;
 	border-bottom: 1px solid #eeeeee;
 	box-shadow: 0 -3px 7px #000000;
-	height: 2.8em;
+	height: 41px;
 	margin: 0;
 	position: fixed;
 	top: 45px;
@@ -125,7 +125,7 @@ a {
 	z-index: 50;
 }
 #fileListTableContent {
-	padding-top: 3em;
+	padding-top: 42px;
 }
 #fileListTable {
 	top: 37px;
@@ -420,7 +420,6 @@ tr.isreadable-no:hover {
 
 .filterbox {
 	position: absolute;
-	top: 3px;
 	right: 3em;
 	color: #888888;
 	background-color: #F7F7F7;
@@ -782,11 +781,12 @@ td.center {
 
 .langswitch {
 	position: fixed;
-	right: 0;
-	top: 0;
+	right: 7px;
+	top: 2px;
 	z-index: 110;
 	color: white;
-	padding-right: 7px;
+	font-size: 10px;
+	line-height: 1;
 }
 .langswitch a {
 	color: white;
@@ -1419,7 +1419,7 @@ img {
 .toolbar {
 	margin: 0;
 	border: none;
-	padding: 3px 1em 0 0;
+	padding: 4px 1em 0 0;
 	white-space: nowrap;
 	position: absolute;
 	width: 100%;
@@ -1428,11 +1428,10 @@ img {
 	line-height: 1;
 }
 .toolbar > li {
-	margin: 0;
+	margin: 1px;
 	display: inline-block;
 	min-width: 8px;
 	height: 18px;
-	margin-top: 8px;
 	font-size: 15px;
 	line-height: 1;
 	vertical-align: middle;
@@ -1485,4 +1484,10 @@ img {
 }
 #popupmenu .new {
 	padding-left: 6px;
+}
+#now {
+	position: absolute;
+	right: 7px;
+	bottom: 5px;
+	font-size: 10px;
 }

@@ -62,3 +62,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat, no-repeat;
 	background-color: #f9f9f9;
 }
+
+.action.zipdwnload.uibutton {
+	background-position-x: center;
+}
+.action.zipdwnload.uibutton .label {
+	display: none;
+}

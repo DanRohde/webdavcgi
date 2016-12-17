@@ -3,6 +3,7 @@
      - added folder upload support via folder drag and drop and menu dialog
      - changed file/folder action dialog
      - improved Highlighter extension
+     - changed HEADER and LANGSWITCH defaults
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension
