@@ -17,8 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 .action.feedback {
 	background-image: url(feedback.png);
-	background-repeat: no-repeat;
-	background-position: 4px center;
+	background-position: 2px center;
 }
 .action.feedback:focus, .action.feedback:hover {
 	background-image: url(feedback-hover.png);
@@ -76,7 +75,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .feedback-button {
 	position: fixed;
 	bottom: 100px;
-	right:-123px;
+	right:-125px;
 	transform: rotate(90deg);
 	transform-origin: left top 0;
 	padding: 6px 10px 6px 24px;
@@ -88,9 +87,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	border-color: red; 
 	border-width: 1px;
 	border-style: solid;
+	font-size: 15px;
+	line-height: 1;
 }
 .feedback-button:focus, .feedback-button:hover {
-	right: -102px;
+	right: -110px;
 	background-color: #ec0;
 }
 .feedback-button.disabled  {

@@ -65,7 +65,7 @@ sub handle_hook_fileactionpopup {
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'listaction diff sel-oneormore disabled',
+        'action diff sel-oneormore disabled',
         'diff_short', 'diff' );
 }
 

@@ -75,7 +75,7 @@ sub handle_hook_fileactionpopup {
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'pacl listaction sel-noneorone disabled', 'pacl' );
+        'pacl action sel-noneorone disabled', 'pacl' );
 }
 
 sub handle_hook_posthandler {

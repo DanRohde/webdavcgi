@@ -88,7 +88,7 @@ sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook(
         $self->{cgi},
-        'listaction dwnload sel-one sel-file disabled ' . $self->{add_classes},
+        'action dwnload sel-one sel-file disabled' . $self->{add_classes},
         'dwnload',
         'dwnload'
     );

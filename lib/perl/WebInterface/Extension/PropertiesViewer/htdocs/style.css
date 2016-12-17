@@ -3,3 +3,9 @@
 	height: 600px;
 	overflow: auto;
 }
+.action.props {
+	background-position-y: -17px;
+}
+.isreadable-no .action.props {
+	display: none;
+}

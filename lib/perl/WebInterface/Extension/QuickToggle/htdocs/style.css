@@ -117,10 +117,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 	width: 24px;
 }
-.filterbox .quicktoggles-spacer:hover, .filterbox .quicktoggles-spacer:focus {
+.filterbox .quicktoggles-spacer:hover, .filterbox .quicktoggles-spacer:focus, 
+.fliterbox .quicktoggles-spacer:active {
 	background-image: url(quicktoggle-hover.png);
 }
-.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus {
+.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus,
+.filterbox .quicktoggles:active {
 	height: auto;
 	background-color: inherit;
 	box-shadow: 3px  0 7px #ddd;

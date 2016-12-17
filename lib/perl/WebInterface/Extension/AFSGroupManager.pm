@@ -61,7 +61,7 @@ sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
         action   => 'afsgroupmngr',
-        classes  => 'listaction',
+        classes  => 'action',
         label    => 'afsgroup',
         title    => 'afsgroup',
         path     => $params->{path},

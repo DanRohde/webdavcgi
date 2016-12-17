@@ -79,7 +79,7 @@ $INCLUDE(htmlhead)</head>
 			<li class="dropdown-click"><span class="fileactions-dropdown" title="$tl(fileactions)" tabindex="0"></span><ul class="dropdown-menu">
 				<li class="dropdown-menu-item action rename access-writeable" href="#" tabindex="0" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></li>
 				$extension(fileaction)
-				<li class="dropdown-menu-item action delete" href="#" tabindex="0" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
+				<li class="dropdown-menu-item action delete sep" href="#" tabindex="0" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
 				</ul>
 			</li> 
 		</ul>
@@ -110,9 +110,11 @@ $INCLUDE(htmlhead)</head>
 </div>
 <!--IF(%AUTOREFRESH)-->
 	<div id="autorefreshtimer">
-		<span class="autorefreshtimer" title="$tl(autorefresh.select.title)" data-template="$tl(autorefresh.format)"></span> 
-		<a href="#" class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)">&nbsp;</a>
-		<a href="#" class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear" title="$tl(autorefresh.clear)">&nbsp;</a>
+		<div class="flex-row">
+			<div class="autorefreshtimer" title="$tl(autorefresh.select.title)" data-template="$tl(autorefresh.format)"></div> 
+			<div class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)" tabindex="0"></div>
+			<div class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear" title="$tl(autorefresh.clear)" tabindex="0"></div>
+		</div>
 	</div>
 <!--ENDIF-->
 <!--IF($config(ALLOW_POST_UPLOADS))-->

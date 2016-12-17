@@ -73,7 +73,7 @@ sub handle_hook_fileaction {
 sub handle_hook_filelistaction {
     my ( $self, $config, $params ) = @_;
     return {
-        listaction => 'zipdwnload',
+        action => 'zipdwnload',
         label      => 'zipdwnload',
         title      => 'zipdwnloadtext',
         path       => ${$params}{path},
@@ -102,7 +102,7 @@ sub handle_hook_fileactionpopup {
                 title   => 'zipdwnloadtext',
                 path    => ${$params}{path},
                 type    => 'li',
-                classes => 'listaction'
+                classes => 'action'
             },
             {
                 action  => 'zipcompress',
@@ -151,7 +151,7 @@ sub handle_hook_new {
 sub handle_hook_apps {
     my ($self) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'listaction zipdwnload sel-multi disabled ',
+        'action zipdwnload sel-multi disabled ',
         'zipdwnload', 'zipdwnload' );
 }
 

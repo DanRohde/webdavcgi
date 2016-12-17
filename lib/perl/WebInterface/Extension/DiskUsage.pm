@@ -85,14 +85,14 @@ sub handle_hook_fileactionpopup {
         label   => 'du_diskusage',
         path    => $params->{path},
         type    => 'li',
-        classes => 'listaction sel-noneormulti sel-dir'
+        classes => 'action sel-noneormulti sel-dir'
     };
 }
 
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'listaction diskusage sel-noneormulti sel-dir disabled',
+        'action diskusage sel-noneormulti sel-dir disabled',
         'du_diskusage_short', 'du_diskusage' );
 }
 
@@ -129,7 +129,11 @@ sub _render_diskusage_template {
     $self->{counter} = $counter;
     $self->{json}    = $json;
 
-    foreach my $file ( $self->get_cgi_multi_param('file') ) {
+    my @files = $self->get_cgi_multi_param('file');
+    if (@files < 1) {
+        push @files, q{};
+    }
+    foreach my $file ( @files ) {
         $self->_get_disk_usage( $PATH_TRANSLATED, $file, $counter );
     }
     if (
@@ -185,7 +189,7 @@ sub _render_diskusage_template {
     my $hdr = DateTime::Format::Human::Duration->new();
 
     my @pbvsum = $self->render_byte_val( $counter->{size}{all} );
-    my $filenamelist = join ', ', $self->get_cgi_multi_param('file');
+    my $filenamelist = join ', ', @files;
     if ( $filenamelist eq q{} ) { $filenamelist = q{.}; }
     if ( length $filenamelist > $_MAX_FILENAMELIST_LENGTH ) {
         $filenamelist =

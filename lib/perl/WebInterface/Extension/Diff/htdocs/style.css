@@ -14,18 +14,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#popupmenu .action.diff {
+.action.diff {
 	background-image: url(diff.png);
-	background-repeat: no-repeat;
-	background-position: 2px 7px;
+	background-position-y: 7px;
 }
-#nav .listaction.diff {
-	background-image: url(diff.png);
-	background-repeat: no-repeat;
-	background-position: 4px center;
-}
-#popupmenu .action.diff:hover, #nav .listaction.diff:hover,
-#popupmenu .action.diff:focus, #nav .listaction.diff:focus {
+.action.diff:hover, .action.diff:focus, .action.diff:active {
 	background-image: url(diff-hover.png);
 }
 .isreadable-no .diff,
@@ -35,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .diff.dialog {
 	overflow: auto;
+	font-size: 15px;
 }
 .diff.table {
 	empty-cells: show;

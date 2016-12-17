@@ -19,7 +19,7 @@
 <li class="action upload access-writeable uibutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_CLIPBOARD))-->			
-<li class="listaction paste uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
+<li class="action paste uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
 <!--ENDIF-->
 <li class="sel-none hideit"><span id="quicknav" class="ws">$[quicknavpath]</span>
 	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
@@ -34,8 +34,8 @@
 			<div class="bookmarklabel">$bookmarktext</div>
 			<div tabindex="0" class="action rmsinglebookmark" title="$tl(rmbookmark)" aria-label="$tl(rmbookmark)" data-bookmark="$bookmarkpath"></div>
 		</li>
-		<li class="sep action bookmarksortpath" data-action="bookmarksortpath"><div class="bookmarksortlabel">$tl(sortbookmarkbypath)</div><div class="path right">&uarr;</div><div class="path-desc right">&darr;</div></li>
-		<li class="action bookmarksorttime" data-action="bookmarksorttime"><div class="bookmarksortlabel">$tl(sortbookmarkbytime)</div><div class="time right">&uarr;</div><div class="time-desc right">&darr;</div></li>
+		<li class="sep action bookmarksortpath" data-action="bookmarksortpath"><div class="bookmarksortlabel">$tl(sortbookmarkbypath)</div><div class="path">&uarr;</div><div class="path-desc">&darr;</div></li>
+		<li class="action bookmarksorttime" data-action="bookmarksorttime"><div class="bookmarksortlabel">$tl(sortbookmarkbytime)</div><div class="time">&uarr;</div><div class="time-desc">&darr;</div></li>
 		<li class="sep action rmallbookmarks" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
 	</ul>
 </li>
@@ -51,15 +51,13 @@
 		<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
 	</ul>
 <!--ENDIF-->
-<li class="sel-multi hideit hidden">
-	<span id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</span>
-</li>
+<li class="sel-multi hideit selstats notab" id="selstats">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</li>
 <!--IF($config(ENABLE_CLIPBOARD))-->			
-<li class="listaction copy sel-multi hideit hidden uibutton"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
-<li class="listaction cut sel-multi hideit access-writeable hidden uibutton" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" accesskey="x"></li>
+<li class="action copy sel-multi hideit hidden uibutton"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
+<li class="action cut sel-multi hideit access-writeable hidden uibutton" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" accesskey="x"></li>
 <!--ENDIF-->		
 $extension(filelistaction)	
-<li class="listaction delete sel-multi hideit hidden access-writeable uibutton" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
+<li class="action delete sel-multi hideit hidden access-writeable uibutton" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 <!--IF($config(ENABLE_NAMEFILTER))-->
 <li class="filterbox sel-none hideit">
 	$extension(filterbox)

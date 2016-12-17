@@ -75,7 +75,7 @@ sub handle_hook_fileactionpopup {
         label    => 'showproperties',
         path     => $params->{path},
         type     => 'li',
-        classes  => 'sel-noneorone listaction'
+        classes  => 'sel-noneorone action'
     };
 }
 

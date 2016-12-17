@@ -581,7 +581,7 @@ function initBookmarks() {
 function toggleButton(button, disabled) {
 	$.each(button, function(i,v) { 
 		var self = $(v);
-		if (self.hasClass("hideit")) self.toggle(!disabled);
+		if (self.hasClass("hideit")) self.toggle(!disabled); // self.css({"display" : disabled ? "none" : "", "visibility" : disabled ? "hidden" : ""});
 		if (self.hasClass("button")) self.button("option","disabled",disabled);
 		if (!self.hasClass("notab")) self.attr("tabindex",disabled ? -1 : 0);
 		self.toggleClass("disabled", disabled);
@@ -1003,7 +1003,7 @@ function handleFileActionEvent(event) {
 	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
 	} else { // extension support:
-		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: getSelectedFiles(this), row: row });
+		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: [ row.data("file") ] , row: row });
 	}
 }
 function handleFileListRowFocusIn(event) {
@@ -1435,9 +1435,9 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
-	$(".listaction.uibutton").button();
-	$(".listaction").click(handleFileListActionEvent);
+	$(".action.uibutton").button();
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
+	$("#apps .action").click(handleFileListActionEvent);
 }
 function updateFileListActions() {
 	var s = getFolderStatistics();
@@ -1647,10 +1647,9 @@ function postAction(data) {
 	form.remove();
 }
 function handleFileListActionEventDelete(event) {
-	$("#fileList tr.selected:visible").fadeTo("slow",0.5);
 	var self = $(this);
-	var selrows = $("#fileList tr.selected:visible");
-	if (selrows.length == 0 ) selrows = $(this).closest('tr');
+	var selrows = getSelectedRows(this);
+	selrows.fadeTo("slow", 0.5);
 	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(selrows.first().attr('data-file')))), {
 		confirm: function() {
 			var block = blockPage();
@@ -1666,7 +1665,7 @@ function handleFileListActionEventDelete(event) {
 			renderAbortDialog(xhr);
 		},
 		cancel: function() {
-			$("#fileList tr.selected:visible").fadeTo("fast",1);
+			selrows.fadeTo("fast",1);
 			$("#fileList tr.selected:not(:visible) .selectbutton").prop('checked',true);
 		}
 	});	
@@ -1694,9 +1693,11 @@ function handleFileListActionEvent(event) {
 	if (self.hasClass("disabled")) return;
 	if (self.hasClass("delete")) {
 		handleFileListActionEventDelete.call(this,event);
+	} else if (self.hasClass("rename")) {
+		handleFileRename(self.closest("tr"));
 	} else if (self.hasClass("cut")||self.hasClass("copy")) {
 		$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
-		var selfiles = $.map($("#fileList tr.selected"), function(val,i) { return $(val).attr("data-file"); });
+		var selfiles = $.map(getSelectedRows(self), function(val,i) { return $(val).attr("data-file"); });
 		cookie('clpfiles', selfiles.join('@/@'));
 		cookie('clpaction',self.hasClass("cut")?"cut":"copy");
 		cookie('clpuri',concatUri($("#fileList").attr('data-uri'),"/"));
@@ -1717,7 +1718,7 @@ function handleFileListActionEvent(event) {
 			confirmDialog(msg, { confirm: function() { doPasteAction(action,srcuri,dsturi,files); }, setting: "settings.confirm.paste" });
 		} else doPasteAction(action,srcuri,dsturi,files);
 	} else {
-		var row = $(this).closest("tr");
+		var row = self.closest("tr");
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });
 	}
 }
@@ -1772,7 +1773,7 @@ function handleClipboard() {
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
 	var disabled = (!files || files=="" || srcuri  == datauri || $("#fileListTable").hasClass("iswriteable-no"));
-	toggleButton($(".listaction.paste"), disabled);
+	toggleButton($(".action.paste"), disabled);
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
@@ -1825,6 +1826,7 @@ function handleInplaceInput(target, defval) {
 	return target;
 }
 function initToolbarActions() {
+	$(".toolbar .action").click(handleFileListActionEvent);
 	$(".toolbar li.uibutton").button();
 	$(".toolbar > li").off("click.toolbar").on("click.toolbar", function() {
 		$("ul:visible",$(this).siblings()).hide();
@@ -1860,7 +1862,7 @@ function initToolbarActions() {
 
 	handleInplaceInput($('.action.create-symlink')).on('changed', function(event) {
 		$(this).closest("ul").hide();
-		var row = $('#fileList tr.selected');
+		var row = getSelectedRows(this);
 		$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: $(this).data('value'), file: row.attr('data-file') }, function(response) {
 			if (!response.error && response.message) updateFileList();
 			handleJSONResponse(response);
@@ -1975,8 +1977,7 @@ function hidePopupMenu() {
 }
 function initPopupMenu() {
 	$("#popupmenu .action").off("click.popup").on("click.popup", function(event) {
-		handleFileActionEvent.call(this,event);
-		//handleFileListActionEvent.call(this,event);
+		handleFileListActionEvent.call(this,event);
 	});
 	// CSS replacement for a delayed
 	$("#popupmenu li ul").hoverIntent(function() { $(this).show(); });
@@ -2007,7 +2008,7 @@ function initPopupMenu() {
 		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
 	});
 	*/
-	$("#popupmenu .action, #popupmenu .listaction").off("dblclick.popup").on("dblclick.popup", function(event) { preventDefault(event);});
+	$("#popupmenu .action").off("dblclick.popup").on("dblclick.popup", function(event) { preventDefault(event);});
 	$("#popupmenu .subpopupmenu").off("click.popup dblclick.popup").on("click.popup dblclick.popup", function(event) { preventDefault(event); });
 	function adjustPopupPosition(pageX,pageY) {
 		var popup = $("#popupmenu");
@@ -2132,7 +2133,7 @@ function initPlugins() {
 		} else {
 			tooltip = toel.data("tooltip");
 		}
-		toel.off("click.MyTooltip").on("click.MyTooltip", function() { 
+		toel.off("click.tooltip").on("click.tooltip", function() { 
 			clearTimeout();
 			tooltip.hide();
 		});
@@ -2142,7 +2143,7 @@ function initPlugins() {
 				tooltip.hide(); 
 		});
 		function clearTimeout() {
-			if (toel.data("tttimeout")) window.clearTimeout(toel.data("tttimeout"));
+			window.clearTimeout(toel.data("tttimeout"));
 		}
 		function setDelayTimeout(e,el) {
 			clearTimeout();
@@ -2165,17 +2166,25 @@ function initPlugins() {
 			if (top-w.scrollTop()<0) top = Math.floor(el.offset().top + el.outerHeight() + 4);
 			if (Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
 			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
-			tooltip.show();
+			tooltip.toggle(tooltip.text()!="");
 			hideTooltip(showtimeout || 7000, el);
+		}
+		function isBlocked(el) {
+			return el.attr("data-tooltip-block") == "true";
+		}
+		function blockParentElements(el) {
+			el.parents("[data-tooltip], [title]").each(function(i,e) { $(e).attr("data-tooltip-block", "true"); } );
+			return el;
+		}
+		function unblockParentElements(el) {
+			el.parents("[data-tooltip-block]").removeAttr("data-tooltip-block");
 		}
 		function handleMouseOver(e,u) {
 			var el = $(this);
 			handleTitleAttribute(el);
-			if (el.is("[data-tooltip-block]")) return;
-			el.parents("[data-tooltip], [title]").each(function(i,el) { $(el).attr("data-tooltip-block", "true"); } );
-			
-			tooltip.text(el.attr("data-tooltip"));
-			
+			if (isBlocked(el)) return;
+			blockParentElements(el);
+			tooltip.text(el.data("tooltip"));
 			if (delay) {
 				setDelayTimeout(e,el);
 			} else {
@@ -2185,29 +2194,26 @@ function initPlugins() {
 		function handleMouseMove(e,u) {
 			var el = $(this);
 			handleTitleAttribute(el);
-			if (el.is("[data-tooltip-block]")) return;
+			if (isBlocked(el)) return;
 			if (tooltip.is(":visible") && !delay) setTooltipPosition(e,el);
 			else setDelayTimeout(e,el);
 		}
 		function handleMouseOut(e,u) {
 			clearTimeout();
 			hideTooltip(hidetimeout || 500, u);
-			$(this).parents("[data-tooltip-block]").removeAttr("data-tooltip-block");
+			unblockParentElements($(this));
 		}
 		function handleTitleAttribute(el) {
-			if (el.attr("title")) {
-				if (el.attr("title").trim()!="") el.attr("data-tooltip", el.attr("title"));
-				else cleanupMouseHandler(el).removeAttr("data-tooltip");
-				el.removeAttr("title");
-			}
+			if (el.data("tooltip") != undefined) return el;
+			return el.attr("data-tooltip", el.attr("title")).removeAttr("title");
 		}
 		function cleanupMouseHandler(el) {
-			return el.off("mouseover.tooltip").off("mouseout.tooltip").off("mousemove.tooltip");
+			return el.off(".tooltip");
 		}
 		function initElement(el) {
-			if (el.attr("title").trim()!="") cleanupMouseHandler(el).on("mouseover.tooltip",handleMouseOver).on("mouseout.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
+			cleanupMouseHandler(el).on("mouseover.tooltip",handleMouseOver).on("mouseout.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
 		}
-		this.find("[title]").each(function(i,v) { initElement($(v)); });
+		initElement(this.find("[title]"));
 		if (this.attr("title")) initElement(this);
 		
 		return this;	

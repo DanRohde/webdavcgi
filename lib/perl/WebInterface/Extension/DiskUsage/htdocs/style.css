@@ -23,11 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.diskusage {
 	background-position: 2px 7px;
 }
-#nav .listaction.diskusage {
+#nav .action.diskusage {
 	background-position: 4px center;
 }
-.action.diskusage:hover, .listaction.diskusage:hover,
-.action.diskusage:focus, .listaction.diskusage:focus {
+.action.diskusage:hover, .action.diskusage:focus,  {
 	background-image: url(diskusage-hover.png);
 } 
 .is-file .action.diskusage,

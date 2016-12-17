@@ -156,7 +156,7 @@ sub render_extension_element {
         my %params = ( -class => q{} );
         $params{-class} .= ${$a}{action} ? ' action ' . ${$a}{action} : q{};
         $params{-class}
-            .= ${$a}{listaction} ? ' listaction ' . ${$a}{listaction} : q{};
+            .= ${$a}{listaction} ? ' action ' . ${$a}{listaction} : q{};
         $params{-class} .= ${$a}{classes}  ? q{ } . ${$a}{classes} : q{};
         $params{-class} .= ${$a}{disabled} ? ' hidden'             : q{};
         if ( ${$a}{accesskey} ) { $params{-accesskey} = ${$a}{accesskey}; }

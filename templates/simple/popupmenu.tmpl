@@ -1,10 +1,10 @@
 <ul id="popupmenu" style="opacity: 1; filter: Alpha(opacity=100);">
-<li class="subpopupmenu" title="$tl(new)">$tl(new)
+<li class="subpopupmenu new" title="$tl(new)">$tl(new)
 <ul>
 <li class="action create-folder access-writeable" title="$tl(createfolderbutton)">$tl(createfolderbutton)</li>
 <li class="action create-file access-writeable" title="$tl(createnewfilebutton)">$tl(createnewfilebutton)</li>
 <!--IF($config(ALLOW_SYMLINK))-->
-	<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
+	<li class="action create-symlink sel-noneorone access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
 <!--ENDIF--> 
 <!--IF($config(ALLOW_POST_UPLOADS))-->
 	<li class="action upload access-writeable sep" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
@@ -18,13 +18,13 @@ $extension(fileactionpopupnew)
 <!--IF($config(ALLOW_POST_UPLOADS))-->
 	<li class="action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
 <!--ENDIF-->
-<li class="listaction copy sel-multi sep" title="$tl(copytooltip)">$tl(copy)</li>
-<li class="listaction cut sel-multi access-writeable hideit" title="$tl(cuttooltip)">$tl(cut)</li>
-<li class="listaction paste sel-none access-writeable hideit" title="$tl(paste)">$tl(paste)</li>
+<li class="action copy access-readable hideit sep" title="$tl(copytooltip)">$tl(copy)</li>
+<li class="action cut access-writeable hideit" title="$tl(cuttooltip)">$tl(cut)</li>
+<li class="action paste hideit" title="$tl(paste)">$tl(paste)</li>
 <li class="subpopupmenu extension sep select" title="$tl(select)">$tl(select)
 <ul class="subpopupmenu extension"><li class="toggleselection" title="$tl(togglealltooltip)">$tl(togglealltooltip)</li><li class="selectall" title="$tl(selectall)">$tl(selectall)</li><li class="selectnone" title="$tl(selectnone)">$tl(selectnone)</li></ul>
 </li>
-<li class="action rename sep" title="$tl(movefilesbutton)">$tl(movefilesbutton)</li>
+<li class="action rename sel-noneorone sep" title="$tl(movefilesbutton)">$tl(movefilesbutton)</li>
 $extension(fileactionpopup)
-<li class="listaction delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
+<li class="action delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 </ul>

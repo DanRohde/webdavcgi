@@ -82,7 +82,7 @@ sub handle_hook_fileactionpopup {
 sub handle_hook_filelistaction {
     my ( $self, $config, $params ) = @_;
     return {
-        listaction => 'sendbymail',
+        action     => 'sendbymail',
         label      => '&nbsp;',
         title      => $self->tl('sendbymail'),
         path       => $params->{path},
@@ -93,7 +93,7 @@ sub handle_hook_filelistaction {
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'listaction sendbymail sel-multi disabled',
+        'action sendbymail sel-multi disabled',
         'sendbymail_short', 'sendbymail' );
 
 }

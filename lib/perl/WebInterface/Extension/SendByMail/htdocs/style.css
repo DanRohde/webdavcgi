@@ -20,25 +20,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: none;
 	visibility: hidden;
 }
-.action.sendbymail, .listaction.sendbymail {
+.action.sendbymail {
 	background-image: url(sendbymail.png);
-	background-repeat: no-repeat;
-	background-position: 4px bottom;
-	background-color: transparent;
-	color: #666;
+	background-position-x: center;
 }
-.action.sendbymail:hover,.listaction.sendbymail:hover,
-.action.sendbymail:focus,.listaction.sendbymail:focus {
+.action.sendbymail:hover, .action.sendbymail:focus, .action.sendbymail:active {
 	background-image: url(sendbymail-hover.png);
 }
-.listaction.sendbymail {
- 	background-position: center center;
- }
-
 #popupmenu .action.sendbymail {
-	background-position: 2px 7px;
+	background-position: 2px center;
 }
-#nav .listaction.sendbymail {
+#nav .action.sendbymail {
 	background-position: 4px center;
 }
 .sendbymail.button {

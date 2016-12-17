@@ -135,6 +135,8 @@ a {
 	white-space: nowrap;
 	border-collapse: separate;
 	clear: both;
+	line-height: 1.2;
+	font-size: 15px;
 }
 table th, table td {
 	border-top: 1px solid #dddddd;
@@ -224,24 +226,27 @@ table,th,td {
 		url(images/sprite.png),
 	    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
-	background-position: left -895px, right 2px center;
+	background-position: left -896px, right 2px center;
 }
 #popupmenu .select.subpopupmenu:hover {
 	background:	url(images/sprite-hover.png),
 	    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
 	background-repeat: no-repeat, no-repeat;
-	background-position: left -895px, right 2px center;
+	background-position: left -896px, right 2px center;
 	background-color: #f9f9f9;
 }
-.action, .listaction, .ui-button.action, .ui-button.listaction {
+.action, .ui-button.action {
     background-image: url(images/sprite.png);
     background-repeat: no-repeat;
     background-color: transparent;
+    background-position-x: left;
+    background-position-y: center;
     cursor: pointer;
+    padding-left: 22px;
 }
-.action:focus, .action:hover, .listaction:focus, .listaction:hover,
-.ui-button.action:focus, .ui-button.action:hover, .ui-button.listaction:focus, .ui-button.listaction:hover,
-.ui-button.action:active, .ui-button.istaction:active {
+.action:focus, .action:hover, .action:active, 
+.ui-button.action:focus, .ui-button.action:hover, 
+.ui-button.action:active {
     background-image: url(images/sprite-hover.png);
     background-repeat: no-repeat;
     background-color: #ddd;
@@ -266,10 +271,14 @@ table,th,td {
 	width: 8ex;
 }
 #fileactions {
-	float: right;
 	margin: 0;
 	border: 0;
 	padding: 0 18px 0 0;
+	display: block;
+	font-size: 15px;
+	font-weight: normal;
+	line-height: 1;
+	float: right;
 }
 
 #fileactions.hidelabels .label  {
@@ -278,18 +287,22 @@ table,th,td {
 
 #fileactions .action {
 	min-width: 22px;
-	padding: 2px 4px 2px 22px;
+	padding: 6px 6px 6px 22px;
 	border: 1px solid transparent;
-	margin-top: 2px;
+	margin: 0;
+	background-position-x: 2px;
 }
 #fileactions .action:hover {
-	border: 1px dotted #808080;
+	border: 1px dotted #999;
+	background-color: #ededed;
 }
 #fileactions.hidelabels .action {
-	padding: 2px 2px 20px 2px;
-	margin-left: 4px;
-	margin-right: 4px;
 	float: left;
+	border: 1px solid white;
+	background-position-x: center;
+	width: 24px;
+	height: 24px;
+	padding: 6px;
 }
 .fileactions-dropdown {
 	display: block;
@@ -301,12 +314,14 @@ table,th,td {
 	cursor: pointer;
 }
 #fileactions li {
-	max-height: 15px !important;
-	line-height: 15px;
-	font-size: small !important;
+	height: 1.2em !important;
+	font-size: 15px !important;
+}
+#fileactions li.sep {
+	border-top: 1px solid #999;
 }
 #fileactions .label  {
-	font-size: small !important;
+	font-size: 15px !important;
 	color: black !important;
 }
 .fileactions-dropdown:focus, .fileactions-dropdown:hover {
@@ -373,12 +388,11 @@ tr.isreadable-no:hover {
 
 .iswriteable-no .action.delete,
 .iswriteable-no .action.rename,
-.isreadable-no .action.props, 
-.unselectable-yes .listaction.delete,
+.unselectable-yes .action.delete,
 .unselectable-yes .action.rename,
 .islocked-yes .action.delete,
 .islocked-yes .action.rename,
-.islocked-yes .listaction.delete
+.islocked-yes .action.delete
 {
 	display: none;
 }
@@ -423,35 +437,20 @@ tr.isreadable-no:hover {
 .invisible {
 	visibility: hidden;
 }
-.listaction {
-	padding-left: 22px;
-	padding-right: 6px;
-}
-#selstats { 
-	padding-right: 1em;
-}
 .action.rename {
-	background-position: left -500px;
+	background-position-y: -496px;
 }
-.action.delete, .listaction.delete {
-	background-position: 2px -221px;
-    padding-left: 22px;
-	color: black;
+.action.delete {
+	background-position-y: -216px;
+ }
+.action.copy {
+	background-position: center -136px;
 }
-.action.props {
-	background-position: 2px -21px;
+.action.cut {
+	background-position: center -176px;
 }
-.listaction.delete, .ui-button.listaction.delete {
-	background-position: 4px -217px;
-}
-.listaction.copy,.ui-button.listaction.copy {
-	background-position: center -134px;
-}
-.listaction.cut,.ui-button.listaction.cut {
-	background-position: center -174px;
-}
-.listaction.paste, .ui-button.listaction.paste {
-	background-position: center -374px;
+.action.paste {
+	background-position: center -376px;
 }
 .icon {
 	width: 20px;
@@ -500,22 +499,13 @@ tr.isreadable-no:hover {
 	padding-top: 5px;
 }
 .action.create-folder {
-	background-position: left -740px;
+	background-position-y: -736px;
 }
 .action.create-file {
-	background-position: left -780px;
+	background-position-y: -776px;
 }
 .action.create-symlink {
-	background-position: left -820px;
-}
-#popupmenu .action.create-folder {
-	background-position: left -736px;
-}
-#popupmenu .action.create-file {
-	background-position: left -776px;
-}
-#popupmenu .action.create-symlink {
-	background-position: left -816px;
+	background-position-y: -816px;
 }
 .renamefield {
 	background-color: inherit;
@@ -681,20 +671,22 @@ li.sep {
 	background-position: center -94px;
 }
 .action.rmsinglebookmark {
-	background-position: center -220px;
+	background-position: center -222px;
 	height: 22px;
 	width: 22px;
 }
-.time.right, .time-desc.right, .path.right, .path-desc.right {
-	margin-right: 7px;
+.time, .time-desc, .path, .path-desc {
+	padding: 0px 0px 0px 22px;
+	width: 26px;
+	height: 22px;
 }
 .action.rmallbookmarks {
-	background-position: 2px -218px;
+	background-position: 2px -216px;
 	background-color: white;
 	padding-left: 24px;
 }
 .action.gotobookmark, .action.dyn-bookmark {
-	background-position: 2px -1578px;
+	background-position: 2px -1576px;
 	display: flex;
 	flex-flow: row nowrap;
 	width: 220px;
@@ -703,6 +695,7 @@ li.sep {
 	display: flex;
 	flex-flow: row nowrap;
 	width: 220px;
+	background-image: none;
 }
 .bookmarklabel, .bookmarksortlabel {
 	flex: 1 1;
@@ -830,18 +823,10 @@ img {
 	border: 0;
 }
 .action.upload {
-	background-position: left -540px;
-	padding-left: 22px;
-}
-.action.upload.ui-button, #popupmenu .action.upload {
-	background-position: left -535px;
+	background-position-y: -537px;
 }
 .action.uploaddir {
-    background-position: left -1621px;
-    padding-left: 22px;	
-}
-#popupmenu .uploaddir {
-	background-position: left -1616px;
+    background-position-y: -1617px;
 }
 .uploaddialog.ui-dialog .ui-dialog-title {
     background: url(images/sprite.png) no-repeat 0px -540px;
@@ -915,66 +900,60 @@ img {
 	filter: Alpha(opacity=50); 
 
 }
-.autorefreshtimer {
-	text-align: center;
-}
 .action.setautorefresh {
-	padding-left: 24px;
-	background-position: 2px -420px;
-	height: 24px;
+	background-position-y: -416px;
 }
 .action.autorefreshmenu, .ui-button.action.autorefreshmenu {
 	background-position: center -414px;
 }
+.action.autorefreshtoggle {
+	background-position-y: -1176px;
+}
+.action.autorefreshtoggle.running {
+	background-position-y: -1216px;
+}
+.action.autorefreshclear {
+	background-position-y: -1256px;
+}
+
 #autorefreshtimer {
 	display: none;
 	position: fixed;
 	right: 5px;
 	bottom: 5px;
 	color: #666666;
-	background: white url(images/sprite.png) no-repeat left -418px;
-	padding: 2px 2px 2px 24px;
+	background: white url(images/sprite.png) no-repeat left -416px;
+	padding: 6px 6px 6px 22px;
 	z-index: 1000;
 	border: 1px solid #666666;
 	box-shadow: 3px 0 7px #666666;
 	width: 125px;
-	height: 20px;
+	height: 18px;
 	cursor: move;
+	line-height: 1;
+	font-size: 15px;
+	margin: 0;
 }
-.action.autorefreshtoggle {
-	background-position: 2px -1180px;
-	padding-left: 24px;
-	height: 24px;
+.autorefreshtimer {
+	flex: 1 1 0;
 }
-.action.autorefreshtoggle.running {
-	background-position: 2px -1220px;
-	padding-left: 24px;
-	height: 24px;
+#autorefreshtimer .action {
+	width: 22px; 
+	height: 22px;
+	display: inline-block;
+	padding: 0;
+	background-position-x: center;
 }
-.action.autorefreshclear {
-	background-position: 2px -1259px;
-	padding-left: 24px;
-	height: 24px;
+#autorefreshtimer .action.autorefreshclear {
+	background-position-y: -1261px;
 }
 #autorefreshtimer .action.autorefreshtoggle {
-	background-position: center -1182px;
-	padding-left: 24px;
-	height: 24px;
-}
-#autorefreshtimer .action:hover {
-	background-color: #eeeeee;
+	background-position-y: -1181px;
 }
 #autorefreshtimer .action.autorefreshtoggle.running {
-	background-position: center -1222px;
-	padding-left: 24px;
-	height: 24px;
+	background-position-y: -1221px;
 }
 
-#autorefreshtimer .action.autorefreshclear {
-	background-position: center -1262px;
-	width: 24px;
-	padding-left: 24px;
-}
 .autorefreshtimer.disabled {
 	display: none;
 	visibility: hidden;
@@ -1151,11 +1130,13 @@ img {
 	z-index: 1;
 	margin: 0;
 	padding: 0;
+	font-size: 15px;
+	line-height: 1;
 }
 #popupmenu li {
 	height: 1.2em;
-	padding: 0.4em;
 	min-width: 150px;
+	padding: 6px 6px 6px 22px;
 	border: 1px solid white;
 	color: black;
 }
@@ -1166,25 +1147,9 @@ img {
 	border: 1px dotted #999999;
 	background-color: #ededed;
 }
-#popupmenu .action, #popupmenu .listaction {
+#popupmenu .action {
+	background-position-x: 2px;
 	padding-left: 22px;
-	cursor: pointer;
-	background-repeat: no-repeat;
-}
-#popupmenu .listaction.copy {
-	background-position: left -134px;
-}
-#popupmenu .listaction.cut {
-	background-position: left -174px;
-}
-#popupmenu .listaction.paste {
-	background-position: left -374px;
-}
-#popupmenu .listaction.delete {
-	background-position: left -215px;
-}
-#popupmenu .action.rename {
-	background-position: left -495px;
 }
 #popupmenu ul {
 	display: none;
@@ -1199,9 +1164,6 @@ img {
 }
 #popupmenu ul li {
 	min-width: 150px;
-	width: auto;
-	height: auto;
-	color: black;
 }
 #popupmenu li.subpopupmenu {
 	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=) no-repeat  right 2px center;
@@ -1443,7 +1405,7 @@ img {
 	padding: 0;
 	font-weight: bold;
 }
-.action.new {
+.action.new  {
 	background-image: none;
 }
 .action.new:focus, .action.new:hover, .ui-button.action.new:focus, .ui-button.action.new:hover {
@@ -1461,12 +1423,17 @@ img {
 	position: absolute;
 	width: 100%;
 	z-index: 1;
+	font-size: 15px;
+	line-height: 1;
 }
 .toolbar > li {
 	margin: 0;
 	display: inline-block;
 	min-width: 8px;
-	min-height: 18px;
+	height: 18px;
+	margin-top: 8px;
+	font-size: 15px;
+	line-height: 1;
 }
 .toolbar > li:focus {
 	outline: none;
@@ -1485,15 +1452,18 @@ img {
 }
 .toolbar ul li {
 	background-color: white;
-	margin: 0.5em;
-	padding: 1px 7px 3px 22px;
+	margin: 0;
+	padding: 6px 6px 6px 22px;
 	min-width: 150px;
+	height: 1.2em;
+	border: 1px solid white;
 }
 .toolbar ul li.sep {
 	border-top: 1px solid #999;
 }
 .toolbar ul li:hover, .toolbar ul li:focus {
-	background-color: #f0f0f0;
+	background-color: #ededed;
+	border: 1px dotted #999;
 }
 .toolbar > li.toolbar-spacer {
 	margin-left: 8px;
@@ -1502,4 +1472,12 @@ img {
 	display: block;
 	left: 150px;
 	margin-top: -1.3em;
+}
+
+.action.changeuri {
+	padding-left: 0px;
+}
+.flex-row {
+	display: flex;
+	flex-flow: row nowrap;
 }

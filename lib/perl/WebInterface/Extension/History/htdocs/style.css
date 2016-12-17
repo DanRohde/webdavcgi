@@ -16,10 +16,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
 #popupmenu .action.history.changeUri {
-	background-position: left -61px;
+	background-position-y: -61px;
 	padding-left: 26px;
 	width: 37ex;
 	overflow: hidden;
+	text-overflow: ellipsis;
+	min-height: 18px;
 }
 #popupmenu li.subpopupmenu.history-popup {
 	background: url(history.png),
