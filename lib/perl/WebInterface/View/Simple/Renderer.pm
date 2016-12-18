@@ -32,7 +32,7 @@ use DefaultConfig qw(
     $PATH_TRANSLATED $REQUEST_URI
     $INSTALL_BASE $VHTDOCS $VIRTUAL_BASE
     @ALLOWED_TABLE_COLUMNS @VISIBLE_TABLE_COLUMNS @EXTENSIONS
-    $DOCUMENT_ROOT $MAXNAVPATHSIZE $MAXFILENAMESIZE);
+    $DOCUMENT_ROOT $MAXFILENAMESIZE $MAXQUICKNAVELEMENTS );
 use HTTPHelper qw( get_parent_uri get_base_uri_frag );
 
 sub render {
@@ -255,95 +255,33 @@ sub read_template {
     return $self->SUPER::read_template( $filename,
         "$INSTALL_BASE/templates/simple/" );
 }
-
 sub render_quicknav_path {
     my ( $self, $query ) = @_;
-    my $ru      = uri_unescape($REQUEST_URI);
+    my $cgi = $self->{cgi};
     my $content = q{};
-    my $path    = q{};
-    my $navpath = $ru;
-    my $base    = q{};
-    if ( $navpath =~ s/^($VIRTUAL_BASE)//xms ) {
-        $base = $1;
-    }
-
-    if ( $base ne q{/} ) {
-        $navpath = get_base_uri_frag($base) . "/$navpath";
-        $base    = get_parent_uri($base);
-        $base .= $base ne q{/} ? q{/} : q{};
-        #$content .= $base;
-    }
-    else {
-        $base    = q{};
-        $navpath = "/$navpath";
-    }
-    my @fna = split /\//xms, substr $PATH_TRANSLATED, length $DOCUMENT_ROOT;
-    my $fnc = $DOCUMENT_ROOT;
-    my @pea             = split /\//xms, $navpath;    ## path element array
-    my $navpathlength   = length $navpath;
-    my $ignorepe        = 0;
-    my $lastignorepe    = 0;
-    my $ignoredpes      = q{};
-    my $lastignoredpath = q{};
-
-    for my $i ( 0 .. $#pea ) {
-        my $pe = $pea[$i];
-        $path .= uri_escape($pe) . q{/};
-        if ( $path eq q{//} ) { $path = q{/}; }
-        my $dn = "$pe/";
-        $dn
-            = $fnc eq $DOCUMENT_ROOT
-            ? "$pe/"
-            : $self->{backend}->getDisplayName($fnc);
-        $lastignorepe = $ignorepe;
-        $ignorepe     = 0;
-        if (   defined $MAXNAVPATHSIZE
-            && $MAXNAVPATHSIZE > 0
-            && $navpathlength > $MAXNAVPATHSIZE )
-        {
-
-            if ( $i == 0 ) {
-                if ( length($dn) > $MAXFILENAMESIZE ) {
-                    $dn = substr( $dn, 0, $MAXFILENAMESIZE - 6 ) . '[...]/';
-                    $navpathlength -= $MAXFILENAMESIZE - 8;
-                }
-            }
-            elsif ( $i == $#pea ) {
-                $dn = substr( $dn, 0, $MAXNAVPATHSIZE - 7 ) . '[...]/';
-                $navpathlength -= length($dn) - 8;
-            }
-            else {
-                $navpathlength -= length $dn;
-                $ignorepe        = 1;
-                $lastignoredpath = "$base$path";
-            }
+    my $base = $REQUEST_URI=~/^($VIRTUAL_BASE)/xms ? $1 : q{/};
+    my $path = $REQUEST_URI=~/^$base(.*)$/xms ? $1 : q{};
+    my @pathelements = split /\/+/xms, $path;
+    if ( (my $diff = @pathelements - $MAXQUICKNAVELEMENTS + 1 ) > 0 ) {
+        my $cpe = q{};
+        foreach (1..$diff) {
+            my $pe = shift @pathelements;
+            $cpe .= $cpe eq q{} ? $pe : q{/}.$pe;
         }
-        $ignoredpes .= $ignorepe ? "$pe/" : q{};
-        if ( !$ignorepe && $lastignorepe ) {
-            $content
-                .= $self->{cgi}
-                ->a( { -href => $lastignoredpath, -title => $ignoredpes, -class=>'action quicknav-el' },
-                '[...]' );
-            $ignoredpes = q{};
-        }
-        $content .=
-            !$ignorepe
-            ? $self->{cgi}->a(
-            {   -href => "$base$path" . ( defined $query ? "?$query" : q{} ),
-                -title =>
-                    $self->{cgi}->escapeHTML( uri_unescape("$base$path") ),
-                -class => 'action quicknav-el' . ($pe eq q{} || "$base$path" eq $DOCUMENT_ROOT ? ' quicknav-el-home' : q{})
-            },
-            "$base$path" ne $DOCUMENT_ROOT ? $self->{cgi}->escapeHTML("$pe") : q{}
-            )
-            : q{};
-        if ( scalar @fna > 0 ) { $fnc .= shift(@fna) . q{/}; }
+        unshift @pathelements, $cpe;
     }
-    $content .=
-          $content eq q{}
-        ? $self->{cgi}->a( { -href => q{/}, -title => q{/}, -class=> 'action quicknav-el quicknav-el-home'}, q{} )
-        : q{};
-
+    unshift @pathelements, $base;
+    my $href = q{};
+    foreach my $el (@pathelements) {
+        $href .= $el eq $base || $href eq $base ? $el : q{/}.$el;
+        my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $el ;
+        $content .= $cgi->a( {
+                -title => $el,
+                -class => 'action quicknav-el' . ($el eq $base ? ' quicknav-el-home' : q{}),
+                -style => 'max-width:'.$MAXFILENAMESIZE.'ex',
+                -href  => $href . ($query // q{}),
+        }, $text );
+    }
     return $content;
 }
 1;

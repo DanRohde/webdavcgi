@@ -801,16 +801,16 @@ ul.ui-autocomplete {
 td.center {
 	text-align: center;
 }
-#nav .action.refresh {
-	background-position: 2px -410px;
+.action.refresh {
+	background-position: 2px -411px;
 }
-#nav .action.viewfilter {
-	background-position: 2px -651px;
+.action.viewfilter {
+	background-position: 2px -650px;
 }
-#nav .action.settings {
+.action.settings {
 	background-position: 2px -1132px;
 }
-#nav .action.about {
+.action.about {
 	background-position: 2px -12px;
 }
 .viewfilterdialog.ui-dialog .ui-dialog-title {
@@ -1549,18 +1549,33 @@ img {
 	background-image: none;
 	padding-left: 4px;
 }
+#quicknav {
+	display: inline-block;
+	border: 0;
+	margin-top: -7px;
+	max-height: 18px;
+}
 .action.quicknav-el {
 	padding: 6px 12px 6px 4px;
-	background-position: right -1735px;
+	background-position: right -1736px;
 	border-radius: 0px 200px 200px 0px;
+	border: 1px solid transparent;
 	color: #666;
+	max-width: 30ex;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: inline-block;
+	min-width: 1ex;
+	min-height: 18px;
+	
 }
 .action.quicknav-el:hover {
 	color: black;
 }
 .action.quicknav-el.quicknav-el-home {
 	background-image: url(images/sprite.png), url(images/sprite.png);
-	background-position: center -1015px, right -1735px;
+	background-position: center -1017px, right -1736px;
 	background-repeat: no-repeat, no-repeat;
-	padding: 6px 12px 4px 22px;
+	width: 22px;
 }

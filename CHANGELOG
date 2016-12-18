@@ -3,8 +3,9 @@
      - added folder upload support via folder drag and drop and menu dialog
      - changed file/folder action dialog
      - improved Highlighter extension
-     - changed HEADER and LANGSWITCH defaults
-     - added ALLOW_PATHINPUT option (default: 0)
+     - changed $HEADER and $LANGSWITCH defaults
+     - added $ALLOW_PATHINPUT option (default: 0)
+     - removed $MAXNAVPATHSIZE, added $MAXQUICKNAVELEMENTS, and changed default for $MAXFILENAMESIZE from 50 to 10
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension

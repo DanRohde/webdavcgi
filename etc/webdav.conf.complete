@@ -60,11 +60,11 @@ $VHTDOCS = "_webdavcgi_/$RELEASE/";
 
 ## -- MAXFILENAMESIZE
 ## Web interface: width of filename column
-$MAXFILENAMESIZE = 40;
+$MAXFILENAMESIZE = 10;
 
-## -- MAXNAVPATHSIZE
-## Web interface: maximum length of the navigation path
-$MAXNAVPATHSIZE = 50;
+## -- MAXQUICKNAVELEMENTS
+## Web interface: maximum path elements in quick navigation path
+$MAXQUICKNAVELEMENTS = 3;
 
 ## -- ALLOW_PATHINPUT
 ## Web interface: allow path input in navigation path
