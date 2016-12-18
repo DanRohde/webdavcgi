@@ -1157,7 +1157,7 @@ img {
 	position: absolute;
 	background: white;
 	border: 1px solid #dddddd;
-	padding: 0 0 0 0;
+	padding: 0;
 	margin: -2px 0 0 0;
 	box-shadow: 3px 0 7px #dddddd;
 }

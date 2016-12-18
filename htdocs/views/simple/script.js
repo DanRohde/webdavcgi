@@ -494,8 +494,7 @@ function initUIEffects() {
 		$(".dropdown-click")
 			.off("click keyup")
 			.on("click", function(e) { preventDefault(e); $(".dropdown-menu",$(this)).toggle(); })
-			.on("keyup", function(e) { if (e.keyCode==13 || e.keyCoce == 32) $(".dropdown-men",$(this)).toggle(); })
-			;
+			.on("keyup", keyboardEventHelper);
 	});
 }
 function initWindowResize() {
@@ -2212,7 +2211,6 @@ function initPlugins() {
 			
 			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
 			tooltip.toggle(tooltip.text()!="");
-			console.log("setTooltipPosition");
 			hideTooltip(showtimeout || 7000, el);
 		}
 		function isBlocked(el) {
