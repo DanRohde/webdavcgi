@@ -1569,7 +1569,7 @@ img {
 	min-height: 18px;
 	
 }
-.action.quicknav-el:hover {
+.action.quicknav-el:hover,.action.quicknav-el:focus {
 	color: black;
 }
 .action.quicknav-el.quicknav-el-home {
@@ -1577,4 +1577,7 @@ img {
 	background-position: center -1017px, right -1736px;
 	background-repeat: no-repeat, no-repeat;
 	width: 22px;
+}
+.action.quicknav-el.quicknav-el-home:hover, .action.quicknav-el.quicknav-el-home:focus {
+	background-image: url(images/sprite-hover.png), url(images/sprite-hover.png);
 }

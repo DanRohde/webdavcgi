@@ -230,9 +230,7 @@ function initTableConfigDialog() {
 					setupTableConfigDialog($(response));
 				});
 			}
-		}).on("keyup",function(e) {
-			if (e.keyCode==13 || e.keyCode==32) $(this).trigger("click");
-		});
+		}).on("keyup",keyboardEventHelper);
 	});
 }
 function setupTableConfigDialog(dialog) {
@@ -335,7 +333,7 @@ function handleSidebarCollapsible(event) {
 	handleWindowResize();
 }
 function initCollapsible() {
-	$(".action.collapse-sidebar").click(handleSidebarCollapsible).MyTooltip(500);
+	$(".action.collapse-sidebar").click(handleSidebarCollapsible).on("keyup",keyboardEventHelper).MyTooltip(500);
 	if (cookie("sidebar") && cookie("sidebar") != "true") {
 		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", cookie("sidebar") == "false").toggleClass("sidebar-iconsonly", cookie("sidebar") == "iconsonly");
 		$(".action.collapse-sidebar").toggleClass("collapsed", cookie("sidebar") == "false").toggleClass("iconsonly", cookie("sidebar") == "iconsonly");
@@ -350,7 +348,7 @@ function initCollapsible() {
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
 		togglecookie("head","false",collapsed, 1);
 		handleWindowResize();
-	}).MyTooltip(500);
+	}).MyTooltip(500).on("keyup", keyboardEventHelper);
 	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
 
@@ -538,17 +536,17 @@ function initSelect() {
 				$(".selectbutton", $(this)).prop("checked", $(this).hasClass("selected"));
 			});
 			$("#flt").trigger("fileListSelChanged");
-		}).off("keyup.select").on("keyup.select", function(e) { if (e.keyCode == 13 || e.keyCode == 32) $(this).trigger("click"); });
+		}).off("keyup.select").on("keyup.select", keyboardEventHelper);
 		$(".selectnone").off("click.select").on("click.select",function(event) {
 			$("#fileList tr.selected:not(:hidden)").removeClass("selected");
 			$("#fileList tr:not(:hidden) .selectbutton:checked").prop("checked", false);
 			$("#flt").trigger("fileListSelChanged");
-		}).off("keyup.select").on("keyup.select", function(e) { if (e.keyCode == 13 || e.keyCode == 32) $(this).trigger("click"); });
+		}).off("keyup.select").on("keyup.select", keyboardEventHelper);
 		$(".selectall").off("click.select").on("click.select",function(event) {
 			$("#fileList tr:not(.selected):not(:hidden).unselectable-no").addClass("selected");
 			$("#fileList tr:not(:hidden).unselectable-no .selectbutton:not(:checked)").prop("checked", true);
 			$("#flt").trigger("fileListSelChanged");
-		}).off("keyup.select").on("keyup.select", function(e) { if (e.keyCode == 13 || e.keyCode == 32) $(this).trigger("click"); });
+		}).off("keyup.select").on("keyup.select", keyboardEventHelper);
 	});
 }
 function initClock() {
@@ -1090,9 +1088,7 @@ function initFileList() {
 		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover"});
 	
 	// init tabbing
-	$("#fileListTable th").on("keyup", function(e) {
-		if (e.keyCode == 32 || e.keyCode == 13 ) $(this).trigger("click");
-	});
+	$("#fileListTable th").on("keyup", keyboardEventHelper);
 	// init column drag and dblclick resize
 	$("#fileListTable th:not(.resizable-false)")
 		.off("click.initFileList").off("click.tablesorter")
@@ -2204,16 +2200,19 @@ function initPlugins() {
 		}
 		function setTooltipPosition(e,el) {
 			clearTimeout();
-			var left = e.pageX - Math.floor(tooltip.outerWidth()/2); 
+			var isFocus = e.type == "focus";
+			var left = ( isFocus ? el.offset().left : e.pageX ) - Math.floor(tooltip.outerWidth()/2); 
 			var top = el.offset().top - tooltip.outerHeight()-4;
 			var maxWidth = Math.max(Math.floor(w.width()/2),50);
 			var maxHeight = Math.max(Math.floor(w.height()/2),10);
 			if (left-w.scrollLeft()<0) left = 4;
 			if (left + tooltip.outerWidth() > w.width()) left = w.width() - tooltip.outerWidth()-4;
 			if (top-w.scrollTop()<0) top = Math.floor(el.offset().top + el.outerHeight() + 4);
-			if (Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
+			if (!isFocus && Math.abs(e.pageY-top) > 50) top = Math.max(e.pageY - tooltip.outerHeight() - 14, 0);
+			
 			tooltip.css({"left":left+"px", "top":top+"px", "max-height":maxHeight+"px", "max-width":maxWidth+"px"});
 			tooltip.toggle(tooltip.text()!="");
+			console.log("setTooltipPosition");
 			hideTooltip(showtimeout || 7000, el);
 		}
 		function isBlocked(el) {
@@ -2257,7 +2256,7 @@ function initPlugins() {
 			return el.off(".tooltip");
 		}
 		function initElement(el) {
-			cleanupMouseHandler(el).on("mouseover.tooltip",handleMouseOver).on("mouseout.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
+			cleanupMouseHandler(el).on("mouseover.tooltip focus.tooltip",handleMouseOver).on("mouseout.tooltip blur.tooltip",handleMouseOut).on("mousemove.tooltip",handleMouseMove);
 		}
 		initElement(this.find("[title]"));
 		if (this.attr("title")) initElement(this);
