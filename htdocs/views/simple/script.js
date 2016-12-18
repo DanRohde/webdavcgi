@@ -1837,15 +1837,16 @@ function keyboardEventHelper(event) {
 	}
 }
 function handlePopupNavigation(sel) {
-	$(sel).off(".popupnavigation").on("focus.popupnavigation mouseover.popupnavigation", function() {
+	$(sel).off(".popupnavigation").on("focus.popupnavigation mouseenter.popupnavigation", function() {
 		var self = $(this);
 		if (self.hasClass("disabled")) return;
-		$("ul:visible", self.siblings("li")).hide();
-		$("ul", self).first().show();
-	}).on("mouseout.popupnavigation", function() {
-		var self = $(this);
-		if (self.hasClass("disabled")) return;
-		$("ul", self).hide();
+		window.clearTimeout($("body").data("popupnavigationtimer"));
+		$("body").data("popupnavigationtimer",
+				window.setTimeout(function() {
+					$("ul:visible", self.siblings("li")).hide();
+					$("ul", self).first().show();
+				}, 350)
+		);
 	});
 }
 function initNavigationActions() {
@@ -1857,6 +1858,9 @@ function initNavigationActions() {
 		$("ul.subpopupmenu", self).first().toggle();
 	}).on("keyup", keyboardEventHelper);
 	handlePopupNavigation("#nav ul.subpopupmenu li");
+	$("#nav ul.subpopupmenu").on("keydown", function(event) {
+		if (event.keyCode == 27) $(this).hide();
+	});
 	$("#flt").on("fileListSelChanged", function() {
 		$("#nav li.disabled ul.subpopupmenu:visible").hide();
 	});
