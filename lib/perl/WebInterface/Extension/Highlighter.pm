@@ -309,6 +309,7 @@ sub _create_subpopup {
                             // $self->_get_style( $attribute, $_ )
                         )
                         . ": $_;",
+                    tabindex => 0,
                 },
                 data => {
                     value => $_,
@@ -333,7 +334,8 @@ sub _create_subpopup {
                 data    => { value => $_, style => $attrname },
                 label   => $self->tl('highlighter.colorpicker'),
                 classes => 'sep',
-                type    => 'li'
+                type    => 'li',
+                attr    => { tabindex => 0, },
                 };
         }
         push @subpopup,
@@ -346,7 +348,8 @@ sub _create_subpopup {
             },
             label   => $self->tl("highlighter.remove.$attrname"),
             type    => 'li',
-            classes => 'sep'
+            classes => 'sep',
+            attr    => { tabindex => 0, },
             };
     }
     return \@subpopup;
@@ -362,7 +365,8 @@ sub _create_preset_popup {
             label   => $self->tl('highlighter.nopresets'),
             action  => 'hlnopresets',
             type    => 'li',
-            classes => 'disabled'
+            classes => 'disabled',
+            attr    => { tabindex => 0, },
             };
     }
     else {
@@ -379,6 +383,7 @@ sub _create_preset_popup {
                     title        => $self->tl('highlighter.morepresets'),
                     type         => 'li',
                     classes      => 'sep',
+                    attr         => { tabindex => 0, },
                 };
                 $p = \@sp;
                 $count = 1;
@@ -389,7 +394,7 @@ sub _create_preset_popup {
                 data =>
                     { style => $presets->{$preset}, presetname => $preset },
                 label => $self->{cgi}->escapeHTML($preset),
-                attr  => { style => $style },
+                attr  => { style => $style, tabindex => 0, },
                 type  => 'li',
                 };
         }
@@ -401,6 +406,7 @@ sub _create_preset_popup {
         label   => $self->tl('highlighter.managepresets'),
         type    => 'li',
         classes => 'sep' . ( $#presetkeys < 0 ? ' disabled' : q{} ),
+        attr    => { tabindex => 0,},
         };
     return \@popup;
 }
@@ -426,6 +432,7 @@ sub _create_popups {
                 $self->_create_preset_popup( $self->_get_presets() ),
             classes => 'highlighter preset',
             subclasses => 'highlighter subpreset',
+            attr => { tabindex => 0, },
             };
     }
     foreach my $attribute (
@@ -439,6 +446,7 @@ sub _create_popups {
                 $attribute, $attributes->{$attribute}
             ),
             classes => "highlighter $attribute ". ( $attributes->{$attribute}->{classes} // q{} ),
+            attr    => { tabindex => 0, },
             };
     }
     if ($top) {
@@ -450,6 +458,7 @@ sub _create_popups {
             label   => $self->tl('highlighter.replacemarks'),
             type    => 'li',
             classes => 'sep',
+            attr    => { tabindex => 0, },
             },
             {
             action => 'savemarksaspreset',
@@ -458,7 +467,8 @@ sub _create_popups {
                 name   => $self->tl('highlighter.presetname')
             },
             label => $self->tl('highlighter.savemarksaspreset'),
-            type  => 'li'
+            type  => 'li',
+            attr  => { tabindex => 0,},
             };
     }
     push @popups,
@@ -471,6 +481,7 @@ sub _create_popups {
         label   => $self->tl('highlighter.removeallmarks'),
         type    => 'li',
         classes => 'sep',
+        attr    => { tabindex => 0,},
         };
     return \@popups;
 }

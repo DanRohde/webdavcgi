@@ -1836,14 +1836,27 @@ function keyboardEventHelper(event) {
 		$(this).trigger("click", { origEvent : event });
 	}
 }
+function handlePopupNavigation(sel) {
+	$(sel).off(".popupnavigation").on("focus.popupnavigation mouseover.popupnavigation", function() {
+		var self = $(this);
+		if (self.hasClass("disabled")) return;
+		$("ul:visible", self.siblings("li")).hide();
+		$("ul", self).first().show();
+	}).on("mouseout.popupnavigation", function() {
+		var self = $(this);
+		if (self.hasClass("disabled")) return;
+		$("ul", self).hide();
+	});
+}
 function initNavigationActions() {
 	$("#nav .action").click(handleFileListActionEvent).on("keyup", keyboardEventHelper);
 	$("#nav > ul > li.subpopupmenu").click(function(ev) {
 		var self = $(this);
 		if (self.hasClass("disabled")) return;
-		self.siblings(".subpopupmenu").hide();
+		self.siblings("ul.subpopupmenu:visible").hide();
 		$("ul.subpopupmenu", self).first().toggle();
 	}).on("keyup", keyboardEventHelper);
+	handlePopupNavigation("#nav ul.subpopupmenu li");
 	$("#flt").on("fileListSelChanged", function() {
 		$("#nav li.disabled ul.subpopupmenu:visible").hide();
 	});
@@ -1851,13 +1864,15 @@ function initNavigationActions() {
 function initToolbarActions() {
 	$(".toolbar .action").click(handleFileListActionEvent);
 	$(".toolbar li.uibutton").button();
-	$(".toolbar > li").off(".toolbar").on("click.toolbar", function() {
+	$(".toolbar li").off("click.toolbar").on("click.toolbar", function() {
 		var self = $(this);
 		if (self.hasClass("disabled")) return;
 		$("ul:visible",self.siblings()).hide();
-		$("ul", this).first().toggle();
+		$("ul", self).first().toggle();
 		//$("ul li:visible",this).first().focus();
 	}).on("keyup.toolbar", keyboardEventHelper);
+	handlePopupNavigation(".toolbar ul li");
+	$(".toolbar li.action").off("keyup.toolbar").on("keyup.toolbar", keyboardEventHelper);
 	$(".toolbar ul").off("keydown.toolbar").on("keydown.toolbar", function(event) {
 		if (event.keyCode == 27) $(this).hide();
 	})
@@ -1899,7 +1914,10 @@ function preventDefault(event) {
 	if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 	if (event.stopPropagation) event.stopPropagation();
 }
-
+function preventDefaultImmediatly(event) {
+	preventDefault(event);
+	if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+}
 function trimString(str,charcount) {
 	if (str.length > charcount)  str = str.substr(0,4)+'...'+str.substr(str.length-charcount+7,charcount-7);
 	return str;
@@ -2310,6 +2328,7 @@ function initToolBox() {
 			notifyInfo : notifyInfo,
 			notifyWarn : notifyWarn,
 			preventDefault : preventDefault,
+			preventDefaultImmediatly : preventDefaultImmediatly,
 			postAction: postAction,
 			quoteWhiteSpaces: quoteWhiteSpaces,
 			refreshFileListEntry : refreshFileListEntry,

@@ -113,8 +113,7 @@ a {
 	left: 150px;
 	margin-top: -18px;
 }
-#nav ul > li > ul.subpopupmenu li:hover > ul {
-	display: block;
+#nav ul li ul.subpopupmenu li ul {
 	position: absolute;
 }
 #nav li.subpopupmenu {
@@ -1523,12 +1522,10 @@ img {
 .toolbar > li.toolbar-spacer {
 	margin-left: 8px;
 }
-.toolbar ul li:hover > ul, .toolbar ul li:focus > ul {
-	display: block;
+.toolbar ul li > ul {
 	left: 150px;
 	margin-top: -1.3em;
 }
-
 .action.changeuri {
 	padding-left: 0px;
 }
@@ -1559,6 +1556,8 @@ img {
 	padding: 6px 12px 6px 4px;
 	background-position: right -1736px;
 	border-radius: 0px 200px 200px 0px;
+	outline-radius: 1px 200px 200px 1px;
+	-moz-outline-radius: 1px 200px 200px 1px;
 	border: 1px solid transparent;
 	color: #666;
 	max-width: 30ex;
