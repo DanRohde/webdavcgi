@@ -20,6 +20,9 @@
 # namespace - XML namespace for attributes (default: {https://DanRohde.github.io/webdavcgi/extension/Highlighter/$REMOTE_USER})
 # attributes - CSS attributes to change for a file list entry
 # maxpresetentries - number of entries in the preset entry menu (default: 5)
+# disable_popup - disables Highlighter menu in context menu
+# disable_filelistaction - disables Highlighter menu button on toolbar
+# disable_apps - disables Highlighter menu button on navigation bar
 
 package WebInterface::Extension::Highlighter;
 
@@ -40,7 +43,17 @@ use vars qw(%_CACHE);
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks
-        = qw(css locales javascript posthandler fileattr fileactionpopup filelistaction);
+        = qw(css locales javascript posthandler fileattr );
+
+    if (!$self->config('disable_popup',0)) {
+        push @hooks, 'fileactionpopup';
+    }
+    if (!$self->config('disable_filelistaction',0)) {
+        push @hooks, 'filelistaction';
+    }
+    if (!$self->config('disable_apps',0)) {
+        push @hooks, 'apps';
+    }
 
     $hookreg->register( \@hooks, $self );
 
@@ -474,9 +487,19 @@ sub handle_hook_filelistaction {
     my ( $self, $config, $params ) = @_;
     return {
         title        => '&nbsp;',
-        label        => $self->tl("highlighter"),
+        label        => $self->tl('highlighter'),
         subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
         classes      => 'highlighter-popup uibutton',
+    };
+}
+sub handle_hook_apps {
+    my ( $self, $config, $params ) = @_;
+    return {
+        label        => $self->tl('highlighter'),
+        title        => $self->tl('highlighter'),
+        subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
+        classes      => 'highlighter-popup sel-multi disabled',
+        attr         => { aria_label=> $self->tl('highlighter'), tabindex => 0,},
     };
 }
 

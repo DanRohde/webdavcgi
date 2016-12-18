@@ -66,6 +66,10 @@ $MAXFILENAMESIZE = 40;
 ## Web interface: maximum length of the navigation path
 $MAXNAVPATHSIZE = 50;
 
+## -- ALLOW_PATHINPUT
+## Web interface: allow path input in navigation path
+$ALLOW_PATHINPUT = 0;
+
 ## -- ICONS
 ## MIME icons for fancy indexing
 ## ("$VHTDOCS" will be replaced by "$VIRTUAL_HOST$VHTDOCS")

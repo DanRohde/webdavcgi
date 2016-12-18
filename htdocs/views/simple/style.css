@@ -64,19 +64,27 @@ a {
 	z-index: 75;
 	overflow:hidden;
 }
-#nav a, #nav li > div {
-	border-bottom: 1px solid #dddddd;
-	border-top: 1px solid #ffffff;
+#nav a.action, #nav li.action, #nav li > div, #nav > ul > li.subpopupmenu,
+#nav .help-button, #nav .contact-button, #nav .logout-button, #nav .home-button {
+	border-bottom: 1px solid #ddd;
+	border-top: 1px solid #fff;
+	border-right: 1px solid #eee;
+	border-left: 1px solid #eee;
 	color: #666666;
 	display: block;
 	font-size: 15px;
-	padding: 0.6em 0.5em 0.4em 25px;
+	padding: 6px 6px 6px 24px;
 	text-decoration: none;
 	text-shadow: 0 1px 0 #f8f8f8;
-	min-height: 1.4em;
+	min-height: 1.2em;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	background-position-x: 2px;
+	cursor: pointer;
+}
+#nav li > div.accordion {
+	padding: 6px;
 }
 #nav ul {
 	padding: 0;
@@ -97,6 +105,50 @@ a {
 }
 #nav li:hover .disabled {
 	background-color: #eeeeee;
+}
+
+#nav ul > li > ul.subpopupmenu {
+	display: none;
+	position: fixed;
+	left: 150px;
+	margin-top: -18px;
+}
+#nav ul > li > ul.subpopupmenu li:hover > ul {
+	display: block;
+	position: absolute;
+}
+#nav li.subpopupmenu {
+	cursor: pointer;
+}
+#nav ul.subpopupmenu {
+	background-color: white;
+	border: 1px solid #ddd;
+	box-shadow: 3px 0 7px #ddd;
+}
+#nav ul.subpopupmenu li {
+	background-color: white;
+	min-width: 120px;
+	max-width: 200px;
+	white-space: nowrap;
+	min-height: 1.2em;
+	height: auto;
+	overflow: hidden;
+	text-overflow: ellipses;
+	margin: 0;
+	padding: 6px 6px 6px 22px;
+	border: 1px solid white;
+	display: block;
+	font-size: 15px;
+	line-height: 1;
+	text-shadow: none;
+	color: black;
+}
+#nav ul.subpopupmenu li.sep {
+	border-top: 1px solid #999;
+}
+#nav ul.subpopupmenu li:hover, ul.subpopupmenu:focus {
+	border: 1px dotted #999;
+	left: 150px;
 }
 #prefs {
 	position: fixed;
@@ -1134,7 +1186,8 @@ img {
 	line-height: 1;
 }
 #popupmenu li {
-	height: 1.2em;
+	min-height: 1.2em;
+	height: auto;
 	min-width: 150px;
 	padding: 6px 6px 6px 22px;
 	border: 1px solid white;
@@ -1456,7 +1509,8 @@ img {
 	margin: 0;
 	padding: 6px 6px 6px 22px;
 	min-width: 150px;
-	height: 1.2em;
+	min-height: 1.2em;
+	height: auto;
 	border: 1px solid white;
 }
 .toolbar ul li.sep {
@@ -1490,4 +1544,23 @@ img {
 	right: 7px;
 	bottom: 5px;
 	font-size: 10px;
+}
+.action.view {
+	background-image: none;
+	padding-left: 4px;
+}
+.action.quicknav-el {
+	padding: 6px 12px 6px 4px;
+	background-position: right -1735px;
+	border-radius: 0px 200px 200px 0px;
+	color: #666;
+}
+.action.quicknav-el:hover {
+	color: black;
+}
+.action.quicknav-el.quicknav-el-home {
+	background-image: url(images/sprite.png), url(images/sprite.png);
+	background-position: center -1015px, right -1735px;
+	background-repeat: no-repeat, no-repeat;
+	padding: 6px 12px 4px 22px;
 }

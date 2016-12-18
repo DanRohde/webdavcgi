@@ -27,51 +27,18 @@ $INCLUDE(htmlhead)</head>
 		$config(HEADER)
 	</div>
 	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible">
-		<ul id="apps">
-			<li title="$tl(files)"><a href="$uri" class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" data-action="refresh"><span class="label">$tl(files)</span></a></li>
-			$INCLUDE(apps)
-			$extension(apps)
-		</ul>
-		$INCLUDE(nav)
-		<ul id="prefs">
-			$INCLUDE(pref)
-			<!--IF($#SUPPORTED_VIEWS>0)-->
-			<li title="$tl(viewoptions)"><div class="accordion">
-					<h3>$tl(viewoptions)</h3> 
-					<div>
-						<ul>$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)"><a class="view $v" href="?view=$v" title="$v" aria-label="$v">$tl(${v}view)</a></li>'#'^$view$'#
-							<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)"><span class="label">$tl(filter.title)</span></a></li>
-						</ul>
-					</div>
-				</div>
-			</li>
-			<!--ELSE-->
-				<li title="$tl(filter.title)"><a href="#" class="action viewfilter" data-action="viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)"><span class="label">$tl(filter.title)</span></a></li>
-			<!--ENDIF-->
-			<li title="$tl(settings)"><a href="#" data-action="settings" class="dialog action settings" aria-label="$tl(settings)"><span class="label">$tl(settings)</span></a></li>
-			$extension(pref)
-			$INCLUDE(help)
-			<li title="$tl(about)"><a href="#" data-action="about" class="dialog action about" accesskey="8" aria-label="$tl(about)"><span class="label">$tl(about)</span></a></li>
-		</ul>
+		$INCLUDE(navigation)
 	</div>
-<div id="content" class="collapse-head-listener collapse-sidebar-listener">
-	<div id="controls" class="collapse-head-listener collapse-sidebar-listener">
-		$INCLUDE(toolbar)
-	</div>
-	<div id="notification"></div>
-	<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
-	<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri"></div>
-	<div id="statusbar">
-		<div class="flex-row">
-		$extension(statusbarleft)
-		<div class="files-stats"><div class="file-icon filecount" title="$tl(statfiles)"></div> <div class="folder-icon dircount" title="$tl(statfolders) "></div> <div class="sum-icon sum" title="$tl(statsum)"></div> <div class="size-icon foldersize" title="$tl(size)"></div></div>
-		<div class="selected-files-stats"><input type="checkbox" checked class="unselectable" name="dummy"> <div class="file-icon selfilecount" title="$tl(statfiles)">0</div> <div class="folder-icon seldircount" title="$tl(statfolders)">0</div> <div class="sum-icon selsum" title="$tl(statsum)">0</div> <div class="size-icon selfoldersize" title="0">0</div></div> 
-		<div class="notify" title=""></div>
-		$extension(statusbar)
+	<div id="content" class="collapse-head-listener collapse-sidebar-listener">
+		<div id="controls" class="collapse-head-listener collapse-sidebar-listener">
+			$INCLUDE(toolbar)
 		</div>
+		<div id="notification"></div>
+		<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
+		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri"></div>
+		$INCLUDE(statusbar)
+		$config(FOOTER)
 	</div>
-	$config(FOOTER)
-</div>
 </div>
 <!-- TEMPLATES -->
 <div class="template">
@@ -80,9 +47,9 @@ $INCLUDE(htmlhead)</head>
 	<div id="fileactions">
 		<ul class="dropdown">
 			<li class="dropdown-click"><span class="fileactions-dropdown" title="$tl(fileactions)" tabindex="0"></span><ul class="dropdown-menu">
-				<li class="dropdown-menu-item action rename access-writeable" href="#" tabindex="0" data-action="rename" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></li>
+				<li class="dropdown-menu-item action rename access-writeable" href="#" tabindex="0" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></li>
 				$extension(fileaction)
-				<li class="dropdown-menu-item action delete sep" href="#" tabindex="0" data-action="delete" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
+				<li class="dropdown-menu-item action delete sep" href="#" tabindex="0" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
 				</ul>
 			</li> 
 		</ul>
@@ -115,18 +82,18 @@ $INCLUDE(htmlhead)</head>
 	<div id="autorefreshtimer">
 		<div class="flex-row">
 			<div class="autorefreshtimer" title="$tl(autorefresh.select.title)" data-template="$tl(autorefresh.format)"></div> 
-			<div class="autorefreshrunning action autorefreshtoggle" data-action="autorefreshtoggle" title="$tl(autorefresh.toggle)" tabindex="0"></div>
-			<div class="autorefreshrunning action autorefreshclear" data-action="autorefreshclear" title="$tl(autorefresh.clear)" tabindex="0"></div>
+			<div class="autorefreshrunning action autorefreshtoggle" title="$tl(autorefresh.toggle)" tabindex="0"></div>
+			<div class="autorefreshrunning action autorefreshclear" title="$tl(autorefresh.clear)" tabindex="0"></div>
 		</div>
 	</div>
 <!--ENDIF-->
 <!--IF($config(ALLOW_POST_UPLOADS))-->
 	<div id="progress" data-title="$tl(upload)"><div class="bar"></div><div class="info"></div></div>
 <!--ENDIF-->
-<img class="collapsible left action collapse-head" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
-<img class="collapsible right action collapse-head" data-action="collapse-head" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglehead)" title="$tl(togglehead)"/>
-<img class="collapsible top action collapse-sidebar" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
-<img class="collapsible bottom action collapse-sidebar" data-action="collapse-sidebar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="$tl(togglesidebar)" title="$tl(togglesidebar)"/>
+<div class="collapsible left action collapse-head" title="$tl(togglehead)"></div>
+<div class="collapsible right action collapse-head" title="$tl(togglehead)"></div>
+<div class="collapsible top action collapse-sidebar" title="$tl(togglesidebar)"></div>
+<div class="collapsible bottom action collapse-sidebar" title="$tl(togglesidebar)"></div>
 $extension(body)
 </body>
 </html>

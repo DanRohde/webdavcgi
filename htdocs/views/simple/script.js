@@ -32,6 +32,8 @@ $(function() {
 	initFolderStatistics();
 
 	initToolbarActions();
+	
+	initNavigationActions();
 
 	initChangeDir();
 
@@ -1437,7 +1439,6 @@ function handleDialogActionEvent(event) {
 function initFileListActions() {
 	$(".action.uibutton").button();
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
-	$("#apps .action").click(handleFileListActionEvent);
 }
 function updateFileListActions() {
 	var s = getFolderStatistics();
@@ -1719,6 +1720,8 @@ function handleFileListActionEvent(event) {
 		} else doPasteAction(action,srcuri,dsturi,files);
 	} else if (self.attr("href") != undefined && self.attr("href") != "#") {
 		window.location.href=self.attr("href");
+	} else if (self.attr("data-href") != undefined && self.attr("data-href") != "#") {
+		window.location.href=self.attr("data-href");
 	} else {
 		var row = self.closest("tr");
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });
@@ -1827,14 +1830,34 @@ function handleInplaceInput(target, defval) {
 	});
 	return target;
 }
+function keyboardEventHelper(event) {
+	if (event.keyCode == 32 || event.keyCode == 13) {
+		preventDefault(event);
+		$(this).trigger("click", { origEvent : event });
+	}
+}
+function initNavigationActions() {
+	$("#nav .action").click(handleFileListActionEvent).on("keyup", keyboardEventHelper);
+	$("#nav > ul > li.subpopupmenu").click(function(ev) {
+		var self = $(this);
+		if (self.hasClass("disabled")) return;
+		self.siblings(".subpopupmenu").hide();
+		$("ul.subpopupmenu", self).first().toggle();
+	}).on("keyup", keyboardEventHelper);
+	$("#flt").on("fileListSelChanged", function() {
+		$("#nav li.disabled ul.subpopupmenu:visible").hide();
+	});
+}
 function initToolbarActions() {
 	$(".toolbar .action").click(handleFileListActionEvent);
 	$(".toolbar li.uibutton").button();
-	$(".toolbar > li").off("click.toolbar").on("click.toolbar", function() {
-		$("ul:visible",$(this).siblings()).hide();
+	$(".toolbar > li").off(".toolbar").on("click.toolbar", function() {
+		var self = $(this);
+		if (self.hasClass("disabled")) return;
+		$("ul:visible",self.siblings()).hide();
 		$("ul", this).first().toggle();
 		//$("ul li:visible",this).first().focus();
-	});
+	}).on("keyup.toolbar", keyboardEventHelper);
 	$(".toolbar ul").off("keydown.toolbar").on("keydown.toolbar", function(event) {
 		if (event.keyCode == 27) $(this).hide();
 	})
@@ -1893,7 +1916,7 @@ function initViewFilterDialog() {
 		$.get(target, {ajax: "getViewFilterDialog", template: template}, function(response){
 			var vfd = $(response);
 			$("input[name='filter.size.val']", vfd).spinner({min: 0, page: 10, numberFormat: "n", step: 1});
-			$("[data-action='filter.apply']", vfd).button().click(function(event){
+			$(".filter-apply", vfd).button().click(function(event){
 				preventDefault(event);
 				togglecookie("filter.name", 
 						$("select[name='filter.name.op'] option:selected", vfd).val()+" "+$("input[name='filter.name.val']",vfd).val(),
@@ -1913,7 +1936,7 @@ function initViewFilterDialog() {
 				vfd.dialog("close");
 				updateFileList();
 			});
-			$("[data-action='filter.reset']", vfd).button().click(function(event){
+			$(".filter-reset", vfd).button().click(function(event){
 				preventDefault(event);
 				rmcookies("filter.name", "filter.size", "filter.types");
 				vfd.dialog("close");

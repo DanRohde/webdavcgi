@@ -215,6 +215,17 @@ Require valid-user
 
 </ol>
 <h2 id="upgrade">Upgrade</h2>
+<h3>Upgrading from 1.1.1 to 1.1.2</h3>
+<ul>
+<li> The web interface was refactored:
+	<ul>
+	<li> folder upload was implemented (by form and D&D) and can be disabled with <code>$ALLOW_FOLDERUPLOAD=0;</code> in webdav.conf</li>
+	<li> $HEADER and $LANGSWITCH defaults were changed</li>
+	<li> menus in toolbar and navigation bar are allowed now</li>
+	<li> the new $ALLOW_PATHINFO (default: 0) enables former enabled path input in toolbar (quick navigation) again</li>
+	</ul>
+</li>
+</ul>
 <h3>Upgrading from 1.1.0 to 1.1.1</h3>
 <ul>
 <li> Feedback extension was added.</li>

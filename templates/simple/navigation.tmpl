@@ -1,0 +1,30 @@
+<ul id="apps">
+	<li class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" tabindex="0"><span class="label">$tl(files)</span></li>
+	$INCLUDE(apps)
+	$extension(apps)
+</ul>
+$INCLUDE(nav)
+<ul id="prefs">
+	$INCLUDE(pref)
+	<!--IF($#SUPPORTED_VIEWS>0)-->
+		<li title="$tl(viewoptions)">
+			<div class="accordion">
+				<h3>$tl(viewoptions)</h3> 
+				<div>
+					<ul>
+						$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)" class="action view $v" data-href="?view=$v" title="$v" aria-label="$v" tabindex="0">$tl(${v}view)</li>'#'^$view$'#
+						<li title="$tl(filter.title)" class="action viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)" tabindex="0">
+							<span class="label">$tl(filter.title)</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</li>
+	<!--ELSE-->
+		<li title="$tl(filter.title)" class="action viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)" tabindex="0"><span class="label">$tl(filter.title)</span></li>
+	<!--ENDIF-->
+	<li title="$tl(settings)" class="dialog action settings" data-action="settings" aria-label="$tl(settings)" tabindex="0"><span class="label">$tl(settings)</span></li>
+	$extension(pref)
+	$INCLUDE(help)
+	<li title="$tl(about)" class="dialog action about" data-action="about" accesskey="8" aria-label="$tl(about)" tabindex="0"><span class="label">$tl(about)</span></li>
+</ul>

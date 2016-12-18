@@ -47,14 +47,7 @@ sub handle_hook_gethandler {
 }
 sub handle_hook_apps {
     my ($self) = @_;
-    my $cgi = $self->{cgi};
-    return $cgi->li(
-        { -title => $self->tl('SysInfo') },
-        $cgi->a(
-            { -class => 'action sysinfo', -href => 'sysinfo.html' },
-            $self->tl('SysInfo')
-        )
-    );
+    return $self->handle_apps_hook($self->{cgi}, 'sysinfo', 'SysInfo', 'System Information', 'sysinfo.html');
 }
 sub render_sys_info {
     my ($self) = @_;

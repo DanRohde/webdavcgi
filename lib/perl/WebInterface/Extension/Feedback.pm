@@ -69,16 +69,12 @@ sub handle_hook_fileactionpopup {
 
 sub handle_hook_pref {
     my ( $self, $config, $params ) = @_;
-    return $self->{cgi}->li(
-        $self->{cgi}->a(
-            {   -href       => q{#},
-                -class      => 'action ' . $ACTION,
-                -title      => $self->tl('feedback'),
-                -aria_label => $self->tl('feedback')
-            },
-            $self->{cgi}->span( { -class => 'label' }, $self->tl('feedback') )
-        )
-    );
+    return {
+        action => $ACTION,
+        title  => $self->tl($ACTION),
+        attr   => { aria_label => $self->tl($ACTION), tabindex=>0, },
+        label  => $self->tl($ACTION),
+    };
 }
 
 sub handle_hook_body {

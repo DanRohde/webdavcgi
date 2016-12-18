@@ -88,13 +88,15 @@ sub handle_hook_locales {
 sub handle_apps_hook {
     my ( $self, @args ) = @_;
     my ( $cgi, $action, $label, $title, $href ) = @args;
-    return $cgi->li(
-        { -title => $self->tl( $title // $label ) },
-        $cgi->a(
-            { -class => "action $action", -href => $href ? $href : q{#}, , -aria_label=> $self->tl( $title // $label ) },
-            $cgi->span( { -class => 'label' }, $self->tl($label) )
-        )
-    );
+    my %data;
+    if ($href) { $data{href} = $href };
+    return {
+        action => $action,
+        data => \%data,
+        label => $self->tl($label // $title),
+        title => $self->tl($title // $label),
+        attr => { 'aria-label' => $self->tl($title // $label), tabindex=>0, },
+    };
 }
 
 sub handle_settings_hook {

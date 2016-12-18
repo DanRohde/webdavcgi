@@ -141,11 +141,14 @@ sub render_extension_element {
     my $content = q{};
     if ( ref($a) eq 'HASH' ) {
         if ( ${$a}{subpopupmenu} ) {
-            return $self->{cgi}->li(
-                {   -class => 'subpopupmenu extension '
+            my %attr = (-class => 'subpopupmenu extension '
                         . ( ${$a}{classes} || q{} ),
-                    -title => $a->{label} // $a->{title} // q{},
-                },
+                    -title => $a->{label} // $a->{title} // q{},);
+            if (exists $a->{attr}) {
+                %attr = ( %attr, %{$a->{attr}});
+            }
+            return $self->{cgi}->li(
+                \%attr,
                 ( ${$a}{title} || q{} )
                     . $self->{cgi}->ul(
                     { -class => 'subpopupmenu extension '.($a->{subclasses}//q{}) },
@@ -268,7 +271,7 @@ sub render_quicknav_path {
         $navpath = get_base_uri_frag($base) . "/$navpath";
         $base    = get_parent_uri($base);
         $base .= $base ne q{/} ? q{/} : q{};
-        $content .= $base;
+        #$content .= $base;
     }
     else {
         $base    = q{};
@@ -319,8 +322,8 @@ sub render_quicknav_path {
         if ( !$ignorepe && $lastignorepe ) {
             $content
                 .= $self->{cgi}
-                ->a( { -href => $lastignoredpath, -title => $ignoredpes },
-                ' [...]/ ' );
+                ->a( { -href => $lastignoredpath, -title => $ignoredpes, -class=>'action quicknav-el' },
+                '[...]' );
             $ignoredpes = q{};
         }
         $content .=
@@ -328,16 +331,17 @@ sub render_quicknav_path {
             ? $self->{cgi}->a(
             {   -href => "$base$path" . ( defined $query ? "?$query" : q{} ),
                 -title =>
-                    $self->{cgi}->escapeHTML( uri_unescape("$base$path") )
+                    $self->{cgi}->escapeHTML( uri_unescape("$base$path") ),
+                -class => 'action quicknav-el' . ($pe eq q{} || "$base$path" eq $DOCUMENT_ROOT ? ' quicknav-el-home' : q{})
             },
-            $self->{cgi}->escapeHTML(" $dn ")
+            "$base$path" ne $DOCUMENT_ROOT ? $self->{cgi}->escapeHTML("$pe") : q{}
             )
             : q{};
         if ( scalar @fna > 0 ) { $fnc .= shift(@fna) . q{/}; }
     }
     $content .=
           $content eq q{}
-        ? $self->{cgi}->a( { -href => q{/}, -title => q{/} }, q{/} )
+        ? $self->{cgi}->a( { -href => q{/}, -title => q{/}, -class=> 'action quicknav-el quicknav-el-home'}, q{} )
         : q{};
 
     return $content;

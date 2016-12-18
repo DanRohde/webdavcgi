@@ -4,6 +4,7 @@
      - changed file/folder action dialog
      - improved Highlighter extension
      - changed HEADER and LANGSWITCH defaults
+     - added ALLOW_PATHINPUT option (default: 0)
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension

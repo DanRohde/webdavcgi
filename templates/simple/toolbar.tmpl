@@ -1,5 +1,5 @@
 <ul class="toolbar">
-<li class="access-writeable uibutton" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)">$tl(new)
+<li class="uibutton" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)">$tl(new)
 	<ul>
 		<li class="action create-folder access-writeable" accesskey="r">$tl(createfolderbutton)</li>
 		<li class="action create-file access-writeable" accesskey="e">$tl(createnewfilebutton)</li>
@@ -18,25 +18,29 @@
 <!--IF($config(ALLOW_POST_UPLOADS))-->
 <li class="action upload access-writeable uibutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</li>
 <!--ENDIF-->
+<li class="sel-none hideit"><div id="quicknav" class="ws">$[quicknavpath]</div>
+	<!--IF($config(ALLOW_PATHINPUT))-->
+	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
+	<!--ENDIF-->
+</li>
+<!--IF($config(ALLOW_PATHINPUT))-->
+<li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
+<!--ENDIF-->
 <!--IF($config(ENABLE_CLIPBOARD))-->			
 <li class="action paste uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
 <!--ENDIF-->
-<li class="sel-none hideit"><span id="quicknav" class="ws">$[quicknavpath]</span>
-	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
-</li>
-<li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
 <!--IF($config(ENABLE_BOOKMARKS))-->
 <li class="toolbar-spacer action addbookmark sel-none hideit uibutton" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)"></li>
-<li class="action bookmarkmenu sel-none hideit uibutton" id="bookmarks" data-action="bookmarkmenu" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
+<li class="action bookmarkmenu sel-none hideit uibutton" id="bookmarks" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
 	&nbsp;
 	<ul id="bookmarksmenulist">
 		<li id="bookmarktemplate" class="hidden">
 			<div class="bookmarklabel">$bookmarktext</div>
 			<div tabindex="0" class="action rmsinglebookmark" title="$tl(rmbookmark)" aria-label="$tl(rmbookmark)" data-bookmark="$bookmarkpath"></div>
 		</li>
-		<li class="sep action bookmarksortpath" data-action="bookmarksortpath"><div class="bookmarksortlabel">$tl(sortbookmarkbypath)</div><div class="path">&uarr;</div><div class="path-desc">&darr;</div></li>
-		<li class="action bookmarksorttime" data-action="bookmarksorttime"><div class="bookmarksortlabel">$tl(sortbookmarkbytime)</div><div class="time">&uarr;</div><div class="time-desc">&darr;</div></li>
-		<li class="sep action rmallbookmarks" data-action="rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
+		<li class="sep action bookmarksortpath"><div class="bookmarksortlabel">$tl(sortbookmarkbypath)</div><div class="path">&uarr;</div><div class="path-desc">&darr;</div></li>
+		<li class="action bookmarksorttime"><div class="bookmarksortlabel">$tl(sortbookmarkbytime)</div><div class="time">&uarr;</div><div class="time-desc">&darr;</div></li>
+		<li class="sep action rmallbookmarks" title="$tl(rmallbookmarkstitle)">$tl(rmallbookmarks)</li>
 	</ul>
 </li>
 <!--ENDIF-->
@@ -63,7 +67,7 @@ $extension(filelistaction)
 	$extension(filterbox)
 	<form id="filterbox" method="post" action="#">
 		$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" aria-label="$tl(namefiltertooltip)" accesskey="i"/>
-		<img class="action clearfilter" data-action="clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)" aria-label="$tl(filter.reset)"/>
+		<img class="action clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)" aria-label="$tl(filter.reset)"/>
 	</form>
 </li>
 <!--ENDIF-->
