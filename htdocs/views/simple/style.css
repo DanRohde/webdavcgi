@@ -101,10 +101,10 @@ a {
 	
 }
 #nav li:hover, #nav li a:focus, #nav li:focus {
-	background-color: #dddddd;
+	background-color: #ddd;
 }
 #nav li:hover .disabled {
-	background-color: #eeeeee;
+	background-color: #eee;
 }
 
 #nav ul > li > ul.subpopupmenu {
@@ -146,6 +146,7 @@ a {
 	border-top: 1px solid #999;
 }
 #nav ul.subpopupmenu li:hover, ul.subpopupmenu:focus {
+	background-color: #ddd;
 	border: 1px dotted #999;
 	left: 150px;
 }
@@ -494,8 +495,11 @@ tr.isreadable-no:hover {
 	background-position-y: -496px;
 }
 .action.delete {
-	background-position-y: -216px;
+	background-position: center -216px;
  }
+.action.delete:focus, .action.delete:hover {
+ 	background-color: #ff6666 !important;
+}
 .action.copy {
 	background-position: center -136px;
 }

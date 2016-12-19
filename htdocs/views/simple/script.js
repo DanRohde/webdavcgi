@@ -178,7 +178,7 @@ function initKeyboardSupport() {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
 				}
-				self.prevAll(":visible:first").focus();
+				self.prevAll(":focusable:first").focus();
 				removeTextSelections();
 			} else if (event.keyCode==40) {
 				preventDefault(event);
@@ -186,7 +186,7 @@ function initKeyboardSupport() {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
 				}
-				self.nextAll(":visible:first").focus();
+				self.nextAll(":focusable:first").focus();
 				removeTextSelections();
 			} 
 		});
@@ -1025,13 +1025,13 @@ function initFileList() {
 	$("#fileList tr.unselectable-no")
 		.off("mouseenter.initFileList").off("mouseleave.initFileList").on("mouseenter.initFileList",handleFileListRowFocusIn).on("mouseleave.initFileList", handleFileListRowFocusOut)
 		.off("focusin.initFileList").on("focusin.initFileList",handleFileListRowFocusIn)
-		.each(function(i,v) {
+/*		.each(function(i,v) {
 			var self = $(this);
 			self.find(".filename a").off("focusin.initFileList").on("focusin.initFileList",function(event) {
 				handleFileListRowFocusIn.call(self,event);
 			});
 		});
-	
+*/
 	// mouse events on a file row:
 	$("#fileList tr")
 		.off("click.initFileList").on("click.initFileList",handleRowClickEvent)
@@ -1820,9 +1820,15 @@ function handleInplaceInput(target, defval) {
 	return target;
 }
 function keyboardEventHelper(event) {
+	var self = $(this);
 	if (event.keyCode == 32 || event.keyCode == 13) {
 		preventDefault(event);
-		$(this).trigger("click", { origEvent : event });
+		self.trigger("click", { origEvent : event });
+	} else if (event.keyCode == 27) {
+		self.parents(".dropdown-menu:visible").hide();
+		if (self.hasClass(".dropdown-menu")) self.hide();
+		self.parents("ul.subpopupmenu:visible").hide();
+		if (self.is("ul.subpopupmenu")) self.hide();
 	}
 }
 function handlePopupNavigation(sel) {
@@ -1847,9 +1853,6 @@ function initNavigationActions() {
 		$("ul.subpopupmenu", self).first().toggle();
 	}).on("keyup", keyboardEventHelper);
 	handlePopupNavigation("#nav ul.subpopupmenu li");
-	$("#nav ul.subpopupmenu").on("keydown", function(event) {
-		if (event.keyCode == 27) $(this).hide();
-	});
 	$("#flt").on("fileListSelChanged", function() {
 		$("#nav li.disabled ul.subpopupmenu:visible").hide();
 	});
@@ -1998,9 +2001,16 @@ function renderAccessKeyDetails() {
 		var bb = $(b).attr("accesskey");
 		return aa < bb ? -1 : aa > bb ? 1 : 0; 
 	});
+	var dup = new Array();
 	$.each(refs, function(i,v) {
 		var qv = $(v);
-		text += "<li>"+qv.attr("accesskey")+": "+( qv.attr("aria-label") || qv.attr("title") || qv.attr("data-tooltip") || qv.html() )+"</li>";
+		var ak = qv.attr("accesskey");
+		if (!dup[ak]) {
+			text += "<li>"+ak+": "+( qv.attr("aria-label") || qv.attr("title") || qv.attr("data-tooltip") || qv.html() )+"</li>";
+			dup[ak]=true;
+		} else {
+			console.log("found accesskey "+ak+" more than on time");
+		}
 	});
 	$('<div id="accesskeydetails"/>')
 		.html('<ul class="accesskeydetails">'+text+"</ul>")
