@@ -259,7 +259,7 @@ sub render_quicknav_path {
     my ( $self, $query ) = @_;
     my $cgi = $self->{cgi};
     my $content = q{};
-    my $ru   = uri_unescape($REQUEST_URI);
+    my $ru   = $REQUEST_URI;
     my $base = $ru=~/^($VIRTUAL_BASE)/xms ? $1 : q{/};
     my $path = $ru=~/^$base(.*)$/xms ? $1 : q{};
     my @pathelements = split /\/+/xms, $path;
@@ -273,10 +273,11 @@ sub render_quicknav_path {
     }
     my $href = q{};
     foreach my $el ($base,@pathelements) {
-        $href .= $el eq $base || $href eq $base ?  $el : q{/}. uri_escape( $el );
-        my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $el;
+        $href .= $el eq $base || $href eq $base ? $el : q{/}.$el;
+        my $uel = uri_unescape( $el );
+        my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $uel;
         $content .= $cgi->a( {
-                -title => $el,
+                -title => $uel,
                 -class => 'action quicknav-el' . ($el eq $base ? ' quicknav-el-home' : q{}),
                 -style => 'max-width:'.$MAXFILENAMESIZE.'em',
                 -href  => $href . ($query // q{}),
