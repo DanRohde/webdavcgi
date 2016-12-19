@@ -33,8 +33,9 @@
 #       
 # SETUP:
 # motd - message file (HTML is allowed) and it can handle filenames with
-#        '_<$LANG>' suffixes (e.g /etc/motd_de)
+#        '_$LANG' suffixes (e.g /etc/motd_de)
 # motdmessage - motd as text; if exists motd parameter will be ignored
+# motdtitle - motd dialog title (default: from locale files: motd.title)
 # session - 1: (default) show MOTD every session, 0: otherwise
 package WebInterface::Extension::MotD;
 
@@ -57,7 +58,7 @@ $ACTION = 'motd';
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript gethandler statusbar );
+    my @hooks = qw( css locales javascript gethandler statusbar pref );
     $hookreg->register( \@hooks, $self );
 
     $self->{json} = JSON->new();
@@ -92,7 +93,7 @@ sub handle_hook_gethandler {
         my $json = {
             message    => $motd,
             timestamp  => $timestamp,
-            title      => $self->tl('motd.title', 'Message Of The Day [MOTD]'),
+            title      => $self->config('motdtitle', $self->tl('motd.title', 'Message Of The Day [MOTD]')),
             session    => $self->{session},
         };
         print_header_and_content( '200 OK', 'application/json', $self->{json}->encode($json) );
@@ -104,6 +105,15 @@ sub _is_admin {
     my ( $self ) = @_;
     # TODO: 
     return 0;
+}
+sub handle_hook_pref {
+    my ( $self, $config, $params ) = @_;
+    return {
+            action => 'showmotd',
+            label  => $self->tl('motd.showmotd'),
+            type   => 'li',
+            attr   => { tabindex=> 0 },
+        };
 }
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
@@ -140,8 +150,9 @@ sub handle_hook_fileactionpopup {
         ],
     };
 }
+
 sub handle_hook_statusbar {
     my ( $self, $config, $params ) = @_;
-    return $self->{cgi}->div({-class=>'motd motd-statusbar'},q{});
+    return $self->{cgi}->div({-class=>'motd motd-statusbar', -tabindex=>0},q{});
 }
 1;

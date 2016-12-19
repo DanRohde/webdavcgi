@@ -249,8 +249,9 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface Image Information" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
 <td><pre>
 # motd - message file (HTML is allowed) and it can handle filenames with
-#        '_<$LANG>' suffixes (e.g /etc/motd_de)
+#        '_$LANG' suffixes (e.g /etc/motd_de)
 # motdmessage - motd as text; if exists motd parameter will be ignored
+# motdtitle - motd dialog title (default: from locale files: motd.title)
 # session - 1: (default) show MOTD every session, 0: otherwise
 </pre></td>
 </tr>
