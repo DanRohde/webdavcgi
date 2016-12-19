@@ -40,12 +40,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(hl.png);
 	background-position:  center center;
 	background-repeat: no-repeat;
-	padding: 0.4em 0.4em 0.4em 22px ;
 }
 .highlighter-popup:hover, .highlighter-popup:focus {
 	background-image: url(hl-hover.png);
 	background-repeat: no-repeat;
 }
+#nav .highlighter-popup {
+	background-position-x: 4px !important;
+}
+
 .action.markcolorpicker {
 	background-image: url(hl.png);
 	background-repeat: no-repeat;

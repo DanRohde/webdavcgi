@@ -31,6 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #popupmenu .action.feedback {
 	background-position: 4px 8px;
 }
+#nav .action.feedback {
+	background-position-x: 4px !important;
+}
 #feedbackmsg {
 	width: 320px;
 	height: 160px;

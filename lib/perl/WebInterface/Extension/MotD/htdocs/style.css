@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .action.showmotd {
 	background-image: url(motd.png);
+	background-position-x: 4px !important;
 }
 .motd-dialog.ui-dialog .ui-dialog-title {
 	background-image: url(motd.png);

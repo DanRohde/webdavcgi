@@ -69,11 +69,11 @@ a {
 	border-bottom: 1px solid #ddd;
 	border-top: 1px solid #fff;
 	border-right: 1px solid #eee;
-	border-left: 1px solid #eee;
+	border-left: 0;
 	color: #666666;
 	display: block;
 	font-size: 15px;
-	padding: 6px 6px 6px 24px;
+	padding: 6px 6px 6px 25px;
 	text-decoration: none;
 	text-shadow: 0 1px 0 #f8f8f8;
 	min-height: 1.2em;
@@ -807,16 +807,16 @@ td.center {
 	text-align: center;
 }
 .action.refresh {
-	background-position: 2px -411px;
+	background-position: 2px -415px;
 }
 .action.viewfilter {
-	background-position: 2px -650px;
+	background-position: 2px -655px;
 }
 .action.settings {
-	background-position: 2px -1132px;
+	background-position: 2px -1135px;
 }
 .action.about {
-	background-position: 2px -12px;
+	background-position: 2px -16px;
 }
 .viewfilterdialog.ui-dialog .ui-dialog-title {
 	background: url(images/sprite.png) no-repeat 0 -660px;
@@ -893,7 +893,7 @@ img {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: 2px -932px;
+	background-position: 2px -935px;
 }
 .logout-button:hover, .logout-button:focus {
 	background-image: url(images/sprite-hover.png);
@@ -902,7 +902,7 @@ img {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: 2px -972px;
+	background-position: 2px -975px;
 }
 .help-button:hover, .help-button:focus {
 	background-image: url(images/sprite-hover.png);
@@ -911,7 +911,7 @@ img {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: 2px -1012px;
+	background-position: 2px -1015px;
 }
 .home-button:hover, .home-button:focus {
 	background-image: url(images/sprite-hover.png);
@@ -920,7 +920,7 @@ img {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: 2px -1372px;
+	background-position: 2px -1375px;
 }
 .contact-button:hover, .contact-button:focus {
 	background-image: url(images/sprite-hover.png);
