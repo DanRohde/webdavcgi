@@ -6,6 +6,7 @@
      - changed $HEADER and $LANGSWITCH defaults
      - added $ALLOW_PATHINPUT option (default: 0)
      - removed $MAXNAVPATHSIZE, added $MAXQUICKNAVELEMENTS, and changed default for $MAXFILENAMESIZE from 50 to 10
+     - added MotD extension
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension

@@ -1,0 +1,1 @@
+motd.title				"Wichtige Nachricht des Tages"

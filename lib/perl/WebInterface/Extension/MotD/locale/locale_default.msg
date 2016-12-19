@@ -1,0 +1,1 @@
+motd.title			"Message of the Day"

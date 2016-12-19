@@ -288,6 +288,7 @@ EOF
         Highlighter Download  Zip          Search
         Diff        DiskUsage ODFConverter ImageInfo
         QuickToggle SaveSettings           Feedback
+        MotD
     );
     @AFS_EXTENSIONS   = qw( AFSACLManager AFSGroupManager );
     @EXTRA_EXTENSIONS = qw( GPXViewer SourceCodeViewer HexDump SendByMail );

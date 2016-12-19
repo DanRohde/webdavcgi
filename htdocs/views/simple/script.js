@@ -2232,7 +2232,8 @@ function initPlugins() {
 			handleTitleAttribute(el);
 			if (isBlocked(el)) return;
 			blockParentElements(el);
-			tooltip.text(el.attr("data-tooltip"));
+			if (el.data("htmltooltip")) tooltip.html(el.data("htmltooltip"));
+			else tooltip.text(el.attr("data-tooltip"));
 			if (delay) {
 				setDelayTimeout(e,el);
 			} else {

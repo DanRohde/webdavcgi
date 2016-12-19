@@ -7,6 +7,7 @@
   <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox.min.css"/>
   <link rel="stylesheet" type="text/css" href="fancybox/jquery.fancybox-buttons.min.css"/>
   <link rel="stylesheet" type="text/css" href="style.min.css"/>
+  <style> pre { max-width: 80ex; overflow: auto; } </style>
   <script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="fancybox/jquery.fancybox.min.js"></script>
   <script type="text/javascript" src="fancybox/jquery.fancybox-buttons.min.js"></script>
@@ -21,8 +22,8 @@
 <ul>
 <li>Extensions are activated by putting the extension name to the <code>@EXTENSIONS</code> list in <code>webdav.conf</code>:
 <pre>
-@EXTENSIONS = ('History', 'Highlighter','Diff','Download','Zip','DiskUsage',
-               'Search','SendByMail','Permissions');
+@EXTENSIONS = ('History', 'Highlighter','Diff','Download','Zip',
+              'DiskUsage', 'Search','SendByMail','Permissions');
 </pre></li>
 <li>Extensions are configured with the <code>%EXTENSION_CONFIG</code> variable in <code>webdav.conf</code>:
 <pre>
@@ -34,7 +35,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 @EXTENSIONS=(@DEFAULT_EXTENSIONS,@EXTRA_EXTENSIONS,
              @AFS_EXTENSIONS,@PUB_EXTENSIONS,@DEV_EXTENSIONS)
 </pre></li>
-<li>If an extension is to be disabled, you can set the option 'dontregister', for example: <pre>$EXTENSION_CONFIG{DiskUsage}{dontregister}=1;</pre></li>
+<li>You can disable an extension if you set the option 'dontregister', for example: <pre>$EXTENSION_CONFIG{DiskUsage}{dontregister}=1;</pre></li>
 </ul>
 <h2>Supported Extensions</h2>
 <ul>
@@ -49,6 +50,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#Highlighter">Highlighter</a> - colorizes files/folders</li>
 <li><a href="#History">History</a> - shows a folder history</li> 
 <li><a href="#ImageInfo">ImageInfo</a> - shows image/video/audio information (EXIF, ID3, ...)</li>
+<li><a href="#MotD">MotD</a> - shows message of the day</li>
 <li><a href="#ODFConverter">ODFConverter</a> - converts between Open Document file formats and other Office file formats</li>
 <li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
 <li><a href="#PosixAclManager">PosixAclManager</a> - manages POSIX ACL</li>
@@ -158,14 +160,20 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 # contact - TO recipient address[es] (default: d.rohde@cms.hu-berlin.de)
 # contact_cc - CC recipient address[es] (default: undef)
 # contact_bcc - BCC recipient address[es] (default: undef)
-# emailallowed - enables email field in feedback form (default: 0 [disabled])
-# domain - mail domain for 'from' address (only used if a REMOTE_USER doesn't contain a domain)
+# emailallowed - enables email field in feedback form 
+#                (default: 0 [disabled])
+# domain - mail domain for 'from' address (only used if a REMOTE_USER 
+#          doesn't contain a domain)
 # subject - email subject (default: "WebDAV CGI")
-# body - email body (default: "\$msg\n\n%s\n" [%s - client info data, \$msg - message])
-# clientinfo - if enabled add client info to feedback mail (default: 1 [enabled])
-# mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
+# body - email body 
+#     (default: "\$msg\n\n%s\n" [%s - client info data, \$msg - message])
+# clientinfo - if enabled add client info to feedback mail 
+#              (default: 1 [enabled])
+# mailrelay - sets the host(name|ip) of the mail relay 
+#             (default: localhost)
 # timeout - mailrelay timeout in seconds (default: 2)
-# sizelimit - defines the mail size limit excepted by your mail relay (default: 20971520 [=20MB])
+# sizelimit - defines the mail size limit excepted by your mail relay 
+#             (default: 20971520 [=20MB])
 </pre></td>
 
 </tr>
@@ -205,7 +213,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <td><pre>
 # SETUP:
 # namespace - XML namespace for attributes (default:
-#  {https://DanRohde.github.io/webdavcgi/extension/Highlighter/$REMOTE_USER})
+# {https://DanRohde.github.io/webdavcgi/extension/Highlighter/$REMOTE_USER})
 # attributes - CSS attributes to change for a file list entry
 # maxpresetentries - number of entries in the preset entry menu (default: 5)
 # disable_popup - disables Highlighter menu in context menu
@@ -234,6 +242,21 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 </pre></td>
 </tr>
 </table>
+
+<h2 id="MotD">MotD</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface Image Information" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
+<td><pre>
+# motd - message file (HTML is allowed) and it can handle filenames with
+#        '_<$LANG>' suffixes (e.g /etc/motd_de)
+# motdmessage - motd as text; if exists motd parameter will be ignored
+# session - 1: (default) show MOTD every session, 0: otherwise
+</pre></td>
+</tr>
+</table>
+
+
 
 <h2 id="ODFConverter">ODFConverter</h2>
 <table style="width:100%">
@@ -316,13 +339,13 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # SETUP:
 # redirect - sets folder/files for a redirect
 #             format: { '/full/file/path' =&gt; 'url' , ... }
-# enable_directredirect - enables redirects of direct calls to redirected pathes (default: off)
+# enable_directredirect - enables redirects of direct calls to 
+#                         redirected pathes (default: off)
 </pre></td>
 
 </tr>
 </table>
-</tr>
-</table>
+
 <h2 id="SaveSettings">SaveSettings</h2>
 <table style="width:100%">
 <tr>
@@ -343,37 +366,37 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <td><a class="screenshot" href="images/webdavcgi-webinterface-sendbymail.png"><img alt="Web interface send by mail dialog" class="screenshot" src="images/webdavcgi-webinterface-sendbymail.png"/></a></td>
 <td><pre>
 # SETUP:
-#   mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
-#   login - sets the login for the mail relay (default: not used)
-#   password - sets the password for the login (default: not used)
-#   sizelimit - sets the mail size limit
-#               (depends on your SMTP setup, default: 20971520 bytes)
-#   defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
-#   defaultto - sets default recipient (default: empty string)
-#   defaultsubject - sets default subject (default: empty string)
-#   defaultmessage - sets default message (default: empty string)
-#   defaultzipfilename - sets a default filename for ZIP files
-#   enable_savemailasfile - allows to save a mail as a eml file
-#   disable_fileactionpopup - disables entry in popup menu
-#   disable_fileaction - disables entry in toolbar
-#   enable_apps - enables sidebar menu entry
-#   addressboook - Perl module name with a addressbook implementation
-#                  LDAP: 'WebInterface::Extension::SendByMail::LdapAddressbook'
-#      ldap.server - sets the LDAP server name (IP or hostname)
-#      ldap.basedn - sets base DN for entry search 
-#      ldap.filter - sets search filter (default: '(|(mail=*%s*)(cn=*%s*))' )
-#      ldap.scope - sets search scope (default: 'sub')
-#      ldap.timelimit - sets search time limit in seconds (default: 5)
-#      ldap.sizelimit - sets number of search results (default: 5)
-#      ldap.cn - sets CN attribute name (default: 'cn')
-#      ldap.mail - sets mail attribute name (default: 'mail')
-#      ldap.debug - sets debug level (default: 0) 
-#                   (see man Net::LDAP  3 - in/out hexdump, 12 - in/out dump)
-#      ldap.starttls - enables TLS support (default: 0 (off))
-#      ldap.verify - enables certificate verification for TLS (default: 'required')
-#      ldap.sslversion - sets SSL version (default: 'tlsv1')
-#      ldap.binddn - sets DN for LDAP login (default: 0 (off))
-#      ldap.password - sets password for LDAP login 
+# mailrelay - sets the host(name|ip) of the mail relay  (default: localhost)
+# login - sets the login for the mail relay (default: not used)
+# password - sets the password for the login (default: not used)
+# sizelimit - sets the mail size limit
+#             (depends on your SMTP setup, default: 20971520 bytes)
+# defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
+# defaultto - sets default recipient (default: empty string)
+# defaultsubject - sets default subject (default: empty string)
+# defaultmessage - sets default message (default: empty string)
+# faultzipfilename - sets a default filename for ZIP files
+# enable_savemailasfile - allows to save a mail as a eml file
+# disable_fileactionpopup - disables entry in popup menu
+# disable_fileaction - disables entry in toolbar
+# enable_apps - enables sidebar menu entry
+# addressboook - Perl module name with a addressbook implementation
+#                LDAP: 'WebInterface::Extension::SendByMail::LdapAddressbook'
+#   ldap.server - sets the LDAP server name (IP or hostname)
+#   ldap.basedn - sets base DN for entry search 
+#   ldap.filter - sets search filter (default: '(|(mail=*%s*)(cn=*%s*))' )
+#   ldap.scope - sets search scope (default: 'sub')
+#   ldap.timelimit - sets search time limit in seconds (default: 5)
+#   ldap.sizelimit - sets number of search results (default: 5)
+#   ldap.cn - sets CN attribute name (default: 'cn')
+#   ldap.mail - sets mail attribute name (default: 'mail')
+#   ldap.debug - sets debug level (default: 0) 
+#                (see man Net::LDAP  3 - in/out hexdump, 12 - in/out dump)
+#   ldap.starttls - enables TLS support (default: 0 (off))
+#   ldap.verify - enables certificate verification for TLS (default: 'required')
+#   ldap.sslversion - sets SSL version (default: 'tlsv1')
+#   ldap.binddn - sets DN for LDAP login (default: 0 (off))
+#   ldap.password - sets password for LDAP login 
 </pre></td>
 </tr>
 </table>
