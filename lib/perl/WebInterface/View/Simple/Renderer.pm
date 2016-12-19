@@ -281,7 +281,7 @@ sub render_quicknav_path {
                 -class => 'action quicknav-el' . ($el eq $base ? ' quicknav-el-home' : q{}),
                 -style => 'max-width:'.$MAXFILENAMESIZE.'em',
                 -href  => $href . ($query // q{}),
-        }, $text );
+        }, $cgi->escapeHTML( $text ) );
     }
     return $content;
 }
