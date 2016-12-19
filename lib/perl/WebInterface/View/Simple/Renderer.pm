@@ -273,7 +273,7 @@ sub render_quicknav_path {
     }
     my $href = q{};
     foreach my $el ($base,@pathelements) {
-        $href .= $el eq $base || $href eq $base ? $el : q{/}.$el;
+        $href .= $el eq $base || $href eq $base ?  $el : q{/}. uri_escape( $el );
         my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $el;
         $content .= $cgi->a( {
                 -title => $el,
