@@ -154,11 +154,9 @@ function initKeyboardSupport() {
 		$("#fileList .filename a").off("keydown.flca").on("keydown.flca",function(event) {
 			if (event.keyCode == 32) { preventDefault(event); handleRowClickEvent.call($(this).closest("tr"), event); }
 		});
-		fixTabIndex();
 		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
 			var self = $(this);
-			// console.log(event.keyCode);
 			if (self.is(":focus")) {
 				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 				else if (event.keyCode==13) 
@@ -174,13 +172,13 @@ function initKeyboardSupport() {
 				else if (event.keyCode==45) 
 					$(".paste").trigger("click");
 			}
-			if (event.keyCode==38 && tabindex > 1 ) {
+			if (event.keyCode==38 && tabindex > -1 ) {
 				preventDefault(event);
 				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
 				}
-				$("#fileList tr[tabindex='"+(tabindex-1)+"']").focus();
+				self.prevAll(":visible:first").focus();
 				removeTextSelections();
 			} else if (event.keyCode==40) {
 				preventDefault(event);
@@ -188,13 +186,12 @@ function initKeyboardSupport() {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
 				}
-				$("#fileList tr[tabindex='"+(tabindex+1)+"']").focus();
+				self.nextAll(":visible:first").focus();
 				removeTextSelections();
 			} 
 		});
 		$("#fileList tr[tabindex='1']").focus();
-	}).on("fileListViewChanged", fixTabIndex);
-	
+	});
 	$('<a accesskey="0" title="Access key details"></a>')
 		.on("click", renderAccessKeyDetails)
 		.appendTo("body");
@@ -203,11 +200,6 @@ function initKeyboardSupport() {
 			$("#fileList tr:visible").first().focus();
 		})
 		.appendTo("body");
-}
-function fixTabIndex() {
-	$("#fileList tr:visible").each(function(i,v) {
-		$(v).attr("tabindex",i+1);
-	});
 }
 function initTableConfigDialog() {
 	$("#flt").on("fileListChanged", function() {
@@ -1013,7 +1005,7 @@ function handleFileListRowFocusIn(event) {
 	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>').MyTooltip();
 	if ($("#fileactions",$(this)).length==0) {
 		$("div.filename",$(this)).after($("#fileactions"));
-		$("#fileactions .action").click(handleFileActionEvent);
+		$("#fileactions .action").off(".flrfi").on("click.flrfi",handleFileActionEvent).on("keyup.flrfi", keyboardEventHelper);
 	}	
 }
 function handleFileListRowFocusOut(event) {
@@ -1142,6 +1134,9 @@ function initFileList() {
 	// fix annyoing text selection after a double click on text in the file
 	// list:
 	removeTextSelections();
+	
+	$("#fileList tr:focusable:visible:first").focus();
+	
 	$("#flt").trigger("fileListChanged");
 }
 function removeTextSelections() {
@@ -1247,7 +1242,6 @@ function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 		});
 		for (var r=0; r<rows.length; r++) {
 			$(val).append(rows[r]);
-			rows[r].tabIndex=r+1;
 		}
 		
 	});
@@ -1401,7 +1395,7 @@ function handleRowClickEvent(event) {
 				start = c;
 			}
 			for (var r = start + 1 ; r < end ; r++ ) {
-				var row = $("#fileList tr").filter(function(i){ return this.rowIndex == r});
+				var row = $("#fileList tr:visible").filter(function(i){ return this.rowIndex == r});
 				if (!row) continue;
 				toggleRowSelection(row);
 				row = row.next();

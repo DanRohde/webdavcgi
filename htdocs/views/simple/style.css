@@ -364,7 +364,10 @@ table,th,td {
 	background-position: center -1658px;
 	cursor: pointer;
 }
-#fileactions li {
+#fileactions-dropdown-menu {
+	margin-top: 20px;
+}
+#fileactions-dropdown-menu li {
 	height: 1.2em !important;
 	font-size: 15px !important;
 }

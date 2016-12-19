@@ -46,11 +46,11 @@ $INCLUDE(htmlhead)</head>
 	<div id="confirmdialog" data-title="$tl(confirm)"></div>
 	<div id="fileactions">
 		<ul class="dropdown">
-			<li class="dropdown-click fileactions-dropdown" title="$tl(fileactions)">&nbsp;
-				<ul class="dropdown-menu">
-					<li class="dropdown-menu-item action rename access-writeable" href="#" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></li>
+			<li class="dropdown-click fileactions-dropdown" title="$tl(fileactions)" tabindex="0">
+				<ul id="fileactions-dropdown-menu" class="dropdown-menu">
+					<li class="dropdown-menu-item action rename access-writeable" href="#" tabindex="0" accesskey="m" title="$tl(movefilesbutton)"><span class="label">$tl(movefilesbutton)</span></li>
 					$extension(fileaction)
-					<li class="dropdown-menu-item action delete sep" href="#" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
+					<li class="dropdown-menu-item action delete sep" href="#" tabindex="0" accesskey="d" title="$tl(deletefilesbutton)"><span class="label">$tl(deletefilesbutton)</span></li>
 				</ul>
 			</li> 
 		</ul>
