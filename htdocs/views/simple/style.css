@@ -1510,7 +1510,7 @@ li.action:hover, li.action:focus {
 li.action.disabled:hover,li.action.disabled:focus {
 	background-color: #eee;
 }
-.subpopupmenu li.sep, li.subpopupmenu.sep {
+li.sep {
 	border-top: 1px solid #999 !important;
 }
 ul.subpopupmenu, ul.subpopupmenu ul {
