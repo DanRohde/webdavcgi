@@ -77,7 +77,7 @@ sub handle_hook_filelistaction {
         label      => 'zipdwnload',
         title      => 'zipdwnload',
         path       => ${$params}{path},
-        classes    => 'sel-multi uibutton'
+        classes    => 'sel-multi hideit uibutton'
     };
 
 }

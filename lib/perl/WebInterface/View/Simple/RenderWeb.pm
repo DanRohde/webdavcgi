@@ -135,8 +135,6 @@ sub render_extension_element {
             $params->{type} = 'li';
             if ($hook eq 'fileaction') {
                 $params->{classes} .= ' dropdown-menu-item';
-            } elsif ( $hook eq 'filelistaction') {
-                $params->{classes} .= ' sel-multi hideit hidden';
             }
         }
     }

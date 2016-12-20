@@ -500,7 +500,7 @@ sub handle_hook_filelistaction {
         nolabel      => 1,
         title        => $self->tl('highlighter'),
         subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
-        classes      => 'highlighter-popup uibutton',
+        classes      => 'highlighter-popup uibutton sel-multi hideit',
     };
 }
 sub handle_hook_apps {

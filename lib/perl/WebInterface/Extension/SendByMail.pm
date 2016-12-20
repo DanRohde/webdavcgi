@@ -86,7 +86,7 @@ sub handle_hook_filelistaction {
         label      => '&nbsp;',
         title      => $self->tl('sendbymail'),
         path       => $params->{path},
-        classes    => 'uibutton'
+        classes    => 'uibutton sel-multi hideit'
     };
 }
 

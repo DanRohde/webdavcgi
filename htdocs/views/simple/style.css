@@ -83,6 +83,9 @@ a {
 	background-position-x: 2px;
 	cursor: pointer;
 }
+#nav > ul > li:hover, #nav > ul > li:focus {
+	background-color: #ddd;
+}
 #nav li > div.accordion {
 	padding: 6px;
 }
@@ -1496,6 +1499,9 @@ li.subpopupmenu > .label {
 }
 li.subpopupmenu .label {
 	min-height: 1.2em !important;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 }
 li.subpopupmenu:hover, li.subpopupmenu:focus,
 li.action:hover, li.action:focus {
@@ -1520,7 +1526,6 @@ ul.subpopupmenu, ul.subpopupmenu ul {
 }
 ul.subpopupmenu li {
 	min-width: 150px;
-	max-width: 200px;
 	min-height: 1.2em !important;
 	height: auto ;
 	white-space: nowrap;
