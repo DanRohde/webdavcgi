@@ -15,208 +15,91 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 .action.removemarks {
-	background-image: url(hl.png), url(remove.png);
-	background-position: 2px center, 2px center;
-	background-repeat: no-repeat, no-repeat;
+	background-image: url(remove.png);
 }
 .action.removemarks:hover {
-	background-image: url(hl-hover.png), url(remove-hover.png);
+	background-image: url(remove-hover.png);
 }
-#popupmenu li.subpopupmenu.highlighter-popup {
-	background-image: url(hl.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position:  2px 6px,right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	padding: 0.4em 0.4em 0.4em 22px ;
-}
-#popupmenu li.subpopupmenu.highlighter-popup:hover {
-	background-image: url(hl-hover.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position:  2px 6px,right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	background-color: #f9f9f9;
-}
-.highlighter-popup {
+.highlighter-popup.label,
+.highlighter-popup.ui-button,
+.action.markcolorpicker,
+.highlighter-popup .action.removemarks .label {
 	background-image: url(hl.png);
-	background-position:  center center;
+	background-position: 2px center;
 	background-repeat: no-repeat;
 }
-.highlighter-popup:hover, .highlighter-popup:focus {
+.highlighter-popup.ui-button {
+	background-position: center center;
+	padding-right: 35px ;
+}
+
+.highlighter-popup.label:hover,
+.highlighter-popup.ui-button:hover,
+.action.markcolorpicker:hover,
+.highlighter-popup .action.removemarks .label:hover {
 	background-image: url(hl-hover.png);
-	background-repeat: no-repeat;
 }
 #nav .highlighter-popup {
 	background-position-x: 4px !important;
 }
-
-.action.markcolorpicker {
-	background-image: url(hl.png);
-	background-repeat: no-repeat;
-	background-position: 2px center;
-}
-.action.markcolorpicker:hover {
-	background-image: url(hl-hover.png);
-	background-repeat: no-repeat;
-	background-position: 2px center;
-	background-color: #f9f9f9;
-}
-#popupmenu .subpopupmenu.highlighter.color, .highlighter.color {
-	background-image: url(fg.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position:2px 6px, right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	padding-left: 22px;
-}
-#popupmenu .subpopupmenu.highlighter.color:hover, .highlighter.color:hover {
-	background-image: url(fg-hover.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position:2px 6px, right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	background-color: #f9f9f9;
-}
-#popupmenu .subpopupmenu.highlighter.background-color, .highlighter.background-color {
-	background-image: url(bg.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position:2px 6px, right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	padding-left: 22px;
-}
-#popupmenu .subpopupmenu.highlighter.background-color:hover, .highlighter.background-color:hover {
-	background-image: url(bg-hover.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position:2px 6px, right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	background-color: #f9f9f9;
-}
-#popupmenu .subpopupmenu.highlighter.border, .highlighter.border,
-#popupmenu .subpopupmenu.highlighter.border-color, .highlighter.border-color,
-#popupmenu .subpopupmenu.highlighter.border-width, .highlighter.border-width,
-#popupmenu .subpopupmenu.highlighter.border-style, .highlighter.border-style {
-	background-image: url(border.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
-}
-#popupmenu .subpopupmenu.highlighter.border:hover, .highlighter.border:hover,
-#popupmenu .subpopupmenu.highlighter.border-color:hover, .highlighter.border-color:hover,
-#popupmenu .subpopupmenu.highlighter.border-width:hover, .highlighter.border-width:hover,
-#popupmenu .subpopupmenu.highlighter.border-style:hover, .highlighter.border-style:hover {
-	background-image: url(border-hover.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
-}
-#popupmenu .subpopupmenu.highlighter.font, .highlighter.font,
-#popupmenu .subpopupmenu.highlighter.font-size, .highlighter.font-size,
-#popupmenu .subpopupmenu.highlighter.font-style, .highlighter.font-style,
-#popupmenu .subpopupmenu.highlighter.font-family, .highlighter.font-family,
-#popupmenu .subpopupmenu.highlighter.text-transform, .highlighter.text-transform {
-	background-image: url(font.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
-}
-#popupmenu .subpopupmenu.highlighter.font:hover, .highlighter.font:hover,
-#popupmenu .subpopupmenu.highlighter.font-size:hover,  .highlighter.font-size:hover,
-#popupmenu .subpopupmenu.highlighter.font-style:hover, .highlighter.font-style:hover,
-#popupmenu .subpopupmenu.highlighter.font-family:hover, .highlighter.font-family:hover,
-#popupmenu .subpopupmenu.highlighter.text-transform:hover, .highlighter.text-transform:hover {
-	background-image: url(font-hover.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
-}
-#popupmenu .subpopupmenu.highlighter.text, .highlighter.text,
-#popupmenu .subpopupmenu.highlighter.text-decoration, .highlighter.text-decoration,
-#popupmenu .subpopupmenu.highlighter.text-decoration-color, .highlighter.text-decoration-color,
-#popupmenu .subpopupmenu.highlighter.text-decoration-style, .highlighter.text-decoration-style {
-	background-image: url(text.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
-}
-#popupmenu .subpopupmenu.highlighter.text:hover,  .highlighter.text:hover,
-#popupmenu .subpopupmenu.highlighter.text-decoration:hover, .highlighter.text-decoration:hover,
-#popupmenu .subpopupmenu.highlighter.text-decoration-color:hover, .highlighter.text-decoration-color:hover
-#popupmenu .subpopupmenu.highlighter.text-decoration-style:hover, .highlighter.text-decoration-style:hover {
-	background-image: url(text-hover.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
-}
-.action.mark {
-	background-image: url(hl.png);
-	background-repeat: no-repeat;
-	background-position: 2px center;
-}
-.action.mark:hover {
-	background-image: url(hl-hover.png);
-}
-.highlighter.background-color .action.mark {
-	background-image: url(bg.png);
-}
-.highlighter.background-color .action.mark:hover {
-	background-image: url(bg-hover.png);
-}
-.highlighter.background-color .action.removemarks {
-	background-image: url(bg.png), url(remove.png);
-}
-.highlighter.background-color .action.removemarks:hover {
-	background-image: url(bg-hover.png), url(remove-hover.png);
-}
-.highlighter.color .action.mark {
+.highlighter.color.label, .action.mark.color,
+.highlighter.color .action.removemarks .label {
 	background-image: url(fg.png);
+	background-position:2px center;
 }
-.highlighter.color .action.mark:hover {
+.highlighter.color.label:hover, .action.mark.color:hover,
+.highlighter.color .action.removemarks .label:hover {
 	background-image: url(fg-hover.png);
 }
-.highlighter.color .action.removemarks {
-	background-image: url(fg.png),url(remove.png);
+.highlighter.background-color.label, .action.mark.background-color,
+.highlighter.background-color .action.removemarks .label {
+	background-image: url(bg.png);
+	background-position:2px center;
 }
-.highlighter.color .action.removemarks:hover {
-	background-image: url(fg-hover.png),url(remove-hover.png);
+.highlighter.background-color.label:hover, .action.mark.background-color:hover,
+.highlighter.background-color .action.removemarks:hover .label {
+	background-image: url(bg-hover.png);
+	background-position:2px center;
 }
-.highlighter.border .action.mark {
+.highlighter.border.label,.highlighter.border-color.label, 
+.highlighter.border-width.label, .highlighter.border-style.label,
+.highlighter.border .action.mark,
+.highlighter.border .action.removemarks .label {
 	background-image: url(border.png);
+	background-position: 2px center;
 }
-.highlighter.border .action.mark:hover {
+.highlighter.border.label:hover, .highlighter.border-color.label:hover, 
+.highlighter.border-width.label:hover, .highlighter.border-style.label:hover,
+.highlighter.border .action.mark:hover,
+.highlighter.border .action.removemarks .label:hover {
 	background-image: url(border-hover.png);
+	background-position: 2px center;
 }
-.highlighter.border .action.removemarks {
-	background-image: url(border.png),url(remove.png);
-}
-.highlighter.border .action.removemarks:hover {
-	background-image: url(border-hover.png),url(remove-hover.png);
-}
-.highlighter.font .action.mark {
+.highlighter.font.label, .highlighter.font-size.label, 
+.highlighter.font-family.label, .highlighter.font-style.label,
+.highlighter.text-transform.label, .highlighter.font .action.mark,
+.highlighter.font .action.removemarks .label {
 	background-image: url(font.png);
+	background-position: 2px center;
 }
-.highlighter.font .action.mark:hover {
+.highlighter.font.label:hover, .highlighter.font-size.label:hover, 
+.highlighter.font-family.label:hover, .highlighter.font-style.label:hover,
+.highlighter.text-transform.label:hover, .highlighter.font .action.mark:hover,
+.highlighter.font .action.removemarks .label:hover {
 	background-image: url(font-hover.png);
 }
-.highlighter.font .action.removemarks {
-	background-image: url(font.png),url(remove.png);
-}
-.highlighter.font .action.removemarks:hover {
-	background-image: url(font-hover.png),url(remove-hover.png);
-}
-.highlighter.text .action.mark {
+.highlighter.text.label, .highlighter.text-decoration.label,
+.highlighter.text-decoration-color.label, .highlighter.text-decoration-style.label,
+.highlighter.text .action.mark,
+.highlighter.text .action.removemarks .label {
 	background-image: url(text.png);
+	background-position: 2px center;
 }
-.highlighter.text .action.mark:hover {
+.highlighter.text.label:hover, .highlighter.text-decoration.label:hover,
+.highlighter.text-decoration-color.label:hover, .highlighter.text-decoration-style.label:hover,
+.highlighter.text .action.mark:hover,
+.highlighter.text .action.removemarks .label:hover {
 	background-image: url(text-hover.png);
-}
-.highlighter.text .action.removemarks {
-	background-image: url(text.png),url(remove.png);
-}
-.highlighter.text .action.removemarks:hover {
-	background-image: url(text-hover.png),url(remove-hover.png);
 }
 .action.replacemarks {
 	background-image: url(transfer.png);
@@ -232,26 +115,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.replacemarks.active:hover {
 	background-image: url(transferactive-hover.png);
 }
-#popupmenu .highlighter.preset, .highlighter.preset {
-	background-image: url(preset.png),
-	   url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-    background-repeat: no-repeat, no-repeat;
-    background-position: 2px center, right 2px center;
-    padding-left: 22px;
+.highlighter.preset.label,
+.action.markwithpreset, .action.managepresets,
+.managepresets.ui-dialog .ui-dialog-title,
+.highlighter-preset-entry {
+	background-image: url(preset.png);
+    background-position: 2px center;
+}
+.highlighter.preset.label:hover,
+.action.markwithpreset:hover, .action.managepresets:hover,
+.highlighter-preset-entry:hover {
+	background-image: url(preset-hover.png);
 }
 .action.markwithpreset, .action.managepresets {
-	background-image: url(preset.png);
-	background-position: left center;
 	max-width: 200px;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
-.action.markwithpreset:hover, .action.managepresets:hover {
-	background-image: url(preset-hover.png);
-}
 .action.savemarksaspreset {
-	background-position: left -1696px;
+	background-position: left -1696px !important;
 }
 .action.hlnopresets {
 	background-image: none;
@@ -260,16 +143,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .highlighter-preset-entry {
 	padding: 1px 8px 1px 22px;
-	background-image: url(preset.png);
 	background-repeat: no-repeat;
 	background-position: left center;
-	width: 330px;
+	width: 345px;
 	clear: both;
 	border: 1px solid white;
 }
 .highlighter-preset-entry:hover {
 	border: 1px solid gray;
-	background-image: url(preset-hover.png);
 }
 .highlighter-preset-entry-name {
 	display: inline-block;
@@ -280,7 +161,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .highlighter-preset-entry-delete {
 	background-position: center -698px;
-	
 	display: inline-block;
 	cursor: pointer;
 	float: right;
@@ -288,15 +168,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	height: 22px;
 }
 .managepresets.ui-dialog .ui-dialog-title {
-	background-image: url(preset.png);
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
 }
-#popupmenu .subpopupmenu.highlighter.preset:hover, .highlighter.preset:hover {
-	background-image: url(preset-hover.png),
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px center, right 2px center;
-	padding-left: 22px; 
+.highlighter-popup .action.removemarks {
+	padding-left: 0 !important;
+}
+.highlighter-popup .action.removemarks .label {
+	padding-left: 22px !important;
 }

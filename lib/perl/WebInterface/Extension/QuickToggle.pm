@@ -79,7 +79,7 @@ sub _handle {
         $self->read_template( $self->config( 'toggles', 'toggles' ) ) );
     if ( $hook ne 'filterbox' && $hook ne 'statusbar' ) {
         $ret = $self->{cgi}->li(
-            { -title => $self->tl('quicktoggles') },
+            { -title => $self->tl('quicktoggles'), -class=>'subpopupmenu' },
             $self->{cgi}->div( { -class => 'action quicktoggle-button' }, $ret )
         );
     }

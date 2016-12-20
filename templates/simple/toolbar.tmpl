@@ -1,5 +1,14 @@
-<ul class="toolbar">
-<li class="uibutton" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">$tl(new)
+<ul class="toolbar" tabindex="0" accesskey="t" aria-label="$tl(toolbar)">
+<li><div id="quicknav">$[quicknavpath]</div>
+	<!--IF($config(ALLOW_PATHINPUT))-->
+	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
+	<!--ENDIF-->
+</li>
+<!--IF($config(ALLOW_PATHINPUT))-->
+<li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
+<!--ENDIF-->
+<li class="uibutton action new" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">
+	&nbsp;
 	<ul>
 		<li class="action create-folder access-writeable" accesskey="r">$tl(createfolderbutton)</li>
 		<li class="action create-file access-writeable" accesskey="e">$tl(createnewfilebutton)</li>
@@ -16,18 +25,10 @@
 	</ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-<li class="action upload access-writeable uibutton" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u">$tl(fileuploadbutton)</li>
+<li class="action upload access-writeable uibutton toolbar-icononly" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u"></li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_CLIPBOARD))-->			
-<li class="action paste uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
-<!--ENDIF-->
-<li class="sel-none hideit"><div id="quicknav">$[quicknavpath]</div>
-	<!--IF($config(ALLOW_PATHINPUT))-->
-	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
-	<!--ENDIF-->
-</li>
-<!--IF($config(ALLOW_PATHINPUT))-->
-<li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
+<li class="action paste hideit uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_BOOKMARKS))-->
 <li class="toolbar-spacer action addbookmark sel-none hideit uibutton" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)"></li>
@@ -55,13 +56,19 @@
 		<li class="sep autorefreshtimer" data-template="$tl(autorefresh.format)"></li> 
 	</ul>
 <!--ENDIF-->
-<li class="sel-multi hideit selstats notab" id="selstats" title="">$tl(statfiles) $filecount, $tl(statfolders) $dircount $tl(statsum) $sum</li>
 <!--IF($config(ENABLE_CLIPBOARD))-->			
-<li class="action copy sel-multi hideit hidden uibutton"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
+<li class="action copy sel-multi hideit hidden uibutton toolbar-spacer"  title="$tl(copytooltip)" aria-label="$tl(copytooltip)" accesskey="c"></li>
 <li class="action cut sel-multi hideit access-writeable hidden uibutton" title="$tl(cuttooltip)" aria-label="$tl(cuttooltip)" accesskey="x"></li>
 <!--ENDIF-->		
+<li class="toolbar-spaceronly sel-multi hideit notab"></li>
 $extension(filelistaction)	
-<li class="action delete sel-multi hideit hidden access-writeable uibutton" title="$tl(deletefilestext)" aria-label="$tl(deletefilestext)" tabindex="0"></li>
+<li class="action delete sel-multi hideit hidden access-writeable toolbar-spacer uibutton" title="$tl(deletefilestext)" aria-label="$tl(deletefilestext)" tabindex="0"></li>
+<li class="sel-multi hideit selstats hidden notab" id="selstats" title="">
+	<div class="file-icon" title="$tl(statfiles) $filecount">$filecount</div> 
+	<div class="folder-icon" title="$tl(statfolders) $dircount">$dircount</div> 
+	<div class="sum-icon" title="$tl(statsum) $sum">$sum</div>
+	<div class="size-icon" title="$tl(statsize) $folderselsizes">$folderselsize</div>
+</li>
 <!--IF($config(ENABLE_NAMEFILTER))-->
 <li class="filterbox">
 	$extension(filterbox)

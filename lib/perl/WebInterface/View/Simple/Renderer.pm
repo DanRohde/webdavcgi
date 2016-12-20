@@ -142,16 +142,16 @@ sub render_extension_element {
     if ( ref($a) eq 'HASH' ) {
         if ( ${$a}{subpopupmenu} ) {
             my %attr = (-class => 'subpopupmenu extension '
-                        . ( ${$a}{classes} || q{} ),
-                    -title => $a->{label} // $a->{title} // q{},);
+                        . ( ${$a}{classes} // q{} ),
+                    -title => $a->{title} // $a->{label} // q{},);
             if (exists $a->{attr}) {
                 %attr = ( %attr, %{$a->{attr}});
             }
             return $self->{cgi}->li(
                 \%attr,
-                ( ${$a}{title} || q{} )
+                ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div({ -class=>'label '.($a->{classes} // q{})}, $a->{label} // $a->{title} // q{} ))
                     . $self->{cgi}->ul(
-                    { -class => 'subpopupmenu extension '.($a->{subclasses}//q{}) },
+                    { -class => 'subpopupmenu extension '.($a->{subclasses} // q{}) },
                     $self->render_extension_element( $hook, ${$a}{subpopupmenu} )
                     )
             );
@@ -182,7 +182,7 @@ sub render_extension_element {
         if ( ${$a}{type} && ${$a}{type} eq 'li' ) {
             $content .= $self->{cgi}->li(
                 \%params,
-                $self->{cgi}->span(
+                $self->{cgi}->div(
                     { -class => 'label' }, $self->tl( ${$a}{label} )
                 )
             );

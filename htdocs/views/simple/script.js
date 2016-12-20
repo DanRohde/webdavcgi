@@ -689,7 +689,13 @@ function handleSelectionStatistics() {
 	var s = getFolderStatistics();
 	$("#fileListTable").attr('data-fileselcounter',s["fileselcounter"]).attr('data-dirselcounter',s["dirselcounter"]).attr('data-folderselsize',s["folderselsize"]).attr("data-sumselcounter", s["sumselcounter"]);
 	$("#flt").trigger("selectionCounterUpdated");
-	selstats.html(tmpl.replace(/\$filecount/,s["fileselcounter"]).replace(/\$dircount/,s["dirselcounter"]).replace(/\$sum/,s["sumselcounter"])).attr('title',renderByteSizes(s["folderselsize"]));
+	selstats.html(
+			tmpl.replace(/\$filecount/g,s["fileselcounter"])
+				.replace(/\$dircount/g,s["dirselcounter"])
+				.replace(/\$sum/g,s["sumselcounter"])
+				.replace(/\$folderselsizes/g, renderByteSizes(s["folderselsize"]))
+				.replace(/\$folderselsize/g,renderByteSize(s["folderselsize"]))
+			).attr('title',renderByteSizes(s["folderselsize"])).MyTooltip();
 }
 
 function initChangeDir() {
@@ -1426,8 +1432,12 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
+	disableFileListActions();
 	$(".action.uibutton").button();
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
+}
+function disableFileListActions() {
+	toggleButton($(".access-writeable, .access-readable, .access-selectable, .sel-one, .sel-multi"), true);
 }
 function updateFileListActions() {
 	var s = getFolderStatistics();

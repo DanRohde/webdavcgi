@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-#popupmenu .action.history.changeUri {
+.action.history.changeUri {
 	background-position-y: -61px;
 	padding-left: 26px;
 	width: 37ex;
@@ -23,17 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	text-overflow: ellipsis;
 	min-height: 18px;
 }
-#popupmenu li.subpopupmenu.history-popup {
-	background: url(history.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position: 2px 6px,right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	padding: 0.4em 0.4em 0.4em 22px;
+.history-popup.label {
+	background-image: url(history.png);
+	background-position: 2px center;
 }
-#popupmenu li.subpopupmenu.history-popup:hover {
-	background: url(history-hover.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position: 2px 6px,right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	background-color: #f9f9f9;
+.history-popup.label:hover {
+	background-image: url(history-hover.png);
 }

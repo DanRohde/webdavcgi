@@ -19,12 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: none;
 	visibility: hidden;
 }
-
-.action.zipup {
+.action.zipup,
+.zip-popup.label {
 	background-image: url(zipup.png);
 	background-position-y: center;
 }
-.action.zipup:hover,.action.zipup:focus {
+.action.zipup:hover,.action.zipup:focus,
+.zip-popup.label:hover {
 	background-image: url(zipup-hover.png);
 }
 .action.zipdwnload {
@@ -48,21 +49,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.zipuncompress:hover, .action.zipuncompress:focus {
 	background-image: url(uncompress-hover.png);
 }
-#popupmenu li.subpopupmenu.zip-popup {
-	background: url(zipup.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position: 2px 6px, right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	padding: 0.4em 0.4em 0.4em 22px ;
+.zip-popup.label {
+	background-position: 2px top;
 }
-#popupmenu li.subpopupmenu.zip-popup:hover {
-	background: url(zipup-hover.png), 
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-position: 2px 6px, right 2px center;
-	background-repeat: no-repeat, no-repeat;
-	background-color: #f9f9f9;
-}
-
 .action.zipdwnload.uibutton {
 	background-position-x: center;
 }

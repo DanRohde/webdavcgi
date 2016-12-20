@@ -51,7 +51,7 @@ sub init {
     if (!$self->config('disable_filelistaction',0)) {
         push @hooks, 'filelistaction';
     }
-    if (!$self->config('disable_apps',0)) {
+    if (!$self->config('disable_apps',1)) {
         push @hooks, 'apps';
     }
 
@@ -497,8 +497,8 @@ sub handle_hook_fileactionpopup {
 sub handle_hook_filelistaction {
     my ( $self, $config, $params ) = @_;
     return {
-        title        => '&nbsp;',
-        label        => $self->tl('highlighter'),
+        nolabel      => 1,
+        title        => $self->tl('highlighter'),
         subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
         classes      => 'highlighter-popup uibutton',
     };

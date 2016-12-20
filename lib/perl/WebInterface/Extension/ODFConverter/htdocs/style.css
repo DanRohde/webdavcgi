@@ -15,14 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-.isreadable-no li.extension.odfconverter,
+.isreadable-no .odfconverter,
 .isreadable-no .action.odfconvert,
 .odfconverter, .odfconvert,
-.isempty-yes li.extension.odfconverter {
+.isempty-yes .odfconverter {
 	display: none;
 }
 .c .odfconverter {
-	display: list-item;
+	display: block;
 }
 .action.odfconvert {
 	background: url(odfconverter.png) no-repeat 2px center;
@@ -30,17 +30,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.odfconvert:hover {
 	background: url(odfconverter-hover.png) no-repeat 2px center;
 }
-#popupmenu li.subpopupmenu.odfconverter {
-	background: url(odfconverter.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px 7px,right 2px center;
-	padding: 0.4em 0.4em 0.4em 22px ;
+.subpopupmenu.odfconverter > .label {
+	background-image: url(odfconverter.png);
+	background-position: 2px center;
 }
-#popupmenu li.subpopupmenu.odfconverter:hover {
-	background: url(odfconverter-hover.png),
-			url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-	background-repeat: no-repeat, no-repeat;
-	background-position: 2px 7px,right 2px center;
-	background-color: #f9f9f9;
+.subpopupmenu.odfconverter:hover {
+	background-image: url(odfconverter-hover.png);
 }
