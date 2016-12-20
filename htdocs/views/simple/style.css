@@ -904,7 +904,6 @@ img {
 .action.autorefreshclear {
 	background-position-y: -1256px;
 }
-
 #autorefreshtimer {
 	display: none;
 	position: fixed;
