@@ -52,7 +52,7 @@ use CGI::Carp;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REMOTE_USER $READBUFSIZE );
 use HTTPHelper
-  qw( print_local_file_header print_header_and_content get_mime_type print_compressed_header_and_content );
+  qw( print_local_file_header get_mime_type print_compressed_header_and_content );
 use FileUtils qw( get_error_document );
 
 sub init {
@@ -126,7 +126,7 @@ sub _search_address {
     }
     require JSON;
     my $content = JSON->new()->encode( \%jsondata );
-    print_header_and_content(
+    print_compressed_header_and_content(
         '200 OK',
         'application/json',
         $content,
@@ -246,7 +246,7 @@ sub _download_mail {
         close($fh) || carp("Cannot close $mailfn.");
     }
     else {
-        print_header_and_content( get_error_document('404 Not Found') );
+        print_compressed_header_and_content( get_error_document('404 Not Found') );
     }
     unlink $mailfn;
     if ($zipfile) { unlink $zipfile; }
@@ -332,7 +332,7 @@ sub _send_mail {
     }
     require JSON;
     my $content = JSON->new()->encode( \%jsondata );
-    print_header_and_content(
+    print_compressed_header_and_content(
         $status, $mime, $content,
         {
             'Cache-Control' => 'no-cache, no-store',

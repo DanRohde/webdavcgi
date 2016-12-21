@@ -29,7 +29,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 #use FileUtils qw( );
 
@@ -60,7 +60,7 @@ sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {
-        print_header_and_content( '200 OK', 'text/html',
+        print_compressed_header_and_content( '200 OK', 'text/html',
             '<!DOCTYPE html><html><head></head><body></body></html>' );
         return 1;
     }

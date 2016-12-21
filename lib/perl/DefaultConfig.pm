@@ -194,14 +194,14 @@ EOF
         group   => [qw(r w x s)],
         others  => [qw(r w x t)], };
     $LANGSWITCH
-        = q{<div id="langswitch"><a href="?lang=default">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
+        = q{<div id="langswitch"><a href="?lang=en">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
     $HEADER
         = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div id="now">$NOW</div></div>};
     $SIGNATURE
         = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2016 by <a href="https://DanRohde.github.io/webdavcgi/">Daniel Rohde</a>};
     $LANG                = 'default';
     %SUPPORTED_LANGUAGES = (
-        'default' => 'English',
+        'en'      => 'English',
         'de'      => 'Deutsch',
         'fr'      => 'Français',
         'hu'      => 'Magyar',

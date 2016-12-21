@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="$LANG">
 <head>
 <title>$config(TITLEPREFIX) $uri</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -95,6 +95,8 @@ $INCLUDE(htmlhead)</head>
 <div class="collapsible right action collapse-head" title="$tl(togglehead)" tabindex="0"></div>
 <!-- <div class="collapsible top action collapse-sidebar" title="$tl(togglesidebar)"></div>  -->
 <div class="collapsible bottom action collapse-sidebar" title="$tl(togglesidebar)" tabindex="0"></div>
+<div accesskey="0" id="accesskeydetailseventcatcher" title="$tl(accesskeydetails)" tabindex="-1"></div>
+<div accesskey="l" id="gotofilelisteventcatcher" title="$tl(gotofilelist)" tabindex="-1"></div>
 $extension(body)
 </body>
 </html>

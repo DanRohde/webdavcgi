@@ -51,7 +51,7 @@ use English qw( -no_match_vars );
 use DefaultConfig
   qw( $FILETYPES $HTTP_HOST $LANG $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI %EXTENSION_CONFIG );
 use HTTPHelper
-  qw( get_mime_type print_compressed_header_and_content print_header_and_content );
+  qw( get_mime_type print_compressed_header_and_content );
 use FileUtils qw( get_file_limit );
 
 use vars qw( %CACHE %TIMEUNITS);
@@ -740,7 +740,7 @@ sub _print_open_search {
       . qq@</Image><Image height="64" width="64" type="image/png">https://$ENV{HTTP_HOST}@
       . $self->get_uri( 'Search', 'htdocs/search64x64.png' )
       . q@</Image></OpenSearchDescription>@;
-    print_header_and_content( '200 OK', 'text/xml', $content );
+    print_compressed_header_and_content( '200 OK', 'text/xml', $content );
     return 1;
 }
 1;

@@ -30,7 +30,7 @@ use base qw( WebInterface::Extension  );
 #use JSON;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -53,10 +53,7 @@ sub init {
 
 sub _get_file_suffix {
     my ( $self, $fn ) = @_;
-    if ( $fn =~ /[.]([^.]+)$/xms ) {
-        return $1;
-    }
-    return q{};
+    return $fn =~ /[.]([^.]+)$/xms ? $1 : q{};
 }
 
 sub handle_hook_fileattr {
@@ -93,7 +90,7 @@ sub handle_hook_posthandler {
             $self->{sizelimit} )
         {
             require JSON;
-            print_header_and_content(
+            print_compressed_header_and_content(
                 '200 OK',
                 'application/json',
                 JSON->new()->encode(
@@ -106,7 +103,7 @@ sub handle_hook_posthandler {
             );
         }
         if ( $self->{supportedsuffixes}{ $self->_get_file_suffix($file) } ) {
-            print_header_and_content(
+            print_compressed_header_and_content(
                 '200 OK',
                 'text/html',
                 $self->render_template(
@@ -129,7 +126,7 @@ sub handle_hook_posthandler {
         }
         else {
             require JSON;
-            print_header_and_content(
+            print_compressed_header_and_content(
                 '200 OK',
                 'application/json',
                 JSON->new()

@@ -29,7 +29,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use DefaultConfig qw( $REMOTE_USER $DOCUMENT_ROOT );
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -69,14 +69,14 @@ sub handle_hook_gethandler {
             $message{error} = $self->tl('savesettings.failed');
         }
         require JSON;
-        print_header_and_content( '200 OK', 'application/json',
+        print_compressed_header_and_content( '200 OK', 'application/json',
             JSON->new()->encode( \%message ) );
         return 1;
     }
     if ( $action eq 'deletesettings' ) {
         $self->{db}->db_removeProperty($self->{settingspath}, $self->_get_property_name());
         require JSON;
-        print_header_and_content( '200 OK', 'application/json', JSON->new()->encode( {} ) );
+        print_compressed_header_and_content( '200 OK', 'application/json', JSON->new()->encode( {} ) );
         return 1;
     }
     return 0;

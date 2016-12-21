@@ -30,7 +30,7 @@ use base qw( WebInterface::Extension );
 #use MIME::Base64;
 
 use DefaultConfig qw( $LANG $PATH_TRANSLATED $REQUEST_URI );
-use HTTPHelper qw( get_mime_type print_header_and_content );
+use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -77,7 +77,7 @@ sub handle_hook_posthandler {
         && $self->{cgi}->param('action') eq 'imageinfo' )
     {
         my $file = $self->{cgi}->param('file');
-        print_header_and_content(
+        print_compressed_header_and_content(
             '200 OK',
             'text/html',
             $self->_render_image_info(

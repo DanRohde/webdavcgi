@@ -27,7 +27,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI );
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -50,7 +50,7 @@ sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq 'gpxviewer' ) {
-        print_header_and_content(
+        print_compressed_header_and_content(
             '200 OK',
             'text/html',
             $self->render_template(

@@ -192,14 +192,8 @@ function initKeyboardSupport() {
 		});
 		$("#fileList tr[tabindex='1']").focus();
 	});
-	$('<a accesskey="0" title="Access key details"></a>')
-		.on("click", renderAccessKeyDetails)
-		.appendTo("body");
-	$('<a href="#" title="go to file list" accesskey="l" class="gotofilelist"></a>')
-		.on("focusin", function(event) {
-			$("#fileList tr:visible").first().focus();
-		})
-		.appendTo("body");
+	$("#accesskeydetailseventcatcher").on("focus", renderAccessKeyDetails);
+	$("#gotofilelisteventcatcher").on("focus", function() { $("#fileList tr:focusable:first").focus() });
 }
 function initTableConfigDialog() {
 	$("#flt").on("fileListChanged", function() {
@@ -2003,6 +1997,7 @@ function removeAbortDialog() {
 function renderAccessKeyDetails() {
 	if ($("#accesskeydetails").length>0) {
 		$("#accesskeydetails").dialog("destroy").remove();
+		$("#fileList tr:focusable:first").focus();
 		return;
 	}
 	var text = "";
@@ -2022,10 +2017,10 @@ function renderAccessKeyDetails() {
 			console.log("found accesskey "+ak+" more than on time");
 		}
 	});
-	$('<div id="accesskeydetails"/>')
+	$('<div id="accesskeydetails" tabindex="-1"/>')
 		.html('<ul class="accesskeydetails">'+text+"</ul>")
 		.dialog({title: $(this).attr("title"), width: "auto", height: "auto",
-				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]});
+				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]}).focus();
 }
 function hidePopupMenu() {
 	$("#popupmenu ul:visible").hide();

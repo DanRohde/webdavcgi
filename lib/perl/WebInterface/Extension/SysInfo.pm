@@ -29,7 +29,7 @@ use English qw( -no_match_vars ) ;
 
 
 use DefaultConfig qw{ $TITLEPREFIX };
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
@@ -128,7 +128,7 @@ sub render_sys_info {
 
     $i .= $cgi->end_html();
 
-    return print_header_and_content( '200 OK', 'text/html', $i );
+    return print_compressed_header_and_content( '200 OK', 'text/html', $i );
 }
 
 1;

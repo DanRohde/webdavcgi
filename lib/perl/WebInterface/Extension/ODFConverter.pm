@@ -35,7 +35,7 @@ use File::Temp qw( tempdir );
 use CGI::Carp;
 
 use DefaultConfig qw( $PATH_TRANSLATED $REMOTE_USER );
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 use FileUtils qw( rcopy );
 
 sub init {
@@ -185,7 +185,7 @@ sub _convert_file {
     }
     unlink $tmpdir;
     require JSON;
-    print_header_and_content( '200 OK', 'application/json',
+    print_compressed_header_and_content( '200 OK', 'application/json',
         JSON->new()->encode( \%jsondata ) );
     return 1;
 }

@@ -33,7 +33,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use DefaultConfig qw( $PATH_TRANSLATED %EXTENSION_CONFIG );
-use HTTPHelper qw( print_file_header print_header_and_content );
+use HTTPHelper qw( print_file_header print_header_and_content print_compressed_header_and_content);
 use FileUtils qw( get_error_document is_hidden );
 
 sub init {
@@ -103,7 +103,7 @@ sub handle_hook_gethandler {
         my $file = $PATH_TRANSLATED . $fn;
         if ( $self->{backend}->exists($file) && !is_hidden($file) ) {
             if ( !$self->{backend}->isReadable($file) ) {
-                print_header_and_content(
+                print_compressed_header_and_content(
                     get_error_document(
                         '403 Forbidden',
                         'text/plain',
@@ -127,7 +127,7 @@ sub handle_hook_gethandler {
             }
         }
         else {
-            print_header_and_content(
+            print_compressed_header_and_content(
                 get_error_document(
                     '404 Not Found',
                     'text/plain', '404 - FILE NOT FOUND'

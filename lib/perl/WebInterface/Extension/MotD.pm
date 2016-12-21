@@ -46,7 +46,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension );
 
 use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI $LANG );
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 use JSON;
 
@@ -96,7 +96,7 @@ sub handle_hook_gethandler {
             title      => $self->config('motdtitle', $self->tl('motd.title', 'Message Of The Day [MOTD]')),
             session    => $self->{session},
         };
-        print_header_and_content( '200 OK', 'application/json', $self->{json}->encode($json) );
+        print_compressed_header_and_content( '200 OK', 'application/json', $self->{json}->encode($json) );
         return 1;
     }
     return 0;

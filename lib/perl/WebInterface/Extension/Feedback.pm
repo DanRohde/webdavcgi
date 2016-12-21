@@ -39,7 +39,7 @@ use base qw( WebInterface::Extension );
 
 use DefaultConfig
     qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $REQUEST_URI $HTTP_HOST);
-use HTTPHelper qw( print_header_and_content );
+use HTTPHelper qw( print_compressed_header_and_content );
 
 use vars qw( $ACTION );
 
@@ -237,7 +237,7 @@ sub handle_hook_posthandler {
                 $self->config('contact');
         }
         require JSON;
-        print_header_and_content( '200 OK', 'application/json',
+        print_compressed_header_and_content( '200 OK', 'application/json',
             JSON->new()->encode( \%resp ) );
         return 1;
     }
@@ -248,7 +248,7 @@ sub handle_hook_gethandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {
-        print_header_and_content(
+        print_compressed_header_and_content(
             '200 OK',
             'text/html',
             $self->render_template(
