@@ -77,19 +77,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .highlighter.font.label, .highlighter.font-size.label, 
 .highlighter.font-family.label, .highlighter.font-style.label,
-.highlighter.text-transform.label, .highlighter.font .action.mark,
+.highlighter.font .action.mark,
 .highlighter.font .action.removemarks .label {
 	background-image: url(font.png);
 	background-position: 2px center;
 }
 .highlighter.font.label:hover, .highlighter.font-size.label:hover, 
 .highlighter.font-family.label:hover, .highlighter.font-style.label:hover,
-.highlighter.text-transform.label:hover, .highlighter.font .action.mark:hover,
+.highlighter.font .action.mark:hover,
 .highlighter.font .action.removemarks .label:hover {
 	background-image: url(font-hover.png);
 }
 .highlighter.text.label, .highlighter.text-decoration.label,
 .highlighter.text-decoration-color.label, .highlighter.text-decoration-style.label,
+.highlighter.text-shadow.label, .highlighter.text-transform.label,
 .highlighter.text .action.mark,
 .highlighter.text .action.removemarks .label {
 	background-image: url(text.png);
@@ -97,6 +98,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .highlighter.text.label:hover, .highlighter.text-decoration.label:hover,
 .highlighter.text-decoration-color.label:hover, .highlighter.text-decoration-style.label:hover,
+.highlighter.text-shadow.label:hover, .highlighter.text-transform.label:hover,
 .highlighter.text .action.mark:hover,
 .highlighter.text .action.removemarks .label:hover {
 	background-image: url(text-hover.png);

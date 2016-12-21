@@ -69,7 +69,7 @@ sub init {
         'attributes',
         {
             'background-color' => {
-                values => '#F07E50,#ADFF2F,#ADD8E6,#FFFF00,#EE82EE',
+                values => '#F07E50/#ADFF2F/#ADD8E6/#FFFF00/#EE82EE',
                 style  => 'background-color',
                 labelcss =>
                     'font-size: 8px; height: 12px; line-height: 10px;',
@@ -78,7 +78,7 @@ sub init {
                 classes     => 'sep',
             },
             'color' => {
-                values => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
+                values => '#FF0000/#00FF00/#0000FF/#FFA500/#A020E0',
                 style  => 'color',
                 labelcss =>
                     'color: white; font-weight: bold; font-size: 8px; line-height: 10px;',
@@ -89,7 +89,7 @@ sub init {
             'border' => {
                 subpopupmenu => {
                     'border-color' => {
-                        values => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
+                        values => '#FF0000/#00FF00/#0000FF/#FFA500/#A020E0',
                         style  => 'border-color',
                         labelstyle => 'background-color',
                         labelcss =>
@@ -98,7 +98,7 @@ sub init {
                         order       => 1,
                     },
                     'border-width' => {
-                        values => 'thin,medium,thick',
+                        values => 'thin/medium/thick',
                         style  => 'border-width',
                         labelcss =>
                             'border-style: solid; border-color: black;',
@@ -106,7 +106,7 @@ sub init {
                     },
                     'border-style' => {
                         values =>
-                            'dotted,dashed,solid,double,groove,ridge,inset,outset',
+                            'dotted/dashed/solid/double/groove/ridge/inset/outset',
                         style    => 'border-style',
                         labelcss => 'border-color: gray; border-width: 3px;',
                         order    => 3,
@@ -118,12 +118,12 @@ sub init {
                 subpopupmenu => {
                     'font-size' => {
                         values =>
-                            'xx-large,x-large,larger,large,medium,small,smaller,x-small,xx-small',
+                            'xx-large/x-large/larger/large/medium/small/smaller/x-small/xx-small',
                         style => 'font-size',
                         order => 1,
                     },
                     'font-style' => {
-                        values => 'lighter,bold,bolder,italic,oblique',
+                        values => 'lighter/bold/bolder/italic/oblique',
                         styles => {
                             italic   => 'font-style',
                             oblique  => 'font-style',
@@ -133,31 +133,36 @@ sub init {
                     },
                     'font-family' => {
                         values =>
-                            'serif,sans-serif,cursive,fantasy,monospace',
+                            'serif/sans-serif/cursive/fantasy/monospace',
                         style => 'font-family',
                         order => 2,
-                    },
-                    'text-transform' => {
-                        values => 'lowercase,uppercase,capitalize,small-caps',
-                        styles => {
-                            _default     => 'text-transform',
-                            'small-caps' => 'font-variant'
-                        },
-                        order => 6,
                     },
                 },
                 order => 10,
             },
             'text' => {
                 subpopupmenu => {
+                    'text-transform' => {
+                        values => 'lowercase/uppercase/capitalize/small-caps',
+                        styles => {
+                            _default     => 'text-transform',
+                            'small-caps' => 'font-variant'
+                        },
+                        order  => 1,
+                    },
+                    'text-shadow' => {
+                        values => '1px 1px 1px #888/2px 2px 16px #ffd700/2px -2px 16px rgba(0,0,0,0.7)/-1px -1px 1px #000,1px 1px 1px #fff/-1px -1px 1px #fff,1px 1px 1px #000',
+                        style  => 'text-shadow',
+                        order  => 2,
+                    },
                     'text-decoration' => {
                         values =>
-                            'underline,overline,line-through,underline overline,overline underline line-through,underline line-through,overline line-through',
+                            'underline/overline/line-through/underline overline/overline underline line-through/underline line-through/overline line-through',
                         style => 'text-decoration',
                         order => 3,
                     },
                     'text-decoration-color' => {
-                        values => '#FF0000,#00FF00,#0000FF,#FFA500,#A020E0',
+                        values => '#FF0000/#00FF00/#0000FF/#FFA500/#A020E0',
                         style  => 'text-decoration-color',
                         labelstyle => 'background-color',
                         labelcss =>
@@ -166,7 +171,7 @@ sub init {
                         order       => 4,
                     },
                     'text-decoration-style' => {
-                        values   => 'solid,double,dotted,dashed,wavy',
+                        values   => 'solid/double/dotted/dashed/wavy',
                         style    => 'text-decoration-style',
                         labelcss => 'text-decoration-line: underline;',
                         order    => 5,
@@ -320,13 +325,13 @@ sub _create_subpopup {
                         // "highlighter.$attrname." . $self->_quote($_),
                     $_
                 ),
-                title => $self->tl(
+                title => $self->_get_style($attribute,$_).q{: }.$self->tl(
                     "highlighter.$attrname.title." . $self->_quote($_), $_
                 ),
                 type    => 'li',
                 classes => $attrname,
             }
-        } split( /,/xms, $attribute->{values} );
+        } split( /\//xms, $attribute->{values} );
         if ( $attribute->{colorpicker} ) {
             push @subpopup,
                 {
