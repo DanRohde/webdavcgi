@@ -66,7 +66,7 @@ sub handle_hook_fileaction {
         accesskey => 'z',
         label     => 'zipdwnload',
         path      => $params->{path},
-        classes   => 'access-readable'
+        classes   => 'access-readable',
     };
 }
 
@@ -77,7 +77,8 @@ sub handle_hook_filelistaction {
         label      => 'zipdwnload',
         title      => 'zipdwnload',
         path       => ${$params}{path},
-        classes    => 'sel-multi hideit uibutton'
+        classes    => 'sel-multi hideit uibutton',
+        akavailable => 'z',
     };
 
 }
@@ -94,7 +95,8 @@ sub handle_hook_fileactionpopup {
                 title   => 'zipup',
                 path    => ${$params}{path},
                 type    => 'li',
-                classes => 'access-writeable sep'
+                classes => 'access-writeable sep',
+                akavailable => 'w',
             },
             {
                 action  => 'zipdwnload',
@@ -102,7 +104,8 @@ sub handle_hook_fileactionpopup {
                 title   => 'zipdwnloadtext',
                 path    => ${$params}{path},
                 type    => 'li',
-                classes => 'action'
+                classes => 'action',
+                akavailable => 'z',
             },
             {
                 action  => 'zipcompress',
@@ -110,7 +113,7 @@ sub handle_hook_fileactionpopup {
                 title   => 'zip.compress.title',
                 path    => ${$params}{path},
                 type    => 'li',
-                classes => 'access-writeable'
+                classes => 'access-writeable',
             },
             {
                 action  => 'zipuncompress',
@@ -118,7 +121,7 @@ sub handle_hook_fileactionpopup {
                 title   => 'zip.uncompress.title',
                 path    => ${$params}{path},
                 type    => 'li',
-                classes => 'access-writeable'
+                classes => 'access-writeable',
             }
         ]
     };
@@ -132,7 +135,8 @@ sub handle_hook_fileactionpopupnew {
         title   => 'zipup',
         path    => ${$params}{path},
         type    => 'li',
-        classes => 'access-writeable sep'
+        classes => 'access-writeable sep',
+        akavailable => 'w',
     };
 }
 
@@ -144,7 +148,7 @@ sub handle_hook_new {
         title     => 'zipup',
         path      => ${$params}{path},
         classes   => 'access-writeable sep',
-        accesskey => 'w'
+        accesskey => 'w',
     };
 }
 

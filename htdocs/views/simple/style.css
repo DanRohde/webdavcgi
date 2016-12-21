@@ -73,7 +73,7 @@ a {
 	color: #666666;
 	display: block;
 	font-size: 15px;
-	padding: 6px 6px 6px 25px;
+	padding: 6px 1.6em 6px 25px;
 	text-decoration: none;
 	text-shadow: 0 1px 0 #f8f8f8;
 	min-height: 1.2em;
@@ -270,13 +270,13 @@ table,th,td {
 	float: right;
 }
 
-#fileactions.hidelabels .label  {
+#fileactions.hidelabels .label, #fileactions.hidelabels .accesskey  {
 	display: none;
 }
 
 #fileactions .action {
 	min-width: 22px;
-	padding: 6px 6px 6px 22px;
+	padding: 6px 1.6em 6px 22px;
 	border: 1px solid transparent;
 	margin: 0;
 	background-position-x: 2px;
@@ -312,6 +312,9 @@ table,th,td {
 #fileactions .label  {
 	font-size: 15px !important;
 	color: black !important;
+	font-style: normal;
+	font-family: sans-serif;
+	text-transform: none;
 }
 .fileactions-dropdown:focus, .fileactions-dropdown:hover {
 	background-image: url(images/sprite-hover.png);
@@ -1385,7 +1388,7 @@ img {
 .toolbar ul li {
 	background-color: white;
 	margin: 0;
-	padding: 6px 6px 6px 22px;
+	padding: 6px 1.6em 6px 22px;
 	min-width: 150px;
 	min-height: 1.2em;
 	height: auto;
@@ -1467,6 +1470,20 @@ img {
 .action.quicknav-el.quicknav-el-home:hover, .action.quicknav-el.quicknav-el-home:focus {
 	background-image: url(images/sprite-hover.png), url(images/sprite-hover.png);
 }
+
+.accesskey {
+	display: inline-block;
+	position: absolute;
+	right: 4px;
+	margin: -1em 0 0 0;
+	padding: 0;
+	border: 0;
+	color: #666;
+	width: 1em;
+	height: 1em;
+	font-family: monospace;
+}
+
 /* Popup menues */
 #popupmenu {
 	display: none;
@@ -1535,7 +1552,7 @@ ul.subpopupmenu li {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	margin: 0;
-	padding: 6px 6px 6px 22px;
+	padding: 6px 1.6em 6px 22px;
 	border: 1px solid white;
 	font-size: 15px;
 	line-height: 1;

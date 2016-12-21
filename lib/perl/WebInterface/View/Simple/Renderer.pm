@@ -184,7 +184,10 @@ sub render_extension_element {
                 \%params,
                 $self->{cgi}->div(
                     { -class => 'label' }, $self->tl( ${$a}{label} )
-                )
+                ) . ( $a->{attr}{accesskey} || $a->{accesskey} || $a->{akavailable} 
+                            ? $self->{cgi}->div({-class=>'accesskey'}, $a->{attr}{accesskey} // $a->{accesskey} // $a->{akavailable}) 
+                            : q{}
+                    )
             );
         }
         else {

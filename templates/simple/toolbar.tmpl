@@ -9,23 +9,23 @@
 <!--ENDIF-->
 <li class="uibutton action new" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">
 	&nbsp;
-	<ul>
-		<li class="action create-folder access-writeable" accesskey="r">$tl(createfolderbutton)</li>
-		<li class="action create-file access-writeable" accesskey="e">$tl(createnewfilebutton)</li>
+	<ul class="absolute">
+		<li class="action create-folder access-writeable" accesskey="r" aria-label="$tl(createfolderbutton)"><div class="label">$tl(createfolderbutton)</div><div class="accesskey">r</div></li>
+		<li class="action create-file access-writeable" accesskey="e" aria-label="$tl(createnewfilebutton)"><div class="label">$tl(createnewfilebutton)</div><div class="accesskey">e</div></li>
 		<!--IF($config(ALLOW_SYMLINK))-->
-		<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)" accesskey="h">$tl(createsymlinkbutton)</li>
+		<li class="action create-symlink sel-one access-writeable" title="$tl(createsymlinkdescr)" accesskey="h"><div class="label">$tl(createsymlinkbutton)</div><div class="accesskey">h</div></li>
 		<!--ENDIF-->
 		<!--IF($config(ALLOW_POST_UPLOADS))-->
-		<li class="sep action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)">$tl(upload)</li>
+		<li class="sep action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u"><div class="label">$tl(upload)</div><div class="accesskey">u</div></li>
 		<!--IF#2($config(ALLOW_FOLDERUPLOAD))-->
-		<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+		<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)" accesskey="y"><div class="label">$tl(uploaddir)</div><div class="accesskey">y</div></li>
 		<!--ENDIF#2-->
 		<!--ENDIF-->
 		$extension(new)
 	</ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-<li class="action upload access-writeable uibutton toolbar-icononly" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)" accesskey="u"></li>
+<li class="action upload access-writeable uibutton toolbar-icononly" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"></li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_CLIPBOARD))-->			
 <li class="action paste hideit uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>

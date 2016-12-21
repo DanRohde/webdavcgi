@@ -65,22 +65,22 @@ sub init {
 sub handle_hook_fileaction {
     my ( $self, $config, $params ) = @_;
     return {
-        action  => 'dwnload',
-        label   => 'dwnload',
-        path    => $params->{path},
-        classes => 'access-readable is-file ' . $self->{add_classes}
+        action    => 'dwnload',
+        label     => 'dwnload',
+        path      => $params->{path},
+        classes   => 'access-readable is-file ' . $self->{add_classes},
+        accesskey => 's',
     };
 }
 
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
-        accesskey => 's',
-        action    => 'dwnload',
-        label     => 'dwnload',
-        path      => $params->{path},
-        type      => 'li',
-        classes   => $self->{add_classes}
+        action  => 'dwnload',
+        label   => 'dwnload',
+        path    => $params->{path},
+        type    => 'li',
+        classes => $self->{add_classes}
     };
 }
 

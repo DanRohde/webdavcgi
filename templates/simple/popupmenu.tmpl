@@ -2,22 +2,22 @@
 <li class="subpopupmenu new" title="$tl(new)">
 	<div class="label new">$tl(new)</div>
 	<ul>
-		<li class="action create-folder access-writeable" title="$tl(createfolderbutton)">$tl(createfolderbutton)</li>
-		<li class="action create-file access-writeable" title="$tl(createnewfilebutton)">$tl(createnewfilebutton)</li>
+		<li class="action create-folder access-writeable" title="$tl(createfolderbutton)"><div class="label">$tl(createfolderbutton)</div><div class="accesskey">r</div></li>
+		<li class="action create-file access-writeable" title="$tl(createnewfilebutton)"><div class="label">$tl(createnewfilebutton)</div><div class="accesskey">e</div></li>
 		<!--IF($config(ALLOW_SYMLINK))-->
-		<li class="action create-symlink sel-noneorone access-writeable" title="$tl(createsymlinkdescr)">$tl(createsymlinkbutton)</li>
+		<li class="action create-symlink sel-noneorone access-writeable" title="$tl(createsymlinkdescr)"><div class="label">$tl(createsymlinkbutton)</div><div class="accesskey">h</div></li>
 		<!--ENDIF--> 
 		<!--IF($config(ALLOW_POST_UPLOADS))-->
-		<li class="action upload access-writeable sep" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
+		<li class="action upload access-writeable sep" title="$tl(upload) (&le; $maxuploadsizehr)"><div class="label">$tl(fileuploadbutton)</div><div class="accesskey">u</div></li>
 		<!--IF#2($config(ALLOW_FOLDERUPLOAD))-->
-		<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)">$tl(uploaddir)</li>
+		<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)"><div class="label">$tl(uploaddir)</div><div class="accesskey">y</div></li>
 		<!--ENDIF#2-->
 		<!--ENDIF-->
 		$extension(fileactionpopupnew)
 </ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-	<li class="action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)">$tl(fileuploadbutton)</li>
+	<li class="action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)"><div class="label">$tl(fileuploadbutton)</div><div class="accesskey">u</div></li>
 <!--ENDIF-->
 <li class="action copy access-readable hideit sep" title="$tl(copytooltip)">$tl(copy)</li>
 <li class="action cut access-writeable hideit" title="$tl(cuttooltip)">$tl(cut)</li>

@@ -60,10 +60,11 @@ sub init {
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
-        action => $ACTION,
-        label  => $ACTION,
-        path   => ${$params}{path},
-        type   => 'li'
+        action    => $ACTION,
+        label     => $ACTION,
+        path      => ${$params}{path},
+        type      => 'li',
+        accesskey => 'f',
     };
 }
 
@@ -81,7 +82,6 @@ sub handle_hook_body {
     my ($self) = @_;
     return $self->{cgi}->div(
         {   class      => 'feedback-button action feedback',
-            accesskey  => 'f',
             title      => $self->tl('feedback'),
             aria_label => $self->tl('feedback'),
             tabindex   => 0
