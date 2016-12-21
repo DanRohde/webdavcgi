@@ -193,7 +193,9 @@ function initKeyboardSupport() {
 		$("#fileList tr[tabindex='1']").focus();
 	});
 	$("#accesskeydetailseventcatcher").on("focus", renderAccessKeyDetails);
-	$("#gotofilelisteventcatcher").on("focus", function() { $("#fileList tr:focusable:first").focus() });
+	$("#gotofilelisteventcatcher").on("focus", function() { $("#fileList tr:focusable:first").focus(); });
+	$("#gotoappsmenueventcatcher").on("focus", function() { $("#apps :focusable:first").focus(); });
+	$("#gototoolbareventcatcher").on("focus", function() { $(".toolbar :focusable:first").focus(); });
 }
 function initTableConfigDialog() {
 	$("#flt").on("fileListChanged", function() {
@@ -2011,7 +2013,7 @@ function renderAccessKeyDetails() {
 		var qv = $(v);
 		var ak = qv.attr("accesskey");
 		if (!dup[ak]) {
-			text += "<li>"+ak+": "+( qv.attr("aria-label") || qv.attr("title") || qv.attr("data-tooltip") || qv.html() )+"</li>";
+			text += '<li tabindex="0" role="definition">'+ak+": "+( qv.attr("aria-label") || qv.attr("title") || qv.attr("data-tooltip") || qv.html() )+"</li>";
 			dup[ak]=true;
 		} else {
 			console.log("found accesskey "+ak+" more than on time");
@@ -2019,8 +2021,9 @@ function renderAccessKeyDetails() {
 	});
 	$('<div id="accesskeydetails" tabindex="-1"/>')
 		.html('<ul class="accesskeydetails">'+text+"</ul>")
-		.dialog({title: $(this).attr("title"), width: "auto", height: "auto",
-				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}]}).focus();
+		.dialog({title: $(this).attr("title"), width: "auto", height: "auto", dialogClass : "accesskeydialog",
+				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}],
+				open: function() { $("#accesskeydetails li:focusable:first").focus(); } });
 }
 function hidePopupMenu() {
 	$("#popupmenu ul:visible").hide();

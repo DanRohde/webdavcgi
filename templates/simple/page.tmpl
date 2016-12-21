@@ -22,11 +22,11 @@ $INCLUDE(htmlhead)</head>
 <div id="filler"></div>
 <div id="main">
 	<div class="langswitch collapse-head-collapsible">$config(LANGSWITCH)</div> 
-	<div id="top" class="collapse-head-collapsible">
+	<div id="top" class="collapse-head-collapsible" role="banner">
 		$INCLUDE(header)
 		$config(HEADER)
 	</div>
-	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible">
+	<div id="nav" class="collapse-head-listener collapse-sidebar-collapsible" role="navigation">
 		$INCLUDE(navigation)
 	</div>
 	<div id="content" class="collapse-head-listener collapse-sidebar-listener">
@@ -35,7 +35,7 @@ $INCLUDE(htmlhead)</head>
 		</div>
 		<div id="notification"></div>
 		<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
-		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri"></div>
+		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri" role="main"></div>
 		$INCLUDE(statusbar)
 		$config(FOOTER)
 	</div>
@@ -97,6 +97,8 @@ $INCLUDE(htmlhead)</head>
 <div class="collapsible bottom action collapse-sidebar" title="$tl(togglesidebar)" tabindex="0"></div>
 <div accesskey="0" id="accesskeydetailseventcatcher" title="$tl(accesskeydetails)" tabindex="-1"></div>
 <div accesskey="l" id="gotofilelisteventcatcher" title="$tl(gotofilelist)" tabindex="-1"></div>
+<div accesskey="g" id="gotoappsmenueventcatcher" title="$tl(gotoappsmenu)" tabindex="-1"></div>
+<div accesskey="t" id="gototoolbareventcatcher"  title="$tl(gototoolbar)" tabindex="-1"></div> 
 $extension(body)
 </body>
 </html>

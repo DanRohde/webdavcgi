@@ -762,6 +762,10 @@ td.center {
 	background: url(images/sprite.png) no-repeat 0 -21px;
 	padding-left: 20px;
 }
+.accesskeydialog.ui-dialog .ui-dialog-title {
+	background: url(images/sprite.png) no-repeat 0 -1780px;
+	padding-left: 20px;
+}
 .viewfilterinfo {
 	background-color: yellow;
 	font-size: 0.8em;
