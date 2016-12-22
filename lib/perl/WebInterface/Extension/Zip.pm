@@ -94,6 +94,14 @@ sub handle_hook_filelistaction {
                 type    => 'li',
                 classes => 'access-writeable',
             },
+            {
+                action  => 'zipuncompress',
+                label   => 'zip.uncompress',
+                title   => 'zip.uncompress.title',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'access-writeable',
+            },
         ],
     };
 }
