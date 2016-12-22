@@ -470,19 +470,16 @@ function initUIEffects() {
 	$(".accordion").accordion({ collapsible: true, active: false });
 	
 	$("#flt").on("fileListChanged", function() {
-		$(".dropdown-hover").off("mouseenter focus keyup").hover(
-			function() {
-				$(".dropdown-menu",$(this)).show();
-			},
-			function() {
-				$(".dropdown-menu",$(this)).hide();
-			}
-		).on("focus", function() { $(".dropdown-menu",$(this)).show(); } )
-		.on("keyup", function(e) { if (e.keyCode==13 || e.keyCode == 32) $(".dropdown-menu" , $(this)).hide(); } );
+		$(".dropdown-hover")
+			.off(".dropdown-hover")
+			.on("mouseenter.dropdown-hover", function() { $(".dropdown-menu",$(this)).show(); })
+			.on("mouseleave.dropdown-hover", function() { $(".dropdown-menu",$(this)).hide(); })
+			.on("focus.dropdown-hover", function() { $(".dropdown-menu",$(this)).show(); } )
+			.on("keyup.dropdown-hover", function(e) { if (e.keyCode==13 || e.keyCode == 32) $(".dropdown-menu" , $(this)).hide(); } );
 		$(".dropdown-click")
-			.off("click keyup")
-			.on("click", function(e) { preventDefault(e); $(".dropdown-menu",$(this)).toggle(); })
-			.on("keyup", keyboardEventHelper);
+			.off(".dropdown-click")
+			.on("click.dropdown-click dblclick.dropdown-click", function(e) { preventDefault(e); $(".dropdown-menu",$(this)).toggle(); })
+			.on("keyup.dropdown-click", keyboardEventHelper);
 	});
 }
 function initWindowResize() {
@@ -1813,6 +1810,7 @@ function handleInplaceInput(target, defval) {
 				$("#flt").disableSelection();
 				self.html(self.data('orig-html')).focus();
 				self.trigger('canceled');
+				self.data("input-canceled",true);
 			}
 		}).focusout(function(event) {
 			self.data('is-active',false);
@@ -1826,58 +1824,124 @@ function handleInplaceInput(target, defval) {
 	return target;
 }
 function keyboardEventHelper(event) {
+	if (event.target != this) return;
 	var self = $(this);
-	if (event.keyCode == 32 || event.keyCode == 13) {
+	var d;
+	switch (event.keyCode) {
+	case 32: // space
+	case 13: // return/enter
 		preventDefault(event);
 		self.trigger("click", { origEvent : event });
-	} else if (event.keyCode == 27) {
-		self.parents(".dropdown-menu:visible").hide();
-		if (self.hasClass(".dropdown-menu")) self.hide();
-		self.parents("ul.subpopupmenu:visible").hide();
-		if (self.is("ul.subpopupmenu")) self.hide();
+		break;
+	case 27: // escape
+		if (self.data("input-canceled")) { // hack for inplace inputs in popups, ...
+			self.data("input-canceled", false);
+			return;
+		}
+		self.closest(".dropdown-menu").hide();
+		self.closest("ul.popup:visible").hide();
+		$("ul.popup:visible", self).hide();
+		self.closest(":focusable").focus();
+		break;
+	case 34: // page down
+	case 35: // end
+		self.nextAll(":not([tabindex=-1]):focusable:last").focus(); // last sibling
+		break;
+	case 33: // page up
+	case 36: // home
+		self.prevAll(":not([tabindex=-1]):focusable:last").focus(); // top sibling
+		break;
+	case 37: // left
+		if ( (d = self.prevAll(":not([tabindex=-1]):focusable")).length >0 ) //  next sibling
+			d.first().focus();
+		else 
+			self.parents(":focusable").prevAll(":not([tabindex=-1]):focusable:first").focus(); // first parent sibling
+		break;
+	case 38: // up
+		if ( (d = self.prevAll(":not([tabindex=-1]):focusable")).length >0 ) // prev. sibling
+			d.first().focus();
+		else
+			self.parents(":not([tabindex=-1]):focusable").first().focus(); // parent
+		break;
+	case 39: // right
+		if ( (d=self.nextAll(":not([tabindex=-1]):focusable")).length>0) // next sibling 
+			d.first().focus();
+		else
+			self.parents(":focusable").nextAll(":not([tabindex=-1]):focusable:first").focus(); // prev. parent sibling
+	case 40: // down 
+		if ((d=$(":not([tabindex=-1]):focusable",self)).length > 0) // first child
+			d.first().focus();
+		 else 
+			self.nextAll(":not([tabindex=-1]):focusable:first").focus(); // next sibling
+		break;
 	}
 }
-function handlePopupNavigation(sel) {
-	$(sel).off(".popupnavigation").on("focus.popupnavigation mouseenter.popupnavigation", function() {
-		var self = $(this);
-		if (self.hasClass("disabled")) return;
+function handlePopupNavigation(selector) {
+	var sel = $(selector);
+	/* IDEA: don't close a popup if a popup was leaved or lost focus -> look at siblings */
+	function _hide_siblings(obj) {
+		$("ul.popup:visible", obj.siblings("li.popup")).hide();
+		return obj;
+	}
+	function _toggle_popup(obj, toggle) {
+		if (obj.hasClass("disabled")) return obj;
+		$("ul.popup:first", obj).toggle(toggle);
+		if (!$("ul.popup:first", obj).is(":visible")) {
+			$("ul.popup", obj).hide(); /* hide all sub popups */
+		}
+		return obj;
+	}
+	function _clear_timeout(obj) {
 		window.clearTimeout($("body").data("popupnavigationtimer"));
+		return obj;
+	}
+	sel.filter(":not(.popup-click)").off(".popupnavigation").on("mouseenter.popupnavigation", function() { /* show popup if mouse entered it and after a little timeout */
+		var self = $(this);
+		_clear_timeout(self);
 		$("body").data("popupnavigationtimer",
 				window.setTimeout(function() {
-					$("ul:visible", self.siblings("li")).hide();
-					$("ul", self).first().show();
+					_toggle_popup(_hide_siblings(self), true);
 				}, 350)
 		);
+	}).on("click.popupnavigation dblclick.popupnavigation", function(ev) {
+		preventDefault(ev);
+		var self = $(this);
+		_toggle_popup(_hide_siblings(_clear_timeout(self)));
+		$(":focusable:first",self).focus();
+	}).off("keyup").on("keyup", keyboardEventHelper);
+	
+	/* clean up all events for .popup-click popups and handle click separatly:*/
+	sel.filter(".popup-click").off(".popupnavigation").on("click.popupnavigation dblclick.popupnavigation", function(ev) {
+		preventDefault(ev);
+		_toggle_popup(_hide_siblings($(this)));
+	}).off("keyup").on("keyup", keyboardEventHelper);
+	
+	/* close siblings on focus change: */
+	sel.on("focus.popupnavigation", function() {
+		_hide_siblings($(this));
+	});
+	/* close popups if siblings in navigation are entered or clicked:*/
+	sel.siblings(":not(.popup)").off(".popupnavigation").on("focus.popupnavigation click.popupnavigation mouseenter.popupnavigation", function() {
+		_hide_siblings($(this));
+	});
+	/* don't close siblings on mouseenter if a popup menu is a .popup-click popup: */
+	sel.filter(".popup-click").siblings("li:not(.popup)").off("mouseenter.popupnavigation");
+	
+	$("#flt").on("fileListSelChanged beforeFileListChange", function() {
+		$("ul.popup:visible",sel).hide();
 	});
 }
 function initNavigationActions() {
 	$("#nav .action").click(handleFileListActionEvent).on("keyup", keyboardEventHelper);
-	$("#nav > ul > li.subpopupmenu").click(function(ev) {
-		var self = $(this);
-		if (self.hasClass("disabled")) return;
-		self.siblings("ul.subpopupmenu:visible").hide();
-		$("ul.subpopupmenu", self).first().toggle();
-	}).on("keyup", keyboardEventHelper);
-	handlePopupNavigation("#nav ul.subpopupmenu li");
-	$("#flt").on("fileListSelChanged", function() {
-		$("#nav li.disabled ul.subpopupmenu:visible").hide();
-	});
+	$("#nav > ul > li.popup").addClass("popup-click");
+	handlePopupNavigation("#nav li.popup");
 }
 function initToolbarActions() {
-	$(".toolbar .action").click(handleFileListActionEvent);
 	$(".toolbar li.uibutton").button();
-	$(".toolbar li").off("click.toolbar").on("click.toolbar", function() {
-		var self = $(this);
-		if (self.hasClass("disabled")) return;
-		$("ul:visible",self.siblings()).hide();
-		$("ul", self).first().toggle();
-		//$("ul li:visible",this).first().focus();
-	}).on("keyup.toolbar", keyboardEventHelper);
-	handlePopupNavigation(".toolbar ul li");
-	$(".toolbar li.action").off("keyup.toolbar").on("keyup.toolbar", keyboardEventHelper);
-	$(".toolbar ul").off("keydown.toolbar").on("keydown.toolbar", function(event) {
-		if (event.keyCode == 27) $(this).hide();
-	})
+	$(".toolbar .action").click(handleFileListActionEvent).on("keyup", keyboardEventHelper);
+	$(".toolbar > li.popup").addClass("popup-click");
+	handlePopupNavigation(".toolbar li.popup");
+	
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
 		var self = $(this);
 		self.closest("ul").hide();
@@ -2030,40 +2094,13 @@ function hidePopupMenu() {
 	$("#popupmenu:visible").hide().appendTo("body");
 }
 function initPopupMenu() {
-	$("#popupmenu .action").off("click.popup").on("click.popup", function(event) {
-		handleFileListActionEvent.call(this,event);
-	});
-	// CSS replacement for a delayed
-	$("#popupmenu li ul").hoverIntent(function() { $(this).show(); });
-	$("#popupmenu li").hoverIntent(function(){
-		var self = $(this);
-		self.siblings().find("ul:visible").hide();
-		$("ul",self).first().show();
-		window.clearTimeout(self.data("leavetimer"));
-	}, function() {
-		var self = $(this);
-		window.clearTimeout(self.data("leavetimer"));
-		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
-	});
-	/*
-	$("#popupmenu li ul").on("mouseenter", function() {
-		$(this).show();
-	});
+	$("#popupmenu .action")
+		.off(".popupmenu")
+		.on("click.popupmenu", function(event) { handleFileListActionEvent.call(this,event); })
+		.on("dblclick.popupmenu", function(event) { preventDefault(event);});
 	
+	handlePopupNavigation("#popupmenu li.popup");
 	
-	$("#popupmenu li").on("mouseenter", function() {
-		var self = $(this);
-		self.siblings().find("ul:visible").hide();
-		$("ul",self).first().show();
-		window.clearTimeout(self.data("leavetimer"));
-	}).on("mouseleave", function(){
-		var self = $(this);
-		window.clearTimeout(self.data("leavetimer"));
-		self.data("leavetimer", window.setTimeout( function() { $("ul:visible", self).hide(); }, 2500));
-	});
-	*/
-	$("#popupmenu .action").off("dblclick.popup").on("dblclick.popup", function(event) { preventDefault(event);});
-	$("#popupmenu .subpopupmenu").off("click.popup dblclick.popup").on("click.popup dblclick.popup", function(event) { preventDefault(event); });
 	function adjustPopupPosition(pageX,pageY) {
 		var popup = $("#popupmenu");
 		var offset = $("#content").position();
@@ -2077,12 +2114,11 @@ function initPopupMenu() {
 		popup.css({"top":top+"px","left":left+"px"});
 	}
 	$("#flt")
-		.off("beforeFileListChange.popup")
-		.on("beforeFileListChange.popup", function() {
+		.off(".popupmenu")
+		.on("beforeFileListChange.popupmenu", function() {
 			$("#popupmenu").appendTo("body").hide();
 		})
-		.off("fileListChanged.popup")
-		.on("fileListChanged.popup", function(){
+		.on("fileListChanged.popupmenu", function(){
 			$("#fileList tr").off("contextmenu").on("contextmenu", function(event) {
 				if (event.which==3) {
 					preventDefault(event);
@@ -2096,8 +2132,9 @@ function initPopupMenu() {
 				}
 			});
 		});
-	$("body").off("click.popup").on("click.popup",function() { hidePopupMenu(); })
-			 .off("keydown.popup").on("keydown.popup", function(e) { if (e.which == 27) hidePopupMenu(); });
+	$("body").off(".popupmenu")
+			 .on("click.popupmenu",function() { hidePopupMenu(); })
+			 .on("keydown.popupmenu", function(e) { if (e.which == 27) hidePopupMenu(); });
 	$("#filler").on("contextmenu", function() { hidePopupMenu() });
 }
 function refreshFileListEntry(filename) {
@@ -2337,6 +2374,7 @@ function initToolBox() {
 			initTabs : initTabs,
 			initUpload : initUpload,
 			isFullscreen : isFullscreen,
+			keyboardEventHelper : keyboardEventHelper,
 			notify : notify,
 			notifyError : notifyError,
 			notifyInfo : notifyInfo,

@@ -7,9 +7,9 @@
 <!--IF($config(ALLOW_PATHINPUT))-->
 <li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
 <!--ENDIF-->
-<li class="uibutton action new" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">
+<li class="uibutton action new popup toolbar-button" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">
 	&nbsp;
-	<ul class="absolute">
+	<ul class="popup">
 		<li class="action create-folder access-writeable" accesskey="r" aria-label="$tl(createfolderbutton)"><div class="label">$tl(createfolderbutton)</div><div class="accesskey">r</div></li>
 		<li class="action create-file access-writeable" accesskey="e" aria-label="$tl(createnewfilebutton)"><div class="label">$tl(createnewfilebutton)</div><div class="accesskey">e</div></li>
 		<!--IF($config(ALLOW_SYMLINK))-->
@@ -25,16 +25,16 @@
 	</ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-<li class="action upload access-writeable uibutton toolbar-icononly" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"></li>
+<li class="action upload access-writeable uibutton toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"></li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_CLIPBOARD))-->			
 <li class="action paste hideit uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_BOOKMARKS))-->
 <li class="toolbar-spacer action addbookmark sel-none hideit uibutton" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)"></li>
-<li class="action bookmarkmenu sel-none hideit uibutton" id="bookmarks" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
+<li class="action bookmarkmenu sel-none hideit uibutton popup toolbar-button" id="bookmarks" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
 	&nbsp;
-	<ul id="bookmarksmenulist">
+	<ul id="bookmarksmenulist" class="popup">
 		<li id="bookmarktemplate" class="hidden">
 			<div class="bookmarklabel">$bookmarktext</div>
 			<div tabindex="0" class="action rmsinglebookmark" title="$tl(rmbookmark)" aria-label="$tl(rmbookmark)" data-bookmark="$bookmarkpath"></div>
@@ -46,9 +46,9 @@
 </li>
 <!--ENDIF-->
 <!--IF(%AUTOREFRESH)-->
-<li id="autorefresh" title="$tl(autorefresh.select.title)" class="toolbar-spacer action autorefreshmenu sel-none hideit uibutton" aria-label="$tl(autorefresh.select.title)" accesskey="a">
+<li id="autorefresh" title="$tl(autorefresh.select.title)" class="toolbar-spacer action autorefreshmenu sel-none hideit uibutton popup toolbar-button" aria-label="$tl(autorefresh.select.title)" accesskey="a">
 	&nbsp;
-	<ul id="autorefreshmenulist">
+	<ul id="autorefreshmenulist" class="popup">
 		<li class="action setautorefresh" tabindex="0" data-value="now" aria-label="$tl(autorefresh.now)">$tl(autorefresh.now)</li>
 		$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k" aria-label="$tl(autorefresh.select.title) $v">$v</li>'@
 		<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0" aria-label="$tl(autorefresh.toggle)">$tl(autorefresh.toggle)</li>

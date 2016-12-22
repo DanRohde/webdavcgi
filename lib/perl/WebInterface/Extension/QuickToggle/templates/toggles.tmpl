@@ -1,9 +1,9 @@
-<div class="quicktoggles">
-<span class="quicktoggles-spacer" title="$tl(quicktoggles)">&nbsp;</span>
-<button title="$tl(quicktoggles.dot)" class="quicktoggle dot" aria-label="$tl(quicktoggles.dot)"></button>
-<!--IF($ENABLE_THUMBNAIL)--> 
-<button title="$tl(quicktoggles.thumbnails)" class="quicktoggle thumbnails" aria-label="$tl(quicktoggles.thumbnails)"></button>
-<!--ENDIF-->
-<button title="$tl(quicktoggles.bars)" class="quicktoggle bars" aria-label="$tl(quicktoggles.bars)"></button>
-<button title="$tl(quicktoggles.fullscreen)" class="quicktoggle fullscreen" aria-label="$tl(quicktoggles.fullscreen)"></button>
-</div>
+<ul class="quicktoggles popup">
+	<li class="quicktoggles-spacer" title="$tl(quicktoggles)"></li>
+	<li title="$tl(quicktoggles.dot)" class="action quicktoggle dot" aria-label="$tl(quicktoggles.dot)" tabindex="0"></li>
+	<!--IF($ENABLE_THUMBNAIL)--> 
+		<li title="$tl(quicktoggles.thumbnails)" class="action quicktoggle thumbnails" aria-label="$tl(quicktoggles.thumbnails)" tabindex="0"></li>
+	<!--ENDIF-->
+	<li title="$tl(quicktoggles.bars)" class="action quicktoggle bars" aria-label="$tl(quicktoggles.bars)" tabindex="0"></li>
+	<li title="$tl(quicktoggles.fullscreen)" class="action quicktoggle fullscreen" aria-label="$tl(quicktoggles.fullscreen)" tabindex="0"></li>
+</ul>

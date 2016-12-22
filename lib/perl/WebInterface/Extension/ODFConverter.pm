@@ -95,7 +95,7 @@ sub handle_hook_fileattr {
 
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
-    my @subpopup = map {
+    my @popup = map {
         {
             action  => 'odfconvert',
             label   => $_,
@@ -107,10 +107,10 @@ sub handle_hook_fileactionpopup {
         }
     } @{ $self->{types} };
     return {
-        title        => $self->tl('odfconverter'),
-        classes      => 'odfconverter',
-        type         => 'li',
-        subpopupmenu => \@subpopup
+        title   => $self->tl('odfconverter'),
+        classes => 'odfconverter',
+        type    => 'li',
+        popup   => \@popup
     };
 }
 

@@ -15,19 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-.quicktoggles {
-	display: inline;
-}
-.quicktoggle {
-	display: inline-block;
-	width: 21px;
-	height: 21px;
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-color: transparent;
-	outline: none;
-    padding: 1px;
-}
 .quicktoggle.fullscreen {
 	background-image: url(fullscreen-on.png);
 }
@@ -80,53 +67,88 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(bars-off-hover.png);
 }
 
-.action.quicktoggle-button {
-	background-image: url(quicktoggle.png);
-	background-position: 2px center;
-}
-.action.quicktoggle-button:hover, .action.quicktoggle-button:focus {
-	background-image: url(quicktoggle-hover.png);
-}
-.sidebar-iconsonly #nav .action.quicktoggle-button:hover .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:hover,
-.sidebar-iconsonly #nav .action.quicktoggle-button:focus .quicktoggles,.sidebar-iconsonly #nav .action.quicktoggle-button .quicktoggles:focus, 
-.sidebar-iconsonly .quicktoggles.show-toggles 
- {
-	position:fixed;
-	display: block;
-	background-color: #ddd;
-	box-shadow: 0 -3px 7px #000;
-    left: 24px;
-}
-.filterbox .quicktoggles {
-	width: 24px;
-	height: 18px;
-	top: 7px;
-	left: -30px;
-	position: absolute;
+.filterbox .quicktoggles.popup {
 	display: inline-block;
+	position: absolute;
+	left: -35px;
+	
+	width: 30px;
+	height: 30px;
+	
+	margin: 0;
+	border: 0;
+	padding: 0px;
+	
 	overflow: hidden;
+	box-shadow: none;
+	
+	background: none;
+}
+.filterbox .quicktoggles-spacer, .filterbox .action.quicktoggle {
+	display: inline-block;
+	width: 30px;
+	min-width: auto;
+	min-height: auto;
+	height: 30px;
+	margin: 0;
+	border: 0;
+	padding: 0;
+	background-position: center center !important;
+	background-repeat: no-repeat;
 }
 .quicktoggles-spacer {
-	display: none;
-}
-.filterbox .quicktoggles-spacer {
 	background-image: url(quicktoggle.png);
 	background-repeat: no-repeat;
-	background-position: left center;
-	display: inline-block;
-	width: 24px;
+	background-position: center center;
 }
-.filterbox .quicktoggles-spacer:hover, .filterbox .quicktoggles-spacer:focus, 
-.fliterbox .quicktoggles-spacer:active {
+.quicktoggles-spacer:hover, .quicktoggles-spacer:focus {
 	background-image: url(quicktoggle-hover.png);
 }
-.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus,
-.filterbox .quicktoggles:active {
+.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus {
 	height: auto;
 	background-color: inherit;
 	box-shadow: 3px  0 7px #ddd;
-	padding: 1px 1px 1px 4px;
-	left: -34px;
-	top: 6px;
 	white-space: normal;
+}
+
+#nav .quicktoggles.popup,
+#statusbar .quicktoggles.popup {
+	display: inline-block !important;
+	position: static !important;
+	background-color: inherit;
+	margin:0;
+	padding: 0;
+	border: 0;
+	box-shadow: none;
+}
+#nav .quicktoggles-button.popup {
+	height: 18px;
+	
+}
+#nav .action.quicktoggle, #nav .quicktoggles-spacer,
+#statusbar .action.quicktoggle, #statusbar .quicktoggles-spacer  {
+	display: inline-block !important;
+	position: static !important;
+	width: 18px; height: 18px;
+	min-width: 18px;
+	min-height: 18px;
+	padding: 2px 4px;
+	border: 0;
+	margin: 0;
+	background-position: center center !important;
+	float: left;
+	
+}
+#nav .quicktoggles-spacer {
+	background-position: 2px center;
+}
+.sidebar-iconsonly #nav .quicktoggles.popup:focus,
+.sidebar-iconsonly #nav .quicktoggles.popup:hover 
+ {
+	position:fixed !important;
+	display: block;
+	left: 0;
+	margin: 0;
+	background-color: #ddd;
+	box-shadow: 0 3px  7px #ddd;
 }

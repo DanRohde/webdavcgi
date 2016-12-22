@@ -34,10 +34,11 @@ sub init {
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
-        title        => $self->tl('history'),
-        subpopupmenu => [],
-        classes      => 'history-popup',
-        type         => 'li'
+        title      => $self->tl('history'),
+        popup      => [],
+        classes    => 'history-popup',
+        type       => 'li',
+        subclasses => 'history-popup-history',
     };
 }
 

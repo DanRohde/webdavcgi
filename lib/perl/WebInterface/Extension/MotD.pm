@@ -126,7 +126,7 @@ sub handle_hook_fileactionpopup {
     }
     return {
         label        => $self->tl('motd.motd'),
-        subpopupmenu => [
+        popup => [
             {
                 action => 'showmotd',
                 label  => $self->tl('motd.showmotd'),

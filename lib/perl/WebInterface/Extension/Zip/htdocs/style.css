@@ -20,12 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	visibility: hidden;
 }
 .action.zipup,
-.zip-popup.label {
+.zip-popup.label,
+.popup.zip-toolbar-button {
 	background-image: url(zipup.png);
 	background-position-y: center;
 }
 .action.zipup:hover,.action.zipup:focus,
-.zip-popup.label:hover {
+.zip-popup.label:hover,
+.popup.zip-toolbar-button:hover, .popup.zip-toolbar-button:focus {
 	background-image: url(zipup-hover.png);
 }
 .action.zipdwnload {

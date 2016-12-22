@@ -140,8 +140,8 @@ sub render_extension_element {
     my ( $self, $hook, $a ) = @_;
     my $content = q{};
     if ( ref($a) eq 'HASH' ) {
-        if ( ${$a}{subpopupmenu} ) {
-            my %attr = (-class => 'subpopupmenu extension '
+        if ( ${$a}{popup} ) {
+            my %attr = ( -tabindex=>0, -class => 'popup '
                         . ( ${$a}{classes} // q{} ),
                     -title => $a->{title} // $a->{label} // q{},);
             if (exists $a->{attr}) {
@@ -149,14 +149,14 @@ sub render_extension_element {
             }
             return $self->{cgi}->li(
                 \%attr,
-                ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div({ -class=>'label '.($a->{classes} // q{})}, $a->{label} // $a->{title} // q{} ))
+                ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div({ -class=>'popup label notab '.($a->{classes} // q{})}, $a->{label} // $a->{title} // q{} ))
                     . $self->{cgi}->ul(
-                    { -class => 'subpopupmenu extension '.($a->{subclasses} // q{}) },
-                    $self->render_extension_element( $hook, ${$a}{subpopupmenu} )
+                    { -class => 'popup '.($a->{subclasses} // q{}) },
+                    $self->render_extension_element( $hook, ${$a}{popup} )
                     )
             );
         }
-        my %params = ( -class => q{} );
+        my %params = ( -class => q{}, -tabindex=>0 );
         $params{-class} .= ${$a}{action} ? ' action ' . ${$a}{action} : q{};
         $params{-class}
             .= ${$a}{listaction} ? ' action ' . ${$a}{listaction} : q{};

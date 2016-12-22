@@ -28,13 +28,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: 2px center;
 	background-repeat: no-repeat;
 }
-.highlighter-popup.ui-button {
-	background-position: center center;
-	padding-right: 35px ;
-}
-
 .highlighter-popup.label:hover,
 .highlighter-popup.ui-button:hover,
+.highlighter-popup.ui-button:focus,
 .action.markcolorpicker:hover,
 .highlighter-popup .action.removemarks .label:hover {
 	background-image: url(hl-hover.png);

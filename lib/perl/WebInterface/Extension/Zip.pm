@@ -73,21 +73,37 @@ sub handle_hook_fileaction {
 sub handle_hook_filelistaction {
     my ( $self, $config, $params ) = @_;
     return {
-        action => 'zipdwnload',
-        label      => 'zipdwnload',
-        title      => 'zipdwnload',
-        path       => ${$params}{path},
-        classes    => 'sel-multi hideit uibutton',
+        nolabel => 1,
+        classes => 'zip-toolbar-button sel-multi hideit uibutton toolbar-button',
+        title   => $self->tl('zip.menu'),
+        popup   => [
+            {
+                action  => 'zipdwnload',
+                label   => 'zipdwnload',
+                title   => 'zipdwnloadtext',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'action',
+                akavailable => 'z',
+            },
+            {
+                action  => 'zipcompress',
+                label   => 'zip.compress',
+                title   => 'zip.compress.title',
+                path    => ${$params}{path},
+                type    => 'li',
+                classes => 'access-writeable',
+            },
+        ],
     };
-
 }
 
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
-        title        => $self->tl('zip.menu'),
-        classes      => 'zip-popup',
-        subpopupmenu => [
+        title   => $self->tl('zip.menu'),
+        classes => 'zip-popup',
+        popup   => [
             {
                 action  => 'zipup',
                 label   => 'zipup',

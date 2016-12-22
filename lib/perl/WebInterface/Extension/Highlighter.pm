@@ -87,7 +87,7 @@ sub init {
                 order       => 2,
             },
             'border' => {
-                subpopupmenu => {
+                popup => {
                     'border-color' => {
                         values => '#FF0000/#00FF00/#0000FF/#FFA500/#A020E0',
                         style  => 'border-color',
@@ -115,7 +115,7 @@ sub init {
                 order => 3,
             },
             'font' => {
-                subpopupmenu => {
+                popup => {
                     'font-size' => {
                         values =>
                             'xx-large/x-large/larger/large/medium/small/smaller/x-small/xx-small',
@@ -141,7 +141,7 @@ sub init {
                 order => 10,
             },
             'text' => {
-                subpopupmenu => {
+                popup => {
                     'text-transform' => {
                         values => 'lowercase/uppercase/capitalize/small-caps',
                         styles => {
@@ -155,11 +155,16 @@ sub init {
                         style  => 'text-shadow',
                         order  => 2,
                     },
+                    #'text-align' => {
+                    #    values => 'left/center/right',
+                    #    style  => 'text-align',
+                    #    order  => 3,  
+                    #},
                     'text-decoration' => {
                         values =>
                             'underline/overline/line-through/underline overline/overline underline line-through/underline line-through/overline line-through',
                         style => 'text-decoration',
-                        order => 3,
+                        order => 4,
                     },
                     'text-decoration-color' => {
                         values => '#FF0000/#00FF00/#0000FF/#FFA500/#A020E0',
@@ -168,13 +173,13 @@ sub init {
                         labelcss =>
                             'color: white; font-weight: bold;font-size: 8px; line-height: 10px;',
                         colorpicker => 1,
-                        order       => 4,
+                        order       => 5,
                     },
                     'text-decoration-style' => {
                         values   => 'solid/double/dotted/dashed/wavy',
                         style    => 'text-decoration-style',
                         labelcss => 'text-decoration-line: underline;',
-                        order    => 5,
+                        order    => 6,
                     },
                 },
                 order => 15,
@@ -298,14 +303,14 @@ sub _get_style {
         : $attribute->{style};
 }
 
-sub _create_subpopup {
+sub _create_popup {
     my ( $self, $attrname, $attribute ) = @_;
-    my @subpopup = ();
-    if ( $attribute->{subpopupmenu} ) {
-        return $self->_create_popups( $attribute->{subpopupmenu} );
+    my @popup = ();
+    if ( $attribute->{popup} ) {
+        return $self->_create_popups( $attribute->{popup} );
     }
     else {
-        @subpopup = map {
+        @popup = map {
             {   action => 'mark',
                 attr   => {
                     style => ( $attribute->{labelcss} // q{} )
@@ -333,7 +338,7 @@ sub _create_subpopup {
             }
         } split( /\//xms, $attribute->{values} );
         if ( $attribute->{colorpicker} ) {
-            push @subpopup,
+            push @popup,
                 {
                 action  => 'markcolorpicker',
                 data    => { value => $_, style => $attrname },
@@ -343,7 +348,7 @@ sub _create_subpopup {
                 attr    => { tabindex => 0, },
                 };
         }
-        push @subpopup,
+        push @popup,
             {
             action => 'removemarks',
             data   => {
@@ -357,7 +362,7 @@ sub _create_subpopup {
             attr    => { tabindex => 0, },
             };
     }
-    return \@subpopup;
+    return \@popup;
 }
 
 sub _create_preset_popup {
@@ -384,11 +389,11 @@ sub _create_preset_popup {
             if ($count > $self->{maxpresetentries}) {
                 my @sp = ();
                 push @{$p}, {
-                    subpopupmenu => \@sp,
-                    title        => $self->tl('highlighter.morepresets'),
-                    type         => 'li',
-                    classes      => 'sep',
-                    attr         => { tabindex => 0, },
+                    popup   => \@sp,
+                    title   => $self->tl('highlighter.morepresets'),
+                    type    => 'li',
+                    classes => 'sep',
+                    attr    => { tabindex => 0, },
                 };
                 $p = \@sp;
                 $count = 1;
@@ -432,12 +437,11 @@ sub _create_popups {
     if ($top) {
         push @popups,
             {
-            title => $self->tl('highlighter.preset'),
-            subpopupmenu =>
-                $self->_create_preset_popup( $self->_get_presets() ),
-            classes => 'highlighter preset',
+            title      => $self->tl('highlighter.preset'),
+            popup      => $self->_create_preset_popup( $self->_get_presets() ),
+            classes    => 'highlighter preset',
             subclasses => 'highlighter subpreset',
-            attr => { tabindex => 0, },
+            attr       => { tabindex => 0, },
             };
     }
     foreach my $attribute (
@@ -446,8 +450,8 @@ sub _create_popups {
     {
         push @popups,
             {
-            title        => $self->tl("highlighter.$attribute"),
-            subpopupmenu => $self->_create_subpopup(
+            title   => $self->tl("highlighter.$attribute"),
+            popup   => $self->_create_popup(
                 $attribute, $attributes->{$attribute}
             ),
             classes => "highlighter $attribute ". ( $attributes->{$attribute}->{classes} // q{} ),
@@ -494,28 +498,28 @@ sub _create_popups {
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
-        title        => $self->tl('highlighter'),
-        subpopupmenu => $self->_create_popups( $self->{attributes}, 1 ),
-        classes      => 'highlighter-popup'
+        title   => $self->tl('highlighter'),
+        popup   => $self->_create_popups( $self->{attributes}, 1 ),
+        classes => 'highlighter-popup'
     };
 }
 sub handle_hook_filelistaction {
     my ( $self, $config, $params ) = @_;
     return {
-        nolabel      => 1,
-        title        => $self->tl('highlighter'),
-        subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
-        classes      => 'highlighter-popup uibutton sel-multi hideit',
+        nolabel => 1,
+        title   => $self->tl('highlighter'),
+        popup   => $self->_create_popups( $self->{attributes}, 1),
+        classes => 'highlighter-popup uibutton sel-multi hideit toolbar-button',
     };
 }
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return {
-        label        => $self->tl('highlighter'),
-        title        => $self->tl('highlighter'),
-        subpopupmenu => $self->_create_popups( $self->{attributes}, 1),
-        classes      => 'highlighter-popup sel-multi disabled',
-        attr         => { aria_label=> $self->tl('highlighter'), tabindex => 0,},
+        label   => $self->tl('highlighter'),
+        title   => $self->tl('highlighter'),
+        popup   => $self->_create_popups( $self->{attributes}, 1),
+        classes => 'highlighter-popup sel-multi disabled',
+        attr    => { aria_label=> $self->tl('highlighter'), tabindex => 0,},
     };
 }
 
@@ -524,11 +528,11 @@ sub _get_all_propnames {
     my @propnames  = ();
     my %propexists = ();
     foreach my $attr ( keys %{$attributes} ) {
-        if ( $attributes->{$attr}{subpopupmenu} ) {
+        if ( $attributes->{$attr}{popup} ) {
             push @propnames,
                 @{
                 $self->_get_all_propnames(
-                    $attributes->{$attr}{subpopupmenu}
+                    $attributes->{$attr}{popup}
                 )
                 };
         }
