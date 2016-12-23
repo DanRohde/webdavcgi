@@ -58,7 +58,8 @@ a {
 	left: 0;
 	width: 160px;
 	height: 100%;
-	background-color: #eeeeee;
+	background: #eee;
+	background: linear-gradient(to right, white, #eee);
 	box-shadow: -3px 0 7px #000000;
 	color: black;
 	z-index: 75;
@@ -191,7 +192,6 @@ table,th,td {
     border: 0;
     cursor: pointer;
     background-image: url(images/sprite.png);
-    background-color: white;
     background-repeat: no-repeat;
 }
 .toggleselection {
@@ -271,15 +271,16 @@ table,th,td {
 	font-weight: normal;
 	line-height: 1;
 	flex: 0 0;
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: center -1658px;
 }
-
-#fileactions.hidelabels .label, #fileactions.hidelabels .accesskey  {
+#fileactions.hidefileactions {
 	display: none;
 }
-#fileactions.hidelabels li.sep {
-	border-top: 1px solid white !important;
+#fileactions:hover, #fileactions:focus {
+	background-image: url(images/sprite-hover.png);
 }
-
 #fileactions .action {
 	min-width: 22px;
 	padding: 6px 1.6em 6px 22px;
@@ -287,31 +288,11 @@ table,th,td {
 	margin: 0;
 	background-position-x: 2px;
 }
-#fileactions .action:hover {
-	border: 1px dotted #999;
-	background-color: #ededed;
-}
-#fileactions.hidelabels .action {
-	float: left;
-	border: 1px solid white;
-	background-position-x: center;
-	width: 24px;
-	height: 24px;
-	padding: 6px;
-}
-.fileactions-dropdown {
-	display: block;
-	width:  22px;
-	height: 22px;
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: center -1658px;
-	cursor: pointer;
-}
-#fileactions-dropdown-menu {
+.fileactions-popup.popup {
+	left: auto;
 	margin-top: 20px;
 }
-#fileactions-dropdown-menu li {
+.fileactions-popup li {
 	height: 1.2em !important;
 	font-size: 15px !important;
 	text-align: left !important;
@@ -323,12 +304,26 @@ table,th,td {
 	font-family: sans-serif;
 	text-transform: none;
 }
-.fileactions-dropdown:focus, .fileactions-dropdown:hover {
-	background-image: url(images/sprite-hover.png);
+#fileactions.hidelabels .action {
+	float: left;
+	border: 1px solid transparent;
+	background-position-x: center !important;
+	width: 24px;
+	height: 24px;
+	padding: 6px;
 }
+#fileactions.hidelabels .label, #fileactions.hidelabels .accesskey  {
+	display: none;
+}
+#fileactions.hidelabels li.sep {
+	border-top: 1px solid transparent !important;
+}
+
 .isreadable-no.iswriteable-no #fileactions {
 	display: none;
 }
+
+/* -- fileactions */
 
 #fileList .selectbutton {
 	opacity: 0;
@@ -680,21 +675,19 @@ a.disabled, .link.disabled {
 }
 .action.rmsinglebookmark {
 	background-position: center -222px;
-	height: 22px;
-	width: 22px;
+	height: 18px;
+	width: 18px;
 }
 .time, .time-desc, .path, .path-desc {
 	padding: 0px 0px 0px 22px;
 	width: 26px;
-	height: 22px;
+	height: 18px;
 }
 .action.rmallbookmarks {
-	background-position: 2px -216px;
-	background-color: white;
-	padding-left: 24px;
+	background-position-y: -216px;
 }
 .action.gotobookmark, .action.dyn-bookmark {
-	background-position: 2px -1576px;
+	background-position-y: -1576px;
 	display: flex;
 	flex-flow: row nowrap;
 	width: 220px;
@@ -1487,7 +1480,8 @@ tr:focus .action.changeuri {
 		clear: both;
 		font-size: 15px;
 		color: black;
-		background-color: white;
+		background: white;
+		background: linear-gradient(to right, white, #efefef);
 		border: 1px solid #ddd;
 		box-shadow: 3px 0 7px #ddd;
 		margin: 0;
@@ -1503,8 +1497,10 @@ tr:focus .action.changeuri {
 		text-overflow: ellipsis;
 		margin: 0;
 		padding: 6px 1.6em 6px 22px;
-		border: 1px solid white;
+		border: 1px solid transparent;
 		font-size: 15px;
+		font-weight: initial;
+		text-transform: initial;
 		line-height: 1;
 		color: black;
 		text-shadow: none;
@@ -1571,7 +1567,7 @@ tr:focus .action.changeuri {
 	#nav > ul > li > ul.popup {
 		position: fixed !important;
 		left: 150px;
-		margin-top: -18px;
+		margin-top: -26px;
 	}
 	.sidebar-iconsonly #nav > ul > li > ul.popup {
 		left: 24px;

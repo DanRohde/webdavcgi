@@ -27,6 +27,8 @@ $(function() {
 	
 	initFileListActions();
 
+	initFileActions();
+
 	initClipboard();
 
 	initFolderStatistics();
@@ -1001,19 +1003,39 @@ function handleFileActionEvent(event) {
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: [ row.data("file") ] , row: row });
 	}
 }
+function initFileActions() {
+	$("#fileactions")
+		.on("click dblclick", function(ev) { 
+			preventDefault(ev); 
+			$(".fileactions-popup").toggle(); 
+		})
+		.on("keyup", keyboardEventHelper);
+	$("#fileactions .action").on("click dblclick", handleFileActionEvent).on("keyup", keyboardEventHelper).MyTooltip();;
+	handlePopupNavigation("#fileactions popup");
+	$("#flt").on("fileListChanged", function(){
+		// init single file actions:
+		$("#fileList tr.unselectable-no")
+			.off(".fileAction")
+			.on("mouseenter.fileAction focusin.fileAction",handleFileListRowFocusIn)
+			.on("mouseleave.fileAction", handleFileListRowFocusOut);
+	}).on("beforeFileListChange", handleFileListRowFocusOut);
+	handleFileActionsSettings();
+	$("body").on("settingchanged", handleFileActionsSettings);
+}
+function handleFileActionsSettings(ev,data) {
+	$("#fileactions")
+		.toggleClass("hidefileactions", cookie("settings.show.fileactions") == "no")
+		.toggleClass("hidelabels", cookie("settings.show.fileactionlabels") == "no")
+		.toggleClass("showalways", cookie("settings.show.fileactionalways") == "no");
+}
 function handleFileListRowFocusIn(event) {
-	if (cookie("settings.show.fileactions")=="no") return;
-	// if (event.type == 'mouseenter') $(this).focus();
-	$("#fileactions").toggleClass("hidelabels", cookie("settings.show.fileactionlabels") =="no").MyTooltip();
-	if ($("#fileactions").length==1) $("#flt").data("#fileactions",$("#fileactions").html());
-	else $(".template").append('<div id="fileactions">'+$("#flt").data("#fileactions")+'</div>').MyTooltip();
-	if ($("#fileactions",$(this)).length==0) {
-		$("div.filename",$(this)).after($("#fileactions"));
-		$("#fileactions .action").off(".flrfi").on("click.flrfi",handleFileActionEvent).on("keyup.flrfi", keyboardEventHelper);
-	}	
+	var self = $(this);
+	if ($("#fileactions", self).length==0) {
+		$(".action.changeuri.filename", self).after($("#fileactions"));
+	}
 }
 function handleFileListRowFocusOut(event) {
-	$("#fileactions").appendTo($(".template")).find(".action").off("click");	
+	$("#fileactions").appendTo($(".template"));
 }
 function initFancyBox() {
 	$("#flt").on("fileListChanged", function() {
@@ -1049,17 +1071,6 @@ function initFileList() {
 	
 	$("#fileList tr.unselectable-yes .selectbutton").attr("disabled","disabled");
 	
-	// init single file actions:
-	$("#fileList tr.unselectable-no")
-		.off("mouseenter.initFileList").off("mouseleave.initFileList").on("mouseenter.initFileList",handleFileListRowFocusIn).on("mouseleave.initFileList", handleFileListRowFocusOut)
-		.off("focusin.initFileList").on("focusin.initFileList",handleFileListRowFocusIn)
-/*		.each(function(i,v) {
-			var self = $(this);
-			self.find(".filename a").off("focusin.initFileList").on("focusin.initFileList",function(event) {
-				handleFileListRowFocusIn.call(self,event);
-			});
-		});
-*/
 	// mouse events on a file row:
 	$("#fileList tr")
 		.off("click.initFileList").on("click.initFileList",handleRowClickEvent)

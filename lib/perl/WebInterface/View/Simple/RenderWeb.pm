@@ -133,9 +133,6 @@ sub render_extension_element {
     if ($hook =~ /^(?:new|fileaction|fileactionpopupnew|filelistaction|$navhooks_rx)$/xms) {
         if (ref($params) eq 'HASH') {
             $params->{type} = 'li';
-            if ($hook eq 'fileaction') {
-                $params->{classes} .= ' dropdown-menu-item';
-            }
         }
     }
     return $self->SUPER::render_extension_element($hook, $params);
