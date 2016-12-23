@@ -274,6 +274,7 @@ table,th,td {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: center -1658px;
+	cursor: pointer;
 }
 #fileactions.hidefileactions {
 	display: none;

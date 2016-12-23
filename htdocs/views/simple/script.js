@@ -1005,12 +1005,13 @@ function handleFileActionEvent(event) {
 }
 function initFileActions() {
 	$("#fileactions")
-		.on("click dblclick", function(ev) { 
-			preventDefault(ev); 
-			$(".fileactions-popup").toggle(); 
+		.on("click dblclick", function(ev) {
+			preventDefault(ev);
+			$(".fileactions-popup").toggle();
 		})
-		.on("keyup", keyboardEventHelper);
-	$("#fileactions .action").on("click dblclick", handleFileActionEvent).on("keyup", keyboardEventHelper).MyTooltip();;
+		.on("keyup", keyboardEventHelper)
+		.MyTooltip();
+	$("#fileactions .action").on("click dblclick", handleFileActionEvent).on("keyup", keyboardEventHelper);
 	handlePopupNavigation("#fileactions popup");
 	$("#flt").on("fileListChanged", function(){
 		// init single file actions:
