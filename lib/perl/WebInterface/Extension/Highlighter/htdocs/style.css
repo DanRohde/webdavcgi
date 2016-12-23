@@ -87,6 +87,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter.text.label, .highlighter.text-decoration.label,
 .highlighter.text-decoration-color.label, .highlighter.text-decoration-style.label,
 .highlighter.text-shadow.label, .highlighter.text-transform.label,
+.highlighter.text-align.label,
 .highlighter.text .action.mark,
 .highlighter.text .action.removemarks .label {
 	background-image: url(text.png);
@@ -95,6 +96,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter.text.label:hover, .highlighter.text-decoration.label:hover,
 .highlighter.text-decoration-color.label:hover, .highlighter.text-decoration-style.label:hover,
 .highlighter.text-shadow.label:hover, .highlighter.text-transform.label:hover,
+.highlighter.text-align.label:hover,
 .highlighter.text .action.mark:hover,
 .highlighter.text .action.removemarks .label:hover {
 	background-image: url(text-hover.png);
@@ -124,6 +126,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.markwithpreset:hover, .action.managepresets:hover,
 .highlighter-preset-entry:hover {
 	background-image: url(preset-hover.png);
+}
+
+.highlighter.fun.label,
+.highlighter.transform.label,
+.highlighter.gradient.label,
+.highlighter.animation.label,
+.highlighter.fun .action {
+	background-image: url(fun.png);
+}
+.highlighter.fun.label:hover,
+.highlighter.transform.label:hover,
+.highlighter.gradient.label:hover,
+.highlighter.animation.label:hover,
+.highlighter.fun .action:hover {
+	background-image: url(fun-hover.png);
+}
+.action.mark.gradient .label,
+.action.mark.animation .label {
+	max-width: 200px;
 }
 .action.markwithpreset, .action.managepresets {
 	max-width: 200px;
@@ -175,4 +196,65 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .highlighter-popup .action.removemarks .label {
 	padding-left: 22px !important;
+}
+
+/* some animations */
+@keyframes paddingleft {
+      0%  { padding-left:  0px; }
+	 50% { padding-left: 30px; }
+	100% { padding-left:  0px; }
+}
+@keyframes fontsize {
+	  0%	{ font-size: xx-small; }
+	 50%	{ font-size: xx-large; }
+	100%	{ font-size: xx-small; }
+}
+@keyframes borderwidth {
+	  0%	{ border-width: 0px; }
+	 50%	{ border-width: 10px; }
+	100%	{ border-width: 0px; }  
+}
+@keyframes bgcolorcycle {
+      0%	{ background-color: red; }
+	 10%	{ background-color: yellow; }
+	 20%	{ background-color: green; }
+	 30%	{ background-color: blue; }
+	 40%	{ background-color: indigo; }
+	 50% 	{ background-color: violet; }
+	 60%	{ background-color: indigo; }
+	 70%	{ background-color: blue; }
+	 80%	{ background-color: green; }
+	 90%	{ background-color: yellow; }
+	100%	{ background-color: red; }
+}
+@keyframes colorcycle {
+	  0%	{ color: red; }
+	 10%	{ color: yellow; }
+	 20%	{ color: green; }
+	 30%	{ color: blue; }
+	 40%	{ color: indigo; }
+	 50% 	{ color: violet; }
+	 60%	{ color: indigo; }
+	 70%	{ color: blue; }
+	 80%	{ color: green; }
+	 90%	{ color: yellow; }
+	100%	{ color: red; }
+}
+@keyframes bordercolorcycle {
+	  0%	{ border-color: red; }
+	 10%	{ border-color: yellow; }
+	 20%	{ border-color: green; }
+	 30%	{ border-color: blue; }
+	 40%	{ border-color: indigo; }
+	 50% 	{ border-color: violet; }
+	 60%	{ border-color: indigo; }
+	 70%	{ border-color: blue; }
+	 80%	{ border-color: green; }
+	 90%	{ border-color: yellow; }
+	100%	{ border-color: red; }
+}
+@keyframes backgroundposition {
+	  0%	{ background-position:0% 50%; }
+	 50%	{ background-position:100% 50%; }
+	100%	{ background-position:0% 50%; }
 }

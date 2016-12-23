@@ -53,6 +53,8 @@ $(function() {
 	
 	initChangeUriAction();
 
+	initFancyBox();
+
 	initWindowResize();
 	
 	initSettingsDialog();
@@ -150,10 +152,6 @@ function initTooltips() {
 }
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
-		// keyboard events for filename links
-		$("#fileList .filename a").off("keydown.flca").on("keydown.flca",function(event) {
-			if (event.keyCode == 32) { preventDefault(event); handleRowClickEvent.call($(this).closest("tr"), event); }
-		});
 		$("#fileList tr").off("keydown.flctr").on("keydown.flctr",function(event) {
 			var tabindex = this.tabIndex || 1;
 			var self = $(this);
@@ -495,20 +493,27 @@ function handleWindowResize() {
 }
 
 function initChangeUriAction() {
-	$(".action.changeuri").on("click.changeuri",handleChangeUriAction);
-	$(".action.refresh").on("click.refresh",function(event) {
+	$(".action.changeuri").off(".changeuri").on("click.changeuri",handleChangeUriAction);
+	$(".action.refresh").off(".refresh").on("click.refresh",function(event) {
 		preventDefault(event);
 		updateFileList();
 		return false;
 	});
 	$("#flt").on("fileListChanged", function() {
-		$("#fileList tr.is-dir .action.changeuri").click(handleChangeUriAction);
+		$("#fileList .is-dir .action.changeuri").off(".changeuri").on("click.changeuri", handleChangeUriAction);
+		$("#fileList .is-file .action.changeuri").off(".changeuri").on("click.changeuri",
+				function() {
+					var self=$(this);
+					if (!self.closest("div.filename").is(".ui-draggable-dragging")) {
+						window.location.href=self.data("href")? self.data("href") : self.attr("href");
+					}
+				});
 	});
 }
 function handleChangeUriAction(event) {
 	preventDefault(event);
 	if (!$(this).closest("div.filename").is(".ui-draggable-dragging")) {
-		changeUri($(this).attr("href"));
+		changeUri($(this).data("href") || $(this).attr("href"));
 	}
 	return false;
 }
@@ -1010,6 +1015,30 @@ function handleFileListRowFocusIn(event) {
 function handleFileListRowFocusOut(event) {
 	$("#fileactions").appendTo($(".template")).find(".action").off("click");	
 }
+function initFancyBox() {
+	$("#flt").on("fileListChanged", function() {
+		$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible .action.changeuri")
+			.off("click")
+			.attr("data-fancybox-group","imggallery")
+			.each(function(i,v){ var self = $(v); if (!self.attr("href")) self.data("fancybox-href", self.data("href"));    })
+			.fancybox({
+				padding: 0,
+				afterShow: function() { $(".fancybox-close").focus();},
+				beforeLoad: function() { this.title = $(this.element).html(); }, 
+				helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('data-href')+'?action=thumb'; } } } 
+			});
+		$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible .action.changeuri")
+			.off("click")
+			.attr("data-fancybox-group","wtimggallery")
+			.each(function(i,v){ var self = $(v); if (!self.attr("href")) self.data("fancybox-href", self.data("href"));    })
+			.fancybox({
+				padding: 0,
+				afterShow: function() { $(".fancybox-close").focus();},
+				beforeLoad: function() { this.title = $(".nametext", this.element).html(); },
+				helpers: { buttons: {} }
+		});
+	});
+}
 function initFileList() {
 	var flt = $("#fileListTable");
 	var fl = $("#fileList");
@@ -1045,23 +1074,6 @@ function initFileList() {
 	// fix annyoing text selection for shift+click:
 	$('#flt').disableSelection();
 	
-	// init fancybox:
-	$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible td.filename a")
-		.attr("data-fancybox-group","imggallery")
-		.fancybox({
-			padding: 0,
-			afterShow: function() { $(".fancybox-close").focus();},
-			beforeLoad: function() { this.title = $(this.element).html(); }, 
-			helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('href')+'?action=thumb'; } } } 
-		});
-	$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible td.filename a")
-		.attr("data-fancybox-group","wtimggallery")
-		.fancybox({ 
-			padding: 0,
-			afterShow: function() { $(".fancybox-close").focus();},
-			beforeLoad: function() { this.title = $(".nametext", this.element).html(); },
-			helpers: { buttons: {} }
-		});
 	// init drag & drop:
 	$("#fileList:not(.dnd-false) tr.iswriteable-yes[data-type='dir']")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
@@ -1550,7 +1562,7 @@ function changeUri(uri, leaveUnblocked) {
 			return;
 		}
 	} catch (e) {
-		console.log(e);		
+		console.log(e);
 	}
 	// fallback for errors and unblocked links:
 	if (!leaveUnblocked) blockPage();

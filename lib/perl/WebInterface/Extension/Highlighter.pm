@@ -155,11 +155,11 @@ sub init {
                         style  => 'text-shadow',
                         order  => 2,
                     },
-                    #'text-align' => {
-                    #    values => 'left/center/right',
-                    #    style  => 'text-align',
-                    #    order  => 3,  
-                    #},
+                    'text-align' => {
+                        values => 'space-between/center/flex-end',
+                        style  => 'justify-content',
+                        order  => 3,  
+                    },
                     'text-decoration' => {
                         values =>
                             'underline/overline/line-through/underline overline/overline underline line-through/underline line-through/overline line-through',
@@ -184,6 +184,34 @@ sub init {
                 },
                 order => 15,
             },
+            'fun' => {
+                popup => {
+                    'gradient' => {
+                        values => 'linear-gradient(black,white,black)/linear-gradient(42deg, transparent, blue)/linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)'
+                                    .'/linear-gradient(red, yellow, green)/radial-gradient(red, yellow, green)'
+                                    .'/linear-gradient(black 33.3%, red 33.3%, red 66.6%, gold 66.6%)/linear-gradient(to right, #0055a4 33.3%, white 33.3%, white 66.6%, #ef4531 66.6%)'
+                                    .'/linear-gradient(to right, #006221 33.3%, white 33.3%, white 66.6%,  #df0024 66.6%)/linear-gradient(#ce1126 33.3%, white 33.3%, white 66.6%, #008751 66.6%)'
+                        ,
+                        style  => 'background',
+                        order  =>1,
+                    },
+                    'transform' => {
+                        values => 'rotateX(180deg)/rotateY(180deg)/rotateZ(180deg)/skewX(30deg)/skewX(-30deg)/skewY(5deg)',
+                        style  => 'transform',
+                        order  => 2,
+                    },
+                    'animation' => {
+                        values   => 'fontsize 4s linear infinite/paddingleft 4s linear infinite'
+                                    .'/colorcycle 8s linear infinite/bgcolorcycle 8s linear infinite'
+                                    .'/borderwidth 4s linear infinite/bordercolorcycle 8s linear infinite'
+                                    ,
+                        style    => 'animation',
+                        labelcss => 'border-color: #666;', 
+                        order    => 3,
+                    },
+                },
+                order => 20,
+            }
         }
     );
     $self->{json} = JSON->new();
@@ -307,7 +335,7 @@ sub _create_popup {
     my ( $self, $attrname, $attribute ) = @_;
     my @popup = ();
     if ( $attribute->{popup} ) {
-        return $self->_create_popups( $attribute->{popup} );
+        return $self->_create_popups( $attribute->{popup}, 0, $attrname );
     }
     else {
         @popup = map {
@@ -432,7 +460,7 @@ sub _get_presets {
 }
 
 sub _create_popups {
-    my ( $self, $attributes, $top ) = @_;
+    my ( $self, $attributes, $top, $attrname ) = @_;
     my @popups = ();
     if ($top) {
         push @popups,
@@ -487,7 +515,7 @@ sub _create_popups {
             styles => join q{,},
             @{ $self->_get_all_propnames($attributes) }
         },
-        label   => $self->tl('highlighter.removeallmarks'),
+        label   => $self->tl("highlighter.remove.$attrname", $self->tl('highlighter.removeallmarks')),
         type    => 'li',
         classes => 'sep',
         attr    => { tabindex => 0,},

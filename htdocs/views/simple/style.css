@@ -260,6 +260,8 @@ table,th,td {
 #headerUID, #headerGID {
 	width: 8ex;
 }
+
+/* file actions */
 #fileactions {
 	margin: 0;
 	border: 0;
@@ -268,7 +270,7 @@ table,th,td {
 	font-size: 15px;
 	font-weight: normal;
 	line-height: 1;
-	float: right;
+	flex: 0 0;
 }
 
 #fileactions.hidelabels .label, #fileactions.hidelabels .accesskey  {
@@ -312,6 +314,7 @@ table,th,td {
 #fileactions-dropdown-menu li {
 	height: 1.2em !important;
 	font-size: 15px !important;
+	text-align: left !important;
 }
 #fileactions .label  {
 	font-size: 15px !important;
@@ -346,10 +349,21 @@ table,th,td {
 #fileList .selector {
 	text-align: center;
 }
+
+#fileList td.filename {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: space-between;
+}
+#fileList td.filename div.filename {
+	display: flex;
+	flex-flow: row nowrap;
+	justiy-content: flex-start;
+}
 #fileList .filename .nametext {
 	padding-left: 10px; 
 	padding-top: 2px;
-	float: left;
+/*	float: left;*/
 	white-space: pre-wrap;
 	text-decoration: inherit;
 	font-weight: inherit;
@@ -357,11 +371,6 @@ table,th,td {
 span.ws, div.ws {
 	white-space: pre-wrap;
 	display: inline-block;
-}
-div.filename a:focus {
-	border: 1px dotted black;
-	width: 100%;
-	display: block;
 }
 #fileList .size, th#headerSize {
 	text-align: right;
@@ -456,7 +465,7 @@ tr.isreadable-no:hover {
 }
 .icon {
 	width: 20px;
-	max-height: 80px;
+	max-height: 22px;
 	min-height: 22px;
 	float: left;
 	margin-left: 0.2em;
@@ -471,7 +480,7 @@ tr.isreadable-no:hover {
 	background-image: none;
 }
 .icon.thumbnail:hover {
-	width: 120px;
+	width: 120px; 
 	max-height: none;
 }
 
@@ -854,7 +863,7 @@ img {
 .help-button:hover, .help-button:focus {
 	background-image: url(images/sprite-hover.png);
 }
-.home-button {
+.home-button, .action.changeuri.home-button {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
@@ -1399,6 +1408,13 @@ img {
 }
 .action.changeuri {
 	padding-left: 0px;
+	background-image: none;
+	background-color: inherit;
+}
+.action.changeuri:focus, .action.changeuri:hover,
+tr:focus .action.changeuri {
+	text-decoration:underline;
+	background-color: inherit;
 }
 .flex-row {
 	display: flex;
