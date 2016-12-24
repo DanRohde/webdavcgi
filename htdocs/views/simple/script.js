@@ -978,8 +978,8 @@ function getVisibleAndSelectedFiles() {
 }
 function getSelectedRows(el) {
 	var selrows = $("#fileList tr.selected:visible");
-	if (selrows.length===0) selrows = $(el).closest("tr[data-file]");
-	if (selrows.length===0) selrows = $("#fileList tr:visible:focus");
+	if (selrows.length==0) selrows = $(el).closest("tr[data-file]");
+	if (selrows.length==0) selrows = $("#fileList tr:visible:focus");
 	return selrows;
 }
 function getSelectedFiles(el) {
@@ -1009,10 +1009,8 @@ function initFileActions() {
 		.on("click dblclick", function(ev) {
 			preventDefault(ev);
 			$(".fileactions-popup").toggle();
-		})
-		.MyKeyboardEventHandler()
-		.MyTooltip();
-	$("#fileactions .action").on("click dblclick", handleFileActionEvent);
+		}).MyKeyboardEventHandler().MyTooltip();
+	$("#fileactions .action").on("click dblclick", handleFileActionEvent).MyKeyboardEventHandler();
 	$("#fileactions li.popup").MyPopup();
 	$("#flt").on("fileListChanged", function(){
 		// init single file actions:
@@ -1417,8 +1415,7 @@ function handleRowClickEvent(event) {
 				start = c;
 			}
 			for (var r = start + 1 ; r < end ; r++ ) {
-				//var row = $("#fileList tr:visible").filter(function(){ return this.rowIndex == r; });
-				var row = $("#fileList tr:visible").not(this);
+				var row = $("#fileList tr:visible").filter(function(){ return this.rowIndex == r; });
 				if (row.length === 0) continue;
 				toggleRowSelection(row);
 				row = row.next();
@@ -1785,7 +1782,7 @@ function renderByteSize(size) {
 }
 function initClipboard() {
 	handleClipboard();
-	$('#flt').on('fileListChanged', handleClipboard).on('popupmenu', handleClipboard);
+	$('#flt').on('fileListChanged', handleClipboard);
 }
 function handleClipboard() {
 	var action = cookie("clpaction");
@@ -2005,7 +2002,6 @@ function renderAccessKeyDetails() {
 }
 function hidePopupMenu() {
 	$("#popupmenu li.popup").MyPopup("close");
-	$("#popupmenu:visible").hide().appendTo("body");
 }
 function initPopupMenu() {
 	$("#popupmenu .action")
@@ -2014,37 +2010,13 @@ function initPopupMenu() {
 		.on("dblclick.popupmenu", function(event) { preventDefault(event);})
 		.MyKeyboardEventHandler();
 	
-	$("#popupmenu li.popup").MyPopup();
-	function adjustPopupPosition(pageX,pageY) {
-		var popup = $("#popupmenu");
-		var offset = $("#content").position();
-		var left = (pageX-offset.left);
-		var top = (pageY-offset.top);
-		var win = $(window);
-		var popupHeight = popup.height();
-		var popupWidth = popup.width();
-		if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
-		if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
-		popup.css({"top":top+"px","left":left+"px"});
-	}
 	$("#flt")
 		.off(".popupmenu")
 		.on("beforeFileListChange.popupmenu", function() {
 			hidePopupMenu();
 		})
 		.on("fileListChanged.popupmenu", function(){
-			$("#fileList tr").off("contextmenu").on("contextmenu", function(event) {
-				if (event.which==3) {
-					preventDefault(event);
-					if ($("#popupmenu").is(":visible")) {
-						hidePopupMenu();
-					} else {
-						$("#popupmenu").appendTo($(this)).css({position: "absolute", opacity: 1}).show();
-						adjustPopupPosition(event.pageX,event.pageY);
-						$("#flt").trigger('popupmenu',$(this).closest('tr'));
-					}
-				}
-			});
+			$("#popupmenu li.popup").MyPopup({contextmenu: $("#popupmenu"), contextmenuTarget: $("#fileList tr"), contextmenuAnchor: "#content"});
 		});
 	$("body").off(".popupmenu")
 			 .on("click.popupmenu",function() { hidePopupMenu(); })

@@ -16,21 +16,56 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 (function ( $ ) {
 	$.fn.MyPopup = function(options) {
-		if (options === "close") {
-			$("ul.popup:visible",this).hide();
-			return this;	
-		}
+		if (options === "close") return	hidePopup(this);
 		
 		var settings = $.extend( {
 			namespace: "popupnavigation",
-			timername: "popupnavigationtimer"
+			timername: "popupnavigationtimer",
+			contextmenu: undefined,
+			contextmenuTarget: undefined,
+			contextmenuAnchor: undefined
 		}, options);
-		
+
+		function adjustContextMenuPosition(menu, event) {
+			var offset = $(settings.contextmenuAnchor).position();
+			var left = (event.pageX-offset.left);
+			var top = (event.pageY-offset.top);
+			var win = $(window);
+			var popupHeight = popup.height();
+			var popupWidth = popup.width();
+			if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
+			if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
+			menu.css({"top":top+"px","left":left+"px"});
+		}
+
+		if (settings.contextmenu) {
+			this.data("MyPopup.contextmenu", settings.contextmenu);
+			var contextmenu = settings.contextmenu;
+			var popup  = this;
+			settings.contextmenuTarget.off("contextmenu."+settings.namespace)
+				.on("contextmenu."+settings.namespace, function(event) {
+					if (event.which==3) {
+						preventDefault(event);
+						if (contextmenu.is(":visible")) {
+							hidePopup(popup);
+						} else {
+							contextmenu.appendTo($(this)).css({position: "absolute", opacity: 1}).show();
+							adjustContextMenuPosition(contextmenu, event);
+						}
+					}
+				});
+		}
+
 		/* IDEA: don't close a popup if a popup was leaved or lost focus -> look at siblings */
-		
+
 		function preventDefault(event) {
 			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 			if (event.stopPropagation) event.stopPropagation();
+		}
+		function hidePopup(popup) {
+			$("ul.popup:visible",popup).hide();
+			if (popup.data("MyPopup.contextmenu")) popup.data("MyPopup.contextmenu").hide().appendTo("body");
+			return popup;
 		}
 		function toggle_popup(obj, toggle) {
 			if (obj.hasClass("disabled")) return obj;

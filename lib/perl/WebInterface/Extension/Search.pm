@@ -711,7 +711,7 @@ sub _render_selected_files {
 sub exec_template_function {
     my ( $self, $fn, $ru, $func, $param ) = @_;
     my $content;
-    if ( $func eq '_render_selected_files' ) {
+    if ( $func eq 'renderSelectedFiles' ) {
         $content = $self->_render_selected_files($param);
     }
     elsif ( $func eq 'getSearchId' ) {
