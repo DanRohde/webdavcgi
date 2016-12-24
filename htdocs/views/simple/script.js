@@ -1847,12 +1847,14 @@ function initNavigationActions() {
 	$("#nav .action").click(handleFileListActionEvent).MyKeyboardEventHandler();
 	$("#nav > ul > li.popup").addClass("popup-click");
 	$("#nav li.popup").MyPopup();
+	$("#flt").on("fileListSelChanged", function() { $("#nav li.popup").MyPopup("close"); });
 }
 function initToolbarActions() {
 	$(".toolbar li.uibutton").button();
 	$(".toolbar .action").click(handleFileListActionEvent).MyKeyboardEventHandler();
 	$(".toolbar > li.popup").addClass("popup-click");
 	$(".toolbar li.popup").MyPopup();
+	$("#flt").on("fileListSelChanged", function() { $(".toolbar li.popup").MyPopup("close"); });
 	
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
 		var self = $(this);

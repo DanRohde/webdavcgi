@@ -46,7 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				.on("contextmenu."+settings.namespace, function(event) {
 					if (event.which==3) {
 						preventDefault(event);
-						if (contextmenu.is(":visible")) {
+						if (contextmenu.is(":visible") && contextmenu.parent()[0] == $(this)[0]) {
 							hidePopup(popup);
 						} else {
 							contextmenu.appendTo($(this)).css({position: "absolute", opacity: 1}).show();

@@ -127,7 +127,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 #nav .action.quicktoggle, #nav .quicktoggles-spacer,
 #statusbar .action.quicktoggle, #statusbar .quicktoggles-spacer  {
-	display: inline-block !important;
+	display: inline-block;
 	position: static !important;
 	width: 18px; height: 18px;
 	min-width: 18px;
@@ -141,6 +141,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 #nav .quicktoggles-spacer {
 	background-position: 2px center;
+}
+.sidebar-iconsonly #nav .quicktoggle.action {
+	display: none !important;
+}
+.sidebar-iconsonly #nav .quicktoggles.popup:focus .quicktoggle.action, 
+.sidebar-iconsonly #nav .quicktoggles.popup:hover .quicktoggle.action {
+	display: inline-block !important;
 }
 .sidebar-iconsonly #nav .quicktoggles.popup:focus,
 .sidebar-iconsonly #nav .quicktoggles.popup:hover 
