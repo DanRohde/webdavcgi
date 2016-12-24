@@ -1136,19 +1136,6 @@ img {
 	z-index: -1;
 	background-color: white;
 }
-.tooltip {
-	color: black;
-	background-color: #feffef;
-	font-size: smaller;
-	box-shadow: 0px 0px 0px 4px rgba(144,144,144,0.5);
-	border-radius: 1px;
-	position: absolute;
-	padding: 2px;
-	z-index:2147483646;
-	overflow: hidden;
-	word-wrap: break-word;
-	white-space: pre-wrap;
-}
 #abortdialog {
 	position: fixed;
 	top: 51%;
