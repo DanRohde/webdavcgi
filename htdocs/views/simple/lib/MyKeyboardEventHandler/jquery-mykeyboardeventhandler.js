@@ -28,12 +28,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 		function keyboardEventHelper(event) {
 			if (event.target != this) return;
+			preventDefault(event);
 			var self = $(this);
 			var d;
 			switch (event.keyCode) {
 			case 32: // space
 			case 13: // return/enter
-				preventDefault(event);
 				self.trigger("click", { origEvent : event });
 				break;
 			case 27: // escape

@@ -142,15 +142,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter.fun .action:hover {
 	background-image: url(fun-hover.png);
 }
-.action.mark.gradient .label,
-.action.mark.animation .label {
+
+.highlighter-popup .label {
 	max-width: 200px;
-}
-.action.markwithpreset, .action.managepresets {
-	max-width: 200px;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
 }
 .action.savemarksaspreset {
 	background-position: left -1696px !important;

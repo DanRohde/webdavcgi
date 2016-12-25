@@ -16,8 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 (function ( $ ) {
 	$.fn.MyPopup = function(options) {
-		if (options === "close") return	hidePopup(this);
-		
+		var popup = this;
+
+		if (options === "close") return	hidePopup();
+
 		var settings = $.extend( {
 			namespace: "popupnavigation",
 			timername: "popupnavigationtimer",
@@ -26,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			contextmenuAnchor: undefined
 		}, options);
 
-		function adjustContextMenuPosition(menu, event) {
+		function adjustContextMenuPosition(event) {
 			var offset = $(settings.contextmenuAnchor).position();
 			var left = (event.pageX-offset.left);
 			var top = (event.pageY-offset.top);
@@ -35,22 +37,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			var popupWidth = popup.width();
 			if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
 			if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
-			menu.css({"top":top+"px","left":left+"px"});
+			settings.contextmenu.css({"top":top+"px","left":left+"px"});
 		}
 
 		if (settings.contextmenu) {
-			this.data("MyPopup.contextmenu", settings.contextmenu);
 			var contextmenu = settings.contextmenu;
-			var popup  = this;
+			popup.data("MyPopup.contextmenu", contextmenu);
 			settings.contextmenuTarget.off("contextmenu."+settings.namespace)
 				.on("contextmenu."+settings.namespace, function(event) {
 					if (event.which==3) {
 						preventDefault(event);
 						if (contextmenu.is(":visible") && contextmenu.parent()[0] == $(this)[0]) {
-							hidePopup(popup);
+							hidePopup();
 						} else {
+							$("ul.popup:visible", popup).hide();
 							contextmenu.appendTo($(this)).css({position: "absolute", opacity: 1}).show();
-							adjustContextMenuPosition(contextmenu, event);
+							adjustContextMenuPosition(event);
 						}
 					}
 				});
@@ -62,7 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 			if (event.stopPropagation) event.stopPropagation();
 		}
-		function hidePopup(popup) {
+		function hidePopup() {
 			$("ul.popup:visible",popup).hide();
 			if (popup.data("MyPopup.contextmenu")) popup.data("MyPopup.contextmenu").hide().appendTo("body");
 			return popup;
@@ -83,8 +85,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			$("ul.popup:visible", obj.siblings("li.popup")).hide();
 			return obj;
 		}
-		
-		this.filter(":not(.popup-click)").off("."+settings.namespace).on("mouseenter."+settings.namespace, function() { /* show popup if mouse entered it and after a little timeout */
+
+		popup.filter(":not(.popup-click)").off("."+settings.namespace).on("mouseenter."+settings.namespace, function() { /* show popup if mouse entered it and after a little timeout */
 			var self = $(this);
 			clear_timeout(self);
 			$("body").data(settings.timername,
@@ -92,32 +94,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 						toggle_popup(hide_siblings(self), true);
 					}, 350)
 			);
-		}).on("click."+settings.namespace+" dblclick."+settings.namespace, function(ev) {
+		}).on("click."+settings.namespace, function(ev) {
 			preventDefault(ev);
 			var self = $(this);
 			toggle_popup(hide_siblings(clear_timeout(self)));
 			$(":focusable:first",self).focus();
+		}).on("dblclick."+settings.namespace, function(ev) {
+			preventDefault(ev);
 		}).MyKeyboardEventHandler();
-		
+
 		/* clean up all events for .popup-click popups and handle click separatly:*/
-		this.filter(".popup-click").off("."+settings.namespace).on("click."+settings.namespace+" dblclick."+settings.namespace, function(ev) {
+		popup.filter(".popup-click").off("."+settings.namespace).on("click."+settings.namespace, function(ev) {
 			preventDefault(ev);
 			toggle_popup(hide_siblings($(this)));
+		}).on("dblclick."+settings.namespace, function(ev) {
+			preventDefault(ev);
 		}).MyKeyboardEventHandler();
-		
+
 		/* close siblings on focus change: */
-		this.on("focus."+settings.namespace, function() {
+		popup.on("focus."+settings.namespace, function() {
 			hide_siblings($(this));
 		});
-		
+
 		/* close popups if siblings in navigation are entered or clicked:*/
-		this.siblings(":not(.popup)").off("."+settings.namespace).on("focus."+settings.namespace+" click."+settings.namespace+" mouseenter."+settings.namespace, function() {
+		popup.siblings(":not(.popup)").off("."+settings.namespace).on("focus."+settings.namespace+" click."+settings.namespace+" mouseenter."+settings.namespace, function() {
 			hide_siblings($(this));
 		});
 		/* don't close siblings on mouseenter if a popup menu is a .popup-click popup: */
-		this.filter(".popup-click").siblings("li:not(.popup)").off("mouseenter."+settings.namespace);
-		
-		return this;
+		popup.filter(".popup-click").siblings("li:not(.popup)").off("mouseenter."+settings.namespace);
+
+		return popup;
 	};
-	
 }( jQuery ));

@@ -16,15 +16,82 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
 .tooltip {
-	color: black;
-	background-color: #feffef;
-	font-size: smaller;
-	box-shadow: 0px 0px 0px 4px rgba(144,144,144,0.5);
-	border-radius: 1px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: center;
+
 	position: absolute;
 	padding: 2px;
 	z-index:2147483646;
-	overflow: hidden;
+	min-width: 10ex;
+
+	color: black;
+	background: #feffef;
+	background: linear-gradient(to right, white, #feffef);
+	box-shadow: 0px 0px 4px 4px rgba(144,144,144,0.5);
+	border-radius: 2px;
+
+	font-size: smaller;
 	word-wrap: break-word;
 	white-space: pre-wrap;
+}
+.tooltip-content {
+	display: block;
+	flex: 1 0;
+}
+.tooltip-help {
+	display: none;
+
+	width: 21px;
+	height: 21px;
+
+	padding: 2px;
+	margin: 0;
+	border: 1px solid #ddd;
+	border-radius: 2px;
+
+	background-image: url(images/sprite.png);
+	background-repeat: no-repeat;
+	background-position: center -977px;
+	background-color: white;
+	transform: scale(0.7);
+}
+.tooltip.help .tooltip-help {
+	display: inline-block;
+}
+.tooltip-help:focus, .tooltip-help:hover {
+	background-color: #999;
+}
+.tooltip-help:active {
+	background-color: #666;
+}
+.tooltip-ta {
+	display: block;
+	position: absolute;
+	width: 0;
+	height: 0;
+}
+.tooltip.tooltip-top .tooltip-ta {
+	top: 100%;
+	border-top: 10px solid #feffef;
+}
+.tooltip.tooltip-bottom .tooltip-ta {
+	top: -10px;
+	border-bottom: 10px solid #feffef;
+}
+.tooltip.tooltip-left .tooltip-ta {
+	left: 10px;
+	border-right: 5px solid transparent;
+}
+.tooltip.tooltip-center .tooltip-ta {
+	left: calc(50% - 5px);
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+}
+
+.tooltip.tooltip-right .tooltip-ta {
+	right: 10px;
+	border-left: 5px solid transparent;
 }

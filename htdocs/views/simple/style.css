@@ -88,8 +88,11 @@ a {
 	background-position-x: 2px;
 	cursor: pointer;
 }
-#nav > ul > li:hover, #nav > ul > li:focus {
+#nav > ul > li:hover {
 	background-color: #ddd;
+}
+#nav > ul > li:active, #nav > ul > li:focus  {
+	background-color: #ccc;
 }
 #nav .popup  .action {
 	color: black;
@@ -240,6 +243,9 @@ table,th,td {
     background-image: url(images/sprite-hover.png);
     background-repeat: no-repeat;
     background-color: #ddd;
+}
+.action:active, .ui-button.action:active {
+	background-color: #aaa;
 }
 #headerSize {
 	width: 8em;
@@ -1466,17 +1472,16 @@ tr:focus .action.changeuri {
 		text-align: left;
 		float: none;
 		clear: both;
-		font-size: 15px;
-		color: black;
 		background: white;
 		background: linear-gradient(to right, white, #efefef);
 		border: 1px solid #ddd;
 		box-shadow: 3px 0 7px #ddd;
-		margin: 0;
 		padding: 0;
 		line-height: 1;
 	}
 	ul.popup li {
+		font-size: 15px;
+		color: black;
 		min-width: 150px;
 		min-height: 1.2em !important;
 		height: auto ;
@@ -1486,11 +1491,9 @@ tr:focus .action.changeuri {
 		margin: 0;
 		padding: 6px 1.6em 6px 22px;
 		border: 1px solid transparent;
-		font-size: 15px;
 		font-weight: initial;
 		text-transform: initial;
 		line-height: 1;
-		color: black;
 		text-shadow: none;
 	}
 	.popup.label {
@@ -1526,23 +1529,24 @@ tr:focus .action.changeuri {
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	li.popup:hover, li.popup:focus,
-	li.action:hover, li.action:focus {
+	li.popup:hover, li.action:hover {
 		border: 1px dotted #999;
 		background-color: #ddd;
 	}
-	li.action.disabled:hover,li.action.disabled:focus {
+	li.popup:focus, li.action:focus,
+	li.popup:active, li.action:active {
+		border: 1px solid white;
+		background-color: #aaa;
+	}
+	li.action.disabled:hover,li.action.disabled:focus,li.action.disabled:active {
 		background-color: #eee;
 	}
 	li.sep {
 		border-top: 1px solid #999 !important;
 	}
 /* Popup Positions */
+
 	ul.popup {
-		display: none;
-		position: absolute !important;
-		z-index: 1;
-		left: 150px;
 		margin-top: -26px;
 	}
 	#nav > ul > li.popup {

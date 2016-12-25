@@ -104,7 +104,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .quicktoggles-spacer:hover, .quicktoggles-spacer:focus {
 	background-image: url(quicktoggle-hover.png);
 }
-.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus {
+.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus, .filterbox .quicktoggles.quicktoggle-focus {
 	height: auto;
 	background-color: inherit;
 	box-shadow: 3px  0 7px #ddd;
@@ -139,23 +139,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	float: left;
 	
 }
-#nav .quicktoggles-spacer {
+#nav .quicktoggles-spacer, #nav .quicktoggles-spacer:focus {
 	background-position: 2px center;
 }
 .sidebar-iconsonly #nav .quicktoggle.action {
 	display: none !important;
 }
 .sidebar-iconsonly #nav .quicktoggles.popup:focus .quicktoggle.action, 
-.sidebar-iconsonly #nav .quicktoggles.popup:hover .quicktoggle.action {
+.sidebar-iconsonly #nav .quicktoggles.popup:hover .quicktoggle.action,
+.sidebar-iconsonly #nav .quicktoggles.popup.quicktoggle-focus .quicktoggle.action  {
 	display: inline-block !important;
 }
 .sidebar-iconsonly #nav .quicktoggles.popup:focus,
-.sidebar-iconsonly #nav .quicktoggles.popup:hover 
+.sidebar-iconsonly #nav .quicktoggles.popup:hover,
+.sidebar-iconsonly #nav .quicktoggles.popup.quicktoggle-focus 
  {
 	position:fixed !important;
 	display: block;
 	left: 0;
-	margin: 0;
+	margin: -6px 0 0 0;
 	background-color: #ddd;
 	box-shadow: 0 3px  7px #ddd;
+	padding: 6px 6px 6px 0px;
+	width: auto;
 }
