@@ -1,5 +1,5 @@
 quicktoggles				"Quick Toggles"
 quicktoggles.bars			"Show/Hide Sidebar/Head"
-quicktoggles.fullscreen		"Toggle fullscreen mode"
+quicktoggles.fullscreen		"Toggle full screen mode"
 quicktoggles.dot			"Show/Hide dot files/folders"
 quicktoggles.thumbnails		"Enable/Disable thumbnails"
