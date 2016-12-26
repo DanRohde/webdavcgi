@@ -100,8 +100,14 @@ ol,ul {
 ul {
 	list-style: initial;
 }
+a {
+	color: blue;
+}
 a:hover {
 	text-decoration: underline;
+}
+a.extern:after {
+	content: "\01F517";
 }
 .exicon {
 	background-image: url(../images/sprite.png) !important;
