@@ -18,7 +18,7 @@
 <body>
 <div id="content">
 <h1>Simple View Extensions</h1>
-<h2>Howto</h2>
+<h2>How to</h2>
 <ul>
 <li>Extensions are activated by putting the extension name to the <code>@EXTENSIONS</code> list in <code>webdav.conf</code>:
 <pre>
@@ -91,7 +91,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 # SETUP:
 # disallow_afsgroupchanges - disallows afs group changes 
 # ptscmd - sets the AFS pts command (default: /usr/bin/pts)
-# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_fileactionpopup - disables file action entry in popup menu
 # disable_apps - disables sidebar menu entry
 # template - sets the template (default: afsgroupmanager)
 </pre></td>
@@ -107,9 +107,9 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <pre>
 # SETUP:
 # diff - sets the path to GNU diff (default: /usr/bin/diff)
-# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_fileactionpopup - disables file action entry in popup menu
 # enable_apps - enables sidebar menu entry
-# files_only - disables folder comparision (recommended for SMB, DBB) 
+# files_only - disables folder comparison (recommended for SMB, DBB) 
 </pre></td>
 
 </tr>
@@ -121,14 +121,14 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <td><a class="screenshot" href="images/webdavcgi-webinterface-du.png"><img alt="Web interface disk usage dialog" class="screenshot" src="images/webdavcgi-webinterface-du.png"/></a></td>
 <td><pre>
 # SETUP:
-# enable_fileaction - enables fileaction entry
-# disable_fileactionpopup - disables fileaction entry in popup menu
+# enable_fileaction - enables file action entry
+# disable_fileactionpopup - disables file action entry in popup menu
 # disable_apps - disables sidebar menu entry
 # timeout - timeout in seconds (default: 60)
 # filelimit - limits file count for treemap (default: 50)
 # folderlimit - limits folder count for details and treemap (default: 50)
 # template - dialog template (default: diskusage)
-# followsymlinks - follows sym links (default: 1 (on))
+# followsymlinks - follows symbolic links (default: 1 (on))
 </pre></td>
 
 </tr>
@@ -141,8 +141,8 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <td><a class="screenshot" href="images/webdavcgi-webinterface.png"><img alt="Web interface" class="screenshot" src="images/webdavcgi-webinterface.png"/></a></td>
 <td><pre>
 # SETUP:
-# disable_fileaction - disables fileaction entry
-# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_fileaction - disables file action entry
+# disable_fileactionpopup - disables file action entry in popup menu
 # enable_apps - enables sidebar menu entry
 # disable_binarydownload - sets the right MIME type 
 </pre></td>
@@ -171,7 +171,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 #              (default: 1 [enabled])
 # mailrelay - sets the host(name|ip) of the mail relay 
 #             (default: localhost)
-# timeout - mailrelay timeout in seconds (default: 2)
+# timeout - mail relay timeout in seconds (default: 2)
 # sizelimit - defines the mail size limit excepted by your mail relay 
 #             (default: 20971520 [=20MB])
 </pre></td>
@@ -319,7 +319,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <tr>
 <td><a class="screenshot" href="images/webdavcgi-webinterface-search.png"><img alt="Web interface search dialog" class="screenshot" src="images/webdavcgi-webinterface-search.png"/></a></td>
 <td><pre>
-# disable_fileactionpopup - disables fileaction entry in popup menu
+# disable_fileactionpopup - disables file action entry in popup menu
 # disable_apps - disables sidebar menu entry
 # allow_contentsearch - allows file content search
 # resultlimit - sets result limit (default: 1000)
@@ -341,7 +341,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # redirect - sets folder/files for a redirect
 #             format: { '/full/file/path' =&gt; 'url' , ... }
 # enable_directredirect - enables redirects of direct calls to 
-#                         redirected pathes (default: off)
+#                         redirected paths (default: off)
 </pre></td>
 
 </tr>
@@ -372,7 +372,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # password - sets the password for the login (default: not used)
 # sizelimit - sets the mail size limit
 #             (depends on your SMTP setup, default: 20971520 bytes)
-# defaultfrom - sets default sender mail addresss (default: REMOTE_USER)
+# defaultfrom - sets default sender mail address (default: REMOTE_USER)
 # defaultto - sets default recipient (default: empty string)
 # defaultsubject - sets default subject (default: empty string)
 # defaultmessage - sets default message (default: empty string)
@@ -381,7 +381,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 # disable_fileactionpopup - disables entry in popup menu
 # disable_fileaction - disables entry in toolbar
 # enable_apps - enables sidebar menu entry
-# addressboook - Perl module name with a addressbook implementation
+# addressboook - Perl module name with a address book implementation
 #                LDAP: 'WebInterface::Extension::SendByMail::LdapAddressbook'
 #   ldap.server - sets the LDAP server name (IP or hostname)
 #   ldap.basedn - sets base DN for entry search 
@@ -408,7 +408,7 @@ Go to <a href="extension-publicuri.html">the PublicUri page</a>.
 <td><pre>
 # SETUP:
 # supportedsuffixes - list of supported file suffixes (without a dot)
-# sizelimit - file size limit (deafult:  2097152 (=2MB))
+# sizelimit - file size limit (default:  2097152 (=2MB))
 </pre></td>
 </tr>
 </table>

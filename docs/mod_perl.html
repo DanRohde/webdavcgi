@@ -133,7 +133,7 @@ $BACKEND_CONFIG{SMB} = {
   quota => 1, # optional
 
   domains => { #required
-    'MY.EXAMPLE.DOMAIN.ORG' => {	#required (multiple domain entries allowed for forrests)
+    'MY.EXAMPLE.DOMAIN.ORG' => {	#required (multiple domain entries allowed for forests)
       ## a domain based filter (overwrites sharefilter and userfilter above):
       sharefilter => [ qr/\$$/, ],	#optional
       usersharefilter => {		#optional

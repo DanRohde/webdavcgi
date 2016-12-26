@@ -40,9 +40,9 @@ Finder (MacOS X 10.x):
 </ul>
 iCal:
 <ul>
-  <li>You must specifiy the server port, e.g. cal.example.org:80</li>
+  <li>You must specify the server port, e.g. cal.example.org:80</li>
 </ul>
-Addressbook (MacOS X 10.6.x):
+Address book (MacOS X 10.6.x):
 <ul>
    <li>WebDAV CGI must run in a root context (WebDAV CGI must handle the root of your (virtual) server)</li>
    <li>You must specify the server port, e.g. abook.example.org:80</li>
@@ -71,12 +71,12 @@ Maybe it helps to increase the <code>Timeout</code> value in your Apache configu
 If a larger <code>Timeout</code> value does not fix the problem perhaps the Apache mod_reqtimeout is loaded. You should disable this module (Debian/Ubuntu: <code>a2dismod reqtimeout; /etc/init.d/apache2 restart</code>) or configure it with larger values.
 <h3>Apache error log: <code>Request exceeded the limit of X internal redirects due to probable configuration error. Use 'LimitInternalRecursion' to increase the limit if necessary. Use 'LogLevel debug' to get a backtrace. </code></h3>
 
-This is a typical rewrite misconfiguration. 
+This is a typical incorrect rewrite configuration. 
 A common mistake is to take the <code>.htaccess</code> rewrite rule example for the Apache configuration. 
 A rule like <code>RewriteRule .* ...</code> in the Apache configuration runs into a 'endless' recursion only stopped by the Apache limit (<code>LimitInternalRecursion</code>). 
 Please use a rule like <code>RewriteRule ^/  ...</code> to fix this problem.
 In a <code>.htaccess</code> makes the pattern <code>^/</code> no sense because this pattern will never match. 
-Rewite rule patterns in a <code>.htaccess</code> have to be relative to the current path therefore <code>.*</code> works fine. 
+Rewrite rule patterns in a <code>.htaccess</code> have to be relative to the current path therefore <code>.*</code> works fine. 
 <br/>
 If this does not help put the following to your Apache configuration:
 <pre>
@@ -195,7 +195,7 @@ EOF
 
 
 <h3>Web interface: Copy/Cut/Paste and bookmarks do not work as expected.</h3>
-WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface without encryption (http instead of https) all cookie based actions do not work.
+WebDAV CGI uses the 'secure' flag for cookies. If you access the Web interface without encryption (HTTP instead of HTTPS) all cookie based actions do not work.
 <h3>Web interface: missing stylesheets, locales, and/or icons</h3>
 <ol>
 <li>Check your <code>$INSTALL_BASE</code> variable in your <code>/etc/webdav.conf</code> (maybe you forget the trailing slash?)</li>

@@ -82,7 +82,7 @@ You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav c
     <li>Image::ExifTool (libimage-exiftool-perl)- (since v1.0.1)</li>
     <li>List::MoreUtils (liblist-moreutils-perl)- (since v1.1.0)</li>
     <li><span style="optional">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
-    <li><span style="optional">optional for LDAP addressbook of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
+    <li><span style="optional">optional for LDAP address book of SendByMail extension:</span>Net::LDAP (libnet-ldap-perl) - (since v0.9.1)</li>
     <li><span style="optional">optional for Kerberos helpers in conjunction with mod_perl (AFS, SMB):</span>Env::C - (since v1.0.0)</li>
     <li><span style="optional">optional for AFS Kerberos helpers in conjunction with mod_perl:</span>AFS::PAG - (since v1.0.1)</li>
   </ul>
@@ -120,8 +120,8 @@ perl -MCPAN -e "install Env::C"
 <ul>
 <li> Speedy - increases the performance of WebDAV CGI (Debian/Ubuntu package: speedy-cgi-perl) </li>
 <li> Ghostscript - allows the web interface of WebDAV CGI to generate thumbnails for PDF/PS files (Debian/Ubuntu package: ghostscript) </li>
-<li> smbclient (only for SMB backend users) - allowes the web interface to show quota information (Debian/Ubuntu package: smbclient) </li>
-<li> kinit (only for SMB and AFS backend users) - allowes you to omit mod_auth_kerberos (Debian/Ubuntu package: krb5-user) </li>
+<li> smbclient (only for SMB backend users) - allows the web interface to show quota information (Debian/Ubuntu package: smbclient) </li>
+<li> kinit (only for SMB and AFS backend users) - allowed you to omit mod_auth_kerberos (Debian/Ubuntu package: krb5-user) </li>
 <li> libreoffice - allows file conversions</li>
 
 </ul>
@@ -225,7 +225,7 @@ Require valid-user
 	<li> the new $ALLOW_PATHINFO (default: 0) enables former enabled path input in toolbar (quick navigation) again</li>
 	</ul>
 </li>
-<li>  The new extension <a href="extensions.html#MotD">MotD</a> is activated by default now und shows /etc/motd as a dialog to the web users of WebDAV CGI.</li>
+<li>  The new extension <a href="extensions.html#MotD">MotD</a> is activated by default now and shows /etc/motd as a dialog to the web users of WebDAV CGI.</li>
 </ul>
 <h3>Upgrading from 1.1.0 to 1.1.1</h3>
 <ul>
@@ -324,7 +324,7 @@ DROP TABLE webdav_props_old;
 	<li> Search - enables file/content search support</li>
 	<li> SendByMail - sends files/folders by e-mail ( Perl module MIME::Entity from MIME tools required; Debian/Ubuntu: <code>apt-get install libmime-tools-perl</code>)</li>
 	<li> SourceCodeViewer - shows syntax highlighted source code</li>
-	<li> TextEditor - allows text file modifcations</li>
+	<li> TextEditor - allows text file modifications</li>
 	<li> ViewerJS - shows OpenDocument and PDF files</li>
 	<li> Zip - allows ZIP download for files/folders and ZIP upload with decompression</li>
 	</ul>
@@ -423,7 +423,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 <li> <code>$IGNOREFILEPERMISSIONS</code> config variable was removed</li>
 <li> <code>$BACKEND</code> variable was added and is required (allowed values: 'FS', 'AFS', 'GFS', 'SMB', 'DBB') </li>
 <li> <code>$SHOW_MIME</code> and <code>$SHOW_PERM</code> were removed: use the new options <code>@ALLOWED_TABLE_COLUMNS</code> and <code>@VISIBLE_TABLE_COLUMNS</code> instead</li>
-<li> <code>%MIMETYPES</code> format was changed: only a single filename suffix is allowed as a key (instead of a space separted list of suffixes); please use <code>$MIMEFILE</code> instead</li>
+<li> <code>%MIMETYPES</code> format was changed: only a single filename suffix is allowed as a key (instead of a space separated list of suffixes); please use <code>$MIMEFILE</code> instead</li>
 <li> <code>@EXTENSIONS</code> parameter was added: contains a list of extensions </li>
 <li> <code>$ENABLE_SYSINFO</code> was removed: add <code>'SysInfo'</code> to the <code>@EXTENSIONS</code> list</li>
 <li> <code>$ENABLE_PROPERTIES_VIEWER</code> was removed: add <code>'PropertiesViewer'</code> to the <code>@EXTENSIONS</code> list</li>
@@ -433,10 +433,10 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 </ol>
 <h3>Upgrading from &le;0.6.x to &ge;0.7.x</h3>
 <ol>
-<li>two new Perl modules are used by WebDAV CGI: <code>IO::Compress::Gzip</code> and <code>IO::Compress::Deflate</code> (both are integraded in most Linux dists)</li>
+<li>two new Perl modules are used by WebDAV CGI: <code>IO::Compress::Gzip</code> and <code>IO::Compress::Deflate</code> (both are integrated in most Linux dists)</li>
 <li>WebDAV CGI is no longer a single file distribution therefore:
 	<ol>
-	<li>unpack the new <a href="index.html#download">installation package</a> in your preferred installlation path, e.g. <code>cd /etc; unzip webdavcgi-0.7.?.zip</code></li>
+	<li>unpack the new <a href="index.html#download">installation package</a> in your preferred installation path, e.g. <code>cd /etc; unzip webdavcgi-0.7.?.zip</code></li>
 	<li>link the path for easier upgrades, e.g. <code>ln -s /etc/webdavcgi-0.7.? /etc/webdavcgi</code></li>
 	<li>copy the webdav.pl script to your CGI directory and allow execution, e.g. 
 <pre>cp /etc/webdavcgi/cgi-bin/webdav.pl /usr/lib/cgi-bin 
@@ -677,7 +677,7 @@ There are two ways to share a folder between users of a group (not for AFS users
 		<li> set set-GID-flag to the folder and make it readable/executable/writeable for the group: <code>chmod g+srwx SHAREDFOLDER</code></li>
 		<li> set the <code>$UMASK</code> parameter in your WebDAV CGI config file: <code>$UMASK = 0002;</code></li>
 	</ul>
-Attention: You need a single database for all users to share WebDAV locks and properties. If you use a file based database like SQLite you have to use a singe file writeable for all users.
+Attention: You need a single database for all users to share WebDAV locks and properties. If you use a file based database like SQLite you have to use a singe file writable for all users.
 
 </li>
 <li> Use the UID/GID Wrapper to map all users to a common user:
@@ -933,7 +933,7 @@ Requirements:
 <li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
 <li> You <b>must not use a setuid/setgid wrapper</b> because mod_auth_kerberos creates a ticket cache file and the WebDAV CGI script needs read rights for the Kerberos ticket cache.</li>
 <li> You need a wrapper if you use Speedy (see <a href="#speedy">Speed Support</a> section) because the SMB backend needs a fresh Kerberos ticket.</li>
-<li> unough temporary file space for thumbnails and ZIP upload/download</li>
+<li> enough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
 
 Apache example:
@@ -969,7 +969,7 @@ Requirements:
 <li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
 <li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
 <li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible): the <code>TICKET_LIFETIME</code> (in seconds) should be a little bit smaller than your Kerberos ticket lifetime</li>
-<li> unough temporary file space for thumbnails and ZIP upload/download</li>
+<li> enough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
 Kerberos configuration example: <code>/etc/krb5.conf</code>:
 <pre id="kerberosconfig">
@@ -1099,7 +1099,7 @@ Requirements:
 <li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
 <li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
 <li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible)</li>
-<li> unough temporary file space for thumbnails and ZIP upload/download</li>
+<li> enough temporary file space for thumbnails and ZIP upload/download</li>
 </ol>
 Apache example:
 <pre>
@@ -1165,7 +1165,7 @@ Requirements:
 </ul> 
 How it works:
 <ul>
-<li>It initializes the document root with <code>git init</code> and adds existing files if neccessary.</li>
+<li>It initializes the document root with <code>git init</code> and adds existing files if necessary.</li>
 <li>The git directory <code>.git</code> is hidden for all users.</li>
 </ul>
 <code>/etc/webdav.conf</code> example:
@@ -1179,7 +1179,7 @@ $BACKEND_CONFIG{GIT} = {
 
 	
 	## path to a lockfile (default: /tmp/webdav-git.lock) 
-	## it have to be writeable by all users using the git repo:
+	## it have to be writable by all users using the git repo:
 	lockfile =&gt; '/tmp/webdav-git.lock',
 };
 ...
@@ -1261,7 +1261,7 @@ $BACKEND_CONFIG{RO}{backend} = 'FS';
 ...
 </pre>
 <h2 id="s3b">Amazon S3 browser backend S3B</h2>
-<p> The S3B backend is a simple Amazon S3 browser. It is tested only with Ceph Radows S3 gateway and supports:</p>
+<p> The S3B backend is a simple Amazon S3 browser. It is tested only with Ceph Rados S3 gateway and supports:</p>
   <ul>
   <li>buckets: create, delete</li>
   <li>files: upload, download, rename, delete, copy, move</li>
@@ -1279,7 +1279,7 @@ $BACKEND_CONFIG{S3B} = {
         access_id => '[myaccessid]',   # required
         secret_key => '[mysecretkey]', # required
         host => '[myradosservername]', # optional, default: s3.amazonaws.com
-        bucketprefix => '[myaccessid][separator like "-"]', # optional, default: undefined (usefull for a Ceph Rados gateway with a required access id in a bucket name)
+        bucketprefix => '[myaccessid][separator like "-"]', # optional, default: undefined (useful for a Ceph Rados gateway with a required access id in a bucket name)
         secure => 1, # optional, 1: https, 0: http, default: 0
         retry => 1,  # optional, default: 0 
         timeout=>2,  # optional, default: 0
