@@ -462,6 +462,7 @@ sub _get_presets {
 sub _create_popups {
     my ( $self, $attributes, $top, $attrname ) = @_;
     my @popups = ();
+    $attrname //= q{};
     if ($top) {
         push @popups,
             {

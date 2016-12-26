@@ -1,0 +1,145 @@
+/*********************************************************************
+(C) ZE CMS, Humboldt-Universitaet zu Berlin
+Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+body {
+	border-left: 1ex solid transparent;
+	counter-reset: h2counter;
+}
+h1 {
+	border-bottom: 3px double #ccc;
+	font-size: 150%;
+}
+h2 {
+	font-size: 120%;
+	border-bottom: 1px solid #ccc;
+	counter-reset: h3counter;
+}
+
+h2:before {
+	content: counter(h2counter) ". ";
+	counter-increment: h2counter;
+}
+h2.toc:before {
+	content: none;
+	counter-increment: none;
+}
+h3:before {
+	content: counter(h2counter) "." counter(h3counter) " ";
+	counter-increment: h3counter;
+}
+
+:target {
+	color: #990000;
+	animation: fontsize 2s linear 1s;
+}
+@keyframes fontsize {
+	  0%	{ font-size: inherit; }
+	 25%	{ font-size: 1.5em; }
+	 50%	{ font-size: 2em; }
+	 75%	{ font-size: 1.5em; }
+	100%	{ font-size: inherit; }
+}
+h3, h4, h5 {
+	font-size: 100%;
+}
+
+.ref {
+	font-size: smaller;
+	position: relative;
+	line-height: 0;
+	vertical-algin: baseline;
+	top: -0.3em;
+}
+
+.ref:before {
+	content: '[';
+}
+
+.ref:after {
+	content: ']';
+}
+
+dl {
+	border: 3px double #ccc;
+	padding: 2px;
+}
+
+dt {
+	width: 15em;
+	font-weight: bold;
+	color: #666;
+	padding: 0;
+}
+
+dt:after {
+	content: ':';
+}
+
+dd {
+	padding: 0 0 0 0.5em;
+	margin-left: 15em;
+	margin-top: -1.2em;
+}
+
+ol,ul {
+	padding-left: 3ex;
+}
+ul {
+	list-style: initial;
+}
+a:hover {
+	text-decoration: underline;
+}
+.exicon {
+	background-image: url(../images/sprite.png) !important;
+	background-position-x: center !important;
+	background-repeat: no-repeat;
+	height: 24px !important;
+	width: 24px !important;
+	display: inline-block;
+	border: 1px solid #ddd;
+	border-radius: 2px;
+	padding: 0;
+	margin: 0;
+	vertical-align: text-bottom;
+	opacity: 1 !important;
+	cursor: default !important;
+}
+.tableconfigbutton, .tableconfigbutton:hover {
+	display: inline-block;
+	vertical-align: text-bottom;
+	opacity: 1;
+	cursor: default;
+}
+body > div > div {
+	padding-left: 2ex;
+	border-left: 1ex solid #ccc;
+}
+.key {
+	padding: 0 2px;
+	border: 1px solid #ccc;
+	border-radius: 0.2em;
+	font-size: 0.8em;
+	background: #eee;
+	background: linear-gradient(to bottom,#eee,white,#eee);
+	box-shadow: 0.1em 0.1em 0.2em rgba(0,0,0,0.1);
+	display: inline;
+}
+@media print {
+	a.extern:after {
+		content: ' [' attr(href) ']';
+	}
+}

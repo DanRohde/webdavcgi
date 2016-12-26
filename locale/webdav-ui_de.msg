@@ -85,6 +85,8 @@ folderisfiltered               "Dieser Ordner-Inhalt wird gefiltert (Regex-Filte
 foldernotreadable              "Dieser Ordner ist nicht lesbar (fehlende Zugriffsrechte)."
 foldernotwriteable             "In diesem Ordner darf nicht geschrieben werden (fehlende Zugriffsrechte)."
 go                             "Wechseln"
+help                           "Hilfe"
+home                           "Startpunkt"
 lastmodified                   "Letzte Änderung"
 lastmodifiedformat             "%d.%m.%Y %H:%M:%S Uhr"
 management                     "Dateien/Ordner-Verwaltung"

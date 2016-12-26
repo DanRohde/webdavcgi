@@ -87,11 +87,12 @@ sub init {
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
-        action  => 'search',
-        label   => 'search',
-        path    => $params->{path},
-        type    => 'li',
-        classes => 'access-readable sel-dir'
+        action    => 'search',
+        label     => 'search',
+        path      => $params->{path},
+        type      => 'li',
+        classes   => 'access-readable sel-dir',
+        accesskey => 4,
     };
 }
 

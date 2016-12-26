@@ -143,16 +143,16 @@ function initStatusbar() {
 			$("#statusbar").toggleClass("enabled", data.value);
 		}
 	});
-	$("#statusbar").MyTooltip(500);
+	$("#statusbar").MyTooltip();
 	
 }
 function initTooltips() {
 	$("#flt").on("fileListChanged", function() {
-		$("#flt,#bookmarks").MyTooltip(500);
+		$("#flt,#bookmarks").MyTooltip();
 	}).on("bookmarksChanged",function() {
-		$("#bookmarks").MyTooltip(500);
+		$("#bookmarks").MyTooltip();
 	});
-	$("#nav,#controls,#autorefreshtimer,#popupmenu").MyTooltip(500);
+	$("#nav,#controls,#autorefreshtimer,#popupmenu").MyTooltip();
 }
 function initKeyboardSupport() {
 	$("#flt").on("fileListChanged", function() { 
@@ -323,7 +323,7 @@ function handleSidebarCollapsible(event) {
 	handleWindowResize();
 }
 function initCollapsible() {
-	$(".action.collapse-sidebar").click(handleSidebarCollapsible).MyKeyboardEventHandler().MyTooltip(500);
+	$(".action.collapse-sidebar").click(handleSidebarCollapsible).MyKeyboardEventHandler().MyTooltip();
 	if (cookie("sidebar") && cookie("sidebar") != "true") {
 		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", cookie("sidebar") == "false").toggleClass("sidebar-iconsonly", cookie("sidebar") == "iconsonly");
 		$(".action.collapse-sidebar").toggleClass("collapsed", cookie("sidebar") == "false").toggleClass("iconsonly", cookie("sidebar") == "iconsonly");
@@ -338,7 +338,7 @@ function initCollapsible() {
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
 		togglecookie("head","false",collapsed, 1);
 		handleWindowResize();
-	}).MyTooltip(500).MyKeyboardEventHandler();
+	}).MyTooltip().MyKeyboardEventHandler();
 	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
 
@@ -1297,7 +1297,7 @@ function handleJSONResponse(response) {
 	if (response.warn) notifyWarn(response.warn);
 	if (response.message) notifyInfo(response.message);
 	if (response.quicknav) {
-		$("#quicknav").html(response.quicknav).MyTooltip(500);
+		$("#quicknav").html(response.quicknav).MyTooltip();
 		$("#quicknav a").click(function(event) {
 			preventDefault(event);
 			changeUri($(this).attr("href"));

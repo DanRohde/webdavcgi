@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="author" content="Daniel Rohde">
+<link rel="stylesheet" href="../contrib/contrib.min.css">
+<link rel="stylesheet" href="../style.min.css">
+<link rel="stylesheet" href="style.css">
+
+<script src="../contrib/contrib.min.js"></script>
+<script src="script.js"></script>
+<title>User manual</title>
+</head>
+<body>
+	<a id="pagetop" href="#pagetop" accesskey="t"></a>
+	<a href="#terms" accesskey="8"></a>
+	<a href="#copyright" accesskey="6"></a>
+	<h1>User manual</h1>
+	<div>
+		<h2 class="toc">Contents of this page</h2>
+		<div id="toc"></div>
+
+		<h2 id="introduction">Introduction</h2>
+		<div>
+			... to the web interface. 
+			<h3 id="prerequisites">Prerequisites</h3>
+			... or the author says requirements:
+			<dl>
+				<dt>
+					Secure connection (HTTP<span style="text-decoration: underline">S</span>)
+				</dt>
+				<dd>is required to secure your data (files, account password)
+					and to enable cookies ...</dd>
+				<dt>Cookies</dt>
+				<dd>are required for settings (language selection, ...),
+					bookmarks, clipboard (copy, cut, paste), folder history,...</dd>
+				<dt>JavaScript</dt>
+				<dd>enables all features and without JavaScript nothing works in the web interface.</dd>
+			</dl>
+
+			<h3 id="navigation">Navigation</h3>
+			The web interface has 3 main parts:
+			<ol>
+				<li>head area at the top with a language switch, date and time,
+					and logon information,</li>
+				<li>application bar at the left side,</li>
+				<li>content area with a toolbar, the file and folder list, and
+					an optional status bar</li>
+			</ol>
+			
+			<h3 id="buttonsandicons">Buttons and icons</h3>
+			Not every button has a label and therefore there are tooltips. Place the mouse cursor over it or put the keyboard focus on it and wait a couple of seconds to get a tooltip. Some tooltips have 
+			a help button to get a context help.
+			
+			<h3 id="dnd">Drag and drop support</h3>
+			Drag and drop makes it easier to upload files and folders, or to customize the file and folder list.
+			 
+			<h3 id="contextmenu">Context menu</h3>
+			The file and folder list has a context menu (right mouse lick on a file or folder row) with some standard file actions and
+			 a lot of additional features (depending on your local installation).
+			
+			<h3 id="keyboardsupport">Keyboard support</h3>
+			
+			<ul>
+				<li>Tabbing with (<div class="key">&#8679; Shift</div>+) <div class="key">&#8633; Tab</div> key is implemented and can be used to reach all
+					important things like buttons, actions, etc.</li>
+				<li>There are default shortcuts<a href="#ref1" class="ref">1</a>
+					to reach file actions and some web interface elements like file and folder list, toolbar, and application bar.
+				</li>
+				<li>How to use shortcuts or which modifiers are needed depends on the web browser<a
+					href="#ref2" class="ref">2</a> and operating system, e.g.:
+					<ul>
+					<li>Mozilla Firefox: on Windows, FreeBSD, and Linux: 
+						<div class="key">Alt</div>+<div class="key">&#8679; Shift</div>, 
+						on Mac: <div class="key">Ctrl</div>+<div class="key">&#8997; Opt</div></li>
+					<li>Google Chrome: on Windows, FreeBSD, and Linux: <div class="key">Alt</div> 
+						and sometimes <div class="key">&#8679; Shift</div> too, 
+						on Mac: <div class="key">Ctrl</div>+<div class="key">&#8997; Opt</div></li>
+					</ul> 
+				</li>
+				<li>To get a full list of available shortcuts use shortcut <div class="key">0</div>.</li>
+				<li>In the file list you can use 
+					<ul>
+						<li>the cursor keys <div class="key">&uarr;</div> and <div class="key">&darr;</div>,
+							 <div class="key">&#9650; Page up</div> and <div class="key">&#9660; Page down</div>, 
+							 <div class="key">&#8676; Home</div>  and <div class="key">&#8677; End</div> keys for navigation too,</li>
+						<li>the <div class="key">&nbsp;&nbsp;Space&nbsp;&nbsp;</div> key to select files,</li>
+						<li>the  <div class="key">&#8629; Enter</div> key to change the folder oder download a file,</li>
+						<li>or the <div class="key">Del</div> key to delete files and folders.</li>
+					</ul>
+				</li>
+			</ul>
+			<h3 id="toolbar">Toolbar</h3>
+			<ul>
+				<li>The toolbar changes it's contents depending on the current file or folder selection.</li>
+				<li>At the left side of the toolbar the quick navigation helps you to navigation back to upper folders.</li>
+				<li>Right of the quick navigation are buttons to create files and folders, uploading files and folders, and so on.</li>
+				<li>If no file or folder is selected, you'll find a bookmarks menu <div class="exicon action bookmarkmenu"></div> and a autorefresh menu <div class="exicon action autorefreshmenu"></div>.</li>
+			</ul>
+			
+		</div>
+		<h2 id="basics">Basic tasks</h2>
+		<div>
+			.. with files and folders:
+			<dl>
+			<dt>Download a single file</dt>
+			<dd>
+				<ul>
+				<li>single click on the filename,</li>
+				<li>double click on the matching file list row,</li>
+				<li>click on the file actions button <div class="exicon fileactions"></div> and select "Download",</li>
+				<li>or open the context menu with a single right click on the matching file list row and select "Download"</li>
+				</ul>
+			</dd>
+			<dt>Upload a file</dt>
+			<dd>
+				<ul>
+				<li> click on the new menu button <div class="action new exicon"></div>, select <div class="action upload exicon"></div> and a file dialog opens,</li>
+				<li> or open your favourite file manager and use drag &amp; drop to put your files and folders into the file and folder list</li> 
+				</ul>
+			</dd>
+			<dt>Change to another folder</dt>
+			<dd>
+				<ul>
+				<li>click on the foldername, </li>
+				<li>double click on the matching folder row,</li>
+				<li>use the quick navigation in the toolbar,</li>
+				<li>or use web browser history back or forward</li>
+				</ul>
+			</dd>
+			<dt>Delete a single file or folder</dt>
+			<dd>click on the file actions button <div class="exicon fileactions"></div> and select "Delete"</dd>
+			<dt>(De)select file(s) or folder(s) for further actions</dt>
+			<dd>
+				<ul>
+				<li>single left click in the row (Attention: don't click on the filename, action button, or icon),</li>
+				<li>after one file or folder was (de)selected you can combine the single left click with <div class="key">&#8679; Shift</div> 
+					to (de)select all files and folders between the first and second selected file or folder
+			</li></ul>
+			</dd> 
+			<dt>Delete a list of files or folders</dt>
+			<dd> 
+				<ol>
+					<li>select a list of files and folders</li>
+					<li>and use one of the following options:
+						<ul>
+							<li> toolbar button <div class="action delete exicon"></div>,</li>
+							<li> context menu (right click to row) and click on "Delete"</li>
+						</ul>
+					</li>
+				</ol>
+			</dd>
+			</dl>
+		</div>
+		<h2 id="customization">Customization</h2>
+		<div>
+			... of the web interface.
+			<h3 id="webinterface">Web interface</h3>
+			Take a look at the <div class="action settings exicon"></div> Settings dialog to change the layout and behavoir the web interface.
+			<dl>
+			<dt>Show/Hide application bar or header</dt>
+			<dd>click on the toggle buttons on the bottom left of the application bar or the bottom right of the head area to (un)collapse or hide one or both</dd>
+			</dl>
+			<h3 id="filelist">File list</h3>
+			<dl>
+				<dt>Column order</dt>
+				<dd>single left click on column header and hold mouse key down
+					(Drag &amp; Drop)</dd>
+
+				<dt>Column width</dt>
+				<dd>
+					<ul>
+						<li>double left click on table header changes the width in
+							two steps: 1. minimum size, 2. default size,</li>
+						<li>or a single left click on left or right border on column
+							header and hold mouse key down (mouse cursors should changed
+							to a resize cursor before left click)</li>
+					</ul>
+				</dd>
+
+				<dt>File and folder list sort order</dt>
+				<dd>
+					<ul>
+						<li>single left click on table header,</li>
+						<li>or use the list options dialog: click on list options icon <div class="tableconfigbutton"></div> at
+							the right of the table header</li>
+					</ul>
+				</dd>
+
+				<dt>Show or hide columns</dt>
+				<dd>
+					click on list options icon
+					<div class="tableconfigbutton"></div>
+					at the right of the table header to open the list options dialog
+				</dd>
+
+			</dl>
+		</div>
+		<h2 id="references">References and external links</h2>
+		<div>
+			<ol>
+				<li><a id="ref1" target="_blank"
+					href="https://www.standardaccesskeys.com/SAK2014/" class="extern">SAK2014:
+						Standard Access Keys 2014</a></li>
+				<li><a id="ref2" target="_blank"
+					href="https://en.wikipedia.org/wiki/Access_key" class="extern">Wikipedia.org:
+						Access key</a></li>
+				<li><a id="ref3" target="_blank"
+					href="http://www.gnu.org/licenses/" class="extern">GNU General
+						Public License</a></li>
+			</ol>
+		</div>
+		<h2 id="terms">Terms and conditions</h2>
+		<div>
+
+			This software and documenation is published under the terms of GPLv3<a
+				href="#ref3" class="ref">3</a>:
+			<pre>
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+			</pre>
+		</div>
+
+		<h2 id="Copyright">Copyright</h2>
+		<div>
+			&copy; ZE Computer- und Medienservice, Written by Daniel Rohde <a
+				href="mailto:d.rohde@cms.hu-berlin.de">&lt;d.rohde@cms.hu-berlin.de&gt;</a>
+		</div>
+	</div>
+	<hr>
+</body>
+</html>

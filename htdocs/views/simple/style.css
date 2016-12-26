@@ -277,10 +277,12 @@ table,th,td {
 	font-weight: normal;
 	line-height: 1;
 	flex: 0 0;
+	cursor: pointer;
+}
+.fileactions {
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
 	background-position: center -1658px;
-	cursor: pointer;
 }
 #fileactions.hidefileactions {
 	display: none;
@@ -786,6 +788,10 @@ td.center {
 	background: url(images/sprite.png) no-repeat 0 -1780px;
 	padding-left: 20px;
 }
+.helpdialog.ui-dialog .ui-dialog-title {
+	background: url(images/sprite.png) no-repeat 0 -981px;
+	padding-left: 20px;
+}
 .viewfilterinfo {
 	background-color: yellow;
 	font-size: 0.8em;
@@ -1069,7 +1075,6 @@ img {
 }
 .tableconfigbutton {
 	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfdBg4KHwNUL/0wAAAAqElEQVQY02XOOQrCYBSF0e/HDKSwsUjUSsEdCA5ECwXLkEbci+Aq3IU7URC0tAkBxQ1ogoQIzyaD0Vvew308gIEekqgzMyrp47Z2xk1JU/C+euPaPmDXF1aoC0e0UhLzbvmmobYIAXZe19TK7L27qcOIDooTl5zmDdGEFEEQIqblMZ89Ac+MhHFJNRyWPIqVV33cLTYxbpUmxBm9+IlHhCBs+MuQmDX6B9oaOj8nvRhuAAAAAElFTkSuQmCC) no-repeat center center;
-	float: right;
 	width: 16px;
 	height: 16px;
 	border: 1px solid #999999;

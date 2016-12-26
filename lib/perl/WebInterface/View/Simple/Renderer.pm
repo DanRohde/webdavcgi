@@ -279,12 +279,17 @@ sub render_quicknav_path {
         $href .= $el eq $base || $href eq $base ? $el : q{/}.$el;
         my $uel = uri_unescape( $el );
         my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $uel;
-        $content .= $cgi->a( {
+        my $attr = {
                 -title => $uel,
                 -class => 'action quicknav-el' . ($el eq $base ? ' quicknav-el-home' : q{}),
                 -style => 'max-width:'.$MAXFILENAMESIZE.'em',
                 -href  => $href . ($query // q{}),
-        }, $cgi->escapeHTML( $text ) );
+        };
+        if ($el eq $base) {
+            $attr->{-accesskey}  = 1;
+            $attr->{-aria_label} = $self->tl('home').q{ }.$uel;
+        }
+        $content .= $cgi->a($attr, $cgi->escapeHTML( $text ) );
     }
     return $content;
 }

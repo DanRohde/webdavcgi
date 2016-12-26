@@ -12,7 +12,7 @@
 	<!--IF($isviewfiltered())--><div class="viewfilterinfo">$tl(filter) $filterInfo() </div><!--ENDIF-->
 
 	<table id="fileListTable" class="isreadable-$isreadable iswriteable-$iswriteable unselectable-$unselectable">
-		<thead class="fileListHead">
+		<thead class="fileListHead" data-help="$help(filelist)">
 		<tr>
 <!--TEMPLATE(selector)[
 			<th id="headerSelector" class="sorter-false resizable-false dragaccept -hidden" data-name="selector">

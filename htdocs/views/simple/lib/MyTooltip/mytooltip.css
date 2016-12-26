@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	position: absolute;
 	padding: 2px;
 	z-index:2147483646;
-	min-width: 10ex;
+	min-width: 3ex;
 
 	color: black;
 	background: #feffef;
@@ -44,28 +44,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .tooltip-help {
 	display: none;
 
-	width: 21px;
-	height: 21px;
-
-	padding: 2px;
-	margin: 0;
+	width: 1.2em;
+	height: 1.2em;
+	padding: 0;
+	margin: 2px 4px;
 	border: 1px solid #ddd;
 	border-radius: 2px;
-
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: center -977px;
-	background-color: white;
-	transform: scale(0.7);
+	line-height: 1.2em;
+	text-align: center;
+	vertical-align: middle;
+}
+.tooltip-help:after {
+	content: '?';
 }
 .tooltip.help .tooltip-help {
 	display: inline-block;
 }
-.tooltip-help:focus, .tooltip-help:hover {
-	background-color: #999;
+.tooltip-help:hover {
+	background-color: #ebeebe;
 }
-.tooltip-help:active {
-	background-color: #666;
+.tooltip-help:active,.tooltip-help:focus {
+	background-color: #dcddcd;
 }
 .tooltip-ta {
 	display: block;

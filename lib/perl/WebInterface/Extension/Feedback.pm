@@ -64,7 +64,7 @@ sub handle_hook_fileactionpopup {
         label     => $ACTION,
         path      => ${$params}{path},
         type      => 'li',
-        accesskey => 'f',
+        accesskey => 9,
     };
 }
 
