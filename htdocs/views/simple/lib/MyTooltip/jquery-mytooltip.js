@@ -130,7 +130,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 			var help = el.data("help"); 
 			if (!help) help = el.parents("[data-help]:first").data("help");
-			tooltip.toggleClass("help", help!=undefined ).data("help", help);
+			tooltip.toggleClass("help", help != undefined);
+			if (help != undefined) tooltip.data("help", help);
+			else tooltip.removeData("help");
 			tooltip.data("element",el);
 
 			if (settings.delay>0) {
