@@ -895,6 +895,17 @@ img {
 .action.guide {
 	background-position-y: -1815px;
 }
+.tooltip-help {
+	background-image: url(images/sprite.png);
+	background-position: center -1823px;
+	background-repeat: no-repeat;
+}
+.tooltip-help:hover {
+	background-image: url(images/sprite-hover.png);
+}
+.tooltip-help:after {
+	content: none;
+}
 .guidedialog.ui-dialog .ui-dialog-title {
 	background-image: url(images/sprite-hover.png);
 	background-repeat: no-repeat;

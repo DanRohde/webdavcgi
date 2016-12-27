@@ -2176,7 +2176,7 @@ function initToolBox() {
 	};
 }
 function initGuide() {
-	$.fn.MyTooltip.helphandler = handleGuide;
+	$.fn.MyTooltip.defaults.helphandler = handleGuide;
 	$(".action.guide").click(function() {
 		handleGuide.call(this, $(this).data("help"));
 	});
