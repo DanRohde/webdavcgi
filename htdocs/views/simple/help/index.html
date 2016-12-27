@@ -9,13 +9,13 @@
 
 <script src="../contrib/contrib.min.js"></script>
 <script src="script.js"></script>
-<title>User manual</title>
+<title>User guide</title>
 </head>
 <body>
 	<a id="pagetop" href="#pagetop" accesskey="t"></a>
 	<a href="#terms" accesskey="8"></a>
 	<a href="#copyright" accesskey="6"></a>
-	<h1>User manual</h1>
+	<h1>User guide</h1>
 	<div>
 		<h2 class="toc">Contents of this page</h2>
 		<div id="toc"></div>
@@ -37,16 +37,27 @@
 				<dt>JavaScript</dt>
 				<dd>enables all features and without JavaScript nothing works in the web interface.</dd>
 			</dl>
-
+			Of course, the latest browser version is required, so that everything works well.
 			<h3 id="navigation">Navigation</h3>
+			<a href="wischema.svg"><img src="wischema.svg" alt="Web interface parts" style="float:right; width: 200px;padding-right: 2ex;"></a>
 			The web interface has 3 main parts:
-			<ol>
-				<li>head area at the top with a language switch, date and time,
-					and logon information,</li>
+			<ul>
+				<li>head area at the top with some useful information,</li>
 				<li>application bar at the left side,</li>
 				<li>content area with a toolbar, the file and folder list, and
-					an optional status bar</li>
-			</ol>
+					an optional status bar.</li>
+			</ul>
+			<h3 id="headarea">Head area</h3>
+			<ul>
+				<li>The head area shows in most cases your account name and at the right date and time information.</li> 
+				<li>There is also a language switch, but not all dialogs are translated to the offered languages.</li> 
+				<li>The header can be <a href="#customization">hidden</a> to save space for the folder list.</li>
+			</ul>
+			<h3 id="applications">Applications</h3>
+			<ul>
+				<li>The available applications depends on your local installation and can change after file or folder selection.</li>
+				<li>To save space you can <a href="#customization">collapse</a> to an icon-only view or to hide the application bar. </li>
+			</ul>
 			<h3 id="toolbar">Toolbar</h3>
 			<ul>
 				<li>The toolbar changes it's contents depending on the current file or folder selection.</li>
@@ -203,6 +214,39 @@
 
 			</dl>
 		</div>
+		<h2 id="trouble">Troubleshooting Guide</h2>
+		<div>
+			<div class="accordion">
+			<h3>Cut&amp;Paste or Copy&amp;Paste don't work as expected.</h3>
+			<div>
+				Please, allow your web browser to store cookies. And if you allow it and it doesn't work you should check the URL, 
+				because all cookies have a secure flag and without SSL (HTTPS) cookies don't work.
+			</div>
+			<h3>My file list is empty.</h3>
+			<div>
+				Please check your filter form (at the right side of the toolbar) and clean the input field or reload the complete page (<div class="key">F5</div>).
+				If it doesn't help, ask your local administrator to look on the server for troubleshooting.
+			</div>
+			<h3>I'm missing my (sub)folders after a folder upload. Or: The folder upload doesn't work.</h3>
+			<div>
+				There are currently problems with old web browser versions and Firefox and should be solved in later versions of Firefox. 
+				Please check your browser version and upgrade if necessary.   
+				There are some alternative solutions for folder uploads yet:
+				<ul>
+					<li> use Drag&amp;Drop feature (see <a href="#basic">Basic tasks</a>),</li>
+					<li> use Google Chrome,</li>
+					<li> or use WebDAV.</li>
+				</ul> 
+			</div>
+			<h3>I cannot find a logout button, why? Or: The logout button doesn't work properly.</h3>
+			<div>
+				This web application uses a special, standardized authentication mechanism (Basic Access Authentication<a href="#ref5" class="ref">5</a>). 
+				There is no proper way to logout a user without quitting the web browser (the only save way).
+				But there is a trick, where a special logout script sends a wrong password response (status 401) to the web browser. 
+				Sometimes a web browser believes this and forgets the correct password, sometimes not.
+			</div>
+			</div>
+		</div>
 		<h2 id="references">References and external links</h2>
 		<div>
 			<ol>
@@ -213,6 +257,8 @@
 				<li><a id="ref3" target="_blank"
 					href="http://www.gnu.org/licenses/" class="extern">GNU General Public License</a></li>
 				<li><a id="ref4" target="_blank" class="extern"	href="https://danrohde.github.io/webdavcgi/">WebDAV CGI: Home page</a></li>
+				<li><a id="ref5" target="_blank"
+					href="https://tools.ietf.org/html/rfc2617" class="extern">RFC2617: HTTP Authentication: Basic and Digest Access Authentication</a></li>
 			</ol>
 		</div>
 		<h2 id="terms">Terms and conditions</h2>

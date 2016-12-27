@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$.fn.MyPopup = function(options) {
 		var popup = this;
 
-		if (options === "close") return	hidePopup();
+		if (options === "close") return hidePopup();
 
 		var settings = $.extend( {
 			namespace: "popupnavigation",
@@ -83,6 +83,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 		function hide_siblings(obj) {
 			$("ul.popup:visible", obj.siblings("li.popup")).hide();
+			//obj.siblings("li.popup").find("ul.popup:visible").hide();
 			return obj;
 		}
 

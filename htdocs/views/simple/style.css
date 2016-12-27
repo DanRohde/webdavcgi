@@ -431,13 +431,17 @@ tr.isreadable-no:hover {
 	color: #aaaaaa;
 }
 
-.filterbox {
+li.filterbox {
 	position: absolute;
 	right: 22px;
 	color: #888888;
 	background-color: #F7F7F7;
 	font-weight: bold;
 	z-index: 80;
+}
+ul.filterbox {
+	padding: 0;
+	margin: 0;
 }
 .filterbox .action.clearfilter {
 	background-position: left -694px;
@@ -886,6 +890,16 @@ img {
 }
 .contact-button:hover, .contact-button:focus {
 	background-image: url(images/sprite-hover.png);
+}
+
+.action.guide {
+	background-position-y: -1815px;
+}
+.guidedialog.ui-dialog .ui-dialog-title {
+	background-image: url(images/sprite-hover.png);
+	background-repeat: no-repeat;
+	background-position: 0 -1820px;
+	padding-left: 20px;
 }
 .small {
 	font-size: 0.2em;

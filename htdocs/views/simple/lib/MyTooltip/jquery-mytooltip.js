@@ -16,14 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 (function ( $ ) {
 	$.fn.MyTooltip = function(options) {
-		var settings = $.extend({ 
-				delay: 500, // open tooltip with a daily of ...
-				showtimeout: 3000,
-				showhelptimeout: 7000,
-				hidetimeout: 0, // hide tooltip if focus lost
-				hidehelptimeout: 3000,
-				helphandler : handleHelp,
-			}, typeof options == "number" ? { delay: options }: options);
+		var settings = $.extend({}, $.fn.MyTooltip.defaults, typeof options === "number" ? { delay: options }: options);
 		var toel = $("body");
 		var w = $(window);
 		var tooltip, tooltipcontent, tooltipta;
@@ -33,23 +26,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			tooltip = $("<div/>")
 						.addClass("tooltip")
 						.append(
-							tooltipcontent,
 							[
 							$("<div/>").addClass("tooltip-help")
-									   .attr({"tabindex":1})
-									   .on("click", function (ev) {
-										   settings.helphandler.call(tooltip.data("element"), tooltip.data("help")); 
+										.attr({"tabindex":1})
+										.on("click", function() {
+											settings.helphandler.call(tooltip.data("element"), tooltip.data("help"));
 										})
 										.MyKeyboardEventHandler(),
+							tooltipcontent,
 							tooltipta
 							]
 						)
 						.appendTo($("body")).hide()
-						.on("mouseenter mousemove focus", function(event) {
+						.on("mouseenter mousemove focus", function() {
 							if (tooltip.data("help") != undefined) clearTimeout();
 							else hideTooltip(settings.hidetimeout);
 						})
-						.on("mouseleave blur", function(event) {
+						.on("mouseleave blur", function() {
 							hideTooltip(settings.showtimeout);
 						});
 			toel.data("tooltip", tooltip);
@@ -62,30 +55,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		initElement(this.find("[title]"));
 		if (this.attr("title")) initElement(this);
 
-		function handleHelp(help) {
-			$("<div/>").append(
-					$("<iframe/>").attr({ name: "help", src: help, width: "99%", height: "99%"}).text(help)
-			).dialog({ width: w.width()/2, height: w.height()/2, title: $("#help").text(), dialogClass: "helpdialog" });
-		}
-		function preventDefault(event) {
-			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
-			if (event.stopPropagation) event.stopPropagation();
-		}
 		function setTooltipPosition(event, el) {
 			var isFocus = event.type == "focus";
-			var left = isFocus ? el.offset().left + el.outerWidth() - 15 : event.pageX;
-			var top = isFocus ? el.offset().top + el.outerHeight() + 10 : event.pageY + 20;
+			var left = isFocus ? el.offset().left + el.outerWidth() + settings.fOffsetX : event.pageX + settings.mOffsetX;
+			var top = isFocus ? el.offset().top + el.outerHeight() + settings.fOffsetY : event.pageY + settings.mOffsetY;
 			var maxWidth = Math.max(Math.floor(w.width() / 2), 50);
 			var maxHeight = Math.max(Math.floor(w.height() / 2), 10);
 			tooltip.removeClass("tooltip-left tooltip-right tooltip-top tooltip-bottom");
 			if (left + tooltip.outerWidth() > w.width()) { // flip tooltip to the right 
-				left = ( isFocus ? el.offset().left : event.pageX ) - tooltip.outerWidth() - Math.min(el.outerWidth(), 15);
+				left = ( isFocus ? el.offset().left - settings.fOffsetX : event.pageX - settings.mOffsetX )
+						- tooltip.outerWidth();
 				tooltip.addClass("tooltip-right");
 			} else {
 				tooltip.addClass("tooltip-left");
 			}
 			if ( top + tooltip.outerHeight() > w.height() ) { // flip tooltip to the top
-				top = (isFocus ? el.offset().top : event.pageY) - tooltip.outerHeight();
+				top = (isFocus ? el.offset().top - settings.fOffsetY : event.pageY - settings.mOffsetY) - tooltip.outerHeight();
 				tooltip.addClass("tooltip-top");
 			} else {
 				tooltip.addClass("tooltip-bottom");
@@ -167,5 +152,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				.on("mousemove.tooltip", handleMouseMove);
 		}
 		return this;
+	};
+	$.fn.MyTooltip.handleHelp = function(help) {
+		var w = $(window);
+		$("<div/>").append(
+				$("<iframe/>").attr({ name: "help", src: help, width: "99%", height: "99%"}).text(help)
+		).dialog({ width: w.width()/2, height: w.height()/2, title: $("#help").text(), dialogClass: "helpdialog" });
+	};
+	$.fn.MyTooltip.defaults = {
+		delay: 500, // open tooltip with a daily of ... ms
+		showtimeout: 3000, // hide tooltip after ... ms
+		showhelptimeout: 7000, // hide tooltip with help button after ... ms
+		hidetimeout: 0, // hide tooltip in case of focus lost in ... ms
+		hidehelptimeout: 3000, // in case of focus lost hide tooltip with help button in ... ms
+		helphandler : $.fn.MyTooltip.handleHelp, // handler for the help button
+		mOffsetX : 0, // x offset from mouse cursor
+		mOffsetY : 20, // y offset from mouse cursor
+		fOffsetX : -10, // x offset  from focused element left or right corner
+		fOffsetY : 10, // y offset from focused element from top or bottom corner
 	};
 }( jQuery ));

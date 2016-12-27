@@ -100,7 +100,7 @@ ol,ul {
 ul {
 	list-style: initial;
 }
-a {
+a, .ui-widget-content a {
 	color: blue;
 }
 a:hover {

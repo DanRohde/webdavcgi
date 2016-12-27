@@ -19,6 +19,8 @@ var ToolBox = {};
 $(function() {
 	
 	initUIEffects();
+
+	initGuide();
 	
 	initPopupMenu();
 	
@@ -1847,14 +1849,14 @@ function initNavigationActions() {
 	$("#nav .action").click(handleFileListActionEvent).MyKeyboardEventHandler();
 	$("#nav > ul > li.popup").addClass("popup-click");
 	$("#nav li.popup").MyPopup();
-	$("#flt").on("fileListSelChanged", function() { $("#nav li.popup").MyPopup("close"); });
+	$("#flt").on("beforeFileListChange fileListSelChanged", function() { $("#nav li.popup").MyPopup("close"); });
 }
 function initToolbarActions() {
 	$(".toolbar li.uibutton").button();
 	$(".toolbar .action").click(handleFileListActionEvent).MyKeyboardEventHandler();
 	$(".toolbar > li.popup").addClass("popup-click");
 	$(".toolbar li.popup").MyPopup();
-	$("#flt").on("fileListSelChanged", function() { $(".toolbar li.popup").MyPopup("close"); });
+	$("#flt").on("beforeFileListChange fileListSelChanged", function() { $(".toolbar li.popup").MyPopup("close"); });
 	
 	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
 		var self = $(this);
@@ -2172,6 +2174,18 @@ function initToolBox() {
 			uncheckSelectedRows : uncheckSelectedRows,
 			updateFileList : updateFileList
 	};
+}
+function initGuide() {
+	$.fn.MyTooltip.helphandler = handleGuide;
+	$(".action.guide").click(function() {
+		handleGuide.call(this, $(this).data("help"));
+	});
+}
+function handleGuide(help) {
+	var w = $(window);
+	$("<div/>").append(
+			$("<iframe/>").attr({ name: "guide", src: help, width: "99%", height: "99%"}).text(help)
+	).dialog({ width: w.width()/2, height: w.height()/2, title:$(".action.guide").data("title"), dialogClass: "guidedialog" });
 }
 // ready ends:
 });
