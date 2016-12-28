@@ -143,6 +143,7 @@ body > div > div {
 	background: linear-gradient(to bottom,#eee,white,#eee);
 	box-shadow: 0.1em 0.1em 0.2em rgba(0,0,0,0.1);
 	display: inline;
+	white-space: nowrap;
 }
 @media print {
 	a.extern:after {

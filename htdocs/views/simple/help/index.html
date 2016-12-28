@@ -55,8 +55,8 @@
 			</ul>
 			<h3 id="applications">Applications</h3>
 			<ul>
-				<li>The available applications depends on your local installation and can change after file or folder selection.</li>
-				<li>To save space you can <a href="#customization">collapse</a> to an icon-only view or to hide the application bar. </li>
+				<li>The available applications depend on your local installation and can change after a file or folder selection.</li>
+				<li>To save space you can <a href="#customization">collapse</a> the application bar to an icon-only view or to hide it. </li>
 				<li>And a settings button to open a settings dialog for some <a href="#customizations">customizations</a> is also available on the applications or side bar.</li>
 			</ul>
 			<h3 id="toolbar">Toolbar</h3>
@@ -65,6 +65,9 @@
 				<li>At the left side of the toolbar the quick navigation helps you to navigation back to upper folders.</li>
 				<li>Right of the quick navigation are buttons to create files and folders, uploading files and folders, and so on.</li>
 				<li>If no file or folder is selected, you'll find a bookmarks menu <div class="exicon action bookmarkmenu"></div> and a autorefresh menu <div class="exicon action autorefreshmenu"></div>.</li>
+				<li>The filter box at the right site of the toolbar allows you to hide all files and folders in the list that do not match your input. 
+					A click on the cross button (appears if a filter input exists) behind the input field removes the filter.
+					Some characters in this filter box have a special meaning (<code>.*+?^$()[]{}\</code>), because this box supports regular expressions<a href="#ref6" class="ref">6</a>.</li>
 			</ul>
 			<h3 id="fileandfolderlist">File and folder list</h3>
 			<ul>
@@ -76,15 +79,35 @@
 					TB (tera bytes=B&times;1024<sup>4</sup>), PB  (peta bytes=B&times;1024<sup>5</sup>).</li>
 			</ul>
 			<h3 id="buttonsandicons">Buttons and icons</h3>
-			Not every button has a label and therefore there are tooltips. Place the mouse cursor over it or put the keyboard focus on it and wait a couple of seconds to get a tooltip. Some tooltips have 
+			Not every button has a label and therefore there are tooltips. Place the mouse cursor over it or put the 
+			<a href="#keyboardsupport">keyboard focus</a> on it and wait a couple of seconds to get a tooltip. Some tooltips have 
 			a help button to get a context help.
+
+			<h3 id="dialogsandmessage">Dialogs and messages</h3>
+			<ul>
+			<li>
+			All "dangerous" actions like delete ask for confirmation with a dialog. 
+			Some dialogs can be supressed for future actions by deselecting "&#128505; Always ask for confirmation.". 
+			To get the confirmation dialog back, use the <div class="action settings exicon"></div> Settings dialog (tab "Dialogs") in the <a href="#applications">applications bar</a>.
+			</li>
+			<li>
+			After a file or folder action (upload, delete, rename, and so on) you will get a message with information of success or failure.
+			This information will be displayed in the top center of the screen (over head and toolbar). 
+			After some seconds, this message box disappears. You can also click with the mouse on the message box to hide it.
+			</li></ul>
+
 			
-			<h3 id="dnd">Drag and drop support</h3>
-			Drag and drop makes it easier to upload files and folders, or to customize the file and folder list.
-			 
+			<h3 id="dnd">Drag and drop support (Drag&amp;Drop, or D&amp;D)</h3>
+			Drag and drop makes it easier 
+			<ul>
+			<li> to upload files and folders selected from your favorite file manager (Windows Explorer, Mac Finder, Xfe, Nautilus, Konqueror, ...),</li>
+			<li>to move or copy (hold <div class="key">&#8679; Shift</div> while dragging) your files and folders from current to a subfolder,</li>  
+			<li> or to <a href="#customization">customize</a> the file and folder list.</li>
+			 </ul>
 			<h3 id="contextmenu">Context menu</h3>
 			The file and folder list has a context menu (right mouse lick on a file or folder row) with some standard file actions and
-			 a lot of additional features (depending on your local installation).
+			 a lot of additional features (depending on your local installation). 
+			 If you have nothing selected in the file list, the right clicked file or folder will be taken for the context action.
 			
 			<h3 id="keyboardsupport">Keyboard support</h3>
 			
@@ -94,7 +117,7 @@
 				<li>There are default shortcuts<a href="#ref1" class="ref">1</a>
 					to reach file actions and some web interface elements like file and folder list, toolbar, and application bar.
 				</li>
-				<li>How to use shortcuts or which modifiers are needed depends on the web browser<a
+				<li>How to use shortcuts or which modifiers are needed depend on your web browser<a
 					href="#ref2" class="ref">2</a> and operating system, e.g.:
 					<ul>
 					<li>Mozilla Firefox: on Windows, FreeBSD, and Linux: 
@@ -234,7 +257,7 @@
 				Please check your browser version and upgrade if necessary.   
 				There are some alternative solutions for folder uploads yet:
 				<ul>
-					<li> use Drag&amp;Drop feature (see <a href="#basic">Basic tasks</a>),</li>
+					<li> use Drag&amp;Drop feature (see <a href="#basics">Basic tasks</a>),</li>
 					<li> use Google Chrome,</li>
 					<li> or use WebDAV.</li>
 				</ul> 
@@ -260,6 +283,8 @@
 				<li><a id="ref4" target="_blank" class="extern"	href="https://danrohde.github.io/webdavcgi/">WebDAV CGI: Home page</a></li>
 				<li><a id="ref5" target="_blank"
 					href="https://tools.ietf.org/html/rfc2617" class="extern">RFC2617: HTTP Authentication: Basic and Digest Access Authentication</a></li>
+				<li><a id="ref6" target="_blank"
+					href="https://en.wikipedia.org/wiki/Regular_expression" class="extern">Wikipedia.org: Regular expression</a></li>
 			</ol>
 		</div>
 		<h2 id="terms">Terms and conditions</h2>

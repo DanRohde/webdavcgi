@@ -1263,11 +1263,6 @@ img {
 #statusbar .selected-files-stats-content div {
 	height: 15px;
 }
-#statusbar div.checkbox {
-	display: inline-block;
-	width: 14px; height: 14px;
-	border: 1px solid black;
-}
 .file-icon {
 	background: url(images/sprite.png) no-repeat left -782px;
 	padding-left: 18px;
