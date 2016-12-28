@@ -1517,6 +1517,7 @@ tr:focus .action.changeuri {
 	height: 1em;
 	text-align: center;
 	vertical-align: middle;
+	line-height: 1;
 }
 .contexthelp:after {
 	content: "?";

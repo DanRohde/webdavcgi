@@ -145,6 +145,14 @@ body > div > div {
 	display: inline;
 	white-space: nowrap;
 }
+code {
+	font-family: monospace;
+	font-size: 0.8em;
+	border: 1px solid #ddd;
+	background-color: #eee;
+	padding: 1px 1ex;
+	margin: 0;
+}
 @media print {
 	a.extern:after {
 		content: ' [' attr(href) ']';

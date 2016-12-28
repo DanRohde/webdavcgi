@@ -79,18 +79,33 @@ input.search.start, input.search.cancel {
 .search.query, .search.typeonly, .search.infolders, .search.size, .search.duplicate {
 	margin-bottom: 8px;
 }
-.search.result.entry {
-	clear:both;
-}
 .search.result.entry:hover, .search.result.entry:focus  {
 	background-color: #ededed;
 }
-.search.result.entry.parent.folder {
+.search.result.entry.folder,.search.result.entry.file {
 	display: inline-block;
-	float: right;
+	float: left;
+}
+.search.result.entry-info {
+	display: inline-block;
+	cursor: pointer;
+	height: 24px;
+}
+.search.result.entry.label {
+	display: inline-block;
+	width: 20ex;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.search.result.entry.parent.folder, .search.result.entry.dummyparent {
+	display: inline-block;
 	opacity: 0.3;
 	padding-right: 1ex;
 	filter: Alpha(opacity=30);
+	cursor: pointer;
+	width: 20px;
+	margin-left: 2px;
 }
 .search.result.entry.parent.folder:hover, .search.result.entry.parent.folder:focus {
 	opacity: 1;
@@ -99,12 +114,10 @@ input.search.start, input.search.cancel {
 
 .search.result.entry .icon {
 	float: none;
-	vertical-align: middle;
-	margin: 1px;
-	padding-right: 10px;
 }
 .search.result.entry.duplicates {
 	background-color: #ffaaaa;
+	clear: both;
 }
 .search.result.entry.duplicates.limitexceeded {
 	background-color: #ffffaa;

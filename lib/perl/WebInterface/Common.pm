@@ -746,6 +746,7 @@ sub get_lang_filename {
     my ($self, $basepath, $basename, $suffix) = @_;
     my $filename = "${basename}_${LANG}.${suffix}";
     if (!-e "${basepath}${filename}") { $filename = "${basename}.${suffix}"; }
+    if (!-e "${basepath}${filename}") { $filename = "${LANG}/${basename}.${suffix}"}
     return -e "${basepath}${filename}" ? $filename : undef;
 }
 sub get_help_filepath {

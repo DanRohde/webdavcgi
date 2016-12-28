@@ -64,7 +64,14 @@ sub get_uri {
     $vbase .= $vbase !~ /\/$/xms ? q{/} : q{};
     return $vbase . $VHTDOCS . '_EXTENSION(' . $extension . ')_/' . $file;
 }
-
+sub get_help_baseuri {
+    my ( $self ) = @_;
+    return $self->get_uri($self->{EXTENSION}, 'help/');
+}
+sub get_help_filepath {
+    my ( $self ) = @_;
+    return $self->get_location($self->{EXTENSION}, 'help/');
+}
 sub handle_hook_javascript {
     my ( $self, $config, $params ) = @_;
     return

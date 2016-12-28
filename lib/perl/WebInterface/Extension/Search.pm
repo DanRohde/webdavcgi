@@ -611,20 +611,19 @@ sub _handle_search {
     my %counter = ( started => time(), results => 0, files => 0, folders => 0 );
 
     if ( $self->{query} = $self->{cgi}->param('query') ) {
-        $self->{query} = join '.*?', map { quotemeta } split /\s+/xms,
+        $self->{query} = join '.*?', map { quotemeta } split /(?<!\\)\s+/xms,
           $self->{query};                                      ## replace all
-        $self->{query} =~ s/([^\#\\]*)\\[%*]/$1\.\*\?/xmsg;    ## wildcards *,%
-        $self->{query} =~ s/([^\#\\]*)\\[?_]/$1\./xmsg;        ## wildcards ?,_
-        $self->{query} =~ s/([^\#\\]*)\\\#/$1\\d+/xmsg;        ## wildcard #
+        $self->{query} =~ s/(?<!\\)\\[%*]/\.\*\?/xmsg;    ## wildcards *,%
+        $self->{query} =~ s/(?<!\\)\\[?_]/\./xmsg;        ## wildcards ?,_
+        $self->{query} =~ s/(?<!\\)\\\#/\\d+/xmsg;        ## wildcard #
         $self->{query} =~
-          s/([^\#\\]*)\\\[(.*?([^\#\\]))\\\]/$1\[$2\]/xmsg;    ## [...]
-        $self->{query} =~ s/\\\\([\#?%*_\[\]])/$1/xmsg;    ## quoted wildcards
+          s/(?<!\\)\\\[(.*?([^\#\\]))\\\]/\[$2\]/xmsg;    ## [...]
+        $self->{query} =~ s/\\\\([\#?%*_\[\]\s])/$1/xmsg;    ## quoted wildcards and spaces
         if ( $self->{query} =~ /[.][*][?]or[.][*][?]/xmsi ) {
             $self->{query} = '('
               . join( q{|}, split /[.][*][?]or[.][*][?]/xmsi, $self->{query} )
               . ')';
         }
-
         $self->{query} =~
           s/([.][*][?]){2,}/$1/xmsg;    ## replace .*? sequence with one .*?
         if ( eval { 'super' =~ /$self->{query}/xms } ) {

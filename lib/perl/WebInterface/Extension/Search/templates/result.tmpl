@@ -1,8 +1,12 @@
 <div class="search result entry $type" >
+	<div data-href="$fileuri" class="search result entry-info $type" >
+		<img src="$iconurl" class="search $iconclass" alt="icon" title="$mime"/>
+		<div class="search result entry label" data-htmltooltip="$filename%0D$tl(search.parentfolder): $dirname/%0D$tl(size): $size%0D$tl(lastmodified): $lastmodified)%0D$parentfolder">$qfilename</div>
+	</div>
 	<!--IF( q@$filename@ ne ".")-->
-		<a class="search result entry parent folder icon category-folder suffix-folder" title="$tl(search.openparentfolder)" href="$dirname" target="_blank"></a>
+		<div class="search result entry parent folder icon category-folder suffix-folder" data-htmltooltip="$tl(search.openparentfolder)%0D$dirname" data-href="$dirname"></div>
+	<!--ELSE-->
+		<div class="search result entry dummyparent"></div>
 	<!--ENDIF-->
-	<a href="$fileuri" target="_blank" class="search result entry $type" ><img src="$iconurl" class="search $iconclass" alt="icon" title="$mime"/><span title="$tl(search.open) $filename ($tl(size): $size, $tl(lastmodified): $lastmodified)">$qfilename</span></a>
-	<div class="search result fileuri">$parentfolder</div>
 	
 </div>

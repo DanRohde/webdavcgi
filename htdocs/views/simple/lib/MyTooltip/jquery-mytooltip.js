@@ -68,7 +68,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			var maxHeight = Math.max(Math.floor(w.height() / 2), 10);
 			tooltip.removeClass("tooltip-left tooltip-right tooltip-top tooltip-bottom");
 			if (left + tooltip.outerWidth() > w.width()) { // flip tooltip to the right 
-				left = ( isFocus ? el.offset().left - settings.fOffsetX : event.pageX - settings.mOffsetX )
+				left = ( isFocus ? el.offset().left + settings.fOffsetX : event.pageX + settings.mOffsetX )
 						- tooltip.outerWidth();
 				tooltip.addClass("tooltip-right");
 			} else {

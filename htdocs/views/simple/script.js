@@ -83,7 +83,7 @@ $(function() {
 	initToolBox();
 	
 	initGuide();
-		
+
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 

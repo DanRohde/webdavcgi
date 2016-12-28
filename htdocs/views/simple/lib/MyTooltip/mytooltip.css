@@ -49,6 +49,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	content: "🔗";
 }
 
+.tooltip code {
+	border: 1px solid #a9aa9a;
+	background-color: #edeede;
+	font-family: monospace;
+	font-size: 0.80em;
+	padding: 1px 1ex;
+}
+
 .tooltip-content {
 	display: block;
 	flex: 1 0;
