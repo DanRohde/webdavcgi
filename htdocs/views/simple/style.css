@@ -1225,12 +1225,12 @@ img {
 #statusbar .notify {;
 	width: 20ex;
 	background-color: white;
-	margin: 2px 1ex;
-	border: 0;
+	border: 1px solid #ddd;
 	padding: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	height: 18px;
 }
 #statusbar .unselectable {
 	outline: none;
@@ -1257,7 +1257,7 @@ img {
 }
 #statusbar .files-stats-content,
 #statusbar .selected-files-stats-content {
-	padding: 7px 4px;;
+	padding: 6px 4px;;
 }
 #statusbar .files-stats-content div,
 #statusbar .selected-files-stats-content div {
