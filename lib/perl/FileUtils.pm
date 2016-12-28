@@ -25,7 +25,7 @@ our $VERSION = '1.0';
 
 use base qw( Exporter );
 our @EXPORT_OK =
-  qw( get_dir_info get_local_file_content_and_type move2trash rcopy read_dir_by_suffix
+  qw( get_dir_info get_local_file_content get_local_file_content_and_type move2trash rcopy read_dir_by_suffix
   rmove is_hidden filter get_error_document stat2h get_file_limit );
 
 use CGI;
@@ -169,6 +169,10 @@ sub get_local_file_content_and_type {
         $content = $default;
     }
     return ( $defaulttype, $content );
+}
+sub get_local_file_content {
+    my ($fn, $default, $defaulttype) = @_;
+    return (get_local_file_content_and_type($fn, $default, $defaulttype))[1];
 }
 
 sub move2trash {

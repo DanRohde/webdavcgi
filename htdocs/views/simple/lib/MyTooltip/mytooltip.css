@@ -37,6 +37,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	word-wrap: break-word;
 	white-space: pre-wrap;
 }
+.tooltip a {
+	color: red;
+}
+
+.tooltip a:hover, .tooltip a:focus {
+	text-decoration: underline;
+	text-decoration-color: red;
+}
+.tooltip a.extern:after {
+	content: "🔗";
+}
+
 .tooltip-content {
 	display: block;
 	flex: 1 0;

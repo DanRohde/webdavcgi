@@ -593,6 +593,9 @@ sub exec_template_function {
     if ( $func eq 'help' ) {
         return $self->handle_help($param);
     }
+    if ( $func eq 'inchelp' ) {
+        return $self->handle_inc_help($param);
+    }
     return q{};
 }
 
@@ -745,11 +748,26 @@ sub get_lang_filename {
     if (!-e "${basepath}${filename}") { $filename = "${basename}.${suffix}"; }
     return -e "${basepath}${filename}" ? $filename : undef;
 }
+sub get_help_filepath {
+    return "${INSTALL_BASE}htdocs/views/${VIEW}/help/";
+}
+sub get_help_baseuri {
+    my ($self) = @_;
+    return $self->get_vbase()."${VHTDOCS}views/${VIEW}/help/";
+}
 sub handle_help {
     my ($self, $param) = @_;
-    my $filepath = "${INSTALL_BASE}htdocs/views/${VIEW}/help/";
+    my $filepath = $self->get_help_filepath();
     my ($helpbase, $anchor) = $param=~/^(.*)(?:\#(.*))?$/xms ? ($1, $2 // $1) : ($param, $param);
     my $helpfile = $self->get_lang_filename($filepath, $helpbase, 'html') // $self->get_lang_filename($filepath, 'index','html');
-    return $self->get_vbase()."${VHTDOCS}views/${VIEW}/help/${helpfile}".q{#}.${anchor};
+    return $self->get_help_baseuri().${helpfile}.q{#}.${anchor};
+}
+sub handle_inc_help {
+    my ($self, $param) = @_;
+    my $filepath = $self->get_help_filepath();
+    my ($helpbase, $anchor) = $param=~/^(.*)(?:\#(.*))?$/xms ? ($1, $2 // $1) : ($param, $param);
+    my $helpfile = $self->get_lang_filename($filepath, $helpbase, 'html') // $self->get_lang_filename($filepath, 'index','html');
+    my $content = FileUtils::get_local_file_content("${filepath}/$helpfile");
+    return $self->{cgi}->escape($content=~m{<body>(.*)</body>}xmsi ? $1 : $content);
 }
 1;

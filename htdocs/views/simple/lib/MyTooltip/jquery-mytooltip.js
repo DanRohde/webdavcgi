@@ -16,10 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 (function ( $ ) {
 	$.fn.MyTooltip = function(options) {
-		var settings = $.extend({}, $.fn.MyTooltip.defaults, typeof options === "number" ? { delay: options }: options);
+		var settings = $.extend({}, $.fn.MyTooltip.defaults, typeof options === "number" ? { delay: options }: options, getSettingsFromEl(this) );
 		var toel = $("body");
 		var w = $(window);
 		var tooltip, tooltipcontent, tooltipta;
+		
 		if (!toel.data("tooltip")) {
 			tooltipcontent = $("<div/>").addClass("tooltip-content");
 			tooltipta = $("<div/>").addClass("tooltip-ta");
@@ -52,9 +53,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			tooltipta = $(".tooltip-ta", tooltip);
 		}
 
-		initElement(this.find("[title]"));
-		if (this.attr("title")) initElement(this);
+		initElement(this.find("[title],[data-htmltooltip]"));
+		if (this.attr("title") || this.attr("data-htmltooltip")) initElement(this);
 
+		function getSettingsFromEl(el) {
+			if (!el.data("tooltip-settings")) return {};
+			return el.data("tooltip-settings");
+		}
 		function setTooltipPosition(event, el) {
 			var isFocus = event.type == "focus";
 			var left = isFocus ? el.offset().left + el.outerWidth() + settings.fOffsetX : event.pageX + settings.mOffsetX;
@@ -87,7 +92,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 		function hideTooltip(t) {
 			clearTimeout();
-			if (t==0) {
+			if (t==-1) {
+				return;
+			} else if (t==0) {
 				tooltip.hide();
 			} else {
 				toel.data("tttimeout", window.setTimeout(function() {
@@ -101,12 +108,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (!text) text = "";
 			return el.attr("data-tooltip", text).removeAttr("title");
 		}
+		
 		function showTooltip(event, el) {
 			clearTimeout();
 			tooltip.hide();
 			handleTitleAttribute(el);
 			if (el.data("htmltooltip")) {
-				tooltipcontent.html(el.data("htmltooltip"));
+				tooltipcontent.html(decodeURIComponent(el.data("htmltooltip")));
 			} else {
 				tooltipcontent.text(el.attr("data-tooltip"));
 			}

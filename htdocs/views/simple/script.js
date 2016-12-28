@@ -20,8 +20,6 @@ $(function() {
 	
 	initUIEffects();
 
-	initGuide();
-	
 	initPopupMenu();
 	
 	initBookmarks();
@@ -84,7 +82,8 @@ $(function() {
 	
 	initToolBox();
 	
-	
+	initGuide();
+		
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -2177,6 +2176,7 @@ function initToolBox() {
 }
 function initGuide() {
 	$.fn.MyTooltip.defaults.helphandler = handleGuide;
+	$(".contexthelp").MyTooltip({delay:0,showtimeout:-1,hidetimeout:-1});
 	$(".action.guide").click(function() {
 		handleGuide.call(this, $(this).data("help"));
 	});

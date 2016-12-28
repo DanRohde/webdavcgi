@@ -1507,6 +1507,23 @@ tr:focus .action.changeuri {
 	font-family: monospace;
 }
 
+.contexthelp {
+	display: inline-block;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 0.8em;
+	cursor: help;
+	width: 1em;
+	height: 1em;
+	text-align: center;
+	vertical-align: middle;
+}
+.contexthelp:after {
+	content: "?";
+}
+a.extern:after {
+	content: "🔗";
+}
 /* Popup menues */
 /* Popup Layout */
 	ul.popup {
