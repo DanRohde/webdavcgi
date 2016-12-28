@@ -153,6 +153,6 @@ sub handle_hook_fileactionpopup {
 
 sub handle_hook_statusbar {
     my ( $self, $config, $params ) = @_;
-    return $self->{cgi}->div({-class=>'motd motd-statusbar', -tabindex=>0},q{});
+    return $self->{cgi}->li({-class=>'motd motd-statusbar', -tabindex=>0},q{});
 }
 1;

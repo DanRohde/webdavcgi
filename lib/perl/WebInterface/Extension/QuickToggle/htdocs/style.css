@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-
+/* icons */
 .quicktoggle.fullscreen {
 	background-image: url(fullscreen-on.png);
 }
@@ -66,8 +66,82 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .quicktoggle.bars.off:hover, .quicktoggle.bars.off:focus {
 	background-image: url(bars-off-hover.png);
 }
+.quicktoggle-icon {
+	background-image: url(quicktoggle.png);
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+.quicktoggle-icon:hover, .quicktoggle-icon:focus {
+	background-image: url(quicktoggle-hover.png);
+}
+/* layout and positions */
+.quicktoggle-icon, .quicktoggle-buttons, .quicktoggle.action {
+	display: inline-block;
+}
+.quicktoggle-content.quicktoggle-focus {
+	box-shadow: 3px 0 7px #ddd;	
+	background: #efefef;
+	background: linear-gradient(to right, white,#efefef)
+}
+#nav .quicktoggles, #nav .quicktoggle-content,
+#statusbar .quicktoggles, #statusbar .quicktoggle-content {
+	height: 32px;
+	padding: 0;
+}
+#nav .quicktoggle-buttons, 
+#statusbar .quicktoggle-buttons {
+	height: 28px;
+	padding: 2px 0px;
+}
+#nav .quicktoggle-buttons {
+	margin-left: -5px;
+}
+#nav .action.quicktoggle, 
+#statusbar .action.quicktoggle {
+	width: 18px;
+	height: 18px;
+	min-width: 18px;
+	min-height: 18px;
+	padding: 4px;
+	border: 1px solid #d3d3d3;
+	border-radius: 4px;
+	outline-radius: 4px;
+	margin: 1px;
+	background-position: center center;
+	float: left;
+}
+#nav .quicktoggle-icon, 
+#nav .quicktoggle-icon:focus {
+	width: 25px;
+	height: 25px;
+	margin: 3.5px 0;
+	background-position: 2px center;
+}
 
-.filterbox .quicktoggles.popup {
+.sidebar-iconsonly #nav .quicktoggle-buttons {
+	display: none;
+}
+.sidebar-iconsonly #nav .quicktoggle-focus .quicktoggle-buttons {
+	display: inline-block;
+}
+.sidebar-iconsonly #nav .quicktoggle-content.quicktoggle-focus 
+ {
+	position:fixed;
+	display: block;
+	left: 0;
+	width: auto;
+}
+#statusbar .quicktoggles, #statusbar .quicktoggle-content {
+	display: inline-block;
+	margin:0;
+	padding: 0 4px;
+	border: 0;
+}
+#statusbar .quicktoggle-icon, #statusbar .quicktoggle-icon:focus {
+	display: none;
+}
+/* filterbox */
+.filterbox .quicktoggle-content {
 	display: inline-block;
 	position: absolute;
 	left: -35px;
@@ -82,10 +156,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	overflow: hidden;
 	box-shadow: none;
 	
-	background: none;
 }
-.filterbox .quicktoggles-spacer, .filterbox .action.quicktoggle {
-	display: inline-block;
+.filterbox .quicktoggle-icon, .filterbox .action.quicktoggle {
 	width: 30px;
 	min-width: auto;
 	min-height: auto;
@@ -96,70 +168,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: center center !important;
 	background-repeat: no-repeat;
 }
-.quicktoggles-spacer {
-	background-image: url(quicktoggle.png);
-	background-repeat: no-repeat;
-	background-position: center center;
-}
-.quicktoggles-spacer:hover, .quicktoggles-spacer:focus {
-	background-image: url(quicktoggle-hover.png);
-}
-.filterbox .quicktoggles:hover, .filterbox .quicktoggles:focus, .filterbox .quicktoggles.quicktoggle-focus {
+.filterbox .quicktoggle-content.quicktoggle-focus {
 	height: auto;
-	background-color: inherit;
-	box-shadow: 3px  0 7px #ddd;
 	white-space: normal;
-}
-
-#nav .quicktoggles.popup,
-#statusbar .quicktoggles.popup {
-	display: inline-block !important;
-	position: static !important;
-	background-color: inherit;
-	margin:0;
-	padding: 0;
-	border: 0;
-	box-shadow: none;
-}
-#nav .quicktoggles-button.popup {
-	height: 18px;
-	
-}
-#nav .action.quicktoggle, #nav .quicktoggles-spacer,
-#statusbar .action.quicktoggle, #statusbar .quicktoggles-spacer  {
-	display: inline-block;
-	position: static !important;
-	width: 18px; height: 18px;
-	min-width: 18px;
-	min-height: 18px;
-	padding: 1px 4px;
-	border: 0;
-	margin: 0;
-	background-position: center center !important;
-	float: left;
-	
-}
-#nav .quicktoggles-spacer, #nav .quicktoggles-spacer:focus {
-	background-position: 2px center;
-}
-.sidebar-iconsonly #nav .quicktoggle.action {
-	display: none !important;
-}
-.sidebar-iconsonly #nav .quicktoggles.popup:focus .quicktoggle.action, 
-.sidebar-iconsonly #nav .quicktoggles.popup:hover .quicktoggle.action,
-.sidebar-iconsonly #nav .quicktoggles.popup.quicktoggle-focus .quicktoggle.action  {
-	display: inline-block !important;
-}
-.sidebar-iconsonly #nav .quicktoggles.popup:focus,
-.sidebar-iconsonly #nav .quicktoggles.popup:hover,
-.sidebar-iconsonly #nav .quicktoggles.popup.quicktoggle-focus 
- {
-	position:fixed !important;
-	display: block;
-	left: 0;
-	margin: -6px 0 0 0;
-	background-color: #ddd;
-	box-shadow: 0 3px  7px #ddd;
-	padding: 6px 6px 6px 0px;
-	width: auto;
 }

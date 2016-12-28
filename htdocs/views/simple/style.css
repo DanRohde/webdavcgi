@@ -1196,20 +1196,25 @@ img {
 #statusbar {
 	display: none;
 	position: fixed;
-	bottom: 0px;
 	left: 160px;
-	height: 25px;
-	font-size: 15px;
-	line-height: 1;
-	vertical-align: middle;
-	background-color: #f7f7f7;
+	bottom: 0px;
+	height: 32px;
 	width: 100%;
-	padding: 1px 10px 1px 10px;
-	box-shadow: -3px 0 3px #000;
+	padding: 0;
+	margin: 0;
 	z-index: 50;
+	box-shadow: -3px 0 3px #000;
+	color: black;
+	background-color: #f7f7f7;
+	font-size: 15px;
 }
 #statusbar.enabled {
 	display: block;
+}
+#statusbar > li {
+	display: inline-block;
+	height: 32px;
+	vertical-align: middle;
 }
 .sidebar-iconsonly #statusbar {
 	left: 24px;
@@ -1218,14 +1223,11 @@ img {
 	left: 0px;
 }
 #statusbar .notify {;
-	display: inline-block;
 	width: 20ex;
-	height: 1.4em;
 	background-color: white;
 	margin: 2px 1ex;
 	border: 0;
 	padding: 0;
-	vertical-align: top;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -1244,13 +1246,27 @@ img {
 #statusbar .notify.warning {
 	background-color: #ffd700;
 }
-#statusbar .files-stats, #statusbar .selected-files-stats  {
-	display: inline-block;
-	padding: 3px;
+
+#statusbar .files-stats,
+#statusbar .selected-files-stats {
+	margin: 1px 0;
+	height: 30px;
 }
-#statusbar .selected-files-stats 
-{
+#statusbar .selected-files-stats {
 	background-color: #dadada;
+}
+#statusbar .files-stats-content,
+#statusbar .selected-files-stats-content {
+	padding: 7px 4px;;
+}
+#statusbar .files-stats-content div,
+#statusbar .selected-files-stats-content div {
+	height: 15px;
+}
+#statusbar div.checkbox {
+	display: inline-block;
+	width: 14px; height: 14px;
+	border: 1px solid black;
 }
 .file-icon {
 	background: url(images/sprite.png) no-repeat left -782px;

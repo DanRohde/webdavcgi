@@ -77,12 +77,6 @@ sub _handle {
     my $ret =
       $self->render_template( $PATH_TRANSLATED, $REQUEST_URI,
         $self->read_template( $self->config( 'toggles', 'toggles' ) ) );
-    if ( $hook ne 'filterbox' && $hook ne 'statusbar' ) {
-        $ret = $self->{cgi}->li(
-            { -title => $self->tl('quicktoggles'), -class=>'popup quicktoggles-button' },
-             $ret
-        );
-    }
     return $ret;
 }
 

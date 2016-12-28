@@ -1,9 +1,21 @@
-<div id="statusbar">
-	<div class="flex-row">
-		$extension(statusbarleft)
-		<div class="files-stats"><div class="file-icon filecount" title="$tl(statfiles)"></div> <div class="folder-icon dircount" title="$tl(statfolders) "></div> <div class="sum-icon sum" title="$tl(statsum)"></div> <div class="size-icon foldersize" title="$tl(size)"></div></div>
-		<div class="selected-files-stats"><input type="checkbox" checked class="unselectable" name="dummy"> <div class="file-icon selfilecount" title="$tl(statfiles)">0</div> <div class="folder-icon seldircount" title="$tl(statfolders)">0</div> <div class="sum-icon selsum" title="$tl(statsum)">0</div> <div class="size-icon selfoldersize" title="0">0</div></div> 
-		<div class="notify" title=""></div>
-		$extension(statusbar)
-	</div>
-</div>
+<ul id="statusbar">
+	$extension(statusbarleft)
+	<li class="files-stats">
+		<div class="files-stats-content">
+			<div class="file-icon filecount" title="$tl(statfiles)"></div>
+			<div class="folder-icon dircount" title="$tl(statfolders)"></div>
+			<div class="sum-icon sum" title="$tl(statsum)"></div>
+			<div class="size-icon foldersize" title="$tl(size)"></div>
+		</div>
+	</li>
+	<li class="selected-files-stats">
+		<div class="selected-files-stats-content sel-multi hideit hidden notab">
+			<div class="checkbox"></div>
+			<div class="file-icon selfilecount" title="$tl(statfiles)">0</div>
+			<div class="folder-icon seldircount" title="$tl(statfolders)">0</div>
+			<div class="sum-icon selsum" title="$tl(statsum)">0</div>
+			<div class="size-icon selfoldersize" title="0">0</div>
+		</div></li>
+	<li class="notify" title=""></li> $extension(statusbar)
+	</li>
+</ul>

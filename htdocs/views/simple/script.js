@@ -136,7 +136,7 @@ function initStatusbar() {
 		$(".selected-files-stats",sb).toggle(flt.attr("data-fileselcounter") !== 0 || flt.attr("data-dirselcounter") !== 0);
 	}
 	renderStatusbarTemplate();
-	$("#flt").on("counterUpdated", renderStatusbarTemplate).on("fileListChanged", renderStatusbarTemplate).on("selectionCounterUpdated", renderStatusbarTemplate);
+	$("#flt").on("counterUpdated fileListChanged selectionCounterUpdated", renderStatusbarTemplate);
 	$("body").on("notify",function(ev,data) {
 		$("#statusbar .notify").attr("title",data.msg).removeClass("error message warning").addClass(data.type).html(data.msg).MyTooltip();
 	});
