@@ -43,15 +43,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (ev.keyCode == 13) {
 				preventDefault(ev);
 				var val = $(this).val();
+				editorTarget.data("input-finished",true); // tell the keyboard listener I was here
 				restoreOrigHTML(settings).closest(":focusable").focus();
 				if (settings.checkAllowedValue(val, defaultValue)) {
 					triggerEvent(settings.changeEvent, actionTarget, { value : val } );
+					triggerEvent(settings.finalEvent, actionTarget, true);
 				} else {
 					triggerEvent(settings.cancelEvent, actionTarget);
+					triggerEvent(settings.finalEvent, actionTarget, false);
 				}
-				triggerEvent(settings.finalEvent, actionTarget);
+				
 			} else if (ev.keyCode == 27) {
 				preventDefault(ev);
+				editorTarget.data("input-canceled",true); // tell the keyboard listener I was here
 				restoreOrigHTML(settings).closest(":focusable").focus();
 				triggerEvent(settings.cancelEvent, actionTarget);
 				triggerEvent(settings.finalEvent, actionTarget);
@@ -59,7 +63,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}).focusout(function() {
 			restoreOrigHTML(settings);
 			triggerEvent(settings.cancelEvent, actionTarget);
-			triggerEvent(settings.finalEvent, actionTarget);
+			triggerEvent(settings.finalEvent, actionTarget, false);
 		});
 	}
 	function getEditorTarget(settings) {
@@ -75,10 +79,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	}
 	function restoreOrigHTML(settings) {
 		var target = getEditorTarget(settings);
-		target.find("."+settings.inputClass).remove();
+		target.find("."+settings.inputClass).remove();   // remove input
 		var my = target.find("."+settings.wrapperClass);
-		target.append(my.children());
-		my.remove();
+		my.children().unwrap();
 		return target;
 	}
 	function triggerEvent(target, source, data) {

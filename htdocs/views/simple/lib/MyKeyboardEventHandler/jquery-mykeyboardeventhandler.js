@@ -34,11 +34,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			switch (event.keyCode) {
 			case 32: // space
 			case 13: // return/enter
+				if (self.data("input-finished")) {
+					self.removeData("input-finished");
+					return;
+				}
 				self.trigger("click", { origEvent : event });
 				break;
 			case 27: // escape
 				if (self.data("input-canceled")) { // hack for inplace inputs in popups, ...
-					self.data("input-canceled", false);
+					self.removeData("input-canceled");
 					return;
 				}
 				self.closest(".dropdown-menu").hide();

@@ -34,6 +34,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}, fmt.match(/%S/) ? 1000 : 60000);
 		return this;
 	};
+	
+	
 	$.MyStringHelper = {};
 	$.MyStringHelper.renderByteSizes = function(size) {
 		var text = "";
@@ -60,6 +62,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		if (nfs.toFixed(2) > 0 && nfs > 1) text =nfs.toFixed(2)+"TB";
 		return text;
 	};
+	$.MyStringHelper.trimString = function(str,charcount) {
+		var ret = str;
+		if (str.length > charcount) ret = str.substr(0,4)+"..."+str.substr(str.length-charcount+7,charcount-7);
+		return ret;
+	};
+	$.MyStringHelper.simpleEscape = function(text) {
+		// return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
+		return $("<div/>").text(text).html();
+	};
+	$.MyStringHelper.uri2html = function(uri) {
+		return $.MyStringHelper.simpleEscape(decodeURIComponent(uri));
+	};
+	$.MyStringHelper.quoteWhiteSpaces = function(filename) {
+		return filename.replace(/( {2,})/g, '<span class="ws">$1</span>');
+	};
+	$.MyStringHelper.addMissingSlash = function(base) {
+		return (base+"/").replace(/\/\//g,"/");
+	};
+	$.MyStringHelper.concatUri = function(base,file) {
+		return ($.MyStringHelper.addMissingSlash(base) + file).replace(/\/\//g,"/").replace(/\/[^\/]+\/\.\.\//g,"/");
+	};
+	$.MyStringHelper.stripSlash = function(uri) {
+		return uri.replace(/\/$/,"");
+	};
+	
 	
 	$.fn.MyFileTableSorter = function(stype,sattr,sortorder,cidx,ssattr) {
 		var rows = this.children("tr").get();
@@ -75,7 +102,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (jqa.attr("data-type") == "dir" && jqb.attr("data-type") != "dir") return -1;
 			if (jqa.attr("data-type") != "dir" && jqb.attr("data-type") == "dir") return 1;
 			
-		
 			if (stype == "number") {
 				ret = vala - valb;
 			} else {
@@ -99,5 +125,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 		return this;
 	};
-	
+	$.toggleFullscreen = function(on) {
+		var e = document.documentElement;
+		if (on) {
+			if (e.requestFullScreen) e.requestFullScreen();
+			else if (e.mozRequestFullScreen) e.mozRequestFullScreen();
+			else if (e.webkitRequestFullscreen) e.webkitRequestFullscreen();
+			else if (e.webkitRequestFullScreen) e.webkitRequestFullScreen();
+			else if (e.msRequestFullscreen) e.msRequestFullscreen();
+		} else {
+			if (document.cancelFullScreen) document.cancelFullScreen();
+			else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+			else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+			else if (document.webkitCancelFullscreen) document.webkitCancelFullscreen();
+			else if (document.msExitFullscreen) document.msExitFullscreen();
+		}
+	};
+	$.isFullscreen = function() {
+		return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement ? true : false;
+	}
+	$.addFullscreenChangeListener = function(fn) {
+		$(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange", fn);
+	}
+
 }( jQuery ));

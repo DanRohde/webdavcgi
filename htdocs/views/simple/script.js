@@ -163,7 +163,7 @@ function initKeyboardSupport() {
 			if (self.is(":focus")) {
 				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 				else if (event.keyCode==13) 
-					changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash(self.attr('data-file')))),self.attr("data-type") == 'file');
+					changeUri($.MyStringHelper.concatUri($("#fileList").attr('data-uri'), encodeURIComponent($.MyStringHelper.stripSlash(self.attr('data-file')))),self.attr("data-type") == 'file');
 				else if (event.keyCode==46) {
 					if ($("#fileList tr.selected:visible").length === 0) { 
 						if (isSelectableRow(self)) handleFileDelete(self);
@@ -567,7 +567,7 @@ function toggleButton(button, disabled) {
 	});
 }
 function toggleBookmarkButtons() {
-	var currentPath = concatUri($("#flt").attr("data-uri"),"/");	
+	var currentPath = $.MyStringHelper.concatUri($("#flt").attr("data-uri"),"/");	
 	var isCurrentPathBookmarked = false;
 	var count = 0;
 	var i = 0;
@@ -592,7 +592,7 @@ function toggleBookmarkButtons() {
 	}
 }
 function buildBookmarkList() {
-	var currentPath = concatUri($("#flt").attr("data-uri"),"/");
+	var currentPath = $.MyStringHelper.concatUri($("#flt").attr("data-uri"),"/");
 	// remove all bookmark list entries:
 	$(".dyn-bookmark").each(function(i,val) {
 		$(val).remove();
@@ -616,12 +616,12 @@ function buildBookmarkList() {
 	var tmpl = $("#bookmarktemplate").html();
 	$.each(bookmarks, function(i,val) {
 		var epath = unescape(val.path);
-		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val.path).replace(/\$bookmarktext/,quoteWhiteSpaces(simpleEscape(trimString(epath,20)))) + "</li>")
+		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val.path).replace(/\$bookmarktext/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape($.MyStringHelper.trimString(epath,20)))) + "</li>")
 			.insertAfter($("#bookmarktemplate"))
 			.click(handleBookmarkActions).MyKeyboardEventHandler()
 			.addClass("action dyn-bookmark")
 			.attr('data-bookmark',val.path)
-			.attr("title",simpleEscape(epath)+" ("+(new Date(parseInt(val.time)))+")")
+			.attr("title",$.MyStringHelper.simpleEscape(epath)+" ("+(new Date(parseInt(val.time)))+")")
 			.attr("tabindex", val.path == currentPath ? -1 : 0)
 			.toggleClass("disabled", val.path == currentPath)
 			.find(".action.rmsinglebookmark").click(handleBookmarkActions).MyKeyboardEventHandler();
@@ -890,8 +890,8 @@ function checkUploadedFilesExist(data) {
 		} else if (data.files[i].webkitRelativePath && data.files[i].webkitRelativePath != "") {
 			relaPath = data.files[i].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join('/') + '/';
 		}
-		if (relaPath && $("#fileList tr[data-file='"+simpleEscape(relaPath)+"']").length>0) return true;
-		else if ($("#fileList tr[data-file='"+simpleEscape(data.files[i].name)+"']").length>0) return true;
+		if (relaPath && $("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(relaPath)+"']").length>0) return true;
+		else if ($("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(data.files[i].name)+"']").length>0) return true;
 	}
 	return false;
 }
@@ -1061,7 +1061,7 @@ function initFileList() {
 	$("#fileList tr")
 		.off("click.initFileList").on("click.initFileList",handleRowClickEvent)
 		.off("dblclick.initFileList").on("dblclick.initFileList",function(event) { 
-			changeUri(concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))),
+			changeUri($.MyStringHelper.concatUri($("#fileList").attr('data-uri'), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr('data-file')))),
 					$(this).attr("data-type") == 'file');
 		});
 	
@@ -1216,15 +1216,9 @@ function setupFileListSort(cidx, sortorder) {
 function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
 	$("#fileListTable tbody").MyFileTableSorter(stype,sattr,sortorder,cidx,ssattr);
 }
-function concatUri(base,file) {
-	return (addMissingSlash(base) + file).replace(/\/\//g,"/").replace(/\/[^\/]+\/\.\.\//g,"/");
-}
-function addMissingSlash(base) {
-	return (base+'/').replace(/\/\//g,"/");
-}
 function handleFileDelete(row) {
 	row.fadeTo('slow',0.5);
-	confirmDialog($('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(row.attr('data-displayname')))),{
+	confirmDialog($('#deletefileconfirm').html().replace(/%s/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape(row.attr('data-displayname')))),{
 		confirm: function() {
 			var file = row.attr('data-file');
 			removeFileListRow(row);
@@ -1256,8 +1250,6 @@ function handleJSONResponse(response) {
 function doRename(row, file, newname) {
 	var block = blockPage();
 	var xhr = $.post($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
-		row.find('.renamefield').remove();
-		row.find('td.filename div.hidden div.filename').unwrap();
 		if (response.message) {
 			var xhr = $.get($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
 				try {
@@ -1294,7 +1286,7 @@ function handleFileRename(row) {
 			var newname = data.value.replace(/\//g,"");
 			if (newname == defaultValue ) return;
 			if (cookie("settings.confirm.rename")!="no") {
-				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,quoteWhiteSpaces(file)).replace(/%s/,quoteWhiteSpaces(newname)), {
+				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,$.MyStringHelper.quoteWhiteSpaces(file)).replace(/%s/,$.MyStringHelper.quoteWhiteSpaces(newname)), {
 					confirm: function() { doRename(row,file,newname); },
 					setting: "settings.confirm.rename"
 				});
@@ -1312,7 +1304,7 @@ function notify(type,msg) {
 // var notification = $("#notification");
 // notification.removeClass().hide();
 // notification.off('click').click(function() { $(this).hide().removeClass();
-// }).addClass(type).html('<span>'+simpleEscape(msg)+'</span>').show();
+// }).addClass(type).html('<span>'+$.MyStringHelper.simpleEscape(msg)+'</span>').show();
 	// .fadeOut(30000,function() { $(this).removeClass(type).html("");});
 }
 function notifyError(error) {
@@ -1478,10 +1470,6 @@ function updateFolderStatistics() {
 	var fs = parseInt(flt.attr('data-foldersize'));
 	if (hs.length > 0) hs.attr('title', hs.attr('data-title').replace(/\$foldersize/, $.MyStringHelper.renderByteSizes(fs)));
 }
-function simpleEscape(text) {
-	// return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
-	return $('<div/>').text(text).html();
-}
 function initNav() {
 	$(window).off("popstate.changeuri").on("popstate.changeuri", function() {
 		var loc = history.location || document.location;
@@ -1550,18 +1538,18 @@ function doFileListDrop(action,srcuri,dsturi,files) {
 }
 function handleFileListDrop(event, ui) {
 	var dragfilerow = ui.draggable.closest('tr');
-	var dsturi = concatUri($("#fileList").attr('data-uri'), encodeURIComponent(stripSlash($(this).attr('data-file')))+"/");
-	var srcuri = concatUri($("#fileList").attr("data-uri"),'/');
-	if (dsturi == concatUri(srcuri,encodeURIComponent(stripSlash(dragfilerow.attr('data-file'))))+"/") return;
+	var dsturi = $.MyStringHelper.concatUri($("#fileList").attr('data-uri'), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr('data-file')))+"/");
+	var srcuri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),'/');
+	if (dsturi == $.MyStringHelper.concatUri(srcuri,encodeURIComponent($.MyStringHelper.stripSlash(dragfilerow.attr('data-file'))))+"/") return;
 	var action = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ? "copy" : "cut" ;
 	var files = dragfilerow.hasClass('selected') ?  
 			$.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
 			: new Array(dragfilerow.attr('data-file'));	
 	if (cookie("settings.confirm.dnd")!="no") {
 		var msg = $("#paste"+action+"confirm").html();
-		msg = msg.replace(/%files%/g, quoteWhiteSpaces(uri2html(files.join(', '))))
-				.replace(/%srcuri%/g, quoteWhiteSpaces(uri2html(srcuri)))
-				.replace(/%dsturi%/g, quoteWhiteSpaces(uri2html(dsturi)))
+		msg = msg.replace(/%files%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(files.join(', '))))
+				.replace(/%srcuri%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(srcuri)))
+				.replace(/%dsturi%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(dsturi)))
 				.replace(/\\n/g,"<br/>");
 		confirmDialog(msg, { confirm: function() { doFileListDrop(action,srcuri,dsturi,files); }, setting: "settings.confirm.dnd" });
 	} else {
@@ -1570,9 +1558,6 @@ function handleFileListDrop(event, ui) {
 }
 function blockPage() {
 	return $("<div></div>").prependTo("body").addClass("overlay");
-}
-function stripSlash(uri) {
-	return uri.replace(/\/$/,"");
 }
 function renderHiddenInput(form, data, key) {
 	for (var k in data) {
@@ -1594,7 +1579,7 @@ function handleFileListActionEventDelete(event) {
 	var self = $(this);
 	var selrows = getSelectedRows(this);
 	selrows.fadeTo("slow", 0.5);
-	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,quoteWhiteSpaces(simpleEscape(selrows.first().attr('data-file')))), {
+	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape(selrows.first().attr('data-file')))), {
 		confirm: function() {
 			var block = blockPage();
 			
@@ -1643,7 +1628,7 @@ function handleFileListActionEvent(event) {
 		var selfiles = $.map(getSelectedRows(self), function(val,i) { return $(val).attr("data-file"); });
 		cookie('clpfiles', selfiles.join('@/@'));
 		cookie('clpaction',self.hasClass("cut")?"cut":"copy");
-		cookie('clpuri',concatUri($("#fileList").attr('data-uri'),"/"));
+		cookie('clpuri',$.MyStringHelper.concatUri($("#fileList").attr('data-uri'),"/"));
 		if (self.hasClass("cut")) $("#fileList tr.selected").addClass("cutted").fadeTo("slow",0.5);
 		handleClipboard();
 		uncheckSelectedRows();
@@ -1651,13 +1636,13 @@ function handleFileListActionEvent(event) {
 		var files = cookie("clpfiles");
 		var action= cookie("clpaction");
 		var srcuri= cookie("clpuri");
-		var dsturi = concatUri($("#fileList").attr("data-uri"),"/");
+		var dsturi = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
 		
 		if (cookie("settings.confirm.paste") != "no") {
 			var msg = $("#paste"+action+"confirm").html()
-					.replace(/%srcuri%/g, uri2html(srcuri))
-					.replace(/%dsturi%/g, uri2html(dsturi)).replace(/\\n/g,"<br/>")
-					.replace(/%files%/g, uri2html(files.split("@/@").join(", ")));
+					.replace(/%srcuri%/g, $.MyStringHelper.uri2html(srcuri))
+					.replace(/%dsturi%/g, $.MyStringHelper.uri2html(dsturi)).replace(/\\n/g,"<br/>")
+					.replace(/%files%/g, $.MyStringHelper.uri2html(files.split("@/@").join(", ")));
 			confirmDialog(msg, { confirm: function() { doPasteAction(action,srcuri,dsturi,files); }, setting: "settings.confirm.paste" });
 		} else doPasteAction(action,srcuri,dsturi,files);
 	} else if (self.attr("href") !== undefined && self.attr("href") != "#") {
@@ -1668,9 +1653,6 @@ function handleFileListActionEvent(event) {
 		var row = self.closest("tr");
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });
 	}
-}
-function uri2html(uri) {
-	return simpleEscape(decodeURIComponent(uri));
 }
 function cookie(name,val,expires) {
 	var date = new Date();
@@ -1692,7 +1674,7 @@ function initClipboard() {
 }
 function handleClipboard() {
 	var action = cookie("clpaction");
-	var datauri = concatUri($("#fileList").attr("data-uri"),"/");
+	var datauri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
 	var srcuri = cookie("clpuri");
 	var files = cookie("clpfiles");
 	var disabled = (!files || files === "" || srcuri == datauri || $("#fileListTable").hasClass("iswriteable-no"));
@@ -1724,12 +1706,15 @@ function initToolbarActions() {
 			$("#flt").enableSelection();
 			$(this).closest("ul.popup:hidden").show();
 		},
-		finalEvent: function() {
+		cancelEvent: function() {
+			$(this).next().focus();
+		},
+		finalEvent: function(success) {
 			$("#flt").disableSelection();
-			$(this).closest("ul").hide();
+			if (success) $(this).closest("ul").hide();
 		}
 	};
-
+	
 	$(".action.create-folder").MyInplaceEditor($.extend(inplaceOptions,  
 		{ changeEvent: function(data) {
 			var self = $(this);
@@ -1752,7 +1737,7 @@ function initToolbarActions() {
 		{ changeEvent: function(data) {
 			var row = getSelectedRows(this);
 			$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: data.value, file: row.attr('data-file') }, function(response) {
-				if (!response.error && response.message) updateFileList();
+				if (!response.error && response.message) refreshFileListEntry(data.value);
 				handleJSONResponse(response);
 			});
 		}}));
@@ -1764,10 +1749,6 @@ function preventDefault(event) {
 function preventDefaultImmediatly(event) {
 	preventDefault(event);
 	if (event.stopImmediatePropagation) event.stopImmediatePropagation();
-}
-function trimString(str,charcount) {
-	if (str.length > charcount)  str = str.substr(0,4)+'...'+str.substr(str.length-charcount+7,charcount-7);
-	return str;
 }
 function initViewFilterDialog() {
 	$(".action.viewfilter").click(function(event){
@@ -1909,10 +1890,10 @@ function initPopupMenu() {
 }
 function refreshFileListEntry(filename) {
 	var fl = $("#fileList");
-	return $.get(addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
+	return $.get($.MyStringHelper.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
 		try {
 			var newrow = $(r);
-			row = $("tr[data-file='"+simpleEscape(filename)+"']", fl);
+			row = $("tr[data-file='"+$.MyStringHelper.simpleEscape(filename)+"']", fl);
 			if (row.length > 0) {
 				$("#flt").trigger("replaceRow", {row:row,newrow:newrow });
 				row.replaceWith(newrow);
@@ -1920,6 +1901,7 @@ function refreshFileListEntry(filename) {
 				newrow.appendTo(fl);
 			}
 			initFileList();
+			newrow.focus();
 		} catch (e) {
 			updateFileList();
 		}
@@ -1968,31 +1950,6 @@ function initThumbnailSwitch() {
 		});
 	});
 }
-function quoteWhiteSpaces(filename) {
-	return filename.replace(/( {2,})/g, '<span class="ws">$1</span>');
-}
-function toggleFullscreen(on) {
-	var e = document.documentElement;
-	if (on) {
-		if (e.requestFullScreen) e.requestFullScreen();
-		else if (e.mozRequestFullScreen) e.mozRequestFullScreen();
-		else if (e.webkitRequestFullscreen) e.webkitRequestFullscreen();
-		else if (e.webkitRequestFullScreen) e.webkitRequestFullScreen();
-		else if (e.msRequestFullscreen) e.msRequestFullscreen();
-	} else {
-		if (document.cancelFullScreen) document.cancelFullScreen();
-		else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-		else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-		else if (document.webkitCancelFullscreen) document.webkitCancelFullscreen();
-		else if (document.msExitFullscreen) document.msExitFullscreen();
-	}
-}
-function addFullscreenChangeListener(fn) {
-	$(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange", fn);
-}
-function isFullscreen() {
-	return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement ? true : false;
-}
 function getDialog(data, initfunc) {
 	var block = blockPage();
 	var xhr = $.get(window.location.pathname, data, function(response) {
@@ -2013,11 +1970,10 @@ function getDialogByPost(data, initfunc) {
 }
 function initToolBox() {
 	ToolBox = { 
-			addFullscreenChangeListener : addFullscreenChangeListener,
-			addMissingSlash: addMissingSlash,
+			addMissingSlash: $.MyStringHelper.addMissingSlash,
 			blockPage: blockPage,
 			changeUri: changeUri,
-			concatUri: concatUri,
+			concatUri: $.MyStringHelper.concatUri,
 			confirmDialog : confirmDialog,
 			cookie : cookie,
 			fixElementPosition: fixElementPosition,
@@ -2032,7 +1988,6 @@ function initToolBox() {
 			initPopupMenu : initPopupMenu,
 			initTabs : initTabs,
 			initUpload : initUpload,
-			isFullscreen : isFullscreen,
 			notify : notify,
 			notifyError : notifyError,
 			notifyInfo : notifyInfo,
@@ -2040,17 +1995,16 @@ function initToolBox() {
 			preventDefault : preventDefault,
 			preventDefaultImmediatly : preventDefaultImmediatly,
 			postAction: postAction,
-			quoteWhiteSpaces: quoteWhiteSpaces,
+			quoteWhiteSpaces: $.MyStringHelper.quoteWhiteSpaces,
 			refreshFileListEntry : refreshFileListEntry,
 			removeAbortDialog: removeAbortDialog,
 			renderAbortDialog: renderAbortDialog,
 			renderByteSize: $.MyStringHelper.renderByteSize,
 			renderByteSizes: $.MyStringHelper.renderByteSizes,
 			rmcookies: rmcookies,
-			simpleEscape: simpleEscape,
-			stripSlash : stripSlash,
+			simpleEscape: $.MyStringHelper.simpleEscape,
+			stripSlash : $.MyStringHelper.stripSlash,
 			togglecookie : togglecookie,
-			toggleFullscreen : toggleFullscreen,
 			toggleRowSelection : toggleRowSelection,
 			uncheckSelectedRows : uncheckSelectedRows,
 			updateFileList : updateFileList
