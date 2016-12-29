@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		return this;
 	};
 	$.MyInplaceEditor = function(options) {
-		return replaceOrigHTML($.exend({}, $.fn.MyInplaceEditor.settings, options, { actionTarget: {} }));
+		return replaceOrigHTML($.extend({}, $.fn.MyInplaceEditor.settings, options, { actionTarget: {} }));
 	};
 	function preventDefault(event) {
 		if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
@@ -43,18 +43,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (ev.keyCode == 13) {
 				preventDefault(ev);
 				var val = $(this).val();
-				restoreOrigHTML(actionTarget, editorTarget).closest(":focusable").focus();
+				restoreOrigHTML(settings).closest(":focusable").focus();
 				if (settings.checkAllowedValue(val, defaultValue)) {
 					triggerEvent(settings.changeEvent, actionTarget, { value : val } );
+				} else {
+					triggerEvent(settings.cancelEvent, actionTarget);
 				}
 				triggerEvent(settings.finalEvent, actionTarget);
 			} else if (ev.keyCode == 27) {
 				preventDefault(ev);
-				restoreOrigHTML(actionTarget, editorTarget).closest(":focusable").focus();
+				restoreOrigHTML(settings).closest(":focusable").focus();
+				triggerEvent(settings.cancelEvent, actionTarget);
 				triggerEvent(settings.finalEvent, actionTarget);
 			}
 		}).focusout(function() {
-			restoreOrigHTML(actionTarget, editorTarget);
+			restoreOrigHTML(settings);
+			triggerEvent(settings.cancelEvent, actionTarget);
+			triggerEvent(settings.finalEvent, actionTarget);
 		});
 	}
 	function getEditorTarget(settings) {
@@ -63,14 +68,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	}
 	function replaceOrigHTML(settings) {
 		var editorTarget = getEditorTarget(settings);
-		if (!settings.actionInterceptor || settings.actionInterceptor.call(settings.actionTarget)) return editorTarget;
-		settings.actionTarget.data("orig-html", editorTarget.html());
+		if (settings.actionInterceptor !== null && settings.actionInterceptor.call(settings.actionTarget)) return editorTarget;
+		editorTarget.wrapInner($("<div/>").addClass(settings.wrapperClass).hide());
 		triggerEvent(settings.beforeEvent, settings.actionTarget);
-		return editorTarget.html(initInputField(settings)).find(":focusable").focus();
+		return editorTarget.prepend(initInputField(settings)).find(":focusable").focus().select();
 	}
-	function restoreOrigHTML(store, target) {
-		target.html(store.data("orig-html"));
-		store.removeData("orig-html");
+	function restoreOrigHTML(settings) {
+		var target = getEditorTarget(settings);
+		target.find("."+settings.inputClass).remove();
+		var my = target.find("."+settings.wrapperClass);
+		target.append(my.children());
+		my.remove();
 		return target;
 	}
 	function triggerEvent(target, source, data) {
@@ -87,7 +95,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			checkAllowedValue: $.fn.MyInplaceEditor.checkAllowedValue, 
 			beforeEvent: null, 
 			changeEvent: null, 
+			cancelEvent: null,
 			finalEvent: null,
-			inputClass : "myinplaceditor-input"
+			inputClass : "myinplaceeditor-input",
+			wrapperClass : "myinplaceeditor-hidden"
 	};
 }( jQuery ));

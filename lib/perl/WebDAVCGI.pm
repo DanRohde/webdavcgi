@@ -55,7 +55,7 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.2BETA20161228.4';
+$RELEASE = '1.1.2BETA20161229.1';
 
 use vars qw( $_METHODS_RX );
 

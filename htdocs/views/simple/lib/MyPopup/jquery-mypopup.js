@@ -25,7 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			timername: "popupnavigationtimer",
 			contextmenu: undefined,
 			contextmenuTarget: undefined,
-			contextmenuAnchor: undefined
+			contextmenuAnchor: undefined,
+			alloworigcontextmenu : true,
 		}, options);
 
 		function adjustContextMenuPosition(event) {
@@ -35,17 +36,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			var win = $(window);
 			var popupHeight = popup.height();
 			var popupWidth = popup.width();
-			if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
-			if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
+			//if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
+			//if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
 			settings.contextmenu.css({"top":top+"px","left":left+"px"});
 		}
-
 		if (settings.contextmenu) {
 			var contextmenu = settings.contextmenu;
 			popup.data("MyPopup.contextmenu", contextmenu);
 			settings.contextmenuTarget.off("contextmenu."+settings.namespace)
 				.on("contextmenu."+settings.namespace, function(event) {
 					if (event.which==3) {
+						if (event.originalEvent.detail === 2 && settings.alloworigcontextmenu) {
+							hidePopup();
+							return;
+						}
 						preventDefault(event);
 						if (contextmenu.is(":visible") && contextmenu.parent()[0] == $(this)[0]) {
 							hidePopup();

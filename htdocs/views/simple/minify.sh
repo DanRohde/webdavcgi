@@ -25,8 +25,9 @@ QUERYSTRING="lib/QueryString/jquery-querystring.js"
 MYKEYBOARDEVENTHANDLER="lib/MyKeyboardEventHandler/jquery-mykeyboardeventhandler.js"
 MYTOOLTIPLIB="lib/MyTooltip/jquery-mytooltip.js lib/MyTooltip/mytooltip.css"
 MYPOPUPLIB="lib/MyPopup/jquery-mypopup.js lib/MyPopup/mypopup.css"
+MYINPLACEEDITOR="lib/MyInplaceEditor/jquery-myinplaceeditor.js"
 
-MYLIBS="${QUERYSTRING} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} script.js style.css suffix.css"
+MYLIBS="${QUERYSTRING} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} script.js style.css suffix.css"
 
 COMPLETE=complete
 

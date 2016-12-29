@@ -1019,7 +1019,7 @@ function initFileActions() {
 			.off(".fileAction")
 			.on("mouseenter.fileAction focusin.fileAction",handleFileListRowFocusIn)
 			.on("mouseleave.fileAction", handleFileListRowFocusOut);
-	}).on("beforeFileListChange", handleFileListRowFocusOut);
+	}).on("beforeFileListChange replaceRow", handleFileListRowFocusOut);
 	handleFileActionsSettings();
 	$("body").on("settingchanged", handleFileActionsSettings);
 }
@@ -1316,9 +1316,11 @@ function doRename(row, file, newname) {
 					var newrow = $(r);
 					var d = $("tr[data-file='"+newname+"']");
 					if (d.length>0) d.remove();
+					$("#flt").trigger("replaceRow",{ row: row,newrow:newrow });
 					row.replaceWith(newrow);
 					row = newrow;
 					initFileList();
+					newrow.focus();
 				} catch (e) {
 					updateFileList();
 				}
@@ -1333,46 +1335,25 @@ function doRename(row, file, newname) {
 	renderAbortDialog(xhr);
 }
 function handleFileRename(row) {
-	var tdfilename = row.find('td.filename');
-	var filename = row.attr('data-displayname');
-	// fixes accesskey bug: multiple calls with on shurtcut usage:
-	if ($(".renamefield",tdfilename).length>0) return;
-	
-	renamefield = $('#renamefield').html();
-
-	tdfilename.wrapInner('<div class="hidden"/>').prepend(renamefield);
-	var inputfield = tdfilename.find('.renamefield input[type=text]');
-	$("#flt").enableSelection();
-	inputfield.attr('value',inputfield.attr('value').replace(/\$filename/,filename).replace(/\/$/,"")).focus().select();
-	
-	inputfield.off("click").on("click", function(event) { preventDefault(event); $(this).focus();})
-		.off("dblclick").on("dblclick",function(event) { preventDefault(event);});
-	inputfield.keydown(function(event) {
-		var row = $(this).closest('tr');
-		var file = $(this).closest('tr').attr('data-file');
-		var newname = $(this).val();
-		if (event.keyCode == 13 && file != newname) {
-			preventDefault(event);
+	var file = row.closest("tr[data-file]").data("file");
+	var defaultValue  = file.replace(/\/$/,"");
+	$.MyInplaceEditor({	
+		editorTarget: row.find("td.filename"),
+		defaultValue: defaultValue,
+		beforeEvent: function() { $("#flt").enableSelection(); },
+		finalEvent: function() { $("#flt").disableSelection(); },
+		changeEvent: function(data) {
+			var newname = data.value.replace(/\//g,"");
+			if (newname == defaultValue ) return;
 			if (cookie("settings.confirm.rename")!="no") {
 				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,quoteWhiteSpaces(file)).replace(/%s/,quoteWhiteSpaces(newname)), {
 					confirm: function() { doRename(row,file,newname); },
 					setting: "settings.confirm.rename"
 				});
 			} else {
-				doRename(row,file,newname);
+				doRename(row, file, newname);
 			}
-		} else if (event.keyCode == 27 || (event.keyCode==13 && file == newname)) {
-			preventDefault(event);
-			row.find('.renamefield').remove();
-			row.find('td.filename div.hidden div.filename').unwrap();
-			$("#flt").disableSelection();
-			row.focus();
-		} 
-	});
-	inputfield.focusout(function(event) {
-		row.find('.renamefield').remove();
-		row.find('td.filename div.hidden div.filename').unwrap();
-		$("#flt").disableSelection();
+		}
 	});
 }
 function notify(type,msg) {
@@ -1797,52 +1778,6 @@ function handleClipboard() {
 			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
 		}) ;
 }
-function handleInplaceInput(target, defval) {
-	target.click(function(event) {
-		preventDefault(event);
-		var self = $(this);
-		self.closest("ul:hidden").show();
-		if (self.hasClass("disabled")) return;
-		if (self.data('is-active')) return;
-		self.data('is-active', true);
-		self.data('orig-html', target.html());
-		inplace=$('<div class="inplace"><form method="post" action="#"><input class="inplace input"/></form></div>');
-		var input = inplace.find('input');
-		inplace.off("click").on("click",function(e) { preventDefault(e); $(this).focus(); } )
-			.off("dblclick").on("dblclick",function(e) { preventDefeault(e);});
-		if (defval) input.val(defval);
-		$("#flt").enableSelection();
-		input.keydown(function(event) {
-			//console.log(event);
-			if (event.keyCode == 13) {
-				preventDefault(event);
-				$("#flt").disableSelection();
-				self.data('is-active', false);
-				self.html(self.data('orig-html'));
-				if ((defval && input.val() == defval)||(input.val() === "")) {
-					self.data('value',input.val()).focus().trigger('unchanged');
-				} else {
-					self.data('value',input.val()).trigger('changed');
-				}
-			} else if (event.keyCode == 27) {
-				preventDefault(event);
-				self.data('is-active', false);
-				$("#flt").disableSelection();
-				self.html(self.data('orig-html')).focus();
-				self.trigger('canceled');
-				self.data("input-canceled",true);
-			}
-		}).focusout(function(event) {
-			self.data('is-active',false);
-			$("#flt").disableSelection();
-			self.html(self.data('orig-html'));
-			self.trigger('canceled');
-		});
-		self.html(inplace);
-		input.focus();
-	});
-	return target;
-}
 
 function initNavigationActions() {
 	$("#nav .action").click(handleFileListActionEvent).MyKeyboardEventHandler();
@@ -1857,39 +1792,46 @@ function initToolbarActions() {
 	$(".toolbar li.popup").MyPopup();
 	$("#flt").on("beforeFileListChange fileListSelChanged", function() { $(".toolbar li.popup").MyPopup("close"); });
 	
-	handleInplaceInput($('.action.create-folder')).on('changed', function(event) {
-		var self = $(this);
-		self.closest("ul").hide();
-		$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : self.data('value') }, function(response) {
-			if (!response.error && response.message) {
-				//updateFileList();
-				refreshFileListEntry(self.data('value'));
-			}
-			handleJSONResponse(response);
-		});
-	});
+	var inplaceOptions = {
+		actionInterceptor: function() {
+			return $(this).hasClass("disabled");
+		},
+		beforeEvent: function() {
+			$("#flt").enableSelection();
+			$(this).closest("ul.popup:hidden").show();
+		},
+		finalEvent: function() {
+			$("#flt").disableSelection();
+			$(this).closest("ul").hide();
+		}
+	};
 
-	handleInplaceInput($('.action.create-file')).on('changed', function(event) {
-		var self = $(this);
-		self.closest("ul").hide();
-		$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : self.data('value') }, function(response) {
-			if (!response.error && response.message) {
-				//updateFileList();
-				refreshFileListEntry(self.data('value'));
-			}
-			handleJSONResponse(response);
-		});
-	});
+	$(".action.create-folder").MyInplaceEditor($.extend(inplaceOptions,  
+		{ changeEvent: function(data) {
+			var self = $(this);
+			$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : data.value }, function(response) {
+				if (!response.error && response.message) refreshFileListEntry(data.value);
+				handleJSONResponse(response);
+			});
+		}}));
 
-	handleInplaceInput($('.action.create-symlink')).on('changed', function(event) {
-		$(this).closest("ul").hide();
-		var row = getSelectedRows(this);
-		$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: $(this).data('value'), file: row.attr('data-file') }, function(response) {
-			if (!response.error && response.message) updateFileList();
-			handleJSONResponse(response);
-		});
+	$(".action.create-file").MyInplaceEditor($.extend(inplaceOptions,
+		{ changeEvent: function(data) {
+			var self = $(this);
+			$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : data.value }, function(response) {
+				if (!response.error && response.message) refreshFileListEntry(data.value);
+				handleJSONResponse(response);
+			});
+		}}));
 
-	});
+	$(".action.create-symlink").MyInplaceEditor($.extend(inplaceOptions,
+		{ changeEvent: function(data) {
+			var row = getSelectedRows(this);
+			$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: data.value, file: row.attr('data-file') }, function(response) {
+				if (!response.error && response.message) updateFileList();
+				handleJSONResponse(response);
+			});
+		}}));
 }
 function preventDefault(event) {
 	if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
@@ -2005,14 +1947,25 @@ function renderAccessKeyDetails() {
 }
 function hidePopupMenu() {
 	$("#popupmenu li.popup").MyPopup("close");
+	$("#tc_popupmenu li.popup").MyPopup("close");
+}
+function handleTableConfigActionEvent(event) {
+	var self = $(this);
+	console.log(self.attr("class"));
 }
 function initPopupMenu() {
 	$("#popupmenu .action")
 		.off(".popupmenu")
-		.on("click.popupmenu", function(event) { handleFileListActionEvent.call(this,event); })
-		.on("dblclick.popupmenu", function(event) { preventDefault(event);})
+		.on("click.popupmenu", handleFileListActionEvent)
+		.on("dblclick.popupmenu", preventDefault)
 		.MyKeyboardEventHandler();
-	
+/*
+	$("#tc_popupmenu .action")
+		.off(".popupmenu")
+		.on("click.popupmenu", handleTableConfigActionEvent)
+		.on("dblclick.popupmenu", preventDefault)
+		.MyKeyboardEventHandler();
+*/
 	$("#flt")
 		.off(".popupmenu")
 		.on("beforeFileListChange.popupmenu", function() {
@@ -2020,11 +1973,15 @@ function initPopupMenu() {
 		})
 		.on("fileListChanged.popupmenu", function(){
 			$("#popupmenu li.popup").MyPopup({contextmenu: $("#popupmenu"), contextmenuTarget: $("#fileList tr"), contextmenuAnchor: "#content"});
+			
+			// $("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content"});
 		});
 	$("body").off(".popupmenu")
 			 .on("click.popupmenu",function() { hidePopupMenu(); })
 			 .on("keydown.popupmenu", function(e) { if (e.which == 27) hidePopupMenu(); });
-	$("#filler").on("contextmenu", function() { hidePopupMenu(); });
+	$("#filler").on("contextmenu", function(event) { if (event.which==3) { if (event.originalEvent.detail === 1 ) preventDefault(event); hidePopupMenu(); } });
+	
+	
 }
 function refreshFileListEntry(filename) {
 	var fl = $("#fileList");
@@ -2033,6 +1990,7 @@ function refreshFileListEntry(filename) {
 			var newrow = $(r);
 			row = $("tr[data-file='"+simpleEscape(filename)+"']", fl);
 			if (row.length > 0) {
+				$("#flt").trigger("replaceRow", {row:row,newrow:newrow });
 				row.replaceWith(newrow);
 			} else {
 				newrow.appendTo(fl);
