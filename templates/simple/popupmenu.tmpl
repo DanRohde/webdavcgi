@@ -36,12 +36,12 @@ $extension(fileactionpopup)
 <li class="action delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 </ul>
 <ul id="tc_popupmenu" class="popup">
-<li class="action table-sort-this-asc hideit">$tl(tableconfig.ascending)</li>
-<li class="action table-sort-this-desc hideit">$tl(tableconfig.descending)</li>
+<li class="action table-sort-this-asc hideit"><div class="symbol">&#8599;</div><div class="label"> $tl(tableconfig.ascending)</div></li>
+<li class="action table-sort-this-desc hideit"><div class="symbol">&#8600;</div><div class="label">$tl(tableconfig.descending)</div></li>
 <li class="popup table-sort-columns" tabindex="0">
-	<div class="label">$tl(tableconfig.sortingcolumns)</div>
+	<div class="symbol">&#8597;</div><div class="label">$tl(tableconfig.sortingcolumns)</div>
 	<ul class="popup">
-		$each#@ALLOWED_TABLE_COLUMNS#'<li class="action table-sort $v hideit" tabindex="0" data-name="$v"><div class="label">$tl($v)</div></li>'#
+		$each|@ALLOWED_TABLE_COLUMNS|'<li class="action table-sort $v hideit" tabindex="0" data-name="$v"><div class="symbol">&#8597;</div><div class="label">$tl($v)</div></li>'|
 	</ul>
 </li>
 <!-- 

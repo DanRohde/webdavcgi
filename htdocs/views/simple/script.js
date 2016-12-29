@@ -285,10 +285,7 @@ function setupTableConfigDialog(dialog) {
 				$("#fileList tr").each(function(j,v) { $("td",$(v)).eq(cidx).hide(); });
 			});
 		} else if (c != column || o != order) {
-			var ch = $("#fileListTable th[data-name='"+c+"']");
-			var sortorder = o == 'desc' ? -1 : 1;
-			setupFileListSort(ch.prop("cellIndex"), sortorder);
-			if (ch.length>0) sortFileList(ch.attr("data-sorttype") || "string", ch.attr("data-sort"), sortorder, ch.prop("cellIndex"), "data-file");	
+			sortTableColumn(c, o == 'desc' ? -1 : 1);
 		}
 						
 		dialog.dialog("close");
@@ -1177,6 +1174,7 @@ function sortTableColumn(name, sortorder) {
 	cookie("order", name + (sortorder==1?"_asc":"_desc"),1);
 	setupFileListSort(col.prop("cellIndex"), sortorder);
 	sortFileList(col.data("sorttype") || "string", col.data("sort"), sortorder, col.prop("cellIndex"), "data-file");
+	$("body").trigger("settingchanged",{ setting: "order", value : cookie("order")});
 }
 function getLastTableSort() {
 	var so = cookie("order").split("_");
@@ -1850,6 +1848,7 @@ function hidePopupMenu() {
 function handleTableConfigActionEvent(event) {
 	preventDefault(event);
 	var self = $(this);
+	if (self.hasClass("disabled")) return;
 	if (self.hasClass("table-sort")) {
 		var lts = getLastTableSort();
 		sortTableColumn(self.data("name"), lts.name == self.data("name") ? -lts.sortorder : 1);
@@ -1870,15 +1869,21 @@ function initTableColumnPopupActions() {
 	$("#flt").on("fileListChanged", function() {
 		$("#fileListTable .fileListHead .sorter-false").each(function(i,v) {
 			var s = $(v);
-			if (s.data("name")!=undefined) $(".action.table-sort."+s.data("name")).hide();
+			if (s.data("name")!=undefined) $(".action.table-sort."+s.data("name")).addClass("disabled");
 		});
+		$(".action.table-sort.fileactions").hide();
 		
 	});
-	// order: tablesorter-(up|down)
-	// data-name: name of attribte
+	function setupContextActions() {
+		var lts = getLastTableSort();
+		$(".action.table-sort .symbol").html("&#8597;");
+		$(".action.table-sort."+lts.name+" .symbol").html( lts.sortorder == 1 ? "&#8600;" : "&#8599;");
+	}
+	$("body").on("settingchanged", function(event,data) {
+		if (data.setting != "order") return;
+		setupContextActions();
+	});
 	// var visiblecolumns = $.map($("#fileListTable thead th[data-name]:not(.hidden)"), function(val,i) { return $(val).attr("data-name");});
-	// sorter-false
-	// handleTableColumnClick.call( th)
 }
 function initPopupMenu() {
 	$("#popupmenu .action")

@@ -1116,20 +1116,17 @@ img {
 }
 .action.table-sort-this-asc, .action.table-sort-this-desc, .action.table-sort, .popup.table-sort-columns {
 	background-image: none;
-	padding-left: 4px;
-}
-.action.table-sort-this-asc:before {
-	content: " \2197 ";
-}
-.action.table-sort-this-desc:before {
-	content: " \2198 ";
-}
-.action.table-sort .label:before, .popup.table-sort-columns .label:before {
-	content: " \2195 ";
+	padding-left: 0px;
 }
 .sorter-false .table-sort-this-asc, .sorter-false .table-sort-this-desc,
 .tablesorter-up .table-sort-this-asc, .tablesorter-down .table-sort-this-desc {
 	display: none;
+}
+.symbol {
+	display: inline-block;
+	width: 22px;
+	float:left;
+	text-align: center;
 }
 .dragaccept { 
 	cursor: pointer; 
