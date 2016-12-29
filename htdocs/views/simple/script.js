@@ -127,11 +127,11 @@ function initStatusbar() {
 		$(".filecount",sb).html(flt.attr("data-filecounter"));
 		$(".dircount",sb).html(flt.attr("data-dircounter"));
 		$(".sum",sb).html(flt.attr("data-sumcounter"));
-		$(".foldersize",sb).attr("title",renderByteSizes(flt.data("foldersize"))).html(renderByteSize(flt.data("foldersize")));
+		$(".foldersize",sb).attr("title",$.MyStringHelper.renderByteSizes(flt.data("foldersize"))).html($.MyStringHelper.renderByteSize(flt.data("foldersize")));
 		$(".selfilecount",sb).html(flt.attr("data-fileselcounter"));
 		$(".seldircount",sb).html(flt.attr("data-dirselcounter"));
 		$(".selsum",sb).html(flt.attr("data-sumselcounter"));
-		$(".selfoldersize",sb).attr("title", renderByteSizes(flt.attr("data-folderselsize"))).html(renderByteSize(flt.attr("data-folderselsize")));
+		$(".selfoldersize",sb).attr("title", $.MyStringHelper.renderByteSizes(flt.attr("data-folderselsize"))).html($.MyStringHelper.renderByteSize(flt.attr("data-folderselsize")));
 		$(".selected-files-stats",sb).toggle(flt.attr("data-fileselcounter") !== 0 || flt.attr("data-dirselcounter") !== 0);
 	}
 	renderStatusbarTemplate();
@@ -544,22 +544,7 @@ function initSelect() {
 	});
 }
 function initClock() {
-	var clock = $("#clock");
-	if (clock.length===0) return;
-	var fmt = clock.attr("data-format");
-    if (!fmt) fmt="%I:%M:%S";
-    window.setInterval(function() {
-    	function addzero(v) { return v<10 ? "0"+v : v; }
-        var d = new Date();
-        var s = fmt;
-        // %H = 00-23; %I = 01-12; %k = 0-23; %l = 1-12
-        // %M = 00-59; %S = 0-60
-        s = s.replace(/\%(H|k)/, addzero(d.getHours()))
-             .replace(/\%(I|l)/, addzero(d.getHours() % 12 === 0 ? 12 : d.getHours() % 12) )
-             .replace(/\%M/, addzero(d.getMinutes()))
-             .replace(/\%S/, addzero(d.getSeconds()));
-        clock.html(s);	
-    }, fmt.match(/%S/) ? 1000 : 60000);
+	$("#clock").MyClock();
 }
 function initBookmarks() {
 	$("#flt").on("bookmarksChanged", buildBookmarkList)
@@ -696,9 +681,9 @@ function handleSelectionStatistics() {
 			tmpl.replace(/\$filecount/g,s.fileselcounter)
 				.replace(/\$dircount/g,s.dirselcounter)
 				.replace(/\$sum/g,s.sumselcounter)
-				.replace(/\$folderselsizes/g, renderByteSizes(s.folderselsize))
-				.replace(/\$folderselsize/g,renderByteSize(s.folderselsize))
-			).attr('title',renderByteSizes(s.folderselsize)).MyTooltip();
+				.replace(/\$folderselsizes/g, $.MyStringHelper.renderByteSizes(s.folderselsize))
+				.replace(/\$folderselsize/g,$.MyStringHelper.renderByteSize(s.folderselsize))
+			).attr('title',$.MyStringHelper.renderByteSizes(s.folderselsize)).MyTooltip();
 }
 
 function initChangeDir() {
@@ -785,7 +770,7 @@ function renderUploadProgressAll(uploadState, data) {
 	if (!data) data=uploadState;
 	var perc =  data.loaded / data.total * 100;
 	$('#progress .bar').css('width', perc.toFixed(2) + '%')
-		.html(parseInt(perc)+'% ('+renderByteSize(data.loaded)+'/'+renderByteSize(data.total)+')' + "; " + uploadState.done+"/"+uploadState.uploads
+		.html(parseInt(perc)+'% ('+$.MyStringHelper.renderByteSize(data.loaded)+'/'+$.MyStringHelper.renderByteSize(data.total)+')' + "; " + uploadState.done+"/"+uploadState.uploads
 				);	
 }
 function initUpload(form,confirmmsg,dialogtitle, dropZone) {
@@ -816,7 +801,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 					preventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
 				}).appendTo(up).attr("title",$("#cancel").html()).MyTooltip().addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
-				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0].name+" ("+renderByteSize(data.files[0].size)+"): 0%");
+				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): 0%");
 				// $("#progress .info").scrollTop($("#progress
 				// .info")[0].scrollHeight);
 				uploadState.uploads++;
@@ -882,7 +867,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		},
 		progress: function(e,data) {
 			var perc = parseInt(data.loaded/data.total * 100)+"%";
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0].name+" ("+renderByteSize(data.files[0].size)+"): "+perc);
+			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): "+perc);
 			
 		},
 		progressall: function(e,data) {
@@ -1229,44 +1214,7 @@ function setupFileListSort(cidx, sortorder) {
 		.eq(cidx).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
 }
 function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
-	$("#fileListTable tbody").each(function(i,val){
-		var rows = $(val).children("tr").get();
-		rows.sort(function(a,b){
-			var ret = 0;
-			var jqa = $(a);
-			var jqb = $(b);
-			var vala = jqa.attr(sattr) ? (stype=='number' ? parseInt(jqa.attr(sattr)) : jqa.attr(sattr)) : a.cells.item(cidx).innerHTML.toLowerCase();
-			var valb = jqb.attr(sattr) ? (stype=='number' ? parseInt(jqb.attr(sattr)) : jqb.attr(sattr)) : b.cells.item(cidx).innerHTML.toLowerCase();
-	
-			if (jqa.attr('data-file').match(/^\.\.?$/)) return -1;
-			if (jqb.attr('data-file').match(/^\.\.?$/)) return 1;
-			if (jqa.attr('data-type') == 'dir' && jqb.attr('data-type') != 'dir') return -1;
-			if (jqa.attr('data-type') != 'dir' && jqb.attr('data-type') == 'dir') return 1;
-			
-		
-			if (stype == "number") {
-				ret = vala - valb;
-			} else {
-				if (vala.localeCompare) {
-					ret = vala.localeCompare(valb);
-				} else {
-					ret = (vala < valb ? -1 : (vala==valb ? 0 : 1));
-				}
-			}
-			if (ret === 0 && sattr!=ssattr) {
-				if (vala.localeCompare) {
-					ret = jqa.attr(ssattr).localeCompare(jqb.attr(ssattr));
-				} else {
-					ret = jqa.attr(ssattr) < jqb.attr(ssattr) ? -1 : jqa.attr(ssattr) > jqb.attr(ssattr) ? 1 : 0;
-				}
-			}
-			return sortorder * ret;
-		});
-		for (var r=0; r<rows.length; r++) {
-			$(val).append(rows[r]);
-		}
-		
-	});
+	$("#fileListTable tbody").MyFileTableSorter(stype,sattr,sortorder,cidx,ssattr);
 }
 function concatUri(base,file) {
 	return (addMissingSlash(base) + file).replace(/\/\//g,"/").replace(/\/[^\/]+\/\.\.\//g,"/");
@@ -1528,7 +1476,7 @@ function updateFolderStatistics() {
 				.replace(/\$sum/,parseInt(flt.attr('data-dircounter'))+parseInt(flt.attr('data-filecounter')))
 		);
 	var fs = parseInt(flt.attr('data-foldersize'));
-	if (hs.length > 0) hs.attr('title', hs.attr('data-title').replace(/\$foldersize/, renderByteSizes(fs)));
+	if (hs.length > 0) hs.attr('title', hs.attr('data-title').replace(/\$foldersize/, $.MyStringHelper.renderByteSizes(fs)));
 }
 function simpleEscape(text) {
 	// return text.replace(/&/,'&amp;').replace(/</,'&lt;').replace(/>/,'&gt;');
@@ -1737,31 +1685,7 @@ function togglecookie(name,val,toggle,expires) {
 	if (toggle) cookie(name,val,expires);
 	else rmcookies(name);
 }
-function renderByteSizes(size) {
-	var text = "";
-	text += size+" Byte(s)";
-	var nfs = size / 1024;
-	if (nfs.toFixed(2) > 0) text +=' = '+nfs.toFixed(2)+'KB';
-	nfs = nfs / 1024;
-	if (nfs.toFixed(2) > 0) text +=' = '+nfs.toFixed(2)+'MB';
-	nfs = nfs / 1024;
-	if (nfs.toFixed(2) > 0) text +=' = '+nfs.toFixed(2)+'GB';
-	nfs = nfs / 1024;
-	if (nfs.toFixed(2) > 0) text +=' = '+nfs.toFixed(2)+'TB';
-	return text;
-}
-function renderByteSize(size) {
-	var text = size+" Byte(s)";
-	var nfs = size / 1024;
-	if (nfs.toFixed(2) > 0 && nfs > 1) text = nfs.toFixed(2)+'KB';
-	nfs = nfs / 1024;
-	if (nfs.toFixed(2) > 0 && nfs > 1) text =nfs.toFixed(2)+'MB';
-	nfs = nfs / 1024;
-	if (nfs.toFixed(2) > 0 && nfs > 1) text =nfs.toFixed(2)+'GB';
-	nfs = nfs / 1024;
-	if (nfs.toFixed(2) > 0 && nfs > 1) text =nfs.toFixed(2)+'TB';
-	return text;
-}
+
 function initClipboard() {
 	handleClipboard();
 	$('#flt').on('fileListChanged', handleClipboard);
@@ -2120,8 +2044,8 @@ function initToolBox() {
 			refreshFileListEntry : refreshFileListEntry,
 			removeAbortDialog: removeAbortDialog,
 			renderAbortDialog: renderAbortDialog,
-			renderByteSize: renderByteSize,
-			renderByteSizes: renderByteSizes,
+			renderByteSize: $.MyStringHelper.renderByteSize,
+			renderByteSizes: $.MyStringHelper.renderByteSizes,
 			rmcookies: rmcookies,
 			simpleEscape: simpleEscape,
 			stripSlash : stripSlash,
