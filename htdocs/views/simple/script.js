@@ -1171,19 +1171,21 @@ function handleFileListColumnDrop(event, ui) {
 	
 	return true;
 }
+function sortTableColumn(name, sortorder) {
+	var col = $("#fileListTable thead th[data-name='"+name+"']:not(.sorter-false)");
+	if (col.length==0) return;
+	cookie("order", name + (sortorder==1?"_asc":"_desc"),1);
+	setupFileListSort(col.prop("cellIndex"), sortorder);
+	sortFileList(col.data("sorttype") || "string", col.data("sort"), sortorder, col.prop("cellIndex"), "data-file");
+}
+function getLastTableSort() {
+	var so = cookie("order").split("_");
+	if (!so) return { name : "data-file", sortorder : 1 };
+	return { name : so[0], sortorder: so[1] && so[1] == 'desc' ? -1 : 1 };
+}
 function initTableSorter() {
-	if (cookie('order')) {
-		var so = cookie('order').split("_");
-		var sname = so[0];
-		var sortorder = so[1] && so[1] == 'desc' ? -1 : 1;
-		var col = $("#fileListTable thead th[data-name='"+sname+"']:not(.sorter-false)");
-		if (col.length>0) {
-			var sattr = col.attr('data-sort');
-			var stype = col.attr('data-sorttype') || 'string';
-			var cidx = col.prop("cellIndex");
-			setupFileListSort(cidx, sortorder);
-			sortFileList(stype, sattr, sortorder, cidx, "data-file");
-		}
+	if (lts = getLastTableSort()) {
+		sortTableColumn(lts.name, lts.sortorder);
 	}
 	
 	$("#fileListTable thead th:not(.sorter-false)")
@@ -1191,18 +1193,9 @@ function initTableSorter() {
 		.off("click.tablesorter")
 		.on("click.tablesorter", handleTableColumnClick);
 }
-function handleTableColumnClick(event) {
-	var flt = $("#fileListTable");
-	var lcc = flt.data("tablesorter-lastclickedcolumn");
-	var sortorder = flt.data("tablesorter-sortorder");
-	var stype = $(this).attr("data-sorttype")|| "string";
-	var sattr = $(this).attr("data-sort");
-	var cidx = $(this).prop("cellIndex");
-	if (!sortorder) sortorder = -1;
-	if (lcc == cidx) sortorder = -sortorder;
-	cookie("order",$(this).attr('data-name') + (sortorder==-1?'_desc':''),1);
-	setupFileListSort(cidx, sortorder);
-	sortFileList(stype,sattr,sortorder,cidx,"data-file");
+function handleTableColumnClick() {
+	var lts = getLastTableSort();
+	sortTableColumn($(this).data("name"), lts.name == $(this).data("name")? -lts.sortorder : 1);
 }
 function setupFileListSort(cidx, sortorder) {
 	var flt = $("#fileListTable");
@@ -1855,8 +1848,37 @@ function hidePopupMenu() {
 	$("#tc_popupmenu li.popup").MyPopup("close");
 }
 function handleTableConfigActionEvent(event) {
+	preventDefault(event);
 	var self = $(this);
-	console.log(self.attr("class"));
+	if (self.hasClass("table-sort")) {
+		var lts = getLastTableSort();
+		sortTableColumn(self.data("name"), lts.name == self.data("name") ? -lts.sortorder : 1);
+	} else if (self.hasClass("table-sort-this-asc")) {
+		sortTableColumn(self.closest("th").data("name"), 1 );
+	} else if (self.hasClass("table-sort-this-desc")) {
+		sortTableColumn(self.closest("th").data("name"), -1 );
+	} else if (self.hasClass("table-column-hide-this")) {
+	}
+}
+function initTableColumnPopupActions() {
+	$("#tc_popupmenu .action")
+	.off(".popupmenu")
+	.on("click.popupmenu", handleTableConfigActionEvent)
+	.on("dblclick.popupmenu", preventDefault)
+	.MyKeyboardEventHandler();
+	
+	$("#flt").on("fileListChanged", function() {
+		$("#fileListTable .fileListHead .sorter-false").each(function(i,v) {
+			var s = $(v);
+			if (s.data("name")!=undefined) $(".action.table-sort."+s.data("name")).hide();
+		});
+		
+	});
+	// order: tablesorter-(up|down)
+	// data-name: name of attribte
+	// var visiblecolumns = $.map($("#fileListTable thead th[data-name]:not(.hidden)"), function(val,i) { return $(val).attr("data-name");});
+	// sorter-false
+	// handleTableColumnClick.call( th)
 }
 function initPopupMenu() {
 	$("#popupmenu .action")
@@ -1864,13 +1886,8 @@ function initPopupMenu() {
 		.on("click.popupmenu", handleFileListActionEvent)
 		.on("dblclick.popupmenu", preventDefault)
 		.MyKeyboardEventHandler();
-/*
-	$("#tc_popupmenu .action")
-		.off(".popupmenu")
-		.on("click.popupmenu", handleTableConfigActionEvent)
-		.on("dblclick.popupmenu", preventDefault)
-		.MyKeyboardEventHandler();
-*/
+
+	initTableColumnPopupActions();
 	$("#flt")
 		.off(".popupmenu")
 		.on("beforeFileListChange.popupmenu", function() {
@@ -1879,7 +1896,7 @@ function initPopupMenu() {
 		.on("fileListChanged.popupmenu", function(){
 			$("#popupmenu li.popup").MyPopup({contextmenu: $("#popupmenu"), contextmenuTarget: $("#fileList tr"), contextmenuAnchor: "#content"});
 			
-			// $("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content"});
+			$("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content"});
 		});
 	$("body").off(".popupmenu")
 			 .on("click.popupmenu",function() { hidePopupMenu(); })
