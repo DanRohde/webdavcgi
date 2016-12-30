@@ -1,5 +1,5 @@
 <ul class="toolbar" data-help="$help(toolbar)">
-<li><div id="quicknav" role="navigation">$[quicknavpath]</div>
+<li><nav id="quicknav" role="navigation">$[quicknavpath]</nav>
 	<!--IF($config(ALLOW_PATHINPUT))-->
 	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
 	<!--ENDIF-->
@@ -25,7 +25,17 @@
 	</ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-<li class="action upload access-writeable uibutton toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"></li>
+<!--  <li class="action upload access-writeable uibutton toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"></li> -->
+<li class="upload-menu popup uibutton access-writeable toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)">
+	&nbsp;
+	<ul class="popup">
+	<li class="sep action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"><div class="label">$tl(upload)</div><div class="accesskey">u</div></li>
+	<!--IF#2($config(ALLOW_FOLDERUPLOAD))-->
+	<li class="action uploaddir access-writeable" title="$tl(uploaddir) (&le; $maxuploadsizehr)" aria-label="$tl(uploaddir) (&le; $maxuploadsizehr)"><div class="label">$tl(uploaddir)</div><div class="accesskey">y</div></li>
+	<!--ENDIF#2-->
+	$extension(upload)
+	</ul>
+</li>
 <!--ENDIF-->
 <!--IF($config(ENABLE_CLIPBOARD))-->			
 <li class="action paste hideit uibutton" title="$tl(paste)" aria-label="$tl(paste)" accesskey="v"></li>

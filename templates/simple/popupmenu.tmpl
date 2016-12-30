@@ -1,7 +1,6 @@
 <ul id="popupmenu" class="popup">
 <li class="popup new" title="$tl(new)" tabindex="0">
 	<div class="popup label new">$tl(new)</div>
-	<div class="accesskey">n</div>
 	<ul class="popup">
 		<li class="action create-folder access-writeable" title="$tl(createfolderbutton)"><div class="label">$tl(createfolderbutton)</div><div class="accesskey">r</div></li>
 		<li class="action create-file access-writeable" title="$tl(createnewfilebutton)"><div class="label">$tl(createnewfilebutton)</div><div class="accesskey">e</div></li>
@@ -36,21 +35,21 @@ $extension(fileactionpopup)
 <li class="action delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 </ul>
 <ul id="tc_popupmenu" class="popup">
-<li class="action table-sort-this-desc hideit"><div class="symbol">&#8599;</div><div class="label">$tl(tableconfig.ascending)<div class="note"></div></div></li>
-<li class="action table-sort-this-asc hideit"><div class="symbol">&#8600;</div><div class="label">$tl(tableconfig.descending)<div class="note"></div></div></li>
+<li class="action table-sort-this-desc" tabindex="0"><div class="symbol">&#8599;</div><div class="label">$tl(tableconfig.ascending)<div class="note"></div></div></li>
+<li class="action table-sort-this-asc" tabindex="0"><div class="symbol">&#8600;</div><div class="label">$tl(tableconfig.descending)<div class="note"></div></div></li>
 <li class="popup table-sort-columns" tabindex="0">
 	<div class="symbol">&#8597;</div><div class="label">$tl(tableconfig.sortingcolumns)</div>
 	<ul class="popup">
-		$each|@ALLOWED_TABLE_COLUMNS|'<li class="action table-sort $v hideit" tabindex="0" data-name="$v"><div class="symbol"></div><div class="label">$tl($v)</div></li>'|
+		$each|@ALLOWED_TABLE_COLUMNS|'<li class="action table-sort $v" tabindex="0" data-name="$v"><div class="symbol"></div><div class="label">$tl($v)</div></li>'|
 	</ul>
 </li>
 <li class="popup table-columns sep" tabindex="0">
 	<div class="symbol">☒</div><div class="label">$tl(tableconfig.tablecolumns)</div>
 	<ul class="popup">
-	$each#@ALLOWED_TABLE_COLUMNS#'<li class="action table-column $v hideit" tabindex="0" data-name="$v"><div class="symbol"></div><div class="label">$tl($v)</div></li>'#
+	$each#@ALLOWED_TABLE_COLUMNS#'<li class="action table-column $v" tabindex="0" data-name="$v"><div class="symbol"></div><div class="label">$tl($v)</div></li>'#
 	</ul>
 </li>
 
-<li class="action table-column-hide-this sep"><div class="symbol">☐</div><div class="label">$tl(tableconfig.hidethis)</div></li>
+<li class="action table-column-hide-this sep" tabindex="0"><div class="symbol">☐</div><div class="label">$tl(tableconfig.hidethis)</div></li>
  
 </ul>

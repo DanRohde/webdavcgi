@@ -1845,8 +1845,10 @@ function setVisibleTableColumnsCookie() {
 	$("body").trigger("settingchanged", { setting: "visibletablecolumns", value: cookie("visibletablecolumns") });
 }
 function toggleTableColumn(name, toggle) {
-	var cidx = $("#fileListTable th[data-name="+name+"]").toggleClass("hidden",!toggle).toggle(toggle).prop("cellIndex");
-	$("#fileListTable td:nth-child("+(cidx+1)+")").toggleClass("hidden",!toggle).toggle(toggle);
+	var th =  $("#fileListTable th[data-name="+name+"]");
+	var on = toggle === undefined ? ! th.is(":visible") : toggle;
+	var cidx = th.toggleClass("hidden",!on).toggle(on).prop("cellIndex");
+	$("#fileListTable td:nth-child("+(cidx+1)+")").toggleClass("hidden",!on).toggle(on);
 	setVisibleTableColumnsCookie();
 }
 function handleTableConfigActionEvent(event) {

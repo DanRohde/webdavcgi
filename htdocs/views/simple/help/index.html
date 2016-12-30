@@ -17,9 +17,11 @@
 	<a href="#copyright" accesskey="6"></a>
 	<h1>User guide</h1>
 	<div>
+		<section>
 		<h2 class="toc">Contents of this page</h2>
 		<nav id="toc"></nav>
-
+		</section>
+		<section>
 		<h2 id="introduction">Introduction</h2>
 		<div>
 			... to the web interface. 
@@ -101,19 +103,21 @@
 			Drag and drop makes it easier 
 			<ul>
 			<li> to upload files and folders selected from your favorite file manager (Windows Explorer, Mac Finder, Xfe, Nautilus, Konqueror, ...),</li>
-			<li>to move or copy (hold <div class="key">&#8679; Shift</div> while dragging) your files and folders from current to a subfolder or to the upper folder,</li>  
+			<li>to move or copy (hold <kbd>&#8679; Shift</kbd> while dragging) your files and folders from current to a subfolder or to the upper folder,</li>  
 			<li> or to <a href="#customization">customize</a> the file and folder list.</li>
 			 </ul>
 			<h3 id="contextmenu">Context menu</h3>
 			The file and folder list has a context menu (right mouse click on a file or folder row) with some standard file actions and
 			a lot of additional features (depending on your local installation).
 			If you have nothing selected in the file list, the right clicked file or folder will be taken for the context action.
-			And if you need the web browser context menu instead of the file and folder list context menu  you have to use the right double click.
+			The table header has it's own context menu to change sort order or to show or hide table columns.
+			And if you need the web browser context menu instead of the file and folder list context menu  you have to use the right double click 
+			(<div class="warn">not of all web browsers supported</div>).
 			
 			<h3 id="keyboardsupport">Keyboard support</h3>
 			
 			<ul>
-				<li>Tabbing with (<div class="key">&#8679; Shift</div>+) <div class="key">&#8633; Tab</div> key is implemented and can be used to reach all
+				<li>Tabbing with (<kbd>&#8679; Shift</kbd>+) <kbd>&#8633; Tab</kbd> key is implemented and can be used to reach all
 					important things like buttons, actions, etc.</li>
 				<li>There are default shortcuts<a href="#ref1" class="ref">1</a>
 					to reach file actions and some web interface elements like file and folder list, toolbar, and application bar.
@@ -122,26 +126,28 @@
 					href="#ref2" class="ref">2</a> and operating system, e.g.:
 					<ul>
 					<li>Mozilla Firefox: on Windows, FreeBSD, and Linux: 
-						<div class="key">Alt</div>+<div class="key">&#8679; Shift</div>, 
-						on Mac: <div class="key">Ctrl</div>+<div class="key">&#8997; Opt</div></li>
-					<li>Google Chrome: on Windows, FreeBSD, and Linux: <div class="key">Alt</div> 
-						and sometimes <div class="key">&#8679; Shift</div> too, 
-						on Mac: <div class="key">Ctrl</div>+<div class="key">&#8997; Opt</div></li>
+						<kbd>Alt</kbd>+<kbd>&#8679; Shift</kbd>, 
+						on Mac: <kbd>Ctrl</kbd>+<kbd>&#8997; Opt</kbd></li>
+					<li>Google Chrome: on Windows, FreeBSD, and Linux: <kbd>Alt</kbd> 
+						and sometimes <kbd>&#8679; Shift</kbd> too, 
+						on Mac: <kbd>Ctrl</kbd>+<kbd>&#8997; Opt</kbd></li>
 					</ul> 
 				</li>
-				<li>To get a full list of available shortcuts use shortcut <div class="key">0</div>.</li>
+				<li>To get a full list of available shortcuts use shortcut <kbd>0</kbd>.</li>
 				<li>In the file list you can use 
 					<ul>
-						<li>the cursor keys <div class="key">&uarr;</div>, <div class="key">&darr;</div>,
-							 <div class="key">&#9650; Page up</div>, <div class="key">&#9660; Page down</div>, 
-							 <div class="key">&#8676; Home</div>, and <div class="key">&#8677; End</div> for navigation too,</li>
-						<li>the <div class="key">&nbsp;&nbsp;Space&nbsp;&nbsp;</div> key to select files,</li>
-						<li>the  <div class="key">&#8629; Enter</div> key to change the folder or download a file,</li>
-						<li>or the <div class="key">Del</div> key to delete files and folders.</li>
+						<li>the cursor keys <kbd>&uarr;</kbd>, <kbd>&darr;</kbd>,
+							 <kbd>&#9650; Page up</kbd>, <kbd>&#9660; Page down</kbd>, 
+							 <kbd>&#8676; Home</kbd>, and <kbd>&#8677; End</kbd> for navigation too,</li>
+						<li>the <kbd>&nbsp;&nbsp;Space&nbsp;&nbsp;</kbd> key to select files,</li>
+						<li>the  <kbd>&#8629; Enter</kbd> key to change the folder or download a file,</li>
+						<li>or the <kbd>Del</kbd> key to delete files and folders.</li>
 					</ul>
 				</li>
 			</ul>
 		</div>
+		</section>
+		<section>
 		<h2 id="basics">Basic tasks</h2>
 		<div>
 			.. with files and folders:
@@ -177,7 +183,7 @@
 			<dd>
 				<ul>
 				<li>single left click in the row (Attention: don't click on the filename, action button, or icon),</li>
-				<li>after one file or folder was (de)selected you can combine the single left click with <div class="key">&#8679; Shift</div> 
+				<li>after one file or folder was (de)selected you can combine the single left click with <kbd>&#8679; Shift</kbd> 
 					to (de)select all files and folders between the first and second selected file or folder
 			</li></ul>
 			</dd> 
@@ -195,6 +201,8 @@
 			</dd>
 			</dl>
 		</div>
+		</section>
+		<section>
 		<h2 id="customization">Customization</h2>
 		<div>
 			... of the web interface.
@@ -239,6 +247,8 @@
 
 			</dl>
 		</div>
+		</section>
+		<section>
 		<h2 id="trouble">Troubleshooting Guide</h2>
 		<div>
 			<div class="accordion">
@@ -249,7 +259,7 @@
 			</div>
 			<h3>My file list is empty.</h3>
 			<div>
-				Please check your filter form (at the right side of the toolbar) and clean the input field or reload the complete page (<div class="key">F5</div>).
+				Please check your filter form (at the right side of the toolbar) and clean the input field or reload the complete page (<kbd>F5</kbd>).
 				If it doesn't help, ask your local administrator to look on the server for troubleshooting.
 			</div>
 			<h3>I'm missing my (sub)folders after a folder upload. Or: The folder upload doesn't work.</h3>
@@ -272,6 +282,8 @@
 			</div>
 			</div>
 		</div>
+		</section>
+		<section>
 		<h2 id="references">References and external links</h2>
 		<div>
 			<ol>
@@ -288,6 +300,8 @@
 					href="https://en.wikipedia.org/wiki/Regular_expression" class="extern">Wikipedia.org: Regular expression</a></li>
 			</ol>
 		</div>
+		</section>
+		<section>
 		<h2 id="terms">Terms and conditions</h2>
 		<div>
 
@@ -307,6 +321,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 			</pre>
 		</div>
+		</section>
+		<section>
 		<h2 id="privacy">Privacy Policy</h2>
 		<div>
 			<p>This application (WebDAV CGI<a class="ref" href="#ref4">4</a>) doesn't send any data to nor collect any data on a public web site. </p>
@@ -316,11 +332,14 @@ along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 			and to enable some features, like a clipboard (copy, cut, paste) and a folder history. An extension allows you to save your preferences into the database,
 			but it's an option and disabled by default (opt-in).</p>
 		</div>
+		</section>
+		<section>
 		<h2 id="copyright">Copyright</h2>
-		<div>
+		<footer>
 			&copy; ZE Computer- und Medienservice, Humboldt-Universität zu Berlin,<br> 
 			Written by Daniel Rohde <a href="mailto:d.rohde@cms.hu-berlin.de">&lt;d.rohde@cms.hu-berlin.de&gt;</a>
-		</div>
+		</footer>
+		</section>
 	</div>
 	<hr>
 </body>

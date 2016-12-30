@@ -842,8 +842,16 @@ input[readonly=readonly] {
 img {
 	border: 0;
 }
-.action.upload {
+.action.upload,.upload-menu.popup.uibutton {
 	background-position-y: -536px;
+}
+.upload-menu.popup {
+	background-image: url(images/sprite.png);
+	background-position-x: center;
+} 
+.upload-menu.popup:hover, .upload-menu.popup:focus, .upload-menu.popup:active {
+	background-image: url(images/sprite-hover.png);
+	background-position-x: center;
 }
 .action.uploaddir {
     background-position-y: -1617px;

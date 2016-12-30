@@ -43,7 +43,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript posthandler body templates );
+    my @hooks = qw( css locales javascript posthandler body templates upload );
     push @hooks, 'fileaction'
       unless $EXTENSION_CONFIG{Zip}{disable_fileaction};
     push @hooks, 'filelistaction'
@@ -171,8 +171,13 @@ sub handle_hook_new {
         title     => 'zipup',
         path      => ${$params}{path},
         classes   => 'access-writeable sep',
-        accesskey => 'w',
+        type      => 'li'
     };
+}
+
+sub handle_hook_upload {
+    my ( $self, $config, $params) = @_;
+    return { accesskey => 'w', %{$self->handle_hook_new($config, $params)} };
 }
 
 sub handle_hook_apps {

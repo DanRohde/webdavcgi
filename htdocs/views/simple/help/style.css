@@ -134,7 +134,7 @@ body > div > div {
 	padding-left: 2ex;
 	border-left: 1ex solid #ccc;
 }
-.key {
+kbd {
 	padding: 0 2px;
 	border: 1px solid #ccc;
 	border-radius: 0.2em;
@@ -142,7 +142,6 @@ body > div > div {
 	background: #eee;
 	background: linear-gradient(to bottom,#eee,white,#eee);
 	box-shadow: 0.1em 0.1em 0.2em rgba(0,0,0,0.1);
-	display: inline;
 	white-space: nowrap;
 }
 code {
@@ -152,6 +151,13 @@ code {
 	background-color: #eee;
 	padding: 1px 1ex;
 	margin: 0;
+}
+.warn, .note {
+	display: inline;
+	color: #808080;
+}
+.warn:before {
+	content: "⚠";
 }
 @media print {
 	a.extern:after {
