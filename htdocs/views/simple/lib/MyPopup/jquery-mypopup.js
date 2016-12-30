@@ -26,18 +26,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			contextmenu: undefined,
 			contextmenuTarget: undefined,
 			contextmenuAnchor: undefined,
+			contextmenuAnchorElement: false,
 			alloworigcontextmenu : true,
 		}, options);
 
-		function adjustContextMenuPosition(event) {
-			var offset = $(settings.contextmenuAnchor).position();
-			var left = (event.pageX-offset.left);
-			var top = (event.pageY-offset.top);
-			var win = $(window);
-			var popupHeight = popup.height();
-			var popupWidth = popup.width();
-			//if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
-			//if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;
+		function adjustContextMenuPosition(event, el) {
+			var offset, left, top;
+			if (settings.contextmenuAnchorElement) {
+				offset = $(settings.contextmenuAnchor).position();
+				left = event.pageX - offset.left;
+				top  = el.offset().top;
+			} else {
+				offset = $(settings.contextmenuAnchor).position();
+				left = (event.pageX-offset.left);
+				top = (event.pageY-offset.top);
+				//var win = $(window);
+				//var popupHeight = popup.height();
+				//var popupWidth = popup.width();
+				//if (popupHeight + top - win.scrollTop() + offset.top > win.height() && top-popupHeight>= $("#top").height()) top-=popupHeight;
+				//if (popupWidth + left - win.scrollLeft() + offset.left > win.width() && left-popupWidth>= 0) left-=popupWidth;	
+			}
 			settings.contextmenu.css({"top":top+"px","left":left+"px"});
 		}
 		if (settings.contextmenu) {
@@ -56,7 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 						} else {
 							$("ul.popup:visible", popup).hide();
 							contextmenu.appendTo($(this)).css({position: "absolute", opacity: 1}).show();
-							adjustContextMenuPosition(event);
+							adjustContextMenuPosition(event, $(this));
 						}
 					}
 				});

@@ -1114,19 +1114,65 @@ img {
 	opacity: 1;
 	filter:Alpha(opacity=100);
 }
-.action.table-sort-this-asc, .action.table-sort-this-desc, .action.table-sort, .popup.table-sort-columns {
+.action.table-sort-this-asc, .action.table-sort-this-desc, .action.table-sort, .popup.table-sort-columns,
+.action.table-column-hide-this, .action.table-column, .popup.table-columns {
 	background-image: none;
 	padding-left: 0px;
 }
-.sorter-false .table-sort-this-asc, .sorter-false .table-sort-this-desc,
-.tablesorter-up .table-sort-this-asc, .tablesorter-down .table-sort-this-desc {
+.sorter-false .action.table-sort-this-asc, .sorter-false .action.table-sort-this-desc,
+.tablesorter-up .action.table-sort-this-asc, .tablesorter-down .action.table-sort-this-desc,
+.table-column-not-hide .action.table-column-hide-this {
 	display: none;
+}
+.action.table-sort .symbol:after {
+	content: "↕";
+}
+.action.table-sort .symbol.ascending:after {
+	content: "↘";
+}
+.action.table-sort .symbol.descending:after {
+	content: "↗";
+}
+.action.table-sort-this-asc .note:after {
+	content: "[Za]"
+}
+.table-sort-this-desc .note:after {
+	content: "[Az]"
+}
+[data-sorttype=number] .action.table-sort-this-asc .note:after {
+	content: "[91]";
+}
+[data-sorttype=number] .action.table-sort-this-desc .note:after {
+	content: "[19]";
+}
+
+.action.table-column .symbol:after {
+	content: "☒";
+}
+.action.table-column .symbol.column-hidden:after {
+	content: "☐";
 }
 .symbol {
 	display: inline-block;
 	width: 22px;
 	float:left;
 	text-align: center;
+	color: #808080;
+	font-weight: bold;
+	line-height: 1.3;
+}
+.symbol:hover, li:hover > .symbol {
+	color: black;
+}
+
+.note {
+	height: 1em;
+	display: inline-block;
+	color: #808080;
+	position: absolute;
+	right: 1ex;
+	font-size: 0.8em;
+	line-height: 15px;
 }
 .dragaccept { 
 	cursor: pointer; 
@@ -1508,13 +1554,12 @@ tr:focus .action.changeuri {
 .accesskey {
 	display: inline-block;
 	position: absolute;
-	right: 4px;
-	margin: -1em 0 0 0;
-	padding: 0;
-	border: 0;
-	color: #666;
-	width: 1em;
 	height: 1em;
+	color: #808080;
+	right: 1ex;
+	font-size: 80%;
+	line-height: 1.8;
+	
 	font-family: monospace;
 }
 
@@ -1594,10 +1639,12 @@ a.extern:after {
 		padding-left: 22px;
 	}
 	.popup .label {
+		display: inline-block;
 		min-height: 1.2em !important;
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
+		line-height: 1.2;
 	}
 	li.popup:hover, li.action:hover {
 		border: 1px dotted #999;

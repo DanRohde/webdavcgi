@@ -269,25 +269,20 @@ function setupTableConfigDialog(dialog) {
 				vc.push(val);
 			}
 		});
-		cookie("visibletablecolumns", vc.join(","), 1);
 		
 		var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
 		var o = dialog.find("input[name='sortingorder']:checked").attr("value");
-		cookie("order", c + (o=="desc" ? "_desc" :""), 1);
 						
 		if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) {
 			$.each(addedEls, function(i,val) {
-				var cidx = $("#fileListTable th[data-name='"+val+"']").removeClass("hidden").prop("cellIndex");
-				$("#fileList tr").each(function(j,v) { $("td",$(v)).eq(cidx).show(); });
+				toggleTableColumn(val, true);
 			});
 			$.each(removedEls, function(i,val) {
-				var cidx = $("#fileListTable th[data-name='"+val+"']").addClass("hidden").prop("cellIndex");
-				$("#fileList tr").each(function(j,v) { $("td",$(v)).eq(cidx).hide(); });
+				toggleTableColumn(val, false);
 			});
-		} else if (c != column || o != order) {
-			sortTableColumn(c, o == 'desc' ? -1 : 1);
 		}
-						
+		sortTableColumn(c, o == 'desc' ? -1 : 1);
+		
 		dialog.dialog("close");
 	});
 	dialog.find("input[name='cancel']").button().click(function(event) {
@@ -618,7 +613,7 @@ function buildBookmarkList() {
 			.click(handleBookmarkActions).MyKeyboardEventHandler()
 			.addClass("action dyn-bookmark")
 			.attr('data-bookmark',val.path)
-			.attr("title",$.MyStringHelper.simpleEscape(epath)+" ("+(new Date(parseInt(val.time)))+")")
+			.attr("data-htmltooltip",$.MyStringHelper.simpleEscape(epath)+"%0D"+(new Date(parseInt(val.time))))
 			.attr("tabindex", val.path == currentPath ? -1 : 0)
 			.toggleClass("disabled", val.path == currentPath)
 			.find(".action.rmsinglebookmark").click(handleBookmarkActions).MyKeyboardEventHandler();
@@ -1159,12 +1154,12 @@ function handleFileListColumnDrop(event, ui) {
 	var cols = $("#fileListTable thead th");
 	cols.eq(didx).detach().insertBefore(cols.eq(tidx));
 	
-	$.each($("#fileList tr"), function() {
+	$("#fileList tr").each(function() {
 		var cols = $(this).children("td");
 		cols.eq(didx).detach().insertBefore(cols.eq(tidx));
 	});
 	
-	cookie("visibletablecolumns", $.map($("#fileListTable thead th[data-name]:not(.hidden):not(:last)"), function(v) { return $(v).attr("data-name"); }).join(","), 1);
+	setVisibleTableColumnsCookie();
 	
 	return true;
 }
@@ -1845,6 +1840,15 @@ function hidePopupMenu() {
 	$("#popupmenu li.popup").MyPopup("close");
 	$("#tc_popupmenu li.popup").MyPopup("close");
 }
+function setVisibleTableColumnsCookie() {
+	cookie("visibletablecolumns", $("#fileListTable th[data-name]:visible").map(function() { return $(this).data("name"); }).get().join(","), 1);
+	$("body").trigger("settingchanged", { setting: "visibletablecolumns", value: cookie("visibletablecolumns") });
+}
+function toggleTableColumn(name, toggle) {
+	var cidx = $("#fileListTable th[data-name="+name+"]").toggleClass("hidden",!toggle).toggle(toggle).prop("cellIndex");
+	$("#fileListTable td:nth-child("+(cidx+1)+")").toggleClass("hidden",!toggle).toggle(toggle);
+	setVisibleTableColumnsCookie();
+}
 function handleTableConfigActionEvent(event) {
 	preventDefault(event);
 	var self = $(this);
@@ -1857,6 +1861,9 @@ function handleTableConfigActionEvent(event) {
 	} else if (self.hasClass("table-sort-this-desc")) {
 		sortTableColumn(self.closest("th").data("name"), -1 );
 	} else if (self.hasClass("table-column-hide-this")) {
+		toggleTableColumn(self.closest("th:not(.table-column-not-hide)").data("name"), false);
+	} else if (self.hasClass("table-column")) {
+		toggleTableColumn(self.data("name"));
 	}
 }
 function initTableColumnPopupActions() {
@@ -1867,22 +1874,32 @@ function initTableColumnPopupActions() {
 	.MyKeyboardEventHandler();
 	
 	$("#flt").on("fileListChanged", function() {
-		$("#fileListTable .fileListHead .sorter-false").each(function(i,v) {
-			var s = $(v);
-			if (s.data("name")!=undefined) $(".action.table-sort."+s.data("name")).addClass("disabled");
+		
+		$("#fileListTable th[data-name].sorter-false").each(function(i,v) {
+			$(".action.table-sort."+$(v).data("name")).addClass("hidden").hide();
 		});
 		$(".action.table-sort.fileactions").hide();
 		
 	});
+	setupContextActions();
 	function setupContextActions() {
 		var lts = getLastTableSort();
-		$(".action.table-sort .symbol").html("&#8597;");
-		$(".action.table-sort."+lts.name+" .symbol").html( lts.sortorder == 1 ? "&#8600;" : "&#8599;");
+		//$(".action.table-sort .symbol").html("&#8597;");
+		//$(".action.table-sort."+lts.name+" .symbol").html( lts.sortorder == 1 ? "&#8600;" : "&#8599;");
+		$(".action.table-sort .symbol").removeClass("descending ascending");
+		$(".action.table-sort."+lts.name+" .symbol").addClass(lts.sortorder == 1 ? "descending" : "ascending");
+		
+		$(".action.table-column .symbol").removeClass("column-hidden");
+		$(".action.table-column").addClass("hidden disabled");
+		$("#fileListTable th[data-name]").each(function(i,v) {
+			$(".action.table-column."+$(v).data("name")).removeClass("hidden").toggleClass("disabled", $(v).hasClass("table-column-not-hide"))
+				.find(".symbol").toggleClass("column-hidden",$(v).is(":not(:visible)"))
+		});
 	}
 	$("body").on("settingchanged", function(event,data) {
-		if (data.setting != "order") return;
-		setupContextActions();
+		if (data.setting == "order" || data.setting == "visibletablecolumns") setupContextActions();
 	});
+	
 	// var visiblecolumns = $.map($("#fileListTable thead th[data-name]:not(.hidden)"), function(val,i) { return $(val).attr("data-name");});
 }
 function initPopupMenu() {
@@ -1901,7 +1918,7 @@ function initPopupMenu() {
 		.on("fileListChanged.popupmenu", function(){
 			$("#popupmenu li.popup").MyPopup({contextmenu: $("#popupmenu"), contextmenuTarget: $("#fileList tr"), contextmenuAnchor: "#content"});
 			
-			$("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content"});
+			$("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content", contextmenuAnchorElement: true});
 		});
 	$("body").off(".popupmenu")
 			 .on("click.popupmenu",function() { hidePopupMenu(); })
