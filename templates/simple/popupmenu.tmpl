@@ -35,9 +35,11 @@ $extension(fileactionpopup)
 <li class="action delete access-writeable hideit sep" title="$tl(deletefilestext)">$tl(deletefilesbutton)</li>
 </ul>
 <ul id="tc_popupmenu" class="popup">
-<li class="action table-sort-this-desc" tabindex="0"><div class="symbol">&#8599;</div><div class="label">$tl(tableconfig.ascending)<div class="note"></div></div></li>
-<li class="action table-sort-this-asc" tabindex="0"><div class="symbol">&#8600;</div><div class="label">$tl(tableconfig.descending)<div class="note"></div></div></li>
-<li class="popup table-sort-columns" tabindex="0">
+<li class="action table-sort-this-asc" tabindex="0"><div class="symbol">&#8599;</div><div class="label">$tl(tableconfig.ascending)<div class="note"></div></div></li>
+<li class="action table-sort-this-desc" tabindex="0"><div class="symbol">&#8600;</div><div class="label">$tl(tableconfig.descending)<div class="note"></div></div></li>
+<li class="action table-column-width-default"><div class="symbol">-</div><div class="label">$tl(tableconfig.defaultcolumnwidth)</div></li>
+<li class="action table-column-width-minimum"><div class="symbol">|</div><div class="label">$tl(tableconfig.minimumcolumnwidth)</div></li>
+<li class="popup table-sort-columns sep" tabindex="0">
 	<div class="symbol">&#8597;</div><div class="label">$tl(tableconfig.sortingcolumns)</div>
 	<ul class="popup">
 		$each|@ALLOWED_TABLE_COLUMNS|'<li class="action table-sort $v" tabindex="0" data-name="$v"><div class="symbol"></div><div class="label">$tl($v)</div></li>'|

@@ -154,10 +154,13 @@ code {
 }
 .warn, .note {
 	display: inline;
-	color: #808080;
+	color: #666;
 }
 .warn:before {
-	content: "⚠";
+	content: "(⚠ ";
+}
+.warn:after {
+	content: " ⚠)"
 }
 @media print {
 	a.extern:after {

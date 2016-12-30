@@ -1087,10 +1087,9 @@ function initFileList() {
 			var col = $(v);
 			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle left");
 			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle right");
-			col.data("origWidth", col.width());
-			var wcookie = cookie(col.prop("id")+".width");
-			if (wcookie) col.width(parseFloat(wcookie));
 			
+			setTableColumnWidth(col, cookie(col.prop("id")+".width"));
+
 			// handle click and dblclick at the same time:
 			var clicks = 0;
 			$(v).on("click.initFileList",function(event) {
@@ -1101,10 +1100,8 @@ function initFileList() {
 						if (clicks == 1) {
 							if (! self.hasClass("sorter-false")) handleTableColumnClick.call(self,event);
 						} else {
-							var width = self.width() == self.data("origWidth") ? 1 : self.data("origWidth");
-							self.width(width);
-							togglecookie(self.prop("id")+".width", width, width != self.data("origWidth"),1);		
-						}	
+							setTableColumnWidth(self, self.width() == self.data("origWidth") ? "minimum" : "default");
+						}
 						clicks = 0;
 					}, 300);
 				}
@@ -1117,13 +1114,11 @@ function initFileList() {
 			startPos = parseInt(ui.offset.left);
 			column = $(this).closest("th");
 			startWidth = column.width(); 
-			// origStyle = $(this).attr("style");
 			handlePos = $(this).hasClass("left")? "left" : "right";
 		},
 		stop: function(event,ui) {
-			// $(this).attr("style", origStyle);
 			$(this).removeAttr("style");
-			cookie(column.attr("id")+".width", column.width(),1);
+			setTableColumnWidth(column, column.width());
 		},
 		drag: function(event,ui) {
 			if (handlePos=="right") column.width( startWidth +  ui.offset.left - startPos );
@@ -1138,6 +1133,19 @@ function initFileList() {
 	$("#fileList tr:focusable:visible:first").focus();
 	
 	$("#flt").trigger("fileListChanged");
+}
+function setTableColumnWidth(col, pWidth) {
+	var name = col.prop("id")+".width";
+	var width = pWidth;
+	var origWidth = col.data("origWidth");
+	if (origWidth === undefined) col.data("origWidth", col.width());
+	if (width === undefined) { col.addClass("column-width-default"); return; }
+	else if (width === "default") width = origWidth;
+	else if (width === "minimum") width = 1;
+	col.width(width);
+	col.toggleClass("column-width-default", width == origWidth).toggleClass("column-width-minimum", width == 1);
+	togglecookie(name, width, width != origWidth);
+	return col;
 }
 function removeTextSelections() {
 	if (document.selection && document.selection.empty) document.selection.empty();
@@ -1866,6 +1874,10 @@ function handleTableConfigActionEvent(event) {
 		toggleTableColumn(self.closest("th:not(.table-column-not-hide)").data("name"), false);
 	} else if (self.hasClass("table-column")) {
 		toggleTableColumn(self.data("name"));
+	} else if (self.hasClass("table-column-width-default")) {
+		setTableColumnWidth(self.closest("th"), "default");
+	} else if (self.hasClass("table-column-width-minimum")) {
+		setTableColumnWidth(self.closest("th"), "minimum");
 	}
 }
 function initTableColumnPopupActions() {
