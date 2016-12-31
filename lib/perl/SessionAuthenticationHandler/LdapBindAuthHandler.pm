@@ -106,8 +106,8 @@ sub check_login {
             sizelimit => $settings{sizelimit},
             timelimit => $settings{timelimit},
             filter    => $f,
-            attrs     => ['dn'],
-            raw       => qr/dn/xmsi
+            attrs     => [ 'dn' ],
+            raw       => qr/images/xmsi
         );
         if ( $msg->code ) {
             carp( $msg->error );
@@ -117,14 +117,16 @@ sub check_login {
         if ( @entries != 1 ) {
             return 0;
         }
-        $userdn = $entries[0]->get_value('dn');
+        $userdn = $entries[0]->dn();
     }
     $msg = $ldap->bind( $userdn, password => $password );
     if ( $msg->code ) {
+        carp("Authentication for user $login ($userdn) failed.");
         return 0;
     }
     $ldap->unbind;
     $ldap->disconnect();
+    undef $ldap;
     return 1;
 }
 
