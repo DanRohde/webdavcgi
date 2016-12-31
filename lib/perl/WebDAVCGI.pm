@@ -48,6 +48,7 @@ use DefaultConfig qw(
   $ENABLE_LOCK $ENABLE_CALDAV $ENABLE_CALDAV_SCHEDULE
   $ENABLE_CARDDAV $ENABLE_GROUPDAV $ENABLE_BIND
   $ENABLE_ACL $ENABLE_SEARCH $BACKEND_INSTANCE $EVENT_CHANNEL
+  %SESSION
 );
 use DB::Driver;
 use DatabaseEventAdapter;
@@ -55,7 +56,8 @@ use Backend::Manager;
 use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
-$RELEASE = '1.1.2BETA20161231.2';
+
+$RELEASE = '1.1.2BETA20161231.3';
 
 use vars qw( $_METHODS_RX );
 
@@ -70,7 +72,18 @@ sub run {
     my ($self) = @_;
     $self->init_defaults();
     $self->init();
-    $self->handle_request();
+    my $auth = 1;
+    if (%SESSION) {
+        require SessionAuthenticationHandler;
+        $REMOTE_USER = 'unknown';
+        $auth = SessionAuthenticationHandler->new($CGI)->authenticate(); # 0 -> login, 1 -> ok, 2->redirect
+    }
+    if ($auth == 1) {
+        $self->handle_request();
+    } elsif ( $auth != 2 ) {
+        require WebInterface;
+        WebInterface->new()->init( $self->{config} )->handle_login();
+    }
     $self->free();
     return $self;
 }
@@ -264,8 +277,10 @@ sub _get_event_channel {
 sub free {
     my ($self) = @_;
     foreach my $k (qw(method cache db dbea event backend)) {
-        $self->{$k}->free();
-        delete $self->{$k};
+        if (defined $self->{$k}) {
+            $self->{$k}->free();
+            delete $self->{$k};
+        }
     }
     delete $self->{config};
     undef $CONFIG;

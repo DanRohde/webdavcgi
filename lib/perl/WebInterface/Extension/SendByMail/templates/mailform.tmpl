@@ -12,8 +12,8 @@
 <tr class="sendbymail subject"><th>$TL{sendbymail_subject}</th><td><input type="text" size="50" name="subject" value="$defaultsubject"/></td></tr>
 <tr class="sendbymail message"><th>$TL{sendbymail_message}</th><td><textarea cols="48" rows="4" name="message">$defaultmessage</textarea></td></tr>
 <tr class="sendbymail attachments"><th>$TL{sendbymail_attachments} 
-									   <div class="sendbymail note sumfilesizes" title="$sumfilesizes_title">$TL{size}: $sumfilesizes</div>
-                                       <div class="sendbymail note" title="$mailsizelimit_title">($TL{sendbymail_sizelimit}: $mailsizelimit)</div></th>
+									   <div class="sendbymail-note sumfilesizes" title="$sumfilesizes_title">$TL{size}: $sumfilesizes</div>
+                                       <div class="sendbymail-note" title="$mailsizelimit_title">($TL{sendbymail_sizelimit}: $mailsizelimit)</div></th>
                                    <td>$FILES</td></tr>
 <tr class="sendbymail zip"><th></th><td class="sendbymail zip"><input type="checkbox" name="zip"> $TL{sendbymail_zip}</input>, $TL{sendbymail_zipfilename} <input type="text" name="zipfilename" value="$defaultzipfilename" size="11"/></td></tr>
 <tr class="sendbymail button"><th><input type="submit" name="download" value="$TL{sendbymail_download}"/></th><th class="sendbymail button"><input type="submit" name="send" value="$TL{sendbymail_send}"/></th></tr>

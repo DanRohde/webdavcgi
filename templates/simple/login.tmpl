@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="$LANG">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>$tl(login.title)</title>
+<style>
+body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+.login-form {
+	margin: 2em;
+	border: 1px outset #ddd;
+	background: linear-gradient(to bottom right, white, #eee);
+	text-align: center;
+	padding: 2em;
+	width: 30em;
+}
+.login-title {
+	font-size: 150%;
+	padding-bottom: 0.5em;
+}
+.login-submit, .login-language {
+	padding-top: 1em;
+}
+input,select {
+	width: 10em;
+}
+label {
+	display: block;
+	padding-top: 1ex;
+	font-size: 80%;
+	font-style: oblique;
+}
+.logon-failure {
+	color: red;
+}
+.logout-success {
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+	<div class="login-form">
+		<form method="POST">
+			<div class="login-title">$tl(login.title)</div>
+			<!--IF("$cgiparam(logon)" ne q{})-->
+			<div class="logon-failure">$tl(login.failure)</div>
+			<!--ENDIF-->
+			<!--IF("$cgiparam(logout)" ne q{})-->
+			<div class="logout-success">$tl(login.logoutsuccess)</div>
+			<!--ENDIF-->
+			<div class="login-login">
+				<label>
+				$tl(login.login)
+				</label>
+				<input type="text" name="login" value="$cgiparam(login)" required autocomplete="username" autofocus>
+				
+			</div>
+			<div class="login-password">
+				<label>
+				$tl(login.password)
+				</label>
+				<input type="password" name="password" required autocomplete="off">
+				
+			</div>
+			<!--IF(scalar keys %{$SESSION{domains}} > 1)-->
+			<div class="login-domain">
+				<label>
+				$tl(login.domain) 
+				</label>
+				<select name="domain">
+				$each|%SESSION{domains}|'<option>$k</option>'|
+				</select>
+				
+			</div>
+			<!--ELSE-->
+			<input type="hidden" name="domain" value="$each|%SESSION{domains}|'$k'|">
+			<!--ENDIF-->
+			<div class="login-submit">
+				<input type="submit" value="$tl(login.submit)">
+			</div>
+			<div class="login-language">
+				<select name="lang">
+					<option value="$LANG">$TRANS_LANG</option>
+					$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|
+				</select>
+			</div>
+		</form>
+	</div>
+
+</body>
+</html>

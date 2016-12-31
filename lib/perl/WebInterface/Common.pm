@@ -34,8 +34,8 @@ use DefaultConfig qw(
   $RELEASE $REMOTE_USER $REQUEST_URI $SHOWDOTFILES $SHOWDOTFOLDERS $VHTDOCS $VIEW
   $VIRTUAL_BASE %ICONS %TRANSLATION @ALLOWED_TABLE_COLUMNS @SUPPORTED_VIEWS
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
-  @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG);
-use HTTPHelper qw( get_mime_type );
+  @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG %SESSION );
+use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 use WebInterface::Translations qw( read_all_tl  );
 use FileUtils;
 
@@ -108,7 +108,7 @@ sub initialize {
          $self->{cgi}->param('lang')
       || $self->{cgi}->cookie('lang')
       || $LANG
-      || 'default';
+      || 'en';
     $ORDER =
          $self->{cgi}->param('order')
       || $self->{cgi}->cookie('order')
@@ -511,9 +511,14 @@ sub _get_varref {
     my ( $self, $str ) = @_;
     $str =~ s/^[@%\$](?:main::)?//xms;
     my $ref = $DefaultConfig::{$str} // $__PACKAGE__::{$str};
+
     if ( !defined $ref ) {
         if ( defined $self->{$str} ) {
             return $self->{$str};
+        }
+        if ($str=~/^(.*){(.*?)}/xms) {
+            $ref = $DefaultConfig::{$1}{$2};
+            return $ref;
         }
         return;
     }
@@ -588,7 +593,7 @@ sub exec_template_function {
         return $self->tl($param);
     }
     if ( $func eq 'cgiparam' ) {
-        return $self->{cgi}->param($param) // q{};
+        return $self->{cgi}->escapeHTML($self->{cgi}->param($param) // q{});
     }
     if ( $func eq 'help' ) {
         return $self->handle_help($param);
@@ -604,7 +609,7 @@ sub render_template {
 
     $vars //= {};
 
-    my $cgi      = $self->{cgi};    ## allowes easer access from templates
+    my $cgi      = $self->{cgi};    ## allowes easier access from templates
     my $anyng_rx = qr{(.*?)}xms;
     my $cond_rx = qr{[(]${anyng_rx}[)]}xms;
 
@@ -640,6 +645,7 @@ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
         REQUEST_URI     => $REQUEST_URI,
         PATH_TRANSLATED => $PATH_TRANSLATED,
         LANG            => $LANG,
+        TRANS_LANG      => $SUPPORTED_LANGUAGES{$LANG} // $SUPPORTED_LANGUAGES{en},
         VBASE           => $self->{cgi}->escapeHTML($vbase),
         VHTDOCS         => $vbase . $VHTDOCS,
         RELEASE         => $RELEASE,
@@ -770,5 +776,9 @@ sub handle_inc_help {
     my $helpfile = $self->get_lang_filename($filepath, $helpbase, 'html') // $self->get_lang_filename($filepath, 'index','html');
     my $content = FileUtils::get_local_file_content("${filepath}/$helpfile");
     return $self->{cgi}->escape($content=~m{<body>(.*)</body>}xmsi ? $1 : $content);
+}
+sub render_login {
+    my ($self) = @_;
+    return print_compressed_header_and_content( '200 OK', 'text/html', $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $self->read_template('login')), 'Cache-Control: no-cache, no-store');
 }
 1;

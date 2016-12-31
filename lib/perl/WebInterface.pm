@@ -182,6 +182,10 @@ sub handle_post_request {
     }
     return 1;
 }
+sub handle_login {
+    my ($self) = @_;
+    return $self->_get_renderer()->render_login();
+}
 
 sub get_thumbnail_renderer {
     my ($self) = @_;

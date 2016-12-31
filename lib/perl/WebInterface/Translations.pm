@@ -117,6 +117,7 @@ sub _handle_default_and_lang {
 
 sub _read_tl {
     my ($lang)    = @_;
+    $lang //= 'default';
     my $fn        = "${INSTALL_BASE}locale/webdav-ui_${lang}.msg";
     my $fndefault = "${INSTALL_BASE}locale/webdav-ui_default.msg";
     _handle_default_and_lang( $lang, $fndefault, $fn );
@@ -127,6 +128,7 @@ sub _read_extensions_tl {
     my ( $extensions, $lang ) = @_;
     if ( _load_translation($lang) ) { return; }
     _read_tl($lang);
+    if (!$extensions) { return; }
     my $locales = $extensions->handle('locales') || [];
     foreach my $lfn ( @{$locales} ) {
         my $fn        = $lfn . '_' . $lang . '.msg';
@@ -139,6 +141,7 @@ sub _read_extensions_tl {
 
 sub read_all_tl {
     my ( $extensions, $lang ) = @_;
+    $REMOTE_USER //= 'unknown';
     _read_extensions_tl( $extensions, $lang );
     return;
 }

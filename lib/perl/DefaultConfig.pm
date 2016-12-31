@@ -55,6 +55,7 @@ our @EXPORT_OK   = qw(
     %SUPPORTED_LANGUAGES $DEFAULT_LOCK_TIMEOUT
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL $ALLOW_PATHINPUT $MAXQUICKNAVELEMENTS
+    %SESSION
 );
 
 #{
@@ -95,6 +96,7 @@ use vars qw(
     @EVENTLISTENER $SHOWDOTFILES $SHOWDOTFOLDERS $FILETYPES @DEFAULT_EXTENSIONS @AFS_EXTENSIONS @EXTRA_EXTENSIONS @PUB_EXTENSIONS @DEV_EXTENSIONS
     $OPTIMIZERTMP $READBUFSIZE $BACKEND_INSTANCE $EVENT_CHANNEL $ALLOW_PATHINPUT $MAXQUICKNAVELEMENTS
     $ALLOW_FOLDERUPLOAD
+    %SESSION
 );
 
 $VERSION = '2.0';
@@ -199,7 +201,7 @@ EOF
         = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div id="now">$NOW</div></div>};
     $SIGNATURE
         = q{&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2016 by <a href="https://DanRohde.github.io/webdavcgi/">Daniel Rohde</a>};
-    $LANG                = 'default';
+    $LANG                = 'en';
     %SUPPORTED_LANGUAGES = (
         'en'      => 'English',
         'de'      => 'Deutsch',
@@ -209,7 +211,7 @@ EOF
     );
     $ORDER   = 'name';
     $DBI_SRC = 'dbi:SQLite:dbname=/tmp/webdav.'
-        . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . '.db';
+        . ( $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // 'unknown' ) . '.db';
     $DBI_USER       = q{};
     $DBI_PASS       = q{};
     $DBI_PERSISTENT = 1;
@@ -225,7 +227,7 @@ EOF
         'CREATE INDEX IF NOT EXISTS webdav_props_idx2 ON webdav_props (fn,propname)',
     );
     $DEFAULT_LOCK_OWNER
-        = { href => ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{@}
+        = { href => ( $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // 'unknown' ) . q{@}
             . $ENV{REMOTE_ADDR} };
     $DEFAULT_LOCK_TIMEOUT                       = 3600;
     $CHARSET                                    = 'utf-8';
@@ -243,7 +245,7 @@ EOF
     $ENABLE_LOCK                               = 1;
     $ENABLE_ACL                                = 0;
     $CURRENT_USER_PRINCIPAL                    = q{/principals/}
-        . ( $ENV{REDIRECT_REMOTE_USER} || $ENV{REMOTE_USER} ) . q{/};
+        . ( $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // 'unknown' ) . q{/};
     $PRINCIPAL_COLLECTION_SET = q{/directory/};
     $ENABLE_CALDAV            = 0;
     %CALENDAR_HOME_SET        = ( default => q{/}, );
@@ -266,7 +268,7 @@ EOF
         '/usr/local/www/htdocs/rohdedan/test/' => 2
     );
     my $_ru = ( split /\@/xms,
-        ( $ENV{REMOTE_USER} || $ENV{REDIRECT_REMOTE_USER} ) )[0];
+        ( $ENV{REMOTE_USER} // $ENV{REDIRECT_REMOTE_USER} // 'unknown' ) )[0];
     %FILEFILTERPERDIR = (
         '/afs/.cms.hu-berlin.de/user/'          => "^$_ru\$",
         '/usr/local/www/htdocs/rohdedan/links/' => '^loop[1-4]$'

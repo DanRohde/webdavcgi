@@ -196,5 +196,4 @@ sub render_msg_response {
     require JSON;
     return ( JSON->new()->encode( \%jsondata ), 'application/json' );
 }
-
 1;
