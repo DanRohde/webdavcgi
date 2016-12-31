@@ -243,6 +243,7 @@ gotoappsmenu                   "Setzt den Tastaturfokus auf das Anwendungsmenü.
 login.title                    "Willkommen"
 login.login                    "Benutzername"
 login.password                 "Passwort"
+login.domain                   "Domäne"
 login.submit                   "Login"
 login.failure                  "Falscher Benutzername oder falsches Passwort!"
 login.logoutsuccess            "Sie wurden erfolgreich abgemeldet!"

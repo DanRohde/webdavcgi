@@ -93,7 +93,7 @@ sub authenticate {
             $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
             $session->flush();
             # redirect because we are in a login procedure:
-            print $self->{cgi}->redirect(-uri=>"${REQUEST_URI}?lang=".$self->{cgi}->escape($self->{cgi}->param("lang")), -cookie => $self->{cgi}->cookie($session->name(), $session->id()) );
+            print $self->{cgi}->redirect(-uri=>"${REQUEST_URI}?lang=".$self->{cgi}->escape(scalar $self->{cgi}->param("lang")), -cookie => $self->{cgi}->cookie($session->name(), $session->id()) );
             return 2;
         }
     }

@@ -55,6 +55,8 @@ use vars qw ( %DEFAULT_CONFIG );
 %DEFAULT_CONFIG = (
     server     => 'localhost',
     starttls   => 1,
+    timeout    => 2,
+    onerror    => 'warn',
     sslversion => 'tlsv1_2',
     verify     => 1,
     basedn     => 'dn=localhost',
@@ -71,7 +73,11 @@ use vars qw ( %DEFAULT_CONFIG );
 sub check_login {
     my ( $self, $config, $login, $password ) = @_;
     my %settings = ( %DEFAULT_CONFIG, %{$config} );
-    my $ldap = Net::LDAP->new( $settings{server}, debug => $settings{debug} );
+    my $ldap = Net::LDAP->new( $settings{server}, timeout=>$settings{timeout}, onerror=>$settings{onerror}, debug => $settings{debug} );
+    if (!$ldap) {
+        carp("Cannot connect to ldap server $settings{server}.");
+        return 0;
+    }
     if ( $settings{starttls} ) {
         $ldap->start_tls(
             verify     => $settings{verify},
