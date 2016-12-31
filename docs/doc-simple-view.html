@@ -41,10 +41,10 @@ Look for include statements in the page template (<code>templates/simple/page.tm
 <li> Create a custom template <code>templates/simple/apps.custom.tmpl</code> to add a new menu entry </li>
 <li> and add a list item to the custom template (see <code>page.tmpl</code> for examples):
 <pre>
-&lt;li title="Home"&gt;
-  &lt;a class="home-button action changeuri" href="/afs/.cms.hu-berlin.de/user/$eval@substr($REMOTE_USER,0,1)@/$USER/" accesskey="1"&gt;
-    &lt;span class="label"&gt;Home&lt;/span&gt;
-  &lt;/a&gt;
+&lt;li accesskey="1" tabindex="0" 
+    class="home-button action changeuri" 
+    data-uri="/afs/.cms.hu-berlin.de/user/$eval@substr($REMOTE_USER,0,1)@/$USER/"&gt;
+  &lt;div class="label"&gt;Home&lt;/div&gt;
 &lt;/li&gt;
 </pre>
 </li>
@@ -58,38 +58,36 @@ Overview of existing page template hooks (template file name pattern: <code>temp
 <li><code>pref</code> - included before views option menu items</li>
 <li><code>help</code> - included before about menu item</li>
 </ul>
-<h3>Example 1: Add a Home Button</h3>
+<h3>Example 1: Add a home button</h3>
 <ol>
 <li> Create a custom template: <code>vi templates/simple/apps.custom.tmpl</code></li>
 <li> Add HTML code to the new template (change href value to your preferred URL):
 <pre>
-&lt;li title="Home"&gt;
-  &lt;a class="home-button action changeuri" href="/.cms.hu-berlin.de/user/$eval@substr($REMOTE_USER,0,1)@/$USER/" accesskey="1"&gt;
-    &lt;span class="label"&gt;Home&lt;/span&gt;
-  &lt;/a&gt;
+&lt;li accesskey="1" tabindex="0"
+    class="home-button action changeuri" 
+    data-uri="/.cms.hu-berlin.de/user/$eval@substr($REMOTE_USER,0,1)@/$USER/"&gt;
+  &lt;div class="label"&gt;Home&lt;/div&gt;
 &lt;/li&gt;
 </pre>
 </li>
 </ol>
-<h3>Example 2: Add a Logout Button, a Contact Button, and a Help Button</h3>
+<h3>Example 2: Add a logout button, a contact button, a external link button, and a help button</h3>
 <ol>
 <li> Create a custom template: <code>vi templates/simple/help.custom.tmpl</code></li>
 <li> Add HTML code to the new template (change href values to your preferred URLs):
 <pre>
-&lt;li title="Help"&gt;
-  &lt;a class="help-button" target="_blank" href="link_to_my_help" aria-label="Get Help" accesskey="6"&gt;
-    &lt;span class="label"&gt;Help&lt;/span&gt;
-  &lt;/a&gt;
+&lt;li class="logout-button" data-href="/logout"&gt;
+  &lt;div class="label"&gt;Logout&lt;/div&gt;
 &lt;/li&gt;
-&lt;li title="Logout"&gt;
-  &lt;a class="logout-button" aria-label="Logout" href="/logout"&gt;
-    &lt;span class="label"&gt;Logout&lt;/span&gt;
-  &lt;/a&gt;
+&lt;li class="contact-button" accesskey="9" 
+    data-href="mailto:contact@mydomain.org?subject=WebDAV%20CGI"&gt;
+  &lt;div class="label"&gt;Contact&lt;/div&gt;
 &lt;/li&gt;
-&lt;li title="Contact"&gt;
-  &lt;a class="contact-button" href="mailto:contact@mydomain.org?subject=WebDAV%20CGI" aria-label="E-Mail Contact" accesskey="9"&gt;
-    &lt;span class="label"&gt;Contact&lt;/span&gt;
-  &lt;/a&gt;
+&lt;li class="link-button" data-href="https://google.com/" data-target="_blank"&gt;
+  &lt;div class="label"&gt;Google&lt;/div&gt;
+&lt;/li&gt;
+&lt;li class="help-button" accesskey="6" data-target="_blank" data-href="link_to_my_help"&gt;
+  &lt;div class="label"&gt;Help&lt;/div&gt;
 &lt;/li&gt;
 </pre>
 </li>

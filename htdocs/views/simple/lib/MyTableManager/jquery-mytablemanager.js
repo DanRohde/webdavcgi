@@ -22,11 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (function ( $ ) {
 
 	$.fn.MyTableManager = function() {
-		var rhleft = $("<div/>").addClass("columnResizeHandle left");
-		var rhright = $("<div/>").addClass("columnResizeHandle right");
-		
 		var table = this;
-		
 		// init column drag & drop:
 		table.find("th.dragaccept").draggable({ 
 			zIndex: 200, 
@@ -61,8 +57,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					self.MyClickCounter+=1;
 				}
 			});
-		
 		// init dblclick resize and drag resize:
+		var rhleft = $("<div/>").addClass("columnResizeHandle left");
+		var rhright = $("<div/>").addClass("columnResizeHandle right");		
 		table.find("th:not(.resizable-false)")
 			.each(function() {
 				var col = $(this);
@@ -105,7 +102,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			var tidx = $(this).prop("cellIndex");
 			if (didx + 1 == tidx) return false;
 			
-			var cols = $("#fileListTable thead th");
+			var cols = table.find("thead th");
 			cols.eq(didx).detach().insertBefore(cols.eq(tidx));
 			
 			$("#fileList tr").each(function() {

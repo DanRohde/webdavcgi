@@ -491,6 +491,12 @@ function handleWindowResize() {
 }
 
 function initChangeUriAction() {
+	
+	$(".home-button[data-href], .logout-button[data-href], .contact-button[data-href], .link-button[data-href], .help-button[data-href]")
+		.off("click")
+		.attr("tabindex",0 )
+		.on("click", function() { window.open($(this).data("href"), $(this).data("target") || "_self"); });
+	
 	$(".action.changeuri").off(".changeuri").on("click.changeuri",handleChangeUriAction);
 	$(".action.refresh").off(".refresh").on("click.refresh",function(event) {
 		$.MyPreventDefault(event);
@@ -511,7 +517,7 @@ function initChangeUriAction() {
 function handleChangeUriAction(event) {
 	$.MyPreventDefault(event);
 	if (!$(this).closest("div.filename").is(".ui-draggable-dragging")) {
-		changeUri($(this).data("href") || $(this).attr("href"));
+		changeUri($(this).data("href") || $(this).attr("href") || $(this).data("uri"));
 	}
 	return false;
 }
@@ -1519,9 +1525,7 @@ function handleFileListActionEvent(event) {
 			confirmDialog(msg, { confirm: function() { doPasteAction(action,srcuri,dsturi,files); }, setting: "settings.confirm.paste" });
 		} else doPasteAction(action,srcuri,dsturi,files);
 	} else if (self.attr("href") !== undefined && self.attr("href") != "#") {
-		window.location.href=self.attr("href");
-	} else if (self.attr("data-href") !== undefined && self.attr("data-href") != "#") {
-		window.location.href=self.attr("data-href");
+		window.open(self.attr("href"), self.attr("target") || "_self");
 	} else {
 		var row = self.closest("tr");
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });

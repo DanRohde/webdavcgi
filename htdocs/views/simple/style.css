@@ -70,7 +70,8 @@ a {
 	margin: 0;
 }
 #nav a.action, #nav li.action, #nav > ul > li.popup,
-#nav .help-button, #nav .contact-button, #nav .logout-button, #nav .home-button {
+#nav .help-button, #nav .contact-button, #nav .logout-button, 
+#nav .home-button, #nav .link-button {
 	border-bottom: 1px solid #ddd;
 	border-top: 1px solid #fff;
 	border-right: 1px solid #eee;
@@ -845,7 +846,7 @@ img {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: 2px -935px;
+	background-position: 2px -936px;
 }
 .logout-button:hover, .logout-button:focus {
 	background-image: url(images/sprite-hover.png);
@@ -863,7 +864,7 @@ img {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
 	background-repeat: no-repeat;
-	background-position: 2px -1015px;
+	background-position: 2px -1016px;
 }
 .home-button:hover, .home-button:focus {
 	background-image: url(images/sprite-hover.png);
@@ -876,6 +877,20 @@ img {
 }
 .contact-button:hover, .contact-button:focus {
 	background-image: url(images/sprite-hover.png);
+}
+.link-button {
+	padding-left: 2px !important;
+	background-image: none;
+}
+.link-button:before {
+	content: "\01F517";
+	width: 22px;
+	text-align: center;
+	display: inline-block;
+	float: left;
+}
+.link-button:hover:before {
+	color: black;
 }
 
 .action.guide {
@@ -1557,6 +1572,11 @@ tr:focus .action.changeuri {
 a.extern:after {
 	content: "🔗";
 }
+.label {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
 /* Popup menues */
 /* Popup Layout */
 	ul.popup {
@@ -1617,9 +1637,6 @@ a.extern:after {
 	.popup .label {
 		display: inline-block;
 		min-height: 1.2em !important;
-		text-overflow: ellipsis;
-		overflow: hidden;
-		white-space: nowrap;
 		line-height: 1.2;
 	}
 	li.popup:hover, li.action:hover {
