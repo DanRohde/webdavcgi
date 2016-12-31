@@ -105,7 +105,7 @@ function initTabs(el) {
 	if (!el) el=$(document);
 	$('.tabsel',el).on("click keyup", function(ev) {
 		if (ev.type == 'keyup' && ev.keyCode != 32 && ev.keyCode != 13) return;
-		preventDefault(ev);
+		$.MyPreventDefault(ev);
 		var self = $(this);
 		$('.tabsel.activetabsel',el).removeClass('activetabsel');
 		self.addClass('activetabsel');
@@ -120,7 +120,7 @@ function initStatusbar() {
 		cookie("settings.show.statusbar.keep","yes");
 	}
 	$("#statusbar").toggleClass("enabled", cookie("settings.show.statusbar") == "yes");
-	$("#statusbar .unselectable").off("change").on("change", function(e) {$(this).prop("checked",true); preventDefault(e); });
+	$("#statusbar .unselectable").off("change").on("change", function(e) {$(this).prop("checked",true); $.MyPreventDefault(e); });
 	function renderStatusbarTemplate(){ 
 		var flt = $("#fileListTable");
 		var sb = $("#statusbar");
@@ -176,7 +176,7 @@ function initKeyboardSupport() {
 					$(".paste").trigger("click");
 			}
 			if (event.keyCode==38 && tabindex > -1 ) {
-				preventDefault(event);
+				$.MyPreventDefault(event);
 				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
@@ -184,7 +184,7 @@ function initKeyboardSupport() {
 				self.prevAll(":focusable:first").focus();
 				removeTextSelections();
 			} else if (event.keyCode==40) {
-				preventDefault(event);
+				$.MyPreventDefault(event);
 				if (isSelectableRow(self) && (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey)) {
 					toggleRowSelection(self, true);
 					$("#flt").trigger("fileListSelChanged");
@@ -203,7 +203,7 @@ function initKeyboardSupport() {
 function initTableConfigDialog() {
 	$("#flt").on("fileListChanged", function() {
 		$(".tableconfigbutton").click(function(event) {
-			preventDefault(event);
+			$.MyPreventDefault(event);
 			if ($(this).hasClass("disabled")) return;
 			$(".tableconfigbutton").addClass("disabled");
 			
@@ -230,9 +230,9 @@ function setupTableConfigDialog(dialog) {
 	$.each(visiblecolumns, function(i,val) {
 		dialog.find("input[name='visiblecolumn'][value='"+val+"']").prop("checked",true);	
 	});
-	dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").prop("checked",true).click(function(e) { preventDefault(e);}).closest("li").addClass("disabled");
+	dialog.find("input[name='visiblecolumn'][value='name']").attr("readonly","readonly").prop("checked",true).click(function(e) { $.MyPreventDefault(e);}).closest("li").addClass("disabled");
 	$("#fileListTable thead th.sorter-false").each(function(i,val) {
-		dialog.find("input[name='sortingcolumn'][value='"+$(val).attr("data-name")+"']").prop("disabled",true).click(function(e){preventDefault(e);}).closest("li").addClass("disabled");
+		dialog.find("input[name='sortingcolumn'][value='"+$(val).attr("data-name")+"']").prop("disabled",true).click(function(e){$.MyPreventDefault(e);}).closest("li").addClass("disabled");
 	});
 	
 	var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");
@@ -272,21 +272,22 @@ function setupTableConfigDialog(dialog) {
 		
 		var c = dialog.find("input[name='sortingcolumn']:checked").attr("value");
 		var o = dialog.find("input[name='sortingorder']:checked").attr("value");
-						
+		
+		var table = $("#fileListTable");
 		if (vtc.sort().join(",") != visiblecolumns.sort().join(",")) {
 			$.each(addedEls, function(i,val) {
-				toggleTableColumn(val, true);
+				$.MyTableManager.toggleTableColumn(table, val, true);
 			});
 			$.each(removedEls, function(i,val) {
-				toggleTableColumn(val, false);
+				$.MyTableManager.toggleTableColumn(table, val, false);
 			});
 		}
-		sortTableColumn(c, o == 'desc' ? -1 : 1);
+		$.MyTableManager.sortTable(table, c, o == 'desc' ? -1 : 1);
 		
 		dialog.dialog("close");
 	});
 	dialog.find("input[name='cancel']").button().click(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		dialog.dialog("close");
 		return false;
 	});
@@ -297,7 +298,7 @@ function setupTableConfigDialog(dialog) {
 	
 }
 function handleSidebarCollapsible(event) {
-	if (event) preventDefault(event);
+	if (event) $.MyPreventDefault(event);
 	var collapsed = $(this).hasClass("collapsed");
 	var iconsonly = $(this).hasClass("iconsonly");
 	if (!collapsed && !iconsonly) iconsonly = true;
@@ -324,7 +325,7 @@ function initCollapsible() {
 	}
 	
 	$(".action.collapse-head").click(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		$(".action.collapse-head").toggleClass("collapsed");
 		var collapsed = $(this).hasClass("collapsed");
 		$(".collapse-head-collapsible").toggle(!collapsed);
@@ -337,7 +338,7 @@ function initCollapsible() {
 
 function initAutoRefresh() {
 	$(".action.autorefreshmenu").dblclick(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		updateFileList();
 	});
 	toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), true);
@@ -360,7 +361,7 @@ function initAutoRefresh() {
 		if (cookie("autorefresh") !== "" && parseInt(cookie("autorefresh"))>0) startAutoRefreshTimer(parseInt(cookie("autorefresh")));
 	});
 	$(".action.setautorefresh").click(function(event){
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		$("#autorefresh ul").addClass("hidden");
 		if ($(this).attr("data-value") == "now") {
 			updateFileList();
@@ -370,7 +371,7 @@ function initAutoRefresh() {
 		startAutoRefreshTimer(parseInt($(this).attr("data-value")));
 	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
 	$(".action.autorefreshclear").click(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		window.clearInterval($("#autorefresh").data("timer"));
 		rmcookies("autorefresh");
@@ -378,7 +379,7 @@ function initAutoRefresh() {
 		$("#autorefresh ul").addClass("hidden");
 	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
 	$(".action.autorefreshtoggle").click(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		var af = $("#autorefresh");
 		if (af.data("timer") != null) {
@@ -473,7 +474,7 @@ function initUIEffects() {
 			.on("keyup.dropdown-hover", function(e) { if (e.keyCode==13 || e.keyCode == 32) $(".dropdown-menu" , $(this)).hide(); } );
 		$(".dropdown-click")
 			.off(".dropdown-click")
-			.on("click.dropdown-click dblclick.dropdown-click", function(e) { preventDefault(e); $(".dropdown-menu",$(this)).toggle(); })
+			.on("click.dropdown-click dblclick.dropdown-click", function(e) { $.MyPreventDefault(e); $(".dropdown-menu",$(this)).toggle(); })
 			.MyKeyboardEventHandler({namespace:'dropdown-click'});
 	});
 }
@@ -492,7 +493,7 @@ function handleWindowResize() {
 function initChangeUriAction() {
 	$(".action.changeuri").off(".changeuri").on("click.changeuri",handleChangeUriAction);
 	$(".action.refresh").off(".refresh").on("click.refresh",function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		updateFileList();
 		return false;
 	});
@@ -508,7 +509,7 @@ function initChangeUriAction() {
 	});
 }
 function handleChangeUriAction(event) {
-	preventDefault(event);
+	$.MyPreventDefault(event);
 	if (!$(this).closest("div.filename").is(".ui-draggable-dragging")) {
 		changeUri($(this).data("href") || $(this).attr("href"));
 	}
@@ -626,7 +627,7 @@ function removeBookmark(path) {
 	$('#flt').trigger("bookmarksChanged");
 }
 function handleBookmarkActions(event) {
-	preventDefault(event);
+	$.MyPreventDefault(event);
 	if ($(this).hasClass("disabled")) return;
 	var self = $(this);
 	var uri = $("#fileList").attr('data-uri');
@@ -686,7 +687,7 @@ function initChangeDir() {
 			$('#quicknav').show();
 			$('.filterbox').show();
 		} else if (event.keyCode==13) {
-			preventDefault(event);
+			$.MyPreventDefault(event);
 			$('#pathinput').hide();
 			$('#quicknav').show();
 			$('.filterbox').show();
@@ -694,14 +695,14 @@ function initChangeDir() {
 		}
 	});
 	$(".action.changedir").button().click(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		$('#pathinput').toggle();
 		$('#quicknav').toggle();
 		$('#pathinput input[name=uri]').focus().select();
 		$('.filterbox').toggle();
 	});
 	$("#path [data-action='chdir']").button().click(function(event){
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		$('#pathinput').hide();
 		$('#quicknav').show();
 		changeUri($("#pathinput input[name='uri']").val());
@@ -721,7 +722,7 @@ function initFilterBox() {
 		$("form#filterbox .action.clearfilter").toggleClass("invisible",$(this).val()=== "");
 	});
 	$("form#filterbox .action.clearfilter").click(function(event) {
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		$("form#filterbox input").val("");
 		applyFilter();
 		$(this).addClass("invisible");
@@ -790,7 +791,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				uploadState.transports.push(transport);
 				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+filename).addClass("fileprogress");
 				$("<div></div>").click(function(event) {
-					preventDefault(event);
+					$.MyPreventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
 				}).appendTo(up).attr("title",$("#cancel").html()).MyTooltip().addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
 				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): 0%");
@@ -970,7 +971,7 @@ function getSelectedFiles(el) {
 	*/
 }
 function handleFileActionEvent(event) {
-	preventDefault(event);
+	$.MyPreventDefault(event);
 	var self = $(this);
 	if (self.hasClass('disabled')) return;
 	var row = self.closest("tr");
@@ -985,7 +986,7 @@ function handleFileActionEvent(event) {
 function initFileActions() {
 	$("#fileactions")
 		.on("click dblclick", function(ev) {
-			preventDefault(ev);
+			$.MyPreventDefault(ev);
 			$(".fileactions-popup").toggle();
 		}).MyKeyboardEventHandler().MyTooltip();
 	$("#fileactions .action").on("click dblclick", handleFileActionEvent).MyKeyboardEventHandler();
@@ -1043,8 +1044,6 @@ function initFileList() {
 	var flt = $("#fileListTable");
 	var fl = $("#fileList");
 	
-	initTableSorter();
-	
 	$("#fileList.selectable-false tr").removeClass("unselectable-no").addClass("unselectable-yes");
 	
 	$("#fileList tr.unselectable-yes .selectbutton").attr("disabled","disabled");
@@ -1069,63 +1068,12 @@ function initFileList() {
 	$("#fileList:not(.dnd-false) tr.isreadable-yes.unselectable-no div.filename")
 			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
 	
-	// init column drag & drop:
-	$("#fileListTable th.dragaccept")
-		.draggable({ zIndex: 200, scope: "fileListTable",  axis: "x" , helper: function(event) {
-			var th = $(event.currentTarget);
-			return $(event.currentTarget).clone().width(th.width()).addClass("dragged");
-		}});
-	$("#fileListTable th.dragaccept,#fileListTable th.dropaccept")
-		.droppable({ scope: "fileListTable", tolerance: "pointer", drop: handleFileListColumnDrop, hoverClass: "draghover"});
-	
-	// init tabbing
+	// init tabbing:
 	$("#fileListTable th").MyKeyboardEventHandler();
-	// init column drag and dblclick resize
-	$("#fileListTable th:not(.resizable-false)")
-		.off("click.initFileList").off("click.tablesorter")
-		.each(function(i,v) {
-			var col = $(v);
-			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle left");
-			$("<div/>").prependTo(col).html("&nbsp;").addClass("columnResizeHandle right");
-			
-			setTableColumnWidth(col, cookie(col.prop("id")+".width"));
 
-			// handle click and dblclick at the same time:
-			var clicks = 0;
-			$(v).on("click.initFileList",function(event) {
-				var self = $(this);
-				clicks++;
-				if (clicks == 1) {
-					window.setTimeout(function() {
-						if (clicks == 1) {
-							if (! self.hasClass("sorter-false")) handleTableColumnClick.call(self,event);
-						} else {
-							setTableColumnWidth(self, self.width() == self.data("origWidth") ? "minimum" : "default");
-						}
-						clicks = 0;
-					}, 300);
-				}
-			});
-		});	
-	$("#fileListTable .columnResizeHandle").draggable({
-		scope: "columnResize",
-		axis: "x",
-		start: function(event,ui) {
-			startPos = parseInt(ui.offset.left);
-			column = $(this).closest("th");
-			startWidth = column.width(); 
-			handlePos = $(this).hasClass("left")? "left" : "right";
-		},
-		stop: function(event,ui) {
-			$(this).removeAttr("style");
-			setTableColumnWidth(column, column.width());
-		},
-		drag: function(event,ui) {
-			if (handlePos=="right") column.width( startWidth +  ui.offset.left - startPos );
-			else column.width(startWidth + startPos - ui.offset.left);
-		}
- 	});
-	
+	// init column drag and dblclick resize:
+	$("#fileListTable").MyTableManager();
+
 	// fix annyoing text selection after a double click on text in the file
 	// list:
 	removeTextSelections();
@@ -1134,81 +1082,12 @@ function initFileList() {
 	
 	$("#flt").trigger("fileListChanged");
 }
-function setTableColumnWidth(col, pWidth) {
-	var name = col.prop("id")+".width";
-	var width = pWidth;
-	var origWidth = col.data("origWidth");
-	if (origWidth === undefined) col.data("origWidth", col.width());
-	if (width === undefined) { col.addClass("column-width-default"); return; }
-	else if (width === "default") width = origWidth;
-	else if (width === "minimum") width = 1;
-	col.width(width);
-	col.toggleClass("column-width-default", width == origWidth).toggleClass("column-width-minimum", width == 1);
-	togglecookie(name, width, width != origWidth);
-	return col;
-}
 function removeTextSelections() {
 	if (document.selection && document.selection.empty) document.selection.empty();
 	else if (window.getSelection) {
 		var sel = window.getSelection();
 		if (sel && sel.removeAllRanges) sel.removeAllRanges();
 	}
-}
-function handleFileListColumnDrop(event, ui) {
-	var didx = ui.draggable.prop("cellIndex");
-	var tidx = $(this).prop("cellIndex");
-	if (didx + 1 == tidx) return false;
-	
-	var cols = $("#fileListTable thead th");
-	cols.eq(didx).detach().insertBefore(cols.eq(tidx));
-	
-	$("#fileList tr").each(function() {
-		var cols = $(this).children("td");
-		cols.eq(didx).detach().insertBefore(cols.eq(tidx));
-	});
-	
-	setVisibleTableColumnsCookie();
-	
-	return true;
-}
-function sortTableColumn(name, sortorder) {
-	var col = $("#fileListTable thead th[data-name='"+name+"']:not(.sorter-false)");
-	if (col.length==0) return;
-	cookie("order", name + (sortorder==1?"_asc":"_desc"),1);
-	setupFileListSort(col.prop("cellIndex"), sortorder);
-	sortFileList(col.data("sorttype") || "string", col.data("sort"), sortorder, col.prop("cellIndex"), "data-file");
-	$("body").trigger("settingchanged",{ setting: "order", value : cookie("order")});
-}
-function getLastTableSort() {
-	var so = cookie("order").split("_");
-	if (!so) return { name : "data-file", sortorder : 1 };
-	return { name : so[0], sortorder: so[1] && so[1] == 'desc' ? -1 : 1 };
-}
-function initTableSorter() {
-	if (lts = getLastTableSort()) {
-		sortTableColumn(lts.name, lts.sortorder);
-	}
-	
-	$("#fileListTable thead th:not(.sorter-false)")
-		.addClass('tablesorter-head')
-		.off("click.tablesorter")
-		.on("click.tablesorter", handleTableColumnClick);
-}
-function handleTableColumnClick() {
-	var lts = getLastTableSort();
-	sortTableColumn($(this).data("name"), lts.name == $(this).data("name")? -lts.sortorder : 1);
-}
-function setupFileListSort(cidx, sortorder) {
-	var flt = $("#fileListTable");
-	flt.data("tablesorter-lastclickedcolumn",cidx);
-	flt.data("tablesorter-sortorder", sortorder);
-	$("#fileListTable thead th")
-		.removeClass('tablesorter-down')
-		.removeClass('tablesorter-up')
-		.eq(cidx).addClass(sortorder == 1 ? 'tablesorter-up' : 'tablesorter-down');
-}
-function sortFileList(stype,sattr,sortorder,cidx,ssattr) {
-	$("#fileListTable tbody").MyFileTableSorter(stype,sattr,sortorder,cidx,ssattr);
 }
 function handleFileDelete(row) {
 	row.fadeTo('slow',0.5);
@@ -1236,7 +1115,7 @@ function handleJSONResponse(response) {
 	if (response.quicknav) {
 		$("#quicknav").html(response.quicknav).MyTooltip();
 		$("#quicknav a").click(function(event) {
-			preventDefault(event);
+			$.MyPreventDefault(event);
 			changeUri($(this).attr("href"));
 		});
 	}
@@ -1346,7 +1225,7 @@ function initDialogActions() {
 	$('.dialog.action').click(handleDialogActionEvent);
 }
 function handleDialogActionEvent(event) {
-	preventDefault(event);
+	$.MyPreventDefault(event);
 	if ($(this).hasClass("disabled")) return;
 	var self = $(this);
 	self.addClass("disabled");
@@ -1610,7 +1489,7 @@ function doPasteAction(action,srcuri,dsturi,files) {
 	renderAbortDialog(xhr);
 }
 function handleFileListActionEvent(event) {
-	preventDefault(event);
+	$.MyPreventDefault(event);
 	var self = $(this);
 	if (self.hasClass("disabled")) return;
 	if (self.hasClass("delete")) {
@@ -1736,17 +1615,9 @@ function initToolbarActions() {
 			});
 		}}));
 }
-function preventDefault(event) {
-	if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
-	if (event.stopPropagation) event.stopPropagation();
-}
-function preventDefaultImmediatly(event) {
-	preventDefault(event);
-	if (event.stopImmediatePropagation) event.stopImmediatePropagation();
-}
 function initViewFilterDialog() {
 	$(".action.viewfilter").click(function(event){
-		preventDefault(event);
+		$.MyPreventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		var self = $(this);
 		$(".action.viewfilter").addClass("disabled");
@@ -1756,7 +1627,7 @@ function initViewFilterDialog() {
 			var vfd = $(response);
 			$("input[name='filter.size.val']", vfd).spinner({min: 0, page: 10, numberFormat: "n", step: 1});
 			$(".filter-apply", vfd).button().click(function(event){
-				preventDefault(event);
+				$.MyPreventDefault(event);
 				togglecookie("filter.name", 
 						$("select[name='filter.name.op'] option:selected", vfd).val()+" "+$("input[name='filter.name.val']",vfd).val(),
 						$("input[name='filter.name.val']", vfd).val() !== "");
@@ -1776,7 +1647,7 @@ function initViewFilterDialog() {
 				updateFileList();
 			});
 			$(".filter-reset", vfd).button().click(function(event){
-				preventDefault(event);
+				$.MyPreventDefault(event);
 				rmcookies("filter.name", "filter.size", "filter.types");
 				vfd.dialog("close");
 				updateFileList();
@@ -1848,43 +1719,32 @@ function hidePopupMenu() {
 	$("#popupmenu li.popup").MyPopup("close");
 	$("#tc_popupmenu li.popup").MyPopup("close");
 }
-function setVisibleTableColumnsCookie() {
-	cookie("visibletablecolumns", $("#fileListTable th[data-name]:visible").map(function() { return $(this).data("name"); }).get().join(","), 1);
-	$("body").trigger("settingchanged", { setting: "visibletablecolumns", value: cookie("visibletablecolumns") });
-}
-function toggleTableColumn(name, toggle) {
-	var th =  $("#fileListTable th[data-name="+name+"]");
-	var on = toggle === undefined ? ! th.is(":visible") : toggle;
-	var cidx = th.toggleClass("hidden",!on).toggle(on).prop("cellIndex");
-	$("#fileListTable td:nth-child("+(cidx+1)+")").toggleClass("hidden",!on).toggle(on);
-	setVisibleTableColumnsCookie();
-}
 function handleTableConfigActionEvent(event) {
-	preventDefault(event);
+	$.MyPreventDefault(event);
 	var self = $(this);
 	if (self.hasClass("disabled")) return;
 	if (self.hasClass("table-sort")) {
-		var lts = getLastTableSort();
-		sortTableColumn(self.data("name"), lts.name == self.data("name") ? -lts.sortorder : 1);
+		var lts = $.MyTableManager.getLastTableSort();
+		$.MyTableManager.sortTable(self.closest("table"), self.data("name"), lts.name == self.data("name") ? -lts.sortorder : 1);
 	} else if (self.hasClass("table-sort-this-asc")) {
-		sortTableColumn(self.closest("th").data("name"), 1 );
+		$.MyTableManager.sortTable(self.closest("table"), self.closest("th").data("name"), 1 );
 	} else if (self.hasClass("table-sort-this-desc")) {
-		sortTableColumn(self.closest("th").data("name"), -1 );
+		$.MyTableManager.sortTable(self.closest("table"), self.closest("th").data("name"), -1 );
 	} else if (self.hasClass("table-column-hide-this")) {
-		toggleTableColumn(self.closest("th:not(.table-column-not-hide)").data("name"), false);
+		$.MyTableManager.toggleTableColumn(self.closest("table"), self.closest("th:not(.table-column-not-hide)").data("name"), false);
 	} else if (self.hasClass("table-column")) {
-		toggleTableColumn(self.data("name"));
+		$.MyTableManager.toggleTableColumn(self.closest("table"), self.data("name"));
 	} else if (self.hasClass("table-column-width-default")) {
-		setTableColumnWidth(self.closest("th"), "default");
+		$.MyTableManager.setTableColumnWidth(self.closest("th"), "default");
 	} else if (self.hasClass("table-column-width-minimum")) {
-		setTableColumnWidth(self.closest("th"), "minimum");
+		$.MyTableManager.setTableColumnWidth(self.closest("th"), "minimum");
 	}
 }
 function initTableColumnPopupActions() {
 	$("#tc_popupmenu .action")
 	.off(".popupmenu")
 	.on("click.popupmenu", handleTableConfigActionEvent)
-	.on("dblclick.popupmenu", preventDefault)
+	.on("dblclick.popupmenu", $.MyPreventDefault)
 	.MyKeyboardEventHandler();
 	
 	$("#flt").on("fileListChanged", function() {
@@ -1897,7 +1757,7 @@ function initTableColumnPopupActions() {
 	});
 	setupContextActions();
 	function setupContextActions() {
-		var lts = getLastTableSort();
+		var lts = $.MyTableManager.getLastTableSort();
 		//$(".action.table-sort .symbol").html("&#8597;");
 		//$(".action.table-sort."+lts.name+" .symbol").html( lts.sortorder == 1 ? "&#8600;" : "&#8599;");
 		$(".action.table-sort .symbol").removeClass("descending ascending");
@@ -1920,7 +1780,7 @@ function initPopupMenu() {
 	$("#popupmenu .action")
 		.off(".popupmenu")
 		.on("click.popupmenu", handleFileListActionEvent)
-		.on("dblclick.popupmenu", preventDefault)
+		.on("dblclick.popupmenu", $.MyPreventDefault)
 		.MyKeyboardEventHandler();
 
 	initTableColumnPopupActions();
@@ -1937,7 +1797,7 @@ function initPopupMenu() {
 	$("body").off(".popupmenu")
 			 .on("click.popupmenu",function() { hidePopupMenu(); })
 			 .on("keydown.popupmenu", function(e) { if (e.which == 27) hidePopupMenu(); });
-	$("#filler").on("contextmenu", function(event) { if (event.which==3) { if (event.originalEvent.detail === 1 ) preventDefault(event); hidePopupMenu(); } });
+	$("#filler").on("contextmenu", function(event) { if (event.which==3) { if (event.originalEvent.detail === 1 ) $.MyPreventDefault(event); hidePopupMenu(); } });
 	
 	
 }
@@ -2045,8 +1905,8 @@ function initToolBox() {
 			notifyError : notifyError,
 			notifyInfo : notifyInfo,
 			notifyWarn : notifyWarn,
-			preventDefault : preventDefault,
-			preventDefaultImmediatly : preventDefaultImmediatly,
+			preventDefault : $.MyPreventDefault,
+			preventDefaultImmediatly : $.MyPreventDefaultImmediatly,
 			postAction: postAction,
 			quoteWhiteSpaces: $.MyStringHelper.quoteWhiteSpaces,
 			refreshFileListEntry : refreshFileListEntry,

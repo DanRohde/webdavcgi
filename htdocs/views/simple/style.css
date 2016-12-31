@@ -812,25 +812,6 @@ td.center {
 	color: white;
 }
 
-.tablesorter-head {
-	cursor: pointer; 
-	padding-left: 10px;
-	padding-right: 10px;
-}
-.tablesorter-up, .tablesorter-down {
-	/*border: 1px inset #eeeeee;*/
-	box-shadow: 1px 1px 1px #aaaaaa inset;
-}
-.tablesorter-up {
-	background: 
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggQDiQca/5bQgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABLSURBVBjThY/BDsAgCEOLF9xfv7/Wm150USNbExLSFgrSDhsVwiPhnQLaKQImydJBXJGWPgeeNk0OlM9NQF1inyjax+H59pT+SEnqvToRLPSNNw0AAAAASUVORK5CYII=) no-repeat left center,
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggQDiQca/5bQgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABLSURBVBjThY/BDsAgCEOLF9xfv7/Wm150USNbExLSFgrSDhsVwiPhnQLaKQImydJBXJGWPgeeNk0OlM9NQF1inyjax+H59pT+SEnqvToRLPSNNw0AAAAASUVORK5CYII=) no-repeat right center;
-}
-.tablesorter-down {
-	background: 
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggQDiU4TuaO0gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAuSURBVBjTY2AgBTQ0NPzHJceErABZITKbEZ9JDQ0NjHCTkAVwWkcIMBHjcOoBABxPEgaCuzXFAAAAAElFTkSuQmCC) no-repeat left center,
-		url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3ggQDiU4TuaO0gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAuSURBVBjTY2AgBTQ0NPzHJceErABZITKbEZ9JDQ0NjHCTkAVwWkcIMBHjcOoBABxPEgaCuzXFAAAAAElFTkSuQmCC) no-repeat right center;
-}
 
 input[readonly=readonly] {
 	opacity: 0.5;
@@ -1191,23 +1172,6 @@ img {
 }
 .ui-front {
 	z-index: 200;
-}
-.columnResizeHandle {
-	border:0;
-	width: 0.5em;
-	padding: 0;
-	margin: 0;
-	position:relative;
-}
-.columnResizeHandle.right {
-	float: right;
-	cursor: e-resize;
-	right: -0.5em;
-}
-.columnResizeHandle.left {
-	float: left;
-	cursor: w-resize;
-	left: -0.5em;
 }
 .dropdown {
 	padding: 0;

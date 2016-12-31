@@ -88,43 +88,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	};
 	
 	
-	$.fn.MyFileTableSorter = function(stype,sattr,sortorder,cidx,ssattr) {
-		var rows = this.children("tr").get();
-		rows.sort(function(a,b){
-			var ret = 0;
-			var jqa = $(a);
-			var jqb = $(b);
-			var vala = jqa.attr(sattr) ? (stype=="number" ? parseInt(jqa.attr(sattr)) : jqa.attr(sattr)) : a.cells.item(cidx).innerHTML.toLowerCase();
-			var valb = jqb.attr(sattr) ? (stype=="number" ? parseInt(jqb.attr(sattr)) : jqb.attr(sattr)) : b.cells.item(cidx).innerHTML.toLowerCase();
-	
-			if (jqa.attr("data-file").match(/^\.\.?$/)) return -1;
-			if (jqb.attr("data-file").match(/^\.\.?$/)) return 1;
-			if (jqa.attr("data-type") == "dir" && jqb.attr("data-type") != "dir") return -1;
-			if (jqa.attr("data-type") != "dir" && jqb.attr("data-type") == "dir") return 1;
-			
-			if (stype == "number") {
-				ret = vala - valb;
-			} else {
-				if (vala.localeCompare) {
-					ret = vala.localeCompare(valb);
-				} else {
-					ret = (vala < valb ? -1 : (vala==valb ? 0 : 1));
-				}
-			}
-			if (ret === 0 && sattr!=ssattr) {
-				if (vala.localeCompare) {
-					ret = jqa.attr(ssattr).localeCompare(jqb.attr(ssattr));
-				} else {
-					ret = jqa.attr(ssattr) < jqb.attr(ssattr) ? -1 : jqa.attr(ssattr) > jqb.attr(ssattr) ? 1 : 0;
-				}
-			}
-			return sortorder * ret;
-		});
-		for (var r=0; r<rows.length; r++) {
-			this.append(rows[r]);
-		}
-		return this;
+	$.MyCookie = function(name,val,expires) {
+		var date = new Date();
+       	date.setTime(date.getTime() + 315360000000);
+       	if (val) return Cookies.set(name, val, { path:$("#flt").attr("data-baseuri"), secure: true, expires: expires ? date : undefined});
+       	return Cookies.get(name);
 	};
+	$.MyCookie.rmCookies = function() {
+		for (var i=0; i < arguments.length; i++) Cookies.remove(arguments[i], { path:$("#flt").attr("data-baseuri"), secure: true});
+	};
+	$.MyCookie.toggleCookie = function(name,val,toggle,expires) {
+		if (toggle) $.MyCookie(name,val,expires);
+		else $.MyCookie.rmCookies(name);
+	};
+
+
+	$.MyPreventDefault = function(event) {
+		if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
+		if (event.stopPropagation) event.stopPropagation();
+	};
+	
 	$.toggleFullscreen = function(on) {
 		var e = document.documentElement;
 		if (on) {
