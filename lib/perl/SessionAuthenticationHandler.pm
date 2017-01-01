@@ -24,6 +24,7 @@
 # %SESSION = (
 #      tokenname => 'TOKEN',
 #      secret => 'uP:oh2oo',
+#      tokenmaxage => 36000, # 10h
 #      expire => '+10m', # can be overwritten by domain
 #      temp => '/tmp',
 #      domains => {
@@ -145,11 +146,12 @@ sub _handle_redirect {
 sub _set_defaults {
     $SESSION{tokenname} //= 'TOKEN';
     $SESSION{secret} //= 'uP:oh2oo';
+    $SESSION{tokenmaxage} //= 36000;
     return;
 }
 sub _create_token {
     my ($self, $login, $force) = @_;
-    my $token = $SESSION{TOKEN} = WWW::CSRF::generate_csrf_token($login, $SESSION{secret}, {  Random => $self->{random}->bytes(20) });
+    my $token = $SESSION{TOKEN} = generate_csrf_token($login, $SESSION{secret}, {  Random => $self->{random}->bytes(20) });
   #  carp("Token $token for $login generated.");
     return $token;
 }
@@ -170,7 +172,7 @@ sub _check_token {
                      2 => "CSRF token $cgitoken of $login has an invalid signature.",
                      3 => "CSRF token $cgitoken of $login is malformed.",
     );
-    my $check = check_csrf_token($login, $SESSION{secret}, $cgitoken);
+    my $check = check_csrf_token($login, $SESSION{secret}, $cgitoken, { MaxAge => $SESSION{tokenmaxage} });
     if ( $check != CSRF_OK ) {
         carp($warnings{$check});
     }

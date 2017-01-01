@@ -97,7 +97,8 @@ $extension(filelistaction)
 <!--ENDIF-->
 </ul>
 <form id="file-upload-form" enctype="multipart/form-data" method="post" action="#" data-maxfilesize="$maxuploadsize" data-maxfilesizehr="$maxuploadsizehr">
-	<input type="hidden" name="filesubmit" value="yes"/>
-	<input id="file-upload-form-relapath" type="hidden" name="relapath" value=""/>
-	<input class="file-upload" type="file" name="file_upload" multiple/>
+	<input type="hidden" name="filesubmit" value="yes">
+	<input id="file-upload-form-relapath" type="hidden" name="relapath" value="">
+	<input class="file-upload" type="file" name="file_upload" multiple>
+	<input id="file-upload-form-token" type="hidden" name="${TOKENNAME}" value="${TOKEN}">
 </form>

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 .pageblocker {
-	z-index: 2210000;
+	z-index: 22100;
 	opacity: 0.5;
 	filter: Alpha(opacity=50); 
 	background: white url(images/ajax-loader-circle.gif) no-repeat center center; 

@@ -92,7 +92,7 @@ $(function() {
 		console.log(settings);
 		console.log(exception);
 		if (jqxhr && jqxhr.statusText && jqxhr.statusText != 'abort') notifyError(jqxhr.statusText);
-		$("div.overlay").remove();
+		$.MyPageBlocker("remove");
 		//if (jqxhr.status = 404) window.history.back();
 	}).ajaxSuccess(function(event,jqxhr,options,data) {
 		if (jqxhr.getResponseHeader('X-Login-Required')) {
@@ -882,6 +882,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		submit: function(e,data) {
 			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
 			$("#file-upload-form-relapath").val(data.files[0].relativePath || (data.files[0].webkitRelativePath && data.files[0].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join('/')+'/') || '');
+			$("#file-upload-form-token").val($("#token").val());
 			return $(this).data('ask.confirm');
 		}
 	});	
@@ -1370,7 +1371,7 @@ function changeUri(uri, leaveUnblocked) {
 		console.log(e);
 	}
 	// fallback for errors and unblocked links:
-	if (!leaveUnblocked) blockPage();
+	if (!leaveUnblocked) $.MyPageBlocker();
 	window.location.href=uri;
 	
 }
@@ -1431,9 +1432,6 @@ function handleFileListDrop(event, ui) {
 	} else {
 		doFileListDrop(action,srcuri,dsturi,files);
 	}
-}
-function blockPage() {
-	return $("<div></div>").prependTo("body").addClass("overlay");
 }
 function renderHiddenInput(form, data, key) {
 	for (var k in data) {
@@ -1876,7 +1874,7 @@ function getDialogByPost(data, initfunc) {
 function initToolBox() {
 	ToolBox = { 
 			addMissingSlash: $.MyStringHelper.addMissingSlash,
-			blockPage: blockPage,
+			blockPage: $.MyPageBlocker,
 			changeUri: changeUri,
 			concatUri: $.MyStringHelper.concatUri,
 			confirmDialog : confirmDialog,
