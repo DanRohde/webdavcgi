@@ -22,6 +22,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 # %SESSION = (
+#      tokenname => 'TOKEN',
+#      secret => 'uP:oh2oo',
 #      expire => '+10m', # can be overwritten by domain
 #      temp => '/tmp',
 #      domains => {
@@ -47,12 +49,13 @@ use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 
 use DefaultConfig qw( %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG);
-
+use HTTPHelper qw( print_compressed_header_and_content );
 sub new {
    my ($class, $cgi) = @_;
    my $self  = {};
    bless $self, $class;
    $self->{cgi} = $cgi;
+   $self->{random} = Bytes::Random::Secure->new(Bits => 512, NonBlocking => 1); ## by default CSRF uses /dev/random but /dev/urandom has more random bytes
    return $self;
 }
 # 0 : unauthenticated -> login screen
@@ -65,21 +68,20 @@ sub authenticate {
     if (! defined $session) {
         carp("${self}: ".CGI::Session->errstr());
         if ($self->{cgi}->param('error')) { # prevent redirect loop
-            return 0;
+            return $self->_handle_goto_login();
         }
         return $self->_handle_redirect($session, error=>CGI::Session->errstr());
     }
     $self->_set_defaults();
     if ($session->is_expired) {
-        $self->_remove_session($session);
         if ($self->{cgi}->param('logon')) { # prevent redirect loop
-            return 0;
+            return $self->_handle_goto_login($session);
         }
-        return $self->_handle_redirect($session, login=>$session->param('login'), logon=>'session', from=>1);
+        return $self->_handle_redirect($session, logon=>'session', from=>1);
     }
     if ($REMOTE_USER = $session->param('login')) { ## login exists
         if ($self->{cgi}->param('logout')) { ## logout requested
-            return _handle_goto_login($session);
+            return $self->_handle_goto_login($session);
         }
         if ($self->_check_token($REMOTE_USER)) {
             $self->_create_token($REMOTE_USER);
@@ -101,7 +103,7 @@ sub authenticate {
     foreach my $auth ( @{$handler} ) {
         Module::Load::load($auth->{authhandler});
         if ($auth->{authhandler}->check_login($auth->{config} // {}, $login, $password)) {
-            # throw old session away:
+            # throw old (expired) session away:
             $self->_remove_session($session);
             # create a new one:
             $CGI::Session::IP_MATCH = 1;
@@ -135,9 +137,9 @@ sub _handle_redirect {
     my $cookie = $query{-cookie};
     if ($cookie) { delete $query{-cookie} };
     my $query_string = join q{&}, map { "${_}=".$self->{cgi}->escape($query{$_}) } keys %query;
-    my %redirparams = ( -uri => ${REQUEST_URI}.q{?}.${query_string} );
-    if ($cookie) { $redirparams{-cookie} = $cookie }
-    print $self->{cgi}->redirect(%redirparams);
+    my $uri = ${REQUEST_URI}.q{?}.${query_string};
+    my %redirparams = ( -location => $uri, -X_Login_Required => $uri );
+    print_compressed_header_and_content('302 Redirect', 'text/html', q{}, \%redirparams, $cookie);
     return 2;
 }
 sub _set_defaults {
@@ -147,9 +149,8 @@ sub _set_defaults {
 }
 sub _create_token {
     my ($self, $login, $force) = @_;
-    my $random = Bytes::Random::Secure->new(Bits => 512, NonBlocking => 1); ## by default CSRF uses /dev/random but /dev/urandom has more random bytes
-    my $token = $SESSION{TOKEN} = WWW::CSRF::generate_csrf_token($login, $SESSION{secret}, {  Random => $random->bytes(20) });
-    carp("Token $token for $login generated.");
+    my $token = $SESSION{TOKEN} = WWW::CSRF::generate_csrf_token($login, $SESSION{secret}, {  Random => $self->{random}->bytes(20) });
+  #  carp("Token $token for $login generated.");
     return $token;
 }
 sub _check_token {
@@ -170,7 +171,9 @@ sub _check_token {
                      3 => "CSRF token $cgitoken of $login is malformed.",
     );
     my $check = check_csrf_token($login, $SESSION{secret}, $cgitoken);
-    carp($warnings{$check});
+    if ( $check != CSRF_OK ) {
+        carp($warnings{$check});
+    }
     return $check == CSRF_OK ? 1 : 0;
 }
 1;

@@ -68,7 +68,7 @@ use vars qw( %CACHE %TIMEUNITS);
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( link css locales javascript gethandler posthandler );
+    my @hooks = qw( link css locales javascript posthandler );
     if ( !$EXTENSION_CONFIG{Search}{disable_fileactionpopup} ) {
         push @hooks, 'fileactionpopup';
     }
@@ -102,10 +102,13 @@ sub handle_hook_apps {
         'search', 'search' );
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
-    if ( $action eq 'getSearchForm' ) {
+    if ( $action eq 'search' ) {
+        return $self->_handle_search();
+    }
+    elsif ( $action eq 'getSearchForm' ) {
         return $self->_get_search_form();
     }
     elsif ( $action eq 'getSearchResult' ) {
@@ -113,15 +116,6 @@ sub handle_hook_gethandler {
     }
     elsif ( $action eq 'opensearch' ) {
         return $self->_print_open_search();
-    }
-    return 0;
-}
-
-sub handle_hook_posthandler {
-    my ( $self, $config, $params ) = @_;
-    my $action = $self->{cgi}->param('action') // q{};
-    if ( $action eq 'search' ) {
-        return $self->_handle_search();
     }
 
     return 0;

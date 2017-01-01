@@ -33,7 +33,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript fileattr gethandler );
+    my @hooks = qw( css locales javascript fileattr posthandler );
     if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
         push @hooks, 'fileactionpopup';
     }
@@ -59,17 +59,17 @@ sub handle_hook_fileaction {
     return { action => 'viewerjs', label => 'viewerjs.view' };
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     if ( defined $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'viewerjs' )
     {
-        return $self->_handle_get_request('view');
+        return $self->_handle_post_request('view');
     }
     return 0;
 }
 
-sub _handle_get_request {
+sub _handle_post_request {
     my ( $self, $template ) = @_;
     my $file    = $self->{cgi}->param('file');
     my $fileuri = $REQUEST_URI . $self->{cgi}->escape($file);

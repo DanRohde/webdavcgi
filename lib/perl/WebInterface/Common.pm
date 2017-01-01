@@ -649,8 +649,8 @@ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
         VBASE           => $self->{cgi}->escapeHTML($vbase),
         VHTDOCS         => $vbase . $VHTDOCS,
         RELEASE         => $RELEASE,
-        TOKENNAME       => %SESSION ? $SESSION{tokenname} : 'TOKEN',
-        TOKEN           => %SESSION ? $SESSION{$SESSION{tokenname}} : 'unknown',
+        TOKENNAME       => %SESSION ? $SESSION{tokenname} : 't',
+        TOKEN           => %SESSION ? $SESSION{$SESSION{tokenname}} : time,
         q{.}            => scalar time(),
         %{$vars},
     };
@@ -781,6 +781,7 @@ sub handle_inc_help {
 }
 sub render_login {
     my ($self) = @_;
-    return print_compressed_header_and_content( '200 OK', 'text/html', $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $self->read_template('login')), 'Cache-Control: no-cache, no-store');
+    return print_compressed_header_and_content( '200 OK', 'text/html', $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $self->read_template('login')), 
+        {-Cache_Control=> 'no-cache, no-store', -X_Login_Required => '?logon=session' });
 }
 1;

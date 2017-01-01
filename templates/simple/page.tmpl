@@ -34,7 +34,7 @@ $INCLUDE(htmlhead)</head>
 		</div>
 		<div id="notification"></div>
 		<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
-		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri" role="main"></div>
+		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri" role="main"><input id="token" name="${TOKENNAME}" value="${TOKEN}"></div>
 		$INCLUDE(statusbar)
 		$config(FOOTER)
 	</div>
@@ -71,6 +71,7 @@ $INCLUDE(htmlhead)</head>
 	$INCLUDE(about)
 	<div id="confirmdialogsetting">$tl(confirmdialog.setting)</div>
 	<div id="uploadaborted">$tl(upload.aborted)</div>
+	<div id="login-session">$tl(login.session)</div>
 	$INCLUDE(popupmenu)
 	$INCLUDE(settings)
 	$extension(templates)

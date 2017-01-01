@@ -1,5 +1,6 @@
 <div id="fileListTableContent">
 	<form id="filelistform" method="post" action="#">
+	<input type="hidden" name="${TOKENNAME}" value="${TOKEN}" id="token">
 	<input id="filelistaction" type="hidden" name="__set__" value=""/>
 	<!--IF($config(SHOW_QUOTA) && "$quotalimitbytes" > 0)-->
 	<div id="quota">

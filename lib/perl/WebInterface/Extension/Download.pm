@@ -33,13 +33,13 @@ our $VERSION = '2.0';
 use base qw( WebInterface::Extension  );
 
 use DefaultConfig qw( $PATH_TRANSLATED %EXTENSION_CONFIG );
-use HTTPHelper qw( print_file_header print_header_and_content print_compressed_header_and_content);
+use HTTPHelper qw( print_file_header print_header_and_content print_compressed_header_and_content get_mime_type);
 use FileUtils qw( get_error_document is_hidden );
 
 sub init {
     my ( $self, $hookreg ) = @_;
 
-    my @hooks = qw( css locales javascript );
+    my @hooks = qw( css locales javascript posthandler);
     if ( !$EXTENSION_CONFIG{Download}{disable_fileaction} ) {
         push @hooks, 'fileaction';
     }
@@ -49,9 +49,7 @@ sub init {
     if ( $EXTENSION_CONFIG{Download}{enable_apps} ) {
         push @hooks, 'apps';
     }
-    if ( !$EXTENSION_CONFIG{Download}{disable_binarydownload} ) {
-        push @hooks, 'gethandler';
-    }
+    
     $hookreg->register( \@hooks, $self );
 
     $self->{add_classes} =
@@ -94,7 +92,7 @@ sub handle_hook_apps {
     );
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     if (   $self->{cgi}->param('action')
         && $self->{cgi}->param('action') eq 'dwnload' )
@@ -118,9 +116,8 @@ sub handle_hook_gethandler {
                     $self->{backend},
                     $file,
                     {
-                        -Content_Disposition => 'attachment; filename="'
-                          . $qfn . q{"},
-                        -type => 'application/octet-stream'
+                        -Content_Disposition => q{attachment; filename="} . $qfn . q{"},
+                        -type => $self->config('disable_binarydownload') ?  get_mime_type($fn) : 'application/octet-stream',
                     }
                 );
                 $self->{backend}->printFile( $file, \*STDOUT );

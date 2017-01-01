@@ -58,7 +58,7 @@ $ACTION = 'motd';
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript gethandler statusbar pref );
+    my @hooks = qw( css locales javascript posthandler statusbar pref );
     $hookreg->register( \@hooks, $self );
 
     $self->{json} = JSON->new();
@@ -85,7 +85,7 @@ sub _get_motd_and_timestamp {
     my $stat = stat2h(stat $motdfn);
     return ( (get_local_file_content_and_type($motdfn))[1], $stat->{mtime});
 }
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {

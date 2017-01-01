@@ -22,7 +22,7 @@ while getopts "dnf" arg; do
 done
 
 QUERYSTRING="lib/QueryString/jquery-querystring.js"
-MYSANHELPER="lib/MySwissArmyKnife/jquery-myswissarmyknife.js"
+MYSANHELPER="lib/MySwissArmyKnife/jquery-myswissarmyknife.js lib/MySwissArmyKnife/myswissarmyknife.css"
 MYKEYBOARDEVENTHANDLER="lib/MyKeyboardEventHandler/jquery-mykeyboardeventhandler.js"
 MYTOOLTIPLIB="lib/MyTooltip/jquery-mytooltip.js lib/MyTooltip/mytooltip.css"
 MYPOPUPLIB="lib/MyPopup/jquery-mypopup.js lib/MyPopup/mypopup.css"

@@ -41,7 +41,7 @@ use FileUtils qw( rcopy );
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw(
-        css         locales         javascript gethandler
+        css         locales         javascript
         posthandler fileactionpopup fileaction settings
         fileattr
     );
@@ -89,21 +89,19 @@ sub handle_hook_fileactionpopup {
         type    => 'li'
     };
 }
-sub handle_hook_gethandler {
-    my ($self) = @_;
-    if(    $self->{cgi}->param('action')
-        && $self->{cgi}->param('action') eq 'edit' )
-    {
-        return $self->_get_edit_form();
-    }
-    return 0;
-}
 sub handle_hook_posthandler {
     my ($self) = @_;
-    if (   $self->{cgi}->param('action')
-        && $self->{cgi}->param('action') eq 'savetextdata' )
+    my $action = $self->{cgi}->param('action');
+    if (!defined $action) {
+        return 0;
+    }
+    if ( $action eq 'savetextdata' )
     {
         return $self->_save_text_data();
+    }
+    elsif ( $action eq 'edit' )
+    {
+        return $self->_get_edit_form();
     }
     return 0;
 }

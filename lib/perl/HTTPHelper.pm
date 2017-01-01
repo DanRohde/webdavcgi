@@ -58,7 +58,7 @@ sub _get_header_hashref {
 }
 sub get_sec_header {
     my ($headerref) = @_;
-    $headerref->{'X-Frame-Options'} = q{DENY};
+    $headerref->{'X-Frame-Options'} = q{SAMEORIGIN};
     $headerref->{'Strict-Transport-Security'} = q{max-age=3600};
     $headerref->{'X-Content-Security-Policy'} = q{default-src 'self'};
     $headerref->{'X-Content-Type-Options'} = q{nosniff};

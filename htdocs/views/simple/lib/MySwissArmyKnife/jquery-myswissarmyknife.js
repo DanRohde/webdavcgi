@@ -88,6 +88,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	};
 	
 	
+	$.MyTokenExtender = function(param) {
+		var result = param;
+		var token = $("#token");
+		if (token.length>0) {
+			result[token.attr("name")] = token.val();
+		}
+		return result;
+	};
+	$.MyPageBlocker = function(param) {
+		if (param == "remove") {
+			$(".pageblocker").remove();
+			return 1;
+		}
+		return $("<div/>").addClass("pageblocker").prepend("body");
+	};
+	$.MyGet = function(uri, param, callback, unblocked) {
+		if (!unblocked) $.MyPageBlocker();
+		var xhr = $.get(uri, $.MyTokenExtender(param), function(response) {
+			if (!unblocked) $.MyPageBlocker("remove");
+			callback.call(this, response);
+			
+		});
+		return xhr;
+	};
+	$.MyPost = function(uri, param, callback, unblocked) {
+		if (!unblocked) $.MyPageBlocker();
+		var xhr = $.post(uri, $.MyTokenExtender(param), function(response) {
+			if (!unblocked) $.MyPageBlocker("remove");
+			callback.call(this,response);
+		});
+		return xhr;
+	};
+	
 	$.MyCookie = function(name,val,expires) {
 		var date = new Date();
        	date.setTime(date.getTime() + 315360000000);

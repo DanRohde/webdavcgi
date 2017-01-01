@@ -168,6 +168,7 @@ sub handle_post_request {
     {
         return 1;
     }
+
     if (   $ALLOW_POST_UPLOADS
         && $self->{backend}->isDir($PATH_TRANSLATED)
         && defined $self->{cgi}->param('filesubmit') )
@@ -177,10 +178,12 @@ sub handle_post_request {
     elsif ( $ENABLE_CLIPBOARD && $self->{cgi}->param('action') ) {
         $self->get_functions()->handle_clipboard_action();
     }
-    else {
-        return 0;
+    elsif ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
+        $self->optimize_css_and_js();
+        $self->render_web_interface();
+        return 1;
     }
-    return 1;
+    return 0;
 }
 sub handle_login {
     my ($self) = @_;

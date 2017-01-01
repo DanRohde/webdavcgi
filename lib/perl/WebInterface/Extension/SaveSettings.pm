@@ -33,7 +33,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( javascript locales gethandler settings cookies );
+    my @hooks = qw( javascript locales posthandler settings cookies );
     $hookreg->register( \@hooks, $self );
     $self->{settingsproperty} =
       '{https://DanRohde.github.io/webdavcgi/[REMOTE_USER]}settings';
@@ -52,7 +52,7 @@ sub handle_hook_settings {
     );
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq 'savesettings' ) {

@@ -94,6 +94,11 @@ $(function() {
 		if (jqxhr && jqxhr.statusText && jqxhr.statusText != 'abort') notifyError(jqxhr.statusText);
 		$("div.overlay").remove();
 		//if (jqxhr.status = 404) window.history.back();
+	}).ajaxSuccess(function(event,jqxhr,options,data) {
+		if (jqxhr.getResponseHeader('X-Login-Required')) {
+			window.alert($("#login-session").text());
+			window.location.href = jqxhr.getResponseHeader('X-Login-Required');
+		}
 	});
 	// allow script caching:
 	$.ajaxPrefilter('script',function( options, originalOptions, jqXHR ) { options.cache = true; });
@@ -215,7 +220,7 @@ function initTableConfigDialog() {
 				$("#flt").data("TableConfigDialog", tct);
 				setupTableConfigDialog($(tct));
 			} else {
-				$.get($("#fileList").attr("data-uri"),{ ajax : 'getTableConfigDialog', template : $(this).attr("data-template")}, function(response) {
+				$.MyPost($("#fileList").attr("data-uri"),{ ajax : 'getTableConfigDialog', template : $(this).attr("data-template")}, function(response) {
 					if (response.error) handleJSONResponse(response);
 					$("#flt").data("TableConfigDialog", response);
 					setupTableConfigDialog($(response));
@@ -1101,9 +1106,7 @@ function handleFileDelete(row) {
 		confirm: function() {
 			var file = row.attr('data-file');
 			removeFileListRow(row);
-			var block = blockPage();
-			var xhr = $.post($('#fileList').attr('data-uri'), { 'delete': 'yes', file: file }, function(response) {
-				block.remove();
+			var xhr = $.MyPost($('#fileList').attr('data-uri'), { 'delete': 'yes', file: file }, function(response) {
 				if (response.error) updateFileList();
 				handleJSONResponse(response);
 			});
@@ -1127,10 +1130,9 @@ function handleJSONResponse(response) {
 	}
 }
 function doRename(row, file, newname) {
-	var block = blockPage();
-	var xhr = $.post($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
+	var xhr = $.MyPost($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
 		if (response.message) {
-			var xhr = $.get($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
+			var xhr = $.MyPost($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
 				try {
 					var newrow = $(r);
 					var d = $("tr[data-file='"+newname+"']");
@@ -1143,11 +1145,8 @@ function doRename(row, file, newname) {
 				} catch (e) {
 					updateFileList();
 				}
-				block.remove();
-			});
+			}, 1);
 			renderAbortDialog(xhr);
-		} else {
-			block.remove();
 		}
 		handleJSONResponse(response);
 	});
@@ -1385,7 +1384,7 @@ function updateFileList(newtarget, data) {
 	$("#flt").hide();
 	var timestamp = $.now();
 	$("#flt").data("timestamp", timestamp);
-	$.get(newtarget, data, function(response) {
+	$.MyPost(newtarget, data, function(response) {
 		if ($("#flt").data("timestamp") != timestamp) return; 
 		$("#flt")
 			.trigger("beforeFileListChange")
@@ -1396,7 +1395,7 @@ function updateFileList(newtarget, data) {
 		$("title").html($("#titleprefix").html()+" "+newtarget.replace(/\/[^\/]+\/\.\.$/,"/"));
 		initFileList();
 		handleJSONResponse(response);
-	});
+	}, true);
 }
 function removeFileListRow(row) {
 	$("#flt").trigger("beforeFileListChange");
@@ -1404,12 +1403,10 @@ function removeFileListRow(row) {
 	$("#flt").trigger("fileListChanged");
 }
 function doFileListDrop(action,srcuri,dsturi,files) {
-	var block = blockPage(); 
-	var xhr = $.post(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
+	var xhr = $.MyPost(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
 		if (response.message && action=='cut') { 
 			removeFileListRow($("#fileList tr[data-file='"+files.join("'],#fileList tr[data-file='")+"']"));
 		}
-		block.remove();
 		if (response.error) updateFileList();
 		handleJSONResponse(response);
 	});
@@ -1460,11 +1457,8 @@ function handleFileListActionEventDelete(event) {
 	selrows.fadeTo("slow", 0.5);
 	confirmDialog(selrows.length > 1 ? $('#deletefilesconfirm').html() : $('#deletefileconfirm').html().replace(/%s/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape(selrows.first().attr('data-file')))), {
 		confirm: function() {
-			var block = blockPage();
-			
 			if (selrows.length === 0) selrows = self.closest("tr");
-			var xhr = $.post($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map(selrows, function(v,i) { return $(v).attr("data-file"); })}, function(response) {
-				block.remove();
+			var xhr = $.MyPost($("#fileList").attr("data-uri"), { "delete" : "yes", "file" : $.map(selrows, function(v,i) { return $(v).attr("data-file"); })}, function(response) {
 				removeFileListRow(selrows);
 				uncheckSelectedRows();
 				if (response.error) updateFileList();
@@ -1485,10 +1479,8 @@ function uncheckSelectedRows() {
 	$("#flt").trigger("fileListSelChanged");
 }
 function doPasteAction(action,srcuri,dsturi,files) {
-	var block = blockPage();
-	var xhr = $.post(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
+	var xhr = $.MyPost(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
 		if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
-		block.remove();
 		updateFileList();
 		handleJSONResponse(response);
 	});
@@ -1595,7 +1587,7 @@ function initToolbarActions() {
 	$(".action.create-folder").MyInplaceEditor($.extend(inplaceOptions,  
 		{ changeEvent: function(data) {
 			var self = $(this);
-			$.post($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : data.value }, function(response) {
+			$.MyPost($('#fileList').attr('data-uri'), { mkcol : 'yes', colname : data.value }, function(response) {
 				if (!response.error && response.message) refreshFileListEntry(data.value);
 				handleJSONResponse(response);
 			});
@@ -1604,7 +1596,7 @@ function initToolbarActions() {
 	$(".action.create-file").MyInplaceEditor($.extend(inplaceOptions,
 		{ changeEvent: function(data) {
 			var self = $(this);
-			$.post($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : data.value }, function(response) {
+			$.MyPost($('#fileList').attr('data-uri'), { createnewfile : 'yes', cnfname : data.value }, function(response) {
 				if (!response.error && response.message) refreshFileListEntry(data.value);
 				handleJSONResponse(response);
 			});
@@ -1613,7 +1605,7 @@ function initToolbarActions() {
 	$(".action.create-symlink").MyInplaceEditor($.extend(inplaceOptions,
 		{ changeEvent: function(data) {
 			var row = getSelectedRows(this);
-			$.post($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: data.value, file: row.attr('data-file') }, function(response) {
+			$.MyPost($('#fileList').attr('data-uri'), { createsymlink: 'yes', lndst: data.value, file: row.attr('data-file') }, function(response) {
 				if (!response.error && response.message) refreshFileListEntry(data.value);
 				handleJSONResponse(response);
 			});
@@ -1627,7 +1619,7 @@ function initViewFilterDialog() {
 		$(".action.viewfilter").addClass("disabled");
 		var target =$("#fileList").attr("data-uri");
 		var template = self.attr("data-template");
-		$.get(target, {ajax: "getViewFilterDialog", template: template}, function(response){
+		$.MyPost(target, {ajax: "getViewFilterDialog", template: template}, function(response){
 			var vfd = $(response);
 			$("input[name='filter.size.val']", vfd).spinner({min: 0, page: 10, numberFormat: "n", step: 1});
 			$(".filter-apply", vfd).button().click(function(event){
@@ -1807,7 +1799,7 @@ function initPopupMenu() {
 }
 function refreshFileListEntry(filename) {
 	var fl = $("#fileList");
-	return $.get($.MyStringHelper.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
+	return $.MyPost($.MyStringHelper.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
 		try {
 			var newrow = $(r);
 			row = $("tr[data-file='"+$.MyStringHelper.simpleEscape(filename)+"']", fl);
@@ -1822,7 +1814,7 @@ function refreshFileListEntry(filename) {
 		} catch (e) {
 			updateFileList();
 		}
-	});
+	}, true);
 }
 function initDotFilter() {
 
@@ -1868,18 +1860,14 @@ function initThumbnailSwitch() {
 	});
 }
 function getDialog(data, initfunc) {
-	var block = blockPage();
-	var xhr = $.get(window.location.pathname, data, function(response) {
-		block.remove();
+	var xhr = $.MyGet(window.location.pathname, data, function(response) {
 		handleJSONResponse(response);
 		initfunc(response);
 	});
 	renderAbortDialog(xhr);
 }
 function getDialogByPost(data, initfunc) {
-	var block = blockPage();
-	var xhr = $.post(window.location.pathname, data, function(response) {
-		block.remove();
+	var xhr = $.MyPost(window.location.pathname, data, function(response) {
 		handleJSONResponse(response);
 		initfunc(response);
 	});
