@@ -34,8 +34,15 @@ label {
 	font-size: 80%;
 	font-style: oblique;
 }
-.logon-failure {
+.logon-failure, .logon-error {
 	color: red;
+}
+.error-text {
+	font-family: monospace;
+	font-size: small;
+}
+.logon-session {
+	color: #aa3800;
 }
 .logout-success {
 	font-weight: bold;
@@ -46,8 +53,14 @@ label {
 	<div class="login-form">
 		<form method="POST">
 			<div class="login-title">$tl(login.title)</div>
-			<!--IF("$cgiparam(logon)" ne q{})-->
+			<!--IF("$cgiparam(logon)" eq q{failure})-->
 			<div class="logon-failure">$tl(login.failure)</div>
+			<!--ENDIF-->
+			<!--IF("$cgiparam(logon)" eq q{session})-->
+			<div class="logon-session">$tl(login.session)</div>
+			<!--ENDIF-->
+			<!--IF("$cgiparam(error)" ne q{})-->
+			<div class="logon-error">$tl(login.error) <div class="error-text">$cgiparam(error)</div></div>
 			<!--ENDIF-->
 			<!--IF("$cgiparam(logout)" ne q{})-->
 			<div class="logout-success">$tl(login.logoutsuccess)</div>
@@ -88,6 +101,7 @@ label {
 					$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|
 				</select>
 			</div>
+			<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
 		</form>
 	</div>
 

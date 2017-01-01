@@ -27,6 +27,7 @@ use base qw(WebInterface::Common);
 use English qw(-no_match_vars);
 #use JSON;
 
+
 use DefaultConfig qw( $PATH_TRANSLATED $VIRTUAL_BASE $DOCUMENT_ROOT
   $ALLOW_SYMLINK $ENABLE_TRASH );
 use FileUtils qw( rcopy rmove move2trash );
@@ -100,7 +101,7 @@ sub handle_post_upload {
         my $destination =
           $PATH_TRANSLATED . $self->{backend}->basename($rfn);
 
-        my $relapath = $self->_normalize($self->{cgi}->param('relapath')); 
+        my $relapath = $self->_normalize(scalar $self->{cgi}->param('relapath')); 
         if ( $relapath  && $relapath ne q{}) {
             $self->mkdirhier($PATH_TRANSLATED.$relapath);
             $destination = $PATH_TRANSLATED . $relapath . $self->{backend}->basename($rfn);

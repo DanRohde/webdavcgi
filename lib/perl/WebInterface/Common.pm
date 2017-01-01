@@ -649,6 +649,8 @@ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
         VBASE           => $self->{cgi}->escapeHTML($vbase),
         VHTDOCS         => $vbase . $VHTDOCS,
         RELEASE         => $RELEASE,
+        TOKENNAME       => %SESSION ? $SESSION{tokenname} : 'TOKEN',
+        TOKEN           => %SESSION ? $SESSION{$SESSION{tokenname}} : 'unknown',
         q{.}            => scalar time(),
         %{$vars},
     };

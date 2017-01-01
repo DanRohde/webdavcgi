@@ -1,6 +1,6 @@
 ########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written 2010-2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written 2010-2017 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -57,7 +57,7 @@ use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
 
-$RELEASE = '1.1.2BETA20161231.5';
+$RELEASE = '1.1.2BETA20170101.1';
 
 use vars qw( $_METHODS_RX );
 
@@ -100,6 +100,7 @@ sub init {
 
     ## create CGI instance:
     $CGI = $REQUEST_METHOD eq 'PUT' ? CGI->new( {} ) : CGI->new();
+    if ($ENV{MOD_PERL}) { $CGI->compile(); }
 
     ## some config independent objects for convinience:
     $self->{debug}  = $D             = \&debug;

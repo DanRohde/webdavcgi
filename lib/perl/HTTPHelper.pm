@@ -27,7 +27,7 @@ our @EXPORT_OK =
   qw( print_header_and_content print_compressed_header_and_content print_file_header
   print_header_and_content print_local_file_header fix_mod_perl_response
   read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components
-  get_dav_header get_supported_methods get_parent_uri get_base_uri_frag );
+  get_dav_header get_supported_methods get_parent_uri get_base_uri_frag get_sec_header );
 
 use CGI::Carp;
 use POSIX qw( strftime );
@@ -56,7 +56,15 @@ sub _get_header_hashref {
     }
     return \%params;
 }
-
+sub get_sec_header {
+    my ($headerref) = @_;
+    $headerref->{'X-Frame-Options'} = q{DENY};
+    $headerref->{'Strict-Transport-Security'} = q{max-age=3600};
+    $headerref->{'X-Content-Security-Policy'} = q{default-src 'self'};
+    $headerref->{'X-Content-Type-Options'} = q{nosniff};
+    $headerref->{'X-XSS-Protection'} = q{1; 'mode=block'};
+    return $headerref;
+}
 sub print_header_and_content {
     my ( $status, $type, $content, $add_header, $cookies ) = @_;
 
@@ -79,7 +87,7 @@ sub print_header_and_content {
         'DAV'           => get_dav_header(),
     );
     if ( defined $cgi->http('Translate') ) { $header{'Translate'} = 'f'; }
-    %header = ( %header, %{ _get_header_hashref($add_header) } );
+    %header = ( %header, %{ get_sec_header(_get_header_hashref($add_header)) }, );
 #binmode STDOUT, ":encoding(\U$CHARSET\E)" || carp('Cannot set bindmode for STDOUT.'); # WebDAV works but web doesn't so ignore wide character warnings
     binmode(STDOUT) || carp('Cannot set bindmode for STDOUT.');
     print($cgi->header( \%header ) . $content) || carp('Cannot write header and content to STDOUT.');
@@ -104,7 +112,7 @@ sub _try_compress_with_brotli {
 sub print_compressed_header_and_content {
     my ( $status, $type, $content, $add_header, $cookies ) = @_;
     my $cgi    = $CGI;
-    my $header = _get_header_hashref($add_header);
+    my $header = get_sec_header(_get_header_hashref($add_header));
     if ( $ENABLE_COMPRESSION
         && ( my $enc = $cgi->http('Accept-Encoding') ) )
     {
@@ -149,7 +157,7 @@ sub print_local_file_header {
     if ( defined $cgi->http('Translate') ) {
         $header{'Translate'} = 'f';
     }
-    %header = ( %header, %{ _get_header_hashref($addheader) } );
+    %header = ( %header, %{ get_sec_header(_get_header_hashref($addheader)) } );
     print $cgi->header( \%header );
     return \%header;
 }
@@ -181,7 +189,7 @@ sub print_file_header {
           $stat[7];
         $header{-Content_Length} = $count;
     }
-    %header = ( %header, %{ _get_header_hashref($addheader) } );
+    %header = ( %header, %{ get_sec_header(_get_header_hashref($addheader)) } );
     print $cgi->header( \%header );
     return \%header;
 }
