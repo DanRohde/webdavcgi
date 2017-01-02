@@ -168,20 +168,18 @@ sub handle_post_request {
     {
         return 1;
     }
-
     if (   $ALLOW_POST_UPLOADS
         && $self->{backend}->isDir($PATH_TRANSLATED)
         && defined $self->{cgi}->param('filesubmit') )
     {
-        $self->get_functions()->handle_post_upload();
+        return $self->get_functions()->handle_post_upload();
     }
-    elsif ( $ENABLE_CLIPBOARD && $self->{cgi}->param('action') ) {
-        $self->get_functions()->handle_clipboard_action();
+    elsif ( $ENABLE_CLIPBOARD && $self->{cgi}->param('action') && $self->{cgi}->param('action') =~/^(?:copy|cut)$/xms) {
+        return $self->get_functions()->handle_clipboard_action();
     }
-    elsif ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
+    if ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
         $self->optimize_css_and_js();
-        $self->render_web_interface();
-        return 1;
+        return $self->render_web_interface();
     }
     return 0;
 }

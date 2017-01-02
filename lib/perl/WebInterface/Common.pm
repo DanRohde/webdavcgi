@@ -606,7 +606,6 @@ sub exec_template_function {
 
 sub render_template {
     my ( $self, $fn, $ru, $content, $vars ) = @_;
-
     $vars //= {};
 
     my $cgi      = $self->{cgi};    ## allowes easier access from templates
@@ -661,6 +660,7 @@ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
 s{<!--IF${cond_rx}-->${anyng_rx}((<!--ELSE-->)${anyng_rx})?<!--ENDIF-->}{eval($1)? ( $2 // q{} ): ($5 // q{})}exmsg;
     $content =~
 s{<!--IF(\#\d+)${cond_rx}-->${anyng_rx}((<!--ELSE\1-->)${anyng_rx})?<!--ENDIF\1-->}{eval($2)? ($3 // q{}) : ($6 // q{})}exmsg;
+
     return $content;
 }
 

@@ -72,12 +72,12 @@ a {
 #nav a.action, #nav li.action, #nav > ul > li.popup,
 #nav .help-button, #nav .contact-button, #nav .logout-button, 
 #nav .home-button, #nav .link-button {
+	/* display: block; */
 	border-bottom: 1px solid #ddd;
 	border-top: 1px solid #fff;
 	border-right: 1px solid #eee;
 	border-left: 0;
 	color: #666666;
-	display: block;
 	font-size: 15px;
 	padding: 6px 1.6em 6px 25px;
 	text-decoration: none;
@@ -106,6 +106,9 @@ a {
 	padding: 0;
 	margin: 0;
 	border: 0 none;
+}
+.applicationsmenu-label {
+	background-position-y: -301px;
 }
 #prefs {
 	position: fixed;
@@ -681,8 +684,11 @@ a.disabled, .link.disabled {
 .action.addbookmark, .ui-button.action.addbookmark {
 	background-position: center -54px;
 }
-.action.bookmarkmenu, .ui-button.action.bookmarkmenu {
+.bookmarkmenu.popup.sprite {
 	background-position: center -94px;
+}
+.bookmark-label {
+	background-position-y: -101px;
 }
 .action.rmsinglebookmark {
 	background-position: center -222px;
@@ -715,6 +721,7 @@ a.disabled, .link.disabled {
 .dyn-bookmark:hover, .dyn-bookmark:focus {
 	background-image: url(images/sprite-hover.png);
 }
+.bookmarktemplate { display: none; visibility: hidden;}
 /* --- BOOKMARKS --- */
 #quota {
 	text-decoration: none;
@@ -824,16 +831,8 @@ input[readonly=readonly] {
 img {
 	border: 0;
 }
-.action.upload,.upload-menu.popup.uibutton {
+.action.upload,.uploadmenu.popup.sprite {
 	background-position-y: -536px;
-}
-.upload-menu.popup {
-	background-image: url(images/sprite.png);
-	background-position-x: center;
-} 
-.upload-menu.popup:hover, .upload-menu.popup:focus, .upload-menu.popup:active {
-	background-image: url(images/sprite-hover.png);
-	background-position-x: center;
 }
 .action.uploaddir {
     background-position-y: -1617px;
@@ -948,8 +947,11 @@ img {
 .action.setautorefresh {
 	background-position-y: -416px;
 }
-.action.autorefreshmenu, .ui-button.action.autorefreshmenu {
-	background-position: center -414px;
+.autorefreshmenu.popup.sprite {
+	background-position-y: -414px;
+}
+.autorefresh-label {
+	background-position-y: -422px;
 }
 .action.autorefreshtoggle {
 	background-position-y: -1176px;
@@ -1142,16 +1144,16 @@ img {
 	content: "↗";
 }
 .action.table-sort-this-asc .note:after {
-	content: "[Za]"
-}
-.table-sort-this-desc .note:after {
 	content: "[Az]"
 }
+.table-sort-this-desc .note:after {
+	content: "[Za]"
+}
 [data-sorttype=number] .action.table-sort-this-asc .note:after {
-	content: "[91]";
+	content: "[19]";
 }
 [data-sorttype=number] .action.table-sort-this-desc .note:after {
-	content: "[19]";
+	content: "[91]";
 }
 
 .action.table-column .symbol:after {
@@ -1576,6 +1578,18 @@ a.extern:after {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
+}
+.sprite {
+	background-image: url(images/sprite.png) !important;
+	background-repeat: no-repeat !important;
+	background-position-x: 2px;
+}
+.sprite:hover, .sprite:focus, .sprite:active,
+li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
+	background-image: url(images/sprite-hover.png) !important;
+}
+.sprite.label {
+	padding-left: 22px;
 }
 /* Popup menues */
 /* Popup Layout */

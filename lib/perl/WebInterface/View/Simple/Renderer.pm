@@ -71,7 +71,7 @@ sub render {
     $content     //= q{};
     $contenttype //= 'text/html';
     return print_compressed_header_and_content( '200 OK', $contenttype,
-        $content, 'Cache-Control: no-cache, no-store',
+        $content, { -Cache_Control => q{no-cache, no-store} },
         $self->get_cookies() );
 }
 sub free {

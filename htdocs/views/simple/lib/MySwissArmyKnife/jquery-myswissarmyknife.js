@@ -35,6 +35,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		return this;
 	};
 	
+	$.fn.MyFixedElementDragger = function(cookiename) {
+		var drag = this;
+		var cn = cookiename === undefined ? this.attr("id") : cookiename;
+		this.css("position","fixed");
+		drag.draggable({ 
+			stop: function(e,ui) { 
+				$.MyCookie(cn, JSON.stringify(fixElementPosition(ui.offset))); 
+			}
+		});
+		if ($.MyCookie(cn)) fixElementPosition(JSON.parse($.MyCookie(cn)));
+		function fixElementPosition(position) {
+			var w = $(window);
+			var newposition = { 
+					left: Math.min(Math.max(position.left, 0), w.width() - drag.outerWidth() + w.scrollLeft() ), 
+					top:  Math.min(Math.max(position.top, 0), w.height() - drag.outerHeight() + w.scrollTop() ) 
+			};
+			drag.offset(newposition);
+			return newposition;
+		}
+		return this;
+	};
 	
 	$.MyStringHelper = {};
 	$.MyStringHelper.renderByteSizes = function(size) {
@@ -97,11 +118,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		return result;
 	};
 	$.MyPageBlocker = function(param) {
-		if (param == "remove") {
+		if (param === "remove") {
 			$(".pageblocker").remove();
 			return 1;
 		}
-		return $("<div/>").addClass("pageblocker").prepend("body");
+		return $("<div/>").addClass("pageblocker").appendTo("body");
 	};
 	$.MyGet = function(uri, param, callback, unblocked) {
 		if (!unblocked) $.MyPageBlocker();

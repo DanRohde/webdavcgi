@@ -40,7 +40,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript posthandler);
+    my @hooks = qw(css locales javascript posthandler appsmenu);
     if ( !$EXTENSION_CONFIG{Diff}{disable_fileactionpopup} ) {
         push @hooks, 'fileactionpopup';
     }
@@ -57,11 +57,14 @@ sub handle_hook_fileactionpopup {
         path    => $params->{path},
         type    => 'li',
         classes => $self->config( 'files_only', 0 )
-        ? 'sel-multi sel-file'
-        : 'sel-multi'
+        ? 'sel-multi sel-file access-readable'
+        : 'sel-multi access-readable'
     };
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_fileactionpopup($config, $params);
+}
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},

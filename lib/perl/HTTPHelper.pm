@@ -92,7 +92,7 @@ sub print_header_and_content {
     binmode(STDOUT) || carp('Cannot set bindmode for STDOUT.');
     print($cgi->header( \%header ) . $content) || carp('Cannot write header and content to STDOUT.');
     fix_mod_perl_response( \%header );
-    return;
+    return 1;
 }
 
 # TODO: solve trouble with utf-8 encoding

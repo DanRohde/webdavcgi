@@ -1,0 +1,7 @@
+<ul class="popup">
+	<li class="action setautorefresh" tabindex="0" data-value="now" aria-label="$tl(autorefresh.now)">$tl(autorefresh.now)</li>
+	$each@%AUTOREFRESH@'<li tabindex="0" class="action setautorefresh" data-value="$k" aria-label="$tl(autorefresh.select.title) $v">$v</li>'@
+	<li class="sep autorefreshrunning action autorefreshtoggle" tabindex="0" aria-label="$tl(autorefresh.toggle)">$tl(autorefresh.toggle)</li>
+	<li class="autorefreshrunning action autorefreshclear" tabindex="0" aria-label="$tl(autorefresh.clear)">$tl(autorefresh.clear)</li>
+	<li class="sep autorefreshtimer notab" data-template="$tl(autorefresh.format)"></li> 
+</ul>

@@ -53,7 +53,7 @@ use vars
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css javascript locales posthandler);
+    my @hooks = qw(css javascript locales posthandler appsmenu);
     if ( $self->config( 'enable_fileaction', 0 ) ) {
         push @hooks, 'fileaction';
     }
@@ -69,10 +69,10 @@ sub handle_hook_fileaction {
     my ( $self, $config, $params ) = @_;
     return {
         action   => 'diskusage',
-        disabled => !$self->{backend}->isDir( $params->{path} )
-          || !$self->{backend}->isReadable( $params->{path} ),
         label => 'du_diskusage',
-        path  => $params->{path}
+        type    => 'li',
+        classes => 'access-readable',
+        path  => $params->{path},
     };
 }
 
@@ -80,22 +80,23 @@ sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
         action   => 'diskusage',
-        disabled => !$self->{backend}->isDir( $params->{path} )
-          || !$self->{backend}->isReadable( $params->{path} ),
         label   => 'du_diskusage',
         path    => $params->{path},
         type    => 'li',
-        classes => 'action sel-noneormulti sel-dir'
+        classes => 'action sel-noneormulti sel-dir access-readable',
     };
 }
 
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'action diskusage sel-noneormulti sel-dir disabled',
+        'action diskusage sel-noneormulti sel-dir',
         'du_diskusage_short', 'du_diskusage' );
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_fileactionpopup($config,$params);
+}
 sub handle_hook_posthandler {
     my ( $self, $hook, $config, $params ) = @_;
     my $action = $config->{cgi}->param('action') // q{};

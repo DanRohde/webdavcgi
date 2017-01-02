@@ -35,7 +35,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript gethandler fileactionpopup);
+    my @hooks = qw(css locales javascript posthandler fileactionpopup appsmenu);
     $hookreg->register( \@hooks, $self );
 
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
@@ -49,11 +49,20 @@ sub handle_hook_fileactionpopup {
         action  => 'hexdump',
         label   => 'hexdump',
         classes => 'access-readable',
-        type    => 'li'
+        type    => 'li',
+    };
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'hexdump',
+        label   => 'hexdump',
+        classes => 'access-readable sel-one sel-file',
+        type    => 'li',
     };
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $cgi = $self->{cgi};
     my $action = $cgi->param('action') // q{};

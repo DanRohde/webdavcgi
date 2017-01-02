@@ -1,5 +1,21 @@
 <ul id="apps">
-	<li class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" tabindex="0"><span class="label">$tl(files)</span></li>
+	<li class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" tabindex="0">
+	<div class="label">$tl(files.title)</div>
+	</li>
+	<li class="applicationsmenu popup" tabindex="0"">
+		<div class="label applicationsmenu-label sprite">$tl(applications)</div>
+		<ul class="popup">
+			<li class="bookmarkmenu popup" tabindex="0">
+				<div class="label bookmark-label sprite">$tl(bookmarks)</div>
+				$INCLUDE(bookmarks)
+			</li>
+			<li class="autorefreshmenu popup" tabindex="0">
+				<div class="label autorefresh-label sprite" title="$tl(autorefresh.select.title)">$tl(autorefresh.select)</div>
+				$INCLUDE(autorefresh)
+			</li>
+			$extension(appsmenu)
+		</ul>
+	</li>
 	$INCLUDE(apps)
 	$extension(apps)
 </ul>

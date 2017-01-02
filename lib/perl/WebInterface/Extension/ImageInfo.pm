@@ -34,7 +34,7 @@ use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript posthandler fileactionpopup fileattr);
+    my @hooks = qw(css locales javascript posthandler fileactionpopup fileattr appsmenu);
     $hookreg->register( \@hooks, $self );
 
     my %ig = map { $_ => 1 } @{ $self->config( 'hidegroups', ['ExifTool'] ) };
@@ -55,22 +55,30 @@ sub handle_hook_fileattr {
     return { ext_classes => $classes };
 }
 
-sub handle_hook_fileactionpopup {
-    my ( $self, $config, $params ) = @_;
+sub _get_popup {
+    my ( $self, $classes ) = @_;
     my $ret         = [];
-    my $is_readable = $self->{backend}->isReadable($PATH_TRANSLATED);
     foreach my $type ( ( 'image', 'audio', 'video' ) ) {
         push @{$ret},
           {
             action   => 'imageinfo ' . $type,
-            disabled => !$is_readable,
             label    => 'imageinfo.' . $type,
+            classes  => $classes,
+            data     => { mime => $type.q{/} },
             type     => 'li'
           };
     }
     return $ret;
 }
 
+sub handle_hook_fileactionpopup {
+    my ( $self, $config, $params ) = @_;
+    return $self->_get_popup('access-readable');
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->_get_popup('access-readable sel-one-mime hideit');
+}
 sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     if (   $self->{cgi}->param('action')

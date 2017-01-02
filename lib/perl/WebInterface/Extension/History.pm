@@ -26,7 +26,7 @@ use base qw( WebInterface::Extension  );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript fileactionpopup);
+    my @hooks = qw(css locales javascript fileactionpopup appsmenu);
     $hookreg->register( \@hooks, $self );
     return $self;
 }
@@ -40,6 +40,10 @@ sub handle_hook_fileactionpopup {
         type       => 'li',
         subclasses => 'history-popup-history',
     };
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_fileactionpopup($config, $params);
 }
 
 1;

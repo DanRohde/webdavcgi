@@ -120,11 +120,11 @@ function initTabs(el) {
 	});
 }
 function initStatusbar() {
-	if (!cookie("settings.show.statusbar")) {
-		cookie("settings.show.statusbar","no");
-		cookie("settings.show.statusbar.keep","yes");
+	if (!$.MyCookie("settings.show.statusbar")) {
+		$.MyCookie("settings.show.statusbar","no");
+		$.MyCookie("settings.show.statusbar.keep","yes");
 	}
-	$("#statusbar").toggleClass("enabled", cookie("settings.show.statusbar") == "yes");
+	$("#statusbar").toggleClass("enabled", $.MyCookie("settings.show.statusbar") == "yes");
 	$("#statusbar .unselectable").off("change").on("change", function(e) {$(this).prop("checked",true); $.MyPreventDefault(e); });
 	function renderStatusbarTemplate(){ 
 		var flt = $("#fileListTable");
@@ -240,7 +240,7 @@ function setupTableConfigDialog(dialog) {
 		dialog.find("input[name='sortingcolumn'][value='"+$(val).attr("data-name")+"']").prop("disabled",true).click(function(e){$.MyPreventDefault(e);}).closest("li").addClass("disabled");
 	});
 	
-	var so = cookie("order") ? cookie("order").split("_") : "name_asc".split("_");
+	var so = $.MyCookie("order") ? $.MyCookie("order").split("_") : "name_asc".split("_");
 	var column = so[0];
 	var order = so[1] || 'asc';
 	
@@ -256,7 +256,7 @@ function setupTableConfigDialog(dialog) {
 		var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
 		
 		// this is more inefficient than
-		// cookie("visibletablecolumns,vtc.join(","));
+		// $.MyCookie("visibletablecolumns,vtc.join(","));
 		// but preserves table column order:
 		// remove unselected elements:
 		var removedEls = [];
@@ -316,16 +316,16 @@ function handleSidebarCollapsible(event) {
 	$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", collapsed).toggleClass("sidebar-iconsonly", iconsonly);
 	$(".action.collapse-sidebar").toggleClass("collapsed",collapsed).toggleClass("iconsonly",iconsonly);
 	
-	if (!iconsonly&&!collapsed) rmcookies("sidebar");
-	else cookie("sidebar", iconsonly?"iconsonly":collapsed?"false":"true");
+	if (!iconsonly&&!collapsed) $.MyCookie.rmCookies("sidebar");
+	else $.MyCookie("sidebar", iconsonly?"iconsonly":collapsed?"false":"true");
 	
 	handleWindowResize();
 }
 function initCollapsible() {
 	$(".action.collapse-sidebar").click(handleSidebarCollapsible).MyKeyboardEventHandler().MyTooltip();
-	if (cookie("sidebar") && cookie("sidebar") != "true") {
-		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", cookie("sidebar") == "false").toggleClass("sidebar-iconsonly", cookie("sidebar") == "iconsonly");
-		$(".action.collapse-sidebar").toggleClass("collapsed", cookie("sidebar") == "false").toggleClass("iconsonly", cookie("sidebar") == "iconsonly");
+	if ($.MyCookie("sidebar") && $.MyCookie("sidebar") != "true") {
+		$(".collapse-sidebar-listener").toggleClass("sidebar-collapsed", $.MyCookie("sidebar") == "false").toggleClass("sidebar-iconsonly", $.MyCookie("sidebar") == "iconsonly");
+		$(".action.collapse-sidebar").toggleClass("collapsed", $.MyCookie("sidebar") == "false").toggleClass("iconsonly", $.MyCookie("sidebar") == "iconsonly");
 		handleWindowResize();
 	}
 	
@@ -335,127 +335,86 @@ function initCollapsible() {
 		var collapsed = $(this).hasClass("collapsed");
 		$(".collapse-head-collapsible").toggle(!collapsed);
 		$(".collapse-head-listener").toggleClass("head-collapsed", collapsed);
-		togglecookie("head","false",collapsed, 1);
+		$.MyCookie.toggleCookie("head","false",collapsed, 1);
 		handleWindowResize();
 	}).MyTooltip().MyKeyboardEventHandler();
-	if (cookie("head") == "false") $(".action.collapse-head").first().trigger("click");
+	if ($.MyCookie("head") == "false") $(".action.collapse-head").first().trigger("click");
 }
 
 function initAutoRefresh() {
-	$(".action.autorefreshmenu").dblclick(function(event) {
-		$.MyPreventDefault(event);
-		updateFileList();
-	});
+	$(".autorefreshmenu").on("dblclick", function() { updateFileList() } );
 	toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), true);
-	$("#autorefresh").on("started", function() {
-		
-		/*$(".autorefreshtimer").removeClass("disabled");
-		$(".action.autorefreshrunning").removeClass("disabled");*/
+	$(document).on("mycountdowntimer-started", function(e, data) {
 		toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), false);
 		$("#autorefreshtimer").show();
 		$(".action.autorefreshtoggle").addClass("running");
-	}).on("stopped", function() {
-		/*$(".autorefreshtimer").addClass("disabled");
-		$(".action.autorefreshrunning").addClass("disabled");*/
+		renderAutoRefreshTimer(data.timeout);
+	}).on("mycountdowntimer-paused", function(e, data) {
+		renderAutoRefreshTimer(data.timeout);
+		$(".action.autorefreshtoggle").removeClass("running");
+	}).on("mycountdowntimer-stopped", function() {
 		toggleButton($(".action.autorefreshrunning, .autorefreshtimer"), true);
 		$("#autorefreshtimer").hide();
 		$(".action.autorefreshtoggle").removeClass("running");
+	}).on("mycountdowntimer-elapsed", function(e,data) {
+		renderAutoRefreshTimer(data.timeout);
+	}).on("mycountdowntimer-lapsed", function() {
+		renderAutoRefreshTimer(0);
+		updateFileList();
 	});
 	
 	$("#flt").on("fileListChanged", function() {
-		if (cookie("autorefresh") !== "" && parseInt(cookie("autorefresh"))>0) startAutoRefreshTimer(parseInt(cookie("autorefresh")));
+		if ($.MyCookie("autorefresh") !== "" && parseInt($.MyCookie("autorefresh"),10)>0) $(document).MyCountdownTimer("start", parseInt($.MyCookie("autorefresh"),10));
 	});
 	$(".action.setautorefresh").click(function(event){
-		$.MyPreventDefault(event);
-		$("#autorefresh ul").addClass("hidden");
-		if ($(this).attr("data-value") == "now") {
+		if ($(this).attr("data-value") === "now") {
 			updateFileList();
 			return;
 		}
-		cookie("autorefresh", $(this).attr("data-value"));
-		startAutoRefreshTimer(parseInt($(this).attr("data-value")));
-	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
+		$.MyCookie("autorefresh", $(this).attr("data-value"));
+		$(document).MyCountdownTimer("start", parseInt($(this).data("value"),10));
+	});
 	$(".action.autorefreshclear").click(function(event) {
-		$.MyPreventDefault(event);
 		if ($(this).hasClass("disabled")) return;
-		window.clearInterval($("#autorefresh").data("timer"));
-		rmcookies("autorefresh");
-		$("#autorefresh").trigger("stopped");
-		$("#autorefresh ul").addClass("hidden");
-	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
+		$(document).MyCountdownTimer("stop");
+		$.MyCookie.rmCookies("autorefresh");
+	});
 	$(".action.autorefreshtoggle").click(function(event) {
-		$.MyPreventDefault(event);
 		if ($(this).hasClass("disabled")) return;
-		var af = $("#autorefresh");
-		if (af.data("timer") != null) {
-			window.clearInterval(af.data("timer"));
-			af.data("timer",null);
-			$(".action.autorefreshtoggle").removeClass("running");
-		} else {
-			startAutoRefreshTimer(af.data("timeout"));
-			$(".action.autorefreshtoggle").addClass("running");
-		}
-		$("#autorefresh ul").addClass("hidden");
-	}).on("keyup", function(e) { if (e.keyCode==32 || e.keyCode==13) { $(this).trigger("click"); $(".action.autorefreshmenu").trigger("click"); } });
+		$(document).MyCountdownTimer("toggle");
+	});
 	
-	$("#autorefreshtimer").draggable({ stop: function(e,ui) { cookie("autorefreshtimerpos", JSON.stringify(fixElementPosition("#autorefreshtimer",ui.offset))); }});	
-	if (cookie("autorefreshtimerpos")) fixElementPosition("#autorefreshtimer",JSON.parse(cookie("autorefreshtimerpos")));
+	$("#autorefreshtimer").MyFixedElementDragger();
 }
-function fixElementPosition(id, position) {
-	var e = $(id);
-	var w = $(window);
-	var newposition = { 
-			left: Math.min(Math.max(position.left, 0), w.width() - e.outerWidth() + w.scrollLeft() ), 
-			 top: Math.min(Math.max(position.top, 0), w.height() - e.outerHeight() + w.scrollTop() ) };
-	e.offset(newposition);
-	return newposition;
-}
+
 function renderAutoRefreshTimer(aftimeout) {
 	var t = $(".autorefreshtimer");
 	var f = t.attr("data-template") || "%sm %ss";
 	var minutes = Math.floor(aftimeout / 60);
 	var seconds = aftimeout % 60;
-	if (seconds < 10) seconds='0'+seconds;
+	if (seconds < 10) seconds="0"+seconds;
 	t.html(f.replace("%s", minutes).replace("%s", seconds));
 }
-function startAutoRefreshTimer(timeout) {
-	var af = $("#autorefresh");
-	if (af.data("timer") != null) window.clearInterval(af.data("timer"));
-	af.data("timeout", timeout);
-	renderAutoRefreshTimer(timeout);
-	af.data("timer", window.setInterval(function() {
-		var aftimeout = af.data("timeout") -1;
-		renderAutoRefreshTimer(aftimeout);
-		af.data("timeout", aftimeout);
-		if (aftimeout < 0) {
-			window.clearInterval(af.data("timer"));
-			af.data("timer",null);
-			renderAutoRefreshTimer(0);
-			af.trigger("stopped");
-			updateFileList();
-		}
-	}, 1000));
-	af.trigger("started");
-}
+
 function initSettingsDialog() {
 	var settings = $("#settings");
 	settings.data("initHandler", { init: function() {
 		$("input[type=checkbox][name^='settings.']", settings).each(function(i,v) {
-			$(v).prop("checked", cookie($(v).prop("name")) != "no").click(function(event) {
-				if (cookie($(this).prop("name")+".keep")) 
-					cookie($(this).prop("name"),$(this).is(":checked")?'yes':'no',1);
+			$(v).prop("checked", $.MyCookie($(v).prop("name")) != "no").click(function(event) {
+				if ($.MyCookie($(this).prop("name")+".keep")) 
+					$.MyCookie($(this).prop("name"),$(this).is(":checked")?'yes':'no',1);
 				else 
-					togglecookie($(this).prop("name"),"no",!$(this).is(":checked"), 1);
+					$.MyCookie.toggleCookie($(this).prop("name"),"no",!$(this).is(":checked"), 1);
 				$("body").trigger("settingchanged", { setting: $(this).prop("name"), value: $(this).is(":checked") });
 			});
 		});
 		$("select[name^='settings.']", settings)
 			.change(function(){
 				if ($(this).prop("name") == "settings.lang") {
-					cookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
+					$.MyCookie($(this).prop("name").replace(/^settings./,""),$("option:selected",$(this)).val(),1);
 					window.location.href = window.location.pathname; // reload bug fixed (if query view=...)
 				} else {
-					cookie($(this).prop("name"), $("option:selected",$(this)).val(),1);
+					$.MyCookie($(this).prop("name"), $("option:selected",$(this)).val(),1);
 					$("body").trigger("settingchanged", { setting: $(this).prop("name"), value: $("option:selected",$(this)).val()});
 				}
 			})
@@ -463,7 +422,7 @@ function initSettingsDialog() {
 				var s = $(v);
 				var name = s.prop("name");
 				if (name == "settings.lang") name = name.replace(/^settings\./,"");
-				$("option[value='"+cookie(name)+"']", s).prop("selected",true);
+				$("option[value='"+$.MyCookie(name)+"']", s).prop("selected",true);
 			});
 	}});
 }
@@ -552,7 +511,7 @@ function initClock() {
 }
 function initBookmarks() {
 	$("#flt").on("bookmarksChanged", buildBookmarkList)
-	.on("bookmarksChanged",toggleBookmarkButtons)
+	.on("bookmarksChanged fileListSelChanged",toggleBookmarkButtons)
 	.on("fileListChanged", function() {
 		buildBookmarkList();
 		toggleBookmarkButtons();	
@@ -575,24 +534,24 @@ function toggleBookmarkButtons() {
 	var isCurrentPathBookmarked = false;
 	var count = 0;
 	var i = 0;
-	while (cookie("bookmark"+i)!=null) {
-		if (cookie("bookmark"+i) == currentPath) isCurrentPathBookmarked=true;
-		if (cookie("bookmark"+i) != "-") count++;
+	while ($.MyCookie("bookmark"+i)!=null) {
+		if ($.MyCookie("bookmark"+i) == currentPath) isCurrentPathBookmarked=true;
+		if ($.MyCookie("bookmark"+i) != "-") count++;
 		i++;
 	}
-	$(".action.addbookmark").button("option","disabled", isCurrentPathBookmarked);
-	toggleButton($(".action.rmbookmark"), !isCurrentPathBookmarked);
+	toggleButton($(".action.addbookmark"), isCurrentPathBookmarked);
+	//toggleButton($(".action.rmbookmark"), !isCurrentPathBookmarked);
 	toggleButton($(".action.bookmarksortpath"), count<2);
 	toggleButton($(".action.bookmarksorttime"), count<2);
 	toggleButton($(".action.rmallbookmarks"), count===0);
 
-	var sort= cookie("bookmarksort")==null ? "time-desc" : cookie("bookmarksort");
+	var sort = $.MyCookie("bookmarksort")==null ? "time-desc" : $.MyCookie("bookmarksort");
 	$(".action.bookmarksortpath .path").hide();
 	$(".action.bookmarksortpath .path-desc").hide();
 	$(".action.bookmarksorttime .time").hide();
 	$(".action.bookmarksorttime .time-desc").hide();
 	if (sort == "path" || sort=="path-desc" || sort=="time" || sort=="time-desc") {
-		$("#bookmarks .action.bookmarksort"+sort.replace(/-desc/,"")+" ."+sort).show();
+		$(".action.bookmarksort"+sort.replace(/-desc/,"")+" ."+sort).show();
 	}
 }
 function buildBookmarkList() {
@@ -604,12 +563,12 @@ function buildBookmarkList() {
 	// read existing bookmarks:
 	var bookmarks = [];
 	var i=0;
-	while (cookie("bookmark"+i)!=null) {
-		if (cookie("bookmark"+i)!="-") bookmarks.push({ path : cookie("bookmark"+i), time: parseInt(cookie("bookmark"+i+"time"))});
+	while ($.MyCookie("bookmark"+i)!=null) {
+		if ($.MyCookie("bookmark"+i)!="-") bookmarks.push({ path : $.MyCookie("bookmark"+i), time: parseInt($.MyCookie("bookmark"+i+"time"))});
 		i++;
 	}
 	// sort bookmarks:
-	var s = cookie("bookmarksort") ? cookie("bookmarksort") : "time-desc";
+	var s = $.MyCookie("bookmarksort") ? $.MyCookie("bookmarksort") : "time-desc";
 	var sortorder = 1;
 	if (s.indexOf("-desc")>0) { sortorder = -1; s= s.replace(/-desc/,""); }
 	bookmarks.sort(function(b1,b2) {
@@ -617,11 +576,11 @@ function buildBookmarkList() {
 		else return sortorder * ( b2[s] - b1[s]);
 	});
 	// build bookmark list:
-	var tmpl = $("#bookmarktemplate").html();
+	var tmpl = $(".bookmarktemplate").first().html();
 	$.each(bookmarks, function(i,val) {
 		var epath = unescape(val.path);
 		$("<li>" + tmpl.replace(/\$bookmarkpath/g,val.path).replace(/\$bookmarktext/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape($.MyStringHelper.trimString(epath,20)))) + "</li>")
-			.insertAfter($("#bookmarktemplate"))
+			.clone(false).insertAfter($(".bookmarktemplate"))
 			.click(handleBookmarkActions).MyKeyboardEventHandler()
 			.addClass("action dyn-bookmark")
 			.attr('data-bookmark',val.path)
@@ -633,8 +592,8 @@ function buildBookmarkList() {
 }
 function removeBookmark(path) {
 	var i = 0;
-	while (cookie('bookmark'+i) != null && cookie('bookmark'+i)!=path) i++;
-	if (cookie('bookmark'+i) == path) cookie('bookmark'+i, "-", 1);
+	while ($.MyCookie('bookmark'+i) != null && $.MyCookie('bookmark'+i)!=path) i++;
+	if ($.MyCookie('bookmark'+i) == path) $.MyCookie('bookmark'+i, "-", 1);
 	$('#flt').trigger("bookmarksChanged");
 }
 function handleBookmarkActions(event) {
@@ -644,9 +603,9 @@ function handleBookmarkActions(event) {
 	var uri = $("#fileList").attr('data-uri');
 	if (self.hasClass('addbookmark')) {
 		var i = 0;
-	        while (cookie('bookmark'+i)!=null && cookie('bookmark'+i)!= "-" && cookie('bookmark'+i) != "" && cookie('bookmark'+i)!=uri) i++;
-		cookie('bookmark'+i, uri, 1);
-		cookie('bookmark'+i+'time', (new Date()).getTime(), 1);
+	        while ($.MyCookie('bookmark'+i)!=null && $.MyCookie('bookmark'+i)!= "-" && $.MyCookie('bookmark'+i) != "" && $.MyCookie('bookmark'+i)!=uri) i++;
+		$.MyCookie('bookmark'+i, uri, 1);
+		$.MyCookie('bookmark'+i+'time', (new Date()).getTime(), 1);
 		$("#flt").trigger("bookmarksChanged");
 	} else if (self.hasClass('dyn-bookmark')) {
 		changeUri(self.attr('data-bookmark'));	
@@ -655,18 +614,18 @@ function handleBookmarkActions(event) {
 		removeBookmark(uri);
 	} else if (self.hasClass('rmallbookmarks')) {
 		var i = 0;
-		while (cookie('bookmark'+i)!=null) {
-			rmcookies('bookmark'+i, 'bookmark'+i+'time');
+		while ($.MyCookie('bookmark'+i)!=null) {
+			$.MyCookie.rmCookies('bookmark'+i, 'bookmark'+i+'time');
 			i++;
 		}
 		$('#flt').trigger("bookmarksChanged");
 	} else if (self.hasClass('rmsinglebookmark')) {
 		removeBookmark($(this).attr("data-bookmark"));
 	} else if (self.hasClass('bookmarksortpath')) {
-		cookie("bookmarksort", cookie("bookmarksort")=="path" || cookie("bookmarksort") == null ? "path-desc" : "path");
+		$.MyCookie("bookmarksort", $.MyCookie("bookmarksort")=="path" || $.MyCookie("bookmarksort") == null ? "path-desc" : "path");
 		$("#flt").trigger("bookmarksChanged");
 	} else if (self.hasClass('bookmarksorttime')) {
-		cookie("bookmarksort", cookie("bookmarksort")=="time" ? "time-desc" : "time");
+		$.MyCookie("bookmarksort", $.MyCookie("bookmarksort")=="time" ? "time-desc" : "time");
 		$("#flt").trigger("bookmarksChanged");
 	}
 }
@@ -880,7 +839,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			renderUploadProgressAll(uploadState, data);
 		},
 		submit: function(e,data) {
-			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', cookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
+			if (!$(this).data('ask.confirm')) $(this).data('ask.confirm', $.MyCookie("settings.confirm.upload") == "no" || !checkUploadedFilesExist(data) || window.confirm(confirmmsg));
 			$("#file-upload-form-relapath").val(data.files[0].relativePath || (data.files[0].webkitRelativePath && data.files[0].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join('/')+'/') || '');
 			$("#file-upload-form-token").val($("#token").val());
 			return $(this).data('ask.confirm');
@@ -925,7 +884,7 @@ function confirmDialog(text, data) {
 	var oldsetting;
 	if (data.setting) {
 		text+='<div class="confirmdialogsetting"><input type="checkbox" name="'+data.setting+'"/> '+$("#confirmdialogsetting").html()+'</div>';
-		oldsetting = cookie(data.setting);
+		oldsetting = $.MyCookie(data.setting);
 	}
 	$("#confirmdialog").html(text).dialog({  
 		modal: true,
@@ -938,7 +897,7 @@ function confirmDialog(text, data) {
 				text: $("#cancel").html(), 
 				click: function() {
 					if (data.setting) {
-						togglecookie(data.setting, oldsetting, oldsetting && oldsetting!=="",1);
+						$.MyCookie.toggleCookie(data.setting, oldsetting, oldsetting && oldsetting!=="",1);
 					}
 					$("#confirmdialog").dialog("close");  
 					if (data.cancel) data.cancel();
@@ -955,8 +914,8 @@ function confirmDialog(text, data) {
 		open: function() {
 			if (data.setting) {
 				$("input[name='"+data.setting+"']",$(this)).click(function(event) {
-					togglecookie(data.setting, "no", !$(this).is(":checked"), 1);
-				}).prop("checked", cookie(data.setting)!="no");
+					$.MyCookie.toggleCookie(data.setting, "no", !$(this).is(":checked"), 1);
+				}).prop("checked", $.MyCookie(data.setting)!="no");
 			}
 		},
 		close: function() {
@@ -971,6 +930,7 @@ function getSelectedRows(el) {
 	var selrows = $("#fileList tr.selected:visible");
 	if (selrows.length==0) selrows = $(el).closest("tr[data-file]");
 	if (selrows.length==0) selrows = $("#fileList tr:visible:focus");
+	if (selrows.length==0) selrows = $("#FileList tr #popup").closest("tr[data-file]");
 	return selrows;
 }
 function getSelectedFiles(el) {
@@ -986,12 +946,14 @@ function handleFileActionEvent(event) {
 	$.MyPreventDefault(event);
 	var self = $(this);
 	if (self.hasClass('disabled')) return;
-	var row = self.closest("tr");
+	var row = self.closest("tr[data-file]");
+	if (row.length === 0) row = getSelectedRows(this).shift();
 	if (self.hasClass("rename")) {
 		handleFileRename(row);
 	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
 	} else { // extension support:
+		console.log(row);
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: [ row.data("file") ] , row: row });
 	}
 }
@@ -1015,9 +977,9 @@ function initFileActions() {
 }
 function handleFileActionsSettings(ev,data) {
 	$("#fileactions")
-		.toggleClass("hidefileactions", cookie("settings.show.fileactions") == "no")
-		.toggleClass("hidelabels", cookie("settings.show.fileactionlabels") == "no")
-		.toggleClass("showalways", cookie("settings.show.fileactionalways") == "no");
+		.toggleClass("hidefileactions", $.MyCookie("settings.show.fileactions") == "no")
+		.toggleClass("hidelabels", $.MyCookie("settings.show.fileactionlabels") == "no")
+		.toggleClass("showalways", $.MyCookie("settings.show.fileactionalways") == "no");
 }
 function handleFileListRowFocusIn(event) {
 	var self = $(this);
@@ -1133,7 +1095,7 @@ function handleJSONResponse(response) {
 function doRename(row, file, newname) {
 	var xhr = $.MyPost($('#fileList').attr('data-uri'), { rename: 'yes', newname: newname, file: file  }, function(response) {
 		if (response.message) {
-			var xhr = $.MyPost($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
+			$.MyPost($('#fileList').attr('data-uri'), { ajax:'getFileListEntry', file: newname, template: $("#fileList").attr("data-entrytemplate")}, function(r) {
 				try {
 					var newrow = $(r);
 					var d = $("tr[data-file='"+newname+"']");
@@ -1146,8 +1108,7 @@ function doRename(row, file, newname) {
 				} catch (e) {
 					updateFileList();
 				}
-			}, 1);
-			renderAbortDialog(xhr);
+			}, true);
 		}
 		handleJSONResponse(response);
 	});
@@ -1164,7 +1125,7 @@ function handleFileRename(row) {
 		changeEvent: function(data) {
 			var newname = data.value.replace(/\//g,"");
 			if (newname == defaultValue ) return;
-			if (cookie("settings.confirm.rename")!="no") {
+			if ($.MyCookie("settings.confirm.rename")!="no") {
 				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,'<br/>').replace(/%s/,$.MyStringHelper.quoteWhiteSpaces(file)).replace(/%s/,$.MyStringHelper.quoteWhiteSpaces(newname)), {
 					confirm: function() { doRename(row,file,newname); },
 					setting: "settings.confirm.rename"
@@ -1177,7 +1138,7 @@ function handleFileRename(row) {
 }
 function notify(type,msg) {
 	console.log("notify["+type+"]: "+msg);
-	if (cookie("settings.messages."+type)=="no") return;
+	if ($.MyCookie("settings.messages."+type)=="no") return;
 	noty({text: msg, type: type, layout: 'topCenter', timeout: 30000 });
 	$("body").trigger("notify",{type:type,msg:msg});
 // var notification = $("#notification");
@@ -1247,12 +1208,9 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
-	disableFileListActions();
+	toggleButton($(".access-writeable, .access-readable, .access-selectable, .sel-one, .sel-multi, .sel-one-mime"), true);
 	$(".action.uibutton").button();
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
-}
-function disableFileListActions() {
-	toggleButton($(".access-writeable, .access-readable, .access-selectable, .sel-one, .sel-multi"), true);
 }
 function updateFileListActions() {
 	var s = getFolderStatistics();
@@ -1283,6 +1241,15 @@ function updateFileListActions() {
 	toggleButton($(".sel-multi.sel-file"+exclude), s.dirselcounter>0 || s.fileselcounter===0);
 	toggleButton($(".sel-noneorone.sel-file"+exclude), s.dirselcounter>0 || s.fileselcounter>1);
 	toggleButton($(".sel-noneormulti.sel-file"+exclude), s.dirselcounter>0);
+	
+	if (s.selectedmimetypes != "" && s.sumselcounter === 1) {
+		$(".sel-one-mime"+exclude).each(function() {
+			var self = $(this);
+			toggleButton(self, s.sumselcounter ===1 && self.data("mime") !==undefined && s.selectedmimetypes.match(self.data("mime")) === null);
+		});
+	} else {
+		toggleButton($(".sel-one-mime"+exclude), true);
+	}
 }
 function initFolderStatistics() {
 	$("#flt").on("fileListChanged", updateFolderStatistics).on("fileListViewChanged", updateFolderStatistics);
@@ -1316,6 +1283,8 @@ function getFolderStatistics() {
 	stats.dirselcounter = $("#fileList tr.selected.is-subdir-yes:visible").length;
 	stats.fileselcounter = $("#fileList tr.selected.is-file:visible").length;
 	stats.sumselcounter = stats.dirselcounter+stats.fileselcounter;
+
+	stats.selectedmimetypes = $("#fileList tr.selected.is-file:visible").map(function() { return $(this).data("mime");  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
 
 	var foldersize = 0;
 	var folderselsize = 0;
@@ -1422,7 +1391,7 @@ function handleFileListDrop(event, ui) {
 	var files = dragfilerow.hasClass('selected') ?  
 			$.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
 			: new Array(dragfilerow.attr('data-file'));	
-	if (cookie("settings.confirm.dnd")!="no") {
+	if ($.MyCookie("settings.confirm.dnd")!="no") {
 		var msg = $("#paste"+action+"confirm").html();
 		msg = msg.replace(/%files%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(files.join(', '))))
 				.replace(/%srcuri%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(srcuri)))
@@ -1478,8 +1447,12 @@ function uncheckSelectedRows() {
 }
 function doPasteAction(action,srcuri,dsturi,files) {
 	var xhr = $.MyPost(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
-		if (cookie("clpaction") == "cut") rmcookies("clpfiles","clpaction","clpuri");
-		updateFileList();
+		if ($.MyCookie("clpaction") == "cut") $.MyCookie.rmCookies("clpfiles","clpaction","clpuri");
+		if (files.split("@/@").length == 1) {
+			refreshFileListEntry(files);
+		} else {
+			updateFileList();
+		}
 		handleJSONResponse(response);
 	});
 	renderAbortDialog(xhr);
@@ -1495,19 +1468,19 @@ function handleFileListActionEvent(event) {
 	} else if (self.hasClass("cut")||self.hasClass("copy")) {
 		$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
 		var selfiles = $.map(getSelectedRows(self), function(val,i) { return $(val).attr("data-file"); });
-		cookie('clpfiles', selfiles.join('@/@'));
-		cookie('clpaction',self.hasClass("cut")?"cut":"copy");
-		cookie('clpuri',$.MyStringHelper.concatUri($("#fileList").attr('data-uri'),"/"));
+		$.MyCookie('clpfiles', selfiles.join('@/@'));
+		$.MyCookie('clpaction',self.hasClass("cut")?"cut":"copy");
+		$.MyCookie('clpuri',$.MyStringHelper.concatUri($("#fileList").attr('data-uri'),"/"));
 		if (self.hasClass("cut")) $("#fileList tr.selected").addClass("cutted").fadeTo("slow",0.5);
 		handleClipboard();
 		uncheckSelectedRows();
 	} else if (self.hasClass("paste")) {
-		var files = cookie("clpfiles");
-		var action= cookie("clpaction");
-		var srcuri= cookie("clpuri");
+		var files = $.MyCookie("clpfiles");
+		var action= $.MyCookie("clpaction");
+		var srcuri= $.MyCookie("clpuri");
 		var dsturi = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
 		
-		if (cookie("settings.confirm.paste") != "no") {
+		if ($.MyCookie("settings.confirm.paste") != "no") {
 			var msg = $("#paste"+action+"confirm").html()
 					.replace(/%srcuri%/g, $.MyStringHelper.uri2html(srcuri))
 					.replace(/%dsturi%/g, $.MyStringHelper.uri2html(dsturi)).replace(/\\n/g,"<br/>")
@@ -1517,33 +1490,19 @@ function handleFileListActionEvent(event) {
 	} else if (self.attr("href") !== undefined && self.attr("href") != "#") {
 		window.open(self.attr("href"), self.attr("target") || "_self");
 	} else {
-		var row = self.closest("tr");
+		var row = getSelectedRows(self);
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), row: row, selected: getSelectedFiles(this) });
 	}
 }
-function cookie(name,val,expires) {
-	var date = new Date();
-       	date.setTime(date.getTime() + 315360000000);
-	if (val) return Cookies.set(name, val, { path:$("#flt").attr("data-baseuri"), secure: true, expires: expires ? date : undefined});
-	return Cookies.get(name);
-}
-function rmcookies() {
-	for (var i=0; i < arguments.length; i++) Cookies.remove(arguments[i], { path:$("#flt").attr("data-baseuri"), secure: true});
-}
-function togglecookie(name,val,toggle,expires) {
-	if (toggle) cookie(name,val,expires);
-	else rmcookies(name);
-}
-
 function initClipboard() {
 	handleClipboard();
 	$('#flt').on('fileListChanged', handleClipboard);
 }
 function handleClipboard() {
-	var action = cookie("clpaction");
+	var action = $.MyCookie("clpaction");
 	var datauri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
-	var srcuri = cookie("clpuri");
-	var files = cookie("clpfiles");
+	var srcuri = $.MyCookie("clpuri");
+	var files = $.MyCookie("clpfiles");
 	var disabled = (!files || files === "" || srcuri == datauri || $("#fileListTable").hasClass("iswriteable-no"));
 	toggleButton($(".action.paste"), disabled);
 	if (srcuri == datauri && action == "cut") 
@@ -1622,10 +1581,10 @@ function initViewFilterDialog() {
 			$("input[name='filter.size.val']", vfd).spinner({min: 0, page: 10, numberFormat: "n", step: 1});
 			$(".filter-apply", vfd).button().click(function(event){
 				$.MyPreventDefault(event);
-				togglecookie("filter.name", 
+				$.MyCookie.toggleCookie("filter.name", 
 						$("select[name='filter.name.op'] option:selected", vfd).val()+" "+$("input[name='filter.name.val']",vfd).val(),
 						$("input[name='filter.name.val']", vfd).val() !== "");
-				togglecookie("filter.size",
+				$.MyCookie.toggleCookie("filter.size",
 						$("select[name='filter.size.op'] option:selected",vfd).val() + 
 						$("input[name='filter.size.val']",vfd).val() + 
 						$("select[name='filter.size.unit'] option:selected",vfd).val(),
@@ -1635,14 +1594,14 @@ function initViewFilterDialog() {
 					$("input[name='filter.types']:checked", vfd).each(function(i,val) {
 						filtertypes += $(val).val();
 					});
-					cookie("filter.types", filtertypes);
-				} else rmcookies("filter.types");
+					$.MyCookie("filter.types", filtertypes);
+				} else $.MyCookie.rmCookies("filter.types");
 				vfd.dialog("close");
 				updateFileList();
 			});
 			$(".filter-reset", vfd).button().click(function(event){
 				$.MyPreventDefault(event);
-				rmcookies("filter.name", "filter.size", "filter.types");
+				$.MyCookie.rmCookies("filter.name", "filter.size", "filter.types");
 				vfd.dialog("close");
 				updateFileList();
 			});
@@ -1825,11 +1784,11 @@ function initDotFilter() {
 			$("#flt").trigger("fileListViewChanged");
 		}
 	});
-	$("body").toggleClass("hidedotfiles", cookie("settings.show.dotfiles") == "no");
-	$("body").toggleClass("hidedotfolders", cookie("settings.show.dotfolders") == "no");
+	$("body").toggleClass("hidedotfiles", $.MyCookie("settings.show.dotfiles") == "no");
+	$("body").toggleClass("hidedotfolders", $.MyCookie("settings.show.dotfolders") == "no");
 }
 function updateThumbnails() {
-	var enabled = cookie("settings.enable.thumbnails") != "no";
+	var enabled = $.MyCookie("settings.enable.thumbnails") != "no";
 	$("#flt .icon").each(function(i,v) {
 		var self = $(this);
 		if (self.data("thumb")!=self.data("icon")) {
@@ -1878,8 +1837,7 @@ function initToolBox() {
 			changeUri: changeUri,
 			concatUri: $.MyStringHelper.concatUri,
 			confirmDialog : confirmDialog,
-			cookie : cookie,
-			fixElementPosition: fixElementPosition,
+			cookie : $.MyCookie,
 			getDialog : getDialog,
 			getDialogByPost: getDialogByPost,
 			getSelectedFiles : getSelectedFiles,
@@ -1904,10 +1862,10 @@ function initToolBox() {
 			renderAbortDialog: renderAbortDialog,
 			renderByteSize: $.MyStringHelper.renderByteSize,
 			renderByteSizes: $.MyStringHelper.renderByteSizes,
-			rmcookies: rmcookies,
+			rmcookies: $.MyCookie.rmCookies,
 			simpleEscape: $.MyStringHelper.simpleEscape,
 			stripSlash : $.MyStringHelper.stripSlash,
-			togglecookie : togglecookie,
+			togglecookie : $.MyCookie.toggleCookie,
 			toggleRowSelection : toggleRowSelection,
 			uncheckSelectedRows : uncheckSelectedRows,
 			updateFileList : updateFileList
