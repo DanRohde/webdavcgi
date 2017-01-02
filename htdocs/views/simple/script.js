@@ -1208,7 +1208,7 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
-	toggleButton($(".access-writeable, .access-readable, .access-selectable, .sel-one, .sel-multi, .sel-one-mime"), true);
+	toggleButton($(".access-writeable, .access-readable, .access-selectable, .sel-one, .sel-multi, .sel-one-mime, .sel-one-suffix"), true);
 	$(".action.uibutton").button();
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
 }
@@ -1242,14 +1242,27 @@ function updateFileListActions() {
 	toggleButton($(".sel-noneorone.sel-file"+exclude), s.dirselcounter>0 || s.fileselcounter>1);
 	toggleButton($(".sel-noneormulti.sel-file"+exclude), s.dirselcounter>0);
 	
-	if (s.selectedmimetypes != "" && s.sumselcounter === 1) {
-		$(".sel-one-mime"+exclude).each(function() {
-			var self = $(this);
-			toggleButton(self, s.sumselcounter ===1 && self.data("mime") !==undefined && s.selectedmimetypes.match(self.data("mime")) === null);
-		});
+	if (s.sumselcounter === 1) {
+		if (s.selectedmimetypes != "") {
+			$(".sel-one-mime"+exclude).each(function() {
+				var self = $(this);
+				toggleButton(self, self.data("mime") !==undefined && s.selectedmimetypes.match(self.data("mime")) === null);
+			});
+		} else {
+			toggleButton($(".sel-one-mime"+exclude), true);
+		}
+		if (s.selectedsuffixes != "") {
+			$(".sel-one-suffix"+exclude).each(function() {
+				var self = $(this);
+				toggleButton(self, self.data("suffix") !==undefined && s.selectedsuffixes.match(self.data("suffix")) === null);
+			});
+		} else {
+			toggleButton($(".sel-one-suffix"+exclude), true);
+		}
 	} else {
-		toggleButton($(".sel-one-mime"+exclude), true);
+		toggleButton($(".sel-one-suffix"+exclude+",.sel-one-mime"+exclude), true);
 	}
+	
 }
 function initFolderStatistics() {
 	$("#flt").on("fileListChanged", updateFolderStatistics).on("fileListViewChanged", updateFolderStatistics);
@@ -1285,6 +1298,7 @@ function getFolderStatistics() {
 	stats.sumselcounter = stats.dirselcounter+stats.fileselcounter;
 
 	stats.selectedmimetypes = $("#fileList tr.selected.is-file:visible").map(function() { return $(this).data("mime");  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
+	stats.selectedsuffixes  = $("#fileList tr.selected.is-file:visible").map(function() { return $(this).data("file").match(/\.\w+$/)!=null ? $(this).data("file").split(".").pop() : "";  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
 
 	var foldersize = 0;
 	var folderselsize = 0;

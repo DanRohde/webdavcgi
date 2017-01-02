@@ -32,7 +32,8 @@ use POSIX qw(strftime);
 use Module::Load;
 
 use HTTPHelper
-  qw( print_header_and_content get_parent_uri print_local_file_header get_mime_type fix_mod_perl_response );
+  qw( print_header_and_content get_parent_uri print_local_file_header 
+      print_file_header get_mime_type fix_mod_perl_response );
 use FileUtils qw( get_local_file_content_and_type );
 use DefaultConfig qw(
   $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
@@ -174,12 +175,17 @@ sub handle_post_request {
     {
         return $self->get_functions()->handle_post_upload();
     }
-    elsif ( $ENABLE_CLIPBOARD && $self->{cgi}->param('action') && $self->{cgi}->param('action') =~/^(?:copy|cut)$/xms) {
+    if ( $ENABLE_CLIPBOARD && $self->{cgi}->param('action') && $self->{cgi}->param('action') =~/^(?:copy|cut)$/xms) {
         return $self->get_functions()->handle_clipboard_action();
     }
     if ( $self->{backend}->isDir($PATH_TRANSLATED) ) {
         $self->optimize_css_and_js();
         return $self->render_web_interface();
+    }
+    if ( $self->{backend}->isFile($PATH_TRANSLATED) && $self->{backend}->isReadable($PATH_TRANSLATED)) {
+        print_file_header($self->{backend}, $PATH_TRANSLATED);
+        $self->{backend}->printFile($PATH_TRANSLATED, \*STDOUT);
+        return 1;
     }
     return 0;
 }

@@ -31,7 +31,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript fileactionpopup posthandler);
+    my @hooks = qw(css locales javascript fileactionpopup posthandler appsmenu );
     $hookreg->register( \@hooks, $self );
     return $self;
 }
@@ -41,11 +41,19 @@ sub handle_hook_fileactionpopup {
     return {
         action => 'gpxviewer',
         label  => 'gpxviewer',
-        path   => $params->{path},
         type   => 'li'
     };
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action  => 'gpxviewer',
+        label   => 'gpxviewer',
+        type    => 'li',
+        classes => 'sel-one-suffix access-readable hideit',
+        data    => { suffix => 'gpx' },
+    };
+}
 sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};

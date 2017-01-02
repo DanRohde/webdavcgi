@@ -368,5 +368,4 @@ sub get_base_uri_frag {
     my ($uri) = @_;
     return $uri && $uri =~ m{([^/]+)/?$}xms ? ( $1 // q{/} ) : q{/};
 }
-
 1;

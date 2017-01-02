@@ -164,6 +164,8 @@ sub _check_token {
     }
     if (!$cgitoken || !$login) {
         #return 0; ## TODO: later
+        my %cgivars = $self->{cgi}->Vars();
+        carp("UGGLY POST TO $REQUEST_URI WITHOUT TOKEN:" . join q{, }, map { $_.q{=}.$cgivars{$_} } sort keys %cgivars );
         return 1;
     }
     $SESSION{secret} //= 'uP:oh2oo';

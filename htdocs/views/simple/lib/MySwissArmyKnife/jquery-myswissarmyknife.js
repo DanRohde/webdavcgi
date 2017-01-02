@@ -124,21 +124,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 		return $("<div/>").addClass("pageblocker").appendTo("body");
 	};
-	$.MyGet = function(uri, param, callback, unblocked) {
+	$.MyGet = function(uri, param, callback, unblocked, dataType) {
 		if (!unblocked) $.MyPageBlocker();
 		var xhr = $.get(uri, $.MyTokenExtender(param), function(response) {
 			if (!unblocked) $.MyPageBlocker("remove");
 			callback.call(this, response);
 			
-		});
+		}, dataType);
 		return xhr;
 	};
-	$.MyPost = function(uri, param, callback, unblocked) {
+	$.MyPost = function(uri, param, callback, unblocked, dataType) {
 		if (!unblocked) $.MyPageBlocker();
 		var xhr = $.post(uri, $.MyTokenExtender(param), function(response) {
 			if (!unblocked) $.MyPageBlocker("remove");
 			callback.call(this,response);
-		});
+		}, dataType);
 		return xhr;
 	};
 	

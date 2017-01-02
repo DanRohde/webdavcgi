@@ -6,6 +6,7 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 <form method="post" action="#">
 	<input type="hidden" name="action" value="search"/>
 	<input type="hidden" class="search id" name="searchid" value="$getSearchId()"/>
+	<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
    $renderSelectedFiles(<input type="hidden" name="files" value="$v"/>)
    
 <div class="search infolders" title="$searchinfolderstitle">$tl(search.searchinfolders): $searchinfolders</div>
