@@ -208,29 +208,51 @@ sub get_cookies {
 
     return \@cookies;
 }
+sub _get_std_template_vars {
+    my ($self, $ru, $vars) = @_;
+    my $vbase = $self->get_vbase();
+    my @lt = localtime;
+    $vars //= {};
+    return {
+        uri             => $ru // $REQUEST_URI,
+        baseuri         => $self->{cgi}->escapeHTML($vbase),
+        maxuploadsize   => $POST_MAX_SIZE,
+        maxuploadsizehr => ( $self->render_byte_val( $POST_MAX_SIZE, 2, 2 ) )[0],
+        view            => $VIEW,
+        viewname        => $self->tl("${VIEW}view"),
+        USER            => $REMOTE_USER,
+        REQUEST_URI     => $REQUEST_URI,
+        PATH_TRANSLATED => $PATH_TRANSLATED,
+        LANG            => $LANG,
+        TRANS_LANG      => $SUPPORTED_LANGUAGES{$LANG} // $SUPPORTED_LANGUAGES{en},
+        VBASE           => $self->{cgi}->escapeHTML($vbase),
+        VHTDOCS         => $vbase . $VHTDOCS,
+        RELEASE         => $RELEASE,
+        TOKENNAME       => %SESSION ? $SESSION{tokenname} : 't',
+        TOKEN           => %SESSION ? $SESSION{$SESSION{tokenname}} : time,
+        q{.}            => scalar time,
+        TIME            => strftime($self->tl('vartimeformat'), @lt),
+        NOW             => strftime($self->tl('varnowformat'), @lt),
+        %{$vars},
+    };
+}
+sub _replace_std_template_vars {
+    my ($self, $tref, $ru, $v) = @_;
+    my $vars = $self->_get_std_template_vars($ru, $v);
 
+    ${$tref} =~ s{\$\[(\w+)\]}{ $vars->{$1} // "\$$1"}exmsg;
+    ${$tref} =~ s{\$\{?(\w+)\}?}{ $vars->{$1} // "\$$1"}exmsg;
+
+    ${$tref} =~ s/\$\{?ENV\{([^}]+?)}}?/$ENV{$1}/exmsg;
+    my $clockfmt = $self->tl('vartimeformat');
+    ${$tref} =~ s{\$\{?CLOCK\}?}{<span id="clock"></span><script>startClock('clock','$clockfmt');</script>}xmsg;
+    ${$tref} =~ s/\$\{?TL\{([^}]+)}}?/$self->tl($1)/exmsg;
+
+    return $tref;
+}
 sub replace_vars {
     my ( $self, $t, $v ) = @_;
-    my $lt = localtime;
-    $t =~ s/\$\{?NOW}?/strftime $self->tl('varnowformat'),$lt/exmsg;
-    $t =~ s/\$\{?TIME}?/strftime $self->tl('vartimeformat'), $lt/exmsg;
-    $t =~ s/\$\{?USER}?/$REMOTE_USER/xmsg;
-    $t =~ s/\$\{?REQUEST_URI}?/$REQUEST_URI/xmsg;
-    $t =~ s/\$\{?PATH_TRANSLATED}?/$PATH_TRANSLATED/xmsg;
-    $t =~ s/\$\{?ENV\{([^}]+?)}}?/$ENV{$1}/exmsg;
-    my $clockfmt = $self->tl('vartimeformat');
-    $t =~ s{\$\{?CLOCK\}?}{<span id="clock"></span><script>startClock('clock','$clockfmt');</script>}xmsg;
-    $t =~ s/\$\{?LANG}?/$LANG/xmsg;
-    $t =~ s/\$\{?TL\{([^}]+)}}?/$self->tl($1)/exmsg;
-    my $vbase = $self->get_vbase();
-    $t =~ s/\$\{?VBASE}?/$vbase/xmsg;
-    $t =~ s/\$\{?VHTDOCS}?/$vbase$VHTDOCS/xmsg;
-
-    if ($v) {
-        $t =~ s{\$\[(\w+)\]}{ $$v{$1} // "\$$1"}exmsg;
-        $t =~ s{\$\{?(\w+)\}?}{ $$v{$1} // "\$$1"}exmsg;
-    }
-    return $t;
+    return ${ $self->_replace_std_template_vars(\$t, $REQUEST_URI, $v) };
 }
 
 sub cmp_strings {
@@ -616,50 +638,16 @@ sub render_template {
     $content =~ s/\$eval(.)${anyng_rx}\1/eval($2)/xmegs;
 
     # replace each:
-    $content =~
-s/\$each(.)${anyng_rx}\1${anyng_rx}\1((.)${anyng_rx}\5\1)?/$self->render_each(fn=>$fn,ru=>$ru,variable=>$2,tmplfile=>$3,filter=>$6)/exmsg;
+    $content =~ s/\$each(.)${anyng_rx}\1${anyng_rx}\1((.)${anyng_rx}\5\1)?/$self->render_each(fn=>$fn,ru=>$ru,variable=>$2,tmplfile=>$3,filter=>$6)/exmsg;
 
     # replace functions:
-    while ( $content =~
-s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg
-      )
-    {
-    }
-
-    $content =~ s/\$\{ENV\{([^}]+?)\}\}?/$ENV{$1}/exmsg;
-    $content =~ s/\$\{?TL\{([^}]+)\}\}?/$self->tl($1)/exmsg;
-
-    my $vbase = $self->get_vbase();
+    while ( $content =~ s/\$(\w+)[(]([^)]*)[)]/$self->exec_template_function($fn,$ru,$1,$2)/xmesg) { }
 
     # replace standard variables:
-    $vars = {
-        uri           => $ru,
-        baseuri       => $self->{cgi}->escapeHTML($vbase),
-        maxuploadsize => $POST_MAX_SIZE,
-        maxuploadsizehr =>
-          ( $self->render_byte_val( $POST_MAX_SIZE, 2, 2 ) )[0],
-        view            => $VIEW,
-        viewname        => $self->tl("${VIEW}view"),
-        USER            => $REMOTE_USER,
-        REQUEST_URI     => $REQUEST_URI,
-        PATH_TRANSLATED => $PATH_TRANSLATED,
-        LANG            => $LANG,
-        TRANS_LANG      => $SUPPORTED_LANGUAGES{$LANG} // $SUPPORTED_LANGUAGES{en},
-        VBASE           => $self->{cgi}->escapeHTML($vbase),
-        VHTDOCS         => $vbase . $VHTDOCS,
-        RELEASE         => $RELEASE,
-        TOKENNAME       => %SESSION ? $SESSION{tokenname} : 't',
-        TOKEN           => %SESSION ? $SESSION{$SESSION{tokenname}} : time,
-        q{.}            => scalar time(),
-        %{$vars},
-    };
+    $self->_replace_std_template_vars(\$content, $ru, $vars);
 
-    $content =~ s{\$\[([\w.]+)\]}{$vars->{$1} // "\$$1"}exmsg;
-    $content =~ s{\$[{]?([\w.]+)[}]?}{$vars->{$1} // "\$$1"}exmsg;
-    $content =~
-s{<!--IF${cond_rx}-->${anyng_rx}((<!--ELSE-->)${anyng_rx})?<!--ENDIF-->}{eval($1)? ( $2 // q{} ): ($5 // q{})}exmsg;
-    $content =~
-s{<!--IF(\#\d+)${cond_rx}-->${anyng_rx}((<!--ELSE\1-->)${anyng_rx})?<!--ENDIF\1-->}{eval($2)? ($3 // q{}) : ($6 // q{})}exmsg;
+    $content =~ s{<!--IF${cond_rx}-->${anyng_rx}((<!--ELSE-->)${anyng_rx})?<!--ENDIF-->}{eval($1)? ( $2 // q{} ): ($5 // q{})}exmsg;
+    $content =~ s{<!--IF(\#\d+)${cond_rx}-->${anyng_rx}((<!--ELSE\1-->)${anyng_rx})?<!--ENDIF\1-->}{eval($2)? ($3 // q{}) : ($6 // q{})}exmsg;
 
     return $content;
 }

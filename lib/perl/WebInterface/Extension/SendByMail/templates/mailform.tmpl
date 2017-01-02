@@ -2,6 +2,7 @@
 <form action="#" method="post" class="sendbymail" target="_blank">
 <input type="hidden" name="ajax" value="send"/>
 <input type="hidden" name="action" value="sendbymail"/>
+<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
 <table class="sendbymail">
 <tr class="sendbymail error hidden" id="inputfailure"><th colspan="2" class="sendbymail error">$TL{sendbymail_msg_inputfailure}</th></tr>
 <tr class="sendbymail from"><th>$TL{sendbymail_from}</th><td><input type="text" size="50" name="from" value="$defaultfrom"/></td></tr>
