@@ -83,7 +83,7 @@ sub handle_hook_fileactionpopup {
         label   => 'du_diskusage',
         path    => $params->{path},
         type    => 'li',
-        classes => 'action sel-noneormulti sel-dir access-readable',
+        classes => 'action sel-noneormulti sel-dir access-readable hideit',
     };
 }
 

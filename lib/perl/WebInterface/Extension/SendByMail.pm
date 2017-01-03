@@ -93,7 +93,7 @@ sub handle_hook_filelistaction {
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'action sendbymail sel-multi',
+        'action sendbymail sel-multi hideit',
         'sendbymail_short', 'sendbymail' );
 
 }

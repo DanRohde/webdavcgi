@@ -15,7 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-.viewerjs-no .action.viewerjs,
+.suffix-odt .action.viewerjs,
+.suffix-odp .action.viewerjs,
+.suffix-ods .action.viewerjs,
+.suffix-pdf .action.viewerjs {
+	display: inherit;
+}
+
+.action.viewerjs,
 .isreadable-no .action.viewerjs,
 .isempty-yes .action.viewerjs
 {
@@ -23,10 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .action.viewerjs {
-	background: url(view.png) no-repeat left center;
-}
-#popupmenu .action.viewerjs {
-	background-position: 2px center;
+	background-image: url(view.png);
+	background-position-y: center;
 }
 .action.viewerjs:hover,.action.viewerjs:focus {
 	background-image: url(view-hover.png);

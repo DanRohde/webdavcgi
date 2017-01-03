@@ -92,6 +92,7 @@ sub handle_hook_fileactionpopup {
         path      => $params->{path},
         type      => 'li',
         classes   => 'access-readable sel-dir',
+        akavailable => 4,
     };
 }
 sub handle_hook_appsmenu {

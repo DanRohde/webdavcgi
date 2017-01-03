@@ -57,7 +57,7 @@ sub handle_hook_appsmenu {
     return {
         action  => 'hexdump',
         label   => 'hexdump',
-        classes => 'access-readable sel-one sel-file',
+        classes => 'access-readable sel-one sel-file hideit',
         type    => 'li',
     };
 }

@@ -30,14 +30,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .action.videojs {
 	background-image: url(videojs.png);
-	background-position: 3px center;
+	background-position: 2px 6px;
 	background-repeat: no-repeat;
 }
 .action.videojs:hover, .action.videojs:focus{
 	background-image: url(videojs-hover.png);
-}
-#popupmenu .action.videojs {
-	background-position: 2px 6px;
 }
 #videojs-overlay {
 	position: fixed;

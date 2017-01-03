@@ -96,7 +96,7 @@ sub handle_hook_appsmenu {
         action => 'dwnload',
         label  => 'dwnload',
         type   => 'li',
-        classes => 'access-readable sel-one sel-file '. $self->{add_classes},
+        classes => 'access-readable sel-one sel-file hideit '. $self->{add_classes},
     };
 }
 

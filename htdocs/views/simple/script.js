@@ -1433,6 +1433,7 @@ function renderHiddenInput(form, data, key) {
 function postAction(data) {
 	var form = $("<form/>").appendTo("body");
 	form.hide().prop("action",$("#fileList").attr("data-uri")).prop("method","POST");
+	form.append($("#token").clone().removeAttr("id"));
 	renderHiddenInput(form,data);
 	form.submit();
 	form.remove();

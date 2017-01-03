@@ -61,7 +61,7 @@ sub handle_hook_appsmenu {
 }
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
-    return $self->handle_apps_hook( $self->{cgi}, 'permissions sel-multi',
+    return $self->handle_apps_hook( $self->{cgi}, 'permissions sel-one hideit',
         'mode', 'mode' );
 }
 

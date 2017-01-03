@@ -38,7 +38,7 @@ $ACTION = 'videojs';
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript posthandler);
+    my @hooks = qw(css locales javascript posthandler appsmenu);
     if ( !$EXTENSION_CONFIG{VideoJS}{disable_fileactionpopup} ) {
         push @hooks, 'fileactionpopup';
     }
@@ -68,7 +68,15 @@ sub handle_hook_fileaction {
         classes => 'access-readable'
     };
 }
-
+sub handle_hook_appsmenu {
+    my ( $self ) = @_;
+    return {
+        action => $ACTION,
+        label  => $ACTION,
+        classes => 'access-readable sel-one-suffix hideit',
+        data => { suffix => q{(?:mp4|ogv|webm)}, },
+    };
+}
 sub handle_hook_posthandler {
     my ($self) = @_;
     if (   $self->{cgi}->param('action')

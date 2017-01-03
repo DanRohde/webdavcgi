@@ -33,7 +33,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript fileattr posthandler );
+    my @hooks = qw( css locales javascript posthandler appsmenu );
     if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
         push @hooks, 'fileactionpopup';
     }
@@ -44,19 +44,15 @@ sub init {
     return $self->SUPER::init($hookreg);
 }
 
-sub handle_hook_fileattr {
-    my ( $self, $config, $params ) = @_;
-    return { ext_classes => 'viewerjs-'
-          . ( $params->{path} =~ /[.](?:odt|odp|ods|pdf)$/xmsi ? 'yes' : 'no' )
-    };
-}
-
 sub handle_hook_fileactionpopup {
-    return { action => 'viewerjs', label => 'viewerjs.view', type => 'li' };
+    return { action => 'viewerjs', label => 'viewerjs.view' };
 }
 
 sub handle_hook_fileaction {
     return { action => 'viewerjs', label => 'viewerjs.view' };
+}
+sub handle_hook_appsmenu {
+    return { action => 'viewerjs', label => 'viewerjs.view', classes=>'sel-one-suffix access-readable hideit', data=> { suffix=>'(?:odt|odp|ods|pdf)'}};
 }
 
 sub handle_hook_posthandler {

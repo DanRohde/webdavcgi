@@ -54,11 +54,10 @@ sub handle_hook_fileactionpopup {
     return {
         action  => 'diff',
         label   => 'diff',
-        path    => $params->{path},
         type    => 'li',
         classes => $self->config( 'files_only', 0 )
-        ? 'sel-multi sel-file access-readable'
-        : 'sel-multi access-readable'
+        ? 'sel-file access-readable'
+        : 'access-readable'
     };
 }
 sub handle_hook_appsmenu {
@@ -67,9 +66,7 @@ sub handle_hook_appsmenu {
 }
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
-    return $self->handle_apps_hook( $self->{cgi},
-        'action diff sel-oneormore disabled',
-        'diff_short', 'diff' );
+    return $self->handle_hook_fileactionpopup($config, $params);
 }
 
 sub handle_hook_posthandler {

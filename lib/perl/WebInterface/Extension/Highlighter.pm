@@ -543,7 +543,7 @@ sub handle_hook_appsmenu {
         label   => $self->tl('highlighter'),
         title   => $self->tl('highlighter'),
         popup   => $self->_create_popups( $self->{attributes}, 1),
-        classes => 'highlighter-popup sel-multi',
+        classes => 'highlighter-popup sel-multi hideit',
         attr    => { aria_label=> $self->tl('highlighter'), tabindex => 0,},
     };
 }
