@@ -49,7 +49,7 @@ use CGI::Carp;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 
-use DefaultConfig qw( %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG);
+use DefaultConfig qw( %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE );
 use HTTPHelper qw( print_compressed_header_and_content );
 sub new {
    my ($class, $cgi) = @_;
@@ -113,7 +113,7 @@ sub authenticate {
             $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
             $session->flush();
             # redirect because I have to set a new session cookie:
-            return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie($session->name(), $session->id()));
+            return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/ ? $1 : $REQUEST_URI ));
         }
     }
     return $self->_handle_redirect($session, logon=>'failure', login=>$login);

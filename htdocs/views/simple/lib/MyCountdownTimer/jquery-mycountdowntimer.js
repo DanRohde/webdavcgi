@@ -35,7 +35,7 @@ $.fn.MyCountdownTimer = function(option, timeout) {
 			break;
 	}
 	function stopAutoRefreshTimer() {
-		if (anchor.data(timername)) {
+		if (anchor.data(timeoutname)) {
 			window.clearInterval(anchor.data(timername));
 			anchor.removeData(timername);
 			anchor.trigger(eventprefix+"stopped", { timeout: anchor.data(timeoutname) });
