@@ -85,6 +85,7 @@ $(document).ready(function() {
 
     <form id="edittextdataform" method="post" action="#">
         <textarea class="textdata" name="textdata" rows="15" cols="70" data-file="$filename">$textdata</textarea>
+        <input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
         <div class="edittextbuttonpanel"><a href="#" class="action cancel-edit" data-action="cancel-edit">$tl(cancel)</a><a href="#" class="action savetextdata" data-action="savetextdata">$tl(savebutton)</a></div>
     </form>
     <div class="template">

@@ -924,23 +924,18 @@ function confirmDialog(text, data) {
 	}).show();
 }
 function getVisibleAndSelectedFiles() {
-	return $("#fileList tr.isreadable-yes.unselectable-no").filter(function() {return $(this).hasClass("selected") && $(this).is(":visible"); }).find("div.filename");
+	return $("#fileList tr.isreadable-yes.unselectable-no.selected:visible div.filename");
 }
 function getSelectedRows(el) {
 	var selrows = $("#fileList tr.selected:visible");
-	if (selrows.length==0) selrows = $(el).closest("tr[data-file]");
-	if (selrows.length==0) selrows = $("#fileList tr:visible:focus");
-	if (selrows.length==0) selrows = $("#FileList tr #popup").closest("tr[data-file]");
+	if (selrows.length === 0) selrows = $(el).closest("tr[data-file]");
+	if (selrows.length === 0) selrows = $("#fileList tr:visible:focus");
+	if (selrows.length === 0) selrows = $("#fileList tr:visible #popupmenu").closest("tr[data-file]");
+	if (selrows.length === 0) selrows = $("#fileList tr:visible #fileactions").closest("tr[data-file]");
 	return selrows;
 }
 function getSelectedFiles(el) {
-	return $.map(getSelectedRows(el), function (v,i) { return $(v).attr("data-file"); });
-	/*
-	var selfiles = $.map($("#fileList tr.selected:visible"), function (v,i) { return $(v).attr("data-file")});
-	if (selfiles.length===0) selfiles = new Array($(el).closest("tr").attr("data-file"));
-	if (selfiles.length===0) selfiles =  $.map($("#fileList tr:visible:focus"), function(v,i){ return $(v).attr("data-file")});
-	return selfiles;
-	*/
+	return $.map(getSelectedRows(el), function (v) { return $(v).attr("data-file"); });
 }
 function handleFileActionEvent(event) {
 	$.MyPreventDefault(event);
@@ -953,7 +948,6 @@ function handleFileActionEvent(event) {
 	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
 	} else { // extension support:
-		console.log(row);
 		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: [ row.data("file") ] , row: row });
 	}
 }
@@ -963,7 +957,7 @@ function initFileActions() {
 			$.MyPreventDefault(ev);
 			$(".fileactions-popup").toggle();
 		}).MyKeyboardEventHandler().MyTooltip();
-	$("#fileactions .action").on("click dblclick", handleFileActionEvent).MyKeyboardEventHandler();
+	$("#fileactions .action").addClass("focus").on("click dblclick", handleFileActionEvent).MyKeyboardEventHandler();
 	$("#fileactions li.popup").MyPopup();
 	$("#flt").on("fileListChanged", function(){
 		// init single file actions:
@@ -986,6 +980,9 @@ function handleFileListRowFocusIn(event) {
 	if ($("#fileactions", self).length===0) {
 		$(".action.changeuri.filename", self).after($("#fileactions"));
 	}
+	$("#fileList tr.focus").removeClass("focus");
+	self.addClass("focus");
+	updateFileListActions(event, { focus: true});
 }
 function handleFileListRowFocusOut(event) {
 	$("#fileactions").appendTo($(".template"));
@@ -1208,22 +1205,25 @@ function handleDialogActionEvent(event) {
 					buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
 }
 function initFileListActions() {
-	toggleButton($(".access-writeable, .access-readable, .access-selectable, .sel-one, .sel-multi, .sel-one-mime, .sel-one-suffix"), true);
+	updateFileListActions();
 	$(".action.uibutton").button();
 	$("#flt").on("fileListSelChanged", updateFileListActions).on("fileListViewChanged",updateFileListActions);
 }
-function updateFileListActions() {
-	var s = getFolderStatistics();
-	// if (s.sumselcounter > 0 ) $('#filelistactions').show(); else
-	// $('#filelistactions').hide();
+function updateFileListActions(event, data) {
+	var s = getFolderStatistics(data && data.focus);
+	
 	var flt = $("#fileListTable");
-	var exclude = flt.hasClass("iswriteable-no") ? ":not(.access-writeable)" : "";
+	var f = data && data.focus ? ".focus" : ":not(.focus)";
+	var exclude = f;
+	exclude += flt.hasClass("iswriteable-no") ? ":not(.access-writeable)" : "";
 	exclude += flt.hasClass("isreadable-no") ? ":not(.access-readable)" : "";
 	exclude += flt.hasClass("unselectable-no") ? ":not(.access-selectable)" : "";
 	
-	toggleButton($(".access-writeable"), flt.hasClass("iswriteable-no"));
-	toggleButton($(".access-readable"), flt.hasClass("isreadable-no"));
-	toggleButton($(".access-selectable"), flt.hasClass("unselectable-yes"));
+	
+	
+	toggleButton($(".access-writeable"+f), flt.hasClass("iswriteable-no"));
+	toggleButton($(".access-readable"+f), flt.hasClass("isreadable-no"));
+	toggleButton($(".access-selectable"+f), flt.hasClass("unselectable-yes"));
 	
 	toggleButton($(".sel-none"+exclude), s.sumselcounter!== 0);
 	toggleButton($(".sel-one"+exclude), s.sumselcounter!=1);
@@ -1242,25 +1242,26 @@ function updateFileListActions() {
 	toggleButton($(".sel-noneorone.sel-file"+exclude), s.dirselcounter>0 || s.fileselcounter>1);
 	toggleButton($(".sel-noneormulti.sel-file"+exclude), s.dirselcounter>0);
 	
-	if (s.sumselcounter === 1) {
+	toggleButton($(".sel-one-suffix"+exclude), true);
+	toggleButton($(".sel-one-mime"+exclude), true);
+	toggleButton($(".sel-one-filename"+exclude), true);
+	if (s.sumselcounter === 1 && s.fileselcounter === 1) {
 		if (s.selectedmimetypes != "") {
 			$(".sel-one-mime"+exclude).each(function() {
 				var self = $(this);
-				toggleButton(self, self.data("mime") !==undefined && s.selectedmimetypes.match(self.data("mime")) === null);
+				toggleButton(self, self.data("mime") == undefined || s.selectedmimetypes.match(self.data("mime")) === null);
 			});
-		} else {
-			toggleButton($(".sel-one-mime"+exclude), true);
 		}
 		if (s.selectedsuffixes != "") {
 			$(".sel-one-suffix"+exclude).each(function() {
 				var self = $(this);
-				toggleButton(self, self.data("suffix") !==undefined && s.selectedsuffixes.match(self.data("suffix")) === null);
+				toggleButton(self, self.data("suffix") == undefined || s.selectedsuffixes.match(self.data("suffix")) === null);
 			});
-		} else {
-			toggleButton($(".sel-one-suffix"+exclude), true);
 		}
-	} else {
-		toggleButton($(".sel-one-suffix"+exclude+",.sel-one-mime"+exclude), true);
+		$(".sel-one-filename"+exclude).each(function() {
+			var self = $(this);
+			toggleButton(self, self.data("filename") == undefined || s.selectedfilenames.match(self.data("filename")) === null);
+		});
 	}
 	
 }
@@ -1287,24 +1288,28 @@ function updateFileListCounters() {
 	
 	$("#flt").trigger("counterUpdated");
 }
-function getFolderStatistics() {
+function getFolderStatistics(focus) {
 	var stats = [];
-
+	var es = focus ? ".focus" : ".selected:visible";
+	stats.focus = focus;
+	
 	stats.dircounter =  $("#fileList tr.is-subdir-yes:visible").length;
 	stats.filecounter = $("#fileList tr.is-file:visible").length;
 	stats.sumcounter = stats.dircounter+stats.filecounter;
-	stats.dirselcounter = $("#fileList tr.selected.is-subdir-yes:visible").length;
-	stats.fileselcounter = $("#fileList tr.selected.is-file:visible").length;
+	stats.dirselcounter = $("#fileList tr.is-subdir-yes"+es).length;
+	stats.fileselcounter = $("#fileList tr.is-file"+es).length;
 	stats.sumselcounter = stats.dirselcounter+stats.fileselcounter;
 
-	stats.selectedmimetypes = $("#fileList tr.selected.is-file:visible").map(function() { return $(this).data("mime");  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
-	stats.selectedsuffixes  = $("#fileList tr.selected.is-file:visible").map(function() { return $(this).data("file").match(/\.\w+$/)!=null ? $(this).data("file").split(".").pop() : "";  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
-
+	var selfiles = $("#fileList tr.is-file"+es);
+	stats.selectedmimetypes = selfiles.map(function() { return $(this).data("mime");  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
+	stats.selectedsuffixes  = selfiles.map(function() { return $(this).data("file").toLocaleLowerCase().match(/\.\w+$/)!=null ? $(this).data("file").split(".").pop() : "";  }).get().sort().join(",").replace(/([^,]+)(,\1)*/g,"$1");
+	stats.selectedfilenames = selfiles.map(function() { return $(this).data("file").toLocaleLowerCase(); }).get().sort().join("/");
+	
 	var foldersize = 0;
 	var folderselsize = 0;
 	$("#fileList tr:visible").each(function(i,val) {  
 		var size = parseInt($(this).attr('data-size'));
-		if ($(this).hasClass('selected')) folderselsize +=size;
+		if ($(this).is(es)) folderselsize +=size;
 		foldersize += size;
 	});
 
@@ -1757,8 +1762,12 @@ function initPopupMenu() {
 			hidePopupMenu();
 		})
 		.on("fileListChanged.popupmenu", function(){
-			$("#popupmenu li.popup").MyPopup({contextmenu: $("#popupmenu"), contextmenuTarget: $("#fileList tr"), contextmenuAnchor: "#content"});
-			
+			$("#popupmenu li.popup").MyPopup({
+				contextmenu: $("#popupmenu"), 
+				contextmenuTarget: $("#fileList tr"), 
+				contextmenuAnchor: "#content"
+			});
+
 			$("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content", contextmenuAnchorElement: true});
 		});
 	$("body").off(".popupmenu")

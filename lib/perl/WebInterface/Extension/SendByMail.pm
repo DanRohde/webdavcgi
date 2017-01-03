@@ -57,7 +57,7 @@ use FileUtils qw( get_error_document );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript posthandler );
+    my @hooks = qw( css locales javascript posthandler appsmenu );
     if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
         push @hooks, 'fileactionpopup';
     }
@@ -93,11 +93,14 @@ sub handle_hook_filelistaction {
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi},
-        'action sendbymail sel-multi disabled',
+        'action sendbymail sel-multi',
         'sendbymail_short', 'sendbymail' );
 
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_apps($config,$params);
+}
 sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     if ( defined $self->{cgi}->param('action')

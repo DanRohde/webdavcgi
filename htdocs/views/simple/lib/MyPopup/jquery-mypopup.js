@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			contextmenuAnchor: undefined,
 			contextmenuAnchorElement: false,
 			alloworigcontextmenu : true,
+			showEvent: undefined,
 		}, options);
 
 		function adjustContextMenuPosition(event, el) {
@@ -65,6 +66,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 							$("ul.popup:visible", popup).hide();
 							contextmenu.appendTo($(this)).css({position: "absolute", opacity: 1}).show();
 							adjustContextMenuPosition(event, $(this));
+							if (settings.showEvent) settings.showEvent.call(this);
 						}
 					}
 				});

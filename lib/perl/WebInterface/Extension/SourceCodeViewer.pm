@@ -36,17 +36,17 @@ sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw(
       css         locales javascript fileactionpopup
-      posthandler fileattr
+      posthandler appsmenu
     );
     $hookreg->register( \@hooks, $self );
 
-    my %sf = map { $_ => 1 } qw(
+    $self->{suffixes} = [qw(
       bsh  c   cc   cpp  cs csh  css   cyc
       cv   htm html java js json m     mxml
       perl pl  pm   py   rb sh   xhtml xml
       xsl
-    );
-    $self->{supportedsuffixes} = \%sf;
+    )];
+
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
     return $self;
 }
@@ -56,28 +56,18 @@ sub _get_file_suffix {
     return $fn =~ /[.]([^.]+)$/xms ? $1 : q{};
 }
 
-sub handle_hook_fileattr {
-    my ( $self, $config, $params ) = @_;
-    if ( $self->{backend}->isFile( $params->{path} ) ) {
-        return {
-            ext_classes => $self->{supportedsuffixes}
-              { $self->_get_file_suffix( $params->{path} ) }
-            ? 'scv-source'
-            : 'scv-nosource'
-        };
-    }
-    return 0;
-
+sub handle_hook_appsmenu {
+    my ($self, $config, $params) = @_;
+    return {
+        action => 'scv',
+        label => 'scv',
+        classes=> 'sel-one-suffix access-readable hideit',
+        data =>  { suffix => q{^(?:}.join(q{|}, @{$self->{suffixes}}).q{)$}  },
+    };
 }
-
 sub handle_hook_fileactionpopup {
     my ($self) = @_;
-    return {
-        action   => 'scv',
-        disabled => !$self->{backend}->isReadable($PATH_TRANSLATED),
-        label    => 'scv',
-        type     => 'li'
-    };
+    return $self->handle_hook_appsmenu();
 }
 
 sub handle_hook_posthandler {
@@ -102,8 +92,7 @@ sub handle_hook_posthandler {
                 )
             );
         }
-        if ( $self->{supportedsuffixes}{ $self->_get_file_suffix($file) } ) {
-            print_compressed_header_and_content(
+        print_compressed_header_and_content(
                 '200 OK',
                 'text/html',
                 $self->render_template(
@@ -122,17 +111,7 @@ sub handle_hook_posthandler {
                         )
                     }
                 )
-            );
-        }
-        else {
-            require JSON;
-            print_compressed_header_and_content(
-                '200 OK',
-                'application/json',
-                JSON->new()
-                  ->encode( { error => $self->tl('scvunsupportedfiletype') } )
-            );
-        }
+         );
         return 1;
     }
     return 0;

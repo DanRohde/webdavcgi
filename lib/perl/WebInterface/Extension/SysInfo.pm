@@ -33,7 +33,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    $hookreg->register( [qw( gethandler apps css )], $self );
+    $hookreg->register( [qw( gethandler apps css javascript appsmenu )], $self );
     return $self;
 }
 sub handle_hook_gethandler {
@@ -48,6 +48,10 @@ sub handle_hook_gethandler {
 sub handle_hook_apps {
     my ($self) = @_;
     return $self->handle_apps_hook($self->{cgi}, 'sysinfo', 'SysInfo', 'System Information', 'sysinfo.html');
+}
+sub handle_hook_appsmenu {
+    my ($self) = @_;
+    return $self->handle_hook_apps();
 }
 sub render_sys_info {
     my ($self) = @_;

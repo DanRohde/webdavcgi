@@ -18,7 +18,7 @@
 #
 # SETUP:
 # editablefiles - list of regular expressions to identify text files
-# editablecategories - regular expression of categories (default: (text|soruce|shell|config|markup))
+# editablecategories - regular expression of categories (default: (text|source|shell|config|markup))
 # disableckeditor - disables CKEditor for HTML editing
 # sizelimit - size limit for text files in bytes (default: 2097152 (=2MB))
 # template - template file (default: editform)
@@ -32,8 +32,6 @@ our $VERSION = '1.0';
 
 use base qw( WebInterface::Extension  );
 
-#use JSON;
-
 use DefaultConfig qw( $FILETYPES $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 use FileUtils qw( rcopy );
@@ -43,31 +41,31 @@ sub init {
     my @hooks = qw(
         css         locales         javascript
         posthandler fileactionpopup fileaction settings
-        fileattr
+        appsmenu
     );
     $hookreg->register( \@hooks, $self );
-
+    $self->{editablecategories} = $self->config( 'editablecategories','(?:text|source|shell|config|markup)' );
     $self->{editablefiles} = $self->config(
         'editablefiles',
-        [   '[.](?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql)$',
-            '^(?:[.]ht|readme|changelog|todo|license|gpl|install|manifest\.mf|author|makefile|configure|notice)'
+        [   '[.](?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|mf|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql|htaccess)(?:\/|$)',
+            '(?:^|\/)(?:readme|changelog|todo|license|gpl|install|author|makefile|configure|notice)\b'
         ]
     );
-    $self->{editablefilesregex}
-        = '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . ')';
-    $self->{editablecategories} = $self->config( 'editablecategories',
-        '(?:text|source|shell|config|markup)' );
+    $self->{editablefilesregex} = '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . '|(?:[.]' . join(q{|}, @{$self->_get_extensions_by_category()} ) . ')(?:\/|$))';
+
     $self->{template}  = $self->config( 'template',  'editform' );
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
     return $self;
 }
-sub handle_hook_fileattr {
-    my ( $self, $config, $params ) = @_;
-    my $is_editable = $self->_is_editable( $params->{path} );
-    return {
-        ext_classes => 'iseditable-' . ( $is_editable ? 'yes' : 'no' ),
-        ext_iconclasses => $is_editable ? 'category-text' : q{}
-    };
+sub _get_extensions_by_category {
+    my ($self) = @_;
+    my @ext = ();
+    foreach my $c ( split /\n/xms, $FILETYPES ) {
+        if ($c=~/^$self->{editablecategories}\s+(.*)$/xms) {
+            push @ext, split /\s+/xms, $1;
+        }
+    }
+    return \@ext;
 }
 sub handle_hook_settings {
     my ( $self, $config, $params ) = @_;
@@ -75,19 +73,26 @@ sub handle_hook_settings {
          . $self->handle_settings_hook('texteditor.backup');
 }
 sub handle_hook_fileaction {
+    my ( $self ) = @_;
     return {
         action  => 'edit',
-        classes => 'access-readable',
-        label   => 'editbutton'
+        classes => 'access-readable sel-one-filename hideit',
+        label   => 'editbutton',
+        data    => { filename => $self->{editablefilesregex} },
     };
 }
 sub handle_hook_fileactionpopup {
+    my ( $self ) = @_;
     return {
         action  => 'edit',
-        classes => 'access-readable',
+        classes => 'access-readable sel-one-filename focus hideit',
         label   => 'editbutton',
-        type    => 'li'
+        data    => { filename => $self->{editablefilesregex} },
     };
+}
+sub handle_hook_appsmenu {
+    my ( $self ) = @_;
+    return $self->handle_hook_fileaction();
 }
 sub handle_hook_posthandler {
     my ($self) = @_;
@@ -177,18 +182,6 @@ sub _save_text_data {
         'Cache-Control: no-cache, no-store'
     );
     return 1;
-}
-
-sub _is_editable {
-    my ( $self, $fn ) = @_;
-    my $suffix = $fn =~ /[.](\w+)$/xms ? lc($1) : '___unknown___';
-    return (
-        $self->{backend}->basename($fn) =~ /$self->{editablefilesregex}/xmsi
-            || $FILETYPES =~
-            /^$self->{editablecategories}\s+[^\n]*\b\Q$suffix\E\b/xmsi )
-        && $self->{backend}->isFile($fn)
-        && $self->{backend}->isReadable($fn)
-        && $self->{backend}->isWriteable($fn);
 }
 
 1;

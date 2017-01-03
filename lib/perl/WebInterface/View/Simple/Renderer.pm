@@ -141,30 +141,30 @@ sub render_extension_element {
     my $content = q{};
     if ( ref($a) eq 'HASH' ) {
         if ( ${$a}{popup} ) {
-            my %attr = ( -tabindex=>0, -class => 'popup '
-                        . ( ${$a}{classes} // q{} ),
-                    -title => $a->{title} // $a->{label} // q{},);
-            if (exists $a->{attr}) {
-                %attr = ( %attr, %{$a->{attr}});
-            }
+            my %attr = (
+                -tabindex=>0,
+                -class => 'popup ' . ( ${$a}{classes} // q{} ),
+                -title => $a->{title} // $a->{label} // q{},
+                %{ $a->{attr} // {} },
+            );
+            my %labelattr = (
+                -class=>'popup label notab '.($a->{classes} // q{}),
+                %{ $a->{labelattr} // {} },
+            );
             return $self->{cgi}->li(
                 \%attr,
-                ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div({ -class=>'popup label notab '.($a->{classes} // q{})}, $a->{label} // $a->{title} // q{} ))
-                    . $self->{cgi}->ul(
-                    { -class => 'popup '.($a->{subclasses} // q{}) },
-                    $self->render_extension_element( $hook, ${$a}{popup} )
-                    )
+                ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div(\%labelattr, $a->{label} // $a->{title} // q{} ))
+                . $self->{cgi}->ul( { -class => 'popup '.($a->{subclasses} // q{}) },  $self->render_extension_element( $hook, ${$a}{popup} ) )
             );
         }
         my %params = ( -class => q{}, -tabindex=>0 );
         $params{-class} .= ${$a}{action} ? ' action ' . ${$a}{action} : q{};
-        $params{-class}
-            .= ${$a}{listaction} ? ' action ' . ${$a}{listaction} : q{};
+        $params{-class} .= ${$a}{listaction} ? ' action ' . ${$a}{listaction} : q{};
         $params{-class} .= ${$a}{classes}  ? q{ } . ${$a}{classes} : q{};
         $params{-class} .= ${$a}{disabled} ? ' hidden'             : q{};
         if ( ${$a}{accesskey} ) { $params{-accesskey} = ${$a}{accesskey}; }
         if ( ${$a}{title} || ${$a}{label} ) {
-            $params{-title} = $self->tl( ${$a}{title} || ${$a}{label} );
+            $params{-title} = $self->tl( ${$a}{title} // ${$a}{label} );
         }
         if ( ${$a}{template} ) { $params{-data_template} = ${$a}{template}; }
         $content .= ${$a}{prehtml} ? ${$a}{prehtml} : q{};
@@ -182,7 +182,7 @@ sub render_extension_element {
         $content .= $self->{cgi}->li(
                 \%params,
                 $self->{cgi}->div(
-                    { -class => 'label' }, $self->tl( ${$a}{label} )
+                    { -class => 'label', %{ $a->{labelattr} // {} } }, $self->tl( ${$a}{label} )
                 ) . ( $a->{attr}{accesskey} || $a->{accesskey} || $a->{akavailable}
                             ? $self->{cgi}->div({-class=>'accesskey'}, $a->{attr}{accesskey} // $a->{accesskey} // $a->{akavailable})
                             : q{}

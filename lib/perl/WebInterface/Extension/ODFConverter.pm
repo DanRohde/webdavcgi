@@ -132,11 +132,13 @@ sub handle_hook_appsmenu {
                 data => { ct=>$suffix, suffix => q{^(?:}.$targets.q{)$} },
         };
     }
+    my $attr = { 'data-suffix' => q{(?:}.join(q{|}, @{$self->{types}}).q{)}  };
     return {
         title => $self->tl('odfconverter'),
         label => $self->tl('odfconverter'),
         classes => 'odfconverter sel-one-suffix hideit',
-        data => { suffix => q{(?:}.join(q{|}, @{$self->{types}}).q{)}  },
+        attr => $attr,
+        labelattr => $attr,
         type => 'li',
         popup => \@popup,
     };
