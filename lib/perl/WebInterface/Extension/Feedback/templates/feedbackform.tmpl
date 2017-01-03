@@ -6,7 +6,8 @@
 	<source src="${VHTDOCS}_EXTENSION(Feedback)_/htdocs/audio/shutter.wav">
 </audio>
 <form action="#" method="post" class="dtable" id="feedbackform">
-<input type="hidden" name="action" value="feedback"/>
+<input type="hidden" name="action" value="feedback">
+<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
 <div class="drow">
 	<label class="dhcell" for="feedbackmsg">$tl(feedback.message):</label>
 </div>

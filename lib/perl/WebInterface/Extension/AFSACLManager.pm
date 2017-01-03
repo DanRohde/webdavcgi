@@ -47,7 +47,7 @@ use vars qw( %_CACHE );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript gethandler posthandler );
+    my @hooks = qw( css locales javascript posthandler appsmenu);
     if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
         push @hooks, 'fileactionpopup';
     }
@@ -67,11 +67,14 @@ sub handle_hook_fileactionpopup {
         action   => 'afsaclmanager',
         label    => 'afs',
         title    => 'afs',
-        path     => $params->{path},
         type     => 'li',
         classes  => 'sel-noneorone sel-dir sep',
         template => $self->config( 'template', 'afsaclmanager' )
     };
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_fileactionpopup($config, $params);
 }
 
 sub handle_hook_apps {
@@ -81,7 +84,7 @@ sub handle_hook_apps {
         'afs', 'afs' );
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $ajax = $self->{cgi}->param('ajax') // q{};
     my $content;
@@ -100,6 +103,11 @@ sub handle_hook_gethandler {
         $contenttype = 'application/json';
 
     }
+    elsif (   $self->config( 'allow_afsaclchanges', 1 )
+        && $self->{cgi}->param('saveafsacl') )
+    {
+        return $self->_do_afs_save_acl();
+    }
     if ($content) {
         delete $_CACHE{$self}{$PATH_TRANSLATED};
         print_compressed_header_and_content( '200 OK', $contenttype,
@@ -108,16 +116,6 @@ sub handle_hook_gethandler {
         return 1;
     }
 
-    return 0;
-}
-
-sub handle_hook_posthandler {
-    my ( $self, $config, $params ) = @_;
-    if (   $self->config( 'allow_afsaclchanges', 1 )
-        && $self->{cgi}->param('saveafsacl') )
-    {
-        return $self->_do_afs_save_acl();
-    }
     return 0;
 }
 

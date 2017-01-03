@@ -69,7 +69,7 @@ a {
 	padding: 0;
 	margin: 0;
 }
-#nav a.action, #nav li.action, #nav > ul > li.popup,
+#nav a.action, #nav > ul > li.action, #nav > ul > li.popup,
 #nav .help-button, #nav .contact-button, #nav .logout-button, 
 #nav .home-button, #nav .link-button {
 	/* display: block; */

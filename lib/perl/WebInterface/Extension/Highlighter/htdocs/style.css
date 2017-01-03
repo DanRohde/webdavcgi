@@ -35,9 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter-popup .action.removemarks .label:hover {
 	background-image: url(hl-hover.png);
 }
-#nav .highlighter-popup {
-	background-position-x: 4px !important;
-}
 .highlighter.color.label, .action.mark.color,
 .highlighter.color .action.removemarks .label {
 	background-image: url(fg.png);

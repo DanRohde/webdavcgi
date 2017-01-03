@@ -47,7 +47,7 @@ use vars qw( %_CACHE );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw(css locales javascript gethandler posthandler);
+    my @hooks = qw(css locales javascript posthandler appsmenu);
     if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
         push @hooks, 'fileactionpopup';
     }
@@ -64,10 +64,13 @@ sub handle_hook_fileactionpopup {
         classes  => 'action',
         label    => 'afsgroup',
         title    => 'afsgroup',
-        path     => $params->{path},
         type     => 'li',
         template => $self->config( 'template', 'afsgroupmanager' )
     };
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_fileactionpopup( $config, $params );
 }
 
 sub handle_hook_apps {
@@ -76,7 +79,7 @@ sub handle_hook_apps {
         'afsgroup' );
 }
 
-sub handle_hook_gethandler {
+sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $ajax = $self->{cgi}->param('ajax') // q{};
     if ( $ajax eq 'getAFSGroupManager' ) {
@@ -91,11 +94,6 @@ sub handle_hook_gethandler {
         delete $_CACHE{$self}{$PATH_TRANSLATED};
         return 1;
     }
-    return 0;
-}
-
-sub handle_hook_posthandler {
-    my ( $self, $config, $params ) = @_;
     if (
         $self->_check_cgi_param_list(
             qw(afschgrp afscreatenewgrp afsdeletegrp afsrenamegrp afsaddusr afsremoveusr)
@@ -282,9 +280,9 @@ sub _do_afs_removeusr {
     }
     my @users = ();
     my @afsusr =
-        $self->{cgi}->param('afsusr[]')
-      ? $self->{cgi}->param('afsusr[]')
-      : $self->{cgi}->param('afsusr');
+        $self->get_cgi_multi_param('afsusr[]')
+      ? $self->get_cgi_multi_param('afsusr[]')
+      : $self->get_cgi_multi_param('afsusr');
     my $adp = $BACKEND_CONFIG{$BACKEND}{allowdottedprincipals};
     foreach (@afsusr) {
         if (   is_valid_afs_username( $_, $adp )

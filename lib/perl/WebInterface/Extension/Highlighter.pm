@@ -22,7 +22,6 @@
 # maxpresetentries - number of entries in the preset entry menu (default: 5)
 # disable_popup - disables Highlighter menu in context menu
 # disable_filelistaction - disables Highlighter menu button on toolbar
-# disable_apps - disables Highlighter menu button on navigation bar
 
 package WebInterface::Extension::Highlighter;
 
@@ -43,16 +42,13 @@ use vars qw(%_CACHE);
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks
-        = qw(css locales javascript posthandler fileattr );
+        = qw(css locales javascript posthandler fileattr appsmenu );
 
-    if (!$self->config('disable_popup',0)) {
+    if (!$self->config('disable_popup', 0)) {
         push @hooks, 'fileactionpopup';
     }
-    if (!$self->config('disable_filelistaction',0)) {
+    if (!$self->config('disable_filelistaction', 1)) {
         push @hooks, 'filelistaction';
-    }
-    if (!$self->config('disable_apps',1)) {
-        push @hooks, 'apps';
     }
 
     $hookreg->register( \@hooks, $self );
@@ -541,13 +537,13 @@ sub handle_hook_filelistaction {
         classes => 'highlighter-popup uibutton sel-multi hideit toolbar-button',
     };
 }
-sub handle_hook_apps {
+sub handle_hook_appsmenu {
     my ( $self, $config, $params ) = @_;
     return {
         label   => $self->tl('highlighter'),
         title   => $self->tl('highlighter'),
         popup   => $self->_create_popups( $self->{attributes}, 1),
-        classes => 'highlighter-popup sel-multi disabled',
+        classes => 'highlighter-popup sel-multi',
         attr    => { aria_label=> $self->tl('highlighter'), tabindex => 0,},
     };
 }

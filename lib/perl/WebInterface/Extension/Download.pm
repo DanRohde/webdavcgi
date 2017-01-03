@@ -39,7 +39,7 @@ use FileUtils qw( get_error_document is_hidden );
 sub init {
     my ( $self, $hookreg ) = @_;
 
-    my @hooks = qw( css locales javascript posthandler);
+    my @hooks = qw( css locales javascript posthandler appsmenu);
     if ( !$EXTENSION_CONFIG{Download}{disable_fileaction} ) {
         push @hooks, 'fileaction';
     }
@@ -81,15 +81,23 @@ sub handle_hook_fileactionpopup {
         classes => $self->{add_classes}
     };
 }
-
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook(
         $self->{cgi},
-        'action dwnload sel-one sel-file disabled' . $self->{add_classes},
+        'action dwnload sel-one sel-file ' . $self->{add_classes},
         'dwnload',
         'dwnload'
     );
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action => 'dwnload',
+        label  => 'dwnload',
+        type   => 'li',
+        classes => 'access-readable sel-one sel-file '. $self->{add_classes},
+    };
 }
 
 sub handle_hook_posthandler {

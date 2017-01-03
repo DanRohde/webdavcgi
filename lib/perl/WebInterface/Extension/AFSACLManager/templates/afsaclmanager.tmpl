@@ -2,6 +2,7 @@
 $afsaclscurrentfolder
 <form id="afsaclmanager" action="$uri" method="post">
 <input type="hidden" name="saveafsacl" value="yes"/>
+<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
 <table>
 <thead>
 <tr> <th>$tl(afsnormalrights)</th> <th class="afs-lookup">lookup</th> <th class="afs-read">read</th> <th class="afs-write">write</th> <th class="afs-insert">insert</th> <th>delete</th> <th class="afs-lock">lock</th> <th class="afs-admin">admin</th> </tr>

@@ -50,7 +50,7 @@ sub init {
     if ( !$self->config('contact') ) {
         return;
     }
-    my @hooks = qw( css locales javascript gethandler posthandler
+    my @hooks = qw( css locales javascript posthandler appsmenu
         fileactionpopup pref body );
     $hookreg->register( \@hooks, $self );
     $self->{sizelimit} = $self->config( 'sizelimit', 20_971_520 );
@@ -64,10 +64,18 @@ sub handle_hook_fileactionpopup {
         label     => $ACTION,
         path      => ${$params}{path},
         type      => 'li',
-        accesskey => 9,
     };
 }
 
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action    => $ACTION,
+        label     => $ACTION,
+        type      => 'li',
+        accesskey => 9,
+    };
+}
 sub handle_hook_pref {
     my ( $self, $config, $params ) = @_;
     return {
@@ -241,13 +249,7 @@ sub handle_hook_posthandler {
             JSON->new()->encode( \%resp ) );
         return 1;
     }
-    return 0;
-}
-
-sub handle_hook_gethandler {
-    my ( $self, $config, $params ) = @_;
-    my $action = $self->{cgi}->param('action') // q{};
-    if ( $action eq $ACTION ) {
+    if ( $action eq 'getFeedbackDialog' ) {
         print_compressed_header_and_content(
             '200 OK',
             'text/html',
