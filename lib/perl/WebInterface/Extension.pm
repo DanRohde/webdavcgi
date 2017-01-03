@@ -103,6 +103,7 @@ sub handle_apps_hook {
         label => $self->tl($label // $title),
         title => $self->tl($title // $label),
         attr => { 'aria-label' => $self->tl($title // $label), tabindex=>0, },
+        type => 'li',
     };
 }
 

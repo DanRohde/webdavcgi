@@ -68,7 +68,7 @@ use vars qw( %CACHE %TIMEUNITS);
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( link css locales javascript posthandler );
+    my @hooks = qw( link css locales javascript posthandler appsmenu );
     if ( !$EXTENSION_CONFIG{Search}{disable_fileactionpopup} ) {
         push @hooks, 'fileactionpopup';
     }
@@ -88,6 +88,16 @@ sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
         action    => 'search',
+        label     => 'search',
+        path      => $params->{path},
+        type      => 'li',
+        classes   => 'access-readable sel-dir',
+    };
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return {
+          action    => 'search',
         label     => 'search',
         path      => $params->{path},
         type      => 'li',

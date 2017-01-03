@@ -162,7 +162,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		if (event.stopPropagation) event.stopPropagation();
 	};
 	
-	$.toggleFullscreen = function(on) {
+	$.MyFullscreen = { };
+	$.MyFullscreen.toggle = function(on) {
 		var e = document.documentElement;
 		if (on) {
 			if (e.requestFullScreen) e.requestFullScreen();
@@ -178,10 +179,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			else if (document.msExitFullscreen) document.msExitFullscreen();
 		}
 	};
-	$.isFullscreen = function() {
+	$.MyFullscreen.is = function() {
 		return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement ? true : false;
 	}
-	$.addFullscreenChangeListener = function(fn) {
+	$.MyFullscreen.addChangeListener = function(fn) {
 		$(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange", fn);
 	}
 

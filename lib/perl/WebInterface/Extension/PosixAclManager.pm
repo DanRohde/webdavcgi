@@ -36,7 +36,7 @@ sub init {
     my ( $self, $hookreg ) = @_;
 
     $hookreg->register(
-        [qw( css javascript fileactionpopup apps locales posthandler )]
+        [qw( css javascript fileactionpopup apps locales posthandler appsmenu )]
         ,
         $self
     );
@@ -69,7 +69,10 @@ sub handle_hook_fileactionpopup {
         type     => 'li',
         classes  => 'sel-noneorone'
     };
-
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_fileactionpopup($config, $params);
 }
 
 sub handle_hook_apps {
@@ -100,7 +103,7 @@ sub handle_hook_posthandler {
 
 sub _quote_param {
     my ( $self, $v ) = @_;
-    $v =~ s{([\$"\\])}{\\$1}xmsg;
+    $v =~ s{(['\\])}{\\$1}xmsg;
     return $v;
 }
 
@@ -108,8 +111,8 @@ sub _handle_acl_update {
     my ($self) = @_;
     my $c = $self->{cgi};
     my $qfn =
-      $self->_quote_param( $self->{backend}->resolveVirt($PATH_TRANSLATED) );
-    my $recursive = scalar $c->param('recursive') eq 'yes' ? '-R' : q{};
+      $self->_quote_param( $self->_normalize_filename(scalar $c->param('filename')) );
+    my $recursive = $c->param('recursive') && $c->param('recursive') eq 'yes' ? '-R' : q{};
     my $output = q{};
     foreach my $param ( $c->param() ) {
         my $val = join q{}, $self->get_cgi_multi_param($param);
@@ -120,22 +123,22 @@ sub _handle_acl_update {
             my $e = $self->_quote_param($1);
             if ( $val eq 'M' ) {
                 if ( $e =~ /^\S+:$/xms ) {
-                    $cmd = sprintf '%s %s -m "%s:"- -- "%s"',
+                    $cmd = sprintf q{%s %s -m '%s:-' -- '%s'},
                       $self->{setfacl}, $recursive, $e, $qfn;
                 }
                 else {
-                    $cmd = sprintf '%s %s -x "%s" -- "%s"',
+                    $cmd = sprintf q{%s %s -x '%s' -- '%s'},
                       $self->{setfacl}, $recursive, $e, $qfn;
                 }
             }
             else {
                 $val =~ s/M//xmsg;
                 if ( $val =~ /---/xms ) {
-                    $cmd = sprintf '%s %s -m "%s:-" -- "%s"',
+                    $cmd = sprintf q{%s %s -m '%s:-' -- '%s'},
                       $self->{setfacl}, $recursive, $e, $qfn;
                 }
                 else {
-                    $cmd = sprintf '%s %s -m "%s:%s" -- "%s"',
+                    $cmd = sprintf q{%s %s -m '%s:%s' -- '%s'},
                       $self->{setfacl}, $recursive, $e, $val, $qfn;
                 }
             }
@@ -146,11 +149,11 @@ sub _handle_acl_update {
                 $self->get_cgi_multi_param('newaclpermissions') );
             if ( $e && $e =~ /^[rwx\-]+$/xms ) {
                 if ( $e =~ /---/xms ) {
-                    $cmd = sprintf '%s %s -m "%s:-" -- "%s"',
+                    $cmd = sprintf q{%s %s -m '%s:-' -- '%s'},
                       $self->{setfacl}, $recursive, $val, $qfn;
                 }
                 else {
-                    $cmd = sprintf '%s %s -m "%s:%s" -- "%s"',
+                    $cmd = sprintf q{%s %s -m '%s:%s' -- '%s'},
                       $self->{setfacl}, $recursive, $val, $e, $qfn;
                 }
             }
@@ -194,7 +197,7 @@ sub _render_posix_acl_manager {
 
     $content .= $c->start_form(
         -method => 'POST',
-        -action => "$REQUEST_URI$f",
+        -action => $REQUEST_URI,
         -class  => 'pacl form'
     );
     $content .= $c->hidden( -name => 'filename', -value => $f )
@@ -392,8 +395,8 @@ sub _search_group_entry {
 sub _normalize_filename {
     my ( $self, $f ) = @_;
     my $fn = $f;
-    $fn =~ s{/$}{}xms;
-    $fn =~ s{/[^/]+/[.]{2}$}{}xms;
+    $fn =~ s{/}{}xms;
+    $fn =~ s{/[^/]+/[.]{2}}{}xmsg;
     return $self->{backend}->resolveVirt( $PATH_TRANSLATED . $fn );
 }
 

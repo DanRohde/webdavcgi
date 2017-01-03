@@ -1,7 +1,10 @@
 <div id="permissions" title="$tl(mode)">
 <form method="post" action="#">
 <input type="hidden" name="changeperm" value="yes">
-$tl(changefilepermissions)
+<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
+<div>$tl(changefilepermissions)</div>
+<div class="permissions-filename" title="${files}">${files}</div>
+<div>$currentpermissions</div>
 <table>
 <tr>
 	<td>$tl(user)</td>

@@ -53,7 +53,7 @@ sub handle_hook_fileprop {
     my ( $self, $config, $params ) = @_;
     my $c = $self->{redirect};
     my $p = $self->_strip_slash( $params->{path} );
-    return $c && exists $c->{$p}
+    return exists $c->{$p}
       ? {
         'fileuri'      => $c->{$p},
         ext_classes    => 'redirect ',

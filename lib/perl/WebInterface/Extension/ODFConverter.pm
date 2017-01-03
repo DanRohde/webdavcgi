@@ -42,7 +42,7 @@ sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw(
       css      locales javascript fileactionpopup
-      fileattr posthandler
+      fileattr posthandler appsmenu
     );
 
     $self->{ooffice} = $self->config( 'ooffice', '/usr/bin/soffice' );
@@ -63,15 +63,18 @@ sub init {
       q{(?:} . join( q{|}, @{ $self->{types} } ) . q{)};
     $self->{groups} = {
         t => [qw(odt doc docx pdf html)],
-        p => [qw(odp ppt ptx pdf swf)],
+        p => [qw(odp ppt pptx pdf swf)],
         s => [qw(ods xls xlsx csv pdf html)],
     };
     $self->{unconvertible} = q{(?:swf|unknown)};
 
     $self->{popupcss} = '<style>';
     foreach my $group ( keys %{ $self->{groups} } ) {
+        my $groupsregex =join q{|}, @{ $self->{groups}{$group} };
         foreach ( @{ $self->{groups}{$group} } ) {
             $self->{memberof}{$_} .= " c-$group";
+            $self->{targets}{$_} //= q{};
+            $self->{targets}{$_} .= ( $self->{targets}{$_} eq q{} ? q{} : q{|} ) . $groupsregex;
         }
         $self->{popupcss} .= ".c-${group} .c-${group}\{display:list-item\} ";
     }
@@ -105,7 +108,7 @@ sub handle_hook_fileactionpopup {
               . " cs-$_",
             data => { ct => $_ }
         }
-    } @{ $self->{types} };
+    } sort @{ $self->{types} };
     return {
         title   => $self->tl('odfconverter'),
         classes => 'odfconverter',
@@ -113,7 +116,31 @@ sub handle_hook_fileactionpopup {
         popup   => \@popup
     };
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    my @popup = ();
+    foreach my $suffix (sort @{ $self->{types} } ) {
+        if ($suffix =~ /$self->{unconvertible}/xms )  { next; }
+        my $targets = $self->{targets}{$suffix};
+        $targets =~ s/ (?: ^ \b \Q$suffix\E \b [|] | [|] \b \Q$suffix\E \b ) //xmsg; # remove suffix
+        $targets =~ s/ \b ( \w+ ) \b (.*?) [|] \1 /$1$2/xmsg; # remove dublets
+        push @popup, {
+                action => 'odfconvert',
+                label  => $suffix,
+                classes => 'access-writeable sel-one-suffix hideit',
+                type => 'li',
+                data => { ct=>$suffix, suffix => q{^(?:}.$targets.q{)$} },
+        };
+    }
+    return {
+        title => $self->tl('odfconverter'),
+        label => $self->tl('odfconverter'),
+        classes => 'odfconverter sel-one-suffix hideit',
+        data => { suffix => q{(?:}.join(q{|}, @{$self->{types}}).q{)}  },
+        type => 'li',
+        popup => \@popup,
+    };
+}
 sub handle_hook_css {
     my ( $self, $config, $params ) = @_;
     if ( my $ret = $self->SUPER::handle_hook_css( $config, $params ) ) {

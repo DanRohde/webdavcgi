@@ -21,10 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.permissions:hover, .action.permissions:focus {
 	background-image: url(permissions-hover.png);
 }
-#nav .action.permissions {
+#apps > .action.permissions {
 	background-position: 4px center;
 }
-#popupmenu .action.permissions {
+.popup .action.permissions {
 	background-position: 2px 7px;
 }
 .permissions.ui-dialog .ui-dialog-title {
@@ -32,4 +32,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
+}
+.permissions-filename {
+	max-width: 20em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: monospace;
 }

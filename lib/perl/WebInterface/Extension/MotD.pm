@@ -58,7 +58,7 @@ $ACTION = 'motd';
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript posthandler statusbar pref );
+    my @hooks = qw( css locales javascript posthandler statusbar pref appsmenu );
     $hookreg->register( \@hooks, $self );
 
     $self->{json} = JSON->new();
@@ -114,6 +114,10 @@ sub handle_hook_pref {
             type   => 'li',
             attr   => { tabindex=> 0 },
         };
+}
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_pref($config,$params);
 }
 sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;

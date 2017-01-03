@@ -333,8 +333,8 @@ sub _render_file_list_entry {
     $self->_call_fileprop_hook(\%stdvars, $full);
 
     ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
-    $e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
-    return $self->SUPER::render_template( $PATH_TRANSLATED, $REQUEST_URI, $e );
+    #$e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
+    return $self->SUPER::render_template( $PATH_TRANSLATED, $REQUEST_URI, $e, \%stdvars );
 }
 sub _call_fileprop_hook {
     my ($self, $stdvars, $full) = @_;
@@ -345,7 +345,10 @@ sub _call_fileprop_hook {
     if ( defined $fileprop_extensions ) {
         foreach my $ret ( @{$fileprop_extensions} ) {
             if ( ref $ret eq 'HASH' ) {
-                $stdvars->{ keys %{$ret} } = values %{$ret};
+                # $stdvars->{keys %{$ret}} = values %{$ret}; # does not work anymore 
+                foreach (keys %{$ret}) { # or $stdvars = { %{stdvars}, %{$ret} }; # but too much data copy
+                    $stdvars->{$_} = $ret->{$_};
+                }
             }
         }
     }

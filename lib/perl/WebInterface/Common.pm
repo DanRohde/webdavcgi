@@ -429,6 +429,8 @@ sub mode2str {
 
     if ( $self->{backend}->isLink($fn) ) {
         $m = ( $self->{backend}->lstat($fn) )[ $STATIDX{mode} ];
+    } elsif (!defined $m) {
+        $m = ( $self->{backend}->stat($fn))[ $STATIDX{mode} ];
     }
     my @ret = qw( - - - - - - - - - - );
 

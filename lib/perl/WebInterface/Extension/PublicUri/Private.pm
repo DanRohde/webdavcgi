@@ -97,7 +97,7 @@ sub handle_hook_fileattr {
 
 }
 
-sub handle_hook_prop {
+sub handle_hook_fileprop {
     my ( $self, $config, $params ) = @_;
     my $publicuridigest = $self->get_public_uri( ${$params}{path} ) || q{};
     my $publicuri =

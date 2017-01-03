@@ -32,7 +32,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 sub init {
     my ( $self, $hookreg ) = @_;
-    my @hooks = qw( css locales javascript gethandler posthandler );
+    my @hooks = qw( css locales javascript posthandler appsmenu );
     if ( !$self->config( 'disable_fileactionpopup', 0 ) ) {
         push @hooks, 'fileactionpopup';
     }
@@ -55,29 +55,14 @@ sub handle_hook_fileactionpopup {
         template  => $self->config( 'template', 'permissions' )
     };
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return $self->handle_hook_apps($config, $params);
+}
 sub handle_hook_apps {
     my ( $self, $config, $params ) = @_;
     return $self->handle_apps_hook( $self->{cgi}, 'permissions sel-multi',
         'mode', 'mode' );
-}
-
-sub handle_hook_gethandler {
-    my ( $self, $config, $params ) = @_;
-    if ( $self->{cgi}->param('ajax') ) {
-        if ( $self->{cgi}->param('ajax') eq 'getPermissionsDialog' ) {
-            my $content = $self->_render_permissions_dialog(
-                $PATH_TRANSLATED,
-                $REQUEST_URI,
-                $self->{cgi}->param('template')
-                  || $self->config( 'template', 'permissions' )
-            );
-            print_compressed_header_and_content( '200 OK', 'text/html',
-                $content, 'Cache-Control: no-cache, no-store' );
-            return 1;
-        }
-    }
-    return 0;
 }
 
 sub _check_perm_allowed {
@@ -101,12 +86,21 @@ sub _render_permissions_dialog {
     my $content = $self->read_template($tmplfile);
     $content =~
 s/\$disabled[(](\w)(\w)[)]/$self->_check_perm_allowed($1,$2) ? q{} : 'disabled="disabled"'/exmsg;
-    return $self->render_template( $fn, $ru, $content );
+    return $self->render_template( $fn, $ru, $content, { files => $self->{cgi}->escapeHTML(scalar $self->{cgi}->param('files')), currentpermissions => $self->mode2str($PATH_TRANSLATED.$self->{cgi}->param('files')) } );
 }
 
 sub handle_hook_posthandler {
     my ($self) = @_;
-
+    if ( $self->{cgi}->param('ajax') && $self->{cgi}->param('ajax') eq 'getPermissionsDialog' ) {
+        my $content = $self->_render_permissions_dialog(
+                $PATH_TRANSLATED,
+                $REQUEST_URI,
+                $self->{cgi}->param('template')
+                  || $self->config( 'template', 'permissions' )
+            );
+        print_compressed_header_and_content( '200 OK', 'text/html', $content, 'Cache-Control: no-cache, no-store' );
+        return 1;
+    }
     if ( $self->{cgi}->param('changeperm') ) {
         my ( $msg, $msgparam, $errmsg );
         if ( $self->{cgi}->param('files[]') || $self->{cgi}->param('files') ) {

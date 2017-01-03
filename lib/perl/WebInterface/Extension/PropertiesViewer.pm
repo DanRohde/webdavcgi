@@ -37,7 +37,7 @@ use WebDAV::WebDAVProps
 sub init {
     my ( $self, $hookreg ) = @_;
     $hookreg->register(
-        [qw(javascript css posthandler fileaction fileactionpopup)],
+        [qw(javascript css posthandler fileaction fileactionpopup appsmenu)],
         $self
     );
     init_webdav_props();
@@ -56,14 +56,23 @@ sub handle_hook_posthandler {
     }
     return 0;
 }
-
+sub handle_hook_appsmenu {
+    my ( $self, $config, $params ) = @_;
+    return {
+        action => 'props',
+        classes => 'access-readable sel-one hideit',
+        label => $self->tl('showproperties'),
+        type => 'li',
+    };
+}
 sub handle_hook_fileaction {
     my ( $self, $config, $params ) = @_;
     return {
         action   => 'props',
         disabled => !$self->{backend}->isReadable( $params->{path} ),
         label    => 'showproperties',
-        path     => $params->{path}
+        path     => $params->{path},
+        type => 'li',
     };
 }
 

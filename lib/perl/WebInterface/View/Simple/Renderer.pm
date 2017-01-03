@@ -179,32 +179,16 @@ sub render_extension_element {
                 $params{"-$attr"} = ${$a}{attr}{$attr};
             }
         }
-        if ( ${$a}{type} && ${$a}{type} eq 'li' ) {
-            $content .= $self->{cgi}->li(
+        $content .= $self->{cgi}->li(
                 \%params,
                 $self->{cgi}->div(
                     { -class => 'label' }, $self->tl( ${$a}{label} )
-                ) . ( $a->{attr}{accesskey} || $a->{accesskey} || $a->{akavailable} 
-                            ? $self->{cgi}->div({-class=>'accesskey'}, $a->{attr}{accesskey} // $a->{accesskey} // $a->{akavailable}) 
+                ) . ( $a->{attr}{accesskey} || $a->{accesskey} || $a->{akavailable}
+                            ? $self->{cgi}->div({-class=>'accesskey'}, $a->{attr}{accesskey} // $a->{accesskey} // $a->{akavailable})
                             : q{}
                     )
             );
-        }
-        else {
-            $params{-href} = q{#};
-            $params{-data_action} = ${$a}{action} || ${$a}{listaction};
-            $content .= $self->{cgi}->a(
-                \%params,
-                $self->{cgi}->span(
-                    { -class => 'label' }, $self->tl( ${$a}{label} )
-                )
-            );
-            if ( ${$a}{type} && ${$a}{type} eq 'li-a' ) {
-                $content = $self->{cgi}
-                    ->li( { -class => ${$a}{liclasses} || q{} }, $content );
-            }
-        }
-        $content .= ${$a}{posthtml} ? ${$a}{posthtml} : q{};
+        $content .= ${$a}{posthtml} // q{};
     }
     elsif ( ref($a) eq 'ARRAY' ) {
         $content = join q{},
