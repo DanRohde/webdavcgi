@@ -142,6 +142,9 @@ Okay, now we need a <strong>logout button</strong> for the web interface, maybe 
 <pre>
 &lt;li class="logout-button" data-href="?logout=1"&gt;&lt;div class="label"&gt;Logout&lt;/div&gt;&lt;/li&gt;
 </pre>
+
+And if you want to <strong>customize the login screen</strong>, you should copy the login.tmpl to login.custom.tmpl and edit the custom template:
+<pre>cp /etc/webdavcgi/templates/simple/login.tmpl /etc/webdavcgi/templates/simple/login.custom.tmpl</pre>
 </div>
 <h3>Apache</h3>
 The Apache configuration depends on your needs: 
