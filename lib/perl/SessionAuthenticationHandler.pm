@@ -165,8 +165,8 @@ sub _create_token {
 sub _check_token {
     my ($self, $login) = @_;
     my $cgitoken = $self->{cgi}->param($SESSION{tokenname});
-    if ($REQUEST_METHOD ne 'POST') {
-        return 1;
+    if ($REQUEST_METHOD ne 'POST' && !$cgitoken) {
+        return $self->{cgi}->http('Referer') || $self->{cgi}->http('Origin');
     }
     if (!$cgitoken || !$login) {
         my %cgivars = $self->{cgi}->Vars();

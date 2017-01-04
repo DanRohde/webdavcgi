@@ -181,7 +181,7 @@ RewriteRule / /_web [PT,L,E=WEBDAVCONF:/etc/webdav-session.conf,E=PERLLIB:/etc/w
 </pre>
 <h2>Security</h2>
 <ul>
-<li>WebDAV CGI uses POST and sometimes GET requests but all POST requests (includes login process) are protected by secure token (using WWW::CSRF).</li>
+<li>WebDAV CGI uses POST and sometimes GET requests but all POST requests (includes login process) are protected by secure token (using WWW::CSRF and the <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Encrypted_Token_Pattern">Encrypted Token Pattern</a>).</li>
 <li>The secure token changes every time a user change the folder and a token expires in a given time (default: 10 hours).</li>
 <li>The token is protected a by a secret password that must be set by the administrator in the session setup.</li>
 <li>The session file on the server holds the username only. No password is stored by WebDAV CGI. </li>
