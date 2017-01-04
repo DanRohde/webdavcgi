@@ -47,11 +47,11 @@ sub init {
     $self->{editablecategories} = $self->config( 'editablecategories','(?:text|source|shell|config|markup)' );
     $self->{editablefiles} = $self->config(
         'editablefiles',
-        [   '[.](?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|mf|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql|htaccess)(?:\/|$)',
+        [   '\.(?:txt|php|s?html?|tex|inc|cc?|java|hh?|ini|pl|pm|py|css|js|inc|csh|sh|tcl|tk|tex|ltx|sty|cls|vcs|vcf|ics|csv|mml|mf|asc|text|pot|brf|asp|p|pas|diff|patch|log|conf|cfg|sgml|xml|xslt|bat|cmd|wsf|cgi|sql|htaccess)(?:\/|$)',
             '(?:^|\/)(?:readme|changelog|todo|license|gpl|install|author|makefile|configure|notice)\b'
         ]
     );
-    $self->{editablefilesregex} = '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . '|(?:[.]' . join(q{|}, @{$self->_get_extensions_by_category()} ) . ')(?:\/|$))';
+    $self->{editablefilesregex} = '(?:' . join( q{|}, @{ $self->{editablefiles} } ) . '|\.(?:' . join(q{|}, @{$self->_get_extensions_by_category()} ) . ')(?:\/|$))';
 
     $self->{template}  = $self->config( 'template',  'editform' );
     $self->{sizelimit} = $self->config( 'sizelimit', 2_097_152 );
@@ -60,7 +60,7 @@ sub init {
 sub _get_extensions_by_category {
     my ($self) = @_;
     my @ext = ();
-    foreach my $c ( split /\n/xms, $FILETYPES ) {
+    foreach my $c ( split /\r?\n/xms, $FILETYPES ) {
         if ($c=~/^$self->{editablecategories}\s+(.*)$/xms) {
             push @ext, split /\s+/xms, $1;
         }

@@ -261,7 +261,8 @@ sub print_styles_vhtdocs_files {
     }
     if ( open my $f, '<', $file ) {
         my $headerref = print_local_file_header( $nfile, $header );
-        binmode(STDOUT) || carp("Cannot set binmode for $file");
+        binmode($f) || carp("Cannot set binmode for $file");
+        binmode(STDOUT) || carp('Cannot set binmode for STDOUT');
         while ( read $f, my $buffer, $READBUFSIZE ) {
             print($buffer) || carp('Cannot write to STDOUT!');
         }

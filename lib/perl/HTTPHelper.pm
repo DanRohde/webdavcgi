@@ -95,16 +95,14 @@ sub print_header_and_content {
     return 1;
 }
 
-# TODO: solve trouble with utf-8 encoding
 sub _try_compress_with_brotli {
     my ($enc, $header, $contentref) = @_;
     if ($enc =~ /\bbr\b/xmsi) {
         my $cd;
-        eval {
-            require IO::Compress::Brotli;
-            $cd = IO::Compress::Brotli::bro(${$contentref});
-            $header->{'Content-Encoding'} = 'br';
-        } || return;
+        require IO::Compress::Brotli;
+        require Encode;
+        $cd = IO::Compress::Brotli::bro(Encode::decode('UTF-8',${$contentref}));
+        $header->{'Content-Encoding'} = 'br';
         return \$cd;
     }
     return;
@@ -117,11 +115,10 @@ sub print_compressed_header_and_content {
         && ( my $enc = $cgi->http('Accept-Encoding') ) )
     {
         my $orig = $content;
-        #if (defined (my $cdataref = _try_compress_with_brotli($enc, $header, \$content))) {
-        #    $content = ${$cdataref};
-        #}
-        #elsif ( $enc =~ /gzip/xmsi ) {
-        if ( $enc =~ /gzip/xmsi ) {
+        if (defined (my $cdataref = _try_compress_with_brotli($enc, $header, \$content))) {
+            $content = ${$cdataref};
+        }
+        elsif ( $enc =~ /gzip/xmsi ) {
             require IO::Compress::Gzip;
             my $g = IO::Compress::Gzip->new( \$content );
             $g->write($orig);

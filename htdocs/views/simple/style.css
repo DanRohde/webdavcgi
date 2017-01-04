@@ -282,6 +282,7 @@ table,th,td {
 	line-height: 1;
 	flex: 0 0;
 	cursor: pointer;
+	height: 22px;
 }
 .fileactions {
 	background-image: url(images/sprite.png);
