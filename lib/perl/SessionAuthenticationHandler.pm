@@ -170,13 +170,13 @@ sub _check_token {
     }
     if (!$cgitoken || !$login) {
         my %cgivars = $self->{cgi}->Vars();
-        carp("UGGLY POST TO $REQUEST_URI WITHOUT TOKEN:" . join q{, }, map { $_.q{=}.$cgivars{$_} } sort keys %cgivars );
+        carp("UGLY POST TO $REQUEST_URI WITHOUT TOKEN:" . join q{, }, map { $_.q{=}.$cgivars{$_} } sort keys %cgivars );
         return 0;
     }
-    my %warnings = ( 0 => "CSRF token $cgitoken of $login checked successfully.",
-                     1 => "CSRF token $cgitoken of $login is expired.",
-                     2 => "CSRF token $cgitoken of $login has an invalid signature.",
-                     3 => "CSRF token $cgitoken of $login is malformed.",
+    my %warnings = ( 0 => "CSRF token $cgitoken for $login checked successfully.",
+                     1 => "CSRF token $cgitoken for $login is expired.",
+                     2 => "CSRF token $cgitoken for $login has an invalid signature.",
+                     3 => "CSRF token $cgitoken for $login is malformed.",
     );
     my $check = check_csrf_token($login, $SESSION{secret}, $cgitoken, { MaxAge => $SESSION{tokenmaxage} });
     if ( $check != CSRF_OK ) {
