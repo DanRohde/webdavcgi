@@ -376,10 +376,11 @@ sub optimizer_write_content2br {
     if (!eval { require IO::Compress::Brotli }) {
         return 0;
     }
-    require Encode;
     if ( open my $fh, '>', $file) {
         flock( $fh, LOCK_EX ) || carp("Cannot get exclusive lock for $file.");
+        require Encode;
         print {$fh} IO::Compress::Brotli::bro(Encode::decode('UTF-8', ${$contentref}));
+        flock( $fh, LOCK_UN ) || carp("Cannot unlock $file.");
         close($fh) || carp("Cannot close filehandle for $file");
         return 1;
     }
