@@ -247,20 +247,24 @@ sub print_styles_vhtdocs_files {
         $file = $self->optimizer_get_filepath($1);
     }
     $file =~ s{/[.][.]/}{}xmsg;
-    my $compression = !-e $file && -e "$file.gz";
-    my $nfile = $file;
-    if ($compression) { $file = "$nfile.gz"; }
-    no locale;
+    no locale; # strftime needs that
     my $header = {
-        -Expires => strftime( '%a, %d %b %Y %T GMT', gmtime( time + 604_800 ) ),
+        -Expires => strftime( '%a, %d %b %Y %T GMT', gmtime( time + 604_800 ) ), ## caching allowed
         -Vary    => 'Accept-Encoding'
     };
-    if ($compression) {
-        ${$header}{-Content_Encoding} = 'gzip';
-        ${$header}{-Content_Length}   = ( stat $file )[7];
+    my $orig_file = $file;
+    if (! -e $file && ( my $enc = $self->{cgi}->http('Accept-Encoding') ) ) {
+        if ( $enc =~ /\b br \b/xms && -e "${file}.br") {
+            $header->{-Content_Encoding} = 'br';
+            $file .= '.br';
+        } elsif ( $enc =~ /\b gzip \b/xms && -e "${file}.gz" ) {
+            $header->{-Content_Encoding} = 'gzip';
+            $file .= '.gz';
+        }
+        $header->{-Content_Length} = ( stat $file )[7]; # overwrite print_local_file_header
     }
     if ( open my $f, '<', $file ) {
-        my $headerref = print_local_file_header( $nfile, $header );
+        my $headerref = print_local_file_header( $orig_file, $header ); # orig_file for the correct mime type
         binmode($f) || carp("Cannot set binmode for $file");
         binmode(STDOUT) || carp('Cannot set binmode for STDOUT');
         while ( read $f, my $buffer, $READBUFSIZE ) {
@@ -308,46 +312,79 @@ sub optimize_css_and_js {
     return if $self->{isoptimized} || $self->{notoptimized};
     $self->{isoptimized} = 0;
 
-    my $csstargetfile = $self->optimizer_get_filepath('css') . '.gz';
-    my $jstargetfile  = $self->optimizer_get_filepath('js') . '.gz';
-    if (   ( -e $csstargetfile && !-w $csstargetfile )
-        || ( -e $jstargetfile && !-w $jstargetfile ) )
+    my $csstargetfilebase = $self->optimizer_get_filepath('css');
+    my $jstargetfilebase  = $self->optimizer_get_filepath('js');
+    if ( !$self->optimizer_check_target_writable($csstargetfilebase) ||
+         !$self->optimizer_check_target_writable($jstargetfilebase) )
     {
         $self->{notoptimized} = 1;
-        carp(
-"Cannot write optimized CSS and JavaScript to $csstargetfile and/or $jstargetfile"
-        );
+        carp("Cannot write optimized CSS and JavaScript to $csstargetfilebase(.gz|.br) and/or $jstargetfilebase(.gz|.br)");
         return;
     }
-    if (   -r $jstargetfile
-        && -r $csstargetfile
-        && ( stat $jstargetfile )[10] > ( stat $CONFIGFILE )[10] )
+    if ( $self->optimizer_check_target_freshness($csstargetfilebase) &&
+         $self->optimizer_check_target_freshness($jstargetfilebase) )
     {
         $self->{isoptimized} = 1;
         return;
     }
 
     ## collect CSS:
-    my $tags = join "\n",
-      @{ $self->get_extension_manager()->handle('css') // [] };
-    my $content =
-      $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'css' );
+    my $tags = join "\n", @{ $self->get_extension_manager()->handle('css') // [] };
+    my $content = $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'css' );
     if ($content) {
-        $self->optimizer_write_content2zip( $csstargetfile, \$content );
+        $self->optimizer_write_content( $csstargetfilebase, \$content );
     }
 
     ## collect JS:
-    $tags = join "\n",
-      @{ $self->get_extension_manager()->handle('javascript') // [] };
-    $content =
-      $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'js' );
+    $tags = join "\n", @{ $self->get_extension_manager()->handle('javascript') // [] };
+    $content = $self->optimizer_extract_content_from_tags_and_attributes( $tags, 'js' );
     if ($content) {
-        $self->optimizer_write_content2zip( $jstargetfile, \$content );
+        $self->optimizer_write_content( $jstargetfilebase, \$content );
     }
 
     return $self->{isoptimized} = 1;
 }
-
+sub optimizer_check_target_freshness {
+    my ($self, $filebase) = @_;
+    my $conf_age = ( stat $CONFIGFILE )[10];
+    foreach my $s ( qw( gz br ) ) {
+        my $f = "${filebase}.${s}";
+        if ( ! -e $f || ( -r $f  && stat $f )[10] < $conf_age  ) {
+            return 0;
+        }
+    }
+    return 1;
+}
+sub optimizer_check_target_writable {
+    my ($self, $filebase ) = @_;
+    foreach my $s ( qw( gz br ) ) {
+        my $f = "${filebase}.${s}";
+        if ( -e $f && !-w $f ) {
+            return 0;
+        }
+    }
+    return 1;
+}
+sub optimizer_write_content {
+    my ( $self, $filebase, $contentref ) = @_;
+    $self->optimizer_write_content2br("${filebase}.br", $contentref);
+    $self->optimizer_write_content2zip("${filebase}.gz", $contentref);
+    return 1;
+}
+sub optimizer_write_content2br {
+    my ($self, $file, $contentref ) = @_;
+    if (!eval { require IO::Compress::Brotli }) {
+        return 0;
+    }
+    require Encode;
+    if ( open my $fh, '>', $file) {
+        flock( $fh, LOCK_EX ) || carp("Cannot get exclusive lock for $file.");
+        print {$fh} IO::Compress::Brotli::bro(Encode::decode('UTF-8', ${$contentref}));
+        close($fh) || carp("Cannot close filehandle for $file");
+        return 1;
+    }
+    return 0;
+}
 sub optimizer_write_content2zip {
     my ( $self, $file, $contentref ) = @_;
     if ( open my $fh, '>', $file ) {
@@ -394,15 +431,13 @@ sub optimizer_collect {
     my ( $self, $contentref, $filename, $data, $type ) = @_;
     if ($filename) {
         my $full = $filename;
-        $full =~
-s{^.*${VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
+        $full =~ s{^.*${VHTDOCS}_EXTENSION[(](.*?)[)]_(.*)}{${INSTALL_BASE}lib/perl/WebInterface/Extension/$1$2}xmsg;
         $self->{debug}->("collect $type from $full");
         my $fc =
           ( get_local_file_content_and_type($full) )[1];
         if ( $type eq 'css' ) {
             my $basepath = get_parent_uri($full);
-            $fc =~
-s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/exmsig;
+            $fc =~ s/url[(](.*?)[)]/$self->optimizer_encode_image($basepath, $1)/exmsig;
         }
         ${$contentref} .= $fc;
         $self->{debug}->("optimizer_collect: $full collected.");
@@ -414,14 +449,11 @@ sub optimizer_extract_content_from_tags_and_attributes {
     my ( $self, $data, $type ) = @_;
     my $content = q{};
     if ( $type eq 'css' ) {
-        $data =~
-s{<style[^>]*>(.*?)</style>}{$self->optimizer_collect(\$content, undef, $1, $type)}exmsig;
-        $data =~
-s{<link[ ].*?href="(.*?)"}{$self->optimizer_collect(\$content, $1, undef, $type)}exmsig;
+        $data =~ s{<style[^>]*>(.*?)</style>}{$self->optimizer_collect(\$content, undef, $1, $type)}exmsig;
+        $data =~ s{<link[ ].*?href="(.*?)"}{$self->optimizer_collect(\$content, $1, undef, $type)}exmsig;
     }
     else {
-        $data =~
-s{<script[ ].*?src="([^>"]+)".*?>(.*?)</script>}{$self->optimizer_collect(\$content, $1, $2, $type)}exmsig;
+        $data =~ s{<script[ ].*?src="([^>"]+)".*?>(.*?)</script>}{$self->optimizer_collect(\$content, $1, $2, $type)}exmsig;
     }
 
     return $content;

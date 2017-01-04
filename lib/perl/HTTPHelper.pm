@@ -97,9 +97,8 @@ sub print_header_and_content {
 
 sub _try_compress_with_brotli {
     my ($enc, $header, $contentref) = @_;
-    if ($enc =~ /\bbr\b/xmsi) {
+    if ($enc =~ /\bbr\b/xmsi && eval { require IO::Compress::Brotli }) {
         my $cd;
-        require IO::Compress::Brotli;
         require Encode;
         $cd = IO::Compress::Brotli::bro(Encode::decode('UTF-8',${$contentref}));
         $header->{'Content-Encoding'} = 'br';

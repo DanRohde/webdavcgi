@@ -2,7 +2,10 @@
 
 while (( "$#" )) ; do
 	echo $1
-    java -jar /etc/webdavcgi/minify/yuicompressor-2.4.8.jar $1  | gzip -c > ${1%.*}.min.${1##*.}.gz
+    mfn=${1%.*}.min.${1##*.}
+    java -jar /etc/webdavcgi/minify/yuicompressor-2.4.8.jar $1  > $mfn
+    brotli --force --input $mfn --output ${mfn}.br
+    gzip -f $mfn
     shift
 done
 

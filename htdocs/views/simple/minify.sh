@@ -58,6 +58,10 @@ for file in $MYLIBS ; do
         tee -a "${complfile}" < "${file}" >  "${newfile}"
     fi
 done
-test ${DEBUG} -ne 0 && echo "gzip ${COMPLETE}.min.*"
-gzip ${COMPLETE}.min.*
+test ${DEBUG} -ne 0 && echo "(brotli|gzip) ${COMPLETE}.min.*"
+for f in ${COMPLETE}.min.* ; do
+    brotli --input "${f}" --output "${f}.br"
+    gzip "${f}"
+done
+
 exit 0
