@@ -50,8 +50,14 @@ Content of this topic:
 <li> a little bit configuration: Apache setup (see <a href="#installation">Installation</a>) and a <a href="#setup">WebDAV CGI Setup</a></li>
 <li> WebDAV CGI works only with a UNIX/Linux server (Ubuntu 12.04/13.10 recommended, Windows/MacOS-X not tested and not supported) </li>
 </ul>
-
+<p>
 You do not need mod_dav for the Apache Web server. WebDAV CGI replaces mod_dav completely. 
+</p>
+WebDAV CGI supports two authentication schemas:
+<ul>
+<li> Basic authentication as described in the following instruction</li>
+<li> <a href="session.html">Session or form-based authentication</a></li>
+</ul>
 
 <h2 id="installation">Installation</h2>
 <p>Note: All steps are done with root rights.</p>
@@ -812,10 +818,7 @@ ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-afs
 RewriteEngine on
 # RewriteRule ^/logout - [L]
 RewriteRule ^/ /webdavcgi \
-               [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
-	             E=PERLLIB:/etc/webdavcgi/lib/perl,\
-		     E=AUTHHEADER:%{HTTP:Authorization},\
-                     E=TICKET_LIFETIME:82800]
+	[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=AUTHHEADER:%{HTTP:Authorization},E=TICKET_LIFETIME:82800]
 </pre>
 <code>/etc/webdav.conf</code> example: <a href="#afsconf">see next section</a>
 
@@ -844,9 +847,8 @@ Krb5Keytab /etc/webafs.keytab
 
 ScriptAlias /webdavcgi /etc/webdavcgi/webdavwrapper-afs
 RewriteEngine on
-RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
-                                 E=PERLLIB:/etc/webdavcgi/lib/perl, \
-                                 E=TICKET_LIFETIME:82800]
+RewriteRule  ^/ /webdavcgi \
+		[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=TICKET_LIFETIME:82800]
 </pre>
 
 <code id="afsconf">/etc/webdav.conf</code> example:
@@ -994,10 +996,8 @@ AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
 Require valid-user
 
 RewriteEngine on
-RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
-                                E=PERLLIB:/etc/webdavcgi/lib/perl,\
-                                E=AUTHHEADER:%{HTTP:Authorization},\
-                                E=TICKET_LIFETIME:21600]
+RewriteRule ^/ /webdavcgi \
+		[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=AUTHHEADER:%{HTTP:Authorization},E=TICKET_LIFETIME:21600]
 </pre>
 
 <code id="smbconf">/etc/webdav.conf</code> example:
@@ -1110,10 +1110,8 @@ AuthName "Workgroup Account"
 Require valid-user
 
 RewriteEngine on
-RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,\
-                                E=PERLLIB:/etc/webdavcgi/lib/perl,\
-                                E=AUTHHEADER:%{HTTP:Authorization},\
-                                E=SMBWORKGROUP:Workgroup]
+RewriteRule ^/ /webdavcgi \
+		[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=AUTHHEADER:%{HTTP:Authorization},E=SMBWORKGROUP:Workgroup]
 </pre>
 
 <code>/etc/webdav.conf</code> example: <a href="#smbconf">see previous section</a>

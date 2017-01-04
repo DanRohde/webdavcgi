@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="keywords" content="WebDAV CGI session authentication" />
+  <meta name="author" content="Daniel Rohde" />
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <title>WebDAV CGI - Documentation: Session or form-based authentication</title>
+</head>
+
+<body>
+<div id="content">
+
+<h1> Session or form-based authentication</h1>
+<a href="images/webdavcgi-session-login.png"><img src="images/webdavcgi-session-login.png" style="float:right; width: 200px;"></a>
+Pros:
+<ul>
+<li>"real" logout button</li>
+<li>"nice" login screen</li>
+</ul>
+
+Cons:
+<ul>
+<li>user-based setuid/setgid wrapping is not possible (or not easy to implement)</li>
+<li>two different URLs for WebDAV access and web interface with all consequences for setup effort, user support, security</li>
+<li>sessions can be attacked (CRSF, man-in-the-middle, ...) </li>
+<li>a matching authentication handler written in Perl</li>
+<li>additional session files on the server </li>
+</ul>
+
+
+<h2>Requirements</h2>
+
+<ol>
+<li> following the <a href="doc.html#installation">installation documentation</a></li>
+<li> some new Perl modules:
+	<ul>
+	<li> CGI::Session (Debian/Ubuntu: apt install libcgi-session-perl)</li>
+	<li> WWW::CSRF (Debian/Ubuntu: apt install libwww-csrf-perl)</li>
+	</ul>
+</li>
+<li> two configurations for Apache und WebDAV CGI:
+	<ol>
+	<li> web interface needs a session setup</li>
+	<li> WebDAV uses another Perl script</li>
+	</ol>
+</li>
+</ol>
+
+<h2>Setup</h2>
+<h3>WebDAV CGI</h3>
+The WebDAV and the web interface setup differ in two aspects:
+<ul>
+<li> <code>$VIRTUAL_BASE</code> - you need two URLs, so the VIRTUAL_BASE differs</li>
+<li> <code>%SESSION</code> - only the web interface setup and the session.pl wrapper for WebDAV access must have this</li>
+</ul>
+The following setups are additional to the normal <a href="doc.html#setup">WebDAV CGI setup</a> like database, backend, and extension configuration). Hint: You can reuse the WebDAV setup for your web interface setup. 
+
+<div>
+<strong>WebDAV setup:</strong> <code>/etc/webdav.conf</code>:
+<pre>
+...
+
+$VIRTUAL_BASE='/webdav/?';
+
+# additional: disable web interface to prevent misuse:
+$FANCYINDEXING = 0;
+
+# to be sure we have no session setup for the WebDAV access:
+undef %SESSION;
+
+...
+
+</pre>
+</div>
+<div>
+<strong>Web interface setup:</strong> <code>/etc/webdav-session.conf</code>:
+<pre>
+
+## reuse webdav.conf because $INSTALL_BASE, $DOCUMENT_ROOT, $BACKEND, $DBI_... are the same:
+require '/etc/webdav.conf';
+
+$FANCYINDEXING = 1;
+$VIRTUAL_BASE = '/';
+
+%SESSION = (
+	## keep it secret like a database password, because it will be used to protect the CSRF token:
+	secret => 'YOUR SECRET PASSWORD COMES HERE',  
+	
+	## if the session timeout is too short the users cry, is it to long, admin cry (security!):
+	## see manual of CGI::Session for more information 
+	expire => '10m', 
+	
+	## in seconds - normally, tokens a refreshed with a folder change but a tokenmaxage is not a session timeout, so it can live longer
+	tokenmaxage => 36000,
+	
+	## the tokenname should not be changed unless you know you are doing (avoid clashes with form/post parameters):
+	tokenname => 'TOKEN',
+	
+	## here comes the path to the session files 
+	## (hint: seutp a daily cronjob to remove old session files, e.g. find /tmp -name cgisess\* -mtime +1 -delete ) 
+	temp => '/tmp', 
+	
+	## okay, the domain based authentication:
+	domain => {
+		## this domain name should be readable for a user if you have more than one:
+		'mydomain' => {
+		
+			## this is an example, because the TestAuthHandler know only one user: testuser1 (password: testuser1)
+			authhandler => qw( SessionAuthenticationHandler::TestAuthHandler ),
+			
+			## handler setup stuff (TestAuthHandler doesn't need it):
+			config => {
+			
+			},
+		},
+		## if you have more domains and more than one auth handler for a domain you can do the folling
+		'myseconddomain' => [
+			{
+				authhandler => qw ( SessionAuthenticationHandler::LdapBindAuthHandler ),
+				config => {
+					server => 'myldapserver.mydomain.test',
+					basedn => 'dn=mydomain,dn=test',
+				},
+			},
+			{
+				authhandler=> qw ( SessionAuthenticationHandler::LdapBindAuthHandler ),
+				config => {
+					server => 'mysecondldapserver.mydomain.test',
+					basedn => 'dn=mydomain,dn=test',
+				},
+			},
+		],
+	},
+);
+
+# ... and here maybe follows extension setup
+
+</pre>
+
+Okay, now we need a <strong>logout button</strong> for the web interface, maybe like this one: <code>/etc/webdavcgi/templates/simple/help.custom.tmpl</code>:
+<pre>
+&lt;li class="logout-button" data-href="?logout=1"&gt;&lt;div class="label"&gt;Logout&lt;/div&gt;&lt;/li&gt;
+</pre>
+</div>
+<h3>Apache</h3>
+The Apache configuration depends on your needs: 
+<ul>
+<li>with mod_perl or with a simple CGI call ...</li>
+<li>multiple domain needs multiple WebDAV URLs</li>
+</ul>
+
+<pre>
+## yes: session.pl handles WebDAV with Basic authentication:
+ScriptAlias /_dav /etc/webdavcgi/cgi-bin/session.pl
+
+ScriptAlias /_web /etc/webdavcgi/cgi-bin/webdav.pl
+
+<Location /_>
+
+	Require all granted
+
+	# ... mod_perl ...
+</Location>
+
+## WebDAV acccess: it gets its own WEBDAVCONF but the the wrapper needs the web interface setup in SESSIONCONF
+## change E parameter like DOMAIN and REALM as you need
+# the session.pl needs the session configuration, the webdav.conf,
+# and the HTTP header 'Authorization' to handle Basic auth:
+RewriteRule /webdav /_dav \
+    [PT,L,E=E=WEBDAVCONF:/etc/webdav.conf,SESSIONCONF:/etc/webdav-session.conf,E=DOMAIN:mydomain,E=REALM:WebDAV,E=AUTHHEADER:%{HTTP:Authorization},E=PERLLIB:/etc/webdavcgi/lib/perl]
+
+## you see: WEBDAVCONF differs because this is for the web interface:
+RewriteRule / /_web [PT,L,E=WEBDAVCONF:/etc/webdav-session.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
+
+</pre>
+
+</div>
+</body>
+</html>

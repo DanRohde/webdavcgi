@@ -46,6 +46,7 @@ use warnings;
 our $VERSION = '1.0';
 
 use CGI::Carp;
+use CGI::Session;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 
@@ -64,7 +65,6 @@ sub new {
 # 2 : fresh authenticated -> redirect -> exit 
 sub authenticate {
     my ($self) = @_;
-    require CGI::Session;
     my $session = CGI::Session->load('driver:File', $self->{cgi}, {Directory => $SESSION{temp} // '/tmp'});
     if (! defined $session) {
         carp("${self}: ".CGI::Session->errstr());
