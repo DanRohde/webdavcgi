@@ -99,24 +99,31 @@ sub authenticate {
         return $self->_handle_redirect($session, login=>$login, logon=>'session', from=>3);
     }
 
-    my $handler = ref $SESSION{domains}{$domain} eq 'HASH' ? [ $SESSION{domains}{$domain} ] : $SESSION{domains}{$domain};
+    if (my $auth = $self->check_credentials(\%SESSION, $domain, $login, $password)) {
+        # throw old (expired) session away:
+        $self->_remove_session($session);
+        # create a new one:
+        $CGI::Session::IP_MATCH = 1;
+        $session = CGI::Session->new('driver:File', undef, {Directory => $SESSION{temp} // '/tmp'});
+        $session->param('login', $login);
+        $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
+        $session->flush();
+        # redirect because I have to set a new session cookie:
+        return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/xms ? $1 : $REQUEST_URI ));
+    }
+    return $self->_handle_redirect($session, logon=>'failure', login=>$login);
+}
+sub check_credentials {
+    my ($self, $session, $domain, $login, $password) = @_;
+    my $handler = ref $session->{domains}{$domain} eq 'HASH' ? [ $session->{domains}{$domain} ] : $session->{domains}{$domain};
     require Module::Load;
     foreach my $auth ( @{$handler} ) {
         Module::Load::load($auth->{authhandler});
         if ($auth->{authhandler}->check_login($auth->{config} // {}, $login, $password)) {
-            # throw old (expired) session away:
-            $self->_remove_session($session);
-            # create a new one:
-            $CGI::Session::IP_MATCH = 1;
-            $session = CGI::Session->new('driver:File', undef, {Directory => $SESSION{temp} // '/tmp'});
-            $session->param('login', $login);
-            $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
-            $session->flush();
-            # redirect because I have to set a new session cookie:
-            return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/ ? $1 : $REQUEST_URI ));
+            return $auth;
         }
     }
-    return $self->_handle_redirect($session, logon=>'failure', login=>$login);
+    return 0;
 }
 sub _remove_session {
     my ($self, $session) = @_;
@@ -158,7 +165,6 @@ sub _create_token {
 sub _check_token {
     my ($self, $login) = @_;
     my $cgitoken = $self->{cgi}->param($SESSION{tokenname});
-
     if ($REQUEST_METHOD ne 'POST') {
         return 1;
     }
@@ -167,7 +173,6 @@ sub _check_token {
         carp("UGGLY POST TO $REQUEST_URI WITHOUT TOKEN:" . join q{, }, map { $_.q{=}.$cgivars{$_} } sort keys %cgivars );
         return 0;
     }
-    $SESSION{secret} //= 'uP:oh2oo';
     my %warnings = ( 0 => "CSRF token $cgitoken of $login checked successfully.",
                      1 => "CSRF token $cgitoken of $login is expired.",
                      2 => "CSRF token $cgitoken of $login has an invalid signature.",

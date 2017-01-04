@@ -120,7 +120,6 @@ sub handle_hook_appsmenu {
     my ( $self, $config, $params ) = @_;
     my @popup = ();
     foreach my $suffix (sort @{ $self->{types} } ) {
-        if ($suffix =~ /$self->{unconvertible}/xms )  { next; }
         my $targets = $self->{targets}{$suffix};
         $targets =~ s/ (?: ^ \b \Q$suffix\E \b [|] | [|] \b \Q$suffix\E \b ) //xmsg; # remove suffix
         $targets =~ s/ \b ( \w+ ) \b (.*?) [|] \1 /$1$2/xmsg; # remove dublets
