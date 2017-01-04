@@ -254,10 +254,10 @@ sub print_styles_vhtdocs_files {
     };
     my $orig_file = $file;
     if (! -e $file && ( my $enc = $self->{cgi}->http('Accept-Encoding') ) ) {
-        if ( $enc =~ /\b br \b/xms && -e "${file}.br") {
+        if ( $enc =~ /\b br \b/xms && -r "${file}.br") {
             $header->{-Content_Encoding} = 'br';
             $file .= '.br';
-        } elsif ( $enc =~ /\b gzip \b/xms && -e "${file}.gz" ) {
+        } elsif ( $enc =~ /\b gzip \b/xms && -r "${file}.gz" ) {
             $header->{-Content_Encoding} = 'gzip';
             $file .= '.gz';
         }

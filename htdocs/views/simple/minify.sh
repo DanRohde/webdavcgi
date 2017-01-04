@@ -60,7 +60,7 @@ for file in $MYLIBS ; do
 done
 test ${DEBUG} -ne 0 && echo "(brotli|gzip) ${COMPLETE}.min.*"
 for f in ${COMPLETE}.min.* ; do
-    brotli --input "${f}" --output "${f}.br"
+    brotli < "${f}" > "${f}.br"
     gzip "${f}"
 done
 
