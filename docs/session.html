@@ -55,7 +55,7 @@ The WebDAV and the web interface setup differ in two aspects:
 <li> <code>%SESSION</code> - only the web interface setup and the session.pl wrapper for WebDAV access must have this</li>
 </ul>
 The following setups are additional to the normal <a href="doc.html#setup">WebDAV CGI setup</a> like database, backend, and extension configuration. 
-Hint: You can reuse the WebDAV setup for your web interface setup. 
+Hint: You cannot reuse the WebDAV setup for your web interface setup with 'require ...' if you use ModPerl. 
 
 <div>
 <strong>WebDAV setup:</strong> <code>/etc/webdav.conf</code>:
@@ -79,6 +79,7 @@ undef %SESSION;
 <pre>
 
 ## reuse webdav.conf because $INSTALL_BASE, $DOCUMENT_ROOT, $BACKEND, $DBI_... are the same:
+## but if you use ModPerl, it doesn't work
 require '/etc/webdav.conf';
 
 $FANCYINDEXING = 1;

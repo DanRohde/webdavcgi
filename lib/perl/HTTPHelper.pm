@@ -91,8 +91,7 @@ sub print_header_and_content {
 #binmode STDOUT, ":encoding(\U$CHARSET\E)" || carp('Cannot set bindmode for STDOUT.'); # WebDAV works but web doesn't so ignore wide character warnings
     binmode(STDOUT) || carp('Cannot set bindmode for STDOUT.');
     print($cgi->header( \%header ) . $content) || carp('Cannot write header and content to STDOUT.');
-    fix_mod_perl_response( \%header );
-    return 1;
+    return fix_mod_perl_response( \%header );
 }
 
 sub _try_compress_with_brotli {
@@ -209,7 +208,7 @@ sub fix_mod_perl_response {
         $cgi->r->status("${1}00");
     }
 
-    return;
+    return 1;
 }
 
 sub read_request_body {
