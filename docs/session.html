@@ -54,7 +54,8 @@ The WebDAV and the web interface setup differ in two aspects:
 <li> <code>$VIRTUAL_BASE</code> - you need two URLs, so the VIRTUAL_BASE differs</li>
 <li> <code>%SESSION</code> - only the web interface setup and the session.pl wrapper for WebDAV access must have this</li>
 </ul>
-The following setups are additional to the normal <a href="doc.html#setup">WebDAV CGI setup</a> like database, backend, and extension configuration). Hint: You can reuse the WebDAV setup for your web interface setup. 
+The following setups are additional to the normal <a href="doc.html#setup">WebDAV CGI setup</a> like database, backend, and extension configuration. 
+Hint: You can reuse the WebDAV setup for your web interface setup. 
 
 <div>
 <strong>WebDAV setup:</strong> <code>/etc/webdav.conf</code>:
@@ -106,7 +107,7 @@ $VIRTUAL_BASE = '/';
 		## this domain name should be readable for a user if you have more than one:
 		'mydomain' => {
 		
-			## this is an example, because the TestAuthHandler know only one user: testuser1 (password: testuser1)
+			## this is an example, because the TestAuthHandler knows only one user: testuser1 (password: testuser1)
 			authhandler => qw( SessionAuthenticationHandler::TestAuthHandler ),
 			
 			## handler setup stuff (TestAuthHandler doesn't need it):
@@ -120,14 +121,14 @@ $VIRTUAL_BASE = '/';
 				authhandler => qw ( SessionAuthenticationHandler::LdapBindAuthHandler ),
 				config => {
 					server => 'myldapserver.mydomain.test',
-					basedn => 'dn=mydomain,dn=test',
+					basedn => 'dc=mydomain,dc=test',
 				},
 			},
 			{
 				authhandler=> qw ( SessionAuthenticationHandler::LdapBindAuthHandler ),
 				config => {
 					server => 'mysecondldapserver.mydomain.test',
-					basedn => 'dn=mydomain,dn=test',
+					basedn => 'dc=mydomain,dc=test',
 				},
 			},
 		],
