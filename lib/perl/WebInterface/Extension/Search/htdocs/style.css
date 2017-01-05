@@ -123,7 +123,7 @@ input.search.start, input.search.cancel {
 }
 .search.result.entry.duplicates {
 	background-color: #ffaaaa;
-	clear: both;
+	flex: 0 0 100%;
 }
 .search.result.entry.duplicates.limitexceeded {
 	background-color: #ffffaa;
