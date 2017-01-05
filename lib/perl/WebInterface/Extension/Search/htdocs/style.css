@@ -29,12 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .search.dialogpane {
 	display: flex;
 }
-.search.formpanel  {
-	float: left;
-}
-.search.buttonpanel {
-	float: right;
-}
 .search.moreoptions {
 	display: none;
 	clear: both;
@@ -52,6 +46,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .search.resultcontentpane {
 	flex: 1 1 auto;
 	overflow: auto;
+}
+.search.resultcontentpane > div {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-between;
 }
 .search.statusbar {
 	background-color: #ededed;
@@ -92,11 +91,6 @@ input.search.start, input.search.cancel {
 }
 .search.result.entry:hover, .search.result.entry:focus  {
 	background-color: #ededed;
-}
-.search.result.entry.folder,.search.result.entry.file {
-	display: inline-block;
-	float: left;
-	padding-right: 20px;
 }
 .search.result.entry-info {
 	display: inline-block;
@@ -170,4 +164,12 @@ div.search.query {
 }
 input.search.query {
 	flex: 1 1 auto;
+}
+.search-form-and-buttons {
+	display: flex;
+	flex-flow: row no-wrap;
+	justify-content: space-between;
+}
+.search.formpanel {
+	flex: 0.6 1 auto;
 }

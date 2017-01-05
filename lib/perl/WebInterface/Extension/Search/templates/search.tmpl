@@ -10,7 +10,7 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
    $renderSelectedFiles(<input type="hidden" name="files" value="$v"/>)
    
 <div class="search infolders" title="$searchinfolderstitle">$tl(search.searchinfolders): $searchinfolders</div>
-<div>
+<div class="search-form-and-buttons">
 <div class="search formpanel">
 	<div class="search query">
 		$tl(search.query): <input class="search query" type="search" name="query" value=""/> <div class="contexthelp" data-htmltooltip="$inchelp(query)"></div>
@@ -29,12 +29,15 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">
 		
-		<fieldset class="search typeonly">$tl(search.typeonly): 
+		<fieldset class="search typeonly">
+			<div>$tl(search.typeonly): 
 				<label for="search-typeonly-filetype-$."><input type="checkbox" name="filetype" checked="checked" id="search-typeonly-filetype-$.">$tl(search.filetype)</label>   
 				<label for="search-typeonly-foldertype-$."><input type="checkbox" name="foldertype" checked="checked" id="search-typeonly-foldertype-$."/>$tl(search.foldertype)</label>
-				<label for="search-typeonly-linktype-$."><input type="checkbox" name="linktype" checked="checked" id="search-typeonly-linktype-$."/>$tl(search.linktype)</label> 
+				<label for="search-typeonly-linktype-$."><input type="checkbox" name="linktype" checked="checked" id="search-typeonly-linktype-$."/>$tl(search.linktype)</label>
+			</div> 
 		</fieldset>
 		<fieldset class="search size">
+			<div>
 			$tl(search.size):
 			<select name="sizecomparator" class="search-select">
 				<option value="&lt;">&lt;</option>
@@ -47,6 +50,8 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 			<select name="sizeunits" class="search-select">
 				$each#@BYTEUNITORDER#'<option value="$v">$v</option>'#'$view'#
 			</select>
+			</div>
+			<div>
 			$tl(search.time): 
 			<select name="timecomparator" class="search-select">
 				<option value="&gt;=">$tl(search.olderthan)</option>
@@ -62,19 +67,23 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 				<option value="months">$tl(search.months)</option>
 				<option value="years">$tl(search.years)</option>
 			</select>
+			</div>
 		</fieldset>
 		<fieldset class="search daterange">
+			<div>
 			$tl(lastmodified):
 			<label for="search-mstartdate-$.">&ge;</label>
 			<input id="search-mstartdate-$." type="text" size="10" name="mstartdate" class="search-datepicker">
 			<label for="search-menddate-$.">&le;</label>
 			<input id="search-menddate-$." type="text" size="10" name="menddate" class="search-datepicker">
-			
+			</div>
+			<div>
 			$tl(created):
 			<label for="search-cstartdate-$.">&ge;</label>
 			<input id="search-cstartdate-$." type="text" size="10" name="cstartdate" class="search-datepicker">
 			<label for="search-cenddate-$.">&le;</label>
 			<input id="search-cenddate-$." type="text" size="10" name="cenddate" class="search-datepicker">
+			</div>
 		</fieldset>
 		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->
 			<fieldset class="search duplicate"><label for="search-dupsearch-$."><input type="checkbox" name="dupsearch" id="search-dupsearch-$.">$tl(search.duplicatefiles)</label></fieldset>
