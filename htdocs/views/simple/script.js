@@ -1897,7 +1897,7 @@ function initToolBox() {
 }
 function initGuide() {
 	$.fn.MyTooltip.defaults.helphandler = handleGuide;
-	$(".contexthelp").MyTooltip({delay:0,showtimeout:-1,hidetimeout:-1});
+	$(".contexthelp").MyContextHelp();
 	$(".action.guide").click(function() {
 		handleGuide.call(this, $(this).data("help"));
 	});

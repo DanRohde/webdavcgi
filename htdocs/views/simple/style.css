@@ -1564,6 +1564,8 @@ tr:focus .action.changeuri {
 
 .contexthelp {
 	display: inline-block;
+	margin: 0 0 0 -2px;
+	
 	border: 1px solid #ddd;
 	border-radius: 4px;
 	font-size: 0.8em;

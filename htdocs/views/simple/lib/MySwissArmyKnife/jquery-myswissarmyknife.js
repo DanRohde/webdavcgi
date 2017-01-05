@@ -181,9 +181,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	};
 	$.MyFullscreen.is = function() {
 		return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement ? true : false;
-	}
+	};
 	$.MyFullscreen.addChangeListener = function(fn) {
 		$(document).on("webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange", fn);
-	}
+	};
+	$.fn.MyContextHelp = function() {
+		return this.MyTooltip({delay:0,showtimeout:-1,hidetimeout:-1});
+	};
 
 }( jQuery ));

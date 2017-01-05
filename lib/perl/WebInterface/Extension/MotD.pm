@@ -82,6 +82,9 @@ sub _get_motd_and_timestamp {
         return ( $self->{motdmessage}, Digest::MD5::md5_hex($self->{motdmessage}) );
     }
     my $motdfn = $self->_get_motd_filename();
+    if (!$motdfn) {
+        return ( undef, 0);
+    }
     my $stat = stat2h(stat $motdfn);
     return ( (get_local_file_content_and_type($motdfn))[1], $stat->{mtime});
 }

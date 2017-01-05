@@ -4,40 +4,41 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 
 </script>
 <form method="post" action="#" class="search-form">
-	<input type="hidden" name="action" value="search"/>
-	<input type="hidden" class="search id" name="searchid" value="$getSearchId()"/>
+	<input type="hidden" name="action" value="search">
+	<input type="hidden" class="search id" name="searchid" value="$getSearchId()">
 	<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
-   $renderSelectedFiles(<input type="hidden" name="files" value="$v"/>)
+   $renderSelectedFiles(<input type="hidden" name="files" value="$v">)
    
 <div class="search infolders" title="$searchinfolderstitle">$tl(search.searchinfolders): $searchinfolders</div>
 <div class="search-form-and-buttons">
 <div class="search formpanel">
 	<div class="search query">
-		$tl(search.query): <input class="search query" type="search" name="query" value=""/> <div class="contexthelp" data-htmltooltip="$inchelp(query)"></div>
+		$tl(search.query): <input class="search query" type="search" name="query" value=""> <div class="contexthelp" data-htmltooltip="$inchelp(query)"></div>
 	</div>
-	<div class="search filenamesearch">		
-			<input type="radio" name="searchin" value="filename" checked="checked" id="search-searchin-filename-$."/><label for="search-searchin-filename-$.">$tl(search.filenameoption)</label>
+	<div class="search filenamesearch">
+			<label><input type="radio" name="searchin" value="filename" checked="checked">$tl(search.filenameoption)</label>	
 			<!--IF("$extconfig(allow_contentsearch)" eq "1")-->
-				<input type="radio" name="searchin" value="content" id="search-searchin-content-$."/>
-				<span>
+			<label>
+				<input type="radio" name="searchin" value="content">
 			<!--ELSE-->
-				<input type="radio" name="searchin" value="content" id="search-searchin-content-$." disabled="disabled"/>
-				<span class="search disabled">
+			<label class="search disabled">
+				<input type="radio" name="searchin" value="content" disabled="disabled">
 			<!--ENDIF-->
-			<label for="search-searchin-content-$.">$tl(search.contentoption)</label></span>
+				$tl(search.contentoption)
+			</label>
 	</div>
 	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">
 		
 		<fieldset class="search typeonly">
 			<div>$tl(search.typeonly): 
-				<label for="search-typeonly-filetype-$."><input type="checkbox" name="filetype" checked="checked" id="search-typeonly-filetype-$.">$tl(search.filetype)</label>   
-				<label for="search-typeonly-foldertype-$."><input type="checkbox" name="foldertype" checked="checked" id="search-typeonly-foldertype-$."/>$tl(search.foldertype)</label>
-				<label for="search-typeonly-linktype-$."><input type="checkbox" name="linktype" checked="checked" id="search-typeonly-linktype-$."/>$tl(search.linktype)</label>
+				<label><input type="checkbox" name="filetype" checked="checked">$tl(search.filetype)</label>   
+				<label><input type="checkbox" name="foldertype" checked="checked">$tl(search.foldertype)</label>
+				<label><input type="checkbox" name="linktype" checked="checked">$tl(search.linktype)</label>
 			</div> 
 		</fieldset>
 		<fieldset class="search size">
-			<div>
+			<label>
 			$tl(search.size):
 			<select name="sizecomparator" class="search-select">
 				<option value="&lt;">&lt;</option>
@@ -50,15 +51,15 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 			<select name="sizeunits" class="search-select">
 				$each#@BYTEUNITORDER#'<option value="$v">$v</option>'#'$view'#
 			</select>
-			</div>
-			<div>
+			</label>
+			<label>
 			$tl(search.time): 
 			<select name="timecomparator" class="search-select">
 				<option value="&gt;=">$tl(search.olderthan)</option>
 				<option value="&lt;=">$tl(search.newerthan)</option>
 			</select>
 			<input class="search-timecomparator" type="number" name="time" min="0" step="1"/>
-			<select name="timeunits" class="search-select search-time-units" id="search-time-units-$.">
+			<select name="timeunits" class="search-select search-time-units">
 				<option value="seconds">$tl(search.seconds)</option>
 				<option value="minutes">$tl(search.minutes)</option>
 				<option value="hours">$tl(search.hours)</option>
@@ -67,26 +68,27 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 				<option value="months">$tl(search.months)</option>
 				<option value="years">$tl(search.years)</option>
 			</select>
-			</div>
+			</label>
 		</fieldset>
 		<fieldset class="search daterange">
 			<div>
-			$tl(lastmodified):
-			<label for="search-mstartdate-$.">&ge;</label>
-			<input id="search-mstartdate-$." type="text" size="10" name="mstartdate" class="search-datepicker">
-			<label for="search-menddate-$.">&le;</label>
-			<input id="search-menddate-$." type="text" size="10" name="menddate" class="search-datepicker">
+				$tl(lastmodified):
+				<label>&ge; <input type="text" size="10" name="mstartdate" class="search-datepicker"></label>
+				<label>&le; <input type="text" size="10" name="menddate" class="search-datepicker"></label>
 			</div>
 			<div>
-			$tl(created):
-			<label for="search-cstartdate-$.">&ge;</label>
-			<input id="search-cstartdate-$." type="text" size="10" name="cstartdate" class="search-datepicker">
-			<label for="search-cenddate-$.">&le;</label>
-			<input id="search-cenddate-$." type="text" size="10" name="cenddate" class="search-datepicker">
+				$tl(created):
+				<label>&ge; <input type="text" size="10" name="cstartdate" class="search-datepicker"></label>
+				<label>&le; <input type="text" size="10" name="cenddate" class="search-datepicker"></label>
 			</div>
 		</fieldset>
 		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->
-			<fieldset class="search duplicate"><label for="search-dupsearch-$."><input type="checkbox" name="dupsearch" id="search-dupsearch-$.">$tl(search.duplicatefiles)</label></fieldset>
+			<fieldset class="search duplicate">
+				<label>
+					<input type="checkbox" name="dupsearch">$tl(search.duplicatefiles)
+					<span class="contexthelp" data-htmltooltip="$inchelp(duplicates)"></span>
+				</label>
+			</fieldset>
 		<!--ENDIF-->
 	</div>
 </div>
@@ -97,6 +99,7 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 </div>
 <div class="search resultpanel">
 	<div class="search statusbar"> </div>
+	<div class="search-result-thumb-view-toggle-button" title="$tl(search.togglethumbview)"></div>
 	<div class="search resultcontentpane">$tl(search.noresult)</div>
 	
 </div>

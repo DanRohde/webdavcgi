@@ -119,13 +119,13 @@ sub handle_hook_posthandler {
     if ( $action eq 'search' ) {
         return $self->_handle_search();
     }
-    elsif ( $action eq 'getSearchForm' ) {
+    if ( $action eq 'getSearchForm' ) {
         return $self->_get_search_form();
     }
-    elsif ( $action eq 'getSearchResult' ) {
+    if ( $action eq 'getSearchResult' ) {
         return $self->_get_search_result();
     }
-    elsif ( $action eq 'opensearch' ) {
+    if ( $action eq 'opensearch' ) {
         return $self->_print_open_search();
     }
 
@@ -406,8 +406,11 @@ sub _compare_vals {
     }
     if ( $op eq q{<=>} ) { return $v1 <=> $v2; }
     if ( $op eq q{<} )   { return $v1 < $v2; }
+    if ( $op eq q{<=} )  { return $v1 <= $v2; }
     if ( $op eq q{=} || $op eq q{==} ) { return $v1 == $v2; }
+    if ( $op eq q{>=} )  { return $v1 >= $v2; }
     if ( $op eq q{>} )   { return $v1 > $v2; }
+
     if ( $op eq q{cmp} ) { return $v1 cmp $v2; }
     if ( $op eq q{lt} )  { return $v1 lt $v2; }
     if ( $op eq q{eq} )  { return $v1 eq $v2; }

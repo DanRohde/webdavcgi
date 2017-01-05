@@ -240,8 +240,8 @@ sub _replace_std_template_vars {
     my ($self, $tref, $ru, $v) = @_;
     my $vars = $self->_get_std_template_vars($ru, $v);
 
-    ${$tref} =~ s{\$\[(\w+)\]}{ $vars->{$1} // "\$$1"}exmsg;
-    ${$tref} =~ s{\$\{?(\w+)\}?}{ $vars->{$1} // "\$$1"}exmsg;
+    ${$tref} =~ s{\$\[([\w.]+)\]}{ $vars->{$1} // "\$$1"}exmsg;
+    ${$tref} =~ s{\$\{?([\w.]+)\}?}{ $vars->{$1} // "\$$1"}exmsg;
 
     ${$tref} =~ s/\$\{?ENV\{([^}]+?)}}?/$ENV{$1}/exmsg;
     my $clockfmt = $self->tl('vartimeformat');
