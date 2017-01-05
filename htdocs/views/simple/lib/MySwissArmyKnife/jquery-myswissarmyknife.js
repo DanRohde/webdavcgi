@@ -141,7 +141,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}, dataType);
 		return xhr;
 	};
-	
+
 	$.MyCookie = function(name,val,expires) {
 		var date = new Date();
        	date.setTime(date.getTime() + 315360000000);

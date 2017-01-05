@@ -182,6 +182,6 @@ sub _check_token {
     if ( $check != CSRF_OK ) {
         carp($warnings{$check});
     }
-    return $check == CSRF_OK ? 1 : 0;
+    return $check == CSRF_OK;
 }
 1;

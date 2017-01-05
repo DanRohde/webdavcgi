@@ -50,13 +50,13 @@ sub get_login_password {
 
 sub letsplay {
 
-    my $conf = $ENV{SESSIONCONF} // '/etc/webdavcgi-session.conf';
+    my $conf = $ENV{SESSIONCONF} // '/etc/webdav-session.conf';
     my $domain = $ENV{DOMAIN} // 'default';
     my $authheader = $ENV{AUTHHEADER};
 
     require $conf;
 
-    $REALM //= $ENV{REALM} // 'WebDAVCGI Login';
+    $REALM //= $ENV{REALM} // $domain;
 
     if (!$authheader) {
         send_auth_required_response();

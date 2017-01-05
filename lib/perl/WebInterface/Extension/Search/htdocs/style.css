@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(search-hover.png);
 }
 .search.dialogpane {
-	min-width: 600px;
+	display: flex;
 }
 .search.formpanel  {
 	float: left;
@@ -41,15 +41,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	margin-bottom: 8px;
 }
 .search.resultpanel {
-	min-height: 350px; 
+	min-height: 10ex; 
 	border: 2px inset #999999;
-	clear: both;
+	flex: 1 1 auto;
+	display: flex;
+	flex-flow: column;
+	justify-content: flex-start;
 	
 }
 .search.resultcontentpane {
-	max-height: 750px;
+	flex: 1 1 auto;
 	overflow: auto;
-	min-width: 750px;
 }
 .search.statusbar {
 	background-color: #ededed;
@@ -79,12 +81,22 @@ input.search.start, input.search.cancel {
 .search.query, .search.typeonly, .search.infolders, .search.size, .search.duplicate {
 	margin-bottom: 8px;
 }
+.search fieldset {
+	border: 1px solid #ddd;
+	padding: 2px 4px;
+	margin: 0;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+}
 .search.result.entry:hover, .search.result.entry:focus  {
 	background-color: #ededed;
 }
 .search.result.entry.folder,.search.result.entry.file {
 	display: inline-block;
 	float: left;
+	padding-right: 20px;
 }
 .search.result.entry-info {
 	display: inline-block;
@@ -93,7 +105,7 @@ input.search.start, input.search.cancel {
 }
 .search.result.entry.label {
 	display: inline-block;
-	width: 20ex;
+	width: 40ex;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -144,4 +156,18 @@ input.search.start, input.search.cancel {
 }
 .search-size, .search-timecomparator {
 	width: 5em;
+}
+.search-form {
+	display: flex;
+	flex-flow: column;
+	justify-content: flex-start;
+	flex: 1 1 auto;
+}
+div.search.query {
+	display: flex;
+	flex-flow: row;
+	jusitry-content: flex-start;
+}
+input.search.query {
+	flex: 1 1 auto;
 }

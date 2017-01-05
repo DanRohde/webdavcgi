@@ -1,7 +1,9 @@
 <div id="viewfilter" title="$tl(filter.title)">
 <form method="post" action="#">
 <div>
+<fieldset class="viewfilter">
 $tl(filter.name.title) $tl(filter.name.showonly) 
+<div>
 <select name="filter.name.op">
 <option $selected(filter.name.op:=~) value="=~">$tl(filter.name.regexmatch)</option>
 <option $selected(filter.name.op:^)  value="^">$tl(filter.name.startswith)</option>
@@ -15,13 +17,18 @@ $tl(filter.name.title) $tl(filter.name.showonly)
 </select>
 <input type="text" size="20" name="filter.name.val" value="$filter.name.val"/>
 </div>
+</fieldset>
+</div>
 <div>
+<fieldset class="viewfilter">
 $tl(filter.types.title) $tl(filter.types.showonly)
 <input $checked(filter.types:f) type="checkbox" name="filter.types" value="f">$tl(filter.types.files) </input>
 <input $checked(filter.types:d) type="checkbox" name="filter.types" value="d">$tl(filter.types.folder)</input>
 <input $checked(filter.types:l) type="checkbox" name="filter.types" value="l">$tl(filter.types.links)</input>
+</fieldset>
 </div>
 <div>
+<fieldset class="viewfilter">
 $tl(filter.size.title) $tl(filter.size.showonly)
 <select name="filter.size.op">
 <option $selected(filter.size.op:<) value="<">&lt;</option>
@@ -39,6 +46,7 @@ $tl(filter.size.title) $tl(filter.size.showonly)
 <option $selected(filter.size.unit:TB)>TB</option>
 <option $selected(filter.size.unit:PB)>PB</option>
 </select>
+</fieldset>
 </div>
 <div>
 <div class="left filter-reset">$tl(filter.reset)</div>

@@ -3,13 +3,14 @@
 $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNAMES], monthNamesShort : [$MONTHNAMESABBR], dayNames : [$DAYNAMES], dayNamesShort : [$DAYNAMESABBR], dayNamesMin : [$DAYNAMESMIN], dateFormat : "$DATEFORMAT" });
 
 </script>
-<form method="post" action="#">
+<form method="post" action="#" class="search-form">
 	<input type="hidden" name="action" value="search"/>
 	<input type="hidden" class="search id" name="searchid" value="$getSearchId()"/>
 	<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
    $renderSelectedFiles(<input type="hidden" name="files" value="$v"/>)
    
 <div class="search infolders" title="$searchinfolderstitle">$tl(search.searchinfolders): $searchinfolders</div>
+<div>
 <div class="search formpanel">
 	<div class="search query">
 		$tl(search.query): <input class="search query" type="search" name="query" value=""/> <div class="contexthelp" data-htmltooltip="$inchelp(query)"></div>
@@ -27,12 +28,13 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 	</div>
 	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">
-		<div class="search typeonly">$tl(search.typeonly): 
-				<input type="checkbox" name="filetype" checked="checked" id="search-typeonly-filetype-$."><label for="search-typeonly-filetype-$.">$tl(search.filetype)</label>   
-				<input type="checkbox" name="foldertype" checked="checked" id="search-typeonly-foldertype-$."/><label for="search-typeonly-foldertype-$.">$tl(search.foldertype)</label>
-				<input type="checkbox" name="linktype" checked="checked" id="search-typeonly-linktype-$."/><label for="search-typeonly-linktype-$.">$tl(search.linktype)</label> 
-		</div>
-		<div class="search size">
+		
+		<fieldset class="search typeonly">$tl(search.typeonly): 
+				<label for="search-typeonly-filetype-$."><input type="checkbox" name="filetype" checked="checked" id="search-typeonly-filetype-$.">$tl(search.filetype)</label>   
+				<label for="search-typeonly-foldertype-$."><input type="checkbox" name="foldertype" checked="checked" id="search-typeonly-foldertype-$."/>$tl(search.foldertype)</label>
+				<label for="search-typeonly-linktype-$."><input type="checkbox" name="linktype" checked="checked" id="search-typeonly-linktype-$."/>$tl(search.linktype)</label> 
+		</fieldset>
+		<fieldset class="search size">
 			$tl(search.size):
 			<select name="sizecomparator" class="search-select">
 				<option value="&lt;">&lt;</option>
@@ -60,8 +62,8 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 				<option value="months">$tl(search.months)</option>
 				<option value="years">$tl(search.years)</option>
 			</select>
-		</div>
-		<div class="search daterange">
+		</fieldset>
+		<fieldset class="search daterange">
 			$tl(lastmodified):
 			<label for="search-mstartdate-$.">&ge;</label>
 			<input id="search-mstartdate-$." type="text" size="10" name="mstartdate" class="search-datepicker">
@@ -73,15 +75,16 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 			<input id="search-cstartdate-$." type="text" size="10" name="cstartdate" class="search-datepicker">
 			<label for="search-cenddate-$.">&le;</label>
 			<input id="search-cenddate-$." type="text" size="10" name="cenddate" class="search-datepicker">
-		</div>
+		</fieldset>
 		<!--IF( "$extconfig(disable_dupsearch)" != "1")-->
-			<div class="search duplicate"><input type="checkbox" name="dupsearch" id="search-dupsearch-$."><label for="search-dupsearch-$.">$tl(search.duplicatefiles)</label></div>
+			<fieldset class="search duplicate"><label for="search-dupsearch-$."><input type="checkbox" name="dupsearch" id="search-dupsearch-$.">$tl(search.duplicatefiles)</label></fieldset>
 		<!--ENDIF-->
 	</div>
 </div>
 <div class="search buttonpanel">
 	<div><input class="search start" type="submit" name="search" value="$tl(search.startsearch)"/></div>
 	<div><input class="search cancel" type="button" name="cancel" value="$tl(search.cancelsearch)"/></div>
+</div>
 </div>
 <div class="search resultpanel">
 	<div class="search statusbar"> </div>

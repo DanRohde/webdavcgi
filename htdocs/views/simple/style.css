@@ -807,6 +807,11 @@ td.center {
 	font-size: 0.8em;
 	padding-left: 1.3em;
 }
+fieldset.viewfilter {
+	border: 1px solid #ddd;
+	padding: 5px;
+	margin: 5px;
+}
 
 .langswitch {
 	position: fixed;
