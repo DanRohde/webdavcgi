@@ -84,7 +84,7 @@ sub authenticate {
     if ($REMOTE_USER = $session->param('login')) { ## login exists
         if ($self->{cgi}->param('logout')) { ## logout requested
             $self->_logout($session);
-            return $self->_handle_goto_login($session);
+            return $self->_handle_logout_redir($session) || $self->_handle_goto_login($session);
         }
         if ($self->_check_token($REMOTE_USER) && $self->_check_session($session)) {
             $ENV{REMOTE_USER} = $REMOTE_USER;
@@ -112,7 +112,7 @@ sub authenticate {
         $session->param('login', $login);
         $session->param('domain', $domain);
         $session->param('handleridx', $auth->{_handleridx});
-        $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
+        $session->expire($auth->{expire} // $SESSION{expire});
         $session->flush();
         # redirect because I have to set a new session cookie:
         return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/xms ? $1 : $REQUEST_URI ));
@@ -196,6 +196,15 @@ sub _handle_goto_login {
     $self->_create_token('LOGIN', 1);
     return 0;
 }
+sub _handle_logout_redir {
+    my ($self, $session) = @_;
+    if ($SESSION{logout_redir}) {
+        $self->_remove_session($session);
+        print_compressed_header_and_content('302 Redirect','text/html', q{}, {-location=>$SESSION{logout_redir}});
+        return 2;
+    }
+    return 0;
+}
 sub _handle_redirect {
     my ($self, $session, %query) = @_;
     $self->_remove_session($session);
@@ -212,6 +221,7 @@ sub _set_defaults {
     $SESSION{tokenname} //= 'TOKEN';
     $SESSION{secret} //= 'uP:oh2oo';
     $SESSION{tokenmaxage} //= 36000;
+    $SESSION{expire} //= '+10m';
     return;
 }
 sub _create_token {

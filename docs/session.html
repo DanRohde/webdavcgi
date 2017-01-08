@@ -83,7 +83,6 @@ $REDIRECT_TO = '/';
 undef %SESSION;
 
 ...
-
 </pre>
 </div>
 <div>
@@ -99,44 +98,52 @@ $VIRTUAL_BASE = '/';
 
 %SESSION = (
 	## keep it secret like a database password, because it will be used to protect the CSRF token:
-	secret => 'YOUR SECRET PASSWORD COMES HERE',  
-	
+	secret => 'YOUR SECRET PASSWORD COMES HERE',
+
 	## if the session timeout is too short the users cry, is it to long, admin cries (security!):
 	## see manual of CGI::Session for more information 
-	expire => '10m', 
-	
+	expire => '+10m',
+
 	## in seconds - normally, tokens a refreshed with a folder change but a tokenmaxage is not a session timeout, so it can live longer
 	tokenmaxage => 36000,
-	
+
 	## the tokenname should not be changed unless you know you are doing (avoid clashes with form/post parameters):
 	tokenname => 'TOKEN',
-	
+
 	## here comes the path to the session files 
 	## (hint: setup a daily cronjob to remove old session files, e.g. find /tmp -name cgisess\* -mtime +1 -delete ) 
-	temp => '/tmp', 
-	
+	temp => '/tmp',
+
+	## logout_redir defines a URL to an alternate logout page
+	# (only for regular logout with logout button [query: ?logout=1])
+	# hint: on a multi domain setup it makes sense to redirect to the start path, e.g. logout_redir=>'/?logout=1',
+	# logout_redir => undef,
+
 	## okay, the domain based authentication:
 	domain => {
 		## this domain name should be readable for a user if you have more than one:
 		'mydomain' => {
-		
+
 			## this is an example, because the TestAuthHandler knows only one user: testuser1 (password: testuser1)
 			## (see Authentication handler section for more)
 			authhandler => qw( SessionAuthenticationHandler::TestAuthHandler ),
-			
+
 			## handler setup stuff (TestAuthHandler doesn't need it):
 			#config => { },
-			
+
 			## this defaults overwrite some webdav.conf defaults:
 			#defaults => {
 			#	DOCUMENT_ROOT => '/somewhereelse/',
 			#	BACKEND => 'GFS',
 			#},
-			
+
+			## domain based session timeout overwrites expire from %SESSION:
+			# expire => '+10m',
+
 			## a callback module that is called per request 
 			# callback => qw( Helper::AdsSmbConfiguratorSessionAdapter ),
 			# callback_param => { debug=>1, nameserver=>['8.8.8.8'], memcached=>'127.0.0.1:11211', allowflag=>'webfiles' }, 
-			
+
 			# this optional _order flag influences the domain selection sort order in the login form:
 			_order => 1,
 		},
