@@ -87,6 +87,7 @@ sub authenticate {
             return $self->_handle_goto_login($session);
         }
         if ($self->_check_token($REMOTE_USER) && $self->_check_session($session)) {
+            $ENV{REMOTE_USER} = $REMOTE_USER;
             $self->_create_token($REMOTE_USER);
             $self->set_domain_defaults($self->_get_auth($session));
             return 1;
@@ -142,6 +143,11 @@ sub set_domain_defaults {
                 carp("set_domain_defaults: unknown default $k (ref=".ref($dref).q{)});
             }
         }
+    }
+    if ($auth->{callback}) {
+        require Module::Load;
+        Module::Load::load($auth->{callback});
+        $auth->{callback}->init($auth->{callback_param});
     }
     return;
 }

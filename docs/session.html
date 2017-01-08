@@ -125,14 +125,18 @@ $VIRTUAL_BASE = '/';
 			authhandler => qw( SessionAuthenticationHandler::TestAuthHandler ),
 			
 			## handler setup stuff (TestAuthHandler doesn't need it):
-			config => {
+			#config => { },
 			
-			},
 			## this defaults overwrite some webdav.conf defaults:
-			defaults => {
-				DOCUMENT_ROOT => '/somewhereelse/',
-				BACKEND => 'GFS',
-			},
+			#defaults => {
+			#	DOCUMENT_ROOT => '/somewhereelse/',
+			#	BACKEND => 'GFS',
+			#},
+			
+			## a callback module that is called per request 
+			# callback => qw( Helper::AdsSmbConfiguratorSessionAdapter ),
+			# callback_param => { debug=>1, nameserver=>['8.8.8.8'], memcached=>'127.0.0.1:11211', allowflag=>'webfiles' }, 
+			
 			# this optional _order flag influences the domain selection sort order in the login form:
 			_order => 1,
 		},
