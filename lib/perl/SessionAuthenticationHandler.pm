@@ -88,6 +88,7 @@ sub authenticate {
         }
         if ($self->_check_token($REMOTE_USER) && $self->_check_session($session)) {
             $ENV{REMOTE_USER} = $REMOTE_USER;
+            $ENV{SESSION_DOMAIN} = $session->param('domain').q{-}.$session->param('handleridx'); ## for msg/js/css caching
             $self->_create_token($REMOTE_USER);
             $self->set_domain_defaults($self->_get_auth($session));
             return 1;

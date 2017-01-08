@@ -100,11 +100,12 @@ $VIRTUAL_BASE = '/';
 	## keep it secret like a database password, because it will be used to protect the CSRF token:
 	secret => 'YOUR SECRET PASSWORD COMES HERE',
 
-	## if the session timeout is too short the users cry, is it to long, admin cries (security!):
+	## if the session timeout is too short, the users cry, if it's to long, admin cries (security!):
 	## see manual of CGI::Session for more information 
 	expire => '+10m',
 
-	## in seconds - normally, tokens a refreshed with a folder change but a tokenmaxage is not a session timeout, so it can live longer
+	## in seconds - normally, tokens a refreshed with a folder change,
+	## but a tokenmaxage is not a session timeout, so it should live longer:
 	tokenmaxage => 36000,
 
 	## the tokenname should not be changed unless you know you are doing (avoid clashes with form/post parameters):

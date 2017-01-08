@@ -301,7 +301,7 @@ sub optimizer_is_optimized {
 sub optimizer_get_filepath {
     my ( $self, $ft ) = @_;
     my $tmp = $OPTIMIZERTMP || $THUMBNAIL_CACHEDIR || '/var/tmp';
-    my $optimizerbasefn = "${CONFIGFILE}_${RELEASE}_${REMOTE_USER}";
+    my $optimizerbasefn = sprintf '%s-%s-%s-%s', $CONFIGFILE, $RELEASE, $REMOTE_USER, $ENV{SESSION_DOMAIN} // q{0};
     $optimizerbasefn =~ s{[/.]}{_}xmsg;
     my $optimizerbase = $tmp . q{/} . $optimizerbasefn;
     return "${optimizerbase}.$ft";

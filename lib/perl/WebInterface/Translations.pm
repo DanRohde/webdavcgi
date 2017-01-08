@@ -59,9 +59,8 @@ sub _replace_syms {
 
 sub _get_translation_tmpfilename {
     my ($lang) = @_;
-    return
-      "$OPTIMIZERTMP/"
-      . _replace_syms("$CONFIGFILE-$RELEASE-$REMOTE_USER-$lang") . '.msg';
+    my $tmpbasefn = sprintf '%s-%s-%s-%s-%s', $CONFIGFILE, $RELEASE, $REMOTE_USER, $ENV{SESSION_DOMAIN} // q{0}, $lang;
+    return "$OPTIMIZERTMP/". _replace_syms($tmpbasefn) . '.msg';
 }
 
 sub _load_translation {
