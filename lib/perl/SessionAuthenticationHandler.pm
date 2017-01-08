@@ -88,7 +88,7 @@ sub authenticate {
         }
         if ($self->_check_token($REMOTE_USER) && $self->_check_session($session)) {
             $self->_create_token($REMOTE_USER);
-            $DOCUMENT_ROOT = $session->param('DOCUMENT_ROOT');
+            $self->set_domain_defaults($self->_get_auth($session));
             return 1;
         }
         return $self->_handle_redirect($session, logon=>'session', login=>$REMOTE_USER, from=>2 );
@@ -110,8 +110,7 @@ sub authenticate {
         $session = CGI::Session->new('driver:File', undef, {Directory => $SESSION{temp} // '/tmp'});
         $session->param('login', $login);
         $session->param('domain', $domain);
-        $session->param('handler', $auth->{authhandler});
-        $session->param('DOCUMENT_ROOT', $auth->{DOCUMENT_ROOT} // $DOCUMENT_ROOT);
+        $session->param('handleridx', $auth->{_handleridx});
         $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
         $session->flush();
         # redirect because I have to set a new session cookie:
@@ -119,13 +118,46 @@ sub authenticate {
     }
     return $self->_handle_redirect($session, logon=>'failure', login=>$login);
 }
+sub _get_auth {
+    my ($self, $session) = @_;
+    return $self->_get_handler_arrref(\%SESSION, $session->param('domain'))->[$session->param('handleridx')];
+}
+sub set_domain_defaults {
+    my ($self, $auth) = @_;
+    if ($auth->{defaults}) {
+        foreach my $k (keys %{$auth->{defaults}}) {
+            my $dref = $DefaultConfig::{$k};
+            my $val = $auth->{defaults}->{$k};
+            if (!defined $dref) {
+                carp("set_domain_defaults: unknown default $k");
+                next;
+            }
+            if (${$dref}) {
+                ${$dref} = $val;
+            } elsif ( @{$dref} ) {
+                @{$dref} = @{$val};
+            } elsif (%{$dref}) {
+                %{$dref} = %{$val};
+            } else {
+                carp("set_domain_defaults: unknown default $k (ref=".ref($dref).q{)});
+            }
+        }
+    }
+    return;
+}
+sub _get_handler_arrref {
+    my ($self, $sessionconfig, $domain) = @_;
+    return ref $sessionconfig->{domains}{$domain} eq 'HASH' ? [ $sessionconfig->{domains}{$domain} ] : $sessionconfig->{domains}{$domain};
+}
 sub check_credentials {
-    my ($self, $session, $domain, $login, $password) = @_;
-    my $handler = ref $session->{domains}{$domain} eq 'HASH' ? [ $session->{domains}{$domain} ] : $session->{domains}{$domain};
+    my ($self, $sessionconfig, $domain, $login, $password) = @_;
+    my $handler = $self->_get_handler_arrref($sessionconfig, $domain);
     require Module::Load;
-    foreach my $auth ( @{$handler} ) {
+    for my $h ( 0 .. $#{$handler} ) {
+        my $auth = $handler->[$h];
         Module::Load::load($auth->{authhandler});
         if ($auth->{authhandler}->login($auth->{config} // {}, $login, $password)) {
+            $auth->{_handleridx} = $h;
             return $auth;
         }
     }
@@ -133,18 +165,18 @@ sub check_credentials {
 }
 sub _check_session {
     my ($self, $session ) = @_;
+    my $auth = $self->_get_auth($session);
     require Module::Load;
-    my $handler = $session->param('handler');
-    Module::Load::load($handler);
-    return $handler->check_session($SESSION{domains}{$session->param('domain')}, $session->param('login'));
+    Module::Load::load($auth->{authhandler});
+    return $auth->{authhandler}->check_session($auth->{config} // {}, $session->param('login'));
 }
 sub _logout {
     my ($self, $session ) = @_;
+    my $auth = $self->_get_auth($session);
     require Module::Load;
-    my $handler = $session->param('handler');
-    Module::Load::load($handler);
-    return $handler->logout($SESSION{domains}{$session->param('domain')}, $session->param('login'));
-} 
+    Module::Load::load($auth->{authhandler});
+    return $auth->{authhandler}->logout($auth->{config} // {}, $session->param('login'));
+}
 sub _remove_session {
     my ($self, $session) = @_;
     if (!$session) { return 0; }

@@ -29,6 +29,7 @@ use CGI::Carp;
 use MIME::Base64;
 
 use SessionAuthenticationHandler;
+use DefaultConfig;
 use WebDAVCGI;
 
 use vars qw( $W %SESSION $REALM );
@@ -51,12 +52,11 @@ sub get_login_password {
 sub letsplay {
 
     my $conf = $ENV{SESSIONCONF} // '/etc/webdav-session.conf';
-    my $domain = $ENV{DOMAIN} // 'default';
     my $authheader = $ENV{AUTHHEADER};
 
     require $conf;
 
-    $REALM //= $ENV{REALM} // $domain;
+    $REALM //= $ENV{REALM} // $ENV{DOMAIN} // 'default';
 
     if (!$authheader) {
         send_auth_required_response();
@@ -64,11 +64,24 @@ sub letsplay {
     }
     my $handler = SessionAuthenticationHandler->new();
     my ($login, $password) = get_login_password($authheader);
-    if (my $auth=$handler->check_credentials(\%SESSION, $domain, $login, $password)) {
-        $ENV{REMOTE_USER} = $login;
-        $W //= WebDAVCGI->new();
-        $W->run();
-        return;
+
+    my @domains = $ENV{DOMAIN}
+                    ? ( $ENV{DOMAIN} )
+                    : sort {
+                             ref $SESSION{domains}{$a} eq 'HASH'
+                                 ? ( $SESSION{domains}{$a}{_order} // 0) <=> ( $SESSION{domains}{$b}{_order} // 1 ) || $a cmp $b
+                                 : $a cmp $b
+                           }
+                           keys %{$SESSION{domains}};
+    foreach my $domain ( @domains ) {
+        if (my $auth=$handler->check_credentials(\%SESSION, $domain, $login, $password)) {
+            $ENV{REMOTE_USER} = $login;
+            DefaultConfig::init_defaults();
+            $handler->set_domain_defaults($auth);
+            $W //= WebDAVCGI->new();
+            $W->run();
+            return;
+        }
     }
     send_auth_required_response();
     return;

@@ -264,17 +264,16 @@ sub get_mime_type {
 
 sub get_etag {
     my ($file) = @_;
-    $file //= $PATH_TRANSLATED;
+    $file //= $PATH_TRANSLATED // q{/};
     my $backend = $BACKEND_INSTANCE;
-
     my (
         $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
         $size, $atime, $mtime, $ctime, $blksize, $blocks
-    ) = $backend->stat($file);
+    ) = $backend ? $backend->stat($file) : stat($file);
     my $digest = Digest::MD5->new;
     $digest->add($file);
-    $digest->add( $size  || 0 );
-    $digest->add( $mtime || 0 );
+    $digest->add( $size  // 0 );
+    $digest->add( $mtime // 0 );
     return q{"} . $digest->hexdigest() . q{"};
 }
 

@@ -23,9 +23,10 @@
 #########################################################################
 # ticketfilename: '/tmp/krb5cc_webdavcgi_%s'
 # kinit: q{kinit '%s' 1>/dev/null 2>&1}
+# kdestroy: q{kdestroy 1>/dev/null 2>&1}
 # login: '%s'
 # ticketlifetime: 300
-# krb5_config
+# krb5_config: set it to '/etc/krb5.conf' or whatever
 
 package SessionAuthenticationHandler::KerberosAuthHandler;
 use strict;
@@ -43,29 +44,29 @@ use English qw( -no_match_vars );
 sub login {
     my ($self, $config, $login, $password) = @_;
 
-    my $domlogin = sprintf $config->{login} // q{%s}, $login;
     my $kinitcmd = sprintf $config->{kinit} // q{kinit '%s' 1>/dev/null 2>&1}, $login;
     my $ticketfn = $self->_get_ticketfilename($config, $login);
     my $agefn    = $self->_get_agefilename($config, $login);
     $self->_setenv($config, $login);
 
-    my $age;
-    if (open $age, q{>}, $agefn) {
-        print({$age} time) || carp "Cannot write to $agefn.";
-        close($age) || carp "Cannot close $agefn: $ERRNO";
-    } else {
-        carp "Cannot write $agefn: $ERRNO";
-        return 0;
+    if ( -r $ticketfn && $self->check_session($config, $login)) {
+        return 1;
     }
     my $kinit;
     if (! open $kinit, q{|-}, $kinitcmd) {
         carp "Cannot execute $kinitcmd: $ERRNO";
     }
     print( {$kinit} $password ) || carp 'Cannot write passwort to kinit.';
-    close($kinit);
+    close $kinit;
     if ($CHILD_ERROR >> 8 != 0) {
         carp("Kerberos login failed for $login: $CHILD_ERROR");
         return 0;
+    }
+    if (open my $age, q{>}, $agefn) {
+        print({$age} time) || carp "Cannot write to $agefn.";
+        close($age) || carp "Cannot close $agefn: $ERRNO";
+    } else {
+        carp "Cannot write $agefn: $ERRNO";
     }
     #carp("Kerberos login for $login successfull.");
     return 1;
@@ -84,7 +85,7 @@ sub check_session {
 sub logout {
     my ($self, $config, $login) = @_;
     $self->_setenv($config, $login);
-    my $kdestroycmd = $config->{kdestroy} // q{kdestroy 1>&2};
+    my $kdestroycmd = $config->{kdestroy} // q{kdestroy 1>/dev/null 2>&1};
     system $kdestroycmd;
     if ($CHILD_ERROR >> 8 != 0 ) {
         carp("Command $kdestroycmd failed: $CHILD_ERROR, $ERRNO");
@@ -105,8 +106,8 @@ sub _setenv {
     my $ticketfn = $self->_get_ticketfilename($config,$login);
     $ENV{KRB5CCNAME} = "FILE:$ticketfn";
     Env::C::setenv( 'KRB5CCNAME', $ENV{KRB5CCNAME} );
-    if ( $ENV{KRB5_CONFIG} || $config->{krb5_config} ) {
-        Env::C::setenv( 'KRB5_CONFIG', $ENV{KRB5_CONFIG} // $config->{krb5_config} );
+    if ( $config->{krb5_config} || $ENV{KRB5_CONFIG} ) {
+        Env::C::setenv( 'KRB5_CONFIG', $config->{krb5_config} || $ENV{KRB5_CONFIG} );
     }
     return;
 }

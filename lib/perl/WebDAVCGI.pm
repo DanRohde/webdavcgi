@@ -57,7 +57,7 @@ use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
 
-$RELEASE = '1.1.2BETA20170108.1';
+$RELEASE = '1.1.2BETA20170108.2';
 
 use vars qw( $_METHODS_RX );
 
@@ -78,6 +78,7 @@ sub run {
         $REMOTE_USER = 'unknown';
         $auth = SessionAuthenticationHandler->new($CGI)->authenticate(); # 0 -> login, 1 -> ok, 2->redirect
     }
+    $self->init_backend_defaults();
     if ($auth == 1) {
         $self->handle_request();
     } elsif ( $auth != 2 ) {
@@ -128,9 +129,16 @@ sub init {
     $self->{config} = $CONFIG = $self;
     $self->{cgi}    = $CGI;
     $self->{db}     = $DB     = DB::Driver->new($self);
-    $self->{dbea} =
-      DatabaseEventAdapter->new($self)->register( $self->{event} );
+    $self->{dbea}   = DatabaseEventAdapter->new($self)->register( $self->{event} );
 
+    $REQUEST_URI =~ s/&/%26/xmsg;     ## bug fix (Mac Finder and &)
+    $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
+
+    $self->{event}->broadcast('INIT');
+    return $self;
+}
+sub init_backend_defaults {
+    my ( $self ) = @_;
     $BACKEND_INSTANCE =
       Backend::Manager::getinstance()->get_backend( $BACKEND, $self );
     $self->{backend} = $BACKEND_INSTANCE;
@@ -152,16 +160,13 @@ sub init {
         }
     }
 
-    $REQUEST_URI =~ s/[?].*$//xms;    ## remove query strings
     $REQUEST_URI .= $BACKEND_INSTANCE->isDir($PATH_TRANSLATED)
       && $REQUEST_URI !~ m{/$}xms ? q{/} : q{};
-    $REQUEST_URI =~ s/&/%26/xmsg;     ## bug fix (Mac Finder and &)
 
     umask($UMASK) || croak("Cannot set umask $UMASK.");
-    $self->{event}->broadcast('INIT');
+
     return $self;
 }
-
 sub handle_request {
     my ($self) = @_;
 

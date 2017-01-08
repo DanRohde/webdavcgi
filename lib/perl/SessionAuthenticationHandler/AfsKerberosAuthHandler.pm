@@ -21,6 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
+# aklog => 'aklog'
 
 package SessionAuthenticationHandler::AfsKerberosAuthHandler;
 use strict;
@@ -28,7 +29,7 @@ use warnings;
 
 our $VERSION = '1.0';
 
-use base qw{ SessionAuthenticationHandler::KerberosAuthHandler };
+use base qw( SessionAuthenticationHandler::KerberosAuthHandler );
 
 use CGI::Carp;
 use English qw( -no_match_vars );
@@ -45,7 +46,7 @@ sub _aklog {
         carp("AFS login failed for $login: $CHILD_ERROR, $ERRNO");
         return 0;
     }
-    carp("AFS login successful ($CHILD_ERROR).");
+    #carp("AFS login successful ($CHILD_ERROR).");
     return 1;
 }
 sub check_session {
@@ -66,7 +67,7 @@ sub check_session {
 sub logout {
     my ($self, $config, $login ) = @_;
     $self->SUPER::logout($config, $login);
-    system $config->{unlog} // 'unlog';
+    unlog();
     return 1;
 }
 

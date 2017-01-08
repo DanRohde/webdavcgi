@@ -13,6 +13,7 @@
 
 <h1> Session or form-based authentication</h1>
 <a href="images/webdavcgi-session-login.png"><img src="images/webdavcgi-session-login.png" style="float:right; width: 200px;"></a>
+<h2>Session vs. Basic authentication</h2>
 Pros:
 <ul>
 <li>"real" logout button</li>
@@ -27,7 +28,12 @@ Cons:
 <li>a matching authentication handler written in Perl</li>
 <li>additional session files on the server </li>
 </ul>
-
+<h2>Features</h2>
+<ul>
+<li>form login customization</li>
+<li>domain based authentication support: let the user select a domain in login screen</li>
+<li>authentication handler for LDAP (simple bind authentication), Kerberos for SMB backend, Kerberos/AFS for AFS backend</li>
+</ul>
 
 <h2>Requirements</h2>
 
@@ -62,10 +68,16 @@ Hint: You cannot reuse the WebDAV setup for your web interface setup with 'requi
 <pre>
 ...
 
+# set this only if you don't use domain based defaults (see defaults in %SESSION domain setup):
+$DOCUMENT_ROOT='/myuserpath/'; 
+$BACKED = 'FS';
+
 $VIRTUAL_BASE='/webdav/?';
 
 # additional: disable web interface to prevent misuse:
 $FANCYINDEXING = 0;
+# and redirect the user to the right session login:
+$REDIRECT_TO = '/';
 
 # to be sure we have no session setup for the WebDAV access:
 undef %SESSION;
@@ -109,14 +121,22 @@ $VIRTUAL_BASE = '/';
 		'mydomain' => {
 		
 			## this is an example, because the TestAuthHandler knows only one user: testuser1 (password: testuser1)
+			## (see Authentication handler section for more)
 			authhandler => qw( SessionAuthenticationHandler::TestAuthHandler ),
 			
 			## handler setup stuff (TestAuthHandler doesn't need it):
 			config => {
 			
 			},
+			## this defaults overwrite some webdav.conf defaults:
+			defaults => {
+				DOCUMENT_ROOT => '/somewhereelse/',
+				BACKEND => 'GFS',
+			},
+			# this optional _order flag influences the domain selection sort order in the login form:
+			_order => 1,
 		},
-		## if you have more domains and more than one auth handler for a domain you can do the folling
+		## if you have more domains and more than one auth handler for a domain you can do this:
 		'myseconddomain' => [
 			{
 				authhandler => qw ( SessionAuthenticationHandler::LdapBindAuthHandler ),
@@ -152,7 +172,8 @@ And if you want to <strong>customize the login screen</strong>, you should copy 
 The Apache configuration depends on your needs: 
 <ul>
 <li>with mod_perl or with a simple CGI call ...</li>
-<li>multiple domain needs multiple WebDAV URLs</li>
+<li>multiple domains need multiple WebDAV URLs, <br/>
+	or all domains are checked for a username and password (omit DOMAIN environment in rewrite rules for that) </li>
 </ul>
 
 <pre>
@@ -168,8 +189,9 @@ ScriptAlias /_web /etc/webdavcgi/cgi-bin/webdav.pl
 	# ... mod_perl ...
 &lt;/Location&gt;
 
-## WebDAV acccess: it gets its own WEBDAVCONF but the the wrapper needs the web interface setup in SESSIONCONF
-## change E parameter like DOMAIN and REALM as you need
+## WebDAV acccess: it gets its own WEBDAVCONF but the the wrapper needs the web interface setup in SESSIONCONF;
+## change E parameter like DOMAIN and REALM as you need;
+## when all domains should be checked, omit the DOMAIN env  
 # the session.pl needs the session configuration, the webdav.conf,
 # and the HTTP header 'Authorization' to handle Basic auth:
 RewriteRule /webdav /_dav \
@@ -178,6 +200,53 @@ RewriteRule /webdav /_dav \
 ## you see: WEBDAVCONF differs because this is for the web interface:
 RewriteRule / /_web [PT,L,E=WEBDAVCONF:/etc/webdav-session.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
 
+</pre>
+<h2>Authentication handler</h2>
+<h3> LDAP </h3>
+The necessary distinguished name (dn) for LDAP bind authentication can be searched or given by a parameter (userdn).
+<pre>
+# this is the default:
+authhandler =&gt; qw( SessionAuthenticationHandler::LdapBindAuthHandler ),
+config =&gt; {
+    server =&gt; 'localhost',
+    basedn =&gt; 'dc=localhost',
+
+    starttls   =&gt; 1,
+    sslversion =&gt; 'tlsv1_2',
+    verify     =&gt; 'required',     
+
+    ## faster than search:
+    userdn =&gt;  undef,         # usage: 'uid=%s,dc=localhost'
+    
+    ## for search:  
+    filter    =&gt; '(uid=%s)',
+    timelimit =&gt; 5,
+    sizelimit =&gt; 5,
+    scope     =&gt; 'sub',
+    binddn    =&gt; undef,
+    password  =&gt; undef,
+},
+</pre>
+<h3> Kerberos </h3>
+<pre>
+authhandler =&gt; qw( SessionAuthenticationHandler::KerberosAuthHandler ),
+config =&gt; {
+    krb5_config    =&gt; undef, # overwrites KRB5CCNAME environment (system default: /etc/krb5.conf)
+    ticketfilename =&gt; '/tmp/krb5cc_webdavcgi_%s',
+    ticketlifetime =&gt; 300,
+  
+    kinit    =&gt; q{kinit '%s' 1&gt;/dev/null 2&gt;&amp;1}, # %s is replaced by username
+    kdestroy =&gt; q{kdestroy   1&gt;/dev/null 2&gt;&amp;1},  
+},
+</pre>
+<h3> Kerberos/AFS </h3>
+ 
+<pre>
+authhandler =&gt; qw( SessionAuthenticationHandler::KerberosAuthHandler ),
+config =&gt; {
+	## all options from Kerberos authentication and additionally:
+	aklog =&gt; 'aklog', # path to aklog binary
+},
 </pre>
 <h2>Security</h2>
 <ul>

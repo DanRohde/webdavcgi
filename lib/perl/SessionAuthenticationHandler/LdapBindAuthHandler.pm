@@ -27,9 +27,9 @@
 #    starttls => 1,
 #    sslversion => 'tlsv1_2',
 #    verify => 'required',
-#    basedn => 'dn=localhost',
+#    basedn => 'dc=localhost',
 #    filter => '(uid=%s)',
-#    userdn => 'uid=%s,dn=localhost', ## faster than search, if dn is fix
+#    userdn => 'uid=%s,dc=localhost', ## faster than search, if dn is fix
 #    timelimit => 5,
 #    sizelimit => 5,
 #    scope => 'sub',
@@ -59,7 +59,7 @@ use vars qw ( %DEFAULT_CONFIG );
     onerror    => 'warn',
     sslversion => 'tlsv1_2',
     verify     => 1,
-    basedn     => 'dn=localhost',
+    basedn     => 'dc=localhost',
     filter     => '(uid=%s)',
     scope      => 'sub',
     binddn     => undef,

@@ -110,7 +110,7 @@ sub init_defaults {
     $CONFIGFILE   = $ENV{REDIRECT_WEBDAVCONF} // $ENV{WEBDAVCONF}
         // 'webdav.conf';
     $VIRTUAL_BASE       = qr{/}xms;
-    $DOCUMENT_ROOT      = $ENV{DOCUMENT_ROOT} . q{/};
+    $DOCUMENT_ROOT      //= $ENV{DOCUMENT_ROOT} . q{/};
     $UMASK              = oct 22;
     $MIMEFILE           = $INSTALL_BASE . '/etc/mime.types';
     $FANCYINDEXING      = 1;
@@ -283,8 +283,8 @@ EOF
     );
     $ENABLE_FLOCK       = 1;
     $LIMIT_FOLDER_DEPTH = 20;
-    $BACKEND            = 'FS';
-    $DEBUG              = 0;
+    $BACKEND            //= 'FS';
+    $DEBUG              //= 0;
     @DEFAULT_EXTENSIONS = qw(
         History     VideoJS   ViewerJS     TextEditor
         Highlighter Download  Zip          Search
