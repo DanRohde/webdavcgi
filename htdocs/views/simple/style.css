@@ -132,7 +132,7 @@ a {
 	position: fixed;
 	top: 45px;
 	left: 160px;
-	padding-left: 1em;
+	padding-left: 2px;
 	width: 100%;
 	z-index: 50;
 }

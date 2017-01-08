@@ -526,9 +526,16 @@ sub _read_template {
 }
 
 sub _flex_sorter {
-    return ( $a =~ /^[\d.]+$/xms && $b =~ /^[\d.]+$/xms )
-      ? $a <=> $b
-      : $a cmp $b;
+    my ( $h ) = @_; 
+    my $aa = $a;
+    my $bb = $b;
+    if ( ref $h->{$a} eq 'HASH') {
+        $aa = $h->{$a}->{_order} // $a;
+        $bb = $h->{$b}->{_order} // $b;
+    }
+    return ( $aa =~ /^[\d.]+$/xms && $bb =~ /^[\d.]+$/xms )
+      ? $aa <=> $bb
+      : $aa cmp $bb;
 }
 
 sub _get_varref {
@@ -572,7 +579,7 @@ sub render_each {
     my $content = q{};
     if ( $variable =~ s/^\%(?:)?//xms ) {
         my $hashref = $self->_get_varref($variable) // {};
-        foreach my $key ( sort _flex_sorter keys %{$hashref} ) {
+        foreach my $key ( sort { _flex_sorter($hashref) } keys %{$hashref} ) {
             next if defined $filter && $hashref->{$key} =~ $filter;
             my $t = $tmpl;
             $t =~ s/\$k/$key/xmsg;

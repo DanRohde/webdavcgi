@@ -70,7 +70,7 @@ use vars qw ( %DEFAULT_CONFIG );
     debug      => 0,
 );
 
-sub check_login {
+sub login {
     my ( $self, $config, $login, $password ) = @_;
     my %settings = ( %DEFAULT_CONFIG, %{$config} );
     my $ldap = Net::LDAP->new( $settings{server}, timeout=>$settings{timeout}, onerror=>$settings{onerror}, debug => $settings{debug} );

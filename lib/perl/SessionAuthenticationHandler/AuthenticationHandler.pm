@@ -28,9 +28,17 @@ use warnings;
 
 our $VERSION = '1.0';
 
-sub check_login {
+use CGI::Carp;
+
+
+sub login {
     my ($self, $config, $login, $password) = @_;
     return 0;
 }
-
+sub check_session {
+    return 1;
+}
+sub logout {
+    return 1;
+}
 1;

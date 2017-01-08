@@ -22,19 +22,52 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-package SessionAuthenticationHandler::TestAuthHandler;
+package SessionAuthenticationHandler::AfsKerberosAuthHandler;
 use strict;
 use warnings;
 
 our $VERSION = '1.0';
 
-use base qw(SessionAuthenticationHandler::AuthenticationHandler);
+use base qw{ SessionAuthenticationHandler::KerberosAuthHandler };
 
 use CGI::Carp;
+use English qw( -no_match_vars );
+use AFS::PAG qw( setpag unlog haspag );
 
 sub login {
     my ($self, $config, $login, $password) = @_;
-    return $login eq 'testuser1' && $password eq 'testuser1';
+    return $self->SUPER::login($config, $login, $password) && $self->_aklog($config, $login);
+}
+sub _aklog {
+    my ($self, $config, $login) = @_;
+    system $config->{aklog} // 'aklog';
+    if ($CHILD_ERROR >> 8 != 0) {
+        carp("AFS login failed for $login: $CHILD_ERROR, $ERRNO");
+        return 0;
+    }
+    carp("AFS login successful ($CHILD_ERROR).");
+    return 1;
+}
+sub check_session {
+    my ($self, $config, $login) = @_;
+    if ($self->SUPER::check_session($config, $login)) {
+        if (haspag()) {
+            unlog();
+        } else {
+            if (!setpag()) {
+                carp("setpag failed for $login.");
+                return 0;
+            }
+        }
+        return $self->_aklog($config, $login);
+    }
+    return 0;
+}
+sub logout {
+    my ($self, $config, $login ) = @_;
+    $self->SUPER::logout($config, $login);
+    system $config->{unlog} // 'unlog';
+    return 1;
 }
 
 1;

@@ -33,6 +33,7 @@
 #                  authhandler => qw( SessionAuthenticationHandler::AuthenticationHandler ),
 #                  expire => '+10m', # default
 #                  config => {  whatever => 'here comes'  },
+#                  _order => 1, # sort order for login screen
 #              }, ...
 #          ],
 #          DOMAIN2 => { ... }, # single handler
@@ -50,7 +51,7 @@ use CGI::Session;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 
-use DefaultConfig qw( %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE );
+use DefaultConfig qw( %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE $DOCUMENT_ROOT );
 use HTTPHelper qw( print_compressed_header_and_content );
 sub new {
    my ($class, $cgi) = @_;
@@ -82,10 +83,12 @@ sub authenticate {
     }
     if ($REMOTE_USER = $session->param('login')) { ## login exists
         if ($self->{cgi}->param('logout')) { ## logout requested
+            $self->_logout($session);
             return $self->_handle_goto_login($session);
         }
-        if ($self->_check_token($REMOTE_USER)) {
+        if ($self->_check_token($REMOTE_USER) && $self->_check_session($session)) {
             $self->_create_token($REMOTE_USER);
+            $DOCUMENT_ROOT = $session->param('DOCUMENT_ROOT');
             return 1;
         }
         return $self->_handle_redirect($session, logon=>'session', login=>$REMOTE_USER, from=>2 );
@@ -106,6 +109,9 @@ sub authenticate {
         $CGI::Session::IP_MATCH = 1;
         $session = CGI::Session->new('driver:File', undef, {Directory => $SESSION{temp} // '/tmp'});
         $session->param('login', $login);
+        $session->param('domain', $domain);
+        $session->param('handler', $auth->{authhandler});
+        $session->param('DOCUMENT_ROOT', $auth->{DOCUMENT_ROOT} // $DOCUMENT_ROOT);
         $session->expire($auth->{expire} // $SESSION{expire} // '+10m');
         $session->flush();
         # redirect because I have to set a new session cookie:
@@ -119,12 +125,26 @@ sub check_credentials {
     require Module::Load;
     foreach my $auth ( @{$handler} ) {
         Module::Load::load($auth->{authhandler});
-        if ($auth->{authhandler}->check_login($auth->{config} // {}, $login, $password)) {
+        if ($auth->{authhandler}->login($auth->{config} // {}, $login, $password)) {
             return $auth;
         }
     }
     return 0;
 }
+sub _check_session {
+    my ($self, $session ) = @_;
+    require Module::Load;
+    my $handler = $session->param('handler');
+    Module::Load::load($handler);
+    return $handler->check_session($SESSION{domains}{$session->param('domain')}, $session->param('login'));
+}
+sub _logout {
+    my ($self, $session ) = @_;
+    require Module::Load;
+    my $handler = $session->param('handler');
+    Module::Load::load($handler);
+    return $handler->logout($SESSION{domains}{$session->param('domain')}, $session->param('login'));
+} 
 sub _remove_session {
     my ($self, $session) = @_;
     if (!$session) { return 0; }
