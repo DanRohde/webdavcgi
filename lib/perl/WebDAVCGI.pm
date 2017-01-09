@@ -57,7 +57,7 @@ use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
 
-$RELEASE = '1.1.2BETA20170108.5';
+$RELEASE = '1.1.2BETA20170109.1';
 
 use vars qw( $_METHODS_RX );
 
@@ -77,6 +77,8 @@ sub run {
         require SessionAuthenticationHandler;
         $REMOTE_USER = 'unknown';
         $auth = SessionAuthenticationHandler->new($CGI)->authenticate(); # 0 -> login, 1 -> ok, 2->redirect
+        ## read config file again:
+        read_config( $self, $CONFIGFILE );
     }
     $self->init_backend_defaults();
     if ($auth == 1) {

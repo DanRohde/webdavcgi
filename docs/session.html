@@ -207,7 +207,7 @@ ScriptAlias /_web /etc/webdavcgi/cgi-bin/webdav.pl
 # the session.pl needs the session configuration, the webdav.conf,
 # and the HTTP header 'Authorization' to handle Basic auth:
 RewriteRule /webdav /_dav \
-    [PT,L,E=E=WEBDAVCONF:/etc/webdav.conf,SESSIONCONF:/etc/webdav-session.conf,E=DOMAIN:mydomain,E=REALM:WebDAV,E=AUTHHEADER:%{HTTP:Authorization},E=PERLLIB:/etc/webdavcgi/lib/perl]
+    [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=SESSIONCONF:/etc/webdav-session.conf,E=DOMAIN:mydomain,E=REALM:WebDAV,E=AUTHHEADER:%{HTTP:Authorization},E=PERLLIB:/etc/webdavcgi/lib/perl]
 
 ## you see: WEBDAVCONF differs because this is for the web interface:
 RewriteRule / /_web [PT,L,E=WEBDAVCONF:/etc/webdav-session.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
