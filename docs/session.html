@@ -116,9 +116,13 @@ $VIRTUAL_BASE = '/';
 	temp => '/tmp',
 
 	## logout_redir defines a URL to an alternate logout page
-	# (only for regular logout with logout button [query: ?logout=1])
-	# hint: on a multi domain setup it makes sense to redirect to the start path, e.g. logout_redir=>'/?logout=1',
+	## (only for regular logout with logout button [query: ?logout=1])
+	## hint: with a multi domain setup it makes sense to redirect to the start path, e.g. logout_redir=>'/?logout=1',
 	# logout_redir => undef,
+
+	## post configuration file only loaded for logged-in users for every request
+	## (same content like webdav.conf but with access to $REMOTE_USER variable for special user-based setups)
+	## postconfig => '/etc/webdav-session-post.conf',
 
 	## okay, the domain based authentication:
 	domain => {
@@ -144,6 +148,11 @@ $VIRTUAL_BASE = '/';
 			## a callback module that is called per request 
 			# callback => qw( Helper::AdsSmbConfiguratorSessionAdapter ),
 			# callback_param => { debug=>1, nameserver=>['8.8.8.8'], memcached=>'127.0.0.1:11211', allowflag=>'webfiles' }, 
+
+			## post configuration file only loaded for logged-in users for every request
+			## after the session postconfig (see above)
+			## (same content like webdav.conf but with access to $REMOTE_USER variable for special user-based setups)
+			# postconfig => '/etc/webdav-session-mydomain-post.conf',
 
 			# this optional _order flag influences the domain selection sort order in the login form:
 			_order => 1,

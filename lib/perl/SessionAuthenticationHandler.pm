@@ -51,7 +51,7 @@ use CGI::Session;
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 
-use DefaultConfig qw( %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE $DOCUMENT_ROOT );
+use DefaultConfig qw( read_config $CONFIG %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE $DOCUMENT_ROOT );
 use HTTPHelper qw( print_compressed_header_and_content );
 sub new {
    my ($class, $cgi) = @_;
@@ -87,10 +87,8 @@ sub authenticate {
             return $self->_handle_logout_redir($session) || $self->_handle_goto_login($session);
         }
         if ($self->_check_token($REMOTE_USER) && $self->_check_session($session)) {
-            $ENV{REMOTE_USER} = $REMOTE_USER;
-            $ENV{SESSION_DOMAIN} = $session->param('domain').q{-}.$session->param('handleridx'); ## for msg/js/css caching
             $self->_create_token($REMOTE_USER);
-            $self->set_domain_defaults($self->_get_auth($session));
+            $self->_handle_post_config($session);
             return 1;
         }
         return $self->_handle_redirect($session, logon=>'session', login=>$REMOTE_USER, from=>2 );
@@ -119,6 +117,20 @@ sub authenticate {
         return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/xms ? $1 : $REQUEST_URI ));
     }
     return $self->_handle_redirect($session, logon=>'failure', login=>$login);
+}
+sub _handle_post_config {
+    my ( $self, $session ) = @_;
+    $ENV{REMOTE_USER} = $session->param('login');
+    $ENV{SESSION_DOMAIN} = $session->param('domain').q{-}.$session->param('handleridx'); ## for msg/js/css caching
+    my $auth = $self->_get_auth($session);
+    $self->set_domain_defaults($auth);
+    if ($SESSION{postconfig}) {
+        read_config($CONFIG, $SESSION{postconfig});
+    }
+    if ($auth->{postconfig}) {
+        read_config($CONFIG, $auth->{postconfig});
+    }
+    return $self;
 }
 sub _get_auth {
     my ($self, $session) = @_;

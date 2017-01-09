@@ -320,9 +320,9 @@ sub read_config {
         my $ret;
         if ( !( $ret = do($configfile) ) ) {
             if ($EVAL_ERROR) {
-                carp "couldn't parse $CONFIGFILE: ${EVAL_ERROR}";
+                carp "couldn't parse $configfile: ${EVAL_ERROR}";
             }
-            if ( !defined $ret ) { carp "couldn't do $CONFIGFILE: ${ERRNO}" }
+            if ( !defined $ret ) { carp "couldn't do $configfile: ${ERRNO}" }
             return 0;
         }
         return 1;
