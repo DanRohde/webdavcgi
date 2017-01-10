@@ -122,10 +122,10 @@ $VIRTUAL_BASE = '/';
 
 	## post configuration file only loaded for logged-in users for every request
 	## (same content like webdav.conf but with access to $REMOTE_USER variable for special user-based setups)
-	## postconfig => '/etc/webdav-session-post.conf',
+	# postconfig => '/etc/webdav-session-post.conf',
 
 	## okay, the domain based authentication:
-	domain => {
+	domains => {
 		## this domain name should be readable for a user if you have more than one:
 		'mydomain' => {
 
@@ -134,13 +134,13 @@ $VIRTUAL_BASE = '/';
 			authhandler => qw( SessionAuthenticationHandler::TestAuthHandler ),
 
 			## handler setup stuff (TestAuthHandler doesn't need it):
-			#config => { },
+			# config => { },
 
 			## this defaults overwrite some webdav.conf defaults:
-			#defaults => {
+			# defaults => {
 			#	DOCUMENT_ROOT => '/somewhereelse/',
 			#	BACKEND => 'GFS',
-			#},
+			# },
 
 			## domain based session timeout overwrites expire from %SESSION:
 			# expire => '+10m',
@@ -154,8 +154,8 @@ $VIRTUAL_BASE = '/';
 			## (same content like webdav.conf but with access to $REMOTE_USER variable for special user-based setups)
 			# postconfig => '/etc/webdav-session-mydomain-post.conf',
 
-			# this optional _order flag influences the domain selection sort order in the login form:
-			_order => 1,
+			## this optional _order flag influences the domain selection sort order in the login form:
+			# _order => 1,
 		},
 		## if you have more domains and more than one auth handler for a domain you can do this:
 		'myseconddomain' => [
