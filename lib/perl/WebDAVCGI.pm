@@ -57,7 +57,7 @@ use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
 
-$RELEASE = '1.1.2BETA20170109.4';
+$RELEASE = '1.1.2BETA20170110.1';
 
 use vars qw( $_METHODS_RX );
 
@@ -78,8 +78,8 @@ sub run {
         $REMOTE_USER = 'unknown';
         $auth = SessionAuthenticationHandler->new($CGI)->authenticate(); # 0 -> login, 1 -> ok, 2->redirect
     }
-    $self->init_backend_defaults();
     if ($auth == 1) {
+        $self->init_backend_defaults();
         $self->handle_request();
     } elsif ( $auth != 2 ) {
         require WebInterface;

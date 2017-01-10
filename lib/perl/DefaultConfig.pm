@@ -307,6 +307,7 @@ EOF
         default => 'application/octet-stream',
     );
     $EXTENSION_CONFIG{Feedback}{contact} = 'd.rohde@cms.hu-berlin.de';
+    undef %SESSION;
     return 1;
 }
 
