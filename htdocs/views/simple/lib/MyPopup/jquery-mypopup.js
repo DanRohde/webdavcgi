@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			contextmenuAnchorElement: false,
 			alloworigcontextmenu : true,
 			showEvent: undefined,
+			autohide : true,
 		}, options);
 
 		function adjustContextMenuPosition(event, el) {
@@ -59,10 +60,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 							hidePopup();
 							return;
 						}
-						preventDefault(event);
+						if (!settings.alloworigcontextmenu) preventDefault(event);
 						if (contextmenu.is(":visible") && contextmenu.parent()[0] == $(this)[0]) {
 							hidePopup();
 						} else {
+							preventDefault(event);
+							$(".MyPopup-autohide ul.popup:visible").hide();
 							$("ul.popup:visible", popup).hide();
 							contextmenu.appendTo($(this)).css({position: "absolute", opacity: 1}).show();
 							adjustContextMenuPosition(event, $(this));
@@ -71,9 +74,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					}
 				});
 		}
-
+		
 		/* IDEA: don't close a popup if a popup was leaved or lost focus -> look at siblings */
-
 		function preventDefault(event) {
 			if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
 			if (event.stopPropagation) event.stopPropagation();
@@ -110,7 +112,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					}, 350)
 			);
 		}).on("click."+settings.namespace, function(ev) {
-			preventDefault(ev);
+			//preventDefault(ev);
 			var self = $(this);
 			toggle_popup(hide_siblings(clear_timeout(self)));
 			$(":focusable:first",self).focus();
@@ -120,7 +122,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 		/* clean up all events for .popup-click popups and handle click separatly:*/
 		popup.filter(".popup-click").off("."+settings.namespace).on("click."+settings.namespace, function(ev) {
-			preventDefault(ev);
+			//preventDefault(ev);
 			toggle_popup(hide_siblings($(this)));
 		}).on("dblclick."+settings.namespace, function(ev) {
 			preventDefault(ev);
@@ -138,6 +140,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		/* don't close siblings on mouseenter if a popup menu is a .popup-click popup: */
 		popup.filter(".popup-click").siblings("li:not(.popup)").off("mouseenter."+settings.namespace);
 
+		
+		if (settings.autohide) {
+			popup.addClass("MyPopup-autohide");
+			$("body").on("click."+settings.namespace+" contextmenu."+settings.namespace, function(event) {
+				console.log(event.which);
+				if ($(event.target).closest(popup).length === 0 && event.originalEvent.detail != 2) hidePopup();
+			}).on("keydown."+settings.namespace, function(event) {
+				if (event.keyCode == 27) {
+					hidePopup();
+				}
+			});
+		}
 		return popup;
 	};
 }( jQuery ));

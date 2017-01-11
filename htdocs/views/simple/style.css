@@ -1443,7 +1443,7 @@ img {
 	padding: 0;
 	font-weight: bold;
 }
-.action.new, .ui-button.action.new {
+.action.new, .newmenu.popup, .newmenu.popup:hover, .newmenu.popup:active,.newmenu.popup:focus {
 	background-position: center -1056px;
 }
 .new.label {

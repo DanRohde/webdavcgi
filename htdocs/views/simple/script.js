@@ -1771,9 +1771,11 @@ function initPopupMenu() {
 
 			$("#tc_popupmenu li.popup").MyPopup({contextmenu: $("#tc_popupmenu"), contextmenuTarget: $("#fileListTable .fileListHead th"), contextmenuAnchor: "#content", contextmenuAnchorElement: true});
 		});
+	/* done by MyPopup
 	$("body").off(".popupmenu")
 			 .on("click.popupmenu",function() { hidePopupMenu(); })
 			 .on("keydown.popupmenu", function(e) { if (e.which == 27) hidePopupMenu(); });
+	*/
 	$("#filler").on("contextmenu", function(event) { if (event.which==3) { if (event.originalEvent.detail === 1 ) $.MyPreventDefault(event); hidePopupMenu(); } });
 	
 	
