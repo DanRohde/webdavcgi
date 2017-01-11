@@ -27,6 +27,7 @@
 # login: '%s'
 # ticketlifetime: 300
 # krb5_config: set it to '/etc/krb5.conf' or whatever
+# log: 1 - error, 2 - warn, 4 - info, 8 - debug; combine: xor, all: 15
 
 package SessionAuthenticationHandler::KerberosAuthHandler;
 use strict;
@@ -43,40 +44,42 @@ use English qw( -no_match_vars );
 
 sub login {
     my ($self, $config, $login, $password) = @_;
-
+    $self->_log($config, "login($login, ...) called.", 8);
     my $kinitcmd = sprintf $config->{kinit} // q{kinit '%s' 1>/dev/null 2>&1}, $login;
     my $ticketfn = $self->_get_ticketfilename($config, $login);
     my $agefn    = $self->_get_agefilename($config, $login);
-    $self->_setenv($config, $login);
 
     if ( -r $ticketfn && $self->check_session($config, $login)) {
         return 1;
     }
+    $self->_setenv($config, $login);
     my $kinit;
     if (! open $kinit, q{|-}, $kinitcmd) {
-        carp "Cannot execute $kinitcmd: $ERRNO";
+        $self->_log($config, "Cannot execute $kinitcmd: $ERRNO", 1);
     }
-    print( {$kinit} $password ) || carp 'Cannot write passwort to kinit.';
+    print( {$kinit} $password ) || $self->_log($config, 'Cannot write passwort to kinit.', 1);
     close $kinit;
     if ($CHILD_ERROR >> 8 != 0) {
-        carp("Kerberos login failed for $login: $CHILD_ERROR");
+        $self->_log($config, "Kerberos login failed for $login: $CHILD_ERROR", 2);
         return 0;
     }
     if (open my $age, q{>}, $agefn) {
-        print({$age} time) || carp "Cannot write to $agefn.";
-        close($age) || carp "Cannot close $agefn: $ERRNO";
+        print({$age} time) || $self->_log($config, "Cannot write to $agefn.", 1);
+        close($age) || $self->_log($config, "Cannot close $agefn: $ERRNO", 2);
     } else {
-        carp "Cannot write $agefn: $ERRNO";
+        $self->_log($config, "Cannot write $agefn: $ERRNO", 1);
     }
-    #carp("Kerberos login for $login successfull.");
+    $self->_log($config, "Kerberos login for $login successfull.", 4);
     return 1;
 }
 sub check_session {
     my ($self, $config, $login) = @_;
+    $self->_log($config, "check_session($login) called.", 8);
     $self->_setenv($config, $login);
     my $agefn = $self->_get_agefilename($config, $login);
     my $ticketlifetime = $config->{ticketlifetime} // 300;
     if ( time - (stat $agefn)[9] >= $ticketlifetime  ) {
+        $self->_log($config, "ticketlifetime $ticketlifetime for $login elapsed.", 4);
         $self->logout($config, $login);
         return 0;
     }
@@ -84,14 +87,23 @@ sub check_session {
 }
 sub logout {
     my ($self, $config, $login) = @_;
+    $self->_log($config, "logout($login) called.", 8);
     $self->_setenv($config, $login);
     my $kdestroycmd = $config->{kdestroy} // q{kdestroy 1>/dev/null 2>&1};
     system $kdestroycmd;
     if ($CHILD_ERROR >> 8 != 0 ) {
-        carp("Command $kdestroycmd failed: $CHILD_ERROR, $ERRNO");
+        $self->_log($config, "Command $kdestroycmd failed: $CHILD_ERROR, $ERRNO", 1);
     }
-    unlink $self->_get_agefilename($config, $login);
+    unlink($self->_get_agefilename($config, $login)) || $self->_log($config, "Cannot remove age file for $login", 1);
     return 1;
+}
+sub _log {
+    my ($self, $config, $message, $severity) = @_;
+    $severity //= 4;
+    if ($config->{log} && ( $config->{log} & $severity) == $severity ) {
+        my %severites = ( 1 => 'ERROR', 2=> 'WARN', 4=> 'INFO', 8=> 'DEBUG' );
+        carp(sprintf '%s: %s', $severites{$severity}, $message);
+    }
 }
 sub _get_ticketfilename {
     my ( $self, $config, $login) = @_;

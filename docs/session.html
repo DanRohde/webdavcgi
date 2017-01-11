@@ -10,7 +10,11 @@
 
 <body>
 <div id="content">
-
+<nav class="navigation">
+        <div class="button"><a href="screenshots.html">Screenshots</a></div>
+        <div class="button"><a href="https://github.com/DanRohde/webdavcgi">Download</a></div>
+        <div class="button"><a href="doc.html">Documentation</a></div>
+</nav>
 <h1> Session or form-based authentication</h1>
 <a href="images/webdavcgi-session-login.png"><img src="images/webdavcgi-session-login.png" style="float:right; width: 200px;"></a>
 <h2>Session vs. Basic authentication</h2>
@@ -249,12 +253,15 @@ config =&gt; {
 },
 </pre>
 <h3> Kerberos </h3>
+... used for ADS/SMB share access. 
 <pre>
 authhandler =&gt; qw( SessionAuthenticationHandler::KerberosAuthHandler ),
 config =&gt; {
     krb5_config    =&gt; undef, # overwrites KRB5CCNAME environment (system default: /etc/krb5.conf)
     ticketfilename =&gt; '/tmp/krb5cc_webdavcgi_%s',
     ticketlifetime =&gt; 300,
+  
+    log =&gt; undef, # log severity: 1:error, 2:warn, 4:info, 8:debug, 15: all; combine severties: add
   
     kinit    =&gt; q{kinit '%s' 1&gt;/dev/null 2&gt;&amp;1}, # %s is replaced by username
     kdestroy =&gt; q{kdestroy   1&gt;/dev/null 2&gt;&amp;1},  
@@ -263,9 +270,9 @@ config =&gt; {
 <h3> Kerberos/AFS </h3>
  
 <pre>
-authhandler =&gt; qw( SessionAuthenticationHandler::KerberosAuthHandler ),
+authhandler =&gt; qw( SessionAuthenticationHandler::AfsKerberosAuthHandler ),
 config =&gt; {
-	## all options from Kerberos authentication and additionally:
+	## all options from Kerberos authentication handler and additionally:
 	aklog =&gt; 'aklog', # path to aklog binary
 },
 </pre>
