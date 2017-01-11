@@ -48,8 +48,9 @@ body {
 	padding-top: 1em;
 }
 input,select {
-	width: 10em;
+	width: 15em;
     text-align: center;
+    padding: 0.5ex 2em;
 }
 label {
 	display: block;
@@ -76,18 +77,19 @@ label {
 #pw-toggle {
     display: inline-block;
     position: absolute;
-    width: 1ex;
-    height: 1ex;
+    width: 1.7em;
+    height: 1.7em;
     cursor: pointer;
-    font-size: smaller;
     overwrite: hidden;
     white-space: no-wrap;
+    line-height: 1.7em;
+    margin-left: -2em;
+}
+#pw-toggle.hidden:after {
+    content: "\1f441";
 }
 #pw-toggle.visible:after  {
-    content: "✕";
-    position: absolute;
-    font-size: normal;
-    left: 0;
+    content: "\1f512";
 }
 </style>
 <script>
@@ -95,10 +97,16 @@ function togglePassword(id) {
 	var i = document.getElementById(id);
 	var type = i.getAttribute("type") == "text" ? "password" : "text";
 	i.setAttribute("type",type);
+	i.focus();
+	i.setSelectionStart = i.setSelectionEnd = i.value.length;
 	document.getElementById(id+"-toggle").setAttribute("class", type=="text" ? "visible" :"hidden");
 }
 function handleKeyDown(event, id) {
-	if (event.keyCode === 13 || event.keyCode == 32 ) togglePassword(id);
+	if (event.keyCode === 13 || event.keyCode === 32 ) { 
+		if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
+        if (event.stopPropagation) event.stopPropagation();
+		togglePassword(id);
+	}
 }
 </script>
 </head>
@@ -132,7 +140,7 @@ $INCLUDE(login-logo)
 				$tl(login.password)
 				</label>
 				<input type="password" name="password" required autocomplete="off" id="pw">
-				<div tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden">&#x1f441;</div>
+				<div tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden"></div>
 			</div>
 			<!--IF(scalar keys %{$SESSION{domains}} > 1)-->
 			<div class="login-domain">
