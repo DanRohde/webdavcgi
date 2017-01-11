@@ -142,19 +142,20 @@ a {
 #fileListTable {
 	top: 37px;
 	width: 100%;
-	padding-bottom: 4em;
-	border-spacing: 0;
+	padding-bottom: 6em;
 	white-space: nowrap;
-	border-collapse: separate;
+	border-collapse: collapse;
 	clear: both;
-	line-height: 1.2;
 	font-size: 15px;
 }
+table tr {
+	border-top: 1px solid #eee;
+    border-bottom: 1px solid #aaa;
+}
 table th, table td {
-	border-top: 1px solid #dddddd;
-	border-bottom: 1px solid #dddddd;
 	text-align: left;
 	vertical-align: middle;
+	line-height: 22px;
 }
 table th {
 	color: #999999;
@@ -173,7 +174,6 @@ table .draghover {
 table td {
 	background-position: 1em 0em;
 	background-repeat: no-repeat;
-	border-bottom: 1px solid #eeeeee;
 }
 table,th,td {
 	vertical-align: middle;
@@ -372,7 +372,6 @@ table,th,td {
 #fileList .filename .nametext {
 	padding-left: 10px; 
 	padding-top: 2px;
-/*	float: left;*/
 	white-space: pre-wrap;
 	text-decoration: inherit;
 	font-weight: inherit;
@@ -480,7 +479,6 @@ ul.filterbox {
 	width: 20px;
 	max-height: 22px;
 	min-height: 22px;
-	float: left;
 	margin-left: 0.2em;
 	transition: width 1s;
 	-webkit-transition: width 1s;

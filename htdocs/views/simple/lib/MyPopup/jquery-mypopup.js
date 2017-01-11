@@ -112,7 +112,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					}, 350)
 			);
 		}).on("click."+settings.namespace, function(ev) {
-			//preventDefault(ev);
+			preventDefault(ev);
+			$("ul.popup:first:visible", $(".MyPopup-autohide").not(popup)).hide();
 			var self = $(this);
 			toggle_popup(hide_siblings(clear_timeout(self)));
 			$(":focusable:first",self).focus();
@@ -122,7 +123,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 		/* clean up all events for .popup-click popups and handle click separatly:*/
 		popup.filter(".popup-click").off("."+settings.namespace).on("click."+settings.namespace, function(ev) {
-			//preventDefault(ev);
+			preventDefault(ev);
+			$("ul.popup:first:visible", $(".MyPopup-autohide").not(popup)).hide();
 			toggle_popup(hide_siblings($(this)));
 		}).on("dblclick."+settings.namespace, function(ev) {
 			preventDefault(ev);
@@ -143,9 +145,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		
 		if (settings.autohide) {
 			popup.addClass("MyPopup-autohide");
+			if (settings.contextmenu) settings.contextmenu.addClass("MyPopup-autohide");
 			$("body").on("click."+settings.namespace+" contextmenu."+settings.namespace, function(event) {
-				console.log(event.which);
-				if ($(event.target).closest(popup).length === 0 && event.originalEvent.detail != 2) hidePopup();
+				if ($(event.target).closest(popup).length != 1 ) hidePopup();
 			}).on("keydown."+settings.namespace, function(event) {
 				if (event.keyCode == 27) {
 					hidePopup();
