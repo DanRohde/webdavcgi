@@ -73,7 +73,34 @@ label {
 .filler {
 	min-height: 100%;
 }
+#pw-toggle {
+    display: inline-block;
+    position: absolute;
+    width: 1ex;
+    height: 1ex;
+    cursor: pointer;
+    font-size: smaller;
+    overwrite: hidden;
+    white-space: no-wrap;
+}
+#pw-toggle.visible:after  {
+    content: "✕";
+    position: absolute;
+    font-size: normal;
+    left: 0;
+}
 </style>
+<script>
+function togglePassword(id) {
+	var i = document.getElementById(id);
+	var type = i.getAttribute("type") == "text" ? "password" : "text";
+	i.setAttribute("type",type);
+	document.getElementById(id+"-toggle").setAttribute("class", type=="text" ? "visible" :"hidden");
+}
+function handleKeyDown(event, id) {
+	if (event.keyCode === 13 || event.keyCode == 32 ) togglePassword(id);
+}
+</script>
 </head>
 <body>
 $INCLUDE(login-logo)
@@ -104,8 +131,8 @@ $INCLUDE(login-logo)
 				<label>
 				$tl(login.password)
 				</label>
-				<input type="password" name="password" required autocomplete="off">
-				
+				<input type="password" name="password" required autocomplete="off" id="pw">
+				<div tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden">&#x1f441;</div>
 			</div>
 			<!--IF(scalar keys %{$SESSION{domains}} > 1)-->
 			<div class="login-domain">

@@ -62,7 +62,7 @@ sub get_sec_header {
     $headerref->{'Strict-Transport-Security'} = q{max-age=3600};
     $headerref->{'X-Content-Security-Policy'} = q{default-src 'self'};
     $headerref->{'X-Content-Type-Options'} = q{nosniff};
-    $headerref->{'X-XSS-Protection'} = q{1; 'mode=block'};
+    $headerref->{'X-XSS-Protection'} = q{1; mode=block};
     return $headerref;
 }
 sub print_header_and_content {
