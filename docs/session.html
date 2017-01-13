@@ -4,14 +4,14 @@
   <meta name="keywords" content="WebDAV CGI session authentication" />
   <meta name="author" content="Daniel Rohde" />
   <meta http-equiv="Content-type" content="text/html;charset=UTF-8" /> 
-  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <link rel="stylesheet" type="text/css" href="style.min.css"/>
   <title>WebDAV CGI - Documentation: Session or form-based authentication</title>
 </head>
 
 <body>
 <div id="content">
 <nav class="navigation">
-        <div class="button"><a href="screenshots.html">Screenshots</a></div>
+        <div class="button"><a href="index.html">Home</a></div>
         <div class="button"><a href="https://github.com/DanRohde/webdavcgi">Download</a></div>
         <div class="button"><a href="doc.html">Documentation</a></div>
 </nav>
@@ -26,7 +26,7 @@ Pros:
 
 Cons:
 <ul>
-<li>user-based setuid/setgid wrapping is not possible (or not easy to implement)</li>
+<li>user-based setuid/setgid wrapping is possible but not really fast (exception: with Speedy-CGI if available)</li>
 <li>two different URLs for WebDAV access and web interface with all consequences for setup effort, user support, security</li>
 <li>sessions can be attacked (CRSF, man-in-the-middle, ...) </li>
 <li>a matching authentication handler written in Perl</li>
@@ -56,7 +56,14 @@ Cons:
 	</ol>
 </li>
 </ol>
-
+<h2>Setup recommendations</h2>
+<table class="recomtable">
+<tr><th>Backend</th><th>ModPerl</th><th>setuid/setgid wrapper</th><th>Required CGI scripts/wrappers</th><th>Authentication handler</th></tr>
+<tr><td>AFS</td><td class="recom">best performance</td><td class="notrecom">UID/GID not used</td><td>webdav.pl and session.pl</td><td>SessionAuthenticationHandler::AfsKerberosAuthHandler</td></tr>
+<tr><td>SMB</td><td class="recom">best performance</td><td class="notrecom">UID/GID not used</td><td>webdav.pl and session.pl</td><td>SessionAuthenticationHandler::KerberosAuthHandler</td></tr>
+<tr><td>DBB</td><td class="recom">best performance</td><td class="notrecom">UID/GID not used</td><td>webdav.pl and session.pl</td><td>SessionAuthenticationHandler::LdapBindAuthHandler SessionAuthenticationHandler::HtpasswdAuthHandler</td></tr>
+<tr><td>FS / GFS / GIT / RCS</td><td class="partrecom">no effect on wrapped webdav.pl script but usable for session.pl and webdav-susession.pl</td><td class="partrecom">on user-based, group-based, or ACL-based file/folder access rights</td><td>session.pl, webdav-susession.pl, webdavwrapper, webdav.pl</td><td>SessionAuthenticationHandler::LdapBindAuthHandler SessionAuthenticationHandler::HtpasswdAuthHandler</td></tr>
+</table>
 <h2>Setup</h2>
 <h3>WebDAV CGI</h3>
 The WebDAV and the web interface setup differ in two aspects:
@@ -94,7 +101,7 @@ undef %SESSION;
 <pre>
 
 ## reuse webdav.conf because $INSTALL_BASE, $DOCUMENT_ROOT, $BACKEND, $DBI_... are the same:
-## but if you use ModPerl, it doesn't work
+## but if you use ModPerl, 'require' doesn't work
 require '/etc/webdav.conf';
 
 $FANCYINDEXING = 1;
@@ -124,10 +131,18 @@ $VIRTUAL_BASE = '/';
 	## hint: with a multi domain setup it makes sense to redirect to the start path, e.g. logout_redir=>'/?logout=1',
 	# logout_redir => undef,
 
+	## a callback module that is called per request 
+	# callback => qw( Helper::AdsSmbConfiguratorSessionAdapter ),
+	# callback_param => { debug=>1, nameserver=>['8.8.8.8'], memcached=>'127.0.0.1:11211', allowflag=>'webfiles' }, 
+
 	## post configuration file only loaded for logged-in users for every request
 	## (same content like webdav.conf but with access to $REMOTE_USER variable for special user-based setups)
 	# postconfig => '/etc/webdav-session-post.conf',
 
+	## setuid/setgid wrapper called from session.pl and webdav-susession.pl for logged-in users
+	## required for setuid/setgid setups
+	# wrapper => '/etc/webdavcgi/cgi-bin/webdavwrapper',
+	
 	## okay, the domain based authentication:
 	domains => {
 		## this domain name should be readable for a user if you have more than one:
@@ -204,14 +219,23 @@ The Apache configuration depends on your needs:
 <pre>
 ## yes: session.pl handles WebDAV with Basic authentication:
 ScriptAlias /_dav /etc/webdavcgi/cgi-bin/session.pl
-
 ScriptAlias /_web /etc/webdavcgi/cgi-bin/webdav.pl
+
+## or for setuid/setgid wrapping:
+# ScriptAlias /_web /etc/webdavcgi/cgi-bin/webdav-susession.pl
+
+
+## ModPerl:
+# PerlRequire /etc/webdavcgi/helper/mod_perl_startup.pl
 
 &lt;Location /_&gt;
 
 	Require all granted
 
-	# ... mod_perl ...
+	## ModPerl:
+	# PerlOptions +SetupEnv
+	# PerlResponseHandler ModPerl::RegistryPrefork
+	# Options +ExecCGI
 &lt;/Location&gt;
 
 ## WebDAV acccess: it gets its own WEBDAVCONF but the the wrapper needs the web interface setup in SESSIONCONF;
@@ -259,7 +283,7 @@ authhandler =&gt; qw( SessionAuthenticationHandler::KerberosAuthHandler ),
 config =&gt; {
     krb5_config    =&gt; undef, # overwrites KRB5CCNAME environment (system default: /etc/krb5.conf)
     ticketfilename =&gt; '/tmp/krb5cc_webdavcgi_%s',
-    ticketlifetime =&gt; 300,
+    ticketlifetime =&gt; 600, ## real ticket lifetime >= ticketlifetime >= expire
   
     log =&gt; undef, # log severity: 1:error, 2:warn, 4:info, 8:debug, 15: all; combine severties: add
   
@@ -267,18 +291,33 @@ config =&gt; {
     kdestroy =&gt; q{kdestroy   1&gt;/dev/null 2&gt;&amp;1},  
 },
 </pre>
-<h3> Kerberos/AFS </h3>
+<h3> AFS </h3>
  
 <pre>
 authhandler =&gt; qw( SessionAuthenticationHandler::AfsKerberosAuthHandler ),
 config =&gt; {
-	## all options from Kerberos authentication handler and additionally:
-	aklog =&gt; 'aklog', # path to aklog binary
+    ## all options from Kerberos authentication handler and additionally:
+    aklog =&gt; 'aklog', # path to aklog binary
 },
 </pre>
+
+<h3>Apache htpasswd (file-based)</h3>
+Requires Perl module Authen::Htpasswd (Debian/Ubuntu: <code>apt install libauthen-htpasswd-perl</code>)
+<pre>
+authhandler =&gt; qw( SessionAuthenticationHandler::HtpasswdAuthHandler),
+config =&gt; {
+    htpasswd => '/etc/apache2/users';  # path to user file managed with htpasswd command
+},
+</pre>
+<h2>Maintenance</h2>
+<ul>
+<li>remove (daily) old session files: <code>find /tmp -name cgisess\* -mtime +1 -delete</code></li>
+<li>remove (daily) old kerberos ticket files (only for AFS or SMB backend users): <code>find /tmp/ -name krb5cc_webdavcgi\* -mtime +1 -delete</code>
+<li>check for WebDAV CGI updates: <a href="https://github.com/DanRohde/webdavcgi" class="extern">https://github.com/DanRohde/webdavcgi</a></li> 
+</ul>
 <h2>Security</h2>
 <ul>
-<li>WebDAV CGI uses POST and sometimes GET requests but all POST requests (includes login process) are protected by secure token (using WWW::CSRF and the <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Encrypted_Token_Pattern">Encrypted Token Pattern</a>).</li>
+<li>WebDAV CGI uses POST and sometimes GET requests but all POST requests (includes login process) are protected by secure token (using WWW::CSRF and the <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Encrypted_Token_Pattern" class="extern">Encrypted Token Pattern</a>).</li>
 <li>The secure token changes every time a user change the folder and a token expires in a given time (default: 10 hours).</li>
 <li>The token is protected by a secret password that must be set by the administrator in the session setup.</li>
 <li>The session file on the server stores only the username. No password is stored by WebDAV CGI. </li>

@@ -77,7 +77,7 @@ sub check_session {
     $self->log($config, "check_session($login) called.", 8);
     $self->_setenv($config, $login);
     my $agefn = $self->_get_agefilename($config, $login);
-    my $ticketlifetime = $config->{ticketlifetime} // 300;
+    my $ticketlifetime = $config->{ticketlifetime} // 600;
     if ( time - (stat $agefn)[9] >= $ticketlifetime  ) {
         $self->log($config, "ticketlifetime $ticketlifetime for $login elapsed.", 4);
         $self->logout($config, $login);

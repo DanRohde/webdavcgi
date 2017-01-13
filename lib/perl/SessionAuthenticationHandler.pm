@@ -27,15 +27,15 @@
 #      tokenmaxage => 36000, # 10h
 #      expire => '+10m', # can be overwritten by domain
 #      temp => '/tmp',
-#      callback => qw(...) # Perl module called aufter domain defaults
+#      callback => qw(...) # Perl module called after domain defaults
 #      callback_param => { } # parameter for callback
 #      postconfig => '/path/to/config' # configs loaded after domain defaults and callback call
 #      domains => {
-#          DOMAIN1 => [ # multiple handler
+#          DOMAIN1 => [ # handler list
 #              {
 #                  authhandler => qw( SessionAuthenticationHandler::AuthenticationHandler ),
 #                  expire => '+10m', # default
-#                  config => {  whatever => 'here comes'  },
+#                  config => {  param => '...'  },
 #                  callback => qw(),
 #                  callback_param => {} ,
 #                  defaults => { DOCUMENT_ROOT=>'...', BACKEND => '..' },
@@ -133,7 +133,7 @@ sub _handle_post_config {
     $ENV{SESSION_DOMAIN} = $session->param('domain').q{-}.$session->param('handleridx'); ## for msg/js/css caching
     $ENV{SESSION_CREATED} = $session->ctime();
     $ENV{SESSION_ACCESSED} = $session->atime();
-    $ENV{SESSION_EXIPRE} = $session->expire();
+    $ENV{SESSION_EXPIRE} = $session->expire();
     $ENV{SESSION_ID} = $session->id();
     return $self->setup_config($self->_get_auth($session));
 }

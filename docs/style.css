@@ -248,6 +248,24 @@ pre {
 	padding: 0.5ex;
 }
 #maninstall { display: none; }
+
+.recomtable {
+	border-collapse: collapse;
+}
+.recomtable tr {
+	border-top: 1px solid #ddd;
+	border-bottom: 1px solid #aaa; 
+}
+.recom {
+	background-color: #44ff44;
+}
+.partrecom {
+	background-color: #ffff44;
+}
+.notrecom {
+	background-color: #ff4444;
+}
+
 @media print {
 	body, #content {
 		background: white; color: black; margin:0; border: 0; padding; 5px; max-width: none;

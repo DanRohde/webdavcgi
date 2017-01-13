@@ -35,8 +35,8 @@ use Authen::Htpasswd;
 sub login {
     my ($self, $config, $login, $password) = @_;
     $self->log($config, "login for $login called.", 8);
-    my $pwfile = Authen::Htpasswd->new($config->{htpasswd});
-    return $pwfile->check_user_password($login, $password);
+    my $user = Authen::Htpasswd->new($config->{htpasswd})->lookup_user($login);
+    return $user && $user->check_password($password);
 }
 
 1;
