@@ -135,8 +135,11 @@ sub _handle_post_config {
     $ENV{SESSION_ACCESSED} = $session->atime();
     $ENV{SESSION_EXIPRE} = $session->expire();
     $ENV{SESSION_ID} = $session->id();
-    my $auth = $self->_get_auth($session);
-    return $self->set_domain_defaults($auth)->_read_post_configs($auth);
+    return $self->setup_config($self->_get_auth($session));
+}
+sub setup_config {
+    my ($self, $auth) = @_;
+    return $self->_set_domain_defaults($auth)->_handle_callbacks($auth)->_read_post_configs($auth);
 }
 sub _read_post_configs {
     my ($self, $auth) = @_;
@@ -152,14 +155,14 @@ sub _get_auth {
     my ($self, $session) = @_;
     return $self->_get_handler_arrref(\%SESSION, $session->param('domain'))->[$session->param('handleridx')];
 }
-sub set_domain_defaults {
+sub _set_domain_defaults {
     my ($self, $auth) = @_;
     if ($auth->{defaults}) {
         foreach my $k (keys %{$auth->{defaults}}) {
             my $dref = $DefaultConfig::{$k};
             my $val = $auth->{defaults}->{$k};
             if (!defined $dref) {
-                carp("set_domain_defaults: unknown default $k");
+                carp("_set_domain_defaults: unknown default $k");
                 next;
             }
             if (${$dref}) {
@@ -169,11 +172,11 @@ sub set_domain_defaults {
             } elsif (%{$dref}) {
                 %{$dref} = %{$val};
             } else {
-                carp("set_domain_defaults: unknown default $k (ref=".ref($dref).q{)});
+                carp("_set_domain_defaults: unknown default $k (ref=".ref($dref).q{)});
             }
         }
     }
-    return $self->_handle_callbacks($auth);
+    return $self;
 }
 sub _handle_callbacks {
     my ($self, $auth) = @_;
@@ -294,8 +297,7 @@ sub _handle_wrapped_session {
     my ($self) = @_;
     $REMOTE_USER = $ENV{REMOTE_USER};
     if ( $ENV{SESSION_DOMAIN} =~ /^ (.*?) - (\d+) $/xms ) {
-        my $auth = ( $self->_get_handler_arrref(\%SESSION, $1) )->[$2];
-        $self->set_domain_defaults($auth)->_read_post_configs($auth);
+        $self->setup_config( ( $self->_get_handler_arrref(\%SESSION, $1) )->[$2] );
     }
     return 1;
 }

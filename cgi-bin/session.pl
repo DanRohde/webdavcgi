@@ -22,20 +22,15 @@ use warnings;
 
 our $VERSION = '1.0';
 
-
-use CGI;
 use CGI::Carp;
-
 use MIME::Base64;
 
 use SessionAuthenticationHandler;
-use DefaultConfig;
-use WebDAVCGI;
 
 use vars qw( $W %SESSION $REALM );
 
-
 sub send_auth_required_response() {
+    require CGI;
     print CGI::header(-status=>'401 Unauthorized', -WWW_Authenticate=>sprintf 'Basic realm="%s"', $REALM);
     return;
 }
@@ -76,10 +71,16 @@ sub letsplay {
     foreach my $domain ( @domains ) {
         if (my $auth=$handler->check_credentials(\%SESSION, $domain, $login, $password)) {
             $ENV{REMOTE_USER} = $login;
-            DefaultConfig::init_defaults();
-            $handler->set_domain_defaults($auth);
-            $W //= WebDAVCGI->new();
-            $W->run();
+            if ($SESSION{wrapper}) {
+                system $SESSION{wrapper};
+            } else {
+                require DefaultConfig;
+                require WebDAVCGI;
+                DefaultConfig::init_defaults();
+                $handler->setup_config($auth);
+                $W //= WebDAVCGI->new();
+                $W->run();
+            }
             return;
         }
     }
