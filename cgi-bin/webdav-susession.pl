@@ -20,7 +20,6 @@
 # calls webdav.pl.
 # Requirements: - a session configuration (%SESSION) from $ENV{WEBDAVCONF}
 #               - additionaly $SESSION{wrapper}
-#               - login form should deliver ?login=1 in query on POST
 
 use strict;
 use warnings;
@@ -92,6 +91,8 @@ sub letsplay {
                 }
                 waitpid $pid, 0;
                 close($in) || carp("Cannot close $SESSION{wrapper}.");
+            } else {
+                carp("Cannot open session wrapper: $SESSION{wrapper}");
             }
         } else {
             system $SESSION{wrapper};
@@ -149,7 +150,7 @@ sub _save_stdin {
     my $file = q{};
     my $size = 0;
     while ( my $rs = read STDIN, my $buffer, $rbs ) {
-        $file.=$buffer;
+        $file .= $buffer;
         $size += $rs;
         if ($size >= $POST_MAX_SIZE) {
             last;

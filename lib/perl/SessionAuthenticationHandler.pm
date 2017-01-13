@@ -27,12 +27,19 @@
 #      tokenmaxage => 36000, # 10h
 #      expire => '+10m', # can be overwritten by domain
 #      temp => '/tmp',
+#      callback => qw(...) # Perl module called aufter domain defaults
+#      callback_param => { } # parameter for callback
+#      postconfig => '/path/to/config' # configs loaded after domain defaults and callback call
 #      domains => {
 #          DOMAIN1 => [ # multiple handler
 #              {
 #                  authhandler => qw( SessionAuthenticationHandler::AuthenticationHandler ),
 #                  expire => '+10m', # default
 #                  config => {  whatever => 'here comes'  },
+#                  callback => qw(),
+#                  callback_param => {} ,
+#                  defaults => { DOCUMENT_ROOT=>'...', BACKEND => '..' },
+#                  postconfig => '/path/to/config',
 #                  _order => 1, # sort order for login screen
 #              }, ...
 #          ],
@@ -129,7 +136,10 @@ sub _handle_post_config {
     $ENV{SESSION_EXIPRE} = $session->expire();
     $ENV{SESSION_ID} = $session->id();
     my $auth = $self->_get_auth($session);
-    $self->set_domain_defaults($auth);
+    return $self->set_domain_defaults($auth)->_read_post_configs($auth);
+}
+sub _read_post_configs {
+    my ($self, $auth) = @_;
     if ($SESSION{postconfig}) {
         read_config($CONFIG, $SESSION{postconfig});
     }
@@ -163,12 +173,21 @@ sub set_domain_defaults {
             }
         }
     }
+    return $self->_handle_callbacks($auth);
+}
+sub _handle_callbacks {
+    my ($self, $auth) = @_;
+    if ($SESSION{callback}) {
+        require Module::Load;
+        Module::Load::load($SESSION{callback});
+        $SESSION{callback}->init($SESSION{callback_param});
+    }
     if ($auth->{callback}) {
         require Module::Load;
         Module::Load::load($auth->{callback});
         $auth->{callback}->init($auth->{callback_param});
     }
-    return;
+    return $self;
 }
 sub _get_handler_arrref {
     my ($self, $sessionconfig, $domain) = @_;
@@ -247,7 +266,6 @@ sub _set_defaults {
 sub _create_token {
     my ($self, $login, $force) = @_;
     $ENV{SESSION_TOKEN} = generate_csrf_token($login, $SESSION{secret}, {  Random => $self->{random}->bytes(20) });
-  #  carp("Token $token for $login generated.");
     return $ENV{SESSION_TOKEN};
 }
 sub _check_token {
@@ -273,7 +291,12 @@ sub _check_token {
     return $check == CSRF_OK;
 }
 sub _handle_wrapped_session {
+    my ($self) = @_;
     $REMOTE_USER = $ENV{REMOTE_USER};
+    if ( $ENV{SESSION_DOMAIN} =~ /^ (.*?) - (\d+) $/xms ) {
+        my $auth = ( $self->_get_handler_arrref(\%SESSION, $1) )->[$2];
+        $self->set_domain_defaults($auth)->_read_post_configs($auth);
+    }
     return 1;
 }
 1;
