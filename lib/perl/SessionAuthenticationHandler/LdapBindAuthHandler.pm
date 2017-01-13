@@ -45,7 +45,6 @@ our $VERSION = '1.0';
 
 use base qw(SessionAuthenticationHandler::AuthenticationHandler);
 
-use CGI::Carp;
 use Net::LDAP;
 use Authen::SASL qw(Perl);
 use English qw ( -no_match_vars );
@@ -75,7 +74,7 @@ sub login {
     my %settings = ( %DEFAULT_CONFIG, %{$config} );
     my $ldap = Net::LDAP->new( $settings{server}, timeout=>$settings{timeout}, onerror=>$settings{onerror}, debug => $settings{debug} );
     if (!$ldap) {
-        carp("Cannot connect to ldap server $settings{server}.");
+        $self->log($config, "Cannot connect to ldap server $settings{server}.", 0);
         return 0;
     }
     if ( $settings{starttls} ) {
@@ -96,7 +95,7 @@ sub login {
           ? $ldap->bind()
           : $ldap->bind( $settings{binddn}, password => $settings{password} );
         if ( $msg->code ) {
-            carp( $msg->error );
+            $self->log($config,  $msg->error );
             return 0;
         }
         my $f = sprintf $settings{filter}, $login;
@@ -110,7 +109,7 @@ sub login {
             raw       => qr/images/xmsi
         );
         if ( $msg->code ) {
-            carp( $msg->error );
+            $self->log($config,  $msg->error );
             return 0;
         }
         my @entries = $msg->entries;
@@ -121,12 +120,13 @@ sub login {
     }
     $msg = $ldap->bind( $userdn, password => $password );
     if ( $msg->code ) {
-        carp("Authentication for user $login ($userdn) failed.");
+        $self->log($config, "Authentication for user $login ($userdn) failed.", 2);
         return 0;
     }
     $ldap->unbind;
     $ldap->disconnect();
     undef $ldap;
+    $self->log($config, "Authenticationf or user $login ($userdn) successful.",4);
     return 1;
 }
 

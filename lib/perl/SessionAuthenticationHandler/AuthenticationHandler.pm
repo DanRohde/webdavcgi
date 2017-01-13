@@ -30,15 +30,27 @@ our $VERSION = '1.0';
 
 use CGI::Carp;
 
-
 sub login {
     my ($self, $config, $login, $password) = @_;
     return 0;
 }
 sub check_session {
+    my ($self, $config, $login) = @_;
+    $self->log($config, "check_session($login) called.", 8);
     return 1;
 }
 sub logout {
+    my ($self, $config, $login) = @_;
+    $self->log($config, "$login logged out.", 4);
     return 1;
+}
+
+sub log {
+    my ($self, $config, $message, $severity) = @_;
+    $severity //= 4;
+    if ($config->{log} && ( $config->{log} & $severity) == $severity ) {
+        my %severites = ( 1 => 'ERROR', 2=> 'WARN', 4=> 'INFO', 8=> 'DEBUG' );
+        carp(sprintf '%s: %s', $severites{$severity}, $message);
+    }
 }
 1;

@@ -47,7 +47,7 @@ use warnings;
 our $VERSION = '1.0';
 
 use CGI::Carp;
-use CGI::Session;
+use CGI::Session '-ip_match';
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 
@@ -66,6 +66,9 @@ sub new {
 # 2 : fresh authenticated -> redirect -> exit 
 sub authenticate {
     my ($self) = @_;
+    if ($ENV{SESSION_WRAPPED}) {
+        return $self->_handle_wrapped_session();
+    }
     my $session = CGI::Session->load('driver:File', $self->{cgi}, {Directory => $SESSION{temp} // '/tmp'});
     if (! defined $session) {
         carp("${self}: ".CGI::Session->errstr());
@@ -106,7 +109,6 @@ sub authenticate {
         # throw old (expired) session away:
         $self->_remove_session($session);
         # create a new one:
-        $CGI::Session::IP_MATCH = 1;
         $session = CGI::Session->new('driver:File', undef, {Directory => $SESSION{temp} // '/tmp'});
         $session->param('login', $login);
         $session->param('domain', $domain);
@@ -122,6 +124,10 @@ sub _handle_post_config {
     my ( $self, $session ) = @_;
     $ENV{REMOTE_USER} = $session->param('login');
     $ENV{SESSION_DOMAIN} = $session->param('domain').q{-}.$session->param('handleridx'); ## for msg/js/css caching
+    $ENV{SESSION_CREATED} = $session->ctime();
+    $ENV{SESSION_ACCESSED} = $session->atime();
+    $ENV{SESSION_EXIPRE} = $session->expire();
+    $ENV{SESSION_ID} = $session->id();
     my $auth = $self->_get_auth($session);
     $self->set_domain_defaults($auth);
     if ($SESSION{postconfig}) {
@@ -235,13 +241,14 @@ sub _set_defaults {
     $SESSION{secret} //= 'uP:oh2oo';
     $SESSION{tokenmaxage} //= 36000;
     $SESSION{expire} //= '+10m';
+    $ENV{SESSION_TOKENNAME} = $SESSION{tokenname};
     return;
 }
 sub _create_token {
     my ($self, $login, $force) = @_;
-    my $token = $SESSION{TOKEN} = generate_csrf_token($login, $SESSION{secret}, {  Random => $self->{random}->bytes(20) });
+    $ENV{SESSION_TOKEN} = generate_csrf_token($login, $SESSION{secret}, {  Random => $self->{random}->bytes(20) });
   #  carp("Token $token for $login generated.");
-    return $token;
+    return $ENV{SESSION_TOKEN};
 }
 sub _check_token {
     my ($self, $login) = @_;
@@ -264,5 +271,9 @@ sub _check_token {
         carp($warnings{$check});
     }
     return $check == CSRF_OK;
+}
+sub _handle_wrapped_session {
+    $REMOTE_USER = $ENV{REMOTE_USER};
+    return 1;
 }
 1;

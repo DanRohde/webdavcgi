@@ -363,6 +363,7 @@ table,th,td {
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-between;
+	padding-top: 3px;
 }
 #fileList td.filename div.filename {
 	display: flex;
