@@ -36,7 +36,8 @@ Cons:
 <ul>
 <li>form login customization</li>
 <li>domain based authentication support: let the user select a domain in login screen</li>
-<li>authentication handler for LDAP (simple bind authentication), Kerberos for SMB backend, Kerberos/AFS for AFS backend</li>
+<li>authentication handler for LDAP (simple bind authentication), Kerberos for SMB backend, Kerberos/AFS for AFS backend, Apache htpasswd files</li>
+<li>support for suid/setgid wrapped WebDAV and web interface access</li>
 </ul>
 
 <h2>Requirements</h2>
@@ -69,7 +70,7 @@ Cons:
 The WebDAV and the web interface setup differ in two aspects:
 <ul>
 <li> <code>$VIRTUAL_BASE</code> - you need two URLs, so the VIRTUAL_BASE differs</li>
-<li> <code>%SESSION</code> - only the web interface setup and the session.pl wrapper for WebDAV access must have this</li>
+<li> <code>%SESSION</code> - only the web interface setup and wrapper scripts like session.pl and webdav-susession.pl for WebDAV access must have this</li>
 </ul>
 The following setups are additional to the normal <a href="doc.html#setup">WebDAV CGI setup</a> like database, backend, and extension configuration. 
 Hint: You cannot reuse the WebDAV setup for your web interface setup with 'require ...' if you use ModPerl. 
