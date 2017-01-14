@@ -46,7 +46,6 @@ our $VERSION = '1.0';
 use base qw(SessionAuthenticationHandler::AuthenticationHandler);
 
 use Net::LDAP;
-use Authen::SASL qw(Perl);
 use English qw ( -no_match_vars );
 
 use vars qw ( %DEFAULT_CONFIG );

@@ -37,9 +37,7 @@ our $VERSION = '1.0';
 
 use base qw( SessionAuthenticationHandler::AuthenticationHandler );
 
-use CGI::Carp;
 use Env::C;
-use Fcntl qw(:flock);
 use English qw( -no_match_vars );
 
 sub login {

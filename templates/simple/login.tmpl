@@ -161,7 +161,7 @@ $INCLUDE(login-logo)
 			<div class="login-language">
 				<select name="lang">
 					<option value="$LANG">$TRANS_LANG</option>
-					$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|
+					$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|/^${TRANS_LANG}$/|
 				</select>
 			</div>
 			<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">

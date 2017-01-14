@@ -34,7 +34,8 @@ use DefaultConfig qw(
   $RELEASE $REMOTE_USER $REQUEST_URI $SHOWDOTFILES $SHOWDOTFOLDERS $VHTDOCS $VIEW
   $VIRTUAL_BASE %ICONS %TRANSLATION @ALLOWED_TABLE_COLUMNS @SUPPORTED_VIEWS
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
-  @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG %SESSION );
+  @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG %SESSION 
+  @ALL_EXTENSIONS );
 use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 use WebInterface::Translations qw( read_all_tl  );
 use FileUtils;
@@ -580,7 +581,7 @@ sub render_each {
     if ( $variable =~ s/^\%(?:)?//xms ) {
         my $hashref = $self->_get_varref($variable) // {};
         foreach my $key ( sort { _flex_sorter($hashref) } keys %{$hashref} ) {
-            next if defined $filter && $hashref->{$key} =~ $filter;
+            next if defined $filter && $hashref->{$key} =~ /$filter/xmsg;
             my $t = $tmpl;
             $t =~ s/\$k/$key/xmsg;
             $t =~ s/\$\{k\}/$key/xmsg;
@@ -600,7 +601,7 @@ sub render_each {
         else {
             @arr = @{ $self->_get_varref($variable) // [] };
         }
-        foreach my $val (@arr) {
+        foreach my $val (sort @arr) {
             next if defined $filter && $val =~ $filter;
             my $t = $tmpl;
             $t =~ s/\$[kv]/$val/xmsg;

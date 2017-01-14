@@ -40,6 +40,14 @@ sub login {
 }
 sub _aklog {
     my ($self, $config, $login) = @_;
+    if (haspag()) {
+        unlog();
+    } else {
+        if (!setpag()) {
+            $self->log($config, "setpag failed for $login.",1);
+            return 0;
+        }
+    }
     system $config->{aklog} // 'aklog';
     if ($CHILD_ERROR >> 8 != 0) {
         $self->log($config, "AFS login failed for $login: $CHILD_ERROR, $ERRNO", 2);
@@ -50,18 +58,7 @@ sub _aklog {
 }
 sub check_session {
     my ($self, $config, $login) = @_;
-    if ($self->SUPER::check_session($config, $login)) {
-        if (haspag()) {
-            unlog();
-        } else {
-            if (!setpag()) {
-                $self->log($config, "setpag failed for $login.",1);
-                return 0;
-            }
-        }
-        return $self->_aklog($config, $login);
-    }
-    return 0;
+    return $self->SUPER::check_session($config, $login) && $self->_aklog($config, $login);
 }
 sub logout {
     my ($self, $config, $login ) = @_;

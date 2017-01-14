@@ -50,6 +50,7 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 <li><a href="#Highlighter">Highlighter</a> - colorizes files/folders</li>
 <li><a href="#History">History</a> - shows a folder history</li> 
 <li><a href="#ImageInfo">ImageInfo</a> - shows image/video/audio information (EXIF, ID3, ...)</li>
+<li><a href="#Localizer">Localizer</a> - supports Web UI translation</li>
 <li><a href="#MotD">MotD</a> - shows message of the day</li>
 <li><a href="#ODFConverter">ODFConverter</a> - converts between Open Document file formats and other Office file formats</li>
 <li><a href="#Permissions">Permissions</a> - manages files/folder POSIX permissions (user, group, others: rwxts)</li>
@@ -242,6 +243,17 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 </tr>
 </table>
 
+<h2 id="Localizer">Localizer</h2>
+<table style="width:100%">
+<tr>
+<td><a class="screenshot" href="images/webdavcgi-webinterface-localizer.png"><img alt="Web interface Localizer" class="screenshot" src="images/webdavcgi-webinterface-localizer.png"/></a></td>
+<td><pre>
+# SETUP:
+</pre></td>
+</tr>
+</table>
+
+
 <h2 id="MotD">MotD</h2>
 <table style="width:100%">
 <tr>
@@ -252,6 +264,8 @@ $EXTENSION_CONFIG{SendByMail} = { relayhost=&gt;'smtp.example.org' };
 # motdmessage - motd as text; if exists motd parameter will be ignored
 # motdtitle - motd dialog title (default: from locale files: motd.title)
 # session - 1: (default) show MOTD every session, 0: otherwise
+# pullinterval - 0 (default - no pilling) in seconds
+#               (Web browser pulls every 'pollinterval' seconds for motd changes)
 </pre></td>
 </tr>
 </table>

@@ -60,9 +60,8 @@ sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {
-        print_compressed_header_and_content( '200 OK', 'text/html',
+        return print_compressed_header_and_content( '200 OK', 'text/html',
             '<!DOCTYPE html><html><head></head><body></body></html>' );
-        return 1;
     }
     return 0;
 }

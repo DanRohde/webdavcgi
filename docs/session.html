@@ -253,6 +253,7 @@ RewriteRule / /_web [PT,L,E=WEBDAVCONF:/etc/webdav-session.conf,E=PERLLIB:/etc/w
 </pre>
 <h2>Authentication handler</h2>
 <h3> LDAP </h3>
+The LDAP authentication handler requires the Perl module Net::LDAP (Debian/Ubuntu: <code>apt install libnet-ldap-perl</code>).
 The necessary distinguished name (dn) for LDAP bind authentication can be searched or given by a parameter (userdn).
 <pre>
 # this is the default:
@@ -278,7 +279,7 @@ config =&gt; {
 },
 </pre>
 <h3> Kerberos </h3>
-... used for ADS/SMB share access. 
+... used for ADS/SMB share access and requires Perl module Env::C (<code>cpan install Env::C</code>).
 <pre>
 authhandler =&gt; qw( SessionAuthenticationHandler::KerberosAuthHandler ),
 config =&gt; {
@@ -293,7 +294,7 @@ config =&gt; {
 },
 </pre>
 <h3> AFS </h3>
- 
+AFS authentication handles require Perl module AFS::PAG (Debian/Ubuntu: <code>apt install libafs-pag-perl</code>).
 <pre>
 authhandler =&gt; qw( SessionAuthenticationHandler::AfsKerberosAuthHandler ),
 config =&gt; {

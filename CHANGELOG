@@ -11,6 +11,7 @@
      - refactored toolbar, status bar, side bar for easier changes and extension integration
      - added session authentication support
      - added Brotli compression support (module IO::Compress::Brotli required)
+     - added Localizer plugin for Web UI translation support
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension

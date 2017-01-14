@@ -37,6 +37,7 @@
 # motdmessage - motd as text; if exists motd parameter will be ignored
 # motdtitle - motd dialog title (default: from locale files: motd.title)
 # session - 1: (default) show MOTD every session, 0: otherwise
+# pullinterval - 0 (default - no pulling), in seconds
 package WebInterface::Extension::MotD;
 
 use strict;
@@ -94,10 +95,11 @@ sub handle_hook_posthandler {
     if ( $action eq $ACTION ) {
         my ( $motd, $timestamp ) = $self->_get_motd_and_timestamp();
         my $json = {
-            message    => $motd,
-            timestamp  => $timestamp,
-            title      => $self->config('motdtitle', $self->tl('motd.title', 'Message Of The Day [MOTD]')),
-            session    => $self->{session},
+            message      => $motd,
+            timestamp    => $timestamp,
+            title        => $self->config('motdtitle', $self->tl('motd.title', 'Message Of The Day [MOTD]')),
+            session      => $self->{session},
+            pullinterval => $self->config('pullintervall', 0),
         };
         print_compressed_header_and_content( '200 OK', 'application/json', $self->{json}->encode($json) );
         return 1;

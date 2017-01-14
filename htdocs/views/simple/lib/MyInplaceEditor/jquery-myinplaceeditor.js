@@ -37,10 +37,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		var input = $("<input/>").addClass(settings.inputClass)
 						.on("click",function(e) { preventDefault(e); $(this).focus(); } )
 						.off("dblclick").on("dblclick",preventDefault);
+		if (settings.spellcheck) input.prop("spellcheck",1);
+		if (settings.lang != null) input.attr("lang",settings.lang);
 		if (defaultValue) input.val(defaultValue);
 		
+		
 		return input.keydown(function(ev) {
-			if (ev.keyCode == 13) {
+			if (ev.keyCode == 13 || (settings.allowtab && ev.keyCode == 9)) {
 				preventDefault(ev);
 				var val = $(this).val();
 				editorTarget.data("input-finished",true); // tell the keyboard listener I was here
@@ -80,8 +83,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	function restoreOrigHTML(settings) {
 		var target = getEditorTarget(settings);
 		target.find("."+settings.inputClass).remove();   // remove input
-		var my = target.find("."+settings.wrapperClass);
-		my.children().unwrap();
+		var wrapper = target.find("."+settings.wrapperClass);
+		if (wrapper.children().length==0) {
+			wrapper.replaceWith(wrapper.html());
+		} else {
+			wrapper.children().unwrap("."+settings.wrapperClass);
+		}
 		return target;
 	}
 	function triggerEvent(target, source, data) {
@@ -101,6 +108,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			cancelEvent: null,
 			finalEvent: null,
 			inputClass : "myinplaceeditor-input",
-			wrapperClass : "myinplaceeditor-hidden"
+			wrapperClass : "myinplaceeditor-hidden",
+			spellcheck: false,
+			lang : null,
+			allowtab : false
 	};
 }( jQuery ));

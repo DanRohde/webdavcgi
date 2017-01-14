@@ -1,0 +1,93 @@
+/*********************************************************************
+(C) ZE CMS, Humboldt-Universitaet zu Berlin
+Written 2016 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+.action.localizer {
+	background-image: url(localizer.svg);
+	background-size: 20px 20px;
+	background-repeat: no-repeat;
+	background-position: 4px center;
+}
+.action.localizer:focus, .action.localizer:hover {
+	background-image: url(localizer-hover.svg);
+}
+.localizerdialog.ui-dialog .ui-dialog-title {
+	background-image: url(localizer.svg);
+	background-size: 20px 18px;
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 20px;
+}
+
+.localizer {
+	display: flex;
+	flex-flow: column;
+}
+.localizer-selectors {
+	flex: 0 0 auto;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-between;
+}
+.localizer-editor-pane {
+	flex: 1 1 auto;
+	overflow: auto;
+}
+.localizer-locale-editor-table {
+	border-collapse: collapse;
+	width: 98%;
+	margin-bottom: 5em;
+}
+.localizer-locale-editor-table tr {
+	border:none
+}
+.localizer-locale-editor-table td {
+	width: 50%;
+}
+tr.localizer-locale-editor-entry-head td {
+	font-size: small;
+	line-height: 1;
+	color: #666;
+	border-top: 1px solid #eee;
+
+}
+tr.localizer-locale-editor-entry {
+	border-bottom: 1px solid #ddd;
+}
+.localizer-locale-editor-entry td {
+	white-space: pre-wrap;
+}
+.localizer-locale-editor-entry .myinplaceeditor-input {
+	width: 95%;
+}
+.localizer-locale-editor-entry-active {
+	background-color: #ffeeee;
+}
+.localizer-locale-editor-buttons {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	background-color: white;
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: flex-end;
+	width: 100%;
+}
+.localizer-locale-editor-buttons > * {
+	flex: 0 0 20%;
+}
+.localizer-add-new-lang {
+	width: 5em;
+}
