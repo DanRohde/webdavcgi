@@ -97,8 +97,8 @@ sub _get_help_basepath {
     my ($self, $extension) = @_;
     
     return $extension && $extension ne q{} 
-            ? "${INSTALL_BASE}/lib/perl/WebInterface/Extension/$extension/help/"
-            : "${INSTALL_BASE}/htdocs/views/$VIEW/help/";
+            ? "${INSTALL_BASE}lib/perl/WebInterface/Extension/$extension/help/"
+            : "${INSTALL_BASE}htdocs/views/$VIEW/help/";
 }
 sub _save_help_file {
     my ($self) = @_;
@@ -107,13 +107,17 @@ sub _save_help_file {
     my $extension = $self->{cgi}->param('extension') // q{};
     $self->_sanitize(\$filename,\$extension);
     my $full = $self->_get_help_basepath($extension).$filename;
-    if ($filename ne q{} && open my $out, q{>}, $full) {
-        print {$out} scalar $self->{cgi}->param('source') // q{};
-        close($out) || carp("Cannot close help file ${full}.");
-        $response{message} = sprintf $self->tl('localizer.helpfilesaved'), $full;
+    if ($self->_create_backup_copy($full)) {
+        if ($filename ne q{} && open my $out, q{>}, $full) {
+            print {$out} scalar $self->{cgi}->param('source') // q{};
+            close($out) || carp("Cannot close help file ${full}.");
+            $response{message} = sprintf $self->tl('localizer.helpfilesaved'), $full;
+        } else {
+            carp("Cannot write helpfile ${full}.");
+            $response{error} = sprintf $self->tl('localizer.cannotwritehelpfile'), $full;
+        }
     } else {
-        carp("Cannot write helpfile ${full}.");
-        $response{error} = sprintf $self->tl('localizer.cannotwritehelpfile'), $full;
+        $response{error} = sprintf $self->tl('localizer.cannotwritebackupcopy'), $full;
     }
     return $self->{json}->encode(\%response);
 }
@@ -254,6 +258,9 @@ sub _get_ui_locale_filename {
 }
 sub _create_backup_copy {
     my ($self,$fn) = @_;
+    if (! -e $fn ) {
+        return 1;
+    }
     my @t = localtime;
     $t[5]+=1900;
     $t[4]++;
