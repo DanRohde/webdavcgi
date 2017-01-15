@@ -36,10 +36,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	flex-flow: column;
 }
 .localizer-selectors {
-	flex: 0 0 auto;
-	display: flex;
-	flex-flow: row wrap;
-	justify-content: space-between;
+	padding: 1ex 1em 1ex 0;
+}
+.localizer-selectors > label {
+	padding: 0 1em;
 }
 .localizer-editor-pane {
 	flex: 1 1 auto;
