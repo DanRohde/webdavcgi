@@ -1,0 +1,37 @@
+<div class="localizer-help-editor">
+<div class="accordion">
+$EDITOR
+<!--TEMPLATE(entry)[
+	<h3>${filename} &rarr; ${transfilename}</h3>
+	<div>
+	<table class="localizer-locale-editor-table">
+		<thead><tr><th>$tl(localizer.original) - ${filename}</th><th>$tl(localizer.translation) ${LT} (${L}) - ${transfilename}</th></tr></thead>
+		<tbody>
+			<tr>
+				<td>
+				  <div class="localizer-help-editor-cell">
+					<textarea readonly="readonly" class="localizer-source-${counter}">$ORIG</textarea>
+					<iframe class="localizer-preview-frame frame-${counter}" src="$docbase"></iframe>
+					<div>
+						<button class="localizer-preview" data-docbase="${docbase}" data-buttontext="$tl(localizer.vieworighelpsource)" data-preview=".localizer-preview-frame.frame-${counter}" data-source=".localizer-source-${counter}">$tl(localizer.vieworighelpfile)</button>
+					</div>
+				  </div>
+				</td>
+				<td>
+				  <div class="localizer-help-editor-cell">
+					<textarea class="localizer-locale-editor-entry-translation localizer-source-${counter}-1 localizer-source">$TRANS</textarea>
+					<iframe class="localizer-preview-frame frame-${counter}-1"></iframe>
+					<div>
+						<button class="localizer-preview" data-docbase="${docbase}" data-buttontext="$tl(localizer.helpfilesource)" data-preview=".localizer-preview-frame.frame-${counter}-1" data-source=".localizer-source-${counter}-1">$tl(localizer.helpfilepreview)</button>
+						<button data-filename="${transfilename}" data-extension="${extension}" class="localizer-download-helpfile" data-source=".localizer-source-${counter}-1">$tl(localizer.downloadhelpfile)</button>
+						<button data-filename="${transfilename}" data-extension="${extension}" class="localizer-save-helpfile" data-source=".localizer-source-${counter}-1">$tl(localizer.savehelpfile)</button>
+					</div>
+				  </div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	</div>
+]-->
+</div>
+</div>

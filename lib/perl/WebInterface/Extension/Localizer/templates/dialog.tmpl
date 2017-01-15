@@ -1,21 +1,23 @@
 <div title="$tl(localizer)" class="localizer">
-<fieldset class="localizer-selectors">
+<fieldset class="localizer-selectors localizer-unsaved-changes-listener">
 <label>$tl(localizer.selectlanguage)
-	<select class="localizer-select-lang">
+	<select class="localizer-select-lang localizer-protect-unsaved-changes">
 	<option value="">-</option>
-	$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|
+	$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|/^English$/|
 	</select>
 </label>
 <label>$tl(localizer.addnewlanguage)
-	<input type="text" class="localizer-add-new-lang"><span class="contexthelp" data-htmltooltip="$inchelp(addnewlang)"></span>
+	<input type="text" class="localizer-add-new-lang localizer-lang-notrequired localizer-protect-unsaved-changes"><span class="contexthelp" data-htmltooltip="$inchelp(addnewlang)"></span>
 </label>
-<button class="localizer-edit-uilocale localizer-lang-required">$tl(localizer.edituilocale)</button>
+<label><button class="localizer-edit-uilocale localizer-lang-required">$tl(localizer.edituilocale)</button></label>
 <label>$tl(localizer.selectextension)
-	<select class="localizer-select-extension localizer-lang-required">
+	<select class="localizer-select-extension localizer-lang-required localizer-protect-unsaved-changes">
 	<option value="">-</option>
 	$each|@ALL_EXTENSIONS|'<option value="$v">$v</option>'|
 	</select>
+	<button class="localizer-edit-extension-locale localizer-extension-required">$tl(localizer.editextensionlocale)</button>
 </label>
+<label><button class="localizer-edit-help localizer-lang-required">$tl(localizer.edithelp)</button></label>
 <label>
 <button class="localizer-download-all">$tl(localizer.downloadall)</button>
 <span class="contexthelp" data-htmltooltip="$inchelp(downloadall)"></span>
@@ -24,4 +26,5 @@
 <div class="localizer-editor-pane">
 </div>
 <div class="localizer-statistics"></div>
+<div class="localizer-unsafed-changes-message" data-message="$tl(localizer.unsavedchanges)"></div>
 </div>

@@ -711,8 +711,29 @@ AFS note: If you use AFS you have to use AFS groups and AFS ACLs to share folder
 <h2 id="webinterface">Web interface</h2>
 <h3>How to add a new translation</h3>
 <div>
-Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;MYLANGCODE&gt;.msg</code> and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
-
+<p>
+Since WebDAV CGI v1.1.2 there is a Localizer extension that helps you to translate all locale and online help files. Activate it by putting @DEV_EXTENSIONS or 'Localize' to
+your @EXTENSIONS setup (see <a href="extensions.html">extensions doc</a>) in your webdav.conf. And you need write permissions for all locale and online help files, e.g.
+<pre>
+find /etc/webdavcgi/ -name locale -type d -exec chmod -R a+w {} \;
+find /etc/webdavcgi/ -name help -type d -exec chmod -R a+w {} \;
+</pre>
+This is an example to get access rights but it should only used if no other user has access to the installation.
+ Alternatively, you can use access groups and putting the users to the group and give only the group write permissions, e.g. 
+<pre>
+find /etc/webdavcgi/ -name locale -type d -exec chgrp -R mygroup {} \;
+find /etc/webdavcgi/ -name help -type d -exec chgrp -R mygroup {} \;
+find /etc/webdavcgi/ -name locale -type d -exec chmod -R g+w {} \;
+find /etc/webdavcgi/ -name help -type d -exec chmod -R g+w {} \;
+</pre>
+And to see your results you should delete temporary message files (<code>rm /tmp/*msg</code>) 
+and put your language to the %SUPPORTED_LANGUAGES in your webdav.conf (<code>$SUPPORTED_LANGUAGES{_my_locale_} = 'MyLanguage'; </code>)
+if necessary (or simply write <code>?lang=_my_locale_</code> behind the WebDAV CGI URL).
+</p>
+The old and simple way:
+<p>Copy the <code>locale/webdav-ui_default.msg</code> to <code>locale/webdav-ui_&lt;_my_locale_&gt;.msg</code> 
+and translate all values (leave the keys unchanged; format: <code>key "value"</code>).
+</p>
 </div>
 <div>
 <a href="doc-simple-view.html">The Simple view</a> has a lot of extensions with locale files: <code>/etc/webdavcgi/lib/perl/WebInterface/Extensions/*/locale/*</code>. 

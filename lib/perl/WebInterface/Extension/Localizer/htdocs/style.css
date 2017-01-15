@@ -66,13 +66,16 @@ tr.localizer-locale-editor-entry-head td {
 tr.localizer-locale-editor-entry {
 	border-bottom: 1px solid #ddd;
 }
+.localizer-locale-editor-entry:hover {
+	background-color: #eee;
+}
 .localizer-locale-editor-entry td {
 	white-space: pre-wrap;
 }
 .localizer-locale-editor-entry .myinplaceeditor-input {
 	width: 95%;
 }
-.localizer-locale-editor-entry-active {
+.localizer-locale-editor-entry-active, .localizer-locale-editor-entry-active:hover {
 	background-color: #ffeeee;
 }
 .localizer-locale-editor-buttons {
@@ -90,4 +93,23 @@ tr.localizer-locale-editor-entry {
 }
 .localizer-add-new-lang {
 	width: 5em;
+}
+.localizer-locale-editor-table textarea {
+	width: 95%;
+	min-height: 20em;
+}
+.localizer-preview-frame {
+	display: none;
+	width: 95%;
+	min-height: 20em;
+	overflow: auto;
+}
+.localizer-unsaved-changes {
+	background: #ffffee;
+	background: linear-gradient(to right, #ffffee, #ffffaa);
+}
+.localizer-help-editor-cell {
+	display: flex;
+	flex-flow: column;
+	align-items: flex-end;
 }
