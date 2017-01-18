@@ -24,7 +24,7 @@
 use strict;
 use warnings;
 
-our $VERSION = '1.0';
+our $VERSION = '1.1';
 
 use CGI;
 use CGI::Carp;
@@ -41,7 +41,7 @@ use WebDAVCGI;
 sub letsplay {
 
     my $self = {};
-    my $conf = $ENV{SESSIONCONF} // '/etc/webdav-session.conf';
+    my $conf = $ENV{SESSIONCONF} // $ENV{WEBDAVCONF} // '/etc/webdav-session.conf';
     my $authheader = $ENV{AUTHHEADER};
 
     $RELEASE = $WebDAVCGI::RELEASE;
@@ -50,7 +50,7 @@ sub letsplay {
     $REQUEST_URI =~ s/[?].*$//xms;
 
     init_defaults();
-    read_config($self, $ENV{WEBDAVCONF});
+    read_config($self, $conf);
 
     $SESSION{tokenname} //= 'TOKEN';
 
