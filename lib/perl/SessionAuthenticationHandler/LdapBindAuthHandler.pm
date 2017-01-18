@@ -86,7 +86,7 @@ sub login {
     my $msg;
     my $userdn;
     if ( $settings{userdn} ) {
-        $userdn = sprintf $settings{dn}, $login;
+        $userdn = sprintf $settings{userdn}, $login;
     }
     else {
         $msg =
