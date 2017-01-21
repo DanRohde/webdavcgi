@@ -260,8 +260,8 @@ The necessary distinguished name (dn) for LDAP bind authentication can be search
 authhandler =&gt; qw( SessionAuthenticationHandler::LdapBindAuthHandler ),
 config =&gt; {
     server =&gt; 'localhost',
-    basedn =&gt; 'dc=localhost',
 
+    ## security:
     starttls   =&gt; 1,
     sslversion =&gt; 'tlsv1_2',
     verify     =&gt; 'required',     
@@ -270,6 +270,7 @@ config =&gt; {
     userdn =&gt;  undef,         # usage: 'uid=%s,dc=localhost'
     
     ## for search:  
+    basedn    =&gt; 'dc=localhost',
     filter    =&gt; '(uid=%s)',
     timelimit =&gt; 5,
     sizelimit =&gt; 5,
@@ -317,13 +318,18 @@ config =&gt; {
 <li>remove (daily) old kerberos ticket files (only for AFS or SMB backend users): <code>find /tmp/ -name krb5cc_webdavcgi\* -mtime +1 -delete</code>
 <li>check for WebDAV CGI updates: <a href="https://github.com/DanRohde/webdavcgi" class="extern">https://github.com/DanRohde/webdavcgi</a></li> 
 </ul>
+<h2>Cluster</h2>
+<ul>
+<li> You should synchronize the session files in a fail-over cluster (DRBD, rsync with inotify-tools, inotify-hookable).</li>
+<li> In an active-active cluster setup your load-balancer should use a "sticky session" policy.</li>
+</ul>
 <h2>Security</h2>
 <ul>
 <li>WebDAV CGI uses POST and sometimes GET requests but all POST requests (includes login process) are protected by secure token (using WWW::CSRF and the <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Encrypted_Token_Pattern" class="extern">Encrypted Token Pattern</a>).</li>
 <li>The secure token changes every time a user change the folder and a token expires in a given time (default: 10 hours).</li>
 <li>The token is protected by a secret password that must be set by the administrator in the session setup.</li>
 <li>The session file on the server stores only the username. No password is stored by WebDAV CGI. </li>
-<li>The session expires in a given time (default: really short 10 minutes) and prevent a abuse of a user session.</li>
+<li>The session expires in a given time (default: really short 10 minutes) and is bound to an IP address to prevent a abuse of a user session.</li>
 </ul> 
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2017 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>

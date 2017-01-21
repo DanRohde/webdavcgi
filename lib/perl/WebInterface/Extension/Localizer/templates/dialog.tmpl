@@ -13,6 +13,9 @@
 <label>$tl(localizer.selectextension)
 	<select class="localizer-select-extension localizer-lang-required localizer-protect-unsaved-changes">
 	<option value="">-</option>
+	<option value="all">$tl(localizer.allextensions)</option>
+	<option value="allactivated">$tl(localizer.allactivatedextensions)</option>
+	<option value="" disabled class="separator">-----------------</option>
 	$each|@ALL_EXTENSIONS|'<option value="$v">$v</option>'|
 	</select>
 	<button class="localizer-edit-extension-locale localizer-extension-required">$tl(localizer.editextensionlocale)</button>

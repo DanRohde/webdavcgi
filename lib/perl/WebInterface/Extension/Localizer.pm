@@ -31,7 +31,9 @@ use CGI::Carp;
 use JSON;
 use English qw( -no_match_vars );
 
-use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI $INSTALL_BASE %SUPPORTED_LANGUAGES $READBUFSIZE $VHTDOCS $VIEW );
+use DefaultConfig qw( $PATH_TRANSLATED $REQUEST_URI $INSTALL_BASE
+                      %SUPPORTED_LANGUAGES $READBUFSIZE $VHTDOCS $VIEW
+                      @EXTENSIONS @ALL_EXTENSIONS );
 use HTTPHelper qw( print_compressed_header_and_content get_sec_header get_parent_uri );
 
 use FileUtils qw( get_local_file_content );
@@ -96,7 +98,7 @@ sub handle_hook_posthandler {
 sub _get_help_basepath {
     my ($self, $extension) = @_;
     
-    return $extension && $extension ne q{} 
+    return $extension && $extension ne q{} && $extension ne 'WebDAVCGI-UI'
             ? "${INSTALL_BASE}lib/perl/WebInterface/Extension/$extension/help/"
             : "${INSTALL_BASE}htdocs/views/$VIEW/help/";
 }
@@ -128,7 +130,7 @@ sub _handle_download_help_file {
     my $source = $self->{cgi}->param('source') // q{};
     $self->_sanitize(\$filename, \$extension);
     my $basepath = $self->_get_help_basepath($extension) =~ /^${INSTALL_BASE}(.*)$/xms ? $1 : $filename;
-    return $self->_handle_zipped_text_download(\$source, $basepath.$filename, $extension ne q{} ?  "${extension}.zip" : "WebDAV-UI.zip" );
+    return $self->_handle_zipped_text_download({ $basepath.$filename => \$source }, $extension ne q{} ?  "${extension}.zip" : "WebDAV-UI.zip" );
 }
 sub _sanitize {
     my $self = shift @_;
@@ -145,36 +147,45 @@ sub _get_help_editor {
     my $lang = $self->{cgi}->param('localizerlang') // 'en';
     my $extension = $self->{cgi}->param('extension') // q{};
     $self->_sanitize(\$lang,\$extension);
-    my $glob = $self->_get_help_basepath($extension).q{*.html};
-    my $docbase = $extension ne q{} ? "${VHTDOCS}_EXTENSION($extension)_/help/": "${VHTDOCS}views/${VIEW}/help/";
+    my @extlist;
+    if ($extension eq 'all') {
+        @extlist = @ALL_EXTENSIONS;
+    } elsif ($extension eq 'allactivated') {
+        @extlist = @EXTENSIONS;
+    } else {
+        @extlist = ( $extension );
+    }
 
     my $template = $self->read_template('helpeditor');
     my $entrytmpl = $template =~ s/<!--TEMPLATE\(entry\)\[(.*?)\]-->//xms ? $1 : $template;
 
+    my $editor  = q{};
+    my $counter = 0;
+    foreach my $e ( @extlist ) {
+        my $glob = $self->_get_help_basepath($e).q{*.html};
+        my $docbase = $e ne q{} ? "${VHTDOCS}_EXTENSION($e)_/help/": "${VHTDOCS}views/${VIEW}/help/";
+        foreach my $file ( glob $glob ) {
+            if ($file =~ m{ _ [[:lower:]]{2} (?:_[[:lower:]]{2})? [.] html $}xmsi) {
+                next;
+            }
+            my $transfile = $file =~ /^(.*?)[.]html/xms ? "${1}_${lang}.html" : $file;
 
-    my $editor = q{};
-    my $counter =0;
-    foreach my $file ( glob $glob ) {
-        if ($file =~ m{ _ [[:lower:]]{2} (?:_[[:lower:]]{2})? [.] html $}xmsi) {
-            next;
+            my $filename = $file =~ m{/([^/]+)$}xms ? $1 : $file;
+            my $transfilename = $transfile =~ m{/([^/]+)$}xms ? $1 : $transfile;
+
+            my %vars = (
+                filename      => $filename,
+                transfilename => $transfilename,
+                extension     => $e eq q{} ? 'WebDAVCGI-UI' : $e,
+                docbase       => $docbase.$filename,
+                counter       => $counter++,
+                ORIG  => $self->{cgi}->escapeHTML(get_local_file_content($file)),
+                TRANS => -r $transfile ? $self->{cgi}->escapeHTML(get_local_file_content($transfile)) : q{},
+                L => $lang,
+                LT => $SUPPORTED_LANGUAGES{$lang} // $lang,
+            );
+            $editor .= $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $entrytmpl, \%vars );
         }
-        my $transfile = $file =~ /^(.*?)[.]html/xms ? "${1}_${lang}.html" : $file;
-
-        my $filename = $file =~ m{/([^/]+)$}xms ? $1 : $file;
-        my $transfilename = $transfile =~ m{/([^/]+)$}xms ? $1 : $transfile;
-
-        my %vars = (
-            filename      => $filename,
-            transfilename => $transfilename,
-            extension     => $extension,
-            docbase       => $docbase.$filename,
-            counter       => $counter++,
-            ORIG  => $self->{cgi}->escapeHTML(get_local_file_content($file)),
-            TRANS => -r $transfile ? $self->{cgi}->escapeHTML(get_local_file_content($transfile)) : q{},
-            L => $lang,
-            LT => $SUPPORTED_LANGUAGES{$lang} // $lang,
-        );
-        $editor .= $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $entrytmpl, \%vars );
     }
     $response{editor} = $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $template, { EDITOR => $editor });
     return $self->{json}->encode(\%response);
@@ -208,11 +219,14 @@ sub _handle_download_all_locales {
     return 1;
 }
 sub _handle_zipped_text_download {
-    my ($self, $textref, $filename, $zipfilename) = @_;
+    my ($self, $content, $zipfilename ) = @_;
     require Archive::Zip;
-    $zipfilename =~ s/"/\\"/xmsg;
     my $zip = Archive::Zip->new();
-    $zip->addString( ${$textref} , $filename);
+    foreach my $filename (sort keys %{$content}) {
+        my $textref = $content->{$filename};
+        $zip->addString( ${$textref} , $filename);
+    }
+    $zipfilename =~ s/"/\\"/xmsg;
     my %header = (
         -status => '200 OK',
         -type   => 'application/octet-stream',
@@ -222,19 +236,19 @@ sub _handle_zipped_text_download {
     $zip->writeToFileHandle(*STDOUT, 0);
     undef $zip;
     return 1;
-    
 }
 sub _handle_download_localization {
     my ($self) = @_;
-    my $type = $self->{cgi}->param('localizertype');
-    my $typeval = $self->{cgi}->param('localizertypeval');
-    my $extension = $type eq 'extension' ? $typeval : undef;
-    my $lang = $self->{cgi}->param('localizerlang');
-    $self->_sanitize(\$lang);
     my $data = $self->{json}->decode(scalar $self->{cgi}->param('localization'));
-    my $filename = $extension ? $self->_get_extension_locale_filename($extension, $lang) : $self->_get_ui_locale_filename($lang);
-    my $zfn = $extension ? "${extension}_$lang" : "WebDAVCGI-UI_$lang";
-    return $self->_handle_zipped_text_download($self->_create_locale_file($data), $filename =~ m{^${INSTALL_BASE}(.*)$}xms ? $1 : $filename, $zfn);
+    my $content = $self->_create_locale_files($data);
+    my $dwnloadcontent = {};
+    foreach my $e ( sort keys %{$content}) {
+        foreach my $l ( sort keys %{$content->{$e}}) {
+            my $filename = $e eq 'WebDAVCGI-UI' ? $self->_get_ui_locale_filename($l) : $self->_get_extension_locale_filename($e, $l);
+            $dwnloadcontent->{ $filename =~ m{^${INSTALL_BASE}(.*)$}xms ? $1 : $filename } = \$content->{$e}->{$l};
+        }
+    }
+    return $self->_handle_zipped_text_download($dwnloadcontent, sprintf '%s-%d.zip', 'WebDAVCGI-Locales', time);
 }
 sub _get_extension_locale_filename {
     my ($self, $extension, $lang, $fallback) = @_;
@@ -281,60 +295,131 @@ sub _create_backup_copy {
     }
     return 0;
 }
-sub _create_locale_file {
+sub _create_locale_files {
     my ($self, $data) = @_;
-    my $content = sprintf "# Created with Localizer extension by %s (%s)\n", $ENV{REMOTE_USER}, scalar localtime;
+    my $content = {};
     foreach my $k ( sort keys %{$data} ) {
+        my ($extension, $lang, $key) = split /::/xms, $k, 3;
         if ($data->{$k} =~ /^\s*$/xms) {
             next;
         }
-        $content .= sprintf qq{%-50s\t"%s"\n}, $k, $data->{$k};
+        $content->{$extension}->{$lang} //= sprintf "# Created with Localizer extension by %s (%s)\n", $ENV{REMOTE_USER}, scalar localtime;
+        $content->{$extension}->{$lang} .= sprintf qq{%-50s\t"%s"\n}, $key, $data->{$k};
     }
-    return \$content;
+    return $content;
+}
+sub _splice_long_list {
+    my ($self, $listref, $count) = @_;
+    if (@{$listref} > $count) {
+        splice @{$listref}, $count;
+        push @{$listref}, q{...};
+    }
+    return $listref;
 }
 sub _save_localization {
     my ($self) = @_;
     my %response = ();
-    my $fn = $self->{cgi}->param('localizertype') eq 'extension'
-            ? $self->_get_extension_locale_filename(scalar $self->{cgi}->param('localizertypeval'), scalar $self->{cgi}->param('localizerlang'))
-            : $self->_get_ui_locale_filename(scalar $self->{cgi}->param('localizerlang'));
-    if ($self->_create_backup_copy($fn)) {
-        my $data = $self->{json}->decode(scalar $self->{cgi}->param('localization'));
-        if (open my $out, '>', $fn) {
-            print {$out} ${$self->_create_locale_file($data)};
-            close($out) || carp("Cannot close $fn.");
-            $response{message} = sprintf $self->tl('localizer.localefilesaved'), $fn;    
-        } else {
-            carp("Cannot write $fn.");
-            $response{error} = sprintf $self->tl('localizer.cannotwritelocalefile'), $fn;
-        }       
-    } else {
-        $response{error} = sprintf $self->tl('localizer.cannotwritebackupcopy'), $fn;
+    my $data = $self->{json}->decode(scalar $self->{cgi}->param('localization'));
+    my $content = $self->_create_locale_files($data);
+    my @nobackup = ();
+    my @unwrittenfiles = ();
+    my @writtenfiles = ();
+    foreach my $e (sort keys %{$content}) {
+        foreach my $l (sort keys %{$content->{$e}}) {
+            my $fn = $e eq 'WebDAVCGI-UI' ? $self->_get_ui_locale_filename($l) : $self->_get_extension_locale_filename($e, $l);
+            if ($self->_create_backup_copy($fn)) {
+                if (open my $out, '>', $fn) {
+                    print {$out} $content->{$e}->{$l};
+                    close($out) || carp("Cannot close $fn.");
+                    push @writtenfiles, $fn;
+                } else {
+                    carp("Cannot write $fn.");
+                    push @unwrittenfiles, $fn;
+                }
+            } else {
+                push @nobackup, $fn;
+            }
+        }
+    }
+    if (@writtenfiles > 0) {
+        $self->_splice_long_list(\@writtenfiles, 3);
+        $response{message} = sprintf $self->tl('localizer.localefilesaved'), join ', ', @writtenfiles;
+    }
+    if (@nobackup > 0 || @unwrittenfiles > 0) {
+        $response{error} //= q{};
+        $self->_splice_long_list(\@nobackup, 3);
+        $self->_splice_long_list(\@unwrittenfiles, 3);
+        $response{error} .= @nobackup > 0 ? sprintf $self->tl('localizer.cannotwritebackupcopy'), join ', ', @nobackup : q{};
+        $response{error} .= @unwrittenfiles > 0 ? sprintf $self->tl('localizer.cannotwritelocalefile'), join ', ', @unwrittenfiles : q{};
     }
     return $self->{json}->encode(\%response);
 }
 sub _read_locale_file {
-    my ($self, $fn) = @_;
+    my ($self, $fn, $prefix) = @_;
     my %ret = ();
     if (open my $fh, '<', $fn) {
         while (<$fh>) {
             chomp;
             if ( /^\#/xms || /^\s*$/xms ) { next; }
-            if ( /^(\S+)\s+"(.*)"\s*$/xms) { $ret{$1} = $2; }
+            if ( /^(\S+)\s+"(.*)"\s*$/xms) { $ret{"${prefix}${1}"} = $2; }
         }
-        close $fh;        
+        close($fh) || carp("Cannot close readed localefile $fn.");
     } else {
         carp("Cannot open locale file $fn.");
     }
     return \%ret;
 }
 sub _read_extension_locale_file {
-    my ($self, $extension, $lang) = @_;
-    return $self->_read_locale_file($self->_get_extension_locale_filename($extension, $lang));
+    my ($self, $extension, $lang, $prefix) = @_;
+    return $self->_read_locale_file($self->_get_extension_locale_filename($extension, $lang), $prefix);
 }
 sub _read_ui_locale_file {
-    my ($self, $lang) = @_;
-    return $self->_read_locale_file($self->_get_ui_locale_filename($lang));
+    my ($self, $lang, $prefix) = @_;
+    return $self->_read_locale_file($self->_get_ui_locale_filename($lang), $prefix);
+}
+sub _check_writable {
+    my ($self, $extension, $lang, $listref) = @_;
+    my $filename = $self->_get_extension_locale_filename($extension, $lang);
+    if ((-e $filename && !-w $filename) || !-w get_parent_uri($filename) ) {
+        push @{$listref}, $filename;
+    }
+    return $self;
+}
+sub _get_locale_files {
+    my ($self, $extension, $lang) = @_;
+    my ($orig, $trans, $resp) = ( {}, {}, {} );
+    my @unwriteablelocalefiles = ();
+    if ($extension) {
+        my @extlist;
+        if ($extension eq 'all') {
+            @extlist = @ALL_EXTENSIONS;
+        } elsif ($extension eq 'allactivated') {
+            @extlist = @EXTENSIONS;
+        } else {
+            @extlist = ( $extension );
+        }
+        foreach my $e (@extlist) {
+            my $prefix = "${e}::${lang}::";
+            my $o = $self->_read_extension_locale_file($e, 'default', $prefix);
+            my $t = $lang ne 'en' || $lang ne 'default' ? $self->_read_extension_locale_file($e, $lang, $prefix) : $o;
+            $orig = { %{$orig}, %{$o} };
+            $trans = { %{$trans},%{$t} };
+            $self->_check_writable($e, $lang, \@unwriteablelocalefiles);
+        }
+    } else {
+        my $prefix = "WebDAVCGI-UI::${lang}::";
+        $orig = $self->_read_ui_locale_file('default', $prefix);
+        $trans = $self->_read_ui_locale_file($lang, $prefix);
+        my $filename = $self->_get_ui_locale_filename($lang);
+        if ( (-e $filename && !-w $filename) || (!-w get_parent_uri($filename)) ) {
+            push @unwriteablelocalefiles, $filename;
+        }
+    }
+    if (@unwriteablelocalefiles > 0) {
+        $self->_splice_long_list(\@unwriteablelocalefiles, 3);
+        $resp->{warn} = sprintf $self->tl('localizer.missingwriteright'), join(q{, }, @unwriteablelocalefiles), $UID, $GID;
+    }
+    return ($orig, $trans, $resp);
 }
 sub _get_locale_editor {
     my ($self) = @_;
@@ -346,9 +431,7 @@ sub _get_locale_editor {
     my $template = $self->read_template('localeeditor');
     my $entrytmpl = $template =~ s/<!--TEMPLATE\(entry\)\[(.*?)\]-->//xms ? $1 : $template;
     my $editor = q{};
-    my $orig = $extension ? $self->_read_extension_locale_file($extension, 'default') : $self->_read_ui_locale_file('default');
-    my $trans = $extension ? $self->_read_extension_locale_file($extension, $lang) : $self->_read_ui_locale_file($lang);
-    my $filename = $extension ? $self->_get_extension_locale_filename($extension, $lang) : $self->_get_ui_locale_filename($lang);
+    my ($orig, $trans, $resp) = $self->_get_locale_files($extension, $lang);
     foreach my $k ( sort keys %{$orig} ) {
         my $et = $entrytmpl;
         $et =~ s/\$KEY/$self->{cgi}->escapeHTML($k)/xmsge;
@@ -358,16 +441,12 @@ sub _get_locale_editor {
     }
     my %response = (
         editor=>$self->render_template($PATH_TRANSLATED, $REQUEST_URI, $template,
-                        { EDITOR => $editor, filename=>$filename, basepath=>get_parent_uri($filename),
-                          T=>$extension ? 'extension' : 'ui', TV=>$extension // 'ui',
+                        { EDITOR => $editor,
+                          TV=>$extension // 'ui',
                           L=>$lang, LT=>$SUPPORTED_LANGUAGES{$lang} // $lang
                         }),
+        %{$resp}
     );
-    if ( -e $filename && !-w $filename ) {
-        $response{warn} = sprintf $self->tl('localizer.missingwriteright'), $filename, $UID, $GID;
-    } elsif ( !-e $filename && !-w get_parent_uri($filename) ) {
-        $response{warn} = sprintf $self->tl('localizer.missingwriteright'), get_parent_uri($filename), $UID, $GID;
-    }
     return $self->{json}->encode( \%response );
 }
 1;

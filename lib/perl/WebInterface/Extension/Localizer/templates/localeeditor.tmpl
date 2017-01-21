@@ -1,7 +1,4 @@
 <div class="localizer-locale-editor">
-<input type="hidden" class="localizer-editor-lang" name="localizereditorlang" value="$L">
-<input type="hidden" class="localizer-editor-type" name="localizereditortype" value="$T">
-<input type="hidden" class="localizer-editor-typeval" name="localizereditortypeval" value="$TV">
 <table class="localizer-locale-editor-table">
 <thead>
 <tr><th>$tl(localizer.original)</th><th>$tl(localizer.translation) $LT ($L)</th></tr>
@@ -15,8 +12,6 @@ $EDITOR
 </table>
 <div class="localizer-locale-editor-buttons">
 <button class="localizer-locale-editor-button-download">$tl(localizer.download)</button>
-<!--IF( (-e "$filename" && -w "$filename") || (!-e "$filename" && -w "$basepath") )-->
 <button class="localizer-locale-editor-button-save">$tl(localizer.save)</button>
-<!--ENDIF-->
 </div>
 </div>
