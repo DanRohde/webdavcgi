@@ -37,12 +37,13 @@ use vars qw( $UID @SETUP);
 @SETUP = (
     {
         files => 'fileicons/*.svg',
-        hover => 1,
         symbol => 'symbol-fi-%s',
         icon => 'icon-fi-%s',
         cssdefault => '.icon { background-image: url(svg/sprite.svg#icon-fi-unknown); background-repeat: no-repeat; background-position: left center; background-size: 20px 22px;} .icon:hover,.icon:active,.icon:focus { background-image: url(svg/sprite.svg#icon-fi-unknown-hover); }',
         css => ' .icon.category-%s ',
+        hover => 1,
         csshover => ' .icon.category-%s:hover, .icon.category-%s:focus, .icon.category-%s:active ',
+        hovercolors => { fill=> { '#808080' => '#000000'} },
     },
 );
 
@@ -125,13 +126,13 @@ sub eliminate_unwanted_g {
         my $e = $aref->[$i];
         my $c = $aref->[$i+1];
         if ($e eq 'g') {
-            my $a = shift @{$c};
+            my $a = shift @{$c}; ## get attributes
             delete $a->{id};
             my $ar = eliminate_unwanted_g($c);
             my $j = 1;
-            while ($j < @{$ar}) {
+            while ($j < @{$ar}) { ## add attributes from g
                 if (ref $ar->[$j] eq 'ARRAY') {
-                    $ar->[$j]->[0] = { %{$ar->[$j]->[0]}, %{$a} };
+                    $ar->[$j]->[0] = { %{$a}, %{$ar->[$j]->[0]} };
                 }
                 $j+=2;
             }
@@ -146,8 +147,8 @@ sub eliminate_unwanted_g {
 
 my $parser = XML::Parser->new(ProtocolEncoding=>'UTF-8', Namespaces=>1, Style=>'Tree' );
 
-my $defs = [ {id=>'defs-'.time} ];
-my $svg = [ {id=>'sprite-'.time, viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
+my $defs = [ {id=>'sprite-defs'} ];
+my $svg = [ {id=>'sprite-svg', viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
              xmlns=>'http://www.w3.org/2000/svg', 'xmlns:xlink' => 'http://www.w3.org/1999/xlink', version=>'1.1'}, 'defs', $defs ];
 my $xml = [ 'svg', $svg ];
 push @{$defs}, 'style', [ {}, 0, 'g{display:none;}g:target,g:target g{display:inline;}' ];
@@ -170,7 +171,7 @@ foreach my $setup ( @SETUP ) {
 
         if ($setup->{hover}) {
             my $scopy = clone_var($s->[1]);
-            replace_colors($scopy, fill=> { '#808080' => '#000000'} );
+            replace_colors($scopy, %{$setup->{hovercolors}});
             push @{$defs}, 'symbol', [ {id=>"${symbolid}-hover"}, @{$scopy} ];
             push @{$svg}, 'g', [ { id=>"${iconid}-hover"}, 'use', [ {'xlink:href' => "#${symbolid}-hover"} ] ];
 
@@ -179,8 +180,6 @@ foreach my $setup ( @SETUP ) {
         }
     }
 }
-#print STDERR Dumper($xml);
-#exit 1;
 if (open my $sfh, '>', 'sprite.svg') {
     print {$sfh} create_xml($xml);
     close $sfh;

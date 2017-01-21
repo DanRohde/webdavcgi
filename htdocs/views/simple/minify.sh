@@ -31,7 +31,8 @@ MYTABLEMANAGER="lib/MyTableManager/jquery-mytablemanager.js lib/MyTableManager/m
 MYCOUNTDOWNTIMER="lib/MyCountdownTimer/jquery-mycountdowntimer.js"
 MYLIBS="${QUERYSTRING} ${MYSANHELPER} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} ${MYTABLEMANAGER} ${MYCOUNTDOWNTIMER} script.js style.css svg/style.css"
 
-COMPLETE=complete
+COMPLETE="complete"
+SPRITE="svg/sprite.svg"
 
 rm -f ${COMPLETE}.min.*
 
@@ -59,9 +60,10 @@ for file in $MYLIBS ; do
     fi
 done
 test ${DEBUG} -ne 0 && echo "(brotli|gzip) ${COMPLETE}.min.*"
-for f in ${COMPLETE}.min.* ; do
+for f in ${COMPLETE}.min.* $SPRITE ; do
+    test ! -e $f && continue
     brotli < "${f}" > "${f}.br"
-    gzip "${f}"
+    gzip -f "${f}" 
 done
 
 exit 0
