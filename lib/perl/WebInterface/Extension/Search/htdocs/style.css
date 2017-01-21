@@ -177,16 +177,16 @@ input.search.query {
 /* ICON VIEW */
 .search-result-thumb-view .search.result.entry.label {
 	width: 20ex;
-	white-space: normal;
+/*	white-space: normal;*/
 }
 .search-result-thumb-view .search.result.entry .icon {
 	min-width: 10ex;
 	max-width: 20ex;
 	max-height: 20ex;
 	width: auto;
-	background-image: url(nothumb.svg);
+/*	background-image: url(nothumb.svg); */
 	background-position: center center;
-	background-size: 80%;
+	background-size: 100%;
 	background-repeat: no-repeat;
 	
 }

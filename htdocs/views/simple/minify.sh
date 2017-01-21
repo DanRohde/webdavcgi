@@ -29,7 +29,7 @@ MYPOPUPLIB="lib/MyPopup/jquery-mypopup.js lib/MyPopup/mypopup.css"
 MYINPLACEEDITOR="lib/MyInplaceEditor/jquery-myinplaceeditor.js"
 MYTABLEMANAGER="lib/MyTableManager/jquery-mytablemanager.js lib/MyTableManager/mytablemanager.css"
 MYCOUNTDOWNTIMER="lib/MyCountdownTimer/jquery-mycountdowntimer.js"
-MYLIBS="${QUERYSTRING} ${MYSANHELPER} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} ${MYTABLEMANAGER} ${MYCOUNTDOWNTIMER} script.js style.css suffix.css"
+MYLIBS="${QUERYSTRING} ${MYSANHELPER} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} ${MYTABLEMANAGER} ${MYCOUNTDOWNTIMER} script.js style.css svg/style.css"
 
 COMPLETE=complete
 
