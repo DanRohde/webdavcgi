@@ -117,6 +117,32 @@ sub clone_var {
     }
     return $v;
 }
+sub eliminate_unwanted_g {
+    my ($aref) = @_;
+    my @na = ();
+    my $i = 0;
+    while ($i < @{$aref}) {
+        my $e = $aref->[$i];
+        my $c = $aref->[$i+1];
+        if ($e eq 'g') {
+            my $a = shift @{$c};
+            delete $a->{id};
+            my $ar = eliminate_unwanted_g($c);
+            my $j = 1;
+            while ($j < @{$ar}) {
+                if (ref $ar->[$j] eq 'ARRAY') {
+                    $ar->[$j]->[0] = { %{$ar->[$j]->[0]}, %{$a} };
+                }
+                $j+=2;
+            }
+            push @na, @{$ar};
+        } elsif (defined $e && defined $c) {
+            push @na, $e, $c;
+        }
+        $i+=2;
+    }
+    return \@na;
+}
 
 my $parser = XML::Parser->new(ProtocolEncoding=>'UTF-8', Namespaces=>1, Style=>'Tree' );
 
@@ -135,6 +161,7 @@ foreach my $setup ( @SETUP ) {
         my $iconid   = sprintf $setup->{icon}, $fb;
         my $s = $parser->parsefile($file);
         shift @{$s->[1]};
+        $s->[1] = eliminate_unwanted_g($s->[1]);
         push @{$defs}, 'symbol', [ {id=>$symbolid}, @{$s->[1]} ];
         push @{$svg}, 'g', [ { id=>$iconid }, 'use', [ {'xlink:href' => "\#${symbolid}"} ] ];
 
@@ -152,6 +179,8 @@ foreach my $setup ( @SETUP ) {
         }
     }
 }
+#print STDERR Dumper($xml);
+#exit 1;
 if (open my $sfh, '>', 'sprite.svg') {
     print {$sfh} create_xml($xml);
     close $sfh;
