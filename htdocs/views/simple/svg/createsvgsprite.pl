@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 # This script builds a sprite.svg file from a bunch of svg files and creates
-# a style.css file.
+# a style.css file using this sprite and create a style with inline SVGs.
 # The svg files are created with Inkscape with following options:
 #       file format: optimized svg
 #       optimization options: css to attributes, no xml declaration, no metadata, ...
@@ -29,6 +29,7 @@ use warnings;
 our $VERSION = '1.0';
 
 use XML::Parser;
+use URI::Escape;
 use Data::Dumper;
 
 
@@ -44,6 +45,13 @@ use vars qw( $UID @SETUP);
         hover => 1,
         csshover => ' .icon.category-%s:hover, .icon.category-%s:focus, .icon.category-%s:active ',
         hovercolors => { fill=> { '#808080' => '#000000'} },
+        inline => {
+            cssdefault => '.icon { background-repeat: no-repeat; background-position: left center; background-size: 20px 22px;} ',
+            defaulticon => 'unknown',
+            defaulticoncss => ' .icon, ',
+            css => ' .icon.category-%s { background-image: url(data:image/svg+xml;utf-8,%s);} ',
+            csshover => ' .icon.category-%s:hover, .icon.category-%s:focus, .icon.category-%s:active { background-image: url(data:image/svg+xml;utf8,%s);} '
+        },
     },
 );
 
@@ -53,7 +61,7 @@ sub fix_ids {
     if ($a eq 'id' && $v!~/^(?:icon|symbol|sprite|defs)-/xms) {
         $UID //= 0;
         $UID++;
-        return qq{$a="unique$UID"};
+        return qq{$a="s$UID"};
     }
     return qq{$a="$v"};
 }
@@ -154,29 +162,55 @@ my $xml = [ 'svg', $svg ];
 push @{$defs}, 'style', [ {}, 0, 'g{display:none;}g:target,g:target g{display:inline;}' ];
 my $css = q{};
 
+my $inlinecss = q{};
+
 foreach my $setup ( @SETUP ) {
     $css .= $setup->{cssdefault};
+    $inlinecss .= $setup->{inline}->{cssdefault};
     for my $file ( glob $setup->{files} ) {
         my $fb = $file=~/^.*\/(.*?)[.]svg$/xms ? ${1} : $file;
         my $symbolid = sprintf $setup->{symbol}, $fb;
         my $iconid   = sprintf $setup->{icon}, $fb;
         my $s = $parser->parsefile($file);
+
+        my $inlinesvg = [ {id=>'s', viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
+                           xmlns=>'http://www.w3.org/2000/svg', version=>'1.1'} ];
+        my $inlinexml = [ 'svg', $inlinesvg ];
+
+
         shift @{$s->[1]};
         $s->[1] = eliminate_unwanted_g($s->[1]);
         push @{$defs}, 'symbol', [ {id=>$symbolid}, @{$s->[1]} ];
         push @{$svg}, 'g', [ { id=>$iconid }, 'use', [ {'xlink:href' => "\#${symbolid}"} ] ];
 
+        push @{$inlinesvg}, @{$s->[1]};
+
         $css .= sprintf $setup->{css}, $fb;
         $css .= sprintf '{ background-image: url(svg/sprite.svg#%s); }', $iconid;
+
+        if ($fb eq $setup->{inline}->{defaulticon}) {
+            $inlinecss .= $setup->{inline}->{defaulticoncss};
+        }
+        $inlinecss .= sprintf $setup->{inline}->{css}, $fb, uri_escape(create_xml($inlinexml));
 
         if ($setup->{hover}) {
             my $scopy = clone_var($s->[1]);
             replace_colors($scopy, %{$setup->{hovercolors}});
+
+            my $inlinehoversvg = [ {id=>'s', viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
+                                    xmlns=>'http://www.w3.org/2000/svg', version=>'1.1'} ];
+            my $inlinehoverxml = [ 'svg', $inlinehoversvg ];
+
             push @{$defs}, 'symbol', [ {id=>"${symbolid}-hover"}, @{$scopy} ];
             push @{$svg}, 'g', [ { id=>"${iconid}-hover"}, 'use', [ {'xlink:href' => "#${symbolid}-hover"} ] ];
 
+            push @{$inlinehoversvg}, @{$scopy} ;
+
             $css .= sprintf $setup->{csshover}, $fb, $fb, $fb;
             $css .= sprintf '{ background-image: url(svg/sprite.svg#%s-hover); }', $iconid;
+
+            $inlinecss .= sprintf $setup->{inline}->{csshover}, $fb, $fb, $fb, uri_escape(create_xml($inlinehoverxml));
+
         }
     }
 }
@@ -187,5 +221,9 @@ if (open my $sfh, '>', 'sprite.svg') {
 if (open my $cfh, '>', 'style.css') {
     print {$cfh} $css;
     close $cfh;
+}
+if (open my $ifh, '>', 'inlinestyle.css') {
+    print {$ifh} $inlinecss;
+    close $ifh;
 }
 1;
