@@ -23,10 +23,7 @@ use warnings;
 
 our $VERSION = '2.0';
 
-# for optimizing css/js:
 use Fcntl qw (:flock);
-#use IO::Compress::Gzip;
-#use MIME::Base64;
 use CGI::Carp;
 use POSIX qw(strftime);
 use Module::Load;
@@ -415,12 +412,13 @@ sub optimizer_encode_image {
             $image .= $buffer;
         }
         close($ih) || carp("Cannot close filehandle for $ifn.");
-        require MIME::Base64;
-        return
-            'url(data:'
-          . $mime
-          . ';base64,'
-          . MIME::Base64::encode_base64( $image, q{} ) . ')';
+        if ($mime=~/xml/xmsi) {
+            require URI::Escape;
+            return 'url(data:'. $mime . ';utf8,' . URI::Escape::uri_escape_utf8($image) . ')';
+        } else {
+            require MIME::Base64;
+            return 'url(data:'. $mime . ';base64,' . MIME::Base64::encode_base64( $image, q{} ) . ')';
+        }
     }
     else {
         carp("Cannot read $ifn.");

@@ -37,20 +37,37 @@ use vars qw( $UID @SETUP);
 
 @SETUP = (
     {
-        files => 'fileicons/*.svg',
-        symbol => 'symbol-fi-%s',
-        icon => 'icon-fi-%s',
-        cssdefault => '.icon { background-image: url(svg/sprite.svg#icon-fi-unknown); background-repeat: no-repeat; background-position: left center; background-size: 20px 22px;} .icon:hover,.icon:active,.icon:focus { background-image: url(svg/sprite.svg#icon-fi-unknown-hover); }',
-        css => ' .icon.category-%s ',
-        hover => 1,
-        csshover => ' .icon.category-%s:hover, .icon.category-%s:focus, .icon.category-%s:active ',
-        hovercolors => { fill=> { '#808080' => '#000000'} },
+        files  => 'fileicons/*.svg',
+        symbol => 'symbol-fi-%n',
+        icon   => 'icon-fi-%n',
+        cssdefault => '.icon{background: transparent url(svg/sprite.svg#icon-fi-unknown) no-repeat left center / 20px 22px;}.icon:hover,.icon:active,.icon:focus{background-image:url(svg/sprite.svg#icon-fi-unknown-hover);}',
+        css    => '.icon.category-%n{background-image:url(svg/sprite.svg#%i);}',
+        hover  => 1,
+        csshover    => '.icon.category-%n:hover,.icon.category-%n:focus,.icon.category-%n:active{background-image:url(svg/sprite.svg#%i-hover);}',
+        hovercolors => { fill=> { '#808080' => '#000000',}, },
         inline => {
-            cssdefault => '.icon { background-repeat: no-repeat; background-position: left center; background-size: 20px 22px;} ',
+            cssdefault  => '.icon{background-repeat:no-repeat;background-position:left center;background-size:20px 22px;}',
             defaulticon => 'unknown',
-            defaulticoncss => ' .icon, ',
-            css => ' .icon.category-%s { background-image: url(data:image/svg+xml;utf-8,%s);} ',
-            csshover => ' .icon.category-%s:hover, .icon.category-%s:focus, .icon.category-%s:active { background-image: url(data:image/svg+xml;utf8,%s);} '
+            defaulticoncss => ' .icon,',
+            css => '.icon.category-%n{background-image:url(data:image/svg+xml;utf-8,%d);}',
+            csshover => '.icon.category-%n:hover,.icon.category-%n:focus,.icon.category-%n:active{background-image:url(data:image/svg+xml;utf8,%d);}',
+        },
+    },
+    {
+        files  => 'actionicons/*.svg',
+        symbol => 'symbol-ai-%n',
+        icon   => 'icon-ai-%n',
+        cssdefault => q{},
+        css    => '.action.%n{background-image:url(svg/sprite.svg#%i);}',
+        hover  => 1,
+        csshover    => '.action.%n:hover,.action.%n:focus,.action.%n:active{background-image:url(svg/sprite.svg#%i-hover);}',
+        hovercolors => { fill => { '#808080', '#000000',}, },
+        inline => {
+            cssdefault     => q{},
+            defaulticon    => 'action',
+            defaulticoncss => q{},
+            css      => '.action.%n,.ai-%n,.ui-button.ai-%n{background: transparent url(data:image/svg+xml;utf8,%d) no-repeat center center;background-size: 18px 18px;}',
+            csshover => '.action.%n:hover,.action.%n:focus,.action.%n:active,.ai-%n:hover,.ai-%n:focus,.ai-%n:active,.ui-button.ai-%n:hover,.ui-button.ai-%n:focus,.ui-button.ai-%n:active{background: transparent url(data:image/svg+xml;utf8,%d) no-repeat center center;background-size: 18px 18px;}',
         },
     },
 );
@@ -152,6 +169,13 @@ sub eliminate_unwanted_g {
     }
     return \@na;
 }
+sub my_sprintf {
+    my ($p, %d) = @_;
+    foreach (keys %d) {
+        $p =~ s/[%]$_/${$d{$_}}/xmsg;
+    }
+    return $p;
+}
 
 my $parser = XML::Parser->new(ProtocolEncoding=>'UTF-8', Namespaces=>1, Style=>'Tree' );
 
@@ -168,9 +192,10 @@ foreach my $setup ( @SETUP ) {
     $css .= $setup->{cssdefault};
     $inlinecss .= $setup->{inline}->{cssdefault};
     for my $file ( glob $setup->{files} ) {
+        print {*STDERR} "$file\n";
         my $fb = $file=~/^.*\/(.*?)[.]svg$/xms ? ${1} : $file;
-        my $symbolid = sprintf $setup->{symbol}, $fb;
-        my $iconid   = sprintf $setup->{icon}, $fb;
+        my $symbolid = my_sprintf($setup->{symbol}, n=>\$fb);
+        my $iconid   = my_sprintf($setup->{icon}, n=>\$fb);
         my $s = $parser->parsefile($file);
 
         my $inlinesvg = [ {id=>'s', viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
@@ -185,13 +210,12 @@ foreach my $setup ( @SETUP ) {
 
         push @{$inlinesvg}, @{$s->[1]};
 
-        $css .= sprintf $setup->{css}, $fb;
-        $css .= sprintf '{ background-image: url(svg/sprite.svg#%s); }', $iconid;
+        $css .= my_sprintf($setup->{css}, n=>\$fb, i=>\$iconid);
 
         if ($fb eq $setup->{inline}->{defaulticon}) {
             $inlinecss .= $setup->{inline}->{defaulticoncss};
         }
-        $inlinecss .= sprintf $setup->{inline}->{css}, $fb, uri_escape(create_xml($inlinexml));
+        $inlinecss .= my_sprintf($setup->{inline}->{css}, n=>\$fb, d=>\uri_escape_utf8(create_xml($inlinexml)));
 
         if ($setup->{hover}) {
             my $scopy = clone_var($s->[1]);
@@ -206,10 +230,9 @@ foreach my $setup ( @SETUP ) {
 
             push @{$inlinehoversvg}, @{$scopy} ;
 
-            $css .= sprintf $setup->{csshover}, $fb, $fb, $fb;
-            $css .= sprintf '{ background-image: url(svg/sprite.svg#%s-hover); }', $iconid;
+            $css .= my_sprintf($setup->{csshover}, n =>\$fb, i=>\$iconid);
 
-            $inlinecss .= sprintf $setup->{inline}->{csshover}, $fb, $fb, $fb, uri_escape(create_xml($inlinehoverxml));
+            $inlinecss .= my_sprintf($setup->{inline}->{csshover}, n=>\$fb, d=>\uri_escape_utf8(create_xml($inlinehoverxml)));
 
         }
     }

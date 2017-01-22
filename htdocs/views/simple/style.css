@@ -681,9 +681,6 @@ a.disabled, .link.disabled {
 	border: 5px solid green;
 }
 /* #### BOOKMARKS ### */
-.action.addbookmark, .ui-button.action.addbookmark {
-	background-position: center -54px;
-}
 .bookmarkmenu.popup.sprite {
 	background-position: center -94px;
 }
@@ -700,11 +697,15 @@ a.disabled, .link.disabled {
 	width: 26px;
 	height: 18px;
 }
+.bookmark-label.ai-bookmarks, 
+.bookmark-label.ai-bookmarks:hover, .bookmark-label.ai-bookmarks:focus, .bookmark-label.ai-bookmarks:active {
+	padding-left: 22px;
+	background-position-x: 2px;
+}
 .action.rmallbookmarks {
 	background-position-y: -216px;
 }
 .action.gotobookmark, .action.dyn-bookmark {
-	background-position-y: -1576px;
 	display: flex;
 	flex-flow: row nowrap;
 	width: 220px;
@@ -717,9 +718,6 @@ a.disabled, .link.disabled {
 }
 .bookmarklabel, .bookmarksortlabel {
 	flex: 1 1;
-}
-.dyn-bookmark:hover, .dyn-bookmark:focus {
-	background-image: url(images/sprite-hover.png);
 }
 .bookmarktemplate { display: none; visibility: hidden;}
 /* --- BOOKMARKS --- */
