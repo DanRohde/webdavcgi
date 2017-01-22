@@ -16,7 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
 .action.history.changeUri {
-	background-position-y: -63px;
 	padding-left: 26px;
 	width: 37ex;
 	overflow: hidden;

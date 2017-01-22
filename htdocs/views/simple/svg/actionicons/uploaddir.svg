@@ -1,0 +1,6 @@
+<svg id="svg2" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="1e3" viewBox="0 0 1000 1000" width="1e3" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <g id="g3186" transform="matrix(48.713 0 0 48.713 12.872 24.263)">
+  <path id="path3190" d="m0 10v-10h20v20h-20v-10z" fill="#fff"/>
+  <path id="path3188" d="m1.25 16.875v-3.125h5v3.75h7.5v-7.5h5v10h-17.5v-3.125zm6.25-4.375v-3.75h-5v-1.0161c0-0.5589 1.6875-2.6329 3.75-4.6089l3.75-3.5927 3.75 3.5927c2.0625 1.976 3.75 4.05 3.75 4.6089v1.0161h-5v7.5h-5v-3.75zm-6.25-1.25v-1.25h5v2.5h-5v-1.25z" fill="#808080"/>
+ </g>
+</svg>
