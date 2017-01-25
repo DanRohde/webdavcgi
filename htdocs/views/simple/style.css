@@ -63,7 +63,7 @@ a {
 	box-shadow: -3px 0 7px #000000;
 	color: black;
 	z-index: 75;
-	overflow:hidden;
+	/*overflow:hidden;*/
 }
 #nav > ul > li {
 	padding: 0;
@@ -1532,7 +1532,7 @@ tr:focus .action.changeuri {
 	display: inline-block;
 	min-width: 1ex;
 	min-height: 18px;
-	
+	float: left;
 }
 .action.quicknav-el:hover,.action.quicknav-el:focus {
 	color: black;
