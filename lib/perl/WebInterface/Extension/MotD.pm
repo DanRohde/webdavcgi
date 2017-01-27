@@ -51,7 +51,7 @@ use HTTPHelper qw( print_compressed_header_and_content );
 
 use JSON;
 
-use FileUtils qw( stat2h get_local_file_content_and_type );
+use FileUtils qw( get_local_file_content_and_type );
 
 use vars qw( $ACTION );
 
@@ -76,27 +76,29 @@ sub _get_motd_filename {
     my $lfn = "$self->{motd}_$LANG";
     return -e $lfn ? $lfn : -e $self->{motd} ? $self->{motd} : undef;
 }
-sub _get_motd_and_timestamp {
+sub _get_motd_and_digest {
     my ($self) = @_;
+    my $message;
     if (defined $self->{motdmessage}) {
-        require Digest::MD5;
-        return ( $self->{motdmessage}, Digest::MD5::md5_hex($self->{motdmessage}) );
+        $message = $self->{motdmessage};
+    } else {
+        my $motdfn = $self->_get_motd_filename();
+        if (!$motdfn) {
+            return ( undef, 0);
+        }
+        $message = (get_local_file_content_and_type($motdfn))[1];
     }
-    my $motdfn = $self->_get_motd_filename();
-    if (!$motdfn) {
-        return ( undef, 0);
-    }
-    my $stat = stat2h(stat $motdfn);
-    return ( (get_local_file_content_and_type($motdfn))[1], $stat->{mtime});
+    require Digest::MD5;
+    return ( $message , Digest::MD5::md5_hex($message) );
 }
 sub handle_hook_posthandler {
     my ( $self, $config, $params ) = @_;
     my $action = $self->{cgi}->param('action') // q{};
     if ( $action eq $ACTION ) {
-        my ( $motd, $timestamp ) = $self->_get_motd_and_timestamp();
+        my ( $motd, $digest ) = $self->_get_motd_and_digest();
         my $json = {
             message      => $motd,
-            timestamp    => $timestamp,
+            digest       => $digest,
             title        => $self->config('motdtitle', $self->tl('motd.title', 'Message Of The Day [MOTD]')),
             session      => $self->{session},
             pullinterval => $self->config('pullintervall', 0),
