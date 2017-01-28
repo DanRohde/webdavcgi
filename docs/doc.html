@@ -10,33 +10,39 @@
 
 <body>
 <div id="content">
+<nav class="navigation doc">
+		<div class="button"><a href="index.html">Home</a></div>
+		<div class="button"><a href="https://github.com/DanRohde/webdavcgi">Download</a></div>
+		<div class="button"><a href="doc.html">Documentation</a></div>
+</nav>
 <h1>WebDAV CGI - Documentation</h1>
 <div id="toc">
-Content of this topic:
+Contents:
 <ul>
 	<li><a href="#requirements">Requirements</a></li>
 	<li><a href="#installation">Installation</a></li>
 	<li><a href="#upgrade">Upgrade</a></li>
-	<li><a href="#setup">WebDAV CGI Setup</a></li>
+	<li><a href="#setup">WebDAV CGI Setup</a>
+		<ul>
+		<li><a href="session.html" class="extern">Session or form-based authentication</a></li></ul>
+	</li>
 	<li><a href="#hints">Hints</a></li>
 	<li><a href="#database">Database Setup</a></li>
 	<li><a href="#wrapper">UID/GID Wrapper</a></li>
 	<li><a href="#foldersharing">Folder Sharing / Group Access</a></li>
-	<li><a href="#webinterface">Web interface</a></li>
-	<li><a href="doc-simple-view.html">The Simple View Documentation (own topic)</a></li>
-	<li><a href="#afs">AFS Support</a></li>
-	<li><a href="#gfs">GFS Support</a></li>
-	<li><a href="#smb">SMB/CIFS Support</a></li>
-	<li><a href="#dbb">DBB database backend</a></li>
-	<li><a href="#git">GIT backend</a></li>
-	<li><a href="#rcs">RCS backend</a></li>
-	<li><a href="#ro">Read-only backend RO</a></li>
-	<li><a href="#s3b">Amazon S3 browser backend S3B</a>
+	<li><a href="#webinterface">Web interface</a>
+		<ul>
+		<li><a href="doc-simple-view.html" class="extern">The Simple View Documentation</a></li>
+		<li><a href="extensions.html" class="extern">Extensions</a></li>
+		</ul>
+	</li>
+	
+	<li><a href="backends.html" class="extern">Backends: AFS, GFS, SMB/CIFS, DBB, ...</a></li>
 	<li><a href="#performance">Performance</a></li>
 	<li><a href="#speedy">Speedy Support</a></li>
-	<li><a href="#modperl">Mod_Perl Support</a>
+	<li><a href="mod_perl.html" class="extern">Mod_Perl Support</a>
 	<!--[<li><a href="#security">Security</a></li>]-->
-	<li><a href="troubleshooting.html#setup">Troubleshooting Guide</a></li>
+	<li><a href="troubleshooting.html#setup" class="extern">Troubleshooting Guide</a></li>
 </ul>
 <a href="index.html"><br/>Back to the WebDAV CGI home</a>
 
@@ -175,7 +181,7 @@ emerge -va app-crypt/heimdal
     <li> or with a handler action (unsupported)</li>
     </ul>
     Examples for Apache 2.x: (you need the Apache rewrite module: <code>a2enmod rewrite</code>) 
-    - and don't forget to take a look at the backend specific configuration: <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, or <a href="#rcs">RCS</a>
+    - and don't forget to take a look at the backend specific configuration: <a href="backends.html#afs">AFS</a>, <a href="backends.html#gfs">GFS</a>, <a href="backends.html#smb">SMB/CIFS</a>, <a href="backends.html#dbb">DBB</a>, or <a href="backends.html#rcs">RCS</a>
     <pre>
 ### EXAMPLE 1: a complete (virtual) server root handled by WebDAV CGI:
 ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper
@@ -396,7 +402,7 @@ RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/web
 		<li> Speedy support for AFS was added and a mod_auth_kerberos free installation is now possible:
 			<ul><li>a new setuid/setgid wrapper was added: helper/webdavwrapper-afs.c (mod_waklog isn't required if you use webdavwrapper-afs.c)</li>
 			<li>a PAG script was added: cgi-bin/afswrapper</li> 
-			<li>visit <a href="#afs">AFS</a> section for details</li>
+			<li>visit <a href="backends.html#afs">AFS</a> section for details</li>
 		   </ul>
 		</li>
 	<li>mod_waklog is no longer required for AFS</li>
@@ -531,9 +537,10 @@ $CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
 
 </pre>
 </li>
-<li> Please take a look at backend specific configuration sections <a href="#afs">AFS</a>, <a href="#gfs">GFS</a>, <a href="#smb">SMB/CIFS</a>, <a href="#dbb">DBB</a>, <a href="#rcs">RCS</a>, <a href="#git">GIT</a></li>
+<li> Please take a look at backend specific configuration sections <a href="backends.html#afs">AFS</a>, <a href="backends.html#gfs">GFS</a>, <a href="backends.html#smb">SMB/CIFS</a>, <a href="backends.html#dbb">DBB</a>, <a href="backends.html#rcs">RCS</a>, <a href="backends.html#git">GIT</a></li>
 <li> <a href="#database">Set up your database</a> </li>
-<li> If you need to change other options take a look at <code>etc/webdav.conf.complete</code></li>
+<li> If you need to change other options, take a look at <code>etc/webdav.conf.complete</code></li>
+<li> Enable <a href="session.html" class="extern">session or form-based authentication</a> if needed.</li> 
 <li> There are a lot of <a href="extensions.html">extensions</a> to activate. </li> 
 <li> Don't forget to check the config file syntax: <code>perl -c /etc/webdav.conf</code></li>
 <li> <a href="#apache">configure your Apache web server</a></li>
@@ -676,7 +683,7 @@ chmod ug+s,a+x cgi-bin/webdavwrapper*
 </pre>
 </li>
 </ul>
-Attention: for AFS and/or Kerberos support you need <code>webdavwrapper-afs.c</code> or <code>webdavwrapper-krb.c</code> instead of <code>webdavwrapper.c</code> (see <a href="#afs">AFS Support</a> section)
+Attention: for AFS and/or Kerberos support you need <code>webdavwrapper-afs.c</code> or <code>webdavwrapper-krb.c</code> instead of <code>webdavwrapper.c</code> (see <a href="backends.html#afs">AFS Support</a> section)
 
 <h2 id="foldersharing">Folder Sharing / Group Access</h2>
 There are two ways to share a folder between users of a group (not for AFS users - see AFS note below):
@@ -805,513 +812,6 @@ Following variables are substituted:
 <tr><td>$VBASE</td><td>virtual host base matching <code>$VIRTUAL_BASE</code></td></tr>
 <tr><td>$VHTDOCS</td><td>virtual htdocs path <code>$VHTDOCS</code> to the <code>$INSTALL_BASE/htdocs</code></td></tr>
 </table>
-
-<h2 id="afs">AFS Support</h2>
-<p>
-WebDAV CGI can be used as a Web frontend for AFS and as a WebDAV-AFS bridge. It's a complete replacement for <a href="http://filedrawers.org/">filedrawers</a>.
-</p>
-Please choose your installation variant:
-<ol>
-<li> <a href="#afswithoutkrb">without mod_perl (maybe with Speedy CGI) and without mod_auth_kerberos</a> (recommended)</li>
-<li> <a href="#afswithkrb">without mod_perl (maybe with Speedy CGI) and with mod_auth_kerberos and mod_waklog</a></li>
-<li> <a href="mod_perl.html">with mod_perl with or without mod_auth_kerberos/mod_waklog</a> (recommended if Speedy CGI is not available)</li>
-</ol>
-
-
-<h3 id="afswithoutkrb">... without mod_auth_kerberos (recommended) </h3>
-Requirements:
-
-<ol>
-<li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured with a default realm: <code>/etc/krb5.conf</code>: <code>default_realm = MY.DOMAIN.NAME</code> (<code>kinit &lt;uid_without_domain&gt; ;  aklog</code> should work)</li>
-<li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
-<li>All users should be visible for the system and have the same password for AFS and your authentication facility like LDAP, RADIUS,... to authenticate your users with kinit and to allow setuid/setgid: <code>getent passwd &lt;uid&gt;</code> should work</li>
-<li>The <code>AUTHHEADER</code> environment variable with the HTTP Authorization header value has to be passed to the wrapper: see RewriteRule of the Apache config example.</li>
-<li>The <code>TICKET_LIFETIME</code> environment variable value should be a little bit smaller than your Kerberos ticket lifetime.</li>
-<li><code>cgi-bin/webdavwrapper-afs</code> (call <code>bash install.sh</code> from your installation directory to compile helper/webdavwrapper-afs.c)</li>
-<li>Replace the pagsh with a bourne shell in the afswrapper script to improve performance and avoid trouble with PAG limits: 
-   <br/><code>sed -i -e 's@^#!/usr/bin/pagsh@#!/bin/sh@' cgi-bin/afswrapper</code></li>
-</ol>
-
-Apache example:
-<pre>
-&lt;Location /webdavcgi&gt;
-	AuthName "WebAFS"
-	AuthType Basic
-	Require valid-user
-&lt;/Location&gt;
-
-ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-afs
-# ScriptAlias /logout /etc/webdavcgi/cgi-bin/logout
-RewriteEngine on
-# RewriteRule ^/logout - [L]
-RewriteRule ^/ /webdavcgi \
-	[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=AUTHHEADER:%{HTTP:Authorization},E=TICKET_LIFETIME:82800]
-</pre>
-<code>/etc/webdav.conf</code> example: <a href="#afsconf">see next section</a>
-
-<h3 id="afswithkrb">... with mod_auth_kerberos</h3>
-Requirements:
-<ol>
-<li><a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu package: libapache2-mod-auth-kerb)</li>
-<li>a keytab file for your server (service name: HTTP/&lt;YOUR SERVER NAME&gt;@&lt;YOUR DOMAIN&gt;, e.g. HTTP/webafs.cms.hu-berlin.de@CMS.HU-BERLIN.DE)</li>
-<li><a href="http://www.openafs.org/">OpenAFS</a> client installed on your server (Debian/Ubuntu package: openafs-client) and configured (<code>kinit ...; aklog</code> should work)</li>
-<li>The <code>TICKET_LIFETIME</code> environment variable value should be a little bit smaller than your Kerberos ticket lifetime.</li>
-<li><code>cgi-bin/webdavwrapper-afs</code> (call <code>bash install.sh</code> from your installation directory to compile helper/webdavwrapper-afs.c)</li>
-</ol>
-
-Apache example:
-<pre>
-KrbMethodNegotiate off
-KrbMethodK5Passwd on
-KrbSaveCredentials on
-Krb5Keytab /etc/webafs.keytab
-
-&lt;Location /webdavcgi&gt;
-	AuthName "WebAFS"
-	AuthType Kerberos
-	Require valid-user
-&lt;/Location&gt;
-
-ScriptAlias /webdavcgi /etc/webdavcgi/webdavwrapper-afs
-RewriteEngine on
-RewriteRule  ^/ /webdavcgi \
-		[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=TICKET_LIFETIME:82800]
-</pre>
-
-<code id="afsconf">/etc/webdav.conf</code> example:
-<pre>
-$INSTALL_BASE = '/etc/webdavcgi/';
-
-$BACKEND = 'AFS';
-
-$DOCUMENT_ROOT = '/afs/';
-$VIRTUAL_BASE='/';
-
-$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-$DBI_USER='';
-$DBI_PASS=''; 
-$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-
-$BACKEND_CONFIG{AFS}{quota}='/usr/bin/fs listquota $FS';
-
-$BACKEND_CONFIG{AFS}{fsvlink}= { '/afs/' => { home => '/afs/.cms.hu-berlin.de/user/'.substr($ENV{REMOTE_USER},0,1).'/'.$ENV{REMOTE_USER}}}; 
-
-@EXTENSIONS = (@DEFAULT_EXTENSIONS,@EXTRA_EXTENSIONS,@AFS_EXTENSIONS);
-$EXTENSION_CONFIG{AFSACLManager} = { allow_afsaclchanges =&gt;1 };
-$EXTENSION_CONFIG{AFSGroupManager} = { disallow_groupchanges=&gt;0 };
-
-$ALLOW_SEARCH = 0;
-$ALLOW_CHANGEPERM = 0;
-
-
-$MIMEFILE='/etc/mime.types';
-
-</pre>
-
-<h2 id="gfs">GFS Support</h2>
-The GFS backend replaces only the quota command.
-Requirements:
-<ol>
-<li> a mounted GFS filesystem </li>
-<li> <code>gfs_quota</code> command executable by a user</li>
-</ol>
-<code>/etc/webdav.conf</code> example:
-<pre>
-$INSTALL_BASE = '/etc/webdavcgi/';
-
-$BACKEND='GFS';
-
-$DOCUMENT_ROOT = '/mygfsmountpoint/';
-$VIRTUAL_BASE = '/';
- 
-$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-$DBI_USER='';
-$DBI_PASS=''; 
-$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-
-$BACKEND_CONFIG{GFS}{quota}='/usr/sbin/gfs_quota -f';
-</pre>
-
-<h2 id="smb">SMB/CIFS Support</h2>
-<p>
-The SMB backend supports Kerberos and username/password/workgroup authenticated file share access.
-</p>
-Please choose your installation variant:
-<ol>
-<li><a href="mod_perl.html">with mod_perl and with Kerberos authentication</a> (recommended)</li>
-<li><a href="#smbwithkrb">with mod_auth_kerberos and Kerberos authentication</a> </li>
-<li><a href="#smbwithoutkrb">without mod_auth_kerberos but with Kerberos authentication</a></li>
-<li><a href="#smbwithpw">with username/password/workgroup authentication</a></li>
-</ol>
-<h3 id="smbwithkrb">... with mod_auth_kerberos</h3>
-Requirements:
-<ol>
-<li> maybe a Active Directory integrated Windows or Samba file server</li>
-<li> <a href="http://modauthkerb.sf.net/">mod_auth_kerberos</a> installed (Debian/Ubuntu: libapache2-mod-auth-kerb)</li>
-<li> a keytab file for the kerberos module:
-	<ol>
-	<li>create a Windows/ADS user account with a good password (e.g. <code>exampleuser</code>)</li>
-	<li>disable password change requirements (policies) for your Windows/ADS user account</li>
-	<li>create a keytab file as a domain admin on your domain controller:
-	<pre>C:&gt;ktpass -princ HTTP/my_www_server_name@MY.EXAMPLE.DOMAIN.ORG -mapuser exampleuser@MY.EXAMPLE.DOMAIN.ORG -pass MySeCreTexampleuserPassw0rd -out keytab.HTTP</pre>
-	</li>
-	<li>copy the keytab file <code>keytab.HTTP</code> to a Web server path, e.g. <code>/etc/keytab.HTTP</code></li>
-	</ol>
-</li>
-<li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
-<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
-<li> You <b>must not use a setuid/setgid wrapper</b> because mod_auth_kerberos creates a ticket cache file and the WebDAV CGI script needs read rights for the Kerberos ticket cache.</li>
-<li> You need a wrapper if you use Speedy (see <a href="#speedy">Speed Support</a> section) because the SMB backend needs a fresh Kerberos ticket.</li>
-<li> enough temporary file space for thumbnails and ZIP upload/download</li>
-</ol>
-
-Apache example:
-<pre>
-ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
-
-KrbVerifyKDC off
-KrbMethodNegotiate on
-KrbMethodK5Passwd on
-KrbAuthoritative on
-KrbServiceName HTTP
-Krb5Keytab /etc/keytab.HTTP
-# required:
-KrbSaveCredentials on
-KrbAuthRealms MY.EXAMPLE.DOMAIN.ORG MYSECOND.EXAMPLE.DOMAIN.ORG
-
-AuthType Kerberos
-AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
-Require valid-user
-
-RewriteEngine on
-RewriteRule  ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl]
-</pre>
-<code>/etc/webdav.conf</code> example: <a href="#smbconf">see next section</a>
-
-<h3 id="smbwithoutkrb">... without mod_auth_kerberos but with Kerberos authentication</h3>
-Requirements:
-<ol>
-<li> a Active Directory integrated Windows or Samba file server</li>
-<li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
-<li> a <a href="#kerberosconfig">Kerberos configuration</a> file (/etc/krb5.conf) with a default_realm</li>
-<li> <code>Filesys::SmbClient</code> perl module installed (Debian/Ubuntu package: libfilesys-smbclient-perl)</li>
-<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
-<li> Kerberos client tool kinit (Debian/Ubuntu package: krb5-user)</li>
-<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible): the <code>TICKET_LIFETIME</code> (in seconds) should be a little bit smaller than your Kerberos ticket lifetime</li>
-<li> enough temporary file space for thumbnails and ZIP upload/download</li>
-</ol>
-Kerberos configuration example: <code>/etc/krb5.conf</code>:
-<pre id="kerberosconfig">
-[libdefaults]
-        dns_lookup_realm = true
-        dns_lookup_kds = true
-        default_realm = MY.EXAMPLE.DOMAIN.ORG
-        clockskew = 900
-        forwardable = true
-        proxiable = true
-        allow_weak_crypto = yes
-[domain_realms]
-	my.example.domain.org = MY.EXAMPLE.DOMAIN.ORG
-	.my.example.domain.org = MY.EXAMPLE.DOMAIN.ORG
-</pre>
-Apache example:
-<pre>
-ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
-
-AuthType Basic
-AuthName "MY.EXAMPLE.DOMAIN.ORG Account"
-Require valid-user
-
-RewriteEngine on
-RewriteRule ^/ /webdavcgi \
-		[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=AUTHHEADER:%{HTTP:Authorization},E=TICKET_LIFETIME:21600]
-</pre>
-
-<code id="smbconf">/etc/webdav.conf</code> example:
-<pre>
-$INSTALL_BASE = '/etc/webdavcgi/';
-
-require Helper::Krb5AuthHelper;
-Helper::Krb5AuthHelper->new();
-
-$DOCUMENT_ROOT = '/';
-$VIRTUAL_BASE = '/';
-
-$BACKEND='SMB';
-
-$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-$DBI_USER='';
-$DBI_PASS=''; 
-$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-
-$SHOW_QUOTA = -x '/usr/bin/smbclient';
-$ALLOW_CHANGEPERM = 0;
-$ALLOW_SYMLINK = 0;
-
-#### SMB backend setup:
-### required entries: defaultdomain, domains, fileserver
-### optional entries: sharefilter, usersharefilter, shares, sharealiases
-$BACKEND_CONFIG{SMB} = {
-  defaultdomain =&gt; 'MY.EXAMPLE.DOMAIN.ORG',	#required
-
-  ## allow only configured server names and shares (default: 0)
-  secure =&gt; 1, # optional
-
-  ## a global share filter (filter out admin shares with trailing $):
-  sharefilter =&gt; [ qr/\$$/, ],  #optional
-
-  usersharefilter =&gt; {  #optional
-    ## admin has no matching filter so he can see all shares (overwrites sharefilter):
-    myadminexample =&gt; [ qr/__NEVER_MATCH/, ],
-  }, 
-
-  sharesep =&gt; '~', #optional - servername-share separator symbol (default: '~')
-  ## don't use a separator symbol like '$', '-', '_', '#', '%', '?', '&amp;', '/', '\', or letters/numbers
-  ## good alternative separators are '!', ':', '=', '\'', '"', '`', '+', '*', or '@'
-
-  ## enables/disables quota support for all domains and shares:
-  quota =&gt; 1, # optional
-
-  domains =&gt; { #required
-    'MY.EXAMPLE.DOMAIN.ORG' =&gt; {	#required (multiple domain entries allowed for forrests)
-      ## a domain based filter (overwrites sharefilter and userfilter above):
-      sharefilter =&gt; [ qr/\$$/, ],	#optional
-      usersharefilter =&gt; {		#optional
-        ## a domain based user filter (overwrites all sharefilter and global filter):
-        myadminexample =&gt; [ qr/__NEVER_MATCH/, ], 
-      }, 
-      fileserver =&gt; {			#required
-        'mywindowsfileserver1.my.example.domain.org' =&gt; {	#required
-
-          ## a fileserver based share filter (overwrites all domain based filter):
-          sharefilter =&gt; [ qr/\$/, ],	#optional
-
-          usersharefilter =&gt; {		#optional
-            ## overwrites all sharefilter and domain based filter
-            myadminexample =&gt; [ qr/__NEVER_MATCH/ ] 
-          }, 
-
-          ## disables all filter and (slow) automatic share detection:
-          shares =&gt; [ 'MyFirstShare', 'MySecondShare', 'MyThirdShare/start/here' ],	#optional
-          
-          ## enables/disables quota support for given shares:
-          quota =&gt; { 'MyFirstShare' =&gt; 0 }, # optional
-
-	  ## defines a initial directory for a share (don't forget the initial '/'):
-	  initdir =&gt; { 			#optional
-	  	'MyFirstShare' =&gt; '/starthere', 
-		'MySecondShare'=&gt; '/start/here' 
-	  },
-
-          sharealiases =&gt; {		#optional
-            ## shows 'H: (Home)' instead of 
-            ## 'mywindowsfileserver1.my.example.domain.org~MyFirstShare' in the Web interface
-            'MyFirstShare' =&gt; 'H: (Home)/',
-            ## shows 'S: (Scratch)' instead of 
-            ## 'mywindowsfileserver1.my.example.domain.org~MySecondShare' in the Web interface
-            'MySecondShare' =&gt; 'S: (Scratch)/',
-	    'MyThirdShare/start/here' =&gt; 'T: Temp (/start/here/)',
-          },
-        },
-      },
-    },
-  },
-};
-</pre>
-
-<h3 id="smbwithpw">... with username/password/workgroup authentication</h3>
-Requirements:
-<ol>
-<li> a Windows or Samba file server </li>
-<li> a Apache authentication provider like auth_n_file, mod_authnz_ldap, ... with the same users and synchronized passwords </li>
-<li> optional the <code>/usr/bin/smbclient</code> binary for quota information (Debian/Ubuntu package: smbclient)</li>
-<li> the <code>cgi-bin/smbwrapper</code> script (Speedy compatible)</li>
-<li> enough temporary file space for thumbnails and ZIP upload/download</li>
-</ol>
-Apache example:
-<pre>
-ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/smbwrapper
-
-AuthType Basic
-AuthName "Workgroup Account"
-Require valid-user
-
-RewriteEngine on
-RewriteRule ^/ /webdavcgi \
-		[PT,L,E=WEBDAVCONF:/etc/webdav.conf,E=PERLLIB:/etc/webdavcgi/lib/perl,E=AUTHHEADER:%{HTTP:Authorization},E=SMBWORKGROUP:Workgroup]
-</pre>
-
-<code>/etc/webdav.conf</code> example: <a href="#smbconf">see previous section</a>
-
-<h2 id="dbb">DBB database backend</h2>
-<p>The DBB backend module is an example module. It shows the possibility to put all your data to your own backend and not only to file systems.</p>
-Features:
-<ul>
-<li> puts all data to a single database table (binaries too)</li>
-<li> the required database table will be created by the backend</li>
-</ul>
-Requirements:
-<ul>
-<li> a database driver (DBD perl module; by default SQLite; Ubuntu/Debian package: libdbd-sqlite3-perl) </li>
-</ul>
-<code>/etc/webdav.conf</code> example:
-<pre>
-$INSTALL_BASE='/etc/webdavcgi/';
-$VIRTUAL_BASE = '/';
-$DOCUMENT_ROOT='/';
-
-
-$DBI_SRC='dbi:SQLite:dbname=/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-$DBI_USER='';
-$DBI_PASS=''; 
-$CREATE_DB = !-e '/tmp/webdav.'.$ENV{REMOTE_USER}.'.db';
-
-$THUMBNAIL_CACHEDIR="/tmp";
-
-$ALLOW_CHANGEPERM = 0;
-$ALLOW_SYMLINK = 0;
-
-$BACKEND = 'DBB';
-
-$BACKEND_CONFIG{DBB} = {
-	dsn =&gt; 'dbi:SQLite:dbname=/tmp/webdavcgi-dbdbackend-'.$ENV{REMOTE_USER}.'.db',
-	username =&gt; '',
-	password =&gt; '',
-};
-
-</pre>
-<h2 id="git">GIT backend</h2>
-<p>
-The GIT backend is a showcase for a revision controlled backend. It is derived from the FS backend and so it works only with local file systems.
-</p>
-Requirements:
-<ul>
-<li>a git binary (Debian/Ubuntu package: git)</li>
-</ul> 
-How it works:
-<ul>
-<li>It initializes the document root with <code>git init</code> and adds existing files if necessary.</li>
-<li>The git directory <code>.git</code> is hidden for all users.</li>
-</ul>
-<code>/etc/webdav.conf</code> example:
-<pre>
-...
-$BACKEND = 'GIT';
-
-$BACKEND_CONFIG{GIT} = {
-	## path to git command  (default: /usr/bin/git):
-	gitcmd =&gt; '/usr/bin/git',
-
-	
-	## path to a lockfile (default: /tmp/webdav-git.lock) 
-	## it have to be writable by all users using the git repo:
-	lockfile =&gt; '/tmp/webdav-git.lock',
-};
-...
-
-</pre>
-<h2 id="rcs">RCS backend</h2>
-<p>
-The RCS backend is a showcase for a revision controlled backend. It needs another backend like FS, or SMB to work because it's a simple backend wrapper.
-</p>
-
-<div>
-How it works:
-<ul>
-<li> only files are under revision control</li>
-<li> the backend creates a revision file with RCS for any uploaded file </li>
-<li> a revision file is stored in the <code>rcsdirname</code> folder (e.g. <code>.rcs/test.txt,v</code>) relative to the folder of a file</li>
-<li> the RCS backend creates a virtual folder structure (<code>rcsdirname/virtualrcsdir</code>) with revision files, rcs log entries, and revision comparision (diff)</li>
-<li> revisions, logs, and diffs are located under <code>rcsdirname/virtualrcsdir/filename/</code> (e.g. <code>.rcs/RCS/test.txt/</code>)</li>
-</ul>
-</div>
-Known issues:
-<ul>
-<li> if you copy or move files over existing files the overwritten files and revisions are lost</li>
-<li> if you delete a folder all containing revisions and files are deleted and lost</li>
-</ul>
-Requirements:
-<ul>
-<li> <code>Rcs</code> Perl module (Debian/Ubuntu package: librcs-perl)</li> 
-<li> rcs binaries (Debian/Ubuntu package: rcs)</li>
-<li> another backend like FS, GFS, AFS, DBB, or SMB and don't forget to configure the other backend</li>
-<li> a little bit temporary space for all RCS operations (ci, co, rcsdiff, rlog, zip download) </li>
-</ul>
-
-<code>/etc/webdav.conf</code> example:
-<pre>
-...
-$BACKEND = 'RCS';
-
-$BACKEND_CONFIG{RCS} = {
-        ## backend used for versioning:
-        backend=&gt;'FS',                  # required 
-
-        ## relative path in a directory for revision files 
-	## (slashes are not allowed):
-        rcsdirname=&gt;'.rcs',             # required
-
-        ## RCS binary path:
-        bindir=&gt;'/usr/bin',             # required
-
-        ## a relative virtual path in 'rcsdirname' to access 
-	## all revisions, logs and diffs of a file 
-	## (slashes are not allowed):
-        virtualrcsdir=&gt;'REVISIONS',     # required
-
-	## limits the number of revisions for a file:
-	## note: maxrevisions includes the current revision that means:
-	## you have to set maxrevisions to 4 if you need access to 3 old revisions
-	# maxrevision=&gt;31,              # optional
-
-        ## ignore suffixes (check is case insensitive):
-        # ignoresuffixes =&gt; [ 'jpg', 'gif', 'png', ],  # optional
-
-        ## allowed suffixes (check is case insensitive):
-        # allowedsuffixes =&gt; [ 'txt', 'html' ],        # optional
-
-        ## ignore filenames (check is case insensitive):
-        # ignorefilenames=&gt; [ '.*~'],   # optional
-
-};
-...
-</pre>
-<h2 id="ro">Read-only backend RO</h2>
-<p> The RO backend is a backend wrapper for all other backends and allows only read access to files and folders.</p>
-<code>webdav.conf</code> example:
-<pre>
-...
-$BACKEND='RO';
-$BACKEND_CONFIG{RO}{backend} = 'FS';
-...
-</pre>
-<h2 id="s3b">Amazon S3 browser backend S3B</h2>
-<p> The S3B backend is a simple Amazon S3 browser. It is tested only with Ceph Rados S3 gateway and supports:</p>
-  <ul>
-  <li>buckets: create, delete</li>
-  <li>files: upload, download, rename, delete, copy, move</li>
-  </ul> 
-Requirements:
-<ul>
-<li> the Amazon::S3 perl module (Debian/Ubuntu: <code>perl -MCPAN -e 'install Amazon::S3' </code></li>
-<li> a access id and secret key for S3 (compatible) storage like Ceph Rados gateway</li>  
-</ul>
-<code>/etc/webdav.conf</code> example:
-<pre>
-...
-$BACKEND='S3B';
-$BACKEND_CONFIG{S3B} = {
-        access_id => '[myaccessid]',   # required
-        secret_key => '[mysecretkey]', # required
-        host => '[myradosservername]', # optional, default: s3.amazonaws.com
-        bucketprefix => '[myaccessid][separator like "-"]', # optional, default: undefined (useful for a Ceph Rados gateway with a required access id in a bucket name)
-        secure => 1, # optional, 1: https, 0: http, default: 0
-        retry => 1,  # optional, default: 0 
-        timeout=>2,  # optional, default: 0
-};
-...
-</pre>
-
 <h2 id="performance">Performance</h2>
 <ul>
   <li> Use a fast (local) database.</li>
@@ -1356,9 +856,9 @@ Setup:
 OLD: #!/usr/bin/perl
 NEW: #!/usr/bin/speedy -- -r50 -M10 -t3600
 </pre>
-The <code>-r50</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M10</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="#smb">SMB backend</a>) you should remove the <code>-M10</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request. The <code>-t3600</code> sets the timeout for a idle Speedy process to one hour. 
+The <code>-r50</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M10</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="backends.html#smb">SMB backend</a>) you should remove the <code>-M10</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request. The <code>-t3600</code> sets the timeout for a idle Speedy process to one hour. 
 </li>
-<li> Only for the <a href="#smb">SMB backend</a>:
+<li> Only for the <a href="backends.html#smb">SMB backend</a>:
     <ol>
     <li>Add <code>E=TICKET_LIFETIME:28800</code> to your RewriteRule:
 <pre>
@@ -1395,10 +895,6 @@ Notes:
 </ul>
 
 </div>
-<h2 id="modperl">Mod_Perl Support</h2>
-<p>
-See <a href="mod_perl.html">mod_perl</a> topic.
-</p>
 <!--[
 <h2 id="security">Security</h2>
 

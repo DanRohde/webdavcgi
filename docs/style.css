@@ -72,6 +72,9 @@ a:active {
 	background: linear-gradient(to right, white, #eee);
 	box-shadow: 2px 2px 2px #aaa;
 }
+.navigation.doc, footer.doc {
+	margin: 5px 1px;
+}
 .home h1, .home h2, .home h3 {
 	flex: 0 0 88%;
 	margin: 5px 2%;
