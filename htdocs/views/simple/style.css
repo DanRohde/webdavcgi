@@ -148,6 +148,9 @@ a {
 	clear: both;
 	font-size: 15px;
 }
+.fileListEntry {
+	cursor: crosshair;
+}
 table tr {
 	border-top: 1px solid #eee;
     border-bottom: 1px solid #aaa;
@@ -190,43 +193,10 @@ table,th,td {
 	width: 20px;
 	height: 20px;
 }
-.toggleselection, .selectall, .selectnone {
-    width: 24px;
-    height: 24px;
-    margin: 2px;
-    /*margin-left: 4px;
-    margin-bottom: 3px;*/ 
-    border: 0;
+.action.toggleselection, .action.selectall, .action.selectnone, .ai-toggleselection {
+    min-width: 24px;
+    min-height: 24px;
     cursor: pointer;
-    background-image: url(images/sprite.png);
-    background-repeat: no-repeat;
-}
-.toggleselection {
-    background-position: center -898px;
-}
-.selectall {
-    background-position: center -1298px;
-}
-.selectnone {
-    background-position: center -1338px;
-}
-#popupmenu .toggleselection {
-	background-position: -2px -896px;
-}
-#popupmenu .selectall {
-	background-position: -2px -1296px; 
-}
-#popupmenu .selectnone {
-	background-position: -2px -1336px;
-}
-
-.toggleselection:hover, .toggleselection:focus, 
-.selectall:hover, .selectall:focus,
-.selectnone:hover, .selectnone:focus {
-    background-image: url(images/sprite-hover.png);
-    background-color: #ededed;
-    opacity: 1;
-    filter: Alpha(opacity=100);
 }
 
 .select.label  {
@@ -1700,3 +1670,98 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	#popupmenu {
 		margin-top: 0px;
 	}
+/* table views */
+.action.flt-view-change.toggle-on {
+	border: 1px inset #ddd;
+	background-color: #eee;
+}
+/* list view*/
+.flt-view-list .fileListHead {
+	display: none;
+}
+.flt-view-list #fileList {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: flex-start;
+}
+.flt-view-list #fileList tr {
+	padding-right: 2em;
+	flex: 0 0 30em;
+	padding: 0 1em;
+	cursor: crosshair;
+	border: 3px solid transparent;
+}
+.flt-view-list #fileList tr.selected {
+	border: 3px inset #ddd;
+}
+.flt-view-list #fileList td {
+	display: none;
+}
+.flt-view-list #fileList td.filename {
+	display: block;
+	flex: 1 1 auto;
+}
+.flt-view-list .draghover {
+	border: inherit;
+	background-color: #ededed;
+}
+.flt-view-list #fileList td.filename div.filename {
+	float: left;
+}
+.flt-view-list #fileactions {
+	float: right;
+}
+/* thumbs view */
+.flt-view-thumbs .fileListHead {
+	display: none;
+}
+.flt-view-thumbs #fileList {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: flex-start;
+	align-items: baseline;
+}
+.flt-view-thumbs #fileList tr {
+	flex: 0 0 12em;
+	padding: 1em;
+	border: 3px solid transparent;
+	cursor: crosshair;
+}
+.flt-view-thumbs #fileList tr.selected {
+	border: 3px inset #ddd;
+}
+.flt-view-thumbs #fileList td {
+	display: none;
+}
+.flt-view-thumbs #fileList td.filename {
+	display: flex;
+	flex-flow: column nowrap;
+	max-width: 12em;
+}
+.flt-view-thumbs .icon {
+	background-position: center center;
+	background-size: 80% auto;
+	max-height: 120px;
+	min-width: 80%;
+	align-self: center;
+}
+.flt-view-thumbs .icon:hover {
+	max-height: 120px;
+}
+.flt-view-thumbs #fileList td.filename div.filename {
+	flex-flow: column nowrap;
+}
+.flt-view-thumbs #fileList .nametext {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	text-align: center;
+}
+.flt-view-thumbs .draghover {
+	border: inherit;
+}
+.flt-view-thumbs #fileactions {
+	height: 24px;
+	width: 24px;
+	position: absolute;
+	margin-top: -5px;
+}

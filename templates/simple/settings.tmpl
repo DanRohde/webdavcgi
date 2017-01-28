@@ -12,7 +12,11 @@
 <td class="tabs">
 <table class="tab showtab settings_view">
 <tr><td colspan="2" class="tabhead">$tl(settings.view)</td></tr>
-$each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" id="settigns.$v" name="settings.$v"/></td></tr>'#
+$each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" id="settings.$v" name="settings.$v"/></td></tr>'#
+<tr><td><label for="settings.filelistable.view">$tl(settings.filelisttable.view)</label></td>
+<td><select name="settings.filelisttable.view" id="settings.filelisttable.view">
+$each#(thumbs,list,details)#'<option value="flt-view-$v">$tl(filelisttable.view.$v)</option>'#
+</select></td></tr>
 <!--IF($ENABLE_THUMBNAIL)-->
 <tr><td><label for="settings.enable.thumbnails">$tl(settings.enable.thumbnails)</label></td><td><input type="checkbox" id="settings.enable.thumbnails" name="settings.enable.thumbnails"/></td></tr>
 <!--ENDIF-->

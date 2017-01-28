@@ -49,6 +49,7 @@ use vars qw( $UID @SETUP);
             cssdefault  => '.icon{background-repeat:no-repeat;background-position:left center;background-size:20px 22px;}',
             defaulticon => 'unknown',
             defaulticoncss => ' .icon,',
+            defaulticoncsshover => '.icon:hover,.icon:focus,.icon:active,',
             css => '.icon.category-%n{background-image:url(data:image/svg+xml;utf-8,%d);}',
             csshover => '.icon.category-%n:hover,.icon.category-%n:focus,.icon.category-%n:active{background-image:url(data:image/svg+xml;utf8,%d);}',
         },
@@ -231,7 +232,10 @@ foreach my $setup ( @SETUP ) {
             push @{$inlinehoversvg}, @{$scopy} ;
 
             $css .= my_sprintf($setup->{csshover}, n =>\$fb, i=>\$iconid);
-
+        
+            if ($fb eq $setup->{inline}->{defaulticon}) {
+                $inlinecss .= $setup->{inline}->{defaulticoncsshover} // q{};
+            }
             $inlinecss .= my_sprintf($setup->{inline}->{csshover}, n=>\$fb, d=>\uri_escape_utf8(create_xml($inlinehoverxml)));
 
         }

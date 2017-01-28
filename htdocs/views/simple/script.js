@@ -72,6 +72,8 @@ $(function() {
 	
 	initThumbnailSwitch();
 	
+	initFileListViewSwitches();
+	
 	initTooltips();
 	
 	initNav();
@@ -105,7 +107,31 @@ $(function() {
 	
 	updateFileList($("#flt").attr("data-uri"));
 	
-	
+function initFileListViewSwitches() {
+	var v = $.MyCookie("settings.filelisttable.view");
+	if (v) {
+		$("#flt").addClass(v);
+		$(".action.flt-view-change."+v).addClass("toggle-on");
+	} else {
+		$("#flt").addClass($(".action.flt-view-default").data("view"));
+		$(".action.flt-view-default").addClass("toggle-on");
+	}
+	$(".action.flt-view-change").on("click",function() {
+		var self = $(this);
+		$.MyCookie("settings.filelisttable.view", self.data("view"));
+		$("body").trigger("settingchanged", { setting: "settings.filelisttable.view", value: self.data("view") });
+	});
+	$("body").on("settingchanged", function(ev,data) {
+		if (data.setting == "settings.filelisttable.view") {
+			$(".action.flt-view-change").removeClass("toggle-on");
+			$(".action.flt-view-change."+data.value).addClass("toggle-on");
+			$(".action.flt-view-change").each(function() {
+				$("#flt").removeClass($(this).data("view"));
+			});
+			$("#flt").addClass(data.value);
+		}
+	});
+}
 function initTabs(el) {
 	if (!el) el=$(document);
 	$('.tabsel',el).on("click keyup", function(ev) {
@@ -1037,7 +1063,7 @@ function initFileList() {
 	$("#fileList:not(.dnd-false) tr.iswriteable-yes[data-type='dir']")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	$("#fileList:not(.dnd-false) tr.isreadable-yes.unselectable-no div.filename")
-			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true, axis: "y" });
+			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true });
 	
 	// init tabbing:
 	$("#fileListTable th").MyKeyboardEventHandler();

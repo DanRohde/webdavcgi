@@ -18,18 +18,14 @@
 <!--TEMPLATE(selector)[
 			<th id="headerSelector" class="sorter-false resizable-false dragaccept -hidden" data-name="selector">
 				<ul class="dropdown">
-				<li class="dropdown-hover" tabindex="0">
-					<div  tabindex="0" class="toggleselection" alt="OX" title="$tl(togglealltooltip)" aria-label="$tl(togglealltooltip)">&nbsp;</div>
+				<li class="dropdown-hover ai-toggleselection" tabindex="0" title="$tl(select)" aria-label="$tl(select)">
 					<ul class="dropdown-menu">
-						<li class="dropdown-menu-item">
-							<div class="selectall" tabindex="0" title="$tl(selectall)" aria-label="$tl(selectall)">&nbsp;</div>
-						</li>
-						<li class="dropdown-menu-item">
-							<div class="selectnone" tabindex="0" alt="O" title="$tl(selectnone)" aria-label="$tl(selectnone)">&nbsp;</div>
-						</li>
+						<li class="dropdown-menu-item action toggleselection" tabindex="0" title="$tl(togglealltooltip)" aria-label="$tl(togglealltooltip)"></li>
+						<li class="dropdown-menu-item action selectall" tabindex="0" title="$tl(selectall)" aria-label="$tl(selectall)"></li>
+						<li class="dropdown-menu-item action selectnone" tabindex="0" title="$tl(selectnone)" aria-label="$tl(selectnone)"></li>
 					</ul>
 				</li>
-				</ul>				
+				</ul>
 			</th>
 ]-->
 			$filelistheadcolumns
