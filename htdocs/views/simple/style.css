@@ -1683,6 +1683,7 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	display: flex;
 	flex-flow: row wrap;
 	justify-content: flex-start;
+	padding-bottom: 3em;
 }
 .flt-view-list #fileList tr {
 	padding-right: 2em;
@@ -1720,6 +1721,7 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	flex-flow: row wrap;
 	justify-content: flex-start;
 	align-items: baseline;
+	padding-bottom: 3em;
 }
 .flt-view-thumbs #fileList tr {
 	flex: 0 0 12em;

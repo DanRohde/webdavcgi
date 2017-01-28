@@ -115,7 +115,7 @@ $INCLUDE(login-logo)
 <div id="bgcontainer"></div>
 	<div class="login-form">
 		<form method="POST">
-			<div class="login-title">$tl(login.title)</div>
+			$INCLUDE(login-title)
 			<!--IF("$cgiparam(logon)" eq q{failure})-->
 			<div class="logon-failure">$tl(login.failure)</div>
 			<!--ENDIF-->
@@ -140,7 +140,7 @@ $INCLUDE(login-logo)
 				$tl(login.password)
 				</label>
 				<input type="password" name="password" required autocomplete="off" id="pw">
-				<div tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden"></div>
+				<div title="$tl(login.toggleshowpassword)" tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden"></div>
 			</div>
 			<!--IF(scalar keys %{$SESSION{domains}} > 1)-->
 			<div class="login-domain">
