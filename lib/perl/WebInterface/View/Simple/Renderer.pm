@@ -100,6 +100,11 @@ sub _get_file_list_renderer {
     require WebInterface::View::Simple::RenderFileListTable;
     return $self->{config}->{flr} = WebInterface::View::Simple::RenderFileListTable->new();
 }
+sub _get_folder_tree_renderer {
+    my ($self) = @_;
+    require WebInterface::View::Simple::RenderFolderTree;
+    return $self->{config}->{ft} = WebInterface::View::Simple::RenderFolderTree->new();
+}
 
 sub _render_ajax_response {
     my ($self) = @_;
@@ -124,6 +129,9 @@ sub _render_ajax_response {
     }
     if ( $ajax eq 'getFileListEntry' ) {
         return $self->_get_file_list_renderer()->get_file_list_entry();
+    }
+    if ( $ajax eq 'getFolderTree') {
+        return $self->_get_folder_tree_renderer()->handle_folder_tree();
     }
     return;
 }

@@ -85,6 +85,8 @@ $(function() {
 	initToolBox();
 	
 	initGuide();
+	
+	initFolderTree();
 
 	$.ajaxSetup({ traditional: true });
 	
@@ -106,7 +108,42 @@ $(function() {
 	$.ajaxPrefilter('script',function( options, originalOptions, jqXHR ) { options.cache = true; });
 	
 	updateFileList($("#flt").attr("data-uri"));
-	
+
+function handleFolderTreeDrop(event,ui) {
+	var dsturi = $(this).closest(".mft-node").data("mftn").uri;
+	var srcinfo = getFileListDropSrcInfo(event,ui);
+	if (dsturi != srcinfo.srcuri) doFileListDropWithConfirm(srcinfo,dsturi);
+	return false;
+}
+function initFolderTree() {
+	var baseuri = $("#flt").data("baseuri");
+	$(".action.toggle-foldertree").on("click", function() {
+		
+		$("#content").toggleClass("show-foldertree");
+		$.MyCookie.toggleCookie("settings.show.foldertree","yes", $("#content").hasClass("show-foldertree"), true);
+	});
+	$("#foldertree").MyFolderTree({ 
+		nodeClickHandler: function(data) {
+			if (data.isreadable && data.uri) changeUri(data.uri);
+		},
+		initDom: function(el) {
+			el.MyTooltip();
+			el.find(".mft-node-label,.mft-node-expander").MyKeyboardEventHandler();
+		},
+		droppable : {
+			selector: ".mft-node.iswriteable-yes .mft-node-label",
+			params: { scope: "fileList", tolerance: "pointer", drop: handleFolderTreeDrop, hoverClass: 'foldertree-draghover' }
+		},
+		rootNodes : [ { name: baseuri, uri: baseuri, isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
+		getFolderTree: function(node, callback) {
+			$.MyPost(node.uri, { ajax:"getFolderTree" }, function(response) {
+				handleJSONResponse(response);
+				callback(response.children ? response.children: []);
+			});
+		},
+	});
+	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
+}
 function initFileListViewSwitches() {
 	var v = $.MyCookie("settings.filelisttable.view");
 	if (v) {
@@ -1417,35 +1454,46 @@ function removeFileListRow(row) {
 	row.remove();
 	$("#flt").trigger("fileListChanged");
 }
-function doFileListDrop(action,srcuri,dsturi,files) {
-	var xhr = $.MyPost(dsturi, { srcuri: srcuri, action: action , files: files.join('@/@')  }, function (response) {
-		if (response.message && action=='cut') { 
-			removeFileListRow($("#fileList tr[data-file='"+files.join("'],#fileList tr[data-file='")+"']"));
+function doFileListDrop(srcinfo,dsturi) {
+	var xhr = $.MyPost(dsturi, { srcuri: srcinfo.srcuri, action: srcinfo.action, files: srcinfo.files.join('@/@') }, function (response) {
+		if (response.message && srcinfo.action=='cut') { 
+			removeFileListRow($("#fileList tr[data-file='"+srcinfo.files.join("'],#fileList tr[data-file='")+"']"));
 		}
 		if (response.error) updateFileList();
 		handleJSONResponse(response);
 	});
 	renderAbortDialog(xhr);
 }
+function doFileListDropWithConfirm(srcinfo, dsturi) {
+	var msg = $("#paste"+srcinfo.action+"confirm").html();
+	msg = msg.replace(/%files%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(srcinfo.files.join(', '))))
+			.replace(/%srcuri%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(srcinfo.srcuri)))
+			.replace(/%dsturi%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(dsturi)))
+			.replace(/\\n/g,"<br/>");
+	if ($.MyCookie("settings.confirm.dnd")!="no") {
+		confirmDialog(msg, { confirm: function() { doFileListDrop(srcinfo, dsturi); }, setting: "settings.confirm.dnd" });
+	} else {
+		doFileListDrop(srcinfo,dsturi);
+	}
+}
+function getFileListDropSrcInfo(event,ui) {
+	var dragfilerow = ui.draggable.closest('tr');
+	var srcuri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),'/');
+	var dragfilerow = ui.draggable.closest('tr');
+	return {
+		action: event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ? "copy" : "cut",
+		srcuri: srcuri,
+		files: dragfilerow.hasClass('selected') ?  
+				$.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
+				: [ dragfilerow.attr('data-file') ]
+	};
+}
 function handleFileListDrop(event, ui) {
 	var dragfilerow = ui.draggable.closest('tr');
 	var dsturi = $.MyStringHelper.concatUri($("#fileList").attr('data-uri'), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr('data-file')))+"/");
-	var srcuri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),'/');
-	if (dsturi == $.MyStringHelper.concatUri(srcuri,encodeURIComponent($.MyStringHelper.stripSlash(dragfilerow.attr('data-file'))))+"/") return;
-	var action = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ? "copy" : "cut" ;
-	var files = dragfilerow.hasClass('selected') ?  
-			$.map($("#fileList tr.selected:visible"), function(val, i) { return $(val).attr("data-file"); }) 
-			: new Array(dragfilerow.attr('data-file'));	
-	if ($.MyCookie("settings.confirm.dnd")!="no") {
-		var msg = $("#paste"+action+"confirm").html();
-		msg = msg.replace(/%files%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(files.join(', '))))
-				.replace(/%srcuri%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(srcuri)))
-				.replace(/%dsturi%/g, $.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(dsturi)))
-				.replace(/\\n/g,"<br/>");
-		confirmDialog(msg, { confirm: function() { doFileListDrop(action,srcuri,dsturi,files); }, setting: "settings.confirm.dnd" });
-	} else {
-		doFileListDrop(action,srcuri,dsturi,files);
-	}
+	var srcinfo = getFileListDropSrcInfo(event, ui);
+	if (dsturi == $.MyStringHelper.concatUri(srcinfo.srcuri,encodeURIComponent($.MyStringHelper.stripSlash(dragfilerow.attr('data-file'))))+"/") return;
+	return doFileListDropWithConfirm(srcinfo,dsturi);
 }
 function renderHiddenInput(form, data, key) {
 	for (var k in data) {
