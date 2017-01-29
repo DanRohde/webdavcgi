@@ -169,8 +169,8 @@ sub _check_timed_out {
     require Date::Parse;
     while ( my $row = shift @{$rows} ) {
         my ( $token, $timeout, $timestamp ) = (
-            ${$row}[4], ${$row}[6],
-            int( Date::Parse::str2time( ${$row}[8], $DBI_TIMEZONE ) ),
+            $row->[4], $row->[6],
+            int( Date::Parse::str2time( $row->[8], $DBI_TIMEZONE ) ),
         );
         if ( !defined $timeout || $timeout =~ /^\s*$/xms ) {
             $timeout = "Second-$DEFAULT_LOCK_TIMEOUT";

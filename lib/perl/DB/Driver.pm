@@ -134,21 +134,19 @@ sub db_getCached {
     }
     my $pfn = get_parent_uri($fn);
     if ( $cm->exists_entry( [ 'lockentry', $pfn, 'row' ] ) ) { return []; }
-
     $cm->set_entry( [ 'lockentry', $fn, 'row' ], [] );
     if ( defined $token ) {
         $cm->set_entry( [ 'lockentry', $fn, 'token', $token ], 0 );
     }
-    my $rows = $self->db_getLike($pfn);
-
+    my $rows = $self->db_getLike($pfn.q{/%});
     $cm->set_entry( [ 'lockentry', $pfn, 'row' ], [] );
     if ( defined $token ) {
         $cm->set_entry( [ 'lockentry', $pfn, 'token', $token ], 0 );
     }
 
     foreach my $row ( @{$rows} ) {
-        $cm->set_entry( [ 'lockentry', ${$row}[1], 'row' ], $row );
-        $cm->set_entry( [ 'lockentry', ${$row}[1], 'token', ${$row}[4] ], 1 );
+        $cm->set_entry( [ 'lockentry', $row->[1], 'row' ], [ $row ] );
+        $cm->set_entry( [ 'lockentry', $row->[1], 'token', $row->[4] ], 1 );
     }
     if (
            defined $fn
