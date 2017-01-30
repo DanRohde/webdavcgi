@@ -1798,6 +1798,9 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	background-color: white;
 	border: 2px solid #ddd;
 }
+.head-collapsed #foldertree {
+	top: 0px;
+}
 .show-foldertree #foldertree {
 	display: block;	
 }
@@ -1833,4 +1836,7 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	text-overflow: hidden;
 	overflow: hidden;
 	white-space: pre;
+}
+.hidedotfolders .mft-node.isdotfile-yes {
+	display: none;
 }

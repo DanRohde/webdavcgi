@@ -30,6 +30,11 @@ use JSON;
 use DefaultConfig qw( $REQUEST_URI $PATH_TRANSLATED  );
 use FileUtils qw( get_file_limit );
 
+
+sub _b2yn {
+    my ($self, $bool, $format) = @_;
+    return sprintf $format // q{%s}, $bool ? 'yes' : 'no';
+}
 sub handle_folder_tree {
     my ($self) = @_;
     my %response = ();
@@ -54,7 +59,7 @@ sub handle_folder_tree {
                 help => $self->tl('foldertree.help'),
                 read => !$isreadable,
                 isreadable => $isreadable,
-                classes => 'isreadable-'. ($isreadable ? 'yes' : 'no' ).' iswriteable-'.($iswriteable? 'yes' : 'no'),
+                classes => $self->_b2yn($isreadable, 'isreadable-%s').$self->_b2yn($iswriteable,' iswriteable-%s').$self->_b2yn($file=~/^[.]/xms, ' isdotfile-%s'),
             };
         }
     }
