@@ -1791,10 +1791,12 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	position: fixed;
 	overflow: auto;
 	width: 20em;
-	height: 95%;
-	margin-top:45px;
-	margin-left: 5px;
+	top: 42px;
+	bottom: 33px;
+	margin-top: 45px;
+	padding-left: 5px;
 	background-color: white;
+	border: 2px solid #ddd;
 }
 .show-foldertree #foldertree {
 	display: block;	
@@ -1830,6 +1832,5 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 .mft-node-label {
 	text-overflow: hidden;
 	overflow: hidden;
-	max-width: 15em;
 	white-space: pre;
 }
