@@ -32,10 +32,11 @@ $INCLUDE(htmlhead)</head>
 		<div id="controls" class="collapse-head-listener collapse-sidebar-listener">
 			$INCLUDE(toolbar)
 		</div>
+        $INCLUDE(viewbar)
 		<div id="notification"></div>
 		<div class="ajax-loader collapse-head-listener collapse-sidebar-listener"></div>
 		<div id="foldertree"></div>
-		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri" role="main"><input id="token" name="${TOKENNAME}" value="${TOKEN}"></div>
+		<div id="flt" data-template="filelisttable" data-uri="$uri" data-baseuri="$baseuri" data-basedn="$basedn" role="main"><input id="token" name="${TOKENNAME}" value="${TOKEN}"></div>
 		$INCLUDE(statusbar)
 		$config(FOOTER)
 	</div>

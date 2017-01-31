@@ -136,6 +136,27 @@ a {
 	width: 100%;
 	z-index: 50;
 }
+#viewbar {
+    position: fixed;
+    top: 41px;
+    right: 0;
+    margin-top: 41px;
+    z-index: 50;
+    padding: 1px;
+	white-space: nowrap;
+	background-color: #f7f7f7;
+	border: 1px solid #ddd;
+	font-size: medium;
+}
+#viewbar .action {
+	background-size: 1em 1em;
+	padding: 0;
+	width: 1.2em;
+	height:1.2em;
+}
+.head-collapsed #viewbar {
+	top: 0;
+}
 #fileListTableContent {
 	padding-top: 42px;
 }
@@ -468,7 +489,7 @@ ul.filterbox {
 .icon.thumbnail {
 	background-color: rgb(255,255,255) !important;
 	background-color: rgba(255,255,255,0.6) !important;
-	background-image: none;
+	background-image: none !important;
 }
 .icon.thumbnail:hover {
 	width: 120px; 

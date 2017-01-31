@@ -53,7 +53,7 @@ sub handle_folder_tree {
         my $fileuri = $REQUEST_URI.$self->{cgi}->escape($file).q{/};
         if ($self->{backend}->isDir($full)) {
             push @children, {
-                name => "$file/",
+                name => $self->{backend}->getDisplayName($full),
                 uri  => $fileuri,
                 title => $self->{cgi}->escapeHTML($self->{cgi}->unescape($REQUEST_URI.$file).q{/}),
                 help => $self->tl('foldertree.help'),

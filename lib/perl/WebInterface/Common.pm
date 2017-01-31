@@ -35,7 +35,7 @@ use DefaultConfig qw(
   $VIRTUAL_BASE %ICONS %TRANSLATION @ALLOWED_TABLE_COLUMNS @SUPPORTED_VIEWS
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
   @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG %SESSION 
-  @ALL_EXTENSIONS );
+  @ALL_EXTENSIONS $DOCUMENT_ROOT);
 use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 use WebInterface::Translations qw( read_all_tl  );
 use FileUtils;
@@ -217,6 +217,7 @@ sub _get_std_template_vars {
     return {
         uri             => $ru // $REQUEST_URI,
         baseuri         => $self->{cgi}->escapeHTML($vbase),
+        basedn          => $self->{backend} ? $self->{backend}->getDisplayName($DOCUMENT_ROOT) : $DOCUMENT_ROOT,
         maxuploadsize   => $POST_MAX_SIZE,
         maxuploadsizehr => ( $self->render_byte_val( $POST_MAX_SIZE, 2, 2 ) )[0],
         view            => $VIEW,

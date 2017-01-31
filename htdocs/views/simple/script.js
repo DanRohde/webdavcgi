@@ -116,7 +116,7 @@ function handleFolderTreeDrop(event,ui) {
 	return false;
 }
 function initFolderTree() {
-	var baseuri = $("#flt").data("baseuri");
+	var flt = $("#flt");
 	$(".action.toggle-foldertree").on("click", function() {
 		
 		$("#content").toggleClass("show-foldertree");
@@ -134,7 +134,7 @@ function initFolderTree() {
 			selector: ".mft-node.iswriteable-yes .mft-node-label",
 			params: { scope: "fileList", tolerance: "pointer", drop: handleFolderTreeDrop, hoverClass: 'foldertree-draghover' }
 		},
-		rootNodes : [ { name: baseuri, uri: baseuri, isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
+		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
 		getFolderTree: function(node, callback) {
 			$.MyPost(node.uri, { ajax:"getFolderTree" }, function(response) {
 				handleJSONResponse(response);
