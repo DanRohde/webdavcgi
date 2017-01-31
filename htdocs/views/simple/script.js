@@ -42,7 +42,7 @@ $(function() {
 	
 	initFileUpload();
 	
-	initSelectionStatistics();
+	initFileStatistics();
 	
 	initDialogActions();
 	
@@ -182,6 +182,22 @@ function initTabs(el) {
 		$(":focusable:visible:first", tab).focus();
 	});
 }
+function updateFileStatistics() {
+	var s = getFolderStatistics();
+	$(".filestats-filecount").html(s.filecounter);
+	$(".filestats-dircount").html(s.dircounter);
+	$(".filestats-sum").html(s.sumcounter);
+	$(".filestats-foldersize").attr("title",$.MyStringHelper.renderByteSizes(s.foldersize)).html($.MyStringHelper.renderByteSize(s.foldersize));
+	
+	$(".filestats-selfilecount").html(s.fileselcounter);
+	$(".filestats-seldircount").html(s.dirselcounter);
+	$(".filestats-selsum").html(s.sumselcounter);
+	$(".filestats-selfoldersize").attr("title", $.MyStringHelper.renderByteSizes(s.folderselsize)).html($.MyStringHelper.renderByteSize(s.folderselsize));
+}
+function initFileStatistics() {
+	updateFileStatistics();
+	$("#flt").on("fileListChanged counterUpdated fileListSelChanged", updateFileStatistics);
+}
 function initStatusbar() {
 	if (!$.MyCookie("settings.show.statusbar")) {
 		$.MyCookie("settings.show.statusbar","no");
@@ -189,21 +205,6 @@ function initStatusbar() {
 	}
 	$("#statusbar").toggleClass("enabled", $.MyCookie("settings.show.statusbar") == "yes");
 	$("#statusbar .unselectable").off("change").on("change", function(e) {$(this).prop("checked",true); $.MyPreventDefault(e); });
-	function renderStatusbarTemplate(){ 
-		var flt = $("#fileListTable");
-		var sb = $("#statusbar");
-		$(".filecount",sb).html(flt.attr("data-filecounter"));
-		$(".dircount",sb).html(flt.attr("data-dircounter"));
-		$(".sum",sb).html(flt.attr("data-sumcounter"));
-		$(".foldersize",sb).attr("title",$.MyStringHelper.renderByteSizes(flt.data("foldersize"))).html($.MyStringHelper.renderByteSize(flt.data("foldersize")));
-		$(".selfilecount",sb).html(flt.attr("data-fileselcounter"));
-		$(".seldircount",sb).html(flt.attr("data-dirselcounter"));
-		$(".selsum",sb).html(flt.attr("data-sumselcounter"));
-		$(".selfoldersize",sb).attr("title", $.MyStringHelper.renderByteSizes(flt.attr("data-folderselsize"))).html($.MyStringHelper.renderByteSize(flt.attr("data-folderselsize")));
-		$(".selected-files-stats",sb).toggle(flt.attr("data-fileselcounter") !== 0 || flt.attr("data-dirselcounter") !== 0);
-	}
-	renderStatusbarTemplate();
-	$("#flt").on("counterUpdated fileListChanged selectionCounterUpdated", renderStatusbarTemplate);
 	$("body").on("notify",function(ev,data) {
 		$("#statusbar .notify").attr("title",data.msg).removeClass("error message warning").addClass(data.type).html(data.msg).MyTooltip();
 	});
@@ -692,26 +693,6 @@ function handleBookmarkActions(event) {
 		$("#flt").trigger("bookmarksChanged");
 	}
 }
-function initSelectionStatistics() {
-	$('#selstats').data('selstats', $('#selstats').html());
-	$("#flt").on("fileListSelChanged",handleSelectionStatistics).on("fileListViewChanged",handleSelectionStatistics);
-}
-function handleSelectionStatistics() {
-	var selstats = $('#selstats');
-	var tmpl = selstats.data('selstats');
-
-	var s = getFolderStatistics();
-	$("#fileListTable").attr('data-fileselcounter',s.fileselcounter).attr('data-dirselcounter',s.dirselcounter).attr('data-folderselsize',s.folderselsize).attr("data-sumselcounter", s.sumselcounter);
-	$("#flt").trigger("selectionCounterUpdated");
-	selstats.html(
-			tmpl.replace(/\$filecount/g,s.fileselcounter)
-				.replace(/\$dircount/g,s.dirselcounter)
-				.replace(/\$sum/g,s.sumselcounter)
-				.replace(/\$folderselsizes/g, $.MyStringHelper.renderByteSizes(s.folderselsize))
-				.replace(/\$folderselsize/g,$.MyStringHelper.renderByteSize(s.folderselsize))
-			).attr('title',$.MyStringHelper.renderByteSizes(s.folderselsize)).MyTooltip();
-}
-
 function initChangeDir() {
 	$("#pathinputform").submit(function(event) { return false; });
 	$("#pathinputform input[name='uri']").keydown(function(event){
@@ -1041,7 +1022,7 @@ function handleFileActionsSettings(ev,data) {
 function handleFileListRowFocusIn(event) {
 	var self = $(this);
 	if ($("#fileactions", self).length===0) {
-		$(".action.changeuri.filename", self).after($("#fileactions"));
+		$(".changeuri.filename", self).after($("#fileactions"));
 	}
 	$("#fileList tr.focus").removeClass("focus");
 	self.addClass("focus");
@@ -1052,7 +1033,7 @@ function handleFileListRowFocusOut(event) {
 }
 function initFancyBox() {
 	$("#flt").on("fileListChanged", function() {
-		$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible .action.changeuri")
+		$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible .changeuri")
 			.off("click")
 			.attr("data-fancybox-group","imggallery")
 			.each(function(i,v){ var self = $(v); if (!self.attr("href")) self.data("fancybox-href", self.data("href"));    })
@@ -1062,7 +1043,7 @@ function initFancyBox() {
 				beforeLoad: function() { this.title = $(this.element).html(); }, 
 				helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('data-href')+'?action=thumb'; } } } 
 			});
-		$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible .action.changeuri")
+		$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible .changeuri")
 			.off("click")
 			.attr("data-fancybox-group","wtimggallery")
 			.each(function(i,v){ var self = $(v); if (!self.attr("href")) self.data("fancybox-href", self.data("href"));    })
@@ -1089,6 +1070,14 @@ function initFileList() {
 			changeUri($.MyStringHelper.concatUri($("#fileList").attr('data-uri'), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr('data-file')))),
 					$(this).attr("data-type") == 'file');
 		});
+	
+	// single click to change folder, open/download files or not:
+	$("#fileList td.filename .changeuri").toggleClass("action",$.MyCookie("settings.dblclick.action")=="no");
+	$("body").off("settingchanged.initFileList").on("settingchanged.initFileList", function(e, data) {
+		if (data.setting != "settings.dblclick.action") return;
+		$("#fileList td.filename .changeuri").off("click.changeuri").toggleClass("action", !data.value);
+		$("#flt").trigger("fileListChanged");
+	});
 	
 	// fix selections after tablesorter:
 	$("#fileList tr.selected td .selectbutton:not(:checked)").prop("checked",true);
