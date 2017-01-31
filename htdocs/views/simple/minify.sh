@@ -30,7 +30,7 @@ MYINPLACEEDITOR="lib/MyInplaceEditor/jquery-myinplaceeditor.js"
 MYTABLEMANAGER="lib/MyTableManager/jquery-mytablemanager.js lib/MyTableManager/mytablemanager.css"
 MYCOUNTDOWNTIMER="lib/MyCountdownTimer/jquery-mycountdowntimer.js"
 MYFOLDERTREE="lib/MyFolderTree/jquery-myfoldertree.js lib/MyFolderTree/myfoldertree.css"
-MYSPLITPANE="lib/MySplitPane/jquery-mysplitpane.js"
+MYSPLITPANE="lib/MySplitPane/jquery-mysplitpane.js lib/MySplitPane/mysplitpane.css"
 MYLIBS="${QUERYSTRING} ${MYSANHELPER} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} ${MYTABLEMANAGER} ${MYCOUNTDOWNTIMER} ${MYFOLDERTREE} ${MYSPLITPANE} script.js style.css svg/inlinestyle.css"
 
 COMPLETE="complete"

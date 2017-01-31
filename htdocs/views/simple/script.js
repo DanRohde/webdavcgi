@@ -118,11 +118,14 @@ function handleFolderTreeDrop(event,ui) {
 function initFolderTree() {
 	var flt = $("#flt");
 	$(".action.toggle-foldertree").on("click", function() {
-		
 		$("#content").toggleClass("show-foldertree");
 		$.MyCookie.toggleCookie("settings.show.foldertree","yes", $("#content").hasClass("show-foldertree"), true);
+		$("#foldertree").resize();
+		$("#flt").css("margin-left","");
 	});
-	$("#foldertree").MyFolderTree({ 
+	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
+	$("#foldertree")
+	.MyFolderTree({ 
 		nodeClickHandler: function(data) {
 			if (data.isreadable && data.uri) changeUri(data.uri);
 		},
@@ -141,8 +144,8 @@ function initFolderTree() {
 				callback(response.children ? response.children: []);
 			});
 		},
-	});
-	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
+	})
+	.MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
 }
 function initFileListViewSwitches() {
 	var v = $.MyCookie("settings.filelisttable.view");
