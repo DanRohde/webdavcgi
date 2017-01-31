@@ -65,10 +65,8 @@ $extension(filelistaction)
 	$extension(filterbox)
 	<li>
 	<form id="filterbox" method="post" action="#">
-		$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" aria-label="$tl(namefiltertooltip)" accesskey="i"/>
-		<div class="contexthelp" tabindex="0" data-htmltooltip="$inchelp(filterbox)"></div>
-		<img class="action clearfilter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dEAACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="-" title="$tl(filter.reset)" aria-label="$tl(filter.reset)"/>
-		
+		$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" aria-label="$tl(namefiltertooltip)" accesskey="i"><div class="action clearfilter" title="$tl(filter.reset)" aria-label="$tl(filter.reset)" tabindex="0">&times;</div>
+	   <div class="contexthelp" tabindex="0" data-htmltooltip="$inchelp(filterbox)"></div>
 	</form>
 	</li>
 	</ul>
