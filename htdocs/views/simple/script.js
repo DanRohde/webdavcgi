@@ -132,7 +132,7 @@ function initFolderTree() {
 		},
 		droppable : {
 			selector: ".mft-node.iswriteable-yes .mft-node-label",
-			params: { scope: "fileList", tolerance: "pointer", drop: handleFolderTreeDrop, hoverClass: 'foldertree-draghover' }
+			params: { scope: "fileList", tolerance: "intersect", drop: handleFolderTreeDrop, hoverClass: 'foldertree-draghover', greedy: true }
 		},
 		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
 		getFolderTree: function(node, callback) {

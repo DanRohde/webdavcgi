@@ -59,7 +59,9 @@ sub handle_folder_tree {
                 help => $self->tl('foldertree.help'),
                 read => !$isreadable,
                 isreadable => $isreadable,
-                classes => $self->_b2yn($isreadable, 'isreadable-%s').$self->_b2yn($iswriteable,' iswriteable-%s').$self->_b2yn($file=~/^[.]/xms, ' isdotfile-%s'),
+                classes => $self->_b2yn($isreadable, 'isreadable-%s')
+                          .$self->_b2yn($iswriteable,' iswriteable-%s')
+                          .$self->_b2yn(($file=~/^[.]/xms ? 1 : 0), ' isdotfile-%s'),
             };
         }
     }

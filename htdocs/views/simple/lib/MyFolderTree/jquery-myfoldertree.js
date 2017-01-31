@@ -48,6 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (settings.droppable) {
 				settings.droppable.params.over_orig = settings.droppable.params.over;
 				settings.droppable.params.over = function(event,ui) {
+					if (even.target != this) return;
 					var node = $(this).closest(".mft-node");
 					foldertree.data("mft-drop-timeout", window.setTimeout(
 							function() {
