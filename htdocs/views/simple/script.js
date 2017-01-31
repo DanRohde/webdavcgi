@@ -121,7 +121,7 @@ function initFolderTree() {
 		$("#content").toggleClass("show-foldertree");
 		$.MyCookie.toggleCookie("settings.show.foldertree","yes", $("#content").hasClass("show-foldertree"), true);
 		$("#foldertree").resize();
-		$("#flt").css("margin-left","");
+		$("#flt").css("margin-left",$("#content").hasClass("show-foldertree") ? $("#foldertree").width()+"px" : "");
 	});
 	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
 	$("#foldertree")
