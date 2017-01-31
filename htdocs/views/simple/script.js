@@ -87,7 +87,9 @@ $(function() {
 	initGuide();
 	
 	initFolderTree();
-
+	
+	initViewBar();
+	
 	$.ajaxSetup({ traditional: true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
@@ -109,6 +111,9 @@ $(function() {
 	
 	updateFileList($("#flt").attr("data-uri"));
 
+function initViewBar() {
+	$("#viewbar").MyTooltip();
+}
 function handleFolderTreeDrop(event,ui) {
 	var dsturi = $(this).closest(".mft-node").data("mftn").uri;
 	var srcinfo = getFileListDropSrcInfo(event,ui);
@@ -120,9 +125,10 @@ function initFolderTree() {
 	$(".action.toggle-foldertree").on("click", function() {
 		$("#content").toggleClass("show-foldertree");
 		$.MyCookie.toggleCookie("settings.show.foldertree","yes", $("#content").hasClass("show-foldertree"), true);
-		$("#foldertree").resize();
+		$("#foldertree").MySplitPane("resize");
 		$("#flt").css("margin-left",$("#content").hasClass("show-foldertree") ? $("#foldertree").width()+"px" : "");
 	});
+	$("body").on("windowResized", function() { $("#foldertree").MySplitPane("resize"); });
 	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
 	$("#foldertree")
 	.MyFolderTree({ 
@@ -510,7 +516,7 @@ function initUIEffects() {
 	});
 }
 function initWindowResize() {
-	$("#flt").on("fileListChanged", handleWindowResize).on("fileListViewChanged", handleWindowResize);
+	$("#flt").on("fileListChanged fileListViewChanged", handleWindowResize);
 	$(window).resize(handleWindowResize);
 	handleWindowResize();
 }

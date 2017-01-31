@@ -55,7 +55,7 @@ sub handle_folder_tree {
             push @children, {
                 name => $self->{backend}->getDisplayName($full),
                 uri  => $fileuri,
-                title => $self->{cgi}->escapeHTML($self->{cgi}->unescape($REQUEST_URI.$file).q{/}),
+                title => $self->{cgi}->escapeHTML($self->{cgi}->unescape($full).q{/}),
                 help => $self->tl('foldertree.help'),
                 read => !$isreadable,
                 isreadable => $isreadable,

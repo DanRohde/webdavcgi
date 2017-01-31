@@ -17,18 +17,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (function ( $ ) {
 	$.fn.MySplitPane = function(options) {
 		var handleContainer = this;
+		if (options == "resize") {
+			var handle = handleContainer.find(".mysplitpane-handle");
+			if (handle.length>0) handleResize(handle);
+			return this;
+		}
 		var settings = $.extend({}, $.fn.MySplitPane.defaults, options);
-		
 		if (settings.left.element == "self") settings.left.element = handleContainer;
+		handleContainer.data("MySplitPaneSettings", settings);
+		
 		var dragHandle = $("<div/>");
 		var handle = $("<div/>").html("&harr;").addClass("mysplitpane-handle").draggable({
 			drag: function(e,ui) {
 				if (settings.left.min && settings.left.min > 0 && ui.position.left <= settings.left.min) return;
 				if (settings.left.max && settings.left.max > 0 && ui.position.left >= settings.left.max) return;
-				
 				settings.left.element.css(settings.left.style, ui.position.left + "px");
 				settings.right.element.css(settings.right.style, ui.position.left + "px");
-				handleContainer.resize();
+				handleResize(handle);
 			},
 			stop: function(e,ui) {
 				if (settings.stop) settings.stop(ui.position.left);
@@ -37,22 +42,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				return dragHandle;
 			},
 		});
-		handle.css({left: getHandlePos().left+"px", top: getHandlePos().top+"px" });
-		handleContainer.on("resize", function() {
-			var handlePos = getHandlePos();
-			handle.css( { left : handlePos.left + "px", top: handlePos.top + "px" } );
-		});
+		handle.css({left: getHandlePos(handle).left+"px", top: getHandlePos(handle).top+"px" });
 		handleContainer.append(handle);
-		function getHandlePos() {
+		function handleResize(handle) {
+			var handlePos = getHandlePos(handle);
+			handle.css( { left : handlePos.left + "px", top: handlePos.top + "px" } );
+		}
+		function getHandlePos(handle) {
+			var w = $(window);
 			return {
-					left: handleContainer.offset().left + handleContainer.outerWidth() - handle.outerWidth()/2,
-					top: handleContainer.offset().top + 100
+					left: handleContainer.offset().left + handleContainer.outerWidth() - handle.outerWidth()/2 - w.scrollLeft(),
+					top: handleContainer.offset().top + handleContainer.data("MySplitPaneSettings").offsetY - w.scrollTop()
 			};
 		}
 		return this;
 	};
 	$.fn.MySplitPane.defaults = {
 		stop: function(left) { },
+		offsetY: 100,
 		left: { style : "width", element: undefined, min: 0, max: 0 },
 		right: { style : "margin-left", element: undefined }
 	};
