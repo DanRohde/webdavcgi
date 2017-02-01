@@ -267,10 +267,12 @@ sub render_quicknav_path {
         unshift @pathelements, $cpe;
     }
     my $href = q{};
+    my $full = $DOCUMENT_ROOT;
     foreach my $el ($base,@pathelements) {
         $href .= $el eq $base || $href eq $base ? $el : q{/}.$el;
+        $full .= $el eq $base || $href eq $base ? q{} : $el.q{/};
         my $uel = uri_unescape( $el );
-        my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $uel;
+        my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $self->strip_slash($self->{backend}->getDisplayName($full));
         my $attr = {
                 -title => $uel,
                 -class => 'action quicknav-el' . ($el eq $base ? ' quicknav-el-home' : q{}),

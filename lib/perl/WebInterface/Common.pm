@@ -783,4 +783,8 @@ sub render_login {
     return print_compressed_header_and_content( '200 OK', 'text/html', $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $self->read_template('login')), 
         {-Cache_Control=> 'no-cache, no-store', -X_Login_Required => '?logon=session' });
 }
+sub strip_slash {
+    my ($self, $s) = @_;
+    return $s=~m{^(.*)/$}xms ? $1 : $s;
+}
 1;

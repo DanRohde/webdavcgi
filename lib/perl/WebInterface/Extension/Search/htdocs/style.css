@@ -214,9 +214,7 @@ input.search.query {
 	cursor: pointer;
 	font-size: 1.2em;
 	text-align: center;
-}
-.search-result-thumb-view-toggle-button:after {
-	content: "☐";
+	background-size: 1em 1em;
 }
 
 .search-result-thumb-view-toggle-button:hover {
@@ -225,7 +223,4 @@ input.search.query {
 .search-result-thumb-view-toggle-button:focus,
 .search-result-thumb-view-toggle-button:active {
 	background-color: #aaa;
-}
-.search-result-thumb-view .search-result-thumb-view-toggle-button:after {
-  content:"◫";
 }
