@@ -15,27 +15,56 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 (function ( $ ) {
-	$.fn.MyFolderTree = function(options) {
+	$.fn.MyFolderTree = function(options, param, value) {
 		var foldertree = this;
+		if (typeof options == "string") {
+			if (options == "set-active-node") { // param: function(element, data)
+				foldertree.find(".mft-active-node").removeClass("mft-active-node");
+				var anode = foldertree.find(".mft-node").filter(function(i, e) {
+					var node = $(e);
+					return param(node, node.data("mftn"));
+				}).addClass("mft-active-node");
+				anode.children(".mft-node-label:first").addClass("mft-active-node");
+				anode.parents(".mft-collapsed").removeClass("mft-collapsed");
+			}
+			return foldertree;
+		}
 		var settings = $.extend({}, $.fn.MyFolderTree.defaults, options);
+		foldertree.data("myfoldertree-settings", settings);
 		var root = initClickHandler(renderFolderTree(settings.rootNodes));
 		foldertree.addClass("mft-foldertree").append(root);
 		function initClickHandler(el) {
 			el.find(".mft-node-label").off(".mft").on("click.mft", function() {
 				var node = $(this).closest(".mft-node");
 				var data = node.data("mftn")
-				settings.nodeClickHandler(data);
-				if (settings.readOnFolderClick) readUnreadNodes(node, data, true);
+				node.data("mft-clicktimeout", window.setTimeout(function() {
+					if (!node.data("mft-clicktimeout")) return;
+					else node.removeData("mft-clicktimeout");
+					settings.nodeClickHandler(data);
+					if (settings.readOnFolderClick) readUnreadNodes(node, data, true);
+					foldertree.find(".mft-active-node").removeClass("mft-active-node");
+					node.addClass("mft-active-node").children(".mft-node-label:first").addClass("mft-active-node");
+				}, 300));
+			}).on("dblclick.mft", function(ev) {
+				var node = $(this).closest(".mft-node");
+				var data = node.data("mftn");
+				window.clearTimeout(node.data("mft-clicktimeout"));
+				node.removeData("mft-clicktimeout");
+				readUnreadNodes(node, data);
+				toggleNode(node);
+				if (document.selection && document.selection.empty) document.selection.empty();
+				else if (window.getSelection) {
+					var sel = window.getSelection();
+					if (sel && sel.removeAllRanges) sel.removeAllRanges();
+				}
 			});
 			el.find(".mft-node-expander").off(".mft").on("click.mft", function(ev) {
-				$.MyPreventDefault(ev);
 				var self = $(this);
 				var node = self.closest(".mft-node");
 				var data = node.data("mftn");
 				readUnreadNodes(node, data, false);
 				toggleNode(node);
 			}).on("dblclick.mft", function(ev) {
-				$.MyPreventDefault(ev);
 				if (!settings.rereadOnDblClick) return;
 				var node = $(this).closest(".mft-node");
 				var data = node.data("mftn");
@@ -43,7 +72,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				node.children(".mft-list").remove();
 				data.children = [];
 				readUnreadNodes(node, data, true);
-				
+				toggleNode(node, false);
 			});
 			if (settings.droppable) {
 				settings.droppable.params.over_orig = settings.droppable.params.over;

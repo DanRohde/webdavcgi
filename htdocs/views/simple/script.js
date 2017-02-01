@@ -120,6 +120,11 @@ function handleFolderTreeDrop(event,ui) {
 	if (dsturi != srcinfo.srcuri) doFileListDropWithConfirm(srcinfo,dsturi);
 	return false;
 }
+function setActiveNodeInFolderTree(uri) {
+	$("#foldertree").MyFolderTree("set-active-node", function(node, data) {
+		return (data.uri == uri);
+	});
+}
 function initFolderTree() {
 	var flt = $("#flt");
 	$(".action.toggle-foldertree").on("click", function() {
@@ -133,7 +138,7 @@ function initFolderTree() {
 	$("#foldertree")
 	.MyFolderTree({ 
 		nodeClickHandler: function(data) {
-			if (data.isreadable && data.uri) changeUri(data.uri);
+			if (data.isreadable && data.uri && data.uri != $("#fileList").data("uri")) changeUri(data.uri);
 		},
 		initDom: function(el) {
 			el.MyTooltip();
@@ -145,13 +150,18 @@ function initFolderTree() {
 		},
 		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
 		getFolderTree: function(node, callback) {
+			var uri = $("#fileList").data("uri");
 			$.MyPost(node.uri, { ajax:"getFolderTree" }, function(response) {
 				handleJSONResponse(response);
 				callback(response.children ? response.children: []);
+				setActiveNodeInFolderTree(uri);
 			});
 		},
 	})
 	.MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
+	$("#flt").on("fileListChanged", function() {
+		setActiveNodeInFolderTree($("#fileList").data("uri"));
+	});
 }
 function initFileListViewSwitches() {
 	var v = $.MyCookie("settings.filelisttable.view");

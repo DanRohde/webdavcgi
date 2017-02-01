@@ -41,4 +41,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 	cursor: pointer;
 	min-width: 5em;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+    user-select: none;
+}
+.mft-active-node.mft-node-label {
+	background-color: #ddd;
 }
