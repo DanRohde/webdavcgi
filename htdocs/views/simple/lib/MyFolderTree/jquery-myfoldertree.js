@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				}).addClass("mft-active-node");
 				anode.children(".mft-node-label:first").addClass("mft-active-node");
 				anode.parents(".mft-collapsed").removeClass("mft-collapsed");
+				if (anode.length>0 && anode[0].scrollIntoView) anode[0].scrollIntoView();
 			}
 			return foldertree;
 		}
@@ -103,6 +104,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			data.read = true;
 			settings.getFolderTree(data, function(children) {
 				initClickHandler(node.append(renderFolderTree(children)));
+				node.toggleClass("mft-node-empty", children.length == 0);
 				if (expand || settings.autoExpandOnRead) toggleNode(node, false);
 			});
 		}
@@ -120,7 +122,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (node.title) label.attr("title", node.title);
 			if (node.help) li.attr("title", node.help);
 			li.data("mftn", node );
-			if (node.children) li.append(renderFolderTree(node.children));
+			if (node.children)
+				li.toggleClass("mft-node-empty", node.read === true && node.children.length == 0).append(renderFolderTree(node.children));
+			else
+				li.toggleClass("mft-node-empty", node.read === true );
 			return li;
 		} 
 		function renderFolderTree(tree) {
