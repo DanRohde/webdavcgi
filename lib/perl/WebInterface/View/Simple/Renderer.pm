@@ -270,8 +270,9 @@ sub render_quicknav_path {
     my $full = $DOCUMENT_ROOT;
     foreach my $el ($base,@pathelements) {
         $href .= $el eq $base || $href eq $base ? $el : q{/}.$el;
-        $full .= $el eq $base || $href eq $base ? q{} : $el.q{/};
         my $uel = uri_unescape( $el );
+        $full .= $el eq $base || $href eq $base ? q{} : $uel.q{/};
+        
         my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $self->strip_slash($self->{backend}->getDisplayName($full));
         my $attr = {
                 -title => $uel,
