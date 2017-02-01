@@ -29,11 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		var dragHandle = $("<div/>");
 		var handle = $("<div/>").html("&harr;").addClass("mysplitpane-handle").draggable({
 			drag: function(e,ui) {
-				if (settings.left.min && settings.left.min > 0 && ui.position.left <= settings.left.min) return;
-				if (settings.left.max && settings.left.max > 0 && ui.position.left >= settings.left.max) return;
-				settings.left.element.css(settings.left.style, ui.position.left + "px");
-				settings.right.element.css(settings.right.style, ui.position.left + "px");
-				handleResize(handle);
+				setElementsCss(ui.position.left);
 			},
 			stop: function(e,ui) {
 				if (settings.stop) settings.stop(ui.position.left);
@@ -41,9 +37,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			helper: function() {
 				return dragHandle;
 			},
+		}).attr("tabindex",0).on("keydown", function(event) {
+			if (event.keyCode == 37) {
+				setElementsCss(parseInt(settings.left.element.css(settings.left.style), 10) - settings.keyboardOffset);
+			} else if (event.keyCode == 39)  {
+				setElementsCss(parseInt(settings.left.element.css(settings.left.style), 10) + settings.keyboardOffset);
+			}
 		});
 		handle.css({left: getHandlePos(handle).left+"px", top: getHandlePos(handle).top+"px" });
 		handleContainer.append(handle);
+		function setElementsCss(pos) {
+			if (settings.left.min && settings.left.min > 0 && pos <= settings.left.min) return;
+			if (settings.left.max && settings.left.max > 0 && pos >= settings.left.max) return;
+			settings.left.element.css(settings.left.style, pos + "px");
+			settings.right.element.css(settings.right.style, pos + "px");
+			handleResize(handle);
+		}
 		function handleResize(handle) {
 			var handlePos = getHandlePos(handle);
 			handle.css( { left : handlePos.left + "px", top: handlePos.top + "px" } );
@@ -60,6 +69,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$.fn.MySplitPane.defaults = {
 		stop: function(left) { },
 		offsetY: 100,
+		keyboardOffset: 10,
 		left: { style : "width", element: undefined, min: 0, max: 0 },
 		right: { style : "margin-left", element: undefined }
 	};

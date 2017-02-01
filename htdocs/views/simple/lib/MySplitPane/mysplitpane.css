@@ -26,3 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-color: #ddd;
 	opacity: 0.5;
 }
+.mysplitpane-handle:focus, .mysplitpane-handle:active, .mysplitpane-handle:hover {
+	opacity: 1;
+	background-color: #ccc;
+}

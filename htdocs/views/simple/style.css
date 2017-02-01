@@ -1603,6 +1603,8 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	padding: 2px 10px;
 	vertical-align: bottom;
 	white-space: nowrap;
+	color: #444;
+	font-size: 0.8em;
 }
 .statistics > div {
 	display: inline-block;
