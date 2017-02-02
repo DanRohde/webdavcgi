@@ -108,9 +108,10 @@ sub render_file_list_table {
     }
 
     $jsondata{quicknav} = $self->minify_html( $self->render_quicknav_path() );
+    $jsondata{foldertree} = $self->get_folder_tree_renderer()->build_folder_tree($CACHE{$self}{files});
+    delete $CACHE{$self}{files};
     require JSON;
     return JSON->new()->encode( \%jsondata );
-
 }
 
 sub render_file_list {
@@ -127,7 +128,7 @@ sub render_file_list {
             $self )
         }
         : ();
-
+    $CACHE{$self}{files} = \@files;
     if ( $SHOW_PARENT_FOLDER && $DOCUMENT_ROOT ne $PATH_TRANSLATED ) {
         unshift @files, q{..};
     }

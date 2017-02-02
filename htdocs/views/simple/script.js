@@ -149,18 +149,24 @@ function initFolderTree() {
 			params: { scope: "fileList", tolerance: "intersect", drop: handleFolderTreeDrop, hoverClass: 'foldertree-draghover', greedy: true }
 		},
 		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
-		getFolderTree: function(node, callback) {
+		getFolderTree: function(node, callback, forceRead) {
 			var uri = $("#fileList").data("uri");
+			if (node.uri == uri && !forceRead) {
+				callback(flt.data("foldertree"));
+				return;
+			}
 			$.MyPost(node.uri, { ajax:"getFolderTree" }, function(response) {
 				handleJSONResponse(response);
 				callback(response.children ? response.children: []);
-				setActiveNodeInFolderTree(uri);
+				if (node.uri == uri) setActiveNodeInFolderTree(uri);
 			});
 		},
 	})
 	.MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
-	$("#flt").on("fileListChanged", function() {
-		setActiveNodeInFolderTree($("#fileList").data("uri"));
+	flt.on("fileListChanged", function() {
+		var uri = $("#fileList").data("uri");
+		$("#foldertree").MyFolderTree("add-node-data", function(node,data) { return data.uri == uri; });
+		setActiveNodeInFolderTree(uri);
 	});
 }
 function initFileListViewSwitches() {
@@ -1443,8 +1449,10 @@ function updateFileList(newtarget, data) {
 	var timestamp = $.now();
 	$("#flt").data("timestamp", timestamp);
 	$.MyPost(newtarget, data, function(response) {
-		if ($("#flt").data("timestamp") != timestamp) return; 
-		$("#flt")
+		var flt = $("#flt");
+		if (flt.data("timestamp") != timestamp) return;
+		flt.data("foldertree", response.foldertree);
+		flt
 			.trigger("beforeFileListChange")
 			.show()
 			.html(response.content)

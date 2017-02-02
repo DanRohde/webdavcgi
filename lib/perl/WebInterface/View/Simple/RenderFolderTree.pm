@@ -35,18 +35,13 @@ sub _b2yn {
     my ($self, $bool, $format) = @_;
     return sprintf $format // q{%s}, $bool ? 'yes' : 'no';
 }
-sub handle_folder_tree {
-    my ($self) = @_;
-    my %response = ();
-    my @files = $self->{backend}->isReadable($PATH_TRANSLATED)
-        ? sort { $self->cmp_files( $a, $b ) } @{
-        $self->{backend}
-            ->readDir( $PATH_TRANSLATED, get_file_limit($PATH_TRANSLATED),
-            $self )
-        }
-        : ();
+sub build_folder_tree {
+    my ($self, $filesref) = @_;
     my @children = ();
-    foreach my $file ( @files ) {
+    foreach my $file ( @{$filesref} ) {
+        if ($file =~ /^[.][.]$/xms) {
+            next;
+        }
         my $full = $PATH_TRANSLATED.$file;
         my $isreadable = $self->{backend}->isReadable($full);
         my $iswriteable = $self->{backend}->isWriteable($full);
@@ -65,7 +60,19 @@ sub handle_folder_tree {
             };
         }
     }
-    $response{children} = \@children;
+    return \@children;
+}
+sub handle_folder_tree {
+    my ($self) = @_;
+    my %response = ();
+    my @files = $self->{backend}->isReadable($PATH_TRANSLATED)
+        ? sort { $self->cmp_files( $a, $b ) } @{
+        $self->{backend}
+            ->readDir( $PATH_TRANSLATED, get_file_limit($PATH_TRANSLATED),
+            $self )
+        }
+        : ();
+    $response{children} = $self->build_folder_tree(\@files);
     $self->{json} //= JSON->new();
     return ( $self->{json}->encode(\%response), 'application/json');
 }

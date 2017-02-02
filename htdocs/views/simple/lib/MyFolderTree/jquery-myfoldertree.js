@@ -17,7 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (function ( $ ) {
 	$.fn.MyFolderTree = function(options, param, value) {
 		var foldertree = this;
+		var settings;
 		if (typeof options == "string") {
+			settings = foldertree.data("myfoldertree-settings");
 			if (options == "set-active-node") { // param: function(element, data)
 				foldertree.find(".mft-active-node").removeClass("mft-active-node");
 				var anode = foldertree.find(".mft-node").filter(function(i, e) {
@@ -27,10 +29,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				anode.children(".mft-node-label:first").addClass("mft-active-node");
 				anode.parents(".mft-collapsed").removeClass("mft-collapsed");
 				if (anode.length>0 && anode[0].scrollIntoView) anode[0].scrollIntoView();
+			} else if ( options == "add-node-data") { // param: function(element, data)
+				var anode = foldertree.find(".mft-node").filter(function(i,e) {
+					var node = $(e);
+					return param(node, node.data("mftn"));
+				});
+				if (anode.length > 0) readUnreadNodes(anode, anode.data("mftn"), false);
 			}
 			return foldertree;
 		}
-		var settings = $.extend({}, $.fn.MyFolderTree.defaults, options);
+		settings = $.extend({}, $.fn.MyFolderTree.defaults, options);
 		foldertree.data("myfoldertree-settings", settings);
 		var root = initClickHandler(renderFolderTree(settings.rootNodes));
 		foldertree.addClass("mft-foldertree").append(root);
@@ -72,7 +80,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				data.read=false;
 				node.children(".mft-list").remove();
 				data.children = [];
-				readUnreadNodes(node, data, true);
+				readUnreadNodes(node, data, true, true);
 				toggleNode(node, false);
 			});
 			if (settings.droppable) {
@@ -99,14 +107,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			settings.initDom(el);
 			return el;
 		}
-		function readUnreadNodes(node, data, expand) {
+		function readUnreadNodes(node, data, expand, forceRead) {
 			if (data.read) return;
 			data.read = true;
 			settings.getFolderTree(data, function(children) {
 				initClickHandler(node.append(renderFolderTree(children)));
 				node.toggleClass("mft-node-empty", children.length == 0);
 				if (expand || settings.autoExpandOnRead) toggleNode(node, false);
-			});
+			}, forceRead);
 		}
 		function toggleNode(node, collapse) {
 			node.toggleClass("mft-collapsed", collapse);
