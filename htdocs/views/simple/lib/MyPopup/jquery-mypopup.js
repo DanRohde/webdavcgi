@@ -35,9 +35,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		function adjustContextMenuPosition(event, el) {
 			var offset, left, top;
 			if (settings.contextmenuAnchorElement) {
-				offset = $(settings.contextmenuAnchor).position();
-				left = event.pageX - offset.left;
-				top  = el.offset().top;
+				el = $(settings.contextmenuAnchor);
+				offset = el.offset() ;
+				left = event.pageX - offset.left + el.scrollLeft();
+				top  = event.pageY - offset.top + el.scrollTop();
 			} else {
 				offset = $(settings.contextmenuAnchor).position();
 				left = (event.pageX-offset.left);

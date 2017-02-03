@@ -108,7 +108,7 @@ sub render_file_list_table {
     }
 
     $jsondata{quicknav} = $self->minify_html( $self->render_quicknav_path() );
-    $jsondata{foldertree} = $self->get_folder_tree_renderer()->build_folder_tree($CACHE{$self}{files});
+    $jsondata{foldertree} = $self->get_folder_tree_renderer()->build_folder_tree($fn, $ru, $CACHE{$self}{files});
     delete $CACHE{$self}{files};
     require JSON;
     return JSON->new()->encode( \%jsondata );
@@ -314,6 +314,7 @@ sub _render_file_list_entry {
         'gidNumber' => $gid // 0,
         'gid'       => $g,
         'subdir' => $id  && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
+        'iscurrent' => $id && $file =~ /^[.]$/xms ? 'yes' : 'no',
         'isdotfile' => $file =~ /^[.]/xms
             && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
         'suffix' => $file =~ /[.]([^.]+)$/xms ? $self->{cgi}->escapeHTML($1)

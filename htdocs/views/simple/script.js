@@ -125,6 +125,14 @@ function setActiveNodeInFolderTree(uri) {
 		return (data.uri == uri);
 	});
 }
+function initFolderTreePopupMenu() {
+	$("#foldertreepopupmenu li").MyPopup({
+		contextmenu: $("#foldertreepopupmenu"), 
+		contextmenuTarget: $("#foldertree .mft-node-label"), 
+		contextmenuAnchor: "#foldertree",
+		contextmenuAnchorElement: true
+	});
+}
 function initFolderTree() {
 	var flt = $("#flt");
 	$(".action.toggle-foldertree").on("click", function() {
@@ -151,22 +159,48 @@ function initFolderTree() {
 		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
 		getFolderTree: function(node, callback, forceRead) {
 			var uri = $("#fileList").data("uri");
-			if (node.uri == uri && !forceRead) {
+			var recurse = $("#foldertree").data("recurse");
+			if (node.uri == uri && !forceRead && !recurse) {
 				callback(flt.data("foldertree"));
+				initFolderTreePopupMenu();
 				return;
 			}
-			$.MyPost(node.uri, { ajax:"getFolderTree" }, function(response) {
+			var param = { ajax: "getFolderTree" };
+			if (recurse) {
+				param.recurse = 1;
+				$("#foldertree").removeData("recurse");
+			}
+			$.MyPost(node.uri, param, function(response) {
 				handleJSONResponse(response);
 				callback(response.children ? response.children: []);
 				if (node.uri == uri) setActiveNodeInFolderTree(uri);
+				initFolderTreePopupMenu();
 			});
 		},
 	})
 	.MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
+	initFolderTreePopupMenu();
 	flt.on("fileListChanged", function() {
 		var uri = $("#fileList").data("uri");
 		$("#foldertree").MyFolderTree("add-node-data", function(node,data) { return data.uri == uri; });
 		setActiveNodeInFolderTree(uri);
+		
+	});
+	$(".action.foldertree-expand-all").on("click", function(event) {
+		$.MyPreventDefault(event);
+		$("#foldertree").MyFolderTree("expand-all",$(this).closest(".mft-node"));
+	});
+	$(".action.foldertree-collapse-all").on("click", function(event) {
+		$.MyPreventDefault(event);
+		$("#foldertree").MyFolderTree("collapse-all", $(this).closest(".mft-node"));
+	});
+	$(".action.foldertree-refresh-current").on("click", function(event) {
+		$.MyPreventDefault(event);
+		$("#foldertree").MyFolderTree("reload-node", $(this).closest(".mft-node"));
+	});
+	$(".action.foldertree-read-all").on("click", function(event) {
+		$.MyPreventDefault(event);
+		$("#foldertree").data("recurse",true).MyFolderTree("reload-node", $(this).closest(".mft-node"));
 	});
 }
 function initFileListViewSwitches() {
@@ -1058,7 +1092,7 @@ function handleFileListRowFocusOut(event) {
 }
 function initFancyBox() {
 	$("#flt").on("fileListChanged", function() {
-		$("#fileList tr.isviewable-yes[data-mime^='image/'][data-size!='0']:visible .changeuri")
+		$("#fileList tr.isviewable-yes.isempty-no[data-mime^='image/']:visible .changeuri")
 			.off("click")
 			.attr("data-fancybox-group","imggallery")
 			.each(function(i,v){ var self = $(v); self.data("fancybox-href", self.data("href")); self.data("fancybox-title", self.html()); })
@@ -1067,7 +1101,7 @@ function initFancyBox() {
 				afterShow: function() { $(".fancybox-close").focus();},
 				helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr('data-href')+'?action=thumb'; } } } 
 			});
-		$("#fileList tr.isviewable-no[data-mime^='image/'][data-size!='0']:visible .changeuri")
+		$("#fileList tr.isviewable-no.isempty-no[data-mime^='image/']:visible .changeuri")
 			.off("click")
 			.attr("data-fancybox-group","wtimggallery")
 			.each(function(i,v){ var self = $(v); self.data("fancybox-href", self.data("href")); self.data("fancybox-title", self.find(".nametext").html()); })
@@ -1109,7 +1143,7 @@ function initFileList() {
 	$('#flt').disableSelection();
 	
 	// init drag & drop:
-	$("#fileList:not(.dnd-false) tr.iswriteable-yes[data-type='dir']")
+	$("#fileList:not(.dnd-false) tr.iswriteable-yes.is-dir.is-current-dir-no")
 			.droppable({ scope: "fileList", tolerance: "pointer", drop: handleFileListDrop, hoverClass: 'draghover' });
 	$("#fileList:not(.dnd-false) tr.isreadable-yes.unselectable-no div.filename")
 			.multiDraggable({getGroup: getVisibleAndSelectedFiles, zIndex: 200, scope: "fileList", revert: true });
@@ -1368,10 +1402,10 @@ function getFolderStatistics(focus) {
 	var es = focus ? ".focus" : ".selected:visible";
 	stats.focus = focus;
 	
-	stats.dircounter =  $("#fileList tr.is-subdir-yes:visible").length;
+	stats.dircounter =  $("#fileList tr.is-subdir-yes:visible, #fileList tr.is-current-dir-yes:visible").length;
 	stats.filecounter = $("#fileList tr.is-file:visible").length;
 	stats.sumcounter = stats.dircounter+stats.filecounter;
-	stats.dirselcounter = $("#fileList tr.is-subdir-yes"+es).length;
+	stats.dirselcounter = $("#fileList tr.is-subdir-yes"+es+", #fileList tr.is-current-dir-yes"+es).length;
 	stats.fileselcounter = $("#fileList tr.is-file"+es).length;
 	stats.sumselcounter = stats.dirselcounter+stats.fileselcounter;
 

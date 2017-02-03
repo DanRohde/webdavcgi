@@ -35,6 +35,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					return param(node, node.data("mftn"));
 				});
 				if (anode.length > 0) readUnreadNodes(anode, anode.data("mftn"), false);
+			} else if ( options == "collapse-all" ) { // param: node
+				if (!param) param = foldertree.find(".mft-node");
+				param.closest(".mft-node").addClass("mft-collapsed").find(".mft-node").addClass("mft-collapsed");
+			} else if ( options == "expand-all") { // param: node
+				if (!param) param = foldertree.find(".mft-node");
+				readUnreadNodes(param, param.data("mftn"), false);
+				param.closest(".mft-node").removeClass("mft-collapsed").find(".mft-node.mft-node-read").removeClass("mft-collapsed");
+			} else if ( options == "reload-node") { // param: node
+				if (!param) param = foldertree.find(".mft-node");
+				reloadNode(param.closest(".mft-node"));
 			}
 			return foldertree;
 		}
@@ -75,13 +85,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				toggleNode(node);
 			}).on("dblclick.mft", function(ev) {
 				if (!settings.rereadOnDblClick) return;
-				var node = $(this).closest(".mft-node");
-				var data = node.data("mftn");
-				data.read=false;
-				node.children(".mft-list").remove();
-				data.children = [];
-				readUnreadNodes(node, data, true, true);
-				toggleNode(node, false);
+				reloadNode($(this).closest(".mft-node"));
 			});
 			if (settings.droppable) {
 				settings.droppable.params.over_orig = settings.droppable.params.over;
@@ -107,12 +111,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			settings.initDom(el);
 			return el;
 		}
+		function reloadNode(node) {
+			var data = node.data("mftn");
+			data.read=false;
+			node.children(".mft-list").remove();
+			data.children = [];
+			readUnreadNodes(node, data, true, true);
+			toggleNode(node, false);
+		}
 		function readUnreadNodes(node, data, expand, forceRead) {
 			if (data.read) return;
 			data.read = true;
 			settings.getFolderTree(data, function(children) {
 				initClickHandler(node.append(renderFolderTree(children)));
-				node.toggleClass("mft-node-empty", children.length == 0);
+				node.addClass("mft-node-read").toggleClass("mft-node-empty", children.length == 0);
 				if (expand || settings.autoExpandOnRead) toggleNode(node, false);
 			}, forceRead);
 		}
