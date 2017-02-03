@@ -38,7 +38,7 @@ sub _b2yn {
 sub build_folder_tree {
     my ($self, $path, $uri, $filesref, $level) = @_;
     my @children = ();
-    foreach my $file ( sort { $self->{backend}->getDisplayName($path.$a) cmp $self->{backend}->getDisplayName($path.$b) } @{$filesref} ) {
+    foreach my $file ( sort { $self->cmp_strings($self->{backend}->getDisplayName($path.$a), $self->{backend}->getDisplayName($path.$b)) } @{$filesref} ) {
         if ($file =~ /^[.]{1,2}$/xms) { next; }
         my $full = $path.$file;
         if ($self->{backend}->isDir($full)) {
