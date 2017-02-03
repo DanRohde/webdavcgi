@@ -38,7 +38,7 @@ sub _b2yn {
 sub build_folder_tree {
     my ($self, $path, $uri, $filesref, $level) = @_;
     my @children = ();
-    foreach my $file ( @{$filesref} ) {
+    foreach my $file ( sort { $self->{backend}->getDisplayName($path.$a) cmp $self->{backend}->getDisplayName($path.$b) } @{$filesref} ) {
         if ($file =~ /^[.]{1,2}$/xms) { next; }
         my $full = $path.$file;
         if ($self->{backend}->isDir($full)) {
@@ -71,14 +71,12 @@ sub handle_folder_tree {
     $path    //= $PATH_TRANSLATED;
     $uri     //= $REQUEST_URI;
     $level   //= $self->{cgi}->param('recurse') ? 1 : 0;
-    my @files = $self->{backend}->isReadable($path)
-        ? sort { $self->cmp_files( $a, $b ) } @{ $self->{backend}->readDir( $path, get_file_limit($path), $self ) }
-        : ();
-    if ($level > 1) {
-        return $self->build_folder_tree($path, $uri, \@files, $level);
-    }
+    my $files = $self->{backend}->isReadable($path)
+        ? $self->{backend}->readDir( $path, get_file_limit($path), $self )
+        : [];
     $self->{json} //= JSON->new();
-    return ( $self->{json}->encode({ children => $self->build_folder_tree($path, $uri, \@files, $level) }), 'application/json');
+    return $level > 1 ? $self->build_folder_tree($path, $uri, $files, $level)
+                      : ( $self->{json}->encode({ children => $self->build_folder_tree($path, $uri, $files, $level) }), 'application/json' );
 }
 
 1;
