@@ -257,8 +257,6 @@ function initFolderTree() {
 	}).on("filesCreated fileRenamed", function(event,data) {
 		var uri = $("#fileList").data("uri");
 		if (data.base == uri) flt.removeData("foldertree");
-		if (data.newname !=undefined && uri.indexOf(data.base + data.file) == 0 ) 
-			changeUri(uri.replace(new RegExp("^"+data.base + data.file), data.base + data.newname +"/"));
 		$("#foldertree").MyFolderTree("set-node-unread", function(n,d) {
 			return data.base == d.uri;
 		});
@@ -1366,7 +1364,14 @@ function initFileListActions() {
 	$("#flt")
 		.on("fileListSelChanged fileListViewChanged", updateFileListActions)
 		.on("filesRemoved", function(e,data) {
-			if (data.base != $("#fileList").data("uri")) return;
+			var uri = $("#fileList").data("uri");
+			for (var i = 0; i<data.files.length; i++) { // check for parent folder:
+				if (uri.indexOf(data.base + data.files[i]) == 0) {
+					changeUri(data.base);
+					return;
+				}
+			}
+			if (data.base != uri) return;
 			uncheckSelectedRows();
 			removeFileListRow($("#fileList tr[data-file='"+data.files.join("'],#fileList tr[data-file='")+"']"));
 		})
@@ -1376,6 +1381,11 @@ function initFileListActions() {
 			else refreshFileListEntry(data.files[0]);
 		})
 		.on("fileRenamed", function(e,data) {
+			var uri = $("#fileList").data("uri");
+			if (uri.indexOf(data.base + data.file) == 0 )  { // check for parent folder:
+				changeUri(uri.replace(new RegExp("^"+data.base + data.file), data.base + data.newname +"/"));
+				return;
+			}
 			if (data.base != $("#fileList").data("uri")) return;
 			refreshFileListEntry(data.newname, data.file);
 		})
