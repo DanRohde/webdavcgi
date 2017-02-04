@@ -67,16 +67,41 @@ use vars qw( $UID @SETUP);
             cssdefault     => q{},
             defaulticon    => 'action',
             defaulticoncss => q{},
-            css      => '.action.%n,.ai-%n,.ui-button.ai-%n{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position:center center;background-size: 18px 18px;}',
-            csshover => '.action.%n:hover,.action.%n:focus,.action.%n:active,.ai-%n:hover,.ai-%n:focus,.ai-%n:active,.ui-button.ai-%n:hover,.ui-button.ai-%n:focus,.ui-button.ai-%n:active{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position:center center;background-size:18px 18px;}',
+            css      => '.action.%n,.ai-%n,.popup.label.ai-%n,.ui-button.ai-%n,.%ndialog.ui-dialog .ui-dialog-title{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-size: 18px 18px;}',
+            csshover => '.action.%n:hover,.action.%n:focus,.action.%n:active,.ai-%n:hover,.ai-%n:focus,.ai-%n:active,.ui-button.ai-%n:hover,.ui-button.ai-%n:focus,.ui-button.ai-%n:active{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-size:18px 18px;}',
+        },
+    },
+    {
+        files  => 'symbols/*.svg',
+        symbol => 'symbol-%n',
+        icon   => 'icon-%n',
+        cssdefault => q{},
+        css    => '%m{background-image:url(svg/sprite#%i);}',
+        csshover    => '%m:hover,%m:focus,.%m:active{background-image:url(svg/sprite.svg#%i-hover);}',
+        hover  => 1,
+        hovercolors => { fill => { '#808080', '#000000',}, },
+        inline => {
+            cssdefault => q{},
+            defaulticon => 'unknown',
+            defaulticoncss => q{},
+            css  => '%m{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position:center center;background-size: 18px 18px;}',
+            csshover => '%m:hover,%m:focus,%m:active{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position:center center;background-size:18px 18px;}',
+        },
+        mapping => {
+            'foldertree-expanded-folder'  => '.mft-node-expander',
+            'foldertree-collapsed-folder' => '.mft-collapsed .mft-node-expander',
+            'foldertree-empty-folder' => '.mft-node.mft-node-empty .mft-node-expander',
+            'foldertree-unreadable-folder' => '.mft-node.mft-node-empty.isreadable-no .mft-node-expander',
+            'contact' => '.contact-button',
+            'help' => '.help-button',
         },
     },
 );
 
 
 sub fix_ids {
-    my ($a,$v) = @_;
-    if ($a eq 'id' && $v!~/^(?:icon|symbol|sprite|defs)-/xms) {
+    my ($a,$v,$e) = @_;
+    if ($a eq 'id' && $v!~/^(?:icon|symbol|sprite|defs)-/xms && $e!~/^linearGradient$/) {
         $UID //= 0;
         $UID++;
         return qq{$a="s$UID"};
@@ -99,7 +124,7 @@ sub create_xml {
         $content .= "<$s->[$i]";
         my $a = $c->[0];
         my @ak = sort keys %{$a};
-        $content .= @ak > 0 ? q{ }. join q{ }, map { fix_ids($_, $a->{$_}) } @ak : q{};
+        $content .= @ak > 0 ? q{ }. join q{ }, map { fix_ids($_, $a->{$_}, $e) } @ak : q{};
         if (@{$c} == 0) {
             $content .= q{/>};
         } else {
@@ -199,6 +224,8 @@ foreach my $setup ( @SETUP ) {
         my $iconid   = my_sprintf($setup->{icon}, n=>\$fb);
         my $s = $parser->parsefile($file);
 
+        my $m = $setup->{mapping} ? $setup->{mapping}->{$fb} // $fb : $fb;
+
         my $inlinesvg = [ {id=>'s', viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
                            xmlns=>'http://www.w3.org/2000/svg', version=>'1.1'} ];
         my $inlinexml = [ 'svg', $inlinesvg ];
@@ -211,12 +238,12 @@ foreach my $setup ( @SETUP ) {
 
         push @{$inlinesvg}, @{$s->[1]};
 
-        $css .= my_sprintf($setup->{css}, n=>\$fb, i=>\$iconid);
+        $css .= my_sprintf($setup->{css}, n=>\$fb, i=>\$iconid, m=>\$m);
 
         if ($fb eq $setup->{inline}->{defaulticon}) {
             $inlinecss .= $setup->{inline}->{defaulticoncss};
         }
-        $inlinecss .= my_sprintf($setup->{inline}->{css}, n=>\$fb, d=>\uri_escape_utf8(create_xml($inlinexml)));
+        $inlinecss .= my_sprintf($setup->{inline}->{css}, n=>\$fb, m=>\$m, d=>\uri_escape_utf8(create_xml($inlinexml)));
 
         if ($setup->{hover}) {
             my $scopy = clone_var($s->[1]);
@@ -231,13 +258,13 @@ foreach my $setup ( @SETUP ) {
 
             push @{$inlinehoversvg}, @{$scopy} ;
 
-            $css .= my_sprintf($setup->{csshover}, n =>\$fb, i=>\$iconid);
+            $css .= my_sprintf($setup->{csshover}, n =>\$fb, i=>\$iconid, m=>\$m);
         
             if ($fb eq $setup->{inline}->{defaulticon}) {
                 $inlinecss .= $setup->{inline}->{defaulticoncsshover} // q{};
             }
-            $inlinecss .= my_sprintf($setup->{inline}->{csshover}, n=>\$fb, d=>\uri_escape_utf8(create_xml($inlinehoverxml)));
-
+            $inlinecss .= my_sprintf($setup->{inline}->{csshover}, n=>\$fb, m=>\$m, d=>\uri_escape_utf8(create_xml($inlinehoverxml)));
+            #print STDERR create_xml($inlinehoverxml)."\n";
         }
     }
 }

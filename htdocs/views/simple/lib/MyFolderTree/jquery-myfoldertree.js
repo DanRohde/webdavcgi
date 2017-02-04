@@ -35,15 +35,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					return param(node, node.data("mftn"));
 				});
 				if (anode.length > 0) readUnreadNodes(anode, anode.data("mftn"), false);
-			} else if ( options == "collapse-all" ) { // param: node
-				if (!param) param = foldertree.find(".mft-node");
+			} else if ( options == "get-node-data" ) { // param: node
+				return param.closest(".mft-node").data("mftn");
+			} else if ( options == "remove-node") { // param: function(element, data)
+				var anode = foldertree.find(".mft-node").filter(function(i,e) {
+					var node = $(e);
+					return param(node, node.data("mftn"));
+				});
+				var parent = anode.parents(".mft-node:first");
+				anode.remove();
+				parent.toggleClass("mft-node-empty", parent.find(".mft-node").length == 0);
+			} else if ( options == "set-node-unread" ) { // param: function(element, data)
+				var anode = foldertree.find(".mft-node").filter(function(i,e) {
+					var node = $(e);
+					return param(node, node.data("mftn"));
+				});
+				var data = anode.data("mftn");
+				anode.removeClass("mft-node-read mft-node-empty").addClass("mft-collapsed").find(".mft-list").remove();
+				delete data.children;
+				delete data.read;
+			} else if ( options == "collapse-all-nodes" ) { // param: node
 				param.closest(".mft-node").addClass("mft-collapsed").find(".mft-node").addClass("mft-collapsed");
-			} else if ( options == "expand-all") { // param: node
-				if (!param) param = foldertree.find(".mft-node");
+			} else if ( options == "expand-all-nodes") { // param: node
 				readUnreadNodes(param, param.data("mftn"), false);
 				param.closest(".mft-node").removeClass("mft-collapsed").find(".mft-node.mft-node-read").removeClass("mft-collapsed");
-			} else if ( options == "reload-node") { // param: node
-				if (!param) param = foldertree.find(".mft-node");
+			} else if ( options == "expand-node" ) { // param: node
+				readUnreadNodes(param, param.data("mftn"), true);
+			} else if ( options == "reload-node" ) { // param: node
 				reloadNode(param.closest(".mft-node"));
 			}
 			return foldertree;
@@ -90,7 +108,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (settings.droppable) {
 				settings.droppable.params.over_orig = settings.droppable.params.over;
 				settings.droppable.params.over = function(event,ui) {
-					if (even.target != this) return;
+					if (event.target != this) return;
 					var node = $(this).closest(".mft-node");
 					foldertree.data("mft-drop-timeout", window.setTimeout(
 							function() {
@@ -136,20 +154,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			var li = $("<li/>").addClass("mft-node");
 			var label = $("<div/>").addClass("mft-node-label").text(node.name).attr("tabindex",0);
 			li.append($("<div/>").addClass("mft-node-expander").attr("tabindex",0)).append(label);
-			if (node.read) li.addClass("mft-node-read");
+			if (node.read == 'yes') li.addClass("mft-node-read");
 			if (node.classes) li.addClass(node.classes);
 			if (!node.expand) li.addClass("mft-collapsed");
 			if (node.title) label.attr("title", node.title);
 			if (node.help) li.attr("title", node.help);
 			li.data("mftn", node );
 			if (node.children)
-				li.toggleClass("mft-node-empty", node.read === true && node.children.length == 0).append(renderFolderTree(node.children));
+				li.toggleClass("mft-node-empty", node.read == "yes" && node.children.length == 0).append(renderFolderTree(node.children));
 			else
-				li.toggleClass("mft-node-empty", node.read === true );
+				li.toggleClass("mft-node-empty", node.read == "yes" );
 			return li;
 		} 
 		function renderFolderTree(tree) {
 			var ul = $("<ul/>").addClass("mft-list");
+			tree.sort(function(a,b) {
+				return a.name.localeCompare ? a.name.localeCompare(b.name) : a.name < b.name ? -1 : a.name > b.name ? 1 : 0; 
+			});
 			ul.data("mft", tree );
 			for (var n = 0; n < tree.length; n++) {
 				ul.append(renderFolderTreeNode(tree[n]));

@@ -470,11 +470,9 @@ ul.filterbox {
 .action.delete:focus, .action.delete:hover {
  	background-color: #ff6666 !important;
 }
-.action.copy {
-	background-position: center -136px;
-}
-.action.cut {
-	background-position: center -176px;
+.action.copy.ui-button,
+.action.cut.ui-button {
+	background-position: center center;
 }
 .action.paste {
 	background-position: center -376px;
@@ -684,12 +682,6 @@ a.disabled, .link.disabled {
 	border: 5px solid green;
 }
 /* #### BOOKMARKS ### */
-.bookmarkmenu.popup.sprite {
-	background-position: center -94px;
-}
-.bookmark-label {
-	background-position-y: -101px;
-}
 .action.rmsinglebookmark {
 	background-position: center -222px;
 	height: 18px;
@@ -723,6 +715,7 @@ a.disabled, .link.disabled {
 	flex: 1 1;
 }
 .bookmarktemplate { display: none; visibility: hidden;}
+.action.addbookmark { background-position: center center; }
 /* --- BOOKMARKS --- */
 #quota {
 	text-decoration: none;
@@ -770,29 +763,11 @@ ul.ui-autocomplete {
 td.center {
 	text-align: center;
 }
-.action.refresh {
-	background-position: 2px -415px;
-}
-.action.viewfilter {
-	background-position: 2px -655px;
-}
-.action.settings {
-	background-position: 2px -1135px;
-}
-.action.about {
-	background-position: 2px -16px;
-}
-.viewfilterdialog.ui-dialog .ui-dialog-title {
-	background: url(images/sprite.png) no-repeat 0 -660px;
-	padding-left: 20px;
-}
-.settingsdialog.ui-dialog .ui-dialog-title {
-	background: url(images/sprite.png) no-repeat 0 -1140px;
-	padding-left: 20px;
-}
+.viewfilterdialog.ui-dialog .ui-dialog-title,
+.settingsdialog.ui-dialog .ui-dialog-title,
 .aboutdialog.ui-dialog .ui-dialog-title {
-	background: url(images/sprite.png) no-repeat 0 -21px;
 	padding-left: 20px;
+	background-position: left center;
 }
 .accesskeydialog.ui-dialog .ui-dialog-title {
 	background: url(images/sprite.png) no-repeat 0 -1780px;
@@ -840,9 +815,6 @@ img {
 .action.upload,.uploadmenu.popup.sprite {
 	background-position-y: -536px;
 }
-.action.uploaddir {
-    background-position-y: -1617px;
-}
 .uploaddialog.ui-dialog .ui-dialog-title {
     background: url(images/sprite.png) no-repeat 0px -540px;
     padding-left: 22px;
@@ -856,15 +828,6 @@ img {
 .logout-button:hover, .logout-button:focus {
 	background-image: url(images/sprite-hover.png);
 }
-.help-button {
-	padding-left: 22px;
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: 2px -975px;
-}
-.help-button:hover, .help-button:focus {
-	background-image: url(images/sprite-hover.png);
-}
 .home-button, .action.changeuri.home-button {
 	padding-left: 22px;
 	background-image: url(images/sprite.png);
@@ -872,15 +835,6 @@ img {
 	background-position: 2px -1016px;
 }
 .home-button:hover, .home-button:focus {
-	background-image: url(images/sprite-hover.png);
-}
-.contact-button {
-	padding-left: 22px;
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: 2px -1375px;
-}
-.contact-button:hover, .contact-button:focus {
 	background-image: url(images/sprite-hover.png);
 }
 .link-button {
@@ -950,14 +904,8 @@ img {
 	filter: Alpha(opacity=50); 
 
 }
-.action.setautorefresh {
-	background-position-y: -416px;
-}
-.autorefreshmenu.popup.sprite {
-	background-position-y: -414px;
-}
 .autorefresh-label {
-	background-position-y: -422px;
+	padding-left: 22px;
 }
 .action.autorefreshtoggle {
 	background-position-y: -1176px;
@@ -1828,9 +1776,10 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	overflow: auto;
 	width: 20em;
 	top: 42px;
-	bottom: 33px;
+	bottom: 0;
 	margin-top: 45px;
 	padding-left: 5px;
+	padding-bottom: 33px;
 	background-color: white;
 	border: 2px solid #ddd;
 }
@@ -1847,27 +1796,23 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	border: 1px inset #ddd;
 	background-color: #eee;
 }
-.mft-node.isreadable-no .mft-node-label { 
-	color: #ddd;
+.mft-node.isreadable-no  { 
+	color: #999;
 }
 .mft-node-expander {
-	background-image: url(data:image/svg+xml;utf-8,%3Csvg%20id%3D%22svg2%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20viewBox%3D%220%200%201000%201000%22%20width%3D%221e3%22%20version%3D%221.1%22%3E%3Cpath%20id%3D%22rect74623%22%20fill%3D%22%23808080%22%20d%3D%22m430.36%20160.65v156.17h-390.46l0.002%20520.37%200.17%200.84%200.461%200.69%200.686%200.46%200.842%200.17h915.88c1.19%200%202.16-0.96%202.16-2.16v-28.11h-470.08v-140.76h470.08v-504.82l-0.17-0.84-0.46-0.69-0.69-0.46-0.84-0.17-527.58-0.69zm529.74%20507.67v140.76h41.3v-140.76h-41.3z%22%2F%3E%3Cpath%20id%3D%22rect74626%22%20d%3D%22m41.657%20103.06h341.15c0.97172%200%201.754%200.78229%201.754%201.754v155.58c0%200.97172-0.78229%201.754-1.754%201.754h-341.15c-0.97172%200-1.754-0.78229-1.754-1.754v-155.58c0-0.97172%200.78229-1.754%201.754-1.754z%22%20fill%3D%22%23fdd1a5%22%2F%3E%3Cpath%20id%3D%22rect74630%22%20d%3D%22m296.18%20162.24h38.693c0.97172%200%201.754%200.78228%201.754%201.754v37.224c0%200.97172-0.78229%201.754-1.754%201.754h-38.693c-0.97172%200-1.754-0.78229-1.754-1.754v-37.224c0-0.97173%200.78229-1.754%201.754-1.754z%22%20fill%3D%22%23e3b61b%22%2F%3E%3C%2Fsvg%3E%0A);
 	background-color: white;
-	background-repeat: no-repeat;
-	background-position: left center;
-	background-size: 18px 18px;
 	width: 20px;
 	height: 20px;
-	opacity: 0.6;
+	opacity: 0.8;
 }
 .mft-node-read > .mft-node-expander {
 	opacity: 1;
 }
-.mft-node.mft-collapsed .mft-node-expander {
-	background-image: url(data:image/svg+xml;utf-8,%3Csvg%20id%3D%22svg2%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20viewBox%3D%220%200%201000%201000%22%20width%3D%221e3%22%20version%3D%221.1%22%3E%3Cpath%20id%3D%22rect74623%22%20fill%3D%22%23808080%22%20d%3D%22m430.36%20160.65v156.17h-390.46l0.002%20520.37%200.17%200.84%200.461%200.69%200.686%200.46%200.842%200.17h630.74v-24.66h-185.31v-140.76h185.31v-185.31h140.76v185.31h146.54v-510.43l-0.17-0.84-0.46-0.69-0.69-0.46-0.84-0.17-527.58-0.69zm529.74%20513.28v140.76h38.77v-140.76h-38.77zm0%20140.76h-146.54v24.66h144.38c1.19%200%202.16-0.96%202.16-2.16v-22.5zm-146.54%2024.66h-140.76v160.65h140.76v-160.65z%22%2F%3E%3Cpath%20id%3D%22rect74626%22%20fill%3D%22%23fdd1a5%22%20d%3D%22m41.657%20103.06h341.15c0.97172%200%201.754%200.78229%201.754%201.754v155.58c0%200.97172-0.78229%201.754-1.754%201.754h-341.15c-0.97172%200-1.754-0.78229-1.754-1.754v-155.58c0-0.97172%200.78229-1.754%201.754-1.754z%22%2F%3E%3Cpath%20id%3D%22rect74630%22%20fill%3D%22%23e3b61b%22%20d%3D%22m296.18%20162.24h38.693c0.97172%200%201.754%200.78228%201.754%201.754v37.224c0%200.97172-0.78229%201.754-1.754%201.754h-38.693c-0.97172%200-1.754-0.78229-1.754-1.754v-37.224c0-0.97173%200.78229-1.754%201.754-1.754z%22%2F%3E%3C%2Fsvg%3E%0A);
-}
 .mft-node {
 	white-space: nowrap;
+}
+.mft-node-label:hover, .mft-node-label:active, .mft-node-label:focus {
+	background-color: #eee;
 }
 .mft-node-label.foldertree-draghover {
 	background-color: #ddd;
@@ -1880,7 +1825,17 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 .hidedotfolders .mft-node.isdotfile-yes {
 	display: none;
 }
-.action.foldertree-collapse-all, .action.foldertree-expand-all, .action.foldertree-read-all, .action.foldertree-refresh-current {
-	background-image: none;
-	padding-left: 0;
+.mft-node.isreadable-no > div .action.foldertree-expand-all,
+.mft-node.isreadable-no > div .action.foldertree-collapse-all,
+.mft-node.isreadable-no > div .action.copy,
+.mft-node.isreadable-no > div .action.cut,
+.mft-node.iswriteable-no > div .action.delete,
+.mft-node.iswriteable-no > div .action.foldertree-rename-folder,
+.mft-node.iswriteable-no > div .action.foldertree-new-folder,
+.mft-node.iswriteable-no > div .action.cut,
+.mft-node.mft-active-node > div .action.foldertree-open-folder {
+	display: none;
+}
+.action.foldertree-delete-folder:hover, .action.foldertree-delete-folder:focus, .action.foldertree-delete-folder:active {
+	background-color: #f66;
 }

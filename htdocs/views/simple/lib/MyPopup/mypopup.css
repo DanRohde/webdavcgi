@@ -20,4 +20,5 @@ ul.popup {
 	z-index: 1;
 	left: 90%;
 	margin-top: -26px;
+	white-space: nowrap;
 }

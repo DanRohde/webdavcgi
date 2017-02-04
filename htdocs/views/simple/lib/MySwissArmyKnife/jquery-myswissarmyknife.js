@@ -107,7 +107,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$.MyStringHelper.stripSlash = function(uri) {
 		return uri.replace(/\/$/,"");
 	};
-	
+	$.MyStringHelper.getParentURI = function(uri) {
+		return uri.replace(/^(.*\/)[^\/]+\/?$/, "$1");
+	}
+	$.MyStringHelper.getBasename = function(uri) {
+		return uri.replace(/^.*\/([^\/]+)\/?$/, "$1");
+	}
 	
 	$.MyTokenExtender = function(param) {
 		var result = param;
