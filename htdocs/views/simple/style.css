@@ -700,7 +700,6 @@ a.disabled, .link.disabled {
 #quota {
 	text-decoration: none;
 	font-weight: normal;
-	font-size: 0.8em;
 	color: #444444;
 	margin: 2px;
 	min-height: 16px;
