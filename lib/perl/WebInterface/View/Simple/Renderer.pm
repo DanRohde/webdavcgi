@@ -276,7 +276,7 @@ sub render_quicknav_path {
         my $text = $el eq $base ? q{} : $el=~/\//xms ? q{...} : $self->strip_slash($self->{backend}->getDisplayName($full));
         my $attr = {
                 -title => $full,
-                -class => 'action quicknav-el' . ($el eq $base ? ' quicknav-el-home' : q{}),
+                -class => 'action ' . ($el eq $base ? 'quicknav-el-home' : 'quicknav-el'),
                 -style => 'max-width:'.$MAXFILENAMESIZE.'em',
                 -href  => $href . ($query // q{}),
         };

@@ -7,7 +7,7 @@
 <!--IF($config(ALLOW_PATHINPUT))-->
 <li class="action changedir sel-none hideit uibutton" title="$tl(changedir)" aria-label="$tl(changedir)"></li>
 <!--ENDIF-->
-<li class="uibutton newmenu sprite popup toolbar-button" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">
+<li class="uibutton newmenu ai-new popup toolbar-button" id="new" accesskey="n" title="$tl(new)" aria-label="$tl(new)" tabindex="0">
 	&nbsp;
 	<ul class="popup">
 		<li class="action create-folder access-writeable" accesskey="r" aria-label="$tl(createfolderbutton)"><div class="label">$tl(createfolderbutton)</div><div class="accesskey">r</div></li>
@@ -25,8 +25,7 @@
 	</ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-<!--  <li class="action upload access-writeable uibutton toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"></li> -->
-<li class="uploadmenu popup sprite uibutton access-writeable toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)">
+<li class="uploadmenu popup ai-upload uibutton access-writeable toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)">
 	&nbsp;
 	<ul class="popup">
 	<li class="sep action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"><div class="label">$tl(upload)</div><div class="accesskey">u</div></li>

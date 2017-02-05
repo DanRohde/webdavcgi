@@ -220,9 +220,6 @@ table,th,td {
     cursor: pointer;
 }
 
-.select.label  {
-	background-position-y: -902px;
-}
 .action, .ui-button.action {
     background-image: url(images/sprite.png);
     background-repeat: no-repeat;
@@ -425,6 +422,12 @@ tr.isreadable-no:hover {
 .action.cancel, .action.cancel:hover, .action.cancel:focus, .action.cancel:active {
 	background-image: none;
 }
+.dropdown-menu-item.action.toggleselection,
+.dropdown-menu-item.action.selectall,
+.dropdown-menu-item.action.selectnone,
+.dropdown-hover.ai-toggleselection {
+	background-position: center center;
+}
 
 #fileList tr.selected {
 	background-color: #dadada;
@@ -461,21 +464,14 @@ ul.filterbox {
 .invisible {
 	visibility: hidden;
 }
-.action.rename {
-	background-position-y: -496px;
-}
-.action.delete {
-	background-position: center -216px;
- }
-.action.delete:focus, .action.delete:hover {
+.action.delete:focus, .action.delete:hover, .action.delete:active {
  	background-color: #ff6666 !important;
 }
 .action.copy.ui-button,
-.action.cut.ui-button {
+.action.cut.ui-button,
+.action.paste.ui-button,
+.action.delete.ui-button {
 	background-position: center center;
-}
-.action.paste {
-	background-position: center -376px;
 }
 .icon {
 	width: 20px;
@@ -521,15 +517,6 @@ ul.filterbox {
 	width: 100%;
 	height: 2.4em;
 	padding-top: 5px;
-}
-.action.create-folder {
-	background-position-y: -736px;
-}
-.action.create-file {
-	background-position-y: -776px;
-}
-.action.create-symlink {
-	background-position-y: -816px;
 }
 .renamefield {
 	background-color: inherit;
@@ -697,9 +684,6 @@ a.disabled, .link.disabled {
 	padding-left: 22px;
 	background-position-x: 2px;
 }
-.action.rmallbookmarks {
-	background-position-y: -216px;
-}
 .action.gotobookmark, .action.dyn-bookmark {
 	display: flex;
 	flex-flow: row nowrap;
@@ -774,7 +758,6 @@ td.center {
 	padding-left: 20px;
 }
 .helpdialog.ui-dialog .ui-dialog-title {
-	background: url(images/sprite.png) no-repeat 0 -981px;
 	padding-left: 20px;
 }
 .viewfilterinfo {
@@ -812,11 +795,7 @@ input[readonly=readonly] {
 img {
 	border: 0;
 }
-.action.upload,.uploadmenu.popup.sprite {
-	background-position-y: -536px;
-}
 .uploaddialog.ui-dialog .ui-dialog-title {
-    background: url(images/sprite.png) no-repeat 0px -540px;
     padding-left: 22px;
 }
 .logout-button {
@@ -852,9 +831,6 @@ img {
 	color: black;
 }
 
-.action.guide {
-	background-position-y: -1815px;
-}
 .tooltip-help {
 	background-image: url(images/sprite.png);
 	background-position: center -1823px;
@@ -867,9 +843,7 @@ img {
 	content: none;
 }
 .guidedialog.ui-dialog .ui-dialog-title {
-	background-image: url(images/sprite-hover.png);
-	background-repeat: no-repeat;
-	background-position: 0 -1820px;
+	background-position: left center;
 	padding-left: 20px;
 }
 .small {
@@ -907,22 +881,13 @@ img {
 .autorefresh-label {
 	padding-left: 22px;
 }
-.action.autorefreshtoggle {
-	background-position-y: -1176px;
-}
-.action.autorefreshtoggle.running {
-	background-position-y: -1216px;
-}
-.action.autorefreshclear {
-	background-position-y: -1256px;
-}
 #autorefreshtimer {
 	display: none;
 	position: fixed;
 	right: 5px;
 	bottom: 5px;
 	color: #666666;
-	background: white url(images/sprite.png) no-repeat left -416px;
+	background-position: left center;
 	padding: 6px 6px 6px 22px;
 	z-index: 1000;
 	border: 1px solid #666666;
@@ -930,7 +895,7 @@ img {
 	width: 125px;
 	height: 18px;
 	cursor: move;
-	line-height: 1;
+	line-height: 15px;
 	font-size: 15px;
 	margin: 0;
 }
@@ -944,16 +909,6 @@ img {
 	padding: 0;
 	background-position-x: center;
 }
-#autorefreshtimer .action.autorefreshclear {
-	background-position-y: -1261px;
-}
-#autorefreshtimer .action.autorefreshtoggle {
-	background-position-y: -1181px;
-}
-#autorefreshtimer .action.autorefreshtoggle.running {
-	background-position-y: -1221px;
-}
-
 .autorefreshtimer.disabled {
 	display: none;
 	visibility: hidden;
@@ -1263,10 +1218,6 @@ img {
 #statusbar .selected-files-stats-content {
 	padding: 6px 4px;;
 }
-#statusbar .files-stats-content div,
-#statusbar .selected-files-stats-content div {
-	height: 15px;
-}
 .file-icon {
 	background: url(images/sprite.png) no-repeat left -782px;
 	padding-left: 18px;
@@ -1391,16 +1342,23 @@ img {
 	padding: 0;
 	font-weight: bold;
 }
-.action.new, .newmenu.popup, .newmenu.popup:hover, .newmenu.popup:active,.newmenu.popup:focus {
-	background-position: center -1056px;
-}
-.new.label {
-	background-position: 2px -1062px !important;
-}
 .action.changeUri:focus, .action.changeUri:hover  {
 	background-image: url(icons/sprite.png);
 }
 
+.filestats-dircount, .filestats-filecount,
+.filestats-seldircount, .filestats-selfilecount,
+.filestats-sum, .filestats-selsum,
+.filestats-foldersize, .filestats-selfoldersize {
+	padding-left: 20px;
+	background-size: 16px 16px !important;
+	display: inline-block;
+	background-position: left center;
+}
+.filestats-checked {
+	transform: scale(0.8);
+	margin: 0;
+}
 .toolbar {
 	margin: 0;
 	border: none;
@@ -1468,9 +1426,10 @@ tr:focus .action.changeuri {
 	margin-top: -7px;
 	max-height: 18px;
 }
-.action.quicknav-el {
+.action.quicknav-el, .action.quicknav-el-home {
 	padding: 6px 12px 6px 4px;
-	background-position: right -1736px;
+	background-size: 22px 22px !important;
+	background-position: right center;
 	border-radius: 0px 200px 200px 0px;
 	outline-radius: 1px 200px 200px 1px;
 	-moz-outline-radius: 1px 200px 200px 1px;
@@ -1481,23 +1440,16 @@ tr:focus .action.changeuri {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	display: inline-block;
-	min-width: 1ex;
-	min-height: 18px;
+	min-width: 1em;
 	float: left;
 }
 .action.quicknav-el:hover,.action.quicknav-el:focus {
 	color: black;
 }
-.action.quicknav-el.quicknav-el-home {
-	background-image: url(images/sprite.png), url(images/sprite.png);
-	background-position: center -1017px, right -1736px;
-	background-repeat: no-repeat, no-repeat;
+.action.quicknav-el-home {
 	width: 22px;
+	height: 15px;
 }
-.action.quicknav-el.quicknav-el-home:hover, .action.quicknav-el.quicknav-el-home:focus {
-	background-image: url(images/sprite-hover.png), url(images/sprite-hover.png);
-}
-
 .accesskey {
 	display: inline-block;
 	position: absolute;
@@ -1548,7 +1500,7 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	padding-left: 22px;
 }
 .statistics {
-	padding: 2px 10px;
+	padding: 4px 10px;
 	vertical-align: bottom;
 	white-space: nowrap;
 	color: #444;

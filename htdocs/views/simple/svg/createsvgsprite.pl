@@ -68,7 +68,7 @@ use vars qw( $UID @SETUP);
             defaulticon    => 'action',
             defaulticoncss => q{},
             css      => '.action.%n,.ai-%n,.popup.label.ai-%n,.ui-button.ai-%n,.%ndialog.ui-dialog .ui-dialog-title{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-size: 18px 18px;}',
-            csshover => '.action.%n:hover,.action.%n:focus,.action.%n:active,.ai-%n:hover,.ai-%n:focus,.ai-%n:active,.ui-button.ai-%n:hover,.ui-button.ai-%n:focus,.ui-button.ai-%n:active{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-size:18px 18px;}',
+            csshover => '.action.%n:hover,.action.%n:focus,.popup.label.ai-%n:hover,.popup.label.ai-%n:active,.popup.label.ai-%n:focus,.action.%n:active,.ai-%n:hover,.ai-%n:focus,.ai-%n:active,.ui-button.ai-%n:hover,.ui-button.ai-%n:focus,.ui-button.ai-%n:active{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-size:18px 18px;}',
         },
     },
     {
@@ -84,8 +84,8 @@ use vars qw( $UID @SETUP);
             cssdefault => q{},
             defaulticon => 'unknown',
             defaulticoncss => q{},
-            css  => '%m{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position:center center;background-size: 18px 18px;}',
-            csshover => '%m:hover,%m:focus,%m:active{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position:center center;background-size:18px 18px;}',
+            css  => '%m,.%n-icon,.%ndialog.ui-dialog .ui-dialog-title{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position-y:center;background-size: 18px 18px;}',
+            csshover => '%m:hover,%m:focus,%m:active,.%n-icon:hover,%n-icon:active,%n-icon:focus{background-image:url(data:image/svg+xml;utf8,%d);background-position-y:center;background-repeat:no-repeat;background-size:18px 18px;}',
         },
         mapping => {
             'foldertree-expanded-folder'  => '.mft-node-expander',
@@ -94,6 +94,13 @@ use vars qw( $UID @SETUP);
             'foldertree-unreadable-folder' => '.mft-node.mft-node-empty.isreadable-no .mft-node-expander',
             'contact' => '.contact-button',
             'help' => '.help-button',
+            'logout' => '.logout-button',
+            'stop' => '.action.autorefreshclear',
+            'pause' => '.action.autorefreshtoggle.running',
+            'play' => '.action.autorefreshtoggle',
+            'sum' => '.sum',
+            'home' => '.home-button',
+            'consumption' => '.foldersize',
         },
     },
 );
