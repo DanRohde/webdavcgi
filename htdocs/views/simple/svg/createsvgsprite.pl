@@ -106,6 +106,21 @@ use vars qw( $UID @SETUP);
             'collapse-sidebar' => '.action.collapse-sidebar',
             'expand-head' => '.action.collapse-head.collapsed',
             'collapse-head' => '.action.collapse-head',
+            'tableconfig' => '.tableconfig',
+        },
+        special => {
+            'tablesorter-up' => {
+                inline => {
+                    css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size: 10px 10px, 10px 10px;}',
+                    csshover => '.%n:focus,.%n:hover,.%n:active{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size: 10px 10px, 10px 10px;}'
+                },
+            },
+            'tablesorter-down' => {
+                inline => {
+                    css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size: 10px 10px, 10px 10px;}',
+                    csshover => '.%n:focus,.%n:hover,.%n:active{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size: 10px 10px, 10px 10px;}'
+                },
+            },
         },
     },
 );
@@ -235,8 +250,12 @@ foreach my $setup ( @SETUP ) {
         my $symbolid = my_sprintf($setup->{symbol}, n=>\$fb);
         my $iconid   = my_sprintf($setup->{icon}, n=>\$fb);
         my $s = $parser->parsefile($file);
-
         my $m = $setup->{mapping} ? $setup->{mapping}->{$fb} // $fb : $fb;
+        
+        $setup->{special} //= {};
+        $setup->{special}->{$fb} //= {};
+        $setup->{special}->{$fb}->{inline} //= {};
+        
 
         my $inlinesvg = [ {id=>'s', viewBox=> '0 0 1000 1000', width=>'1e3', height=>'1e3',
                            xmlns=>'http://www.w3.org/2000/svg', version=>'1.1'} ];
@@ -250,12 +269,13 @@ foreach my $setup ( @SETUP ) {
 
         push @{$inlinesvg}, @{$s->[1]};
 
-        $css .= my_sprintf($setup->{css}, n=>\$fb, i=>\$iconid, m=>\$m);
+        
+        $css .= my_sprintf($setup->{special}->{$fb}->{css} // $setup->{css} // q{}, n=>\$fb, i=>\$iconid, m=>\$m);
 
         if ($fb eq $setup->{inline}->{defaulticon}) {
-            $inlinecss .= $setup->{inline}->{defaulticoncss};
+            $inlinecss .= $setup->{special}->{$fb}->{inline}->{defaulticoncss} // $setup->{inline}->{defaulticoncss} // q{};
         }
-        $inlinecss .= my_sprintf($setup->{inline}->{css}, n=>\$fb, m=>\$m, d=>\uri_escape_utf8(create_xml($inlinexml)));
+        $inlinecss .= my_sprintf($setup->{special}->{$fb}->{inline}->{css} // $setup->{inline}->{css} // q{} , n=>\$fb, m=>\$m, d=>\uri_escape_utf8(create_xml($inlinexml)));
 
         if ($setup->{hover}) {
             my $scopy = clone_var($s->[1]);
@@ -270,12 +290,13 @@ foreach my $setup ( @SETUP ) {
 
             push @{$inlinehoversvg}, @{$scopy} ;
 
-            $css .= my_sprintf($setup->{csshover}, n =>\$fb, i=>\$iconid, m=>\$m);
+            $css .= my_sprintf($setup->{special}->{$fb}->{csshover} // $setup->{csshover} // q{}, n =>\$fb, i=>\$iconid, m=>\$m);
         
             if ($fb eq $setup->{inline}->{defaulticon}) {
-                $inlinecss .= $setup->{inline}->{defaulticoncsshover} // q{};
+                $inlinecss .= $setup->{special}->{$fb}->{inline}->{defaulticoncsshover} // $setup->{inline}->{defaulticoncsshover} // q{};
             }
-            $inlinecss .= my_sprintf($setup->{inline}->{csshover}, n=>\$fb, m=>\$m, d=>\uri_escape_utf8(create_xml($inlinehoverxml)));
+            $inlinecss .= my_sprintf($setup->{special}->{$fb}->{inline}->{csshover} // $setup->{inline}->{csshover} // q{}, 
+                                     n=>\$fb, m=>\$m, d=>\uri_escape_utf8(create_xml($inlinehoverxml)));
             #print STDERR create_xml($inlinehoverxml)."\n";
         }
     }

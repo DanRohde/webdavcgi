@@ -984,7 +984,7 @@ img {
 #nav.head-collapsed, #controls.head-collapsed, #content.head-collapsed, .ajax-loader.head-collapsed  {
 	top: 0;
 }
-.tableconfig {
+.tableconfigdialog {
 	background-color: white;
 	left: 0;
 	margin: 0;
@@ -992,12 +992,12 @@ img {
 	width: auto;
 	z-index: 110;
 }
-.tableconfig fieldset {
+.tableconfigdialog fieldset {
 	clear: none;
 	float: left;
 	margin: 1ex;
 }
-.tableconfig ul li, .tableconfig ul {
+.tableconfigdialog ul li, .tableconfigdialog ul {
 	padding:0;
 	margin: 0;
 }
@@ -1006,23 +1006,17 @@ img {
 	text-align: center;
 }
 .tableconfigbutton {
-	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfdBg4KHwNUL/0wAAAAqElEQVQY02XOOQrCYBSF0e/HDKSwsUjUSsEdCA5ECwXLkEbci+Aq3IU7URC0tAkBxQ1ogoQIzyaD0Vvew308gIEekqgzMyrp47Z2xk1JU/C+euPaPmDXF1aoC0e0UhLzbvmmobYIAXZe19TK7L27qcOIDooTl5zmDdGEFEEQIqblMZ89Ac+MhHFJNRyWPIqVV33cLTYxbpUmxBm9+IlHhCBs+MuQmDX6B9oaOj8nvRhuAAAAAElFTkSuQmCC) no-repeat center center;
+	background-position: center center;
+	background-size: 12px 12px !important;
 	width: 16px;
 	height: 16px;
 	border: 1px solid #999999;
-	opacity: 0.5;
 	filter: Alpha(opacity=0.5);
 	cursor: pointer;
 }
 .tableconfigdialog.ui-dialog .ui-dialog-title {
-	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfdBg4KHwNUL/0wAAAAqElEQVQY02XOOQrCYBSF0e/HDKSwsUjUSsEdCA5ECwXLkEbci+Aq3IU7URC0tAkBxQ1ogoQIzyaD0Vvew308gIEekqgzMyrp47Z2xk1JU/C+euPaPmDXF1aoC0e0UhLzbvmmobYIAXZe19TK7L27qcOIDooTl5zmDdGEFEEQIqblMZ89Ac+MhHFJNRyWPIqVV33cLTYxbpUmxBm9+IlHhCBs+MuQmDX6B9oaOj8nvRhuAAAAAElFTkSuQmCC);
-	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
-}
-.tableconfigbutton:hover {
-	opacity: 1;
-	filter:Alpha(opacity=100);
 }
 .action.table-sort-this-asc, .action.table-sort-this-desc, .action.table-sort, .popup.table-sort-columns,
 .action.table-column-hide-this, .action.table-column, .popup.table-columns,
