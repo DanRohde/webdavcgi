@@ -110,11 +110,10 @@ a.extern:after {
 	content: "\01F517";
 }
 .exicon {
-	background-image: url(../images/sprite.png) !important;
-	background-position-x: center !important;
-	background-repeat: no-repeat;
-	height: 24px !important;
-	width: 24px !important;
+	background-position: center center !important;
+	background-size: 1em 1em !important;
+	height: 1.2em !important;
+	width: 1.2em !important;
 	display: inline-block;
 	border: 1px solid #ddd;
 	border-radius: 2px;

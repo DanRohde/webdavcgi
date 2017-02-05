@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="author" content="Daniel Rohde">
 <link rel="stylesheet" href="../contrib/contrib.min.css">
-<link rel="stylesheet" href="../style.min.css">
+<link rel="stylesheet" href="../complete.min.css">
 <link rel="stylesheet" href="style.css">
 
 <script src="../contrib/contrib.min.js"></script>
@@ -66,14 +66,18 @@
 				<li>The toolbar changes it's content depending on the current file or folder selection.</li>
 				<li>At the left side of the toolbar the quick navigation helps you to navigation back to upper folders.</li>
 				<li>Right of the quick navigation are buttons to create files and folders, uploading files and folders, and so on.</li>
-				<li>If no file or folder is selected, you'll find a bookmarks menu <div class="exicon bookmarkmenu popup sprite"></div> and a autorefresh menu <div class="exicon autorefreshmenu popup sprite"></div>.</li>
+				<li>If no file or folder is selected, you'll find a bookmarks menu <div class="exicon ai-bookmarks "></div> and a autorefresh menu <div class="exicon ai-refresh"></div>.</li>
 				<li>The filter box at the right site of the toolbar allows you to hide all files and folders in the list that do not match your input. 
 					A click on the cross button (appears if a filter input exists) behind the input field removes the filter.
 					Some characters in this filter box have a special meaning (<code>.*+?^$()[]{}\</code>), because this box supports regular expressions<a href="#ref6" class="ref">6</a>.</li>
 			</ul>
 			<h3 id="fileandfolderlist">File and folder list</h3>
 			<ul>
-				<li> You can <a href="#filelist">customize</a> the file and folder list.</li>
+				<li> You can <a href="#filelist">customize</a> the file and folder list and 
+				you can change the view from a table with details <div class="exicon ai-flt-view-details"></div> 
+				to a big icon list<div class="exicon ai-flt-view-thumbs"></div>, 
+				or small icon list <div class="exicon ai-flt-view-list"></div>. 
+				A folder tree <div class="exicon ai-toggle-foldertree"></div> with a context menu is also available.</li>
 				<li> The tooltip of the File/Folder column shows statistics with a file and folder count.</li>
 				<li> The tooltip of the Size column shows a summary of used file space of the current folder (excluding folders).</li>
 				<li> All size values have a tooltip with other size units
@@ -90,7 +94,7 @@
 			<li>
 			All "dangerous" actions like delete ask for confirmation with a dialog. 
 			Some dialogs can be supressed for future actions by deselecting "&#128505; Always ask for confirmation.". 
-			To get the confirmation dialog back, use the <div class="action settings exicon"></div> Settings dialog (tab "Dialogs") in the <a href="#applications">applications bar</a>.
+			To get the confirmation dialog back, use the <div class="ai-settings exicon"></div> Settings dialog (tab "Dialogs") in the <a href="#applications">applications bar</a>.
 			</li>
 			<li>
 			After a file or folder action (upload, delete, rename, and so on) you will get a message with information of success or failure.
@@ -102,15 +106,16 @@
 			<h3 id="dnd">Drag and drop support (Drag&amp;Drop, or D&amp;D)</h3>
 			Drag and drop makes it easier 
 			<ul>
-			<li> to upload files and folders selected from your favorite file manager (Windows Explorer, Mac Finder, Xfe, Nautilus, Konqueror, ...),</li>
-			<li>to move or copy (hold <kbd>&#8679; Shift</kbd> while dragging) your files and folders from current to a subfolder or to the upper folder,</li>  
+			<li> to upload files and folders selected from your favorite file manager (Windows Explorer, Mac Finder, Xfe, Nautilus, ...),</li>
+			<li>to move or copy (hold <kbd>&#8679; Shift</kbd> while dragging) your files and folders from current to a subfolder, to the upper folder, or any folder in the folder tree <div class="exicon ai-toggle-foldertree"></div>,</li>  
 			<li> or to <a href="#customization">customize</a> the file and folder list.</li>
 			 </ul>
 			<h3 id="contextmenu">Context menu</h3>
 			The file and folder list has a context menu (right mouse click on a file or folder row) with some standard file actions and
 			a lot of additional features (depending on your local installation).
 			If you have nothing selected in the file list, the right clicked file or folder will be taken for the context action.
-			The table header has it's own context menu to change sort order or to show or hide table columns.
+			The table header has it's own context menu to change sort order or to show or hide table columns. 
+			The folder tree <div class="exicon ai-toggle-foldertree"></div> has also a a context menu with some basic folder operations.
 			And if you need the web browser context menu instead of the file and folder list context menu  you have to use the right double click 
 			<div class="warn">not of all web browsers supported</div>.
 			
@@ -164,7 +169,7 @@
 			<dt>Upload a file</dt>
 			<dd>
 				<ul>
-				<li> click on the new menu button <div class="action new exicon"></div>, select <div class="action upload exicon"></div> and a file dialog opens,</li>
+				<li> click on the new menu button <div class="ai-new exicon"></div>, select <div class="ai-upload exicon"></div> and a file dialog opens,</li>
 				<li> or open your favorite file manager and use drag &amp; drop to put your files and folders into the file and folder list</li> 
 				</ul>
 			</dd>
@@ -193,7 +198,7 @@
 					<li>select a list of files and folders</li>
 					<li>and use one of the following options:
 						<ul>
-							<li> toolbar button <div class="action delete exicon"></div>,</li>
+							<li> toolbar button <div class="ai-delete exicon"></div>,</li>
 							<li> context menu (right click to row) and click on "Delete"</li>
 						</ul>
 					</li>
@@ -207,7 +212,7 @@
 		<div>
 			... of the web interface.
 			<h3 id="webinterface">Web interface</h3>
-			Take a look at the <div class="action settings exicon"></div> Settings dialog to change the layout and behavior of the web interface.
+			Take a look at the <div class="ai-settings exicon"></div> Settings dialog to change the layout and behavior of the web interface.
 			<dl>
 			<dt>Show/Hide application bar or header</dt>
 			<dd>click on the toggle buttons on the bottom left of the application bar or the bottom right of the head area to (un)collapse or hide one or both</dd>
@@ -233,7 +238,7 @@
 				<dd>
 					<ul>
 						<li>single left click on table header,</li>
-						<li>or use the list options dialog: click on list options icon <div class="tableconfigbutton"></div> at
+						<li>or use the list options dialog: click on list options icon <div class="tableconfig-icon exicon"></div> at
 							the right of the table header</li>
 					</ul>
 				</dd>
@@ -241,7 +246,7 @@
 				<dt>Show or hide columns</dt>
 				<dd>
 					click on list options icon
-					<div class="tableconfigbutton"></div>
+					<div class="tableconfig-icon exicon"></div>
 					at the right of the table header to open the list options dialog
 				</dd>
 

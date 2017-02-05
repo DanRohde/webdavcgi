@@ -107,6 +107,7 @@ use vars qw( $UID @SETUP);
             'expand-head' => '.action.collapse-head.collapsed',
             'collapse-head' => '.action.collapse-head',
             'tableconfig' => '.tableconfig',
+            'fileactions' => '.fileactions'
         },
         special => {
             'tablesorter-up' => {

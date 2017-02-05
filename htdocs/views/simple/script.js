@@ -90,7 +90,7 @@ $(function() {
 	
 	initViewBar();
 	
-	$.ajaxSetup({ traditional: true });
+	$.ajaxSetup({ traditional: true, async : true });
 	
 	$(document).ajaxError(function(event, jqxhr, settings, exception) { 
 		console.log(event);

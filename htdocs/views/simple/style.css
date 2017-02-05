@@ -150,6 +150,7 @@ a {
 }
 #viewbar .action {
 	background-size: 0.8em 0.8em;
+	background-position: center center;
 	padding: 0;
 	width: 1em;
 	height:1em;
@@ -273,15 +274,10 @@ table,th,td {
 	height: 22px;
 }
 .fileactions {
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: center -1658px;
+	background-position-x: center;
 }
 #fileactions.hidefileactions {
 	display: none;
-}
-#fileactions:hover, #fileactions:focus {
-	background-image: url(images/sprite-hover.png);
 }
 #fileactions .action {
 	min-width: 22px;
