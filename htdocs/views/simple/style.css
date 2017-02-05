@@ -508,8 +508,8 @@ ul.filterbox {
 	text-shadow: 0 1px 0 #f8f8f8;
 	font-size: 100%;
 }
-.action.changedir, .ui-button.action.changedir {
-	background-position: center -856px;
+.ui-button.action.changedir {
+	background-position: center center;
 }
 #pathinput {
 	z-index: 70;
@@ -670,7 +670,7 @@ a.disabled, .link.disabled {
 }
 /* #### BOOKMARKS ### */
 .action.rmsinglebookmark {
-	background-position: center -222px;
+	background-position: center center;
 	height: 18px;
 	width: 18px;
 }
@@ -832,12 +832,7 @@ img {
 }
 
 .tooltip-help {
-	background-image: url(images/sprite.png);
-	background-position: center -1823px;
-	background-repeat: no-repeat;
-}
-.tooltip-help:hover {
-	background-image: url(images/sprite-hover.png);
+	background-position: center center;
 }
 .tooltip-help:after {
 	content: none;
@@ -925,8 +920,9 @@ img {
 .collapsible.action.collapse-sidebar {
 	position:fixed;
 	left: 152px;
-	background: #eeeeee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUUBR8jHBlX7gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAwSURBVBjTY2BgYPjPgApQ+Ez4JNEVYEgyMDAwMOKSwGUFBmDBYRIjNhMYibECQxEAhgkGDvIbNtoAAAAASUVORK5CYII=) no-repeat center center;
-	/*cursor: w-resize;*/
+	background-color: #eee;
+	background-position: center center;
+	background-size: 12px 12px !important;
 	z-index:76;
 }
 .collapsible.bottom {
@@ -938,17 +934,17 @@ img {
 	filter: Alpha(opacity=0);
 }
 .collapsible.action.collapse-sidebar.collapsed {
-	background: white url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUUBSAI6HuEkgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAuSURBVBjTY2BABf/R+UwMmABFETYFKIoYsRjLQIwJDMgm4LKfEZcjUTQyETIVAJtaBwm2r62/AAAAAElFTkSuQmCC) no-repeat center center;
-	/* cursor: e-resize; */
 	left:-5px;
 }
 .sidebar-iconsonly .collapsible.action.collapse-sidebar {
 	left: 19px;
 }
 .collapsible.action.collapse-head {
+	background-color: #eee;
+	background-position: center center;
+	background-size: 12px 12px !important;
 	top: 34px;
 	z-index: 101;
-	background: #eeeeee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUVCjU2rU9fdQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAmSURBVBjTY2RgYPjPQAL4j66BEU0SQ44RhyRcESPFbmAipIOgAgAoGAgDd5gyOwAAAABJRU5ErkJggg==) no-repeat center center;
 }
 .collapsible.right {
 	right: 0.5em;
@@ -960,7 +956,6 @@ img {
 }
 .collapsible.action.collapse-head.collapsed {
 	top: -5px;
-	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUVCjYes9ekTAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAqSURBVBjTY2BABf+hGA6YGAgAggoY0Y3EpoABjyJGRjQHYtOM3xcE3QAA4AoIA7nIcu4AAAAASUVORK5CYII=) no-repeat center center;
 }
 .collapsible:hover {
 	opacity: 1;
@@ -1505,6 +1500,7 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	white-space: nowrap;
 	color: #444;
 	font-size: 0.8em;
+	border-bottom: 1px solid #ddd;
 }
 .statistics > div {
 	display: inline-block;

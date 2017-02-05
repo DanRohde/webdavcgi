@@ -101,6 +101,11 @@ use vars qw( $UID @SETUP);
             'sum' => '.sum',
             'home' => '.home-button',
             'consumption' => '.foldersize',
+            'tooltip-help' => '.tooltip-help',
+            'expand-sidebar' => '.action.collapse-sidebar.collapsed',
+            'collapse-sidebar' => '.action.collapse-sidebar',
+            'expand-head' => '.action.collapse-head.collapsed',
+            'collapse-head' => '.action.collapse-head',
         },
     },
 );
