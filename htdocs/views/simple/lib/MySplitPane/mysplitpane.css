@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	position: fixed;
 	width: 1em;
 	vertical-align: middle;
-	height: 100px;
+	height: 100%;
 	line-height: 100px;
 	text-align: center;
 	cursor: ew-resize;

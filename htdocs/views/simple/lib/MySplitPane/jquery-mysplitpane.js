@@ -68,7 +68,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	};
 	$.fn.MySplitPane.defaults = {
 		stop: function(left) { },
-		offsetY: 100,
+		offsetY: 0,
 		keyboardOffset: 10,
 		left: { style : "width", element: undefined, min: 0, max: 0 },
 		right: { style : "margin-left", element: undefined }
