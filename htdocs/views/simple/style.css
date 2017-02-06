@@ -1600,8 +1600,14 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 		left: 0;
 	}
 	#popupmenu {
-		margin-top: 0px;
+		margin-top: 0;
 	}
+    #foldertreepopupmenu {
+        margin-top: 0;
+    }
+    #tc_popupmenu.popup {
+        margin-top: 0;
+    }
 /* table views */
 .action.flt-view-change.toggle-on {
 	border: 1px inset #ddd;
