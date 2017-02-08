@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		handleContainer.data("MySplitPaneSettings", settings);
 		
 		var dragHandle = $("<div/>");
-		var handle = $("<div/>").html("&harr;").addClass("mysplitpane-handle").draggable({
+		var handle = $("<div/>").addClass("mysplitpane-handle").draggable({
 			drag: function(e,ui) {
 				setElementsCss(ui.position.left);
 			},

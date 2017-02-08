@@ -112,20 +112,20 @@ use vars qw( $UID @SETUP);
         special => {
             'tablesorter-up' => {
                 inline => {
-                    css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size: 10px 10px, 10px 10px;}',
+                    css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size:9px 9px,9px 9px;}',
                     csshover => '.%n:focus,.%n:hover,.%n:active{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);}'
                 },
             },
             'tablesorter-down' => {
                 inline => {
-                    css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size: 10px 10px, 10px 10px;}',
+                    css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size:9px 9px,9px 9px;}',
                     csshover => '.%n:focus,.%n:hover,.%n:active{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);}'
                 },
             },
             'panehandle' => {
                 inline =>  {
-                    css =>'.mysplitpane-handle{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:repeat;background-size:0.5em 0.5em;}',
-                    csshover =>'.mysplitpane-handle:active,.mysplitpane-handle:hover,.mysplitpane-handle:focus{background-image:url(data:image/svg+xml;utf8,%d);}',
+                    css =>'.mysplitpane-handle{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:repeat;background-size:1em 1em;}',
+                    csshover => q{}, #'.mysplitpane-handle:active,.mysplitpane-handle:hover,.mysplitpane-handle:focus{background-image:url(data:image/svg+xml;utf8,%d);}',
                 },
             },
         },
