@@ -15,16 +15,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-.action.search {
-	background-image: url(search.png);
+.action.search, .search.ui-dialog .ui-dialog-title {
+	background-image: url(search.svg);
+	background-position-y: center;
+	background-size: 18px 18px;
+}
+.action.search:hover, .action.search:focus, .action.search:active {
+	background-image: url(search-hover.svg);
+}
+.search.ui-dialog .ui-dialog-title  {
+	background-position: left center;
 	background-repeat: no-repeat;
-	background-position: 2px center;
+	padding-left: 20px;
 }
 #nav .action.search {
 	background-position: 4px center;
-}
-.action.search:hover, .action.search:focus {
-	background-image: url(search-hover.png);
 }
 .search.dialogpane {
 	display: flex;
@@ -68,14 +73,16 @@ input.search.start, input.search.cancel {
 	font-size: small;
 	cursor: pointer;
 	margin-top: 8px;
-	padding-left: 10px;
-	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gcREAQjZEgsEwAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABNSURBVAjXfY27CcAwDESfomyjzkj7D2BQ53GEUxhMCDhX3QfeyZwTACIC6L2veHHQvV1VvQdx99WOMQAzU9U/lOzz1hqQmd+PRdg6oh6mdRWo0k2hZgAAAABJRU5ErkJggg==);
-	background-position: left center;
-	background-repeat: no-repeat;
+	padding-left: 1.2em;
 	display: inline-block;
 }
-.search.moreoptionscollapser.uncollapsed {
-	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gcRDzkwnWTBPgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAeSURBVAjXY/z//z8DNsDEgAPglGA0MTEhUQf1LAcAezQGpKUYLeIAAAAASUVORK5CYII=);
+.search.moreoptionscollapser:after {
+	content: "▶";
+	float: left;
+}
+
+.search.moreoptionscollapser.uncollapsed:after {
+	content: "▼";
 }
 .search.query, .search.typeonly, .search.infolders, .search.size, .search.duplicate {
 	margin-bottom: 8px;
@@ -141,12 +148,6 @@ input.search.start, input.search.cancel {
 .search.disabled {
 	opacity: 0.5;
 	filter: Alpha(opacity=50);
-}
-.search.ui-dialog .ui-dialog-title {
-	background-image: url(search.png);
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
 }
 .search-size, .search-timecomparator {
 	width: 5em;

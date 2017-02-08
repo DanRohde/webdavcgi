@@ -4,9 +4,10 @@
 	visibility: hidden;
 }
 .action.dwnload {
-	background-image: url(download.png);
-	background-position-y: 6px;
+	background-image: url(download.svg);
+	background-position-y: center;
+	background-size: 18px 18px;
 }
 .action.dwnload:hover, .action.dwnload:focus, .action.dwnload:active {
-	background-image: url(download-hover.png);
+	background-image: url(download-hover.svg);
 }
