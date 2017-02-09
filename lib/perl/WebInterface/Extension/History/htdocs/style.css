@@ -23,9 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-size: 20px 22px;
 }
 .history-popup.label {
-	background-image: url(history.png);
+	background-image: url(history.svg);
 	background-position: 2px center;
+	background-size: 18px 18px;
 }
 .history-popup.label:hover {
-	background-image: url(history-hover.png);
+	background-image: url(history-hover.svg);
 }

@@ -22,34 +22,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.zipup,
 .zip-popup.label,
 .popup.zip-toolbar-button {
-	background-image: url(zipup.png);
+	background-image: url(zipup.svg);
 	background-position-y: center;
+	background-size: 18px 18px;
 }
 .action.zipup:hover,.action.zipup:focus,
 .zip-popup.label:hover,
 .popup.zip-toolbar-button:hover, .popup.zip-toolbar-button:focus {
-	background-image: url(zipup-hover.png);
+	background-image: url(zipup-hover.svg);
 }
 .action.zipdwnload {
-	background-image: url(zipdwnload.png);
+	background-image: url(zipdwnload.svg);
 	background-position-y: center;
+	background-size: 18px 18px;
 }
 .action.zipdwnload:hover, .action.zipdwnload:focus {
-	background-image: url(zipdwnload-hover.png);
+	background-image: url(zipdwnload-hover.svg);
 }
 .action.zipcompress {
-	background-image: url(compress.png);
+	background-image: url(compress.svg);
 	background-position-y: center;
+	background-size: 18px 18px;
 }
 .action.zipcompress:hover,.action.zipcompress:focus {
-	background-image: url(compress-hover.png);
+	background-image: url(compress-hover.svg);
 }
 .action.zipuncompress {
-	background-image: url(uncompress.png);
+	background-image: url(uncompress.svg);
 	background-position-y: center;
+	background-size: 18px 18px;
 }
 .action.zipuncompress:hover, .action.zipuncompress:focus {
-	background-image: url(uncompress-hover.png);
+	background-image: url(uncompress-hover.svg);
 }
 .zip-popup.label {
 	background-position: 2px top;

@@ -31,16 +31,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: 2px center;
 	margin-left: 18px
 }
-.action.showmotd {
-	background-image: url(motd.png);
-	background-position-x: 4px !important;
+.action.showmotd, .motd-dialog.ui-dialog .ui-dialog-title {
+	background-image: url(motd.svg);
+	background-position-y: center;
+	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.showmotd:hover, .action.showmotd:focus {
-	background-image: url(motd-hover.png);
+	background-image: url(motd-hover.svg);
 }
 .motd-dialog.ui-dialog .ui-dialog-title {
-	background-image: url(motd.png);
-	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
 }

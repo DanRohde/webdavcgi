@@ -14,12 +14,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-.action.diskusage {
-	background-image: url(diskusage.png);
+.action.diskusage, .diskusage.ui-dialog .ui-dialog-title {
+	background-image: url(diskusage.svg);
 	background-repeat: no-repeat;
-	background-position: 4px bottom;
+	background-position-y: center;
+	background-size: 18px 18px;
 }
-
+.diskusage.ui-dialog .ui-dialog-title {
+	background-position: left center;
+	padding-left: 20px;
+}
 #popupmenu .action.diskusage {
 	background-position: 2px 7px;
 }
@@ -29,7 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.diskusage:hover, 
 .action.diskusage:focus,
 .action.diskudage:active {
-	background-image: url(diskusage-hover.png);
+	background-image: url(diskusage-hover.svg);
 } 
 .is-file .action.diskusage,
 .isreadable-no .action.diskusage,
@@ -100,10 +104,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .smalltext {
 	font-size: small;
-}
-.diskusage.ui-dialog .ui-dialog-title {
-	background-image: url(diskusage.png);
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
 }

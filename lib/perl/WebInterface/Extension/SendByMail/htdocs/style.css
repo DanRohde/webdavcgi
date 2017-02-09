@@ -20,12 +20,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: none;
 	visibility: hidden;
 }
-.action.sendbymail {
-	background-image: url(sendbymail.png);
+.action.sendbymail, .sendbymail.ui-dialog .ui-dialog-title {
+	background-image: url(sendbymail.svg);
 	background-position-x: center;
+	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.sendbymail:hover, .action.sendbymail:focus, .action.sendbymail:active {
-	background-image: url(sendbymail-hover.png);
+	background-image: url(sendbymail-hover.svg);
+}
+.sendbymail.ui-dialog .ui-dialog-title {
+	background-position: left center;
+	padding-left: 20px;
 }
 #popupmenu .action.sendbymail {
 	background-position: 2px center;
@@ -60,12 +66,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 ul.ui-autocomplete {
 	z-index: 99999 !important;
-}
-.sendbymail.ui-dialog .ui-dialog-title {
-	background-image: url(sendbymail.png);
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
 }
 .sendbymail.cc, .sendbymail.bcc {
 	display: none;

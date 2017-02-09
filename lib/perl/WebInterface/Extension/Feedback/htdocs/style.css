@@ -15,16 +15,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-.action.feedback {
-	background-image: url(feedback.png);
+.action.feedback, .feedbackdialog.ui-dialog .ui-dialog-title {
+	background-image: url(feedback.svg);
 	background-position: 2px center;
+	background-size: 18px 18px;
+	background-repeat: no-repeat;
 }
 .action.feedback:focus, .action.feedback:hover {
-	background-image: url(feedback-hover.png);
+	background-image: url(feedback-hover.svg);
 }
 .feedbackdialog.ui-dialog .ui-dialog-title {
-	background-image: url(feedback.png);
-	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
 }
