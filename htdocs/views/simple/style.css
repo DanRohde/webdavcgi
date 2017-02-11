@@ -463,6 +463,7 @@ ul.filterbox {
 .action.delete:focus, .action.delete:hover, .action.delete:active {
  	background-color: #ff6666 !important;
 }
+.action.backupcopy.ui-button,
 .action.copy.ui-button,
 .action.cut.ui-button,
 .action.paste.ui-button,
@@ -1624,9 +1625,8 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	padding-bottom: 3em;
 }
 .flt-view-list #fileList tr {
-	padding-right: 2em;
 	flex: 0 1 15em;
-	padding: 0 1em;
+	padding: 0 5px;
 	border: 3px solid transparent;
 }
 .flt-view-list #fileList tr.selected {

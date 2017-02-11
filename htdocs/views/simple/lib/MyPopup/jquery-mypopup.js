@@ -99,6 +99,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			return obj;
 		}
 		function hide_siblings(obj) {
+			clear_timeout(obj);
 			$("ul.popup:visible", obj.siblings("li.popup")).hide();
 			//obj.siblings("li.popup").find("ul.popup:visible").hide();
 			return obj;

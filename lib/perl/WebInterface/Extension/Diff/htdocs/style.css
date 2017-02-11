@@ -14,12 +14,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-.action.diff {
-	background-image: url(diff.png);
-	background-position-y: 7px;
+.action.diff, .diff.ui-dialog .ui-dialog-title {
+	background-image: url(diff.svg);
+	background-position-y: center;
+	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.diff:hover, .action.diff:focus, .action.diff:active {
-	background-image: url(diff-hover.png);
+	background-image: url(diff-hover.svg);
+}
+.diff.ui-dialog .ui-dialog-title {
+	background-position: left center;
+	padding-left: 20px;
 }
 .isreadable-no .diff,
 .unselectable-yes .diff {
@@ -91,10 +97,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .diff.close {
 	float: right;
 }
-.diff.ui-dialog .ui-dialog-title {
-	background-image: url(diff.png);
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
-}
-

@@ -20,17 +20,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .isempty-yes .hexdump {
 	display: none;
 }
-.action.hexdump {
-	background-image: url(hexdump.png);
+.action.hexdump,
+.hexdump.ui-dialog .ui-dialog-title {
+	background-image: url(hexdump.svg);
 	background-repeat: no-repeat;
-	background-position: 2px center;
+	background-position-y: center;
+	background-size: 18px 18px;
 }
 .action.hexdump:hover, .action.hexdump:focus {
-	background-image: url(hexdump-hover.png);
+	background-image: url(hexdump-hover.svg);
 }
 .hexdump.ui-dialog .ui-dialog-title {
-	background-image: url(hexdump.png);
-	background-repeat: no-repeat;
 	background-position: left center;
 	padding-left: 20px;
 }

@@ -1097,7 +1097,7 @@ function getSelectedRows(el) {
 	return selrows;
 }
 function getSelectedFiles(el) {
-	return $.map(getSelectedRows(el), function (v) { return $(v).attr("data-file"); });
+	return $.map(getSelectedRows(el), function (v) { return $(v).data("file"); });
 }
 function handleFileActionEvent(event) {
 	$.MyPreventDefault(event);
@@ -1110,7 +1110,7 @@ function handleFileActionEvent(event) {
 	} else if (self.hasClass("delete")) {
 		handleFileDelete(row);
 	} else { // extension support:
-		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.attr('data-file'), selected: [ row.data("file") ] , row: row });
+		$("body").trigger("fileActionEvent",{ obj: self, event: event, file: row.data("file"), selected: [ row.data("file") ] , row: row });
 	}
 }
 function initFileActions() {
@@ -1649,7 +1649,7 @@ function handleFileListActionEventDelete(event) {
 		if (posturi == $("#fileList").data("uri")) selrows = $("#fileList tr[data-file='"+filename+"/']");
 	} else {
 		selrows = getSelectedRows(this);
-		if (selrows.length > 1) filename = selrows.first().data("file");
+		if (selrows.length == 1) filename = selrows.first().data("file");
 		posturi = $("#fileList").data("uri");
 		files = $.map(selrows, function(v,i) { return $(v).data("file"); });
 		selrows.fadeTo("slow", 0.5);
@@ -1682,7 +1682,7 @@ function uncheckSelectedRows() {
 function doPasteAction(action,srcuri,dsturi,files) {
 	var xhr = $.MyPost(dsturi, { action: action, files: files, srcuri: srcuri }, function(response) {
 		if ($.MyCookie("clpaction") == "cut") $.MyCookie.rmCookies("clpfiles","clpaction","clpuri");
-		$("#flt").trigger("filesCreated", { base: dsturi, files: files.split("@/@") });
+		$("#flt").trigger("filesCreated", { base: dsturi, files: response.files ? response.files : files.split("@/@") });
 		handleJSONResponse(response);
 	});
 	renderAbortDialog(xhr);
@@ -1729,6 +1729,14 @@ function handleFileListActionEvent(event) {
 					.replace(/%files%/g, $.MyStringHelper.uri2html(files.split("@/@").join(", ")));
 			confirmDialog(msg, { confirm: function() { doPasteAction(action,srcuri,dsturi,files); }, setting: "settings.confirm.paste" });
 		} else doPasteAction(action,srcuri,dsturi,files);
+	} else if (self.hasClass("backupcopy")) {
+		var uri = $("#fileList").data("uri");
+		var files = getSelectedFiles(self);
+		var filesparam = files.join("@/@");
+		var msg = $("#backupcopyconfirm").html().replace(/%files%/g,  files.join(", "));
+		if ($.MyCookie("settings.confirm.backupcopy") != "no") 
+			confirmDialog(msg, { confirm: function() { doPasteAction("copy", uri, uri, filesparam); }, setting: "settings.confirm.backupcopy" });
+		else doPasteAction("copy",uri, uri, filesparam);
 	} else if (self.attr("href") !== undefined && self.attr("href") != "#") {
 		window.open(self.attr("href"), self.attr("target") || "_self");
 	} else {
@@ -1742,10 +1750,10 @@ function initClipboard() {
 }
 function handleClipboard() {
 	var action = $.MyCookie("clpaction");
-	var datauri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
+	var datauri = $.MyStringHelper.concatUri($("#fileList").data("uri"),"/");
 	var srcuri = $.MyCookie("clpuri");
 	var files = $.MyCookie("clpfiles");
-	var disabled = (!files || files === "" || srcuri == datauri || $("#fileListTable").hasClass("iswriteable-no"));
+	var disabled = (!files || files === "" || (srcuri == datauri && action!="copy") || $("#fileListTable").hasClass("iswriteable-no"));
 	toggleButton($(".action.paste"), disabled);
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
@@ -1951,7 +1959,7 @@ function initTableColumnPopupActions() {
 			$(".action.table-sort."+$(v).data("name")).addClass("hidden").hide();
 		});
 		$(".action.table-sort.fileactions").hide();
-		
+		setupContextActions();
 	});
 	setupContextActions();
 	function setupContextActions() {

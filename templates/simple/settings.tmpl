@@ -43,7 +43,7 @@ $extensions(settings_view)
 </table>
 <table class="tab settings_dialogs">
 <tr><td colspan="2" class="tabhead">$tl(settings.dialogs)</td></tr>
-$each#(messages.warning,confirm.upload,confirm.dnd,confirm.paste,confirm.rename)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" name="settings.$v" id="settings.$v"/></td></tr>'#
+$each#(messages.warning,confirm.upload,confirm.dnd,confirm.paste,confirm.rename,confirm.backupcopy)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" name="settings.$v" id="settings.$v"/></td></tr>'#
 $extensions(settings_dialogs)
 </table>
 $extensions(settings_tabs)

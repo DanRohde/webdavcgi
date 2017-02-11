@@ -19,23 +19,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: none;
 	visibility: hidden;
 }
-.action.zipup,
-.zip-popup.label,
-.popup.zip-toolbar-button {
+.action.zipup {
 	background-image: url(zipup.svg);
 	background-position-y: center;
 	background-size: 18px 18px;
 }
-.action.zipup:hover,.action.zipup:focus,
-.zip-popup.label:hover,
-.popup.zip-toolbar-button:hover, .popup.zip-toolbar-button:focus {
+.action.zipup:hover,.action.zipup:focus {
 	background-image: url(zipup-hover.svg);
 }
+.zip-popup.label,
+.popup.zip-toolbar-button,
 .action.zipdwnload {
 	background-image: url(zipdwnload.svg);
 	background-position-y: center;
 	background-size: 18px 18px;
 }
+.zip-popup.label:hover,
+.popup.zip-toolbar-button:hover, .popup.zip-toolbar-button:focus,
 .action.zipdwnload:hover, .action.zipdwnload:focus {
 	background-image: url(zipdwnload-hover.svg);
 }

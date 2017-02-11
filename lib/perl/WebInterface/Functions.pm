@@ -29,7 +29,7 @@ use English qw(-no_match_vars);
 
 
 use DefaultConfig qw( $PATH_TRANSLATED $VIRTUAL_BASE $DOCUMENT_ROOT
-  $ALLOW_SYMLINK $ENABLE_TRASH );
+  $ALLOW_SYMLINK $ENABLE_TRASH $REQUEST_URI );
 use FileUtils qw( rcopy rmove move2trash );
 use HTTPHelper qw( print_compressed_header_and_content );
 
@@ -51,8 +51,8 @@ sub free {
 }
 
 sub _print_json_response {
-    my ( $self, $msg, $errmsg, $msgparam ) = @_;
-    my %jsondata = ();
+    my ( $self, $msg, $errmsg, $msgparam, %data ) = @_;
+    my %jsondata = ( %data );
     my @params =
       $msgparam ? map { $self->{cgi}->escapeHTML($_) } @{$msgparam} : ();
     if ($errmsg) {
@@ -149,30 +149,33 @@ sub handle_clipboard_action {
     $srcuri =~ s/\%([a-f\d]{2})/chr(hex($1))/xmseig;
     $srcuri =~ s/^$VIRTUAL_BASE//xms;
     my $srcdir = $DOCUMENT_ROOT . $srcuri;
-    my ( @success, @failed );
+    my ( @success, @failed, %jsondata );
     foreach my $file ( split /\@\/\@/xms, $self->get_cgi_multi_param('files') ) {
-
         if (   $self->{config}->{method}->is_locked("$srcdir$file")
-            || $self->{config}->{method}->is_locked("$PATH_TRANSLATED$file") )
-        {
+            || $self->{config}->{method}->is_locked("$PATH_TRANSLATED$file") ) {
             $errmsg = 'locked';
             push @failed, $file;
-        }
-        elsif (
-            rcopy(
-                $self->{config},
-                "$srcdir$file",
-                $PATH_TRANSLATED . $file,
-                $self->{cgi}->param('action') eq 'cut'
-            )
-          )
-        {
-            $msg = $self->{cgi}->param('action') . 'success';
-            push @success, $file;
-        }
-        else {
-            $errmsg = $self->{cgi}->param('action') . 'failed';
-            push @failed, $file;
+        } else  { 
+            my $srcfile = $srcdir.$file;
+            my $sfile =  $file =~ m{^(.*)/$}xms ? $1 : $file; # strip slash from folder name
+            my $dstfile = $PATH_TRANSLATED.$sfile ;
+            if ($srcdir eq $PATH_TRANSLATED) { # same folder -> backup copy
+                my $n = q{};
+                while ( $self->{backend}->exists($dstfile.'.copy'.$n)) { # look for unused copy file name
+                    $n++;
+                }
+                $dstfile .= '.copy'.$n;
+                $file     = $sfile.'.copy'.$n;
+            }
+            if (rcopy($self->{config},$srcfile, $dstfile, $self->{cgi}->param('action') eq 'cut')) {
+                $msg = $self->{cgi}->param('action') . 'success';
+                push @success, $sfile;
+                $jsondata{files} //= [];
+                push @{$jsondata{files}}, $file;
+            } else {
+                $errmsg = $self->{cgi}->param('action') . 'failed';
+                push @failed, $file;
+            }
         }
     }
     if ( defined $errmsg ) { $msg = undef; }
@@ -180,7 +183,7 @@ sub handle_clipboard_action {
         substr join( ', ', defined $msg ? @success : @failed ), 0,
         $self->{msglimit}
     ];
-    return $self->_print_json_response( $msg, $errmsg, $msgparam );
+    return $self->_print_json_response( $msg, $errmsg, $msgparam, %jsondata );
 }
 
 sub _handle_delete_action {

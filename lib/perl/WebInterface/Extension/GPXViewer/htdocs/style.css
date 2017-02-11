@@ -26,15 +26,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: none;
 }
 .action.gpxviewer, .gpxviewer.ui-dialog .ui-dialog-title {
-	background-image: url(gpxviewer.png);
+	background-image: url(gpxviewer.svg);
 	background-repeat: no-repeat;
-	
+	background-size: 18px 18px;
+	background-position-y: center;
 }
 .action.gpxviewer:hover, .action.gpxviewer:focus {
-	background-image: url(gpxviewer-hover.png);
-}
-.action.gpxviewer {
-	background-position: 2px center;
+	background-image: url(gpxviewer-hover.svg);
 }
 .gpxviewer.ui-dialog .ui-dialog-title {
 	background-position: left center; 
