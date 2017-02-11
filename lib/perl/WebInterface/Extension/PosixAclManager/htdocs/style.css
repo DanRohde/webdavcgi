@@ -28,12 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .posixaclmngr.ui-dialog .ui-dialog-title {
 	padding-left: 20px;
 }
-#popupmenu .action.pacl {
-	background-position: 2px 7px;
-}
-#nav .action.pacl {
-	background-position: 4px center;
-}
 ul.ui-autocomplete {
 	z-index: 1100;
 }

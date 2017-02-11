@@ -30,9 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .afsaclmanager.ui-dialog .ui-dialog-title {
 	padding-left: 20px;
 }
-#nav a.afsaclmanager {
-	white-space: normal;
-}
 .afs-admin {
 	color: red;
 }

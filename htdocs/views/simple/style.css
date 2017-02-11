@@ -732,18 +732,13 @@ ul.ui-autocomplete {
 td.center {
 	text-align: center;
 }
+.helpdialog.ui-dialog .ui-dialog-title,
+.accesskeydialog.ui-dialog .ui-dialog-title,
 .viewfilterdialog.ui-dialog .ui-dialog-title,
 .settingsdialog.ui-dialog .ui-dialog-title,
 .aboutdialog.ui-dialog .ui-dialog-title {
 	padding-left: 20px;
 	background-position: left center;
-}
-.accesskeydialog.ui-dialog .ui-dialog-title {
-	background: url(images/sprite.png) no-repeat 0 -1780px;
-	padding-left: 20px;
-}
-.helpdialog.ui-dialog .ui-dialog-title {
-	padding-left: 20px;
 }
 .viewfilterinfo {
 	background-color: yellow;
