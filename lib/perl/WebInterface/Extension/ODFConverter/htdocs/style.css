@@ -24,16 +24,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .c .odfconverter {
 	display: block;
 }
+.popup.odfconverter.label,
 .action.odfconvert {
-	background: url(odfconverter.png) no-repeat 2px center;
+	background: url(odfconverter.svg) no-repeat 2px center / 18px 18px;
 }
+.popup.odfconverter.label:hover,
 .action.odfconvert:hover {
-	background: url(odfconverter-hover.png) no-repeat 2px center;
-}
-.popup.odfconverter.label {
-	background-image: url(odfconverter.png);
-	background-position: 2px center;
-}
-.popup.odfconverter.label:hover {
-	background-image: url(odfconverter-hover.png);
+	background-image: url(odfconverter-hover.svg);
 }

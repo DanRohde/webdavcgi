@@ -222,19 +222,15 @@ table,th,td {
 }
 
 .action, .ui-button.action {
-    background-image: url(images/sprite.png);
     background-repeat: no-repeat;
     background-color: transparent;
-    background-position-x: left;
-    background-position-y: center;
+    background-position: left center;
     cursor: pointer;
     padding-left: 22px;
 }
 .action:focus, .action:hover, .action:active, 
 .ui-button.action:focus, .ui-button.action:hover, 
 .ui-button.action:active {
-    background-image: url(images/sprite-hover.png);
-    background-repeat: no-repeat;
     background-color: #ddd;
 }
 .action:active, .ui-button.action:active {
@@ -599,16 +595,9 @@ input.file-upload {
 	margin-bottom: 2px;
 }
 #progress .info .cancel {
+	background-position: center center;
 	float: right;
-	opacity: 0.5;
-	filter: Alpha(opacity: 50);
-	background: url(images/sprite.png) no-repeat center -698px;
 	width: 22px;
-}
-#progress .info .cancel:hover {
-	opacity: 1;
-	filter: Alpha(opacity: 50);
-	background: url(images/sprite-hover.png) no-repeat center -698px;
 }
 #progress .info .fileprogressbar.running {
 	border-bottom: 2px solid #4444ff;
@@ -793,24 +782,6 @@ img {
 }
 .uploaddialog.ui-dialog .ui-dialog-title {
     padding-left: 22px;
-}
-.logout-button {
-	padding-left: 22px;
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: 2px -936px;
-}
-.logout-button:hover, .logout-button:focus {
-	background-image: url(images/sprite-hover.png);
-}
-.home-button, .action.changeuri.home-button {
-	padding-left: 22px;
-	background-image: url(images/sprite.png);
-	background-repeat: no-repeat;
-	background-position: 2px -1016px;
-}
-.home-button:hover, .home-button:focus {
-	background-image: url(images/sprite-hover.png);
 }
 .link-button {
 	padding-left: 2px !important;
@@ -1203,36 +1174,6 @@ img {
 #statusbar .selected-files-stats-content {
 	padding: 6px 4px;;
 }
-.file-icon {
-	background: url(images/sprite.png) no-repeat left -782px;
-	padding-left: 18px;
-	display: inline-block;
-}
-.folder-icon {
-	background: url(images/sprite.png) no-repeat left -742px;
-	padding-left: 18px;
-	display: inline-block;
-}
-.plus-icon {
-	background: url(images/sprite.png) no-repeat left -1060px;
-	padding-left: 18px;
-	display: inline-block;
-}
-.sum-icon {
-	background: url(images/sprite.png) no-repeat left -1462px;
-	padding-left: 18px;
-	display: inline-block;
-}
-.size-icon {
-	background: url(images/sprite.png) no-repeat left -1422px;
-	padding-left: 18px;
-	display: inline-block;
-}
-.file-icon:hover,.file-icon:focus,.folder-icon:hover,.folder-icon:hover,
-.sum-icon:hover,.sum-icon:focus,.plus-icon:hover,.plus-icon:focus,
-.size-icon:hover,.size-icon:focus {
-	background-image: url(images/sprite-hover.png);
-}
 .inline-block {
 	display: inline-block;
 	vertical-align: top;
@@ -1326,9 +1267,6 @@ img {
 	margin: 2px;
 	padding: 0;
 	font-weight: bold;
-}
-.action.changeUri:focus, .action.changeUri:hover  {
-	background-image: url(icons/sprite.png);
 }
 
 .filestats-dircount, .filestats-filecount,
@@ -1472,18 +1410,6 @@ a.extern:after {
 	white-space: nowrap;
 	overflow: hidden;
 }
-.sprite {
-	background-image: url(images/sprite.png) !important;
-	background-repeat: no-repeat !important;
-	background-position-x: 2px;
-}
-.sprite:hover, .sprite:focus, .sprite:active,
-li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
-	background-image: url(images/sprite-hover.png) !important;
-}
-.sprite.label {
-	padding-left: 22px;
-}
 .statistics {
 	padding: 4px 10px;
 	vertical-align: bottom;
@@ -1530,12 +1456,8 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 		text-shadow: none;
 	}
 	.popup.label {
-		background-image: url(images/sprite.png);
 		background-position-x: 2px;
 		background-repeat: no-repeat;
-	}
-	.popup.label:hover {
-		background-image: url(images/sprite-hover.png);
 	}
 	.popup .label {
 		background-repeat: no-repeat;
@@ -1549,9 +1471,6 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 		color: black;
 		cursor: pointer;
 		padding-left: 0px;
-		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAHCAQAAACFbCRbAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAkSURBVAjXTcoxCgAwDAMxOf//czuYQDbBHQ8YyqHMTZAiduUDv+MFBymCv+wAAAAASUVORK5CYII=);
-		background-repeat: no-repeat;
-		background-position: right 2px center;
 	}
 	.popup.label {
 		padding-left: 22px;
@@ -1625,7 +1544,7 @@ li:hover > .sprite, li:focus > .sprite, li:active > .sprite {
 	padding-bottom: 3em;
 }
 .flt-view-list #fileList tr {
-	flex: 0 1 15em;
+	flex: 0 1 17em;
 	padding: 0 5px;
 	border: 3px solid transparent;
 }

@@ -922,13 +922,11 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				var filename = data.files[0].name;
 				uploadState.transports.push(transport);
 				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+filename).addClass("fileprogress");
-				$("<div></div>").click(function(event) {
+				$("<div/>").click(function(event) {
 					$.MyPreventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
 				}).appendTo(up).attr("title",$("#cancel").html()).MyTooltip().addClass("cancel").html("&nbsp;").data({ filename: filename, transport: transport });
-				$("<div></div>").appendTo(up).addClass("fileprogressbar running").html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): 0%");
-				// $("#progress .info").scrollTop($("#progress
-				// .info")[0].scrollHeight);
+				$("<div/>").appendTo(up).addClass("fileprogressbar running").html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): 0%");
 				uploadState.uploads++;
 				return true;
 			}

@@ -84,8 +84,8 @@ use vars qw( $UID @SETUP);
             cssdefault => q{},
             defaulticon => 'unknown',
             defaulticoncss => q{},
-            css  => '%m,.%n-icon,.%ndialog.ui-dialog .ui-dialog-title{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position-y:center;background-size: 18px 18px;}',
-            csshover => '%m:hover,%m:focus,%m:active,.%n-icon:hover,%n-icon:active,%n-icon:focus{background-image:url(data:image/svg+xml;utf8,%d);background-position-y:center;background-repeat:no-repeat;background-size:18px 18px;}',
+            css  => '%m,%m.ui-button,.%n-icon,.%ndialog.ui-dialog .ui-dialog-title{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-position-y:center;background-size:18px 18px;}',
+            csshover => '%m:hover,%m:focus,%m:active,%m.ui-button:active,.%n-icon:hover,.%n-icon:active,.%n-icon:focus{background-image:url(data:image/svg+xml;utf8,%d);}',
         },
         mapping => {
             'foldertree-expanded-folder'  => '.mft-node-expander',
@@ -107,9 +107,15 @@ use vars qw( $UID @SETUP);
             'expand-head' => '.action.collapse-head.collapsed',
             'collapse-head' => '.action.collapse-head',
             'tableconfig' => '.tableconfig',
-            'fileactions' => '.fileactions'
+            'fileactions' => '.fileactions',
         },
         special => {
+            'submenu' => {
+                inline => {
+                    css => 'li.popup{background-image:url(data:image/svg+xml;utf8,%d);background-repeat:no-repeat;background-size:12px 12px;background-position:right 0.5ex center;}',
+                    csshover => 'li.popup:hover,li.popup:active,li.popup:focus{background-image:url(data:image/svg+xml;utf8,%d);}',
+                },
+            },
             'tablesorter-up' => {
                 inline => {
                     css => '.%n{background-image:url(data:image/svg+xml;utf8,%d),url(data:image/svg+xml;utf8,%d);background-position:left center,right center; background-repeat:no-repeat,no-repeat;background-size:9px 9px,9px 9px;}',

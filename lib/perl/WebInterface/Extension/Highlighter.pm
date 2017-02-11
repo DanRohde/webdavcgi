@@ -496,6 +496,7 @@ sub _create_popups {
             },
             {
             action => 'savemarksaspreset',
+            classes => 'save-icon',
             data   => {
                 styles => join( q{,}, @propnames ),
                 name   => $self->tl('highlighter.presetname')

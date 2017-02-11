@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(zipup.svg);
 	background-position-y: center;
 	background-size: 18px 18px;
+	background-repeat: no-repeat;
 }
 .action.zipup:hover,.action.zipup:focus {
 	background-image: url(zipup-hover.svg);
@@ -33,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(zipdwnload.svg);
 	background-position-y: center;
 	background-size: 18px 18px;
+	background-repeat: no-repeat;
 }
 .zip-popup.label:hover,
 .popup.zip-toolbar-button:hover, .popup.zip-toolbar-button:focus,

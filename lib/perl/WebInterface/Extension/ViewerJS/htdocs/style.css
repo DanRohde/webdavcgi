@@ -30,11 +30,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 .action.viewerjs {
-	background-image: url(view.png);
-	background-position-y: center;
+	background-image: url(view.svg);
+	background-position: center center;
+	background-size: 18px 18px;
 }
 .action.viewerjs:hover,.action.viewerjs:focus {
-	background-image: url(view-hover.png);
+	background-image: url(view-hover.svg);
 }
 .viewerjs.content {
 	position: fixed;

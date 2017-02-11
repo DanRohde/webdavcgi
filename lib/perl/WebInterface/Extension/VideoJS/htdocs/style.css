@@ -29,12 +29,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline;
 }
 .action.videojs {
-	background-image: url(videojs.png);
+	background-image: url(videojs.svg);
 	background-position: 2px 6px;
 	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.videojs:hover, .action.videojs:focus{
-	background-image: url(videojs-hover.png);
+	background-image: url(videojs-hover.svg);
 }
 #videojs-overlay {
 	position: fixed;

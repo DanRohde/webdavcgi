@@ -20,22 +20,30 @@ tr.iswriteable-no .action.edit,
 .islocked-yes .action.edit {
 	display: none;
 }
-
+.edittextdata.ui-dialog .ui-dialog-title,
 .action.edit {
-	background-image: url(edit.png);
-	background-position-y: center;
+	background-image: url(edit.svg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.edit:hover, .action.edit:focus {
-	background-image: url(edit-hover.png);
+	background-image: url(edit-hover.svg);
 }
+.edittextdata.ui-dialog .ui-dialog-title {
+	padding-left: 20px;
+	white-space: pre;
+}
+
 #edittextdata .action.savetextdata { 
 	font-size: 15px;
 	line-height: 1;
 	display: block;
 	float: right;
-	background-position: 20px -1696px;
-	padding-left: 42px;
-	padding-right: 22px;
+	padding: 5px 1.5em 5px 3em;
+	background-position: 1em center;
+	border: 1px solid #ddd;
+	border-radius: 5px;
 	margin-left: 10%;
 	margin-right: 10%;
 }
@@ -44,20 +52,14 @@ tr.iswriteable-no .action.edit,
 	line-height: 1;
 	display: block;
 	float: left;
-	background-position: 20px -696px;
-	padding-left: 42px;
-	padding-right: 22px;
+	padding: 5px 1.5em 5px 3em;
+	background-position: 1em center;
+	border: 1px solid #ddd;
+	border-radius: 5px;
 	margin-left: 10%;
 	margin-right: 10%;
 }
 
-.edittextdata.ui-dialog .ui-dialog-title {
-	background-image: url(edit.png);
-	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
-	white-space: pre;
-}
 
 #edittextdataform {
     display: flex;

@@ -14,23 +14,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-.action.permissions {
-	background-image: url(permissions.png);
+.action.permissions,
+.permissions.ui-dialog .ui-dialog-title {
+	background-image: url(permissions.svg);
+	background-position: left center;
 	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.permissions:hover, .action.permissions:focus {
-	background-image: url(permissions-hover.png);
-}
-#apps > .action.permissions {
-	background-position: 4px center;
-}
-.popup .action.permissions {
-	background-position: 2px 7px;
+	background-image: url(permissions-hover.svg);
 }
 .permissions.ui-dialog .ui-dialog-title {
-	background-image: url(permissions.png);
-	background-repeat: no-repeat;
-	background-position: left center;
 	padding-left: 20px;
 }
 .permissions-filename {

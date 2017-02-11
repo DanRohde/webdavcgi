@@ -143,9 +143,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter-popup .label {
 	max-width: 200px;
 }
-.action.savemarksaspreset {
-	background-position: left -1696px !important;
-}
 .action.hlnopresets {
 	background-image: none;
 	padding: 0;

@@ -328,7 +328,7 @@ sub _render_file_list_entry {
         ? $self->{cgi}->escapeHTML($file)
             . ' &rarr; '
             . $self->{cgi}->escapeHTML( $self->{backend}->getLinkSrc($full) )
-        : q{},
+        : $displayname,
     );
 
     $self->_call_fileattr_hook(\%stdvars, $full);
