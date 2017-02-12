@@ -987,7 +987,6 @@ img {
 .action.table-sort-this-asc, .action.table-sort-this-desc, .action.table-sort, .popup.table-sort-columns,
 .action.table-column-hide-this, .action.table-column, .popup.table-columns,
 .action.table-column-width-default, .action.table-column-width-minimum {
-	background-image: none;
 	padding-left: 0px;
 }
 .sorter-false .action.table-sort-this-asc, .sorter-false .action.table-sort-this-desc,

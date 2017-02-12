@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-image: url(motd.svg);
 	background-repeat: no-repeat;
 	background-position: 2px center;
+	background-size: 18px;
 	margin-left: 18px
 }
 .action.showmotd, .motd-dialog.ui-dialog .ui-dialog-title {
