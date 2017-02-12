@@ -14,21 +14,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-#nav .action.afsgroupmngr {
-	background-image: url(group.png);
+.afsgroupmngr.ui-dialog .ui-dialog-title,
+.action.afsgroupmngr {
+	background-image: url(group.svg);
 	background-repeat: no-repeat;
 	background-position: 4px center;
+	background-size: 18px 18px;
 }
-#nav .action.afsgroupmngr:hover, #nav .action.afsgroupmngr:focus {
-	background-image: url(group-hover.png);
+.action.afsgroupmngr:hover, .action.afsgroupmngr:focus {
+	background-image: url(group-hover.svg);
 }
-#popupmenu .action.afsgroupmngr {
-	background-image: url(group.png);
-	background-position: 2px center;
-	background-repeat: no-repeat;
-}
-#popupmenu .action.afsgroupmngr:hover {
-	background-image: url(group-hover.png);
+.afsgroupmngr.ui-dialog .ui-dialog-title {
+	background-position: left center;
+	padding-left: 20px;
 }
 #afsgroupactions {
 	display: inline;
@@ -78,30 +76,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-color: #ededed;
 }
  
-#afsmembereditor a.afsmemberdelete, #afsgroupeditor a.afsgroupdelete, 
-#afsmembereditor a.afsremoveselectedmembers {
-	background-image: url(remove.png);
-	background-repeat: no-repeat;
-	background-position: center 0 ;
+#afsmembereditor .afsmemberdelete, 
+#afsgroupeditor .afsgroupdelete, 
+#afsmembereditor .afsremoveselectedmembers {
+	background-position: center center;
+	background-size: 1em 1em;
 	padding: 0 0 0 22px;
 	float: right;
 	margin: 0 0 0 1em;
-	width:22px;
-}
-#afsmembereditor img.afsaddusr, #afsgroupeditor img.afscreatenewgrp {
-	width: 16px;
-	height: 16px;
-	background-image: url(add.png);
-	background-repeat: no-repeat;
-	background-position:  0 0;
+	width: 1.2em;
+	height: 1.2em;
 	cursor: pointer;
 }
-.afsgroupmngr.ui-dialog .ui-dialog-title {
-	background-image: url(group.png);
+#afsmembereditor .afsaddusr, 
+#afsgroupeditor .afscreatenewgrp {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
 	background-repeat: no-repeat;
-	background-position: left center;
-	padding-left: 20px;
+	background-position: center center;
+	background-size: 1em 1em;
+	cursor: pointer;
 }
+
 #nav a.afsgroupmngr {
 	white-space: normal;
 }

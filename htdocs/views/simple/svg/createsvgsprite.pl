@@ -108,6 +108,7 @@ use vars qw( $UID @SETUP);
             'collapse-head' => '.action.collapse-head',
             'tableconfig' => '.tableconfig',
             'fileactions' => '.fileactions',
+            'confirm' => '.confirm',
         },
         special => {
             'submenu' => {

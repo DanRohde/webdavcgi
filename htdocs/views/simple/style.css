@@ -627,6 +627,10 @@ input.file-upload {
 #confirmdialog { 
 	text-align: center;
 }
+.confirmdialog.ui-dialog .ui-dialog-title {
+	padding-left: 20px;
+	background-position: left center;
+}
 .link {
 	cursor: pointer;
 }

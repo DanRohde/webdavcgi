@@ -33,12 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-position: left center;
 	padding-left: 20px;
 }
-#popupmenu .action.sendbymail {
-	background-position: 2px center;
-}
-#nav .action.sendbymail {
-	background-position: 4px center;
-}
 .sendbymail.button {
 	text-align: right;
 }

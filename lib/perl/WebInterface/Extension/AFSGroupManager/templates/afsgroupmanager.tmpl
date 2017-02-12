@@ -12,8 +12,7 @@
 	<div></div>
 	<div class="afsnewgroup">
 		<input type="text" size="20" name="afsnewgrp" data-user="$user" title="$tl(afscreatenewgroup)"/>
-		<img class="afscreatenewgrp" title="$tl(afscreatenewgroup)" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE
-AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="+"/>
+		<div class="afscreatenewgrp ai-new" title="$tl(afscreatenewgroup)" aria-label="$tl(afscreatenewgroup)"/>
 	</div>
 	<!--ENDIF-->
 </div>
@@ -26,11 +25,10 @@ AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5C
 		</ul>
 	</div>
 	<!--IF#2($extconfig(disallow_afsgroupchanges))--><!--ELSE#2-->
-	<div class="afsremoveselectedmembers"><a href="#" class="afsremoveselectedmembers" title="$tl(afsremoveuser)">&nbsp;</a></div>
+	<div class="afsremoveselectedmembers remove-icon" title="$tl(afsremoveuser)"></div>
 	<div class="afsnewmembers">
 		<input type="text" size="16" name="afsaddusers" data-afsgrp="$cgiparam(afsgrp)" title="$tl(afsadduser)"/>
-		<img class="afsaddusr" title="$tl(afsadduser)" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAJiS0dE
-AACqjSMyAAAACXBIWXMAAABIAAAASABGyWs+AAAAC0lEQVQI12NgYAAAAAMAASDVlMcAAAAASUVORK5CYII=" alt="+"/>
+		<div class="afsaddusr ai-new" title="$tl(afsadduser)" aria-label="$tl(afsadduser)"/>
 	</div>
 	<!--ENDIF#2-->
 </div>

@@ -1052,6 +1052,7 @@ function confirmDialog(text, data) {
 		height: "auto",
 		title: $("#confirmdialog").attr('data-title'),
 		closeText: $("#close").html(),
+		dialogClass: "confirmdialog",
 		buttons: [ 
 			{ 
 				text: $("#cancel").html(), 

@@ -15,71 +15,76 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 .action.removemarks {
-	background-image: url(remove.png);
+	background-image: url(remove.svg);
+	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
-.action.removemarks:hover {
-	background-image: url(remove-hover.png);
+.action.removemarks:hover, .action.removemarks:active, .action.removemarks:focus {
+	background-image: url(remove-hover.svg);
 }
 .highlighter-popup.label,
 .highlighter-popup.ui-button,
 .action.markcolorpicker,
 .highlighter-popup .action.removemarks .label {
-	background-image: url(hl.png);
+	background-image: url(hl.svg);
 	background-position: 2px center;
 	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .highlighter-popup.label:hover,
 .highlighter-popup.ui-button:hover,
 .highlighter-popup.ui-button:focus,
 .action.markcolorpicker:hover,
 .highlighter-popup .action.removemarks .label:hover {
-	background-image: url(hl-hover.png);
+	background-image: url(hl-hover.svg);
 }
 .highlighter.color.label, .action.mark.color,
 .highlighter.color .action.removemarks .label {
-	background-image: url(fg.png);
+	background-image: url(fg.svg);
 	background-position:2px center;
+	background-size: 18px 18px;
 }
 .highlighter.color.label:hover, .action.mark.color:hover,
 .highlighter.color .action.removemarks .label:hover {
-	background-image: url(fg-hover.png);
+	background-image: url(fg-hover.svg);
 }
 .highlighter.background-color.label, .action.mark.background-color,
 .highlighter.background-color .action.removemarks .label {
-	background-image: url(bg.png);
-	background-position:2px center;
+	background-image: url(bg.svg);
+	background-position: 2px center;
+	background-size: 18px 18px;
 }
 .highlighter.background-color.label:hover, .action.mark.background-color:hover,
 .highlighter.background-color .action.removemarks:hover .label {
-	background-image: url(bg-hover.png);
-	background-position:2px center;
+	background-image: url(bg-hover.svg);
 }
 .highlighter.border.label,.highlighter.border-color.label, 
 .highlighter.border-width.label, .highlighter.border-style.label,
 .highlighter.border .action.mark,
 .highlighter.border .action.removemarks .label {
-	background-image: url(border.png);
+	background-image: url(border.svg);
 	background-position: 2px center;
+	background-size: 18px 18px;
 }
 .highlighter.border.label:hover, .highlighter.border-color.label:hover, 
 .highlighter.border-width.label:hover, .highlighter.border-style.label:hover,
 .highlighter.border .action.mark:hover,
 .highlighter.border .action.removemarks .label:hover {
-	background-image: url(border-hover.png);
-	background-position: 2px center;
+	background-image: url(border-hover.svg);
 }
 .highlighter.font.label, .highlighter.font-size.label, 
 .highlighter.font-family.label, .highlighter.font-style.label,
 .highlighter.font .action.mark,
 .highlighter.font .action.removemarks .label {
-	background-image: url(font.png);
+	background-image: url(font.svg);
 	background-position: 2px center;
+	background-size: 18px 18px;
 }
 .highlighter.font.label:hover, .highlighter.font-size.label:hover, 
 .highlighter.font-family.label:hover, .highlighter.font-style.label:hover,
 .highlighter.font .action.mark:hover,
 .highlighter.font .action.removemarks .label:hover {
-	background-image: url(font-hover.png);
+	background-image: url(font-hover.svg);
 }
 .highlighter.text.label, .highlighter.text-decoration.label,
 .highlighter.text-decoration-color.label, .highlighter.text-decoration-style.label,
@@ -87,8 +92,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter.text-align.label,
 .highlighter.text .action.mark,
 .highlighter.text .action.removemarks .label {
-	background-image: url(text.png);
+	background-image: url(text.svg);
 	background-position: 2px center;
+	background-size: 18px 18px;
 }
 .highlighter.text.label:hover, .highlighter.text-decoration.label:hover,
 .highlighter.text-decoration-color.label:hover, .highlighter.text-decoration-style.label:hover,
@@ -96,48 +102,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .highlighter.text-align.label:hover,
 .highlighter.text .action.mark:hover,
 .highlighter.text .action.removemarks .label:hover {
-	background-image: url(text-hover.png);
+	background-image: url(text-hover.svg);
 }
 .action.replacemarks {
-	background-image: url(transfer.png);
+	background-image: url(transfer.svg);
 	background-position: 2px center;
+	background-size: 18px 18px;
 }
 .action.replacemarks:hover {
-	background-image: url(transfer-hover.png);
+	background-image: url(transfer-hover.svg);
 }
 .action.replacemarks.active {
-	background-image: url(transferactive.png);
+	background-image: url(transferactive.svg);
 	background-color: yellow;
 }
 .action.replacemarks.active:hover {
-	background-image: url(transferactive-hover.png);
+	background-image: url(transferactive-hover.svg);
 }
 .highlighter.preset.label,
 .action.markwithpreset, .action.managepresets,
 .managepresets.ui-dialog .ui-dialog-title,
 .highlighter-preset-entry {
-	background-image: url(preset.png);
+	background-image: url(preset.svg);
     background-position: 2px center;
+    background-size: 18px 18px;
 }
 .highlighter.preset.label:hover,
 .action.markwithpreset:hover, .action.managepresets:hover,
 .highlighter-preset-entry:hover {
-	background-image: url(preset-hover.png);
+	background-image: url(preset-hover.svg);
 }
 
 .highlighter.fun.label,
 .highlighter.transform.label,
 .highlighter.gradient.label,
 .highlighter.animation.label,
-.highlighter.fun .action {
-	background-image: url(fun.png);
+.highlighter.fun .action.mark,
+.highlighter.fun .action.removemarks .label {
+	background-image: url(fun.svg);
+	background-size: 18px 18px;
 }
 .highlighter.fun.label:hover,
 .highlighter.transform.label:hover,
 .highlighter.gradient.label:hover,
 .highlighter.animation.label:hover,
-.highlighter.fun .action:hover {
-	background-image: url(fun-hover.png);
+.highlighter.fun .action.mark:hover,
+.highlighter.fun .action.removemarks .label:hover {
+	background-image: url(fun-hover.svg);
 }
 
 .highlighter-popup .label {

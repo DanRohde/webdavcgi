@@ -47,7 +47,7 @@ sub handle_hook_gethandler {
 }
 sub handle_hook_apps {
     my ($self) = @_;
-    return $self->handle_apps_hook($self->{cgi}, 'sysinfo', 'SysInfo', 'System Information', 'sysinfo.html');
+    return $self->handle_apps_hook($self->{cgi}, 'sysinfo info-icon', 'SysInfo', 'System Information', 'sysinfo.html');
 }
 sub handle_hook_appsmenu {
     my ($self) = @_;

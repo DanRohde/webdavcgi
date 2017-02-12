@@ -28,9 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	background-repeat: no-repeat;
 	padding-left: 20px;
 }
-#nav .action.search {
-	background-position: 4px center;
-}
 .search.dialogpane {
 	display: flex;
 }

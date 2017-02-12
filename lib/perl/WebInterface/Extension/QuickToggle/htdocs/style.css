@@ -15,64 +15,66 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 /* icons */
+.quicktoggle {
+	background-size: 18px 18px;
+	background-repeat: no-repeat;
+}
 .quicktoggle.fullscreen {
-	background-image: url(fullscreen-on.png);
+	background-image: url(fullscreen-on.svg);
 }
 .quicktoggle.fullscreen.off {
-	background-image: url(fullscreen-off.png);
+	background-image: url(fullscreen-off.svg);
 }
 .quicktoggle.dot {
-	background-image: url(dot-on.png);
+	background-image: url(dot-on.svg);
 }
 .quicktoggle.dot.off {
-	background-image: url(dot-off.png);
+	background-image: url(dot-off.svg);
 }
 .quicktoggle.thumbnails {
-	background-image: url(thumbnails-on.png);
+	background-image: url(thumbnails-on.svg);
 }
 .quicktoggle.thumbnails.off {
-	background-image: url(thumbnails-off.png);
+	background-image: url(thumbnails-off.svg);
 }
 .quicktoggle.bars {
-	background-image: url(bars-on.png);
+	background-image: url(bars-on.svg);
 }
 .quicktoggle.bars.off {
-	background-image: url(bars-off.png);
+	background-image: url(bars-off.svg);
 }
-.quicktoggle:hover, .quicktoggle.focus {
-    background-repeat: no-repeat;
+.quicktoggle.fullscreen:hover, .quicktoggle.fullscreen:focus, .quicktoggle.fullscreen:active {
+	background-image: url(fullscreen-on-hover.svg);
 }
-.quicktoggle.fullscreen:hover, .quicktoggle.fullscreen:focus {
-	background-image: url(fullscreen-on-hover.png);
+.quicktoggle.fullscreen.off:hover, .quicktoggle.fullscreen.off:focus, .quicktoggle.fullscreen.off:active {
+	background-image: url(fullscreen-off-hover.svg);
 }
-.quicktoggle.fullscreen.off:hover, .quicktoggle.fullscreen.off:focus {
-	background-image: url(fullscreen-off-hover.png);
+.quicktoggle.dot:hover, .quicktoggle.dot:focus, .quicktoggle.dot:active {
+	background-image: url(dot-on-hover.svg);
 }
-.quicktoggle.dot:hover, .quicktoggle.dot:focus {
-	background-image: url(dot-on-hover.png);
+.quicktoggle.dot.off:hover, .quicktoggle.dot.off:focus, .quicktoggle.dot.off:active {
+	background-image: url(dot-off-hover.svg);
 }
-.quicktoggle.dot.off:hover, .quicktoggle.dot.off:focus {
-	background-image: url(dot-off-hover.png);
+.quicktoggle.thumbnails:hover, .quicktoggle.thumbnails:focus, .quicktoggle.thumbnails:active {
+	background-image: url(thumbnails-on-hover.svg);
 }
-.quicktoggle.thumbnails:hover, .quicktoggle.thumbnails:focus {
-	background-image: url(thumbnails-on-hover.png);
+.quicktoggle.thumbnails.off:hover, .quicktoggle.thumbnails.off:focus, .quicktoggle.thumbnails.off:active {
+	background-image: url(thumbnails-off-hover.svg);
 }
-.quicktoggle.thumbnails.off:hover, .quicktoggle.thumbnails.off:focus {
-	background-image: url(thumbnails-off-hover.png);
+.quicktoggle.bars:hover, .quicktoggle.bars:focus, .quicktoggle.bars:active {
+	background-image: url(bars-on-hover.svg);
 }
-.quicktoggle.bars:hover, .quicktoggle.bars:focus {
-	background-image: url(bars-on-hover.png);
-}
-.quicktoggle.bars.off:hover, .quicktoggle.bars.off:focus {
-	background-image: url(bars-off-hover.png);
+.quicktoggle.bars.off:hover, .quicktoggle.bars.off:focus, .quicktoggle.bars:active {
+	background-image: url(bars-off-hover.svg);
 }
 .quicktoggle-icon {
-	background-image: url(quicktoggle.png);
+	background-image: url(quicktoggle.svg);
 	background-repeat: no-repeat;
 	background-position: center center;
+	background-size: 18px 18px;
 }
 .quicktoggle-icon:hover, .quicktoggle-icon:focus {
-	background-image: url(quicktoggle-hover.png);
+	background-image: url(quicktoggle-hover.svg);
 }
 /* layout and positions */
 .quicktoggle-icon, .quicktoggle-buttons, .quicktoggle.action {

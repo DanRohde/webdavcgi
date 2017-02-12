@@ -60,7 +60,7 @@ sub handle_hook_appsmenu {
     my ( $self, $config, $params ) = @_;
     return {
         action => 'props',
-        classes => 'access-readable sel-one hideit',
+        classes => 'access-readable sel-one hideit  info-icon',
         label => $self->tl('showproperties'),
         type => 'li',
     };
@@ -69,6 +69,7 @@ sub handle_hook_fileaction {
     my ( $self, $config, $params ) = @_;
     return {
         action   => 'props',
+        classes  => ' info-icon',
         disabled => !$self->{backend}->isReadable( $params->{path} ),
         label    => 'showproperties',
         path     => $params->{path},
@@ -84,7 +85,7 @@ sub handle_hook_fileactionpopup {
         label    => 'showproperties',
         path     => $params->{path},
         type     => 'li',
-        classes  => 'sel-noneorone action'
+        classes  => 'sel-noneorone action  info-icon'
     };
 }
 

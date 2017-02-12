@@ -22,24 +22,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .action.imageinfo, .imageinfo.ui-dialog .ui-dialog-title {
 	background-repeat: no-repeat;
+	background-size: 18px 18px;
 }
 .action.imageinfo.image, .imageinfo.image.ui-dialog .ui-dialog-title {
-	background-image: url(imageinfo-image.png);
+	background-image: url(imageinfo-image.svg);
 }
 .action.imageinfo.image:hover {
-	background-image: url(imageinfo-image-hover.png);
+	background-image: url(imageinfo-image-hover.svg);
 }
 .action.imageinfo.video, .imageinfo.video.ui-dialog .ui-dialog-title {
-	background-image: url(imageinfo-video.png);
+	background-image: url(imageinfo-video.svg);
 }
 .action.imageinfo.video:hover {
-	background-image: url(imageinfo-video-hover.png);
+	background-image: url(imageinfo-video-hover.svg);
 }
 .action.imageinfo.audio, .imageinfo.audio.ui-dialog .ui-dialog-title {
-	background-image: url(imageinfo-audio.png);
+	background-image: url(imageinfo-audio.svg);
 }
 .action.imageinfo.audio:hover {
-	background-image: url(imageinfo-audio-hover.png);
+	background-image: url(imageinfo-audio-hover.svg);
 }
 .action.imageinfo.image, .action.imageinfo.video, .action.imageinfo.audio {
 	background-position: 2px center;
