@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	border: 1px solid red;
 	background-color: #ffffcc;
 	padding: 1px 1px 1px 22px;
-	background-image: url(motd.png);
+	background-image: url(motd.svg);
 	background-repeat: no-repeat;
 	background-position: 2px center;
 	margin-left: 18px
