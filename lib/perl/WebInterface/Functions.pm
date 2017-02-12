@@ -155,17 +155,22 @@ sub handle_clipboard_action {
             || $self->{config}->{method}->is_locked("$PATH_TRANSLATED$file") ) {
             $errmsg = 'locked';
             push @failed, $file;
-        } else  { 
+        } else {
             my $srcfile = $srcdir.$file;
             my $sfile =  $file =~ m{^(.*)/$}xms ? $1 : $file; # strip slash from folder name
             my $dstfile = $PATH_TRANSLATED.$sfile ;
             if ($srcdir eq $PATH_TRANSLATED) { # same folder -> backup copy
+                my $fnformat = '%s-copy%s%s';
+                my $isfile   = $self->{backend}->isFile($dstfile);
+                my $bn       = $isfile && $sfile =~ /^(.*)[.][^.]+$/xms ? $1 : $sfile;
+                my $suffix   = $isfile && $sfile =~ /([.][^.]+)$/xms    ? $1 : q{};
+                my $dstbn    = $PATH_TRANSLATED.$bn;
                 my $n = q{};
-                while ( $self->{backend}->exists($dstfile.'.copy'.$n)) { # look for unused copy file name
+                while ( $self->{backend}->exists(sprintf $fnformat, $dstbn, $n, $suffix)) { # look for unused copy file name
                     $n++;
                 }
-                $dstfile .= '.copy'.$n;
-                $file     = $sfile.'.copy'.$n;
+                $dstfile = sprintf $fnformat, $dstbn, $n, $suffix;
+                $file    = sprintf $fnformat, $bn, $n, $suffix;
             }
             if (rcopy($self->{config},$srcfile, $dstfile, $self->{cgi}->param('action') eq 'cut')) {
                 $msg = $self->{cgi}->param('action') . 'success';

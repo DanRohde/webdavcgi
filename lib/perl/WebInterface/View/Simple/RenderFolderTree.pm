@@ -58,7 +58,7 @@ sub build_folder_tree {
         if (!$isreadable) {
             $child->{read} = 'yes';
             $child->{children} = [];
-        } elsif ($level > 0 && $level <= $LIMIT_FOLDER_DEPTH && !$self->{backend}->isLink($full)) {
+        } elsif ($level && $level > 0 && $level <= $LIMIT_FOLDER_DEPTH && !$self->{backend}->isLink($full)) {
             $child->{read} = 'yes';
             $child->{children} = $self->handle_folder_tree($full, $fileuri, $level+1);
         }
