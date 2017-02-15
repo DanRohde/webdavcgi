@@ -746,8 +746,8 @@ sub get_category_class {
     my ( $self, $suffix, $class, $default ) = @_;
     $suffix=~s/\s/+/xmsg;
     $class //= q{};
-    my $ft = $self->replace_vars($FILETYPES);
-    return $CACHE{category}{$suffix}{$class} //=  $ft =~ /^($class\w+)[^\n]*\s+\Q$suffix\E\s+/xms ? 'category-' . $1  : $default // q{};
+    my $ft = $CACHE{categorytypes}{$REMOTE_USER} //= $self->replace_vars($FILETYPES);
+    return $CACHE{category}{$REMOTE_USER}{$suffix}{$class} //=  $ft =~ /^($class\w+)[^\n]*\s+\Q$suffix\E\s+/xms ? 'category-' . $1  : $default // q{};
 }
 sub get_lang_filename {
     my ($self, $basepath, $basename, $suffix) = @_;
@@ -780,7 +780,7 @@ sub handle_inc_help {
 }
 sub render_login {
     my ($self) = @_;
-    return print_compressed_header_and_content( '200 OK', 'text/html', $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $self->read_template('login')), 
+    return print_compressed_header_and_content( '200 OK', 'text/html', $self->render_template($PATH_TRANSLATED, $REQUEST_URI, $self->read_template('login')),
         {-Cache_Control=> 'no-cache, no-store', -X_Login_Required => '?logon=session' });
 }
 sub strip_slash {

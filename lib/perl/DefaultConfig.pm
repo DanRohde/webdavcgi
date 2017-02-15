@@ -132,7 +132,7 @@ folderpictures my+pictures pictures dcim $TL{foldertypes.pictures}
 foldertemp temp tmp
 foldertrash $recycle.bin trash $TL{foldertypes.trash}
 folderup folderup ..
-foldervideo my+videos videos video mp4 $TL{foldertypes.videos}
+foldervideo my+videos videos video movie movies mymovies my+movies mp4 $TL{foldertypes.videos}
 folderweb public_html .public_html
 text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs md markdown
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
