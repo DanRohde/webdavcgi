@@ -743,11 +743,11 @@ sub get_cgi_multi_param {
 }
 
 sub get_category_class {
-    my ( $self, $suffix ) = @_;
-    return $CACHE{category}{$suffix} //=
-      $FILETYPES =~ /^(\w+)[^\n]*(?<=\s)\Q$suffix\E(?=\s)/xms
-      ? 'category-' . $1
-      : q{};
+    my ( $self, $suffix, $class, $default ) = @_;
+    $suffix=~s/\s/+/xmsg;
+    $class //= q{};
+    my $ft = $self->replace_vars($FILETYPES);
+    return $CACHE{category}{$suffix}{$class} //=  $ft =~ /^($class\w+)[^\n]*\s+\Q$suffix\E\s+/xms ? 'category-' . $1  : $default // q{};
 }
 sub get_lang_filename {
     my ($self, $basepath, $basename, $suffix) = @_;

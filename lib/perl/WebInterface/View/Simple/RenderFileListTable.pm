@@ -226,6 +226,7 @@ sub _render_file_list_entry {
     my $ir = $self->{backend}->isReadable($full);
     my $il = $self->{backend}->isLink($full);
     my $id = $self->{backend}->isDir($full);
+    my $bfile = $file =~ m{^(.*)/$} ? $1 : $file;
     $file .= $file !~ /^[.]{1,2}$/xms && $id ? q{/} : q{};
     my $e = $entrytemplate;
     my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
@@ -240,18 +241,13 @@ sub _render_file_list_entry {
         : $id            ? '<folder>'
         :                  get_mime_type($full);
     my $suffix
-        = $file eq q{..} ? 'folderup'
-        : (
-        $self->{backend}->isDir($full) ? 'folder'
-        : ( $file =~ /[.]([\w?]+)$/xms ? lc($1) : 'unknown' )
-        );
-    my $category = $self->get_category_class($suffix);
-    my $is_locked
-        = $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
-    my $displayname
-        = $self->{cgi}->escapeHTML( $self->{backend}->getDisplayName($full) );
-    my $now = $self->{c}{_render_file_list_entry}{now}{$lang}
-        //= DateTime->now( locale => $lang );
+        = $id ? ( $file eq q{..} ? 'folderup' : 'folder' )
+              : ( $file =~ /[.]([^.]+)$/xms ? lc($1) : 'unknown' );
+    my $category    = $id ? $self->get_category_class(lc($bfile), 'folder', 'category-folder')
+                          : $self->get_category_class($suffix, q{(?!folder)}, q{});
+    my $is_locked   = $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
+    my $displayname = $self->{cgi}->escapeHTML( $self->{backend}->getDisplayName($full) );
+    my $now = $self->{c}{_render_file_list_entry}{now}{$lang} //= DateTime->now( locale => $lang );
     my $cct = $self->can_create_thumb($full);
     my $u   = $self->{c}{_render_file_list_entry}{uid}{$uid // 'unknown'} //= $uid && $uid=~/^\d+$/xms ? scalar getpwuid( $uid ) : $uid ? $uid : 'unknown';
     my $g   = $self->{c}{_render_file_list_entry}{gid}{$gid // 'unknown'} //= $gid && $gid=~/^\d+$/xms ? scalar getgrgid( $gid ) : $gid ? $gid : 'unknown';
@@ -314,11 +310,10 @@ sub _render_file_list_entry {
         'gidNumber' => $gid // 0,
         'gid'       => $g,
         'subdir' => $id  && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
-        'iscurrent' => $id && $file =~ /^[.]$/xms ? 'yes' : 'no',
+        'iscurrent' => $id && $file eq q{.} ? 'yes' : 'no',
         'isdotfile' => $file =~ /^[.]/xms
             && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
-        'suffix' => $file =~ /[.]([^.]+)$/xms ? $self->{cgi}->escapeHTML($1)
-        : 'unknown',
+        'suffix' => $file =~ /[.]([^.]+)$/xms ? $self->{cgi}->escapeHTML($1) : 'unknown',
         'ext_classes'     => q{},
         'ext_attributes'  => q{},
         'ext_styles'      => q{},

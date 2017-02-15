@@ -123,7 +123,17 @@ sub init_defaults {
     $FILETYPES = <<'EOF'
 unknown unknown
 folder  folder
-folderup folderup
+folderaudio my+music music audio $TL{foldertypes.audio}
+folderconfig .gnome .gnome2 .ssh .ssh2 etc system windows
+foldercurrent .
+folderdocs documents $TL{foldertypes.documents}
+folderhome $USER home
+folderpictures my+pictures pictures dcim $TL{foldertypes.pictures} 
+foldertemp temp tmp
+foldertrash $recycle.bin trash $TL{foldertypes.trash}
+folderup folderup ..
+foldervideo my+videos videos video mp4 $TL{foldertypes.videos}
+folderweb public_html .public_html
 text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs md markdown
 audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv

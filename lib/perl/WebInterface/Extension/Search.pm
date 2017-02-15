@@ -236,19 +236,15 @@ sub _render_search_result {
       ->escapeHTML( $self->{backend}->getDisplayName( $base . $file ) );
     my $full = $base . $file;
     my @stat = $self->{backend}->stat($full);
+    my $is_dir = $self->{backend}->isDir($full);
     my $uri  = $REQUEST_URI . $self->{cgi}->escape($file);
     $uri =~ s/\%2f/\//xmsig;
     my $mime =
       $self->{backend}->isDir($full)
       ? '<folder>'
       : get_mime_type($full);
-    my $suffix =
-      $file eq q{..} ? 'folderup'
-      : (
-        $self->{backend}->isDir($full) ? 'folder'
-        : ( $file =~ /[.]([\w?]+)$/xmsi ? lc($1) : 'unknown' )
-      );
-    my $category = $self->get_category_class($suffix);
+    my $suffix = $is_dir ? ( $file eq q{..} ? 'folderup' : 'folder') : ( $file =~ /[.]([^.]+)$/xmsi ? lc($1) : 'unknown' );
+    my $category = $is_dir ? $self->get_category_class($filename=~m{^(.*)/$}xms ? lc($1) : lc($filename) , 'folder', 'category-folder') : $self->get_category_class($suffix, '(?!folder)',q{});
     my $has_thumb = $self->can_create_thumb($full) && ($self->{cgi}->cookie('settings.enable.thumbnails') // q{}) ne 'no';
     return $self->render_template(
         $PATH_TRANSLATED,
