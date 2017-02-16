@@ -1663,7 +1663,7 @@ a.extern:after {
 	background-color: white;
 	width: 18px;
 	height: 22px;
-	opacity: 0.8;
+	opacity: 0.5;
 }
 .mft-node-read > .mft-node-expander {
 	opacity: 1;

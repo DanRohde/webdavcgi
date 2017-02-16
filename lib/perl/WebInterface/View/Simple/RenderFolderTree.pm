@@ -51,7 +51,7 @@ sub build_folder_tree {
             title => $full,
             help  => $self->tl('foldertree.help'),
             isreadable => $isreadable,
-            labelclasses => "icon ".$self->get_category_class($file,'folder','category-folder'),
+            labelclasses => "icon ".$self->get_category_class(lc($file),'folder','category-folder'),
             classes => $self->_b2yn($isreadable, 'isreadable-%s')
                       .$self->_b2yn($iswriteable,' iswriteable-%s')
                       .$self->_b2yn(($file=~/^[.]/xms ? 1 : 0), ' isdotfile-%s'),
