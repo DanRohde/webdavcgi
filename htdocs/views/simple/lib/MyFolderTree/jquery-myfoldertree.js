@@ -152,7 +152,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		}
 		function renderFolderTreeNode(node) {
 			var li = $("<li/>").addClass("mft-node");
-			var label = $("<div/>").addClass("mft-node-label").text(node.name).attr("tabindex",0);
+			var label = $("<div/>").addClass("mft-node-label").addClass(node.labelclasses).text(node.name).attr("tabindex",0);
 			li.append($("<div/>").addClass("mft-node-expander").attr("tabindex",0)).append(label);
 			if (node.read == 'yes') li.addClass("mft-node-read");
 			if (node.classes) li.addClass(node.classes);

@@ -156,7 +156,7 @@ function initFolderTree() {
 			selector: ".mft-node.iswriteable-yes .mft-node-label",
 			params: { scope: "fileList", tolerance: "intersect", drop: handleFolderTreeDrop, hoverClass: 'foldertree-draghover', greedy: true }
 		},
-		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes" } ],
+		rootNodes : [ { name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes", labelclasses : "icon category-folderhome" } ],
 		getFolderTree: function(node, callback, forceRead) {
 			var uri = $("#fileList").data("uri");
 			var recurse = $("#foldertree").data("recurse");
