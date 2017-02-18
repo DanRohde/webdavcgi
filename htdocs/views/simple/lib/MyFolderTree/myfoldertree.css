@@ -34,8 +34,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 	width: 20px;
 	height: 20px;
-	background-color: blue;
 	cursor: pointer;
+}
+.mft-node-icon {
+	display: inline-block;
 }
 .mft-node-label {
 	display: inline-block;

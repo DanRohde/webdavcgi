@@ -211,7 +211,10 @@ sub _render_extension_function {
         s/[\$]extension[(](.*?)[)]/$self->_render_extension($PATH_TRANSLATED,$REQUEST_URI,$1)/xmegs;
     return $content;
 }
-
+sub _b2yn {
+    my ($self, $b) = @_;
+    return $b ? 'yes' : 'no';
+}
 sub _render_file_list_entry {
     my ( $self, $file, $entrytemplate ) = @_;
 
@@ -263,9 +266,7 @@ sub _render_file_list_entry {
         'qdisplayname' => $self->quote_ws($displayname),
         'size'         => $ir ? $sizetxt : q{-},
         'sizetitle'    => $sizetitle,
-        'lastmodified' => $ir
-        ? strftime( $self->tl('lastmodifiedformat'), localtime $mtime )
-        : q{-},
+        'lastmodified' => $ir ? strftime( $self->tl('lastmodifiedformat'), localtime $mtime ) : q{-},
         'lastmodifiedtime' => $mtime,
         'lastmodifiedhr'   => $ir && $mtime ? $hdr->format_duration_between(
             DateTime->from_epoch( epoch => $mtime, locale => $lang ),
@@ -273,9 +274,7 @@ sub _render_file_list_entry {
             precision         => 'seconds',
             significant_units => 2
             ) : q{-},
-        'created' => $ir
-        ? strftime( $self->tl('lastmodifiedformat'), localtime $ctime )
-        : q{-},
+        'created' => $ir ? strftime( $self->tl('lastmodifiedformat'), localtime $ctime ) : q{-},
         'createdhr' => $ir && $ctime ? $hdr->format_duration_between(
             DateTime->from_epoch( epoch => $ctime, locale => $lang ),
             $now,
@@ -286,94 +285,44 @@ sub _render_file_list_entry {
         'iconurl'      => $iconurl,
         'thumbiconurl' => $cct ? $fulle . '?action=thumb' : q{},
         'mimeiconurl'  => $iconurl eq $icon ? q{} : $icon,
-        'iconclass'    => "icon $category suffix-$suffix"
-            . ( $cct && $enthumb ne 'no' ? ' thumbnail' : q{} ),
+        'iconclass'    => "icon $category suffix-$suffix" . ( $cct && $enthumb ne 'no' ? ' thumbnail' : q{} ),
         'mime'        => $self->{cgi}->escapeHTML($mime),
         'realsize'    => $size ? $size : 0,
-        'isreadable'  => $file eq q{..} || $ir ? 'yes' : 'no',
-        'iswriteable' => $self->{backend}->isWriteable($full)
-            || $il ? 'yes' : 'no',
-        'isviewable' => $ir && $cct ? 'yes' : 'no',
-        'islocked' => $is_locked ? 'yes'     : 'no',
-        'islink'   => $il        ? 'yes'     : 'no',
-        'isempty'  => $id        ? 'unknown' : ( defined $size )
-            && $size == 0 ? 'yes' : 'no',
-        'type' => $file =~ /^[.]{1,2}$/xms
-            || $id ? 'dir' : 'file',
+        'isreadable'  => $self->_b2yn( $file eq q{..} || $ir ),
+        'iswriteable' => $self->_b2yn( $self->{backend}->isWriteable($full) || $il ),
+        'isviewable'  => $self->_b2yn( $ir && $cct ),
+        'islocked' => $self->_b2yn( $is_locked ),
+        'islink'   => $self->_b2yn( $il ),
+        'isempty'  => $id  ? 'unknown' : $self->_b2yn( (defined $size ) && $size == 0),
+        'type'     => $file =~ /^[.]{1,2}$/xms || $id ? 'dir' : 'file',
         'fileuri'      => $fulle,
-        'unselectable' => $file eq q{..}
-            || $self->is_unselectable($full) ? 'yes' : 'no',
+        'unselectable' => $self->_b2yn( $file eq q{..} || $self->is_unselectable($full) ),
         'mode'    => sprintf( '%04o',        $mode & oct 7777 ),
         'modestr' => $self->mode2str( $full, $mode ),
         'uidNumber' => $uid // 0,
         'uid'       => $u,
         'gidNumber' => $gid // 0,
         'gid'       => $g,
-        'subdir' => $id  && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
-        'iscurrent' => $id && $file eq q{.} ? 'yes' : 'no',
-        'isdotfile' => $file =~ /^[.]/xms
-            && $file !~ /^[.]{1,2}$/xms ? 'yes' : 'no',
+        'subdir' => $self->_b2yn( $id  && $file !~ /^[.]{1,2}$/xms ),
+        'iscurrent' => $self->_b2yn( $id && $file eq q{.} ),
+        'isdotfile' => $self->_b2yn( $file =~ /^[.]/xms && $file !~ /^[.]{1,2}$/xms ),
         'suffix' => $file =~ /[.]([^.]+)$/xms ? $self->{cgi}->escapeHTML($1) : 'unknown',
         'ext_classes'     => q{},
         'ext_attributes'  => q{},
         'ext_styles'      => q{},
         'ext_iconclasses' => q{},
         'thumbtitle'      => $id ? q{} : $mime,
-        'filenametitle'   => $il
-        ? $self->{cgi}->escapeHTML($file)
-            . ' &rarr; '
-            . $self->{cgi}->escapeHTML( $self->{backend}->getLinkSrc($full) )
-        : $displayname,
+        'filenametitle'   => $il ? $self->{cgi}->escapeHTML($file). ' &rarr; '. $self->{cgi}->escapeHTML( $self->{backend}->getLinkSrc($full) ) : $displayname,
     );
 
-    $self->_call_fileattr_hook(\%stdvars, $full);
-    $self->_call_fileprop_hook(\%stdvars, $full);
+    $self->call_fileattr_hook(\%stdvars, $full);
+    $self->call_fileprop_hook(\%stdvars, $full);
 
     ##$e=~s/\$\{?(\w+)\}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/egs;
     #$e =~ s{[\$]{?(\w+)}?}{  $stdvars{$1}//= "\$$1" }xmegs;
     return $self->SUPER::render_template( $PATH_TRANSLATED, $REQUEST_URI, $e, \%stdvars );
 }
-sub _call_fileprop_hook {
-    my ($self, $stdvars, $full) = @_;
-    # fileprop hook by Harald Strack <hstrack@ssystems.de>
-    # overwrites all stdvars including ext_...
-    my $fileprop_extensions = $self->{config}{extensions}
-        ->handle( 'fileprop', { path => $full } );
-    if ( defined $fileprop_extensions ) {
-        foreach my $ret ( @{$fileprop_extensions} ) {
-            if ( ref $ret eq 'HASH' ) {
-                # $stdvars->{keys %{$ret}} = values %{$ret}; # does not work anymore 
-                foreach (keys %{$ret}) { # or $stdvars = { %{stdvars}, %{$ret} }; # but too much data copy
-                    $stdvars->{$_} = $ret->{$_};
-                }
-            }
-        }
-    }
-    return $stdvars;
-}
-sub _call_fileattr_hook {
-    my ($self, $stdvars, $full) = @_;
-    # fileattr hook: collect and concatenate attribute values
-    my $fileattr_extensions = $self->{config}{extensions}
-        ->handle( 'fileattr', { path => $full } );
-    if ($fileattr_extensions) {
-        foreach my $attr_hashref ( @{$fileattr_extensions} ) {
-            if ( ref($attr_hashref) ne 'HASH' ) { next; }
-            foreach my $supported_file_attr (
-                (   'ext_classes', 'ext_attributes',
-                    'ext_styles',  'ext_iconclasses'
-                )
-                )
-            {
-                $stdvars->{$supported_file_attr} .=
-                    ${$attr_hashref}{$supported_file_attr}
-                    ? q{ } . ${$attr_hashref}{$supported_file_attr}
-                    : q{};
-            }
-        }
-    }
-    return $stdvars;
-}
+
 sub _render_filter_info {
     my ($self) = @_;
     my @filter;

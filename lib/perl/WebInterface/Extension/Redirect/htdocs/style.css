@@ -14,12 +14,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-.redirect td.filename {
+.redirect td.filename, .mft-node.redirect {
 	background-image: url(redirect.svg);
 	background-repeat: no-repeat;
 	background-position: 13px 2px;
 	background-size: 1.4em;
 	padding-right: 1.4em;
+}
+.mft-node.redirect {
+	background-position: 30px 2px;
 }
 .flt-view-thumbs .redirect td.filename {
 	background-size: 120px;

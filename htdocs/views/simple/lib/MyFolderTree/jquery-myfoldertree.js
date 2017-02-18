@@ -151,11 +151,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (!node.hasClass("mft-collapsed")) $(".mft-node", node).addClass("mft-collapsed");
 		}
 		function renderFolderTreeNode(node) {
-			var li = $("<li/>").addClass("mft-node");
-			var label = $("<div/>").addClass("mft-node-label").addClass(node.labelclasses).text(node.name).attr("tabindex",0);
-			li.append($("<div/>").addClass("mft-node-expander").attr("tabindex",0)).append(label);
+			if (!node.ext_attributes) node.ext_attributes = "";
+			var li = $("<li "+node.ext_attributes+"></li>").addClass("mft-node");
+			var expander = $("<div/>").addClass("mft-node-expander").attr("tabindex",0).appendTo(li);
+			var label = $("<div/>").addClass("mft-node-label").addClass(node.labelclasses).appendTo(li).attr("tabindex",0);
+			var icon = $("<div/>").addClass("mft-node-icon").addClass(node.iconclasses).appendTo(label);
+			var text = $("<div/>").addClass("mft-node-label-text").text(node.name).appendTo(label);
 			if (node.read == 'yes') li.addClass("mft-node-read");
 			if (node.classes) li.addClass(node.classes);
+			if (node.ext_classes) li.addClass(node.ext_classes);
 			if (!node.expand) li.addClass("mft-collapsed");
 			if (node.title) label.attr("title", node.title);
 			if (node.help) li.attr("title", node.help);

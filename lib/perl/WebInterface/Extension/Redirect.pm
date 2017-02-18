@@ -55,8 +55,11 @@ sub handle_hook_fileprop {
     my $p = $self->_strip_slash( $params->{path} );
     return exists $c->{$p}
       ? {
-        'fileuri'      => $c->{$p},
-        ext_classes    => 'redirect ',
+        fileuri        => $c->{$p},
+        uri            => $c->{$p},
+        title          => $c->{$p},
+        read           => 'yes',
+        ext_classes    => 'redirect isreadable-yes iswriteable-no unselectable-yes ',
         ext_attributes => q{},
         ext_styles     => q{},
         isreadable     => 'yes',

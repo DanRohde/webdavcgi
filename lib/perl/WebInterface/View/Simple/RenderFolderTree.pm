@@ -27,7 +27,7 @@ use base qw( WebInterface::View::Simple::Renderer );
 
 use JSON;
 
-use DefaultConfig qw( $REQUEST_URI $PATH_TRANSLATED $LIMIT_FOLDER_DEPTH );
+use DefaultConfig qw( $REQUEST_URI $PATH_TRANSLATED $LIMIT_FOLDER_DEPTH $SHOW_LOCKS );
 use FileUtils qw( get_file_limit );
 
 
@@ -41,28 +41,32 @@ sub build_folder_tree {
     foreach my $file ( @{$filesref} ) {
         my $full = $path.$file;
         if ( $file =~ /^[.]{1,2}$/xms || !$self->{backend}->isDir($full)) { next; }
-        $full.=q{/};
         my $isreadable = $self->{backend}->isReadable($full);
         my $iswriteable = $self->{backend}->isWriteable($full);
+        my $islink = $self->{backend}->isLink($full);
         my $fileuri = $uri.$self->{cgi}->escape($file).q{/};
         my $child = {
             name  => $self->{backend}->getDisplayName($full),
             uri   => $fileuri,
-            title => $full,
+            title => $islink ? sprintf "%s → %s", $full, $self->{backend}->getVirtualLinkTarget($full) : $full,
             help  => $self->tl('foldertree.help'),
             isreadable => $isreadable,
-            labelclasses => "icon ".$self->get_category_class(lc($file),'folder','category-folder'),
+            iconclasses => "icon ".$self->get_category_class(lc($file),'folder','category-folder'),
             classes => $self->_b2yn($isreadable, 'isreadable-%s')
                       .$self->_b2yn($iswriteable,' iswriteable-%s')
-                      .$self->_b2yn(($file=~/^[.]/xms ? 1 : 0), ' isdotfile-%s'),
+                      .$self->_b2yn(($file=~/^[.]/xms ? 1 : 0), ' isdotfile-%s')
+                      .$self->_b2yn($islink,' islink-%s')
+                      .$self->_b2yn($SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full), ' islocked-%s'),
         };
         if (!$isreadable) {
             $child->{read} = 'yes';
             $child->{children} = [];
         } elsif ($level && $level > 0 && $level <= $LIMIT_FOLDER_DEPTH && !$self->{backend}->isLink($full)) {
             $child->{read} = 'yes';
-            $child->{children} = $self->handle_folder_tree($full, $fileuri, $level+1);
+            $child->{children} = $self->handle_folder_tree($full.q{/}, $fileuri, $level+1);
         }
+        $self->call_fileattr_hook($child, $full);
+        $self->call_fileprop_hook($child, $full);
         push @children, $child;
     }
     return \@children;

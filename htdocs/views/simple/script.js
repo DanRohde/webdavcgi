@@ -97,13 +97,21 @@ $(function() {
 		console.log(jqxhr); 
 		console.log(settings);
 		console.log(exception);
-		if (jqxhr && jqxhr.statusText && jqxhr.statusText != 'abort') notifyError(jqxhr.statusText);
 		$.MyPageBlocker("remove");
+		if (jqxhr) {
+			if (jqxhr.getResponseHeader("Location")) {
+				window.open(jqxhr.getResponseHeader("Location"),"_blank");
+			} else if (jqxhr.statusText && jqxhr.statusText != "abort") {
+				notifyError(jqxhr.statusText);
+			}
+		}
 		//if (jqxhr.status = 404) window.history.back();
 	}).ajaxSuccess(function(event,jqxhr,options,data) {
-		if (jqxhr.getResponseHeader('X-Login-Required')) {
+		if (jqxhr.getResponseHeader("X-Login-Required")) {
 			window.alert($("#login-session").text());
-			window.location.href = jqxhr.getResponseHeader('X-Login-Required');
+			window.location.href = jqxhr.getResponseHeader("X-Login-Required");
+		} else if (jqxhr.getResponseHeader("Location")) {
+			window.open(jqxhr.getResponseHeader("Location"),"_blank");
 		}
 	});
 	// allow script caching:
@@ -162,6 +170,7 @@ function initFolderTree() {
 			var recurse = $("#foldertree").data("recurse");
 			if (node.uri == uri && !forceRead && !recurse && flt.data("foldertree")) {
 				callback(flt.data("foldertree"));
+				$("#foldertree").trigger("foldertreeChanged");
 				initFolderTreePopupMenu();
 				return;
 			}
@@ -174,6 +183,7 @@ function initFolderTree() {
 				handleJSONResponse(response);
 				callback(response.children ? response.children: []);
 				if (node.uri == uri) setActiveNodeInFolderTree(uri);
+				$("#foldertree").trigger("foldertreeChanged");
 				initFolderTreePopupMenu();
 			});
 		},

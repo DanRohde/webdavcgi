@@ -288,4 +288,45 @@ sub render_quicknav_path {
     }
     return $content;
 }
+sub call_fileprop_hook {
+    my ($self, $stdvars, $full) = @_;
+    # fileprop hook by Harald Strack <hstrack@ssystems.de>
+    # overwrites all stdvars including ext_...
+    my $fileprop_extensions = $self->{config}{extensions}
+        ->handle( 'fileprop', { path => $full } );
+    if ( defined $fileprop_extensions ) {
+        foreach my $ret ( @{$fileprop_extensions} ) {
+            if ( ref $ret eq 'HASH' ) {
+                # $stdvars->{keys %{$ret}} = values %{$ret}; # does not work anymore 
+                foreach (keys %{$ret}) { # or $stdvars = { %{stdvars}, %{$ret} }; # but too much data copy
+                    $stdvars->{$_} = $ret->{$_};
+                }
+            }
+        }
+    }
+    return $stdvars;
+}
+sub call_fileattr_hook {
+    my ($self, $stdvars, $full) = @_;
+    # fileattr hook: collect and concatenate attribute values
+    my $fileattr_extensions = $self->{config}{extensions}
+        ->handle( 'fileattr', { path => $full } );
+    if ($fileattr_extensions) {
+        foreach my $attr_hashref ( @{$fileattr_extensions} ) {
+            if ( ref($attr_hashref) ne 'HASH' ) { next; }
+            foreach my $supported_file_attr (
+                (   'ext_classes', 'ext_attributes',
+                    'ext_styles',  'ext_iconclasses'
+                )
+                )
+            {
+                $stdvars->{$supported_file_attr} .=
+                    ${$attr_hashref}{$supported_file_attr}
+                    ? q{ } . ${$attr_hashref}{$supported_file_attr}
+                    : q{};
+            }
+        }
+    }
+    return $stdvars;
+}
 1;
