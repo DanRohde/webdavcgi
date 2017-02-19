@@ -129,8 +129,9 @@ function handleFolderTreeDrop(event,ui) {
 	return false;
 }
 function setActiveNodeInFolderTree(uri) {
+	var duri = decodeURI(uri);
 	$("#foldertree").MyFolderTree("set-active-node", function(node, data) {
-		return (data.uri == uri);
+		return (decodeURI(data.uri) == duri);
 	});
 }
 function initFolderTreePopupMenu() {
@@ -147,7 +148,7 @@ function initFolderTree() {
 		$("#content").toggleClass("show-foldertree");
 		$.MyCookie.toggleCookie("settings.show.foldertree","yes", $("#content").hasClass("show-foldertree"), true);
 		$("#foldertree").MySplitPane("resize");
-		$("#flt").css("margin-left",$("#content").hasClass("show-foldertree") ? $("#foldertree").width()+"px" : "");
+		$("#flt").css("margin-left",$("#content").hasClass("show-foldertree") ? ($("#foldertree").width()+12)+"px" : "");
 	});
 	$("body").on("windowResized", function() { $("#foldertree").MySplitPane("resize"); });
 	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
@@ -442,7 +443,7 @@ function setupTableConfigDialog(dialog) {
 	dialog.find("input[value='fileactions']").closest("li").hide();
 	
 	// register dialog actions:
-	dialog.find("input[name='save']").button().click(function(event) {
+	dialog.find(".tableconfig-save").button().click(function(event) {
 		// preserve table column order:
 		var vc = visiblecolumns.slice(0); // clone visiblecolumns
 		var vtc = $.map($("input[name='visiblecolumn']:checked"), function (val,i) { return $(val).attr("value"); });
@@ -483,7 +484,7 @@ function setupTableConfigDialog(dialog) {
 		
 		dialog.dialog("close");
 	});
-	dialog.find("input[name='cancel']").button().click(function(event) {
+	dialog.find(".tableconfig-cancel").button().click(function(event) {
 		$.MyPreventDefault(event);
 		dialog.dialog("close");
 		return false;

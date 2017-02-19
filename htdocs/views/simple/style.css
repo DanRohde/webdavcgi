@@ -988,6 +988,12 @@ img {
 	background-position: left center;
 	padding-left: 20px;
 }
+.tableconfig-save.save-icon, .tableconfig-cancel.cancel-icon {
+	background-position: 5px center;
+	background-size: 18px 18px;
+	background-repeat: no-repeat;
+	padding-left: 27px;
+}
 .action.table-sort-this-asc, .action.table-sort-this-desc, .action.table-sort, .popup.table-sort-columns,
 .action.table-column-hide-this, .action.table-column, .popup.table-columns,
 .action.table-column-width-default, .action.table-column-width-minimum {
@@ -1657,7 +1663,7 @@ a.extern:after {
 	display: block;	
 }
 .show-foldertree #flt {
-	margin-left: 20em;
+	margin-left: 21em;
 }
 .show-foldertree .action.toggle-foldertree {
 	border: 1px inset #ddd;

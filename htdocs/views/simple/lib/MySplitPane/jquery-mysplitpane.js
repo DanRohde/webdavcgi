@@ -50,7 +50,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (settings.left.min && settings.left.min > 0 && pos <= settings.left.min) return;
 			if (settings.left.max && settings.left.max > 0 && pos >= settings.left.max) return;
 			settings.left.element.css(settings.left.style, pos + "px");
-			settings.right.element.css(settings.right.style, pos + "px");
+			settings.right.element.css(settings.right.style, (pos + 12) + "px");
 			handleResize(handle);
 		}
 		function handleResize(handle) {
@@ -60,8 +60,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		function getHandlePos(handle) {
 			var w = $(window);
 			return {
-					left: handleContainer.offset().left + handleContainer.outerWidth() - handle.outerWidth()/2 - w.scrollLeft(),
-					top: handleContainer.offset().top + handleContainer.data("MySplitPaneSettings").offsetY - w.scrollTop()
+				left: handleContainer.offset().left + handleContainer.outerWidth() - handle.outerWidth()/2 - w.scrollLeft(),
+				top: handleContainer.offset().top + handleContainer.data("MySplitPaneSettings").offsetY - w.scrollTop()
 			};
 		}
 		return this;
