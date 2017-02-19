@@ -1108,6 +1108,14 @@ function getSelectedRows(el) {
 function getSelectedFiles(el) {
 	return $.map(getSelectedRows(el), function (v) { return $(v).data("file"); });
 }
+function getFolderTreeNodesForRows(rows) {
+	var baseuri = decodeURIComponent($("#fileList").data("uri"));
+	var uris = {};
+	rows.each(function(){ uris[baseuri + $(this).data("file")]=true; });
+	return $("#foldertree").MyFolderTree("get-nodes", function(node,data) {
+		return uris[decodeURIComponent(data.uri)];
+	});
+}
 function handleFileActionEvent(event) {
 	$.MyPreventDefault(event);
 	var self = $(this);
@@ -2102,6 +2110,7 @@ function initToolBox() {
 			getDialogByPost: getDialogByPost,
 			getSelectedFiles : getSelectedFiles,
 			getSelectedRows : getSelectedRows,
+			getFolderTreeNodesForRows : getFolderTreeNodesForRows,
 			handleJSONResponse : handleJSONResponse,
 			handleWindowResize : handleWindowResize,
 			hidePopupMenu : hidePopupMenu,

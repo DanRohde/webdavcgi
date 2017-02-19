@@ -22,34 +22,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			settings = foldertree.data("myfoldertree-settings");
 			if (options == "set-active-node") { // param: function(element, data)
 				foldertree.find(".mft-active-node").removeClass("mft-active-node");
-				var anode = foldertree.find(".mft-node").filter(function(i, e) {
-					var node = $(e);
-					return param(node, node.data("mftn"));
-				}).addClass("mft-active-node");
+				var anode = getNodes(param).addClass("mft-active-node");
 				anode.children(".mft-node-label:first").addClass("mft-active-node");
 				anode.parents(".mft-collapsed").removeClass("mft-collapsed");
 				if (anode.length>0 && anode[0].scrollIntoView) anode[0].scrollIntoView();
 			} else if ( options == "add-node-data") { // param: function(element, data)
-				var anode = foldertree.find(".mft-node").filter(function(i,e) {
-					var node = $(e);
-					return param(node, node.data("mftn"));
-				});
+				var anode = getNodes(param);
 				if (anode.length > 0) readUnreadNodes(anode, anode.data("mftn"), false);
 			} else if ( options == "get-node-data" ) { // param: node
 				return param.closest(".mft-node").data("mftn");
+			} else if ( options == "get-nodes" ) { // param: function(element, data):bool
+				return getNodes(param);
 			} else if ( options == "remove-node") { // param: function(element, data)
-				var anode = foldertree.find(".mft-node").filter(function(i,e) {
-					var node = $(e);
-					return param(node, node.data("mftn"));
-				});
+				var anode = getNodes(param);
 				var parent = anode.parents(".mft-node:first");
 				anode.remove();
 				parent.toggleClass("mft-node-empty", parent.find(".mft-node").length == 0);
-			} else if ( options == "set-node-unread" ) { // param: function(element, data)
-				var anode = foldertree.find(".mft-node").filter(function(i,e) {
-					var node = $(e);
-					return param(node, node.data("mftn"));
-				});
+			} else if ( options == "set-node-unread" ) { // param: function(element, data):bool
+				var anode = getNodes(param);
 				var data = anode.data("mftn");
 				anode.removeClass("mft-node-read mft-node-empty").addClass("mft-collapsed").find(".mft-list").remove();
 				delete data.children;
@@ -181,7 +171,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			}
 			return ul;
 		}
-		
+		function getNodes(filter) {
+			return foldertree.find(".mft-node").filter(function(i,e) {
+				var node = $(e);
+				return filter(node, node.data("mftn"));
+			});
+		}
 		return this;
 	};
 	$.fn.MyFolderTree.defaults = {
