@@ -932,7 +932,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				var transport = data.submit();
 				var filename = data.files[0].name;
 				uploadState.transports.push(transport);
-				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+filename).addClass("fileprogress");
+				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+filename.replace(/'/g, '')).addClass("fileprogress");
 				$("<div/>").click(function(event) {
 					$.MyPreventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
@@ -944,8 +944,8 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			return false;
 		},
 		done:  function(e,data) {
-			$("#progress [id='fpb"+data.files[0].name+"'] .cancel").remove();
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info")
+			$("#progress [id='fpb"+data.files[0].name.replace(/'/g, '')+"'] .cancel").remove();
+			$("div[id='fpb"+data.files[0].name.replace(/'/g, '')+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass(data.result.message ? "done" : "failed")
 				.css("width","100%")
@@ -954,8 +954,8 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			renderUploadProgressAll(uploadState);
 		},
 		fail: function(e,data) {
-			$("#progress [id='fpb"+data.files[0].name+"'] .cancel").remove();
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info")
+			$("#progress [id='fpb"+data.files[0].name.replace(/'/g, '')+"'] .cancel").remove();
+			$("div[id='fpb"+data.files[0].name.replace(/'/g, '')+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("failed")
 				.css("width","100%")
@@ -1001,7 +1001,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		},
 		progress: function(e,data) {
 			var perc = parseInt(data.loaded/data.total * 100)+"%";
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): "+perc);
+			$("div[id='fpb"+data.files[0].name.replace(/'/g, '')+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): "+perc);
 			
 		},
 		progressall: function(e,data) {
@@ -1025,8 +1025,8 @@ function checkUploadedFilesExist(data) {
 		} else if (data.files[i].webkitRelativePath && data.files[i].webkitRelativePath != "") {
 			relaPath = data.files[i].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join('/') + '/';
 		}
-		if (relaPath && $("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(relaPath)+"']").length>0) return true;
-		else if ($("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(data.files[i].name)+"']").length>0) return true;
+		if (relaPath && $("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(relaPath).replace(/'/g, '&#39;')+"']").length>0) return true;
+		else if ($("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(data.files[i].name).replace(/'/g, '&#39;')+"']").length>0) return true;
 	}
 	return false;
 }
@@ -1391,7 +1391,8 @@ function initFileListActions() {
 			}
 			if (data.base != uri) return;
 			uncheckSelectedRows();
-			removeFileListRow($("#fileList tr[data-file='"+data.files.join("'],#fileList tr[data-file='")+"']"));
+			var quoteEscaped = $.map(data.files, function(val) { return val.replace(/'/g, '&#39;') });
+			removeFileListRow($("#fileList tr[data-file='"+quoteEscaped.join("'],#fileList tr[data-file='")+"']"));
 		})
 		.on("filesCreated", function(e,data) {
 			if (data.base != $("#fileList").data("uri")) return;
@@ -1664,7 +1665,7 @@ function handleFileListActionEventDelete(event) {
 		filename = $.MyStringHelper.getBasename(data.uri)+"/";
 		posturi = $.MyStringHelper.getParentURI(data.uri);
 		files = [ filename ];
-		if (posturi == $("#fileList").data("uri")) selrows = $("#fileList tr[data-file='"+filename+"/']");
+		if (posturi == $("#fileList").data("uri")) selrows = $("#fileList tr[data-file='"+filename.replace(/'/g, '&#39;')+"/']");
 	} else {
 		selrows = getSelectedRows(this);
 		if (selrows.length == 1) filename = selrows.first().data("file");
@@ -1775,7 +1776,7 @@ function handleClipboard() {
 	toggleButton($(".action.paste"), disabled);
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
-			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
+			$("[data-file='"+val.replace(/'/g, '&#39;')+"']").addClass("cutted").fadeTo("fast",0.5);
 		}) ;
 }
 
@@ -2029,7 +2030,7 @@ function refreshFileListEntry(filename, oldname) {
 	return $.MyPost($.MyStringHelper.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
 		try {
 			var newrow = $(r);
-			row = $("tr[data-file='"+$.MyStringHelper.simpleEscape(oldname !=undefined ? oldname : filename)+"']", fl);
+			row = $("tr[data-file='"+$.MyStringHelper.simpleEscape(oldname !=undefined ? oldname : filename).replace(/'/g, '&#39;')+"']", fl);
 			if (row.length > 0) {
 				$("#flt").trigger("replaceRow", {row:row,newrow:newrow });
 				row.replaceWith(newrow);
