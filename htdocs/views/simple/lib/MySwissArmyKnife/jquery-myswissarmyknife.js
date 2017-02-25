@@ -193,5 +193,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	$.fn.MyContextHelp = function() {
 		return this.MyTooltip({delay:0,showtimeout:-1,hidetimeout:-1});
 	};
+	
+
+	$.MyRemoveTextSelections = function() {
+		if (document.selection && document.selection.empty) document.selection.empty();
+		else if (window.getSelection) {
+			var sel = window.getSelection();
+			if (sel && sel.removeAllRanges) sel.removeAllRanges();
+		}
+	};
 
 }( jQuery ));

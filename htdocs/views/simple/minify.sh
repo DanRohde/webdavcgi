@@ -31,7 +31,8 @@ MYTABLEMANAGER="lib/MyTableManager/jquery-mytablemanager.js lib/MyTableManager/m
 MYCOUNTDOWNTIMER="lib/MyCountdownTimer/jquery-mycountdowntimer.js"
 MYFOLDERTREE="lib/MyFolderTree/jquery-myfoldertree.js lib/MyFolderTree/myfoldertree.css"
 MYSPLITPANE="lib/MySplitPane/jquery-mysplitpane.js lib/MySplitPane/mysplitpane.css"
-MYLIBS="${QUERYSTRING} ${MYSANHELPER} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} ${MYTABLEMANAGER} ${MYCOUNTDOWNTIMER} ${MYFOLDERTREE} ${MYSPLITPANE} script.js style.css svg/inlinestyle.css"
+MYMAIN="script.js style.css svg/inlinestyle.css"
+MYLIBS="${QUERYSTRING} ${MYSANHELPER} ${MYKEYBOARDEVENTHANDLER} ${MYTOOLTIPLIB} ${MYPOPUPLIB} ${MYINPLACEEDITOR} ${MYTABLEMANAGER} ${MYCOUNTDOWNTIMER} ${MYFOLDERTREE} ${MYSPLITPANE} ${MYMAIN}"
 
 COMPLETE="complete"
 SPRITE="svg/sprite.svg"
@@ -49,16 +50,16 @@ for file in $MYLIBS ; do
         if test \( ${FORCEMINIFY} -eq 1 \) -o \( ! -e ${newfile} \) -o \( "${file}" -nt "${newfile}" \) ; then
             test ${DEBUG} -ne 0  && echo "Minify $file to $newfile and concat to $complfile"
 
-            java -jar /etc/webdavcgi/minify/yuicompressor.jar $file \
+            perl prepjs.pl "$file" | java -jar /etc/webdavcgi/minify/yuicompressor.jar --type "${ext}" \
                  | tee -a "${complfile}" \
                  > "${newfile}"
         else
             test ${DEBUG} -ne 0 && echo "Nothing to minify for ${file} -> concat only."
-            cat "${newfile}" >> "${complfile}"
+            perl prepjs.pl "${newfile}" >> "${complfile}"
         fi
     else
         test ${DEBUG} -ne 0  && echo "Copy $file to $newfile and concat to $complfile"
-        tee -a "${complfile}" < "${file}" >  "${newfile}"
+        perl prepjs.pl "${file}" | tee -a "${complfile}" >  "${newfile}"
     fi
 done
 test ${DEBUG} -ne 0 && echo "(brotli|gzip) ${COMPLETE}.min.*"

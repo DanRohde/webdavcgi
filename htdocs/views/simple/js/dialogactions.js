@@ -1,6 +1,6 @@
 /*********************************************************************
 (C) ZE CMS, Humboldt-Universitaet zu Berlin
-Written 2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 **********************************************************************
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,13 +14,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
-var ToolBox = {};
-$(function() {
-	/**INCLUDE(js/effects.js, js/notify.js, js/ajax.js, js/dialogs.js, 
-	 		   js/popups.js, js/bookmarks.js, js/clipboard.js, js/toolbar.js,
-	 		   js/changedir.js, js/filter.js, js/upload.js, js/statistics.js,
-	 		   js/dialogactions.js, js/viewfilter.js, js/actions.js, js/fancybox.js,
-	 		   js/window.js, js/settingsdialog.js, js/autorefresh.js, js/collapsible.js,
-	 		   js/tableconfigdialog.js, js/keyboard.js, js/thumbnails.js, js/statusbar.js,
-	 		   js/guide.js, js/foldertree.js, js/viewbar.js, js/toolbox.js, js/filelisttable.js)**/
-});
+
+initDialogActions();
+
+function initDialogActions() {
+	$(".dialog.action").click(handleDialogActionEvent);
+}
+function handleDialogActionEvent(event) {
+	$.MyPreventDefault(event);
+	if ($(this).hasClass("disabled")) return;
+	var self = $(this);
+	self.addClass("disabled");
+	
+	var action = $("#"+self.attr("data-action"));
+	if (action.attr("title")) action.data("title", action.attr("title"));
+	action.attr("title", action.data("title"));
+	
+	action.dialog({
+					modal:true,
+					width: "auto", 
+					open: function() { if (action.data("initHandler")) action.data("initHandler").init(); },
+					close: function() { self.removeClass("disabled"); },
+					dialogClass: self.attr("data-action")+"dialog",
+					buttons : [{ text: $("#close").html(), click:  function() { $(this).dialog("close"); }}]}).show();
+}
