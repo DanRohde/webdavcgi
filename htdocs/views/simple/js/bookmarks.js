@@ -35,7 +35,7 @@ function initBookmarks() {
 		.click(handleBookmarkActions);
 
 	function toggleBookmarkButtons() {
-		var currentPath = $.MyStringHelper.concatUri($("#flt").attr("data-uri"),"/");	
+		var currentPath = $.MyStringHelper.concatUri(getBaseURI(),"/");	
 		var isCurrentPathBookmarked = false;
 		var count = 0;
 		var i = 0;
@@ -60,7 +60,7 @@ function initBookmarks() {
 		}
 	}
 	function buildBookmarkList() {
-		var currentPath = $.MyStringHelper.concatUri($("#flt").attr("data-uri"),"/");
+		var currentPath = $.MyStringHelper.concatUri(getBaseURI(),"/");
 		// remove all bookmark list entries:
 		$(".dyn-bookmark").each(function(i,val) {
 			$(val).remove();
@@ -105,7 +105,7 @@ function initBookmarks() {
 		$.MyPreventDefault(event);
 		if ($(this).hasClass("disabled")) return;
 		var self = $(this);
-		var uri = $("#fileList").attr("data-uri");
+		var uri = getURI();
 		if (self.hasClass("addbookmark")) {
 			var i = 0;
 			while ($.MyCookie("bookmark"+i)!=null && $.MyCookie("bookmark"+i)!= "-" && $.MyCookie("bookmark"+i) != "" && $.MyCookie("bookmark"+i)!=uri) i+=1;

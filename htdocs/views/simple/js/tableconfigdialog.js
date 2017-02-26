@@ -31,7 +31,7 @@ function initTableConfigDialog() {
 				$("#flt").data("TableConfigDialog", tct);
 				setupTableConfigDialog($(tct));
 			} else {
-				$.MyPost($("#fileList").attr("data-uri"),{ ajax : "getTableConfigDialog", template : $(this).attr("data-template")}, function(response) {
+				$.MyPost(getURI(), { ajax : "getTableConfigDialog", template : $(this).attr("data-template")}, function(response) {
 					if (response.error) handleJSONResponse(response);
 					$("#flt").data("TableConfigDialog", response);
 					setupTableConfigDialog($(response));

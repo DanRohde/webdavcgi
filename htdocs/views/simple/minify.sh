@@ -3,7 +3,6 @@
 # (C) ZE Computer- Medienservice, Humboldt-Universitaet zu Berlin
 # Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 ##################################################################
-set -e
 
 DEBUG=0
 DONTCOMPRESS=0
@@ -47,7 +46,8 @@ for file in $MYLIBS ; do
     newfile="${dir}/${bn}.min.${ext}"
     complfile="${COMPLETE}.min.${ext}"
     if test "${DONTCOMPRESS}" -eq 0 ; then
-        if test \( ${FORCEMINIFY} -eq 1 \) -o \( ! -e ${newfile} \) -o \( "${file}" -nt "${newfile}" \) ; then
+        grep -q '/**INCLUDE(' "${file}"
+        if test \( $? -eq 0 \) -o \( ${FORCEMINIFY} -eq 1 \) -o \( ! -e ${newfile} \) -o \( "${file}" -nt "${newfile}" \) ; then
             test ${DEBUG} -ne 0  && echo "Minify $file to $newfile and concat to $complfile"
 
             perl prepjs.pl "$file" | java -jar /etc/webdavcgi/minify/yuicompressor.jar --type "${ext}" \

@@ -23,7 +23,7 @@ function initClipboard() {
 }
 function handleClipboard() {
 	var action = $.MyCookie("clpaction");
-	var datauri = $.MyStringHelper.concatUri($("#fileList").data("uri"),"/");
+	var datauri = $.MyStringHelper.concatUri(getURI(), "/");
 	var srcuri = $.MyCookie("clpuri");
 	var files = $.MyCookie("clpfiles");
 	var disabled = (!files || files === "" || (srcuri == datauri && action!="copy") || $("#fileListTable").hasClass("iswriteable-no"));

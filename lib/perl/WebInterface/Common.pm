@@ -602,7 +602,7 @@ sub render_each {
         else {
             @arr = @{ $self->_get_varref($variable) // [] };
         }
-        foreach my $val (sort @arr) {
+        foreach my $val (@arr) {
             next if defined $filter && $val =~ $filter;
             my $t = $tmpl;
             $t =~ s/\$[kv]/$val/xmsg;

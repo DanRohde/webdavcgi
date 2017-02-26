@@ -18,10 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 initFilterBox();
 initDotFilter();
 
-/* TODO: Escape */
 function initFilterBox() {
 	$("form#filterbox").submit(function(event) { return false;});
-	$("form#filterbox input").keyup(applyFilter).change(applyFilter).autocomplete({minLength: 1, select: applyFilter, close: applyFilter});
+	$("form#filterbox input")
+		.keydown(function(e) { if (e.keyCode==27) $(this).val(""); })
+		.on("keyup change", applyFilter)
+		.autocomplete({minLength: 1, select: applyFilter, close: applyFilter});
 	// clear button:
 	$("form#filterbox .action.clearfilter").toggleClass("invisible",$("form#filterbox input").val()=== "");
 	$("form#filterbox input").keyup(function() {

@@ -46,6 +46,6 @@ function initChangeDir() {
 		changeUri($("#pathinput input[name='uri']").val());
 	});
 	$("#flt").on("fileListChanged", function() {
-		$("#pathinput input[name=uri]").val(decodeURI($("#fileList").attr("data-uri")));
+		$("#pathinput input[name=uri]").val(decodeURI(getURI()));
 	});
 }

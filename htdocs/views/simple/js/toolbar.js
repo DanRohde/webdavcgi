@@ -43,18 +43,18 @@ function initToolbarActions() {
 	
 	$(".action.create-folder").MyInplaceEditor($.extend(inplaceOptions,  
 		{ changeEvent: function(data) {
-			$.MyPost($("#fileList").data("uri"), { mkcol : "yes", colname : data.value }, function(response) {
+			$.MyPost(getURI(), { mkcol : "yes", colname : data.value }, function(response) {
 				if (!response.error && response.message) 
-					$("#flt").trigger("filesCreated", { base: $("#fileList").data("uri"), files: [data.value] });
+					$("#flt").trigger("filesCreated", { base: getURI(), files: [data.value] });
 				handleJSONResponse(response);
 			});
 		}}));
 
 	$(".action.create-file").MyInplaceEditor($.extend(inplaceOptions,
 		{ changeEvent: function(data) {
-			$.MyPost($("#fileList").attr("data-uri"), { createnewfile : "yes", cnfname : data.value }, function(response) {
+			$.MyPost(getURI(), { createnewfile : "yes", cnfname : data.value }, function(response) {
 				if (!response.error && response.message) 
-					$("#flt").trigger("filesCreated", { base: $("#fileList").data("uri"), files: [data.value] });
+					$("#flt").trigger("filesCreated", { base: getURI(), files: [data.value] });
 				handleJSONResponse(response);
 			});
 		}}));
@@ -62,9 +62,9 @@ function initToolbarActions() {
 	$(".action.create-symlink").MyInplaceEditor($.extend(inplaceOptions,
 		{ changeEvent: function(data) {
 			var row = getSelectedRows(this);
-			$.MyPost($("#fileList").attr("data-uri"), { createsymlink: "yes", lndst: data.value, file: row.attr("data-file") }, function(response) {
+			$.MyPost(getURI(), { createsymlink: "yes", lndst: data.value, file: row.attr("data-file") }, function(response) {
 				if (!response.error && response.message) 
-					$("#flt").trigger("filesCreated", { base: $("#fileList").data("uri"), files: [data.value] });
+					$("#flt").trigger("filesCreated", { base: getURI(), files: [data.value] });
 				handleJSONResponse(response);
 			});
 		}}));

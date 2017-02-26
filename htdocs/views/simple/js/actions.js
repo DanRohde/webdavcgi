@@ -90,7 +90,7 @@ function initFileListActions() {
 	$("#flt")
 		.on("fileListSelChanged fileListViewChanged", updateFileListActions)
 		.on("filesRemoved", function(e,data) {
-			var uri = $("#fileList").data("uri");
+			var uri = getURI();
 			for (var i = 0; i<data.files.length; i++) { // check for parent folder:
 				if (uri.indexOf(data.base + data.files[i]) == 0) {
 					changeUri(data.base);
@@ -102,17 +102,17 @@ function initFileListActions() {
 			removeFileListRow($("#fileList tr[data-file='"+data.files.join("'],#fileList tr[data-file='")+"']"));
 		})
 		.on("filesCreated", function(e,data) {
-			if (data.base != $("#fileList").data("uri")) return;
+			if (data.base != getURI()) return;
 			if (data.files.length > 1) updateFileList();
 			else refreshFileListEntry(data.files[0]);
 		})
 		.on("fileRenamed", function(e,data) {
-			var uri = $("#fileList").data("uri");
+			var uri = getURI();
 			if (uri.indexOf(data.base + data.file) == 0 ) { // check for parent folder:
 				changeUri(uri.replace(new RegExp("^"+data.base + data.file), data.base + data.newname +"/"));
 				return;
 			}
-			if (data.base != $("#fileList").data("uri")) return;
+			if (data.base != getURI()) return;
 			refreshFileListEntry(data.newname, data.file);
 		})
 	;
@@ -195,8 +195,8 @@ function handleFileDelete(row) {
 	confirmDialog($("#deletefileconfirm").html().replace(/%s/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape(row.attr("data-displayname")))),{
 		confirm: function() {
 			var file = row.data("file");
-			var xhr = $.MyPost($("#fileList").data("uri"), { "delete": "yes", file: file }, function(response) {
-				$("#flt").trigger("filesRemoved", { base: $("#fileList").data("uri"), files: [ file ] });
+			var xhr = $.MyPost(getURI(), { "delete": "yes", file: file }, function(response) {
+				$("#flt").trigger("filesRemoved", { base: getURI(), files: [ file ] });
 				if (response.error) updateFileList();
 				handleJSONResponse(response);
 			});
@@ -224,7 +224,7 @@ function handleFileRename(row) {
 		finalEvent: function() { $("#flt").disableSelection(); },
 		changeEvent: function(data) {
 			var newname = data.value.replace(/\//g,"");
-			var base = $("#fileList").data("uri");
+			var base = getURI();
 			if (newname == defaultValue ) return;
 			if ($.MyCookie("settings.confirm.rename")!="no") {
 				confirmDialog($("#movefileconfirm").html().replace(/\\n/g,"<br/>").replace(/%s/,$.MyStringHelper.quoteWhiteSpaces(file)).replace(/%s/,$.MyStringHelper.quoteWhiteSpaces(newname)), {
@@ -249,11 +249,11 @@ function handleFileListActionEventDelete() {
 		filename = $.MyStringHelper.getBasename(data.uri)+"/";
 		posturi = $.MyStringHelper.getParentURI(data.uri);
 		files = [ filename ];
-		if (posturi == $("#fileList").data("uri")) selrows = $("#fileList tr[data-file='"+filename+"/']");
+		if (posturi == getURI()) selrows = $("#fileList tr[data-file='"+filename+"/']");
 	} else {
 		selrows = getSelectedRows(this);
 		if (selrows.length == 1) filename = selrows.first().data("file");
-		posturi = $("#fileList").data("uri");
+		posturi = getURI();
 		files = $.map(selrows, function(v,i) { return $(v).data("file"); });
 		selrows.fadeTo("slow", 0.5);
 	}
@@ -305,7 +305,7 @@ function handleFileListActionEvent(event) {
 		} else {
 			$("#fileList tr").removeClass("cutted").fadeTo("fast",1);
 			selfiles = $.map(getSelectedRows(self), function(val,i) { return $(val).attr("data-file"); });
-			clpuri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
+			clpuri = $.MyStringHelper.concatUri(getURI(), "/");
 			if (self.hasClass("cut")) $("#fileList tr.selected:visible").addClass("cutted").fadeTo("slow",0.5);
 			uncheckSelectedRows();
 		}
@@ -317,7 +317,7 @@ function handleFileListActionEvent(event) {
 		var files = $.MyCookie("clpfiles");
 		var action= $.MyCookie("clpaction");
 		var srcuri= $.MyCookie("clpuri");
-		var dsturi = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
+		var dsturi = $.MyStringHelper.concatUri(getURI(), "/");
 		
 		if ($.MyCookie("settings.confirm.paste") != "no") {
 			var msg = $("#paste"+action+"confirm").html()
@@ -327,7 +327,7 @@ function handleFileListActionEvent(event) {
 			confirmDialog(msg, { confirm: function() { doPasteAction(action,srcuri,dsturi,files); }, setting: "settings.confirm.paste" });
 		} else doPasteAction(action,srcuri,dsturi,files);
 	} else if (self.hasClass("backupcopy")) {
-		var uri = $("#fileList").data("uri");
+		var uri = getURI();
 		var files = getSelectedFiles(self);
 		var filesparam = files.join("@/@");
 		var msg = $("#backupcopyconfirm").html().replace(/%files%/g,  files.join(", "));
@@ -352,7 +352,7 @@ function renderHiddenInput(form, data, key) {
 }
 function postAction(data) {
 	var form = $("<form/>").appendTo("body");
-	form.hide().prop("action",$("#fileList").attr("data-uri")).prop("method","POST");
+	form.hide().prop("action", getURI()).prop("method","POST");
 	form.append($("#token").clone().removeAttr("id"));
 	renderHiddenInput(form,data);
 	form.submit();

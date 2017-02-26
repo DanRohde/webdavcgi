@@ -23,7 +23,7 @@ function initViewFilterDialog() {
 		if ($(this).hasClass("disabled")) return;
 		var self = $(this);
 		$(".action.viewfilter").addClass("disabled");
-		var target =$("#fileList").attr("data-uri");
+		var target = getURI();
 		var template = self.attr("data-template");
 		$.MyPost(target, {ajax: "getViewFilterDialog", template: template}, function(response){
 			var vfd = $(response);

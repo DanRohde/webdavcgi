@@ -60,7 +60,7 @@ function renderUploadProgressAll(uploadState, dataparam) {
 }
 function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 	$("#flt").on("fileListChanged",function() {
-		form.fileupload("option","url",$("#fileList").attr("data-uri"));
+		form.fileupload("option", "url", getURI());
 	});
 	var uploadState = {
 		aborted: false,
@@ -70,7 +70,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 		uploads: 0
 	};
 	form.fileupload({ 
-		url: $("#fileList").attr("data-uri"), 
+		url: getURI(), 
 		sequentialUploads: false,
 		limitConcurrentUploads: 3,
 		dropZone: dropZone,

@@ -25,7 +25,7 @@ function initKeyboardSupport() {
 			if (self.is(":focus")) {
 				if (event.keyCode ==32) handleRowClickEvent.call(this,event);
 				else if (event.keyCode==13) 
-					changeUri($.MyStringHelper.concatUri($("#fileList").attr("data-uri"), encodeURIComponent($.MyStringHelper.stripSlash(self.attr("data-file")))),self.attr("data-type") == "file");
+					changeUri($.MyStringHelper.concatUri(getURI(), encodeURIComponent($.MyStringHelper.stripSlash(self.attr("data-file")))),self.attr("data-type") == "file");
 				else if (event.keyCode==46) {
 					if ($("#fileList tr.selected:visible").length === 0) { 
 						if (isSelectableRow(self)) handleFileDelete(self);

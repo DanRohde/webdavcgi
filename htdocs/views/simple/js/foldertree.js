@@ -50,7 +50,7 @@ function initFolderTree() {
 	$("#foldertree")
 	.MyFolderTree({ 
 		nodeClickHandler: function(data) {
-			if (data.isreadable && data.uri && data.uri != $("#fileList").data("uri")) changeUri(data.uri);
+			if (data.isreadable && data.uri && data.uri != getURI()) changeUri(data.uri);
 		},
 		initDom: function(el) {
 			el.MyTooltip();
@@ -62,7 +62,7 @@ function initFolderTree() {
 		},
 		rootNodes : [{ name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes", labelclasses : "icon category-folderhome" }],
 		getFolderTree: function(node, callback, forceRead) {
-			var uri = $("#fileList").data("uri");
+			var uri = getURI();
 			var recurse = $("#foldertree").data("recurse");
 			if (node.uri == uri && !forceRead && !recurse && flt.data("foldertree")) {
 				callback(flt.data("foldertree"));
@@ -88,7 +88,7 @@ function initFolderTree() {
 	initFolderTreePopupMenu();
 	$("#foldertreepopupmenu .action").on("click", handleFileListActionEvent);
 	flt.on("fileListChanged", function() {
-		var uri = $("#fileList").data("uri");
+		var uri = getURI();
 		$("#foldertree").MyFolderTree("add-node-data", function(node,data) { return data.uri == uri; });
 		setActiveNodeInFolderTree(uri);
 		
@@ -164,13 +164,13 @@ function initFolderTree() {
 			$("#foldertree").MyFolderTree("remove-node", getUriFilterFunc(data, data.files[i]));
 		}
 	}).on("filesCreated fileRenamed", function(event,data) {
-		var uri = $("#fileList").data("uri");
+		var uri = getURI();
 		if (data.base == uri) flt.removeData("foldertree");
 		$("#foldertree").MyFolderTree("set-node-unread", getUriFilterFunc(data));
 	});
 }
 function getFolderTreeNodesForRows(rows) {
-	var baseuri = decodeURIComponent($("#fileList").data("uri"));
+	var baseuri = decodeURIComponent(getURI());
 	var uris = {};
 	rows.each(function(){ uris[baseuri + $(this).data("file")]=true; });
 	return $("#foldertree").MyFolderTree("get-nodes", function(node,data) {

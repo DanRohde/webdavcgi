@@ -18,8 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 initSelect();
 initNav();
 
-updateFileList($("#flt").attr("data-uri"));
+updateFileList();
 
+function getURI() {
+	return $("#fileList").data("uri");
+}
+function getBaseURI() {
+	return $("#flt").data("uri");
+}
 function initFileList() {
 	$("#fileList.selectable-false tr").removeClass("unselectable-no").addClass("unselectable-yes");
 	
@@ -29,7 +35,7 @@ function initFileList() {
 	$("#fileList tr")
 		.off("click.initFileList").on("click.initFileList",handleRowClickEvent)
 		.off("dblclick.initFileList").on("dblclick.initFileList",function() { 
-			changeUri($.MyStringHelper.concatUri($("#fileList").attr("data-uri"), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr("data-file")))),
+			changeUri($.MyStringHelper.concatUri(getURI(), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr("data-file")))),
 					$(this).attr("data-type") == "file");
 		});
 	
@@ -71,7 +77,7 @@ function initFileList() {
 function updateFileList(targetparam, dataparam) {
 	var newtarget = targetparam;
 	var data = dataparam;
-	if (!newtarget) newtarget = $("#fileList").attr("data-uri");
+	if (!newtarget) newtarget = getURI();
 	if (!newtarget) newtarget = window.location.href;
 	if (!data) {
 		data={ajax: "getFileListTable", template: $("#flt").attr("data-template")};
@@ -244,7 +250,7 @@ function doFileListDropWithConfirm(srcinfo, dsturi) {
 }
 function getFileListDropSrcInfo(event,ui) {
 	var dragfilerow = ui.draggable.closest("tr");
-	var srcuri = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"),"/");
+	var srcuri = $.MyStringHelper.concatUri(getURI(), "/");
 	return {
 		action: event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ? "copy" : "cut",
 		srcuri: srcuri,
@@ -255,7 +261,7 @@ function getFileListDropSrcInfo(event,ui) {
 }
 function handleFileListDrop(event, ui) {
 	var dragfilerow = ui.draggable.closest("tr");
-	var dsturi = $.MyStringHelper.concatUri($("#fileList").attr("data-uri"), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr("data-file")))+"/");
+	var dsturi = $.MyStringHelper.concatUri(getURI(), encodeURIComponent($.MyStringHelper.stripSlash($(this).attr("data-file")))+"/");
 	var srcinfo = getFileListDropSrcInfo(event, ui);
 	if (dsturi == $.MyStringHelper.concatUri(srcinfo.srcuri,encodeURIComponent($.MyStringHelper.stripSlash(dragfilerow.attr("data-file"))))+"/") return;
 	return doFileListDropWithConfirm(srcinfo,dsturi);
