@@ -1178,6 +1178,12 @@ img {
 #statusbar .selected-files-stats {
 	background-color: #dadada;
 }
+.selected-files-stats-checkedbox {
+	width: 18px;
+	height: 18px;
+	display: inline-block;
+	vertical-align: bottom;
+}
 #statusbar .files-stats-content,
 #statusbar .selected-files-stats-content {
 	padding: 6px 4px;;

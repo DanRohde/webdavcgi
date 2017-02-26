@@ -1,6 +1,6 @@
 /*********************************************************************
 (C) ZE CMS, Humboldt-Universitaet zu Berlin
-Written 2013 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 **********************************************************************
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
