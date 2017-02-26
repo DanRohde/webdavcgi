@@ -27,7 +27,6 @@ function initToolBox() {
 			cookie : $.MyCookie,
 			getDialog : getDialog,
 			getDialogByPost: getDialogByPost,
-			getFolderTreeNodesForRows : getFolderTreeNodesForRows,
 			getSelectedFiles : getSelectedFiles,
 			getSelectedRows : getSelectedRows,
 			getURI : getURI,

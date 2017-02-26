@@ -50,7 +50,7 @@ for file in $MYLIBS ; do
         if test \( $? -eq 0 \) -o \( ${FORCEMINIFY} -eq 1 \) -o \( ! -e ${newfile} \) -o \( "${file}" -nt "${newfile}" \) ; then
             test ${DEBUG} -ne 0  && echo "Minify $file to $newfile and concat to $complfile"
 
-            perl prepjs.pl "$file" | java -jar /etc/webdavcgi/minify/yuicompressor.jar --type "${ext}" \
+            perl prepjs.pl "$file" | yuglify --terminal --type "${ext}" \
                  | tee -a "${complfile}" \
                  > "${newfile}"
         else

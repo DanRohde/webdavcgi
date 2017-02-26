@@ -15,29 +15,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-initFolderTree();
+function WebDAVCGIFolderTree() {
+	this.initFolderTree();
+}
 
-function handleFolderTreeDrop(event,ui) {
-	var dsturi = $(this).closest(".mft-node").data("mftn").uri;
-	var srcinfo = getFileListDropSrcInfo(event,ui);
-	if (dsturi != srcinfo.srcuri) doFileListDropWithConfirm(srcinfo,dsturi);
-	return false;
-}
-function setActiveNodeInFolderTree(uri) {
-	var duri = decodeURI(uri);
-	$("#foldertree").MyFolderTree("set-active-node", function(node, data) {
-		return (decodeURI(data.uri) == duri);
-	});
-}
-function initFolderTreePopupMenu() {
-	$("#foldertreepopupmenu").MyPopup({
-		contextmenu: $("#foldertreepopupmenu"), 
-		contextmenuTarget: $("#foldertree .mft-node-label, #foldertree .mft-node-expander"), 
-		contextmenuAnchor: "#foldertree",
-		contextmenuAnchorElement: true
-	}).MyPopup("close");
-}
-function initFolderTree() {
+WebDAVCGIFolderTree.prototype.initFolderTree = function() {
+	function handleFolderTreeDrop(event,ui) {
+		var dsturi = $(this).closest(".mft-node").data("mftn").uri;
+		var srcinfo = getFileListDropSrcInfo(event,ui);
+		if (dsturi != srcinfo.srcuri) doFileListDropWithConfirm(srcinfo,dsturi);
+		return false;
+	}
+	function setActiveNodeInFolderTree(uri) {
+		var duri = decodeURI(uri);
+		$("#foldertree").MyFolderTree("set-active-node", function(node, data) {
+			return (decodeURI(data.uri) == duri);
+		});
+	}
+	function initFolderTreePopupMenu() {
+		$("#foldertreepopupmenu").MyPopup({
+			contextmenu: $("#foldertreepopupmenu"),
+			contextmenuTarget: $("#foldertree .mft-node-label, #foldertree .mft-node-expander"),
+			contextmenuAnchor: "#foldertree",
+			contextmenuAnchorElement: true
+		}).MyPopup("close");
+	}
 	var flt = $("#flt");
 	$(".action.toggle-foldertree").on("click", function() {
 		$("#content").toggleClass("show-foldertree");
@@ -168,12 +170,13 @@ function initFolderTree() {
 		if (data.base == uri) flt.removeData("foldertree");
 		$("#foldertree").MyFolderTree("set-node-unread", getUriFilterFunc(data));
 	});
-}
-function getFolderTreeNodesForRows(rows) {
+};
+WebDAVCGIFolderTree.prototype.getFolderTreeNodesForRows = function(rows) {
 	var baseuri = decodeURIComponent(getURI());
 	var uris = {};
 	rows.each(function(){ uris[baseuri + $(this).data("file")]=true; });
 	return $("#foldertree").MyFolderTree("get-nodes", function(node,data) {
 		return uris[decodeURIComponent(data.uri)];
 	});
-}
+};
+WebDAVCGI.foldertree = new WebDAVCGIFolderTree();

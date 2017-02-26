@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 var ToolBox = {};
+var WebDAVCGI = {};
 $(function() {
 	/**INCLUDE(js/effects.js, js/notify.js, js/ajax.js, js/dialogs.js, 
 	 		   js/popups.js, js/bookmarks.js, js/clipboard.js, js/toolbar.js,
