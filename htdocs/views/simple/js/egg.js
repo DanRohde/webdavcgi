@@ -8,13 +8,14 @@ function Snake() {
 	this.feedFactor = 100; // points+= feedFactor * level for feed
 	this.stepFactor = 10; // points = stepFactor * level for every move
 	this.segFactor = 5; // new snake segments = segFactor * level
-	this.eat = [ ]; // array of { s: segments, c: color }
-	this.snake = [ [4,1,"rgba(0,0,255,0.5)"], [3,1,"rgba(0,255,0,0.5)"], [2,1,"rgba(255,255,0,0.5)"], [1,1,-1] ];
+	this.eat = [ {s: this.segFactor, c: "rgba(0,255,0,0.5)"} ]; // array of { s: segments, c: color }
+	this.snake = [ [2,1,"rgba(0,0,255,0.5)"], [1,1,-1] ];
 	this.dir = { x: 1, y: 0 };
 	this.wall = {};
 	this.feed = {};
 	this.elements = 60; // elements in a row 
 	this.highscore = this.getHighscoreCookie();
+	this.steps = 0;
 	
 	var w = $(window);
 	this.arena = {
@@ -29,15 +30,21 @@ function Snake() {
 	this.maxY =  Math.floor(this.arena.height / this.seg);
 	this.arena.width = this.maxX * this.seg;
 	this.arena.height = this.maxY * this.seg;
-	console.log(this);
 }
 Snake.prototype.start = function() {
-	console.log("Start snake.");
 	var self = this;
 	self.arena.canvas = $("<canvas/>")
 		.attr({tabindex : 0, width: self.arena.width, height: self.arena.height })
-		.css({position: "fixed", left: self.arena.x + "px", top: self.arena.y + "px", zIndex: 10000})
+		.css({position: "fixed", left: self.arena.x + "px", top: self.arena.y + "px", cursor: "crosshair", zIndex: 10000})
 		.appendTo("body")
+		.on("click.snake", function(event) {
+			var i = self.getSnakeInfo();
+			var offset = $(this).offset();
+			var cx = event.pageX - offset.left;
+			var cy = event.pageY - offset.top;
+			if (self.dir.x != 0) self.setDir(0, cy > i.py ? 1 : -1); // left - right
+			else if (self.dir.y != 0) self.setDir(cx > i.px ? 1 : -1, 0); // up - down
+		})
 		.focus();
 	$("body").on("keydown.snake", function(event) {
 		if (event.keyCode == 27) self.destroy(); // escape
@@ -94,7 +101,12 @@ Snake.prototype.updateHighscore = function() {
 }
 Snake.prototype.showGameInfo = function() {
 	if (!this.arena.pointsDiv) {
-		this.arena.pointsDiv = $("<div/>").css({ position: "fixed", left: this.arena.x+"px", top: (this.arena.y-(2*this.seg))+"px", fontSize: this.seg+"px", zIndex: 10000, background: "white" }).appendTo("body");
+		this.arena.pointsDiv = 
+				$("<div/>").css(
+							{ position: "fixed", left: this.arena.x+"px", top: (this.arena.y-(1.2*this.seg))+"px", 
+								fontSize: this.seg+"px", height: "1.2em", lineheight: 1.2,
+								paddingLeft: this.seg+"px", paddingRight: this.seg+"px", zIndex: 10000, 
+								backgroundColor: "black", color: "white", fontFamily: "fantasy", fontWeight:"bold" }).appendTo("body");
 	}
 	this.arena.pointsDiv.html("SNAKE -- Level: "+this.level+", Level up: "+this.levelup+", Points: "+this.points+", Highscore: "+this.highscore);
 	// +", Speed: "+this.speed+", Snake length: "+(this.snake.length-1)
@@ -103,7 +115,7 @@ Snake.prototype.addPoints = function(p) {
 	this.points += p;
 }
 Snake.prototype.getSnakeInfo = function() {
-	return { x: this.snake[0][0], y: this.snake[0][1], c: this.snake[0][2] };
+	return { x: this.snake[0][0], y: this.snake[0][1], c: this.snake[0][2], px: this.snake[0][0] * this.seg, py: this.snake[0][1] * this.seg };
 }
 Snake.prototype.eatFeed = function() {
 	var i = this.getSnakeInfo();
@@ -136,12 +148,10 @@ Snake.prototype.feedSnake = function() {
 	ctx.fillRect(x*this.seg,y*this.seg, this.seg, this.seg);
 }
 Snake.prototype.destroy = function() {
-	console.log("Destroy snake");
 	window.clearInterval(this.interval);
 	$("body").off("keydown.snake");
 	this.arena.canvas.remove();
 	this.arena.pointsDiv.remove();
-	console.log(this.snake);
 }
 Snake.prototype.drawWall  = function() {
 	var self = this;
@@ -165,7 +175,7 @@ Snake.prototype.drawWall  = function() {
 }
 Snake.prototype.draw = function() {
 	var ctx = this.arena.canvas[0].getContext("2d");
-	for (var i=0; i<this.snake.length; i++) {
+	for (var i=this.snake.length-1; i>=0; i--) {
 		var x = this.snake[i][0] * this.seg;
 		var y = this.snake[i][1] * this.seg;
 		var c = this.snake[i][2];
@@ -177,7 +187,7 @@ Snake.prototype.draw = function() {
 				ctx.fillRect(x, y, this.seg, this.seg );
 			}
 		} else {
-			ctx.clearRect(x, y, this.seg, this.seg);
+			if (this.eat.length == 0) ctx.clearRect(x, y, this.seg, this.seg);
 		}
 	}
 }
@@ -201,6 +211,8 @@ Snake.prototype.move = function(dir) {
 	
 	this.addPoints(this.level * this.stepFactor);
 	
+	this.steps += 1;
+	
 	return dir.x != 0 || dir.y != 0;
 }
 Snake.prototype.isWallCrash = function(x,y) {
@@ -219,10 +231,19 @@ Snake.prototype.isCrash = function() {
 	return this.isWallCrash(x,y) || this.isTailCrash(x,y); 
 }
 Snake.prototype.failed = function() {
-	console.log("Snake failed");
 	window.clearInterval(this.interval);
 	var ctx = this.arena.canvas[0].getContext("2d");
-	
+	var fontSize = 3 * this.seg;
+	var text ="FAILED!";
+	ctx.font = fontSize+"px fantasy";
+	if (this.points == this.highscore) {
+		text = "!!! NEW HIGHSCORE !!!";
+		ctx.strokeStyle = "rgb(255,215,0)";
+	} else {
+		ctx.strokeStyle = "red";
+	}
+	var mt = ctx.measureText(text)
+	ctx.strokeText(text, (this.arena.width-mt.width) / 2, (this.arena.height-fontSize)/2 );
 }
 Snake.prototype.setDir = function(x,y) {
 	this.dir.x = x;
