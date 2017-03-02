@@ -104,7 +104,7 @@ Snake.prototype.showGameInfo = function() {
 		this.arena.pointsDiv = 
 				$("<div/>").css(
 							{ position: "fixed", left: this.arena.x+"px", top: (this.arena.y-(1.2*this.seg))+"px", 
-								fontSize: this.seg+"px", height: "1.2em", lineheight: 1.2,
+								fontSize: this.seg+"px", height: "1.2em", lineHeight: 1.2,
 								paddingLeft: this.seg+"px", paddingRight: this.seg+"px", zIndex: 10000, 
 								backgroundColor: "black", color: "white", fontFamily: "fantasy", fontWeight:"bold" }).appendTo("body");
 	}
