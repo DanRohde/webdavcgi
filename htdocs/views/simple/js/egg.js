@@ -16,6 +16,10 @@ function Snake() {
 	this.elements = 60; // elements in a row 
 	this.highscore = this.getHighscoreCookie();
 	this.steps = 0;
+	this.egg = new Image();
+	this.egg.src = "data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20width%3D%221e3%22%20version%3D%221.1%22%20viewBox%3D%220%200%20264.58333%20264.58334%22%3E%3Cpath%20stroke-width%3D%22.29342%22%20fill%3D%22%23FFFFFF%22%20d%3D%22m132.29%2035.305c-41.949%200-75.956%2061.073-75.956%20114.64s34.006%2079.337%2075.956%2079.337c41.949%200%2075.956-25.77%2075.956-79.337%200-53.564-34.006-114.64-75.956-114.64zm-1.2806%2016.171c14.65-0.1561%2027.215%2010.303%2035.808%2021.389%2019.171%2027.183%2030.099%2062.507%2023.415%2095.587-3.0109%2023.503-24.037%2041.645-47.119%2044.426-22.659%203.7226-49.064-4.519-61.581-24.733-15.155-29.53-9.9535-65.29%203.757-94.273%208.7206-18.859%2022.905-39.235%2045.021-42.38%200.23283-0.0079%200.46566-0.01323%200.69849-0.01587z%22%2F%3E%3C%2Fsvg%3E";
+	this.brick = new Image();
+	this.brick.src = "data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20width%3D%221e3%22%20version%3D%221.1%22%20viewBox%3D%220%200%20264.58333%20264.58334%22%3E%3Cg%20transform%3D%22translate%280%20-32.417%29%22%3E%3Cpath%20d%3D%22m-0.35547%200v60.652h660.4v379.02h-660.4l0.00453%20120.66h321.15v379.02h-321.15l0.00453%2060.65h321.15%20120.66%20558.95v-60.65h-558.95v-379.02h558.95v-120.66h-219.7v-379.02l219.7%200.002v-60.652h-1000.8z%22%20transform%3D%22matrix%28.26458%200%200%20.26458%200%2032.417%29%22%20fill%3D%22%23FFFFFF%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E";
 	
 	var w = $(window);
 	this.arena = {
@@ -146,6 +150,7 @@ Snake.prototype.feedSnake = function() {
 	var ctx = this.arena.canvas[0].getContext("2d");
 	ctx.fillStyle = c;
 	ctx.fillRect(x*this.seg,y*this.seg, this.seg, this.seg);
+	ctx.drawImage(this.egg, x*this.seg,y*this.seg,this.seg,this.seg);
 }
 Snake.prototype.destroy = function() {
 	window.clearInterval(this.interval);
@@ -170,7 +175,10 @@ Snake.prototype.drawWall  = function() {
 	ctx.fillStyle = "rgba(255,0,0,0.5)";
 	Object.keys(this.wall).forEach(function(p) {
 		var w = self.wall[p];
-		ctx.fillRect( w.x * self.seg, w.y * self.seg, self.seg, self.seg);
+		var px = w.x * self.seg;
+		var py = w.y * self.seg;
+		ctx.fillRect( px, py, self.seg, self.seg);
+		ctx.drawImage(self.brick, px, py, self.seg, self.seg);
 	});
 }
 Snake.prototype.draw = function() {
