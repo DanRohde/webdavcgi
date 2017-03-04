@@ -19,6 +19,7 @@ function ColoredBlocks() {
 	var self = this;
 	self.height = 25;
 	self.width = 25;
+	self.startColors = 3;
 	self.colors = self.getColorsCookie();
 	
 	var w = $(window);
@@ -28,7 +29,7 @@ function ColoredBlocks() {
 		width : Math.round(w.width() * 0.8),
 		height: Math.round(w.height() * 0.8),
 		field : [],
-		colors: ["black", "lightgray", "blue", "red", "cyan", "coral", "green", "magenta", "yellow", "lightgreen",  "gold", "indigo","gray"]
+		colors: ["black", "lightgray", "blue", "red", "cyan", "coral", "green", "magenta", "yellow", "lightgreen", "gold", "indigo", "gray"]
 	};
 	
 	self.arena.bs = Math.floor(self.arena.width / self.width);
@@ -41,8 +42,7 @@ function ColoredBlocks() {
 	self.arena.canvas = $("<canvas/>")
 		.attr({tabindex : 0, width: self.arena.width, height: self.arena.height })
 		.css({position: "fixed", left: self.arena.x + "px", top: self.arena.y + "px", cursor: "crosshair", zIndex: 10000, opacity: 0.7})
-		.on("click.coloredblocks", function(event) { self.click(event); })
-		.on("keydown", function(event) { self.destroy(); })
+		.on("keydown", function(event) { if (event.keyCode==27) self.destroy(); })
 		.appendTo("body")
 		.focus();
 }
@@ -52,13 +52,14 @@ ColoredBlocks.prototype.start = function() {
 	self.points = 0;
 	self.highscore = self.getHighscoreCookie();
 	self.initField().draw().showGameInfo();
+	self.arena.canvas.off("click.colredblocks").on("click.coloredblocks", function(event) { self.click(event); })
 	return self;
 };
 ColoredBlocks.prototype.destroy = function() {
 	this.arena.canvas.remove();
 	this.arena.pointsDiv.remove();
 	this.arena.field = null;
-}
+};
 ColoredBlocks.prototype.initField = function() {
 	var self = this;
 	for (var x = 0 ; x < self.width; x++ ) {
@@ -150,7 +151,7 @@ ColoredBlocks.prototype.animate = function() {
 	while (self.moveDown() || self.moveLeft()) self.draw();
 	return self.draw();
 };
-ColoredBlocks.prototype.finish = function() {
+ColoredBlocks.prototype.isClickable = function() {
 	var self = this;
 	var clickable = false;
 	for (var x = 0; x < self.width; x++) {
@@ -162,7 +163,12 @@ ColoredBlocks.prototype.finish = function() {
 		}
 		if (clickable) break;
 	}
-	if (!clickable) {
+	return clickable;
+};
+ColoredBlocks.prototype.finish = function() {
+	var self = this;
+	if (!self.isClickable()) {
+		self.arena.canvas.off("click.coloredblocks");
 		if (self.blocks <= self.colors * 2) {
 			self.colors = Math.min(self.colors + 1 , self.arena.colors.length);
 		//} else if (self.blocks > self.colors * 4) {
@@ -185,17 +191,18 @@ ColoredBlocks.prototype.finish = function() {
 		var mt = ctx.measureText(text);
 		ctx.fillText(text, (self.arena.width-mt.width) / 2, (self.arena.height-fontSize)/2 );
 		ctx.restore();
+		self.updateColorsCookie();
 		window.setTimeout(function() {
-			self.updateColorsCookie().start();
+			self.start();
 		},5000);
 		
 	}
 };
 ColoredBlocks.prototype.calcPoints = function() {
 	var self = this;
-	self.points = (self.width * self.height - self.blocks) * self.colors;
+	self.points = ( (self.width * self.height) - self.blocks) * self.colors;
 	return self;
-}
+};
 ColoredBlocks.prototype.click = function(event) {
 	var self = this;
 	var offset = $(event.target).offset();
@@ -208,8 +215,8 @@ ColoredBlocks.prototype.showGameInfo = function() {
 	var a = self.arena;
 	if (!a.pointsDiv) {
 		var fs = a.bs/2;
-		a.pointsDiv = 
-				$("<div/>")
+		a.pointsDiv 
+			= $("<div/>")
 					.css(
 						{ position: "fixed", display: "flex", flexFlow: "row nowrap", justifyContent: "space-between",
 							left: a.x+"px", top: (a.y-(1.2*fs))+"px", 
@@ -227,7 +234,7 @@ ColoredBlocks.prototype.showGameInfo = function() {
 					;
 	}
 	function prependZeros(v,m) {
-		var s = ""+v;
+		var s = String(v);
 		while (s.length <m) s = "0"+s;
 		return s;
 	}
@@ -241,7 +248,7 @@ ColoredBlocks.prototype.getColorsCookie = function() {
 	var c = document.cookie;
 	var regex = /coloredblocks.colors=(\d+)/;
 	var res = regex.exec(c);
-	return !res  || res.length == 0 ? 3 : res[1];
+	return !res || res.length === 0 ? this.startColors : res[1];
 };
 ColoredBlocks.prototype.updateColorsCookie = function() {
 	document.cookie = "coloredblocks.colors="+this.colors+"; expires=Fri, 26 Feb 2027 00:00:00 UTC; path=/;";
@@ -252,7 +259,7 @@ ColoredBlocks.prototype.getHighscoreCookie = function() {
 	var c = document.cookie;
 	var regex = /coloredblocks.highscore=(\d+)/;
 	var res = regex.exec(c);
-	return !res  || res.length == 0 ? 0 : res[1];
+	return !res || res.length === 0 ? 0 : res[1];
 };
 ColoredBlocks.prototype.updateHighscore = function() {
 	if (this.points > this.highscore) { 
