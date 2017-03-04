@@ -1,3 +1,20 @@
+/*********************************************************************
+(C) ZE CMS, Humboldt-Universitaet zu Berlin
+Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+**********************************************************************
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**********************************************************************/
+
 function Snake() {
 	this.level = 1;
 	this.levelup = 1000; 
@@ -58,23 +75,16 @@ Snake.prototype.start = function() {
 		else if (event.keyCode == 40) self.setDir( 0, 1); // down
 	});
 	
-	self.gameLoop();
-	self.drawWall();
-	self.draw();
-	self.feedSnake();
-}
+	self.gameLoop().drawWall().draw().feedSnake();
+};
 Snake.prototype.gameLoop = function() {
 	var self = this;
 	window.clearInterval(self.interval);
 	self.interval = window.setInterval(function() {
 		try {
-			self.setupLevel();
-			self.showGameInfo();
+			self.setupLevel().showGameInfo();
 			if (self.move(self.dir)) self.draw();
-			if (self.feedFound()) {
-				self.eatFeed();
-				self.feedSnake();
-			}
+			if (self.feedFound()) self.eatFeed().feedSnake();
 			self.updateHighscore();
 			if (self.isCrash()) self.failed();
 		} catch (e) {
@@ -82,7 +92,8 @@ Snake.prototype.gameLoop = function() {
 			window.clearInterval(self.interval);
 		}
 	}, self.speed);
-}
+	return self;
+};
 Snake.prototype.setupLevel = function() {
 	if (this.points >= this.levelup ) {
 		this.level++;
@@ -90,49 +101,73 @@ Snake.prototype.setupLevel = function() {
 		this.speed = Math.max(this.speed - this.speedIncr, 40);
 		this.gameLoop();
 	}
-}
+	return this;
+};
 Snake.prototype.getHighscoreCookie = function() {
 	var c = document.cookie;
 	var regex = /snake.highscore=(\d+)/;
 	var res = regex.exec(c);
-	return res == null  || res.length == 0 ? 0 : res[1];
-}
+	return !res  || res.length == 0 ? 0 : res[1];
+};
 Snake.prototype.updateHighscore = function() {
 	if (this.points > this.highscore) { 
 		this.highscore = this.points;
 		document.cookie = "snake.highscore="+this.highscore+"; expires=Fri, 26 Feb 2027 00:00:00 UTC; path=/;";
 	}
-}
+};
 Snake.prototype.showGameInfo = function() {
-	if (!this.arena.pointsDiv) {
-		this.arena.pointsDiv = 
-				$("<div/>").css(
-							{ position: "fixed", left: this.arena.x+"px", top: (this.arena.y-(1.2*this.seg))+"px", 
-								fontSize: this.seg+"px", height: "1.2em", lineHeight: 1.2,
-								paddingLeft: this.seg+"px", paddingRight: this.seg+"px", zIndex: 10000, 
-								backgroundColor: "black", color: "white", fontFamily: "fantasy", fontWeight:"bold" }).appendTo("body");
+	var self = this;
+	var a = self.arena;
+	var fs = self.seg;
+	if (!a.pointsDiv) {
+		a.pointsDiv = 
+			$("<div/>")
+				.css(
+					{ 	position: "fixed", display: "flex", flexFlow: "row nowrap", justifyContent: "space-between",
+						left: a.x+"px", top: (a.y-(1.2*fs))+"px", 
+						fontSize: fs+"px", height: "1.2em", lineHeight: 1.2,
+						paddingLeft: fs+"px", paddingRight: fs+"px", width: a.width-2*fs, zIndex: 10000, 
+						backgroundColor: "black", color: "white", fontFamily: "monospace", fontWeight:"bold" })
+				.appendTo("body")
+				.append($("<div/>").html("&#8212; Snake &#8212;"))
+				.append($("<div/>").append($("<span/>").html("Level: ")).append($("<span/>").addClass("level")))
+				.append($("<div/>").append($("<span/>").html("Level up: ")).append($("<span/>").addClass("levelup")))
+				.append($("<div/>").append($("<span/>").html("Points: ")).append($("<span/>").addClass("points")))
+				.append($("<div/>").append($("<span/>").html("Highscore: ")).append($("<span/>").addClass("highscore")))
+		;
 	}
-	this.arena.pointsDiv.html("SNAKE -- Level: "+this.level+", Level up: "+this.levelup+", Points: "+this.points+", Highscore: "+this.highscore);
+	//this.arena.pointsDiv.html("SNAKE -- Level: "+this.level+", Level up: "+this.levelup+", Points: "+this.points+", Highscore: "+this.highscore);
 	// +", Speed: "+this.speed+", Snake length: "+(this.snake.length-1)
-}
+	function prependZeros(v,m) {
+		var s = ""+v;
+		while (s.length <m) s = "0"+s;
+		return s;
+	}
+	self.arena.pointsDiv.find(".level").html(prependZeros(self.level,6));
+	self.arena.pointsDiv.find(".levelup").html(prependZeros(self.levelup,6));
+	self.arena.pointsDiv.find(".points").html(prependZeros(self.points,6));
+	self.arena.pointsDiv.find(".highscore").html(prependZeros(self.highscore,6));
+	return this;
+};
 Snake.prototype.addPoints = function(p) {
 	this.points += p;
-}
+};
 Snake.prototype.getSnakeInfo = function() {
 	return { x: this.snake[0][0], y: this.snake[0][1], c: this.snake[0][2], px: this.snake[0][0] * this.seg, py: this.snake[0][1] * this.seg };
-}
+};
 Snake.prototype.eatFeed = function() {
 	var i = this.getSnakeInfo();
 	var f = this.feed[i.x+"-"+i.y];
 	this.eat.push({ s: this.level * this.segFactor, c: f.c });
 	this.addPoints(this.level * this.feedFactor);
 	delete this.feed[i.x+"-"+i.y];
-}
+	return this;
+};
 Snake.prototype.feedFound = function() {
 	var x = this.snake[0][0];
 	var y = this.snake[0][1];
 	return this.feed[x+"-"+y];
-}
+};
 Snake.prototype.feedSnake = function() {
 	var x,y, r,g,b, c;
 	do {
@@ -151,13 +186,14 @@ Snake.prototype.feedSnake = function() {
 	ctx.fillStyle = c;
 	ctx.fillRect(x*this.seg,y*this.seg, this.seg, this.seg);
 	ctx.drawImage(this.egg, x*this.seg,y*this.seg,this.seg,this.seg);
-}
+	return this;
+};
 Snake.prototype.destroy = function() {
 	window.clearInterval(this.interval);
 	$("body").off("keydown.snake");
 	this.arena.canvas.remove();
 	this.arena.pointsDiv.remove();
-}
+};
 Snake.prototype.drawWall  = function() {
 	var self = this;
 	this.wall = {};
@@ -180,7 +216,8 @@ Snake.prototype.drawWall  = function() {
 		ctx.fillRect( px, py, self.seg, self.seg);
 		ctx.drawImage(self.brick, px, py, self.seg, self.seg);
 	});
-}
+	return self;
+};
 Snake.prototype.draw = function() {
 	var ctx = this.arena.canvas[0].getContext("2d");
 	for (var i=this.snake.length-1; i>=0; i--) {
@@ -198,7 +235,8 @@ Snake.prototype.draw = function() {
 			if (this.eat.length == 0) ctx.clearRect(x, y, this.seg, this.seg);
 		}
 	}
-}
+	return this;
+};
 Snake.prototype.move = function(dir) {
 	var s = this.snake;
 	var l = s.length -1;
@@ -222,22 +260,22 @@ Snake.prototype.move = function(dir) {
 	this.steps += 1;
 	
 	return dir.x != 0 || dir.y != 0;
-}
+};
 Snake.prototype.isWallCrash = function(x,y) {
 	return this.wall[x+"-"+y];
-}
+};
 Snake.prototype.isTailCrash = function(x,y) {
 	var s = this.snake;
 	for (var i = 1; i < s.length-1; i++) {
 		if (x == s[i][0] && y == s[i][1]) return true;
 	}
-}
+};
 Snake.prototype.isCrash = function() {
 	var s = this.snake;
 	var x = s[0][0];
 	var y = s[0][1];
 	return this.isWallCrash(x,y) || this.isTailCrash(x,y); 
-}
+};
 Snake.prototype.failed = function() {
 	window.clearInterval(this.interval);
 	var ctx = this.arena.canvas[0].getContext("2d");
@@ -246,13 +284,13 @@ Snake.prototype.failed = function() {
 	ctx.font = fontSize+"px fantasy";
 	if (this.points == this.highscore) {
 		text = "!!! NEW HIGHSCORE !!!";
-		ctx.strokeStyle = "rgb(255,215,0)";
+		ctx.fillStyle = "rgb(255,215,0)";
 	} else {
-		ctx.strokeStyle = "red";
+		ctx.fillStyle = "red";
 	}
-	var mt = ctx.measureText(text)
-	ctx.strokeText(text, (this.arena.width-mt.width) / 2, (this.arena.height-fontSize)/2 );
-}
+	var mt = ctx.measureText(text);
+	ctx.fillText(text, (this.arena.width-mt.width) / 2, (this.arena.height-fontSize)/2 );
+};
 Snake.prototype.setDir = function(x,y) {
 	this.dir.x = x;
 	this.dir.y = y;

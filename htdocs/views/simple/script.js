@@ -23,5 +23,6 @@ $(function() {
 	 		   js/dialogactions.js, js/viewfilter.js, js/actions.js, js/fancybox.js,
 	 		   js/window.js, js/settingsdialog.js, js/autorefresh.js, js/collapsible.js,
 	 		   js/tableconfigdialog.js, js/keyboard.js, js/thumbnails.js, js/statusbar.js,
-	 		   js/guide.js, js/foldertree.js, js/viewbar.js, js/toolbox.js, js/filelisttable.js, js/egg.js)**/
+	 		   js/guide.js, js/foldertree.js, js/viewbar.js, js/toolbox.js, js/filelisttable.js, 
+	 		   js/egg.js, js/egg2.js)**/
 });
