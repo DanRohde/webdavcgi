@@ -30,11 +30,10 @@ use JSON;
 use DefaultConfig qw( $REQUEST_URI $PATH_TRANSLATED $LIMIT_FOLDER_DEPTH $SHOW_LOCKS );
 use FileUtils qw( get_file_limit );
 
+use vars qw( %B2YN );
 
-sub _b2yn {
-    my ($self, $bool, $format) = @_;
-    return sprintf $format // q{%s}, $bool ? 'yes' : 'no';
-}
+%B2YN = ( 0=>'no', undef=>'no', 1=>'yes', q{} => 'no' );
+
 sub build_folder_tree {
     my ($self, $path, $uri, $filesref, $level) = @_;
     my @children = ();
@@ -48,15 +47,15 @@ sub build_folder_tree {
         my $child = {
             name  => $self->{backend}->getDisplayName($full),
             uri   => $fileuri,
-            title => $islink ? sprintf "%s → %s", $full, $self->{backend}->getVirtualLinkTarget($full) : $full,
+            title => $islink ? sprintf '%s → %s', $full, $self->{backend}->getVirtualLinkTarget($full) : $full,
             help  => $self->tl('foldertree.help'),
             isreadable => $isreadable,
-            iconclasses => "icon ".$self->get_category_class(lc($file),'folder','category-folder'),
-            classes => $self->_b2yn($isreadable, 'isreadable-%s')
-                      .$self->_b2yn($iswriteable,' iswriteable-%s')
-                      .$self->_b2yn(($file=~/^[.]/xms ? 1 : 0), ' isdotfile-%s')
-                      .$self->_b2yn($islink,' islink-%s')
-                      .$self->_b2yn($SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full), ' islocked-%s'),
+            iconclasses => 'icon '.$self->get_category_class(lc($file),'folder','category-folder'),
+            classes => 'isreadable-'.$B2YN{$isreadable}
+                      .' iswriteable-'.$B2YN{$iswriteable}
+                      .' isdotfile-'.$B2YN{$file=~/^[.]/xms}
+                      .' islink-'.$B2YN{$islink}
+                      .' islocked-'.$B2YN{$SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full)},
         };
         if (!$isreadable) {
             $child->{read} = 'yes';

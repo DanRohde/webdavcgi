@@ -31,7 +31,7 @@ use English qw( -no_match_vars );
 use DefaultConfig
   qw( $INSTALL_BASE %TRANSLATION $OPTIMIZERTMP $CONFIGFILE $RELEASE $REMOTE_USER );
 
-use vars qw( %_FILESREAD );
+use vars qw( %_FILESREAD %CACHE );
 
 sub _read_tl_file {
     my ( $fn, $dataref ) = @_;
@@ -66,8 +66,8 @@ sub _get_translation_tmpfilename {
 sub _load_translation {
     my ($lang) = @_;
     if ( $lang ne 'default' && !_load_translation('default') ) { return 0; }
-    my $fn = _get_translation_tmpfilename($lang);
-    if ( $_FILESREAD{$fn} || !-e $fn ) { return -e $fn; }
+    my $fn = $CACHE{$lang}{$REMOTE_USER}{$ENV{SESSION_DOMAIN}//q{0}} //= _get_translation_tmpfilename($lang);
+    if ( $_FILESREAD{$fn} || !-e $fn ) { return $_FILESREAD{$fn} || -e $fn; }
     _read_tl_file( $fn, $TRANSLATION{$lang} //= {} );
     $_FILESREAD{$fn} = 1;
     return 1;

@@ -36,7 +36,9 @@ use DefaultConfig
     $SHOW_QUOTA %QUOTA_LIMITS );
 use FileUtils qw( get_file_limit );
 use HTTPHelper qw(get_mime_type);
-use vars qw( %CACHE );
+use vars qw( %CACHE %B2YN );
+
+%B2YN = ( 0=>'no', undef=>'no', q{} => 'no', 1=>'yes' );
 
 sub render_template {
     my ( $self, $fn, $ru, $content ) = @_;
@@ -122,7 +124,8 @@ sub render_file_list {
 
     my @files
         = $self->{backend}->isReadable($PATH_TRANSLATED)
-        ? sort { $self->cmp_files( $a, $b ) } @{
+        ?  #sort { $self->cmp_files( $a, $b ) } # replaced by client sort
+        @{
         $self->{backend}
             ->readDir( $PATH_TRANSLATED, get_file_limit($PATH_TRANSLATED),
             $self )
@@ -211,10 +214,6 @@ sub _render_extension_function {
         s/[\$]extension[(](.*?)[)]/$self->_render_extension($PATH_TRANSLATED,$REQUEST_URI,$1)/xmegs;
     return $content;
 }
-sub _b2yn {
-    my ($self, $b) = @_;
-    return $b ? 'yes' : 'no';
-}
 sub _render_file_list_entry {
     my ( $self, $file, $entrytemplate ) = @_;
 
@@ -288,24 +287,24 @@ sub _render_file_list_entry {
         'iconclass'    => "icon $category suffix-$suffix" . ( $cct && $enthumb ne 'no' ? ' thumbnail' : q{} ),
         'mime'        => $self->{cgi}->escapeHTML($mime),
         'realsize'    => $size ? $size : 0,
-        'isreadable'  => $self->_b2yn( $file eq q{..} || $ir ),
-        'iswriteable' => $self->_b2yn( $self->{backend}->isWriteable($full) || $il ),
-        'isviewable'  => $self->_b2yn( $ir && $cct ),
-        'islocked' => $self->_b2yn( $is_locked ),
-        'islink'   => $self->_b2yn( $il ),
-        'isempty'  => $id  ? 'unknown' : $self->_b2yn( (defined $size ) && $size == 0),
+        'isreadable'  => $B2YN{ $file eq q{..} || $ir },
+        'iswriteable' => $B2YN{ $self->{backend}->isWriteable($full) || $il },
+        'isviewable'  => $B2YN{ $ir && $cct },
+        'islocked' => $B2YN{ $is_locked },
+        'islink'   => $B2YN{ $il },
+        'isempty'  => $id  ? 'unknown' : $B2YN{ (defined $size ) && $size == 0},
         'type'     => $file =~ /^[.]{1,2}$/xms || $id ? 'dir' : 'file',
         'fileuri'      => $fulle,
-        'unselectable' => $self->_b2yn( $file eq q{..} || $self->is_unselectable($full) ),
+        'unselectable' => $B2YN{ $file eq q{..} || $self->is_unselectable($full) },
         'mode'    => sprintf( '%04o',        $mode & oct 7777 ),
         'modestr' => $self->mode2str( $full, $mode ),
         'uidNumber' => $uid // 0,
         'uid'       => $u,
         'gidNumber' => $gid // 0,
         'gid'       => $g,
-        'subdir' => $self->_b2yn( $id  && $file !~ /^[.]{1,2}$/xms ),
-        'iscurrent' => $self->_b2yn( $id && $file eq q{.} ),
-        'isdotfile' => $self->_b2yn( $file =~ /^[.]/xms && $file !~ /^[.]{1,2}$/xms ),
+        'subdir' => $B2YN{ $id  && $file !~ /^[.]{1,2}$/xms },
+        'iscurrent' => $B2YN{ $id && $file eq q{.} },
+        'isdotfile' => $B2YN{ $file =~ /^[.]/xms && $file !~ /^[.]{1,2}$/xms },
         'suffix' => $file =~ /[.]([^.]+)$/xms ? $self->{cgi}->escapeHTML($1) : 'unknown',
         'ext_classes'     => q{},
         'ext_attributes'  => q{},

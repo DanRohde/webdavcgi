@@ -41,7 +41,7 @@ function ColoredBlocks() {
 	
 	self.arena.canvas = $("<canvas/>")
 		.attr({tabindex : 0, width: self.arena.width, height: self.arena.height })
-		.css({position: "fixed", left: self.arena.x + "px", top: self.arena.y + "px", cursor: "crosshair", zIndex: 10000, opacity: 0.7})
+		.css({position: "fixed", left: self.arena.x + "px", top: self.arena.y + "px", cursor: "crosshair", zIndex: 10000})
 		.on("keydown", function(event) { if (event.keyCode==27) self.destroy(); })
 		.appendTo("body")
 		.focus();

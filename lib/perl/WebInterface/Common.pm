@@ -615,24 +615,23 @@ sub render_each {
 
 sub exec_template_function {
     my ( $self, $fn, $ru, $func, $param ) = @_;
-
+    if ( $func eq 'tl' ) {
+        return $self->tl($param);
+    }
     if ( $func eq 'config' ) {
         return $param ? ${ $self->_get_varref($param) // \q{} } : q{};
     }
+    if ( $func eq 'inchelp' ) {
+        return $self->handle_inc_help($param);
+    }
     if ( $func eq 'env' ) {
         return $ENV{$param} // q{};
-    }
-    if ( $func eq 'tl' ) {
-        return $self->tl($param);
     }
     if ( $func eq 'cgiparam' ) {
         return $self->{cgi}->escapeHTML($self->{cgi}->param($param) // q{});
     }
     if ( $func eq 'help' ) {
         return $self->handle_help($param);
-    }
-    if ( $func eq 'inchelp' ) {
-        return $self->handle_inc_help($param);
     }
     return q{};
 }
