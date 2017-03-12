@@ -36,8 +36,8 @@ function ColoredBlocks() {
 	self.arena.bs = Math.min( self.arena.bs, Math.floor(self.arena.height / self.height) );
 	self.arena.width = self.arena.bs * self.width;
 	self.arena.height = self.arena.bs * self.height;
-	self.arena.x = Math.floor( w.width() - self.arena.width) / 2;
-	self.arena.y = Math.floor( w.height() - self.arena.height ) / 2;
+	self.arena.x = Math.floor(w.width() - self.arena.width) / 2;
+	self.arena.y = Math.floor(w.height() - self.arena.height ) / 2;
 	
 	self.arena.canvas = $("<canvas/>")
 		.attr({tabindex : 0, width: self.arena.width, height: self.arena.height })
@@ -52,7 +52,7 @@ ColoredBlocks.prototype.start = function() {
 	self.points = 0;
 	self.highscore = self.getHighscoreCookie();
 	self.initField().draw().showGameInfo();
-	self.arena.canvas.off("click.colredblocks").on("click.coloredblocks", function(event) { self.click(event); })
+	self.arena.canvas.off("click.coloredblocks").on("click.coloredblocks", function(event) { self.click(event); })
 	return self;
 };
 ColoredBlocks.prototype.destroy = function() {
@@ -208,7 +208,10 @@ ColoredBlocks.prototype.click = function(event) {
 	var offset = $(event.target).offset();
 	var x = Math.floor( (event.pageX - offset.left) / self.arena.bs);
 	var y = Math.floor( (event.pageY - offset.top) / self.arena.bs);
+	if (self.mutex) return;
+	self.mutex = true;
 	if (self.isAllowed(x,y)) self.eliminate(x,y).animate().calcPoints().updateHighscore().showGameInfo().finish();
+	self.mutex = false;
 };
 ColoredBlocks.prototype.showGameInfo = function() {
 	var self = this;
