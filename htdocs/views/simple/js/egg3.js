@@ -61,9 +61,11 @@ P2048.prototype.start = function() {
 		.off("mousedown.r2048").on("mousedown.r2048", function(event) { self.mousedown(event); })
 		.off("mousemove.r2048").on("mousemove.r2048", function(event) { self.mousemove(event); })
 		.off("mouseup.r2048").on("mouseup.r2048", function(event) { self.mouseup(event); })
+		.off("click.r2048").on("click.r2048", function(event){ self.click(event); })
 		.off("keydown.r2048").on("keydown.r2048", function(event) { self.keypressed(event);})
 	;
 	self.score = 0;
+	self.countNums = 0;
 	self.highscore = self.getHighscoreCookie();
 	self.arena.ctx = self.arena.canvas[0].getContext("2d");
 	self.initField().draw().showGameInfo().addNumber().addNumber();
@@ -82,6 +84,7 @@ P2048.prototype.mousedown = function(event) {
 };
 P2048.prototype.mousemove = function(event) {
 	var self = this;
+	this.arena.canvas.css("cursor",this.getMouseDirInfo(event).cursor);
 	if (!self.arena.mousepos) return;
 	if (self.arena.mousepos.x != event.pageX || self.arena.mousepos.y != event.pageY ) {
 		self.arena.dragging = true;
@@ -99,6 +102,29 @@ P2048.prototype.mouseup = function(event) {
 		}
 		self.arena.dragging = false;
 	}
+};
+P2048.prototype.getMouseDirInfo = function(event) {
+	var self = this;
+	var offset = $(event.target).offset();
+	var x = Math.floor( (event.pageX - offset.left) / self.arena.bs);
+	var y = Math.floor( (event.pageY - offset.top) / self.arena.bs);
+	var dirinfo =  { dir : { x: 0, y: 0}, cursor : "move"};
+	if (y>0 && y<self.height-1) {
+		if ( x === 0 ) dirinfo = {dir:{x:-1, y:0}, cursor:"w-resize"};
+		else if ( x == self.width-1 ) dirinfo = {dir:{x:1,y:0},cursor:"e-resize"};
+	}
+	if (x>0 && x<self.width-1) {
+		if ( y === 0 ) dirinfo = {dir:{x:0,y:-1},cursor:"n-resize"};
+		else if ( y == self.height-1) dirinfo = {dir:{x:0,y:1},cursor:"s-resize"};
+	}
+	return dirinfo;
+};
+P2048.prototype.click = function(event) {
+	var self = this;
+	if (self.arena.dragging) return self;
+	var i = self.getMouseDirInfo(event);
+	if (i.dir.x !=0 || i.dir.y !=0 ) self.move(i.dir.x,i.dir.y);
+	return self;
 };
 P2048.prototype.keypressed = function(event) {
 	var self = this;
@@ -313,14 +339,16 @@ P2048.prototype.hasWon = function() {
 P2048.prototype.showMessageText = function(text, color, stroke) {
 	var self = this;
 	var ctx = self.arena.ctx;
-	ctx.save();
-	var i = self.fitText(text, self.arena.width, self.arena.height);
-	ctx.font = i.fs+"px fantasy";
-	ctx.fillStyle = color;
-	ctx.fillText(text, i.xOffset, i.yOffset, self.arena.width);
-	ctx.strokeStyle = stroke;
-	ctx.strokeText(text, i.xOffset,i.yOffset,self.arena.width);
-	ctx.restore();
+	window.setTimeout(function() {
+		ctx.save();
+		var i = self.fitText(text, self.arena.width, self.arena.height);
+		ctx.font = i.fs+"px fantasy";
+		ctx.fillStyle = color;
+		ctx.fillText(text, i.xOffset, i.yOffset, self.arena.width);
+		ctx.strokeStyle = stroke;
+		ctx.strokeText(text, i.xOffset,i.yOffset,self.arena.width);
+		ctx.restore();	
+	},300);
 	return self;
 };
 P2048.prototype.checkGameState = function() {

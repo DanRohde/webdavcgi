@@ -10,7 +10,7 @@ for p in $(find . -type d -name htdocs) ; do
 		newfile=${bn}.min.${ext} 
 
 		if [ \( ! -e "$p/$newfile" \) -o \( "$p/$file" -nt "$p/$newfile" \) ]; then
-			test -f "$p/$file" && yuglify --terminal < "$p/$file" > "$p/$newfile"
+			test -f "$p/$file" && yuglify --terminal --type "${ext}" < "$p/$file" > "$p/$newfile"
 			test -f $"$p/$newfile" && gzip -c < "$p/$newfile" > "$p/${newfile}.gz"
 		fi
 	done
