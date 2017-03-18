@@ -138,7 +138,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		var nd = $("#foldertree").MyFolderTree("get-node-data", n);
 		var label = n.children(".mft-node-label:first");
 		var base = $.MyStringHelper.getParentURI(nd.uri);
-		var file = $.MyStringHelper.getBasename(nd.uri);
+		var file = decodeURIComponent($.MyStringHelper.getBasename(nd.uri));
 		$.MyInplaceEditor({
 			editorTarget: label,
 			defaultValue: file,
@@ -158,7 +158,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	});
 	function getUriFilterFunc(data, file) {
 		return function(n,d) {
-			return file ? d.uri == data.base + file : d.uri == data.base;
+			return file ? decodeURIComponent(d.uri) == decodeURIComponent(data.base) + file : d.uri == data.base;
 		};
 	}
 	$("#flt").on("filesRemoved", function(event, data) {

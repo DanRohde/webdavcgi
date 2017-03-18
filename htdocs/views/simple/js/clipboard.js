@@ -30,6 +30,6 @@ function handleClipboard() {
 	toggleButton($(".action.paste"), disabled);
 	if (srcuri == datauri && action == "cut") 
 		$.each(files.split("@/@"), function(i,val) { 
-			$("[data-file='"+val+"']").addClass("cutted").fadeTo("fast",0.5);
+			$("[data-file='"+$.MyStringHelper.escapeSel(val)+"']").addClass("cutted").fadeTo("fast",0.5);
 		}) ;
 }

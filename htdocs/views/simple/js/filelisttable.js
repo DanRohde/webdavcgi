@@ -106,7 +106,7 @@ function refreshFileListEntry(filename, oldname) {
 	return $.MyPost($.MyStringHelper.addMissingSlash(fl.data("uri")), { ajax: "getFileListEntry", template: fl.data("entrytemplate"), file: filename}, function(r) {
 		try {
 			var newrow = $(r);
-			var row = $("tr[data-file='"+$.MyStringHelper.simpleEscape(oldname !=undefined ? oldname : filename)+"']", fl);
+			var row = $("tr[data-file='"+$.MyStringHelper.escapeSel(oldname !=undefined ? oldname : filename)+"']", fl);
 			if (row.length > 0) {
 				$("#flt").trigger("replaceRow", {row:row,newrow:newrow });
 				row.replaceWith(newrow);

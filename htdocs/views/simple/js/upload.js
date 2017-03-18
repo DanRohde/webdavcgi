@@ -25,8 +25,8 @@ function checkUploadedFilesExist(data) {
 		} else if (data.files[i].webkitRelativePath && data.files[i].webkitRelativePath != "") {
 			relaPath = data.files[i].webkitRelativePath.split(/[\\\/]/).slice(0,-1).join("/") + "/";
 		}
-		if (relaPath && $("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(relaPath)+"']").length>0) return true;
-		else if ($("#fileList tr[data-file='"+$.MyStringHelper.simpleEscape(data.files[i].name)+"']").length>0) return true;
+		if (relaPath && $("#fileList tr[data-file='"+$.MyStringHelper.escapeHTML(relaPath)+"']").length>0) return true;
+		else if ($("#fileList tr[data-file='"+$.MyStringHelper.escapeHTML(data.files[i].name)+"']").length>0) return true;
 	}
 	return false;
 }
@@ -80,8 +80,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			if (!uploadState.aborted) {
 				var transport = data.submit();
 				var filename = data.files[0].name;
+				var pid = "fpb" + $.MyStringHelper.getIdFromString(filename);
 				uploadState.transports.push(transport);
-				var up =$("<div></div>").appendTo("#progress .info").attr("id","fpb"+filename).addClass("fileprogress");
+				var up =$("<div></div>").appendTo("#progress .info").attr("id",pid).addClass("fileprogress");
 				$("<div/>").click(function(event) {
 					$.MyPreventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
@@ -93,8 +94,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			return false;
 		},
 		done:  function(e,data) {
-			$("#progress [id='fpb"+data.files[0].name+"'] .cancel").remove();
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info")
+			var id = "fpb" + $.MyStringHelper.getIdFromString(data.files[0].name);
+			$("#progress [id='"+id+"'] .cancel").remove();
+			$("div[id='"+id+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass(data.result.message ? "done" : "failed")
 				.css("width","100%")
@@ -103,8 +105,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			renderUploadProgressAll(uploadState);
 		},
 		fail: function(e,data) {
-			$("#progress [id='fpb"+data.files[0].name+"'] .cancel").remove();
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info")
+			var pid = "fpb" + $.MyStringHelper.getIdFromString(data.files[0].name);
+			$("#progress [id='"+pid+"'] .cancel").remove();
+			$("div[id='fpb"+pid+"'] .fileprogressbar", "#progress .info")
 				.removeClass("running")
 				.addClass("failed")
 				.css("width","100%")
@@ -114,7 +117,6 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			console.log(data);
 		},
 		stop: function() {
-			// $("#progress").dialog("close");
 			renderUploadProgressAll(uploadState);
 			$(this).data("ask.confirm",false);
 			$("#progress").dialog("option","beforeClose",function() { return true; });
@@ -151,8 +153,9 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 			});
 		},
 		progress: function(e,data) {
+			var pid = "fpb" + $.MyStringHelper.getIdFromString(data.files[0].name);
 			var perc = parseInt(data.loaded/data.total * 100, 10)+"%";
-			$("div[id='fpb"+data.files[0].name+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): "+perc);
+			$("div[id='"+pid+"'] .fileprogressbar", "#progress .info").css("width", perc).html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): "+perc);
 			
 		},
 		progressall: function(e,data) {

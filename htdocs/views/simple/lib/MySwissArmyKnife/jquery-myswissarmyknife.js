@@ -93,7 +93,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		return $("<div/>").text(text).html();
 	};
 	$.MyStringHelper.uri2html = function(uri) {
-		return $.MyStringHelper.simpleEscape(decodeURIComponent(uri));
+		var r = uri;
+		try {
+			r = decodeURIComponent(uri);
+		} catch (e) {
+			console.log(e);
+		}
+		return $.MyStringHelper.simpleEscape(r);
 	};
 	$.MyStringHelper.quoteWhiteSpaces = function(filename) {
 		return filename.replace(/( {2,})/g, '<span class="ws">$1</span>');
@@ -109,11 +115,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	};
 	$.MyStringHelper.getParentURI = function(uri) {
 		return uri.replace(/^(.*\/)[^\/]+\/?$/, "$1");
-	}
+	};
 	$.MyStringHelper.getBasename = function(uri) {
 		return uri.replace(/^.*\/([^\/]+)\/?$/, "$1");
-	}
-	
+	};
+	$.MyStringHelper.getIdFromString = function(s) {
+		return s.replace(/[^a-z0-9_:.\-]/gi, "_");
+	};
+	$.MyStringHelper.escapeSel = function(s) {
+		if (typeof s === "string") return s.replace(/'/g,"\\\'");
+		else if (typeof s === "object") return $.map(s,function(val) { return $.MyStringHelper.escapeSel(String(val)); });
+	};
+	$.MyStringHelper.escapeHTML = function(s) {
+		if (typeof s  === "string") return $.MyStringHelper.simpleEscape(s).replace(/'/g,'&#39;');
+		else if (typeof s === "object") return $.map(s,function(val) { return $.MyStringHelper.escapeHTML(String(val)); });
+	};
 	$.MyTokenExtender = function(param) {
 		var result = param;
 		var token = $("#token");

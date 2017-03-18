@@ -99,7 +99,7 @@ function initFileListActions() {
 			}
 			if (data.base != uri) return;
 			uncheckSelectedRows();
-			removeFileListRow($("#fileList tr[data-file='"+data.files.join("'],#fileList tr[data-file='")+"']"));
+			removeFileListRow($("#fileList tr[data-file='"+$.MyStringHelper.escapeSel(data.files).join("'],#fileList tr[data-file='")+"']"));
 		})
 		.on("filesCreated", function(e,data) {
 			if (data.base != getURI()) return;
@@ -246,10 +246,10 @@ function handleFileListActionEventDelete() {
 	var files;
 	if (self.parents(".mft-node").length > 0 ) {
 		data = $("#foldertree").MyFolderTree("get-node-data", self);
-		filename = $.MyStringHelper.getBasename(data.uri)+"/";
+		filename = decodeURIComponent($.MyStringHelper.getBasename(data.uri))+"/";
 		posturi = $.MyStringHelper.getParentURI(data.uri);
 		files = [ filename ];
-		if (posturi == getURI()) selrows = $("#fileList tr[data-file='"+filename+"/']");
+		if (posturi == getURI()) selrows = $("#fileList tr[data-file='"+$.MyStringHelper.escapeSel(filename)+"/']");
 	} else {
 		selrows = getSelectedRows(this);
 		if (selrows.length == 1) filename = selrows.first().data("file");
@@ -258,7 +258,7 @@ function handleFileListActionEventDelete() {
 		selrows.fadeTo("slow", 0.5);
 	}
 	var confirm_msg = filename != undefined ?  $("#deletefileconfirm").html() : $("#deletefilesconfirm").html();
-	confirm_msg = confirm_msg.replace(/%s/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.simpleEscape(filename)));
+	confirm_msg = confirm_msg.replace(/%s/,$.MyStringHelper.quoteWhiteSpaces($.MyStringHelper.uri2html(filename)));
 	confirmDialog( confirm_msg, {
 		confirm: function() {
 			var xhr = $.MyPost(posturi, { "delete" : "yes", "file" : files } , function(response) {
@@ -299,7 +299,7 @@ function handleFileListActionEvent(event) {
 			var node = self.closest(".mft-node");
 			var data = $("#foldertree").MyFolderTree("get-node-data",node);
 			clpuri = $.MyStringHelper.getParentURI(data.uri);
-			selfiles = [ $.MyStringHelper.getBasename(data.uri) ];
+			selfiles = [ decodeURIComponent($.MyStringHelper.getBasename(data.uri)) ];
 			$("#foldertree .mft-node").removeClass("cutted").fadeTo("fast", 1);
 			if (self.hasClass("cut")) node.addClass("cutted").fadeTo("slow", 0.5);
 		} else {
