@@ -90,7 +90,7 @@ function initFileListActions() {
 	$("#flt")
 		.on("fileListSelChanged fileListViewChanged", updateFileListActions)
 		.on("filesRemoved", function(e,data) {
-			var uri = getURI();
+			var uri = decodeURIComponent(getURI());
 			for (var i = 0; i<data.files.length; i++) { // check for parent folder:
 				if (uri.indexOf(data.base + data.files[i]) == 0) {
 					changeUri(data.base);
