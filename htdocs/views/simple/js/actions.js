@@ -97,7 +97,7 @@ function initFileListActions() {
 					return;
 				}
 			}
-			if (data.base != uri) return;
+			if (data.base != getURI()) return;
 			uncheckSelectedRows();
 			removeFileListRow($("#fileList tr[data-file='"+$.MyStringHelper.escapeSel(data.files).join("'],#fileList tr[data-file='")+"']"));
 		})
