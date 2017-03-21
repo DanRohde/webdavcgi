@@ -43,6 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 	cursor: pointer;
 	min-width: 5em;
+	white-space: pre;
 	-webkit-user-select: none;
 	-ms-user-select: none;
 	-moz-user-select: none;

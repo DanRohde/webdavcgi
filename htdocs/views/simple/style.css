@@ -1375,7 +1375,7 @@ tr:focus .action.changeuri {
 	max-width: 30ex;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	white-space: pre;
 	display: inline-block;
 	min-width: 1em;
 	float: left;
