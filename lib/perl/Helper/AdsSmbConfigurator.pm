@@ -163,23 +163,22 @@ sub _get_smb_config {
     );
 
     #### homedirectory als Share eintragen
-    chomp $home_directory;
-    $home_directory =~ s/\s+$//xms;     # Leerzeichen am Ende entfernen
-    $home_directory =~ s/[*].*//xms;    # Kommentare entfernen
-    if ( $home_directory =~ /^\\\\($REGEX_DOMAIN)\\([^\\]+)(\\.*)?$/xms )
-    {                                   # wenn es ein korrekter Shareeintrag ist
-        my ( $home_server, $home_share, $home_dir ) = ( $1, $2, $3 );
-        if ($home_dir) {
-            $home_dir =~ s{\\}{/}xmsg; # alle restlischen Rückstriche umwandeln
-            $home_dir =~ s{/$}{}xmsg;
-        }
-        $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{shares} =
-          [$home_share];
-        $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{sharealiases}
-          ->{$home_share} = "$home_drive \u$home_share/";
-        if ($home_dir) {
-            $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{initdir}
-              ->{$home_share} = $home_dir;
+    if (defined $home_directory) {
+        chomp $home_directory;
+        $home_directory =~ s/\s+$//xms;     # Leerzeichen am Ende entfernen
+        $home_directory =~ s/[*].*//xms;    # Kommentare entfernen
+        if ( $home_directory =~ /^\\\\($REGEX_DOMAIN)\\([^\\]+)(\\.*)?$/xms )
+        {                                   # wenn es ein korrekter Shareeintrag ist
+            my ( $home_server, $home_share, $home_dir ) = ( $1, $2, $3 );
+            if ($home_dir) {
+                $home_dir =~ s{\\}{/}xmsg; # alle restlischen Rückstriche umwandeln
+                $home_dir =~ s{/$}{}xmsg;
+            }
+            $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{shares} =  [$home_share];
+            $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{sharealiases}->{$home_share} = "$home_drive \u$home_share/";
+            if ($home_dir) {
+                $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{initdir}->{$home_share} = $home_dir;
+            }
         }
     }
 
