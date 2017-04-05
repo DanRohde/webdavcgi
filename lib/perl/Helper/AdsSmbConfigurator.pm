@@ -51,10 +51,7 @@ sub _init {
     $self->{memcachedexpire} = $config{memcachedexpire} // 600;
     $self->{debug}           = $config{debug};
     $self->{separator}       = $config{separator} // q{~};
-    $self->{defaultdomain} =
-      $config{defaultdomain}
-      ? uc( $config{defaultdomain} )
-      : 'CMS.HU-BERLIN.DE';
+    $self->{defaultdomain}   = $config{defaultdomain} ? uc( $config{defaultdomain} ) : 'CMS.HU-BERLIN.DE';
     $self->{nameservers} = $config{nameservers};
     $self->{allowflag}   = $config{allowflag};
     $self->{ldapattr}    = $config{ldapattr} // 'info';
@@ -153,28 +150,24 @@ sub _get_smb_config {
     );
     foreach ( $result->entries ) {
         $home_directory  = $_->get_value('homeDirectory');
-        $home_drive      = uc( $_->get_value('homeDrive') );
+        $home_drive      = uc( $_->get_value('homeDrive') // q{});
         $other_directory = $_->get_value( $self->{ldapattr} );
     }
     $ldap->unbind();
 
-    $self->debug(
-"genConfig: homeDirectory: $home_directory, homeDrive: $home_drive, other=$other_directory"
-    );
-
     #### homedirectory als Share eintragen
     if (defined $home_directory) {
+        $self->debug("genConfig: homeDirectory: $home_directory, homeDrive: $home_drive, other=$other_directory");
         chomp $home_directory;
         $home_directory =~ s/\s+$//xms;     # Leerzeichen am Ende entfernen
         $home_directory =~ s/[*].*//xms;    # Kommentare entfernen
-        if ( $home_directory =~ /^\\\\($REGEX_DOMAIN)\\([^\\]+)(\\.*)?$/xms )
-        {                                   # wenn es ein korrekter Shareeintrag ist
+        if ( $home_directory =~ /^\\\\($REGEX_DOMAIN)\\([^\\]+)(\\.*)?$/xms ) { # wenn es ein korrekter Shareeintrag ist
             my ( $home_server, $home_share, $home_dir ) = ( $1, $2, $3 );
             if ($home_dir) {
                 $home_dir =~ s{\\}{/}xmsg; # alle restlischen Rückstriche umwandeln
                 $home_dir =~ s{/$}{}xmsg;
             }
-            $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{shares} =  [$home_share];
+            $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{shares} = [$home_share];
             $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{sharealiases}->{$home_share} = "$home_drive \u$home_share/";
             if ($home_dir) {
                 $SMB{domains}->{$domain}->{fileserver}->{$home_server}->{initdir}->{$home_share} = $home_dir;
@@ -204,25 +197,18 @@ sub _handle_other_directory {
             $smbref->{allowed} = 1;
         }
         if (/^($REGEX_DRIVE)?\\\\($REGEX_DOMAIN)\\([^\\]+)(\\.*)?$/xms) {
-            my ( $drive, $server, $share, $directory ) =
-              ( uc($1 // q{?:} ), $2, $3, $4 );
+            my ( $drive, $server, $share, $directory ) = ( uc($1 // q{?:} ), $2, $3, $4 );
             $directory //= q{};
             $directory =~ s{\\}{/}xmsg;    # umwandeln von \ nach /
             $directory =~ s{/$}{/}xms;     # / am Ende entfernen
             my $alias = $directory;        # Alias auf Pfad ableiten
             $alias =~ s{.*/}{}xms;
-            push @{ $smbref->{domains}->{$domain}->{fileserver}->{$server}
-                  ->{shares} },
-              $share . $directory;
+            push @{ $smbref->{domains}->{$domain}->{fileserver}->{$server}->{shares} }, $share . $directory;
             if ($alias) {
-                $smbref->{domains}->{$domain}->{fileserver}->{$server}
-                  ->{sharealiases}->{ $share . $directory } =
-                  "$drive \u$share: $alias/";
+                $smbref->{domains}->{$domain}->{fileserver}->{$server}->{sharealiases}->{ $share . $directory } = "$drive \u$share: $alias/";
             }
             else {
-                $smbref->{domains}->{$domain}->{fileserver}->{$server}
-                  ->{sharealiases}->{ $share . $directory } =
-                  "$drive \u$share/";
+                $smbref->{domains}->{$domain}->{fileserver}->{$server}->{sharealiases}->{ $share . $directory } = "$drive \u$share/";
             }
         }
     }
