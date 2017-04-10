@@ -60,6 +60,7 @@ sub compress_files {
     my $tempdir =
       tempdir( '/tmp/webdavcgi-compress-files-XXXXX', CLEANUP => 1 );
     require Archive::Zip;
+    local $Archive::Zip::UNICODE = 1;
     my $zip = Archive::Zip->new();
     foreach my $file (@files) {
         $self->_copytolocal( "$tempdir/", "$basepath$file" );

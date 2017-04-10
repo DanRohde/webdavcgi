@@ -203,6 +203,7 @@ sub _handle_download_all_locales {
                 ;
 
     require Archive::Zip;
+    local $Archive::Zip::UNICODE = 1;
     my $zip = Archive::Zip->new();
     foreach my $fn ( glob $glob ) {
         $zip->addFile( $fn, $fn=~/^${INSTALL_BASE}(.*)$/xms ? $1 : $fn);
@@ -221,6 +222,7 @@ sub _handle_download_all_locales {
 sub _handle_zipped_text_download {
     my ($self, $content, $zipfilename ) = @_;
     require Archive::Zip;
+    local $Archive::Zip::UNICODE = 1;
     my $zip = Archive::Zip->new();
     foreach my $filename (sort keys %{$content}) {
         my $textref = $content->{$filename};

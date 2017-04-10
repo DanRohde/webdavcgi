@@ -323,6 +323,7 @@ sub uncompress_archive {
     my ( $self, $zipfile, $destination ) = @_;
     my $ret = 1;
     require Archive::Zip;
+    local $Archive::Zip::UNICODE = 1;
     my $zip    = Archive::Zip->new();
     my $status = $zip->read( $self->resolveVirt($zipfile) );
     if ( $ret = $status eq $zip->AZ_OK ) {
@@ -336,6 +337,7 @@ sub compress_files {
 
     require Archive::Zip;
     my $zip = Archive::Zip->new();
+    local $Archive::Zip::UNICODE = 1;
     foreach my $file (@files) {
         if ( $self->isDir( $basepath . $file ) ) {
             $zip->addTree( $self->resolveVirt( $basepath . $file ), $file );
