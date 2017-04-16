@@ -68,9 +68,7 @@ sub init {
             }
             else {
                 if ( $oldfilename ne $newfilename ) {
-                    carp(
-q{Cannot read ticket file (don' t use a setuid / setgid wrapper:}
-                          . ( -r $oldfilename ) );
+                    carp(q{Cannot read ticket file (don' t use a setuid / setgid wrapper:} . ( -r $oldfilename ) );
                 }
 
             }
@@ -87,19 +85,10 @@ sub getSmbClient {
         $ENV{KRB5CCNAME} = "FILE:/tmp/krb5cc_webdavcgi_$rmuser";
     }
 
-    if ( exists $_SMBCLIENT{$rmuser} ) { return $_SMBCLIENT{$rmuser}; }
-    return $_SMBCLIENT{$rmuser} = Filesys::SmbClient->new(
-        username  => $ENV{SMBUSER},
-        password  => $ENV{SMBPASSWORD},
-        workgroup => $ENV{SMBWORKGROUP}
-      )
-      if exists $ENV{SMBUSER}
-      && exists $ENV{SMBPASSWORD}
-      && exists $ENV{SMBWORKGROUP};
-    return $_SMBCLIENT{$rmuser} = Filesys::SmbClient->new(
-        username => _get_full_username(),
-        flags    => Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS
-    );
+    return $_SMBCLIENT{$rmuser} //=
+                exists $ENV{SMBUSER} && exists $ENV{SMBPASSWORD} && exists $ENV{SMBWORKGROUP}
+                    ? Filesys::SmbClient->new(username => $ENV{SMBUSER}, password => $ENV{SMBPASSWORD}, workgroup => $ENV{SMBWORKGROUP})
+                    : Filesys::SmbClient->new(username => _get_full_username(), flags => Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS);
 }
 
 sub finalize {
@@ -135,15 +124,13 @@ sub _read_dir_root {
                 }
                 push @files, $path;
             }
-
-#push @files, split(/, /, $fserver.$_SHARESEP.join(", $fserver$_SHARESEP",@{$dom->{fileserver}{$fserver}{shares}}) );
             next;
         }
         if ( $fserver eq q{} ) {
             ## ignore empty entries
             next;
         }
-        my $smbclient = self->getSmbClient();
+        my $smbclient = $self->getSmbClient();
         if ( my $dir = $smbclient->opendir("smb://$fserver/") ) {
             my $sfilter = _get_share_filter(
                 $dom->{fileserver}{$fserver},
@@ -249,41 +236,19 @@ sub _is_allowed {
     }
     my ( $server, $share, $path, $shareidx ) = _get_path_info($file);
     my $userdomain = _get_user_domain();
-    my $sregex =
-         defined $server
-      && defined $userdomain
-      && ref(
-        $BACKEND_CONFIG{$BACKEND}{domains}{$userdomain}{fileserver}{$server}
-          {shares} ) eq 'ARRAY'
-      ? '^(?:'
-      . join(
-        q{|},
-        @{
-            $BACKEND_CONFIG{$BACKEND}{domains}{$userdomain}{fileserver}
-              {$server}{shares}
-        }
-      )
-      . ')$'
-      : q{^$};
-    return $self->_set_cache_entry(
-        '_is_allowed',
-        $file,
+    if (!$userdomain) {
+        return ! $BACKEND_CONFIG{$BACKEND}{secure};
+    }
+    my $serverconfig = $BACKEND_CONFIG{$BACKEND}{domains}{$userdomain}{fileserver}{$server};
+    my $sregex = $serverconfig && ref $serverconfig->{shares} eq 'ARRAY' ? '^(?:' . join(q{|}, @{$serverconfig->{shares}}) . ')$' : q{^$};
+    my $allowed =
         !$BACKEND_CONFIG{$BACKEND}{secure}
           || _is_root($file)
-          || (
-            exists $BACKEND_CONFIG{$BACKEND}
-            {domains}{$userdomain}{fileserver}{$server}
-            && !
-            exists $BACKEND_CONFIG{$BACKEND}
-            {domains}{$userdomain}{fileserver}{$server}{shares} )
-          || (
-            exists $BACKEND_CONFIG{$BACKEND}
-            {domains}{$userdomain}{fileserver}{$server}
-            && $shareidx
-            && exists $BACKEND_CONFIG{$BACKEND}
-            {domains}{$userdomain}{fileserver}{$server}{shares}[$shareidx] )
-          || $share =~ /$sregex/xmsi
-    );
+          || ( $serverconfig && ! exists $serverconfig->{shares} )
+          || ( $serverconfig && $shareidx && exists $serverconfig->{shares}[$shareidx] )
+          || ( $serverconfig && $share =~ /$sregex/xmsi )
+    ;
+    return $self->_set_cache_entry('_is_allowed', $file, $allowed);
 }
 
 sub isLink {

@@ -602,6 +602,7 @@ input.file-upload {
 	background-position: center center;
 	float: right;
 	width: 22px;
+	height:22px;
 }
 #progress .info .fileprogressbar.running {
 	border-bottom: 2px solid #4444ff;
