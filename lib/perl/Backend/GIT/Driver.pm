@@ -134,6 +134,7 @@ sub compress_files {
     my ( $self, $desthandle, $basepath, @files ) = @_;
 
     require Archive::Zip;
+    local $Archive::Zip::UNICODE = 1;
     my $zip       = Archive::Zip->new();
     my $gitfilter = sub {
         return !$self->gitFilter( $self->dirname($_), $self->basename($_) );
@@ -159,6 +160,7 @@ sub uncompress_archive {
     my ( $self, $zipfile, $destination ) = @_;
     my $ret = 1;
     require Archive::Zip;
+    local $Archive::Zip::UNICODE = 1;
     my $zip    = Archive::Zip->new();
     my $status = $zip->read( $self->resolveVirt($zipfile) );
     $ret = $status eq $zip->AZ_OK;
