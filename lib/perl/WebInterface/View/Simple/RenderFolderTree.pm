@@ -47,7 +47,7 @@ sub build_folder_tree {
         my $child = {
             name  => $self->{backend}->getDisplayName($full),
             uri   => $fileuri,
-            title => $islink ? sprintf '%s → %s', $full, $self->{backend}->getVirtualLinkTarget($full) : $full,
+            title => $self->{cgi}->escapeHTML( $islink ? sprintf '%s → %s', $file, $self->{backend}->getLinkSrc($full) : $full ),
             help  => $self->tl('foldertree.help'),
             isreadable => $isreadable,
             iconclasses => 'icon '.$self->get_category_class(lc($file),'folder','category-folder'),
