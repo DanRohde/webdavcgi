@@ -1,29 +1,26 @@
 ## common: 
 - need the unminfied version of JS/CSS for debug and production
 - use contrib.sh to build contrib.css.gz, contrib.js.gz
-- contrib.sh uses minify.sh uses YUI Compressor: http://yui.github.io/yuicompressor/ - updated 2015-09-02 (v2.4.8)
+- contrib.sh uses minify.sh uses yuglify  
 
 ## main contrib:
-jquery: http://www.jquery.com/ - updated 2016-12-06 (v3.0.0)
+jquery: http://www.jquery.com/ - updated 2017-04-29 (v3.2.1)
 	jquery.js 
-jquery-migrate: http://www.jquery.com/ - updated 2016-12-06 (v1.4.1)
+jquery-migrate: http://www.jquery.com/ - updated 2017-04-29 (v3.0.0)
 	jquery-migrate.js 
-jquery-ui: http://www.jqueryui.com/ - updated 2016-12-06 (v1.12.0)
+jquery-ui: http://www.jqueryui.com/ - updated 2017-04-29 (v1.12.1)
 	jquery-ui.js jquery-ui.css 
 	# theme: Smoothness and don't forget to copy ui images to images/
-js-cookie: https://github.com/js-cookie/js-cookie - updated 2015-09-02 (v2.0.3)
+js-cookie: https://github.com/js-cookie/js-cookie - updated 2017-04-29 (v2.1.4)
+    # https://raw.githubusercontent.com/js-cookie/js-cookie/master/src/js.cookie.js
 	js.cookie.js 
-hoverIntent: http://cherne.net/brian/resources/jquery.hoverIntent.html - updated 2015-09-02 (v1.8.0)
-	jquery.hoverIntent.js
-noty: https://github.com/needim/noty/releases - updated 2015-09-02 (v2.3.6)
-	jquery.noty.js jquery.noty.layout.topCenter.js jquery.noty.themes.default.js
-fileupload: http://blueimp.github.io/jQuery-File-Upload/ - updated 2015-09-02 (v9.11.2)
+noty: https://github.com/needim/noty/releases - updated 2017-04-29 (v3.1.0)
+    # http://ned.im/noty
+	noty.js noty.css
+fileupload: http://blueimp.github.io/jQuery-File-Upload/ - updated 2017-04-29 (v9.18.0)
 	jquery.fileupload.js
-fancybox2: http://fancyapps.com/fancybox/ - updated 2015-09-02 (v2.1.5)
+fancybox3: http://fancyapps.com/fancybox/3/ - updated 2017-04-29 (v3.0)
 	jquery.fancybox.js		jquery.fancybox.css
-	jquery.fancybox-buttons.js	jquery.fancybox-buttons.css
-	jquery.fancybox-thumbs.js	jquery.fancybox-thumbs.css
-	# don't forget images (egrep '(gif|png)' jquery.fancy*css)
 multidraggable: https://github.com/someshwara/MultiDraggable - updated 2015-09-02 (13 Nov 2012)
 	multidraggable.js
 	#is a patched version (don't upgrade without the patch) 

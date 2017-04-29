@@ -19,21 +19,19 @@ function initFancyBox() {
 	$("#flt").on("fileListChanged", function() {
 		$("#fileList tr.isviewable-yes.isempty-no[data-mime^='image/']:visible .changeuri")
 			.off("click")
-			.attr("data-fancybox-group","imggallery")
-			.each(function(i,v){ var self = $(v); self.data("fancybox-href", self.data("href")); self.data("fancybox-title", self.html()); })
-			.fancybox({
-				padding: 0,
-				afterShow: function() { $(".fancybox-close").focus();},
-				helpers: { buttons: {}, thumbs: { width: 60, height: 60, source: function(current) { return (current.element).attr("data-href")+"?action=thumb"; } } } 
-			});
+			.attr({"data-fancybox":"imggallary"})
+			.each(function(i,item) {
+				var $item = $(item);
+				$item.data({ src: $item.data("href"), caption: $item.html()});
+			})
+			.fancybox({ thumbs: { showOnStart: true, hideOnClosing: true}});
 		$("#fileList tr.isviewable-no.isempty-no[data-mime^='image/']:visible .changeuri")
 			.off("click")
-			.attr("data-fancybox-group","wtimggallery")
-			.each(function(i,v){ var self = $(v); self.data("fancybox-href", self.data("href")); self.data("fancybox-title", self.find(".nametext").html()); })
-			.fancybox({
-				padding: 0,
-				afterShow: function() { $(".fancybox-close").focus();},
-				helpers: { buttons: {} }
-			});
+			.attr({"data-fancybox":"wtimggallery"})
+			.each(function(i,item){ 
+				var $item = $(item); 
+				$item.data({ src: $item.data("href"), caption: $item.find(".nametext").html()})
+			})
+			.fancybox();
 	});
 }
