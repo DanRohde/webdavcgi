@@ -121,40 +121,40 @@ sub init_defaults {
     $ALLOW_PATHINPUT    = 0;
     %ICONS     = ( default => '${VHTDOCS}views/simple/icons/blank.png' );
     $FILETYPES = <<'EOF'
-unknown unknown
-folder  folder
-folderaudio my+music music audio $TL{foldertypes.audio}
-folderconfig .gnome .gnome2 .ssh .ssh2 etc system windows
-foldercurrent .
-folderdocs documents $TL{foldertypes.documents}
-folderhome $USER home
-folderpictures my+pictures pictures dcim $TL{foldertypes.pictures} 
-foldertemp temp tmp
-foldertrash $recycle.bin trash $TL{foldertypes.trash}
-folderup folderup ..
-foldervideo my+videos videos video movie movies mymovies my+movies mp4 $TL{foldertypes.videos}
-folderweb public_html .public_html
-text    1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs md markdown
-audio   aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
-video   3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv
-image   arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
-source  ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f77 f90 for fs h has hpp hrl hs in inl jav java js json l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
-oofficew odt ott odm stw sxw
-officew doc docb docm docx dot dotx dotm rtf
-officep pot potm potx ppam pps ppsx ppsm ppt pptm pptx odp otp sldm sldx sxi sti
-offices 123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xla xlam xlr xll xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx xlw  
-adobe   ai eps flv ind indt pdf prn ps psd swf
-markup  dtd htm html opml rdf rss sgml xml xsl xslt
-archive ??_ ?q? ?z? 7z apk arc arj bz2 cpio deb egg f gz jar kgb lbr lz lzma lzo mar par par2 pea pim rar rpm rz s7z sda sfx shar sit sitx sqx sz tar tgz tlz war xpi xz z zz zip 
-binary  a bin class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
-shell   alias bat bash bash_history bashrc bash_login bash_profile bash_logout logout bsh bshrc csh cshrc env history jsh ksh kshrc lesshst login mysql_history netrwhist profile ps1 selected_editor sqlite_history sh tcsh tcshrc 
-tex     aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
-font    afm fnt fon mf otf tfm ttc ttf 
-ebook   azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
-db      accdb accde accdr accdt accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 tmd usr wmdb xld
-config	cf cnf conf exrc gitconfig gvimrc gxt inf ini manifest muttrc perltidyrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
-gis	axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
-crypt	cer cert crl crt csr der eslock gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
+unknown  unknown
+folder          folder
+folderaudio     my+music music audio $TL{foldertypes.audio}
+folderconfig    .gnome .gnome2 .ssh .ssh2 etc system windows
+foldercurrent   .
+folderdocs      documents $TL{foldertypes.documents}
+folderhome      $USER home
+folderpictures  my+pictures pictures dcim $TL{foldertypes.pictures} 
+foldertemp      temp tmp
+foldertrash     $recycle.bin trash $TL{foldertypes.trash}
+folderup        .. folderup
+foldervideo     my+videos videos video movie movies mymovies my+movies mp4 $TL{foldertypes.videos}
+folderweb       public_html .public_html www html
+text      1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs md markdown
+audio     aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
+video     3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv
+image     arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
+source    ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f77 f90 for fs h has hpp hrl hs in inl jav java js json l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
+oofficew  odt ott odm stw sxw
+officew   doc docb docm docx dot dotx dotm rtf
+officep   pot potm potx ppam pps ppsx ppsm ppt pptm pptx odp otp sldm sldx sxi sti
+offices   123 bks csv dex fm fp fods ods ots sdc sxc stc wki wks wku xl xla xlam xlr xll xls xlsb xlshtml xlsm xlsmhtml xlsx xlt xlthtml xltm xltx xlw  
+adobe     ai eps flv ind indt pdf prn ps psd swf
+markup    dtd htm html opml rdf rss sgml xml xsl xslt
+archive   ??_ ?q? ?z? 7z apk arc arj bz2 cpio deb egg f gz jar kgb lbr lz lzma lzo mar par par2 pea pim rar rpm rz s7z sda sfx shar sit sitx sqx sz tar tgz tlz war xpi xz z zz zip 
+binary    a bin class cmd com ds_store dump exe img iso la lai lib lo o obj so vmdk 
+shell     alias bat bash bash_history bashrc bash_login bash_profile bash_logout logout bsh bshrc csh cshrc env history jsh ksh kshrc lesshst login mysql_history netrwhist profile ps1 selected_editor sqlite_history sh tcsh tcshrc 
+tex       aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
+font      afm fnt fon mf otf tfm ttc ttf 
+ebook     azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
+db        accdb accde accdr accdt accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 tmd usr wmdb xld
+config    cf cnf conf exrc gitconfig gvimrc gxt inf ini manifest muttrc perltidyrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
+gis       axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
+crypt     cer cert crl crt csr der eslock gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
 EOF
         ;
     $ICON_WIDTH              = 18;

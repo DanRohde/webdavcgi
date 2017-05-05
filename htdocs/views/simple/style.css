@@ -1610,6 +1610,7 @@ a.extern:after {
 	display: flex;
 	flex-flow: column nowrap;
 	max-width: 12em;
+	position: relative;
 }
 .flt-view-thumbs .icon {
 	background-position: center center;
@@ -1637,6 +1638,8 @@ a.extern:after {
 	width: 24px;
 	position: absolute;
 	margin-top: -5px;
+	top: 60px;
+	left: 150px;
 }
 .flt-view-thumbs .islink-yes td.filename,
 .flt-view-thumbs .islocked-yes td.filename {

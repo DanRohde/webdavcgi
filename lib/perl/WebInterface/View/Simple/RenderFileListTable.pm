@@ -228,7 +228,7 @@ sub _render_file_list_entry {
     my $ir = $self->{backend}->isReadable($full);
     my $il = $self->{backend}->isLink($full);
     my $id = $self->{backend}->isDir($full);
-    my $bfile = $file =~ m{^(.*)/$} ? $1 : $file;
+    my $bfile = $file =~ m{^(.*)/$}xms ? $1 : $file;
     $file .= $file !~ /^[.]{1,2}$/xms && $id ? q{/} : q{};
     my $e = $entrytemplate;
     my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
