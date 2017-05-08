@@ -4,7 +4,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>amCharts Responsive Example</title>
+    <title>amCharts Data Loader Example</title>
     <link rel="stylesheet" href="http://www.amcharts.com/lib/3/ammap.css" type="text/css">
     <script src="http://www.amcharts.com/lib/3/ammap.js"></script>
     <script src="http://www.amcharts.com/lib/3/maps/js/usaLow.js"></script>
@@ -20,7 +20,7 @@
     }
     </style>
     <script>
-      var map = AmCharts.makeChart("chartdiv", {
+      var map = AmCharts.makeChart( "chartdiv", {
         type: "map",
         "dataLoader": {
           "url": "data/map.json",
@@ -35,11 +35,8 @@
           "right": 10,
           "minValue": "little",
           "maxValue": "a lot!"
-        },
-        "responsive": {
-          "enabled": true
         }
-      });
+      } );
     </script>
   </head>
 
