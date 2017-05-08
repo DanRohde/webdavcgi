@@ -134,7 +134,7 @@ foldertrash     $recycle.bin trash $TL{foldertypes.trash}
 folderup        .. folderup
 foldervideo     my+videos videos video movie movies mymovies my+movies mp4 $TL{foldertypes.videos}
 folderweb       public_html .public_html www html
-text      1 2 3 4 5 6 7 8 9 asc eml ldif list log ics info out pub text txt vcard vcs md markdown
+text      1 2 3 4 5 6 7 8 9 asc eml htpasswd ldif list log ics info out pub text txt vcard vcs md markdown
 audio     aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video     3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv
 image     arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
@@ -151,8 +151,8 @@ shell     alias bat bash bash_history bashrc bash_login bash_profile bash_logout
 tex       aux bbl bib brf blg bst cls ctx def dtx dvi fd fmt ins lof lot ltx nav snm sty tex toc vrb
 font      afm fnt fon mf otf tfm ttc ttf 
 ebook     azw azw3 azw4 cbr cbz cb7 cbt cba ceb chm djvu epub fb2 kf8 lit lrf lrx ibooks opf oxps mobi pdb pdg prc  tpz tr2 tr3 xeb xps
-db        accdb accde accdr accdt accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 tmd usr wmdb xld
-config    cf cnf conf exrc gitconfig gvimrc gxt inf ini manifest muttrc perltidyrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
+db        accdb accde accdr accdt accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv dbx fm5 fmp fmp12 fmpsl fp3 fp4 fp5 fp7 fpt frm kdb maf mav maw mdb mdbhtml mdn mrg myd mdtsqlite nsf s3db sq2 sq3 sqlite sqlite3 sqlite-journal tmd usr wmdb xld
+config    cf cnf conf exrc gitconfig gvimrc gxt htaccess inf ini manifest muttrc perltidyrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
 gis       axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
 crypt     cer cert crl crt csr der eslock gpg p12 p7b p7m p7r pem pfx pgr pgp pkr rnd skr spc sst stl
 EOF

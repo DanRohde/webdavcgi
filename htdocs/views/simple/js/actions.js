@@ -26,7 +26,9 @@ function initChangeUriAction() {
 	$(".home-button[data-href], .logout-button[data-href], .contact-button[data-href], .link-button[data-href], .help-button[data-href]")
 		.off("click")
 		.attr("tabindex",0 )
-		.on("click", function() { window.open($(this).data("href"), $(this).data("target") || "_self"); });
+		.on("click", function() { window.open($(this).data("href"), $(this).data("target") || "_self"); })
+		.off("keydown")
+		.on("keydown", function(e) { if (e.keyCode == 13 || e.keyCode == 32) window.open($(this).data("href"), $(this).data("target") || "_self"); });
 	
 	$(".action.changeuri").off(".changeuri").on("click.changeuri",handleChangeUriAction);
 	$(".action.refresh").off(".refresh").on("click.refresh",function(event) {
