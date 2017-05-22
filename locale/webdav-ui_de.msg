@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 addbookmark                    "Hinzufügen"
 addbookmarktitle               "Aktuellen Ordner zu Lesezeichen hinzufügen"
+ajax.connection.error          "Verbindungsfehler. Bitte prüfen Sie Ihre Netzwerkverbindung."
 applications                   "Anwendungen"
 autorefresh                    "Automatische Seitenaktualisierung: "
 autorefresh.clear              "Abschalten"

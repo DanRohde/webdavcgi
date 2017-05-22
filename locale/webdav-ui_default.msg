@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 addbookmark                    "Add"
 addbookmarktitle               "Add current folder to bookmarks"
+ajax.connection.error          "Server connection error. Please check your network connection."
 applications                   "Applications"
 autorefresh                    "Automatic page refresh: "
 autorefresh.clear              "Clear"
