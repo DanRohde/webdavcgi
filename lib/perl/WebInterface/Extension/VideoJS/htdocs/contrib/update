@@ -1,0 +1,7 @@
+ mkdir tmp
+ cd tmp
+ npm install --save-dev video.js
+ cd ..
+ mv video-js video-js.$(date +%Y%m%d-%H%M%S)
+ mv tmp/node_modules/video.js/dist/ video-js
+ rm -rf tmp

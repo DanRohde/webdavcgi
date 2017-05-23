@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODES="css dtd javascript perl php python r shell tcl vbscript xml yaml"
+MODES="css dtd javascript perl php python r shell sql tcl vb vbscript xml yaml"
 
 rm codemirror-modes.js
 for m in $MODES ; do

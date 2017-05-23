@@ -1,5 +1,6 @@
 
-ckeditor: http://ckeditor.com/ - updated 2016-14-07
+ckeditor: http://ckeditor.com/ - updated 2017-23-05
 
-codemirror: http://codemirror.net/ - updated 2016-21-07
+codemirror: http://codemirror.net/ - updated 2017-23-05
+    http://codemirror.net/codemirror.zip
     bash buildmodejs.sh ## build codemirror-mode.js with support modes
