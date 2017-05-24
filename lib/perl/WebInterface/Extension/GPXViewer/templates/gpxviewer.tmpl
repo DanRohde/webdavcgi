@@ -6,9 +6,7 @@
 <script src="${VHTDOCS}_EXTENSION(Libs)_/htdocs/contrib/amcharts/themes/light.js"></script>
 </div>
 <script>
-
 $("#gpxviewertabs").tabs({heightStyle: "auto", activate: tabActivated});
-
 $("#gpxviewer").on("init.gpxviewer", function(event,data) {
 	initGPXViewer(); 
 }).on("resized.gpxviewer", function(event,data) {
@@ -29,7 +27,7 @@ window.gpxViewerMapCallback = function() {
 	$(window).trigger("gpxViewerMapLoaded");	
 }
 function tabActivated(event,ui) {
-	if (ui.newPanel.selector == "#gpxviewerprofile") renderProfile(event,ui);
+	if (ui.newPanel[0].id == "gpxviewerprofile") renderProfile(event,ui);
 	else triggerGPXViewerResize();
 }
 function renderProfile(event,ui) {
