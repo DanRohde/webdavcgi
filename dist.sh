@@ -1,13 +1,10 @@
 #!/bin/bash
-RELEASE=`cat RELEASE`
-TMPPATH=/tmp/webdavcgi-${RELEASE}
+RELEASE=${1:-$(cat RELEASE)}
+TMPPATH=/tmp
+ARCBASE=webdavcgi-${RELEASE}
+ARCFORMATS="zip tgz"
 
-test -e ${TMPPATH} && rm -rf ${TMPPATH}
+for format in ${ARCFORMATS} ; do
+    git archive --format ${format} --output ${TMPPATH}/${ARCBASE}.${format} $RELEASE
+done
 
-svn export svn://svn.code.sf.net/p/webdavcgi/code/trunk ${TMPPATH}
-
-
-(cd `dirname ${TMPPATH}`; zip -r  webdavcgi-${RELEASE}.zip `basename ${TMPPATH}`)
-(cd `dirname ${TMPPATH}`; tar jcf webdavcgi-${RELEASE}.tar.bz2 `basename ${TMPPATH}`)
-(cd $(dirname ${TMPPATH}); cp webdavcgi-${RELEASE}.zip  webdavcgi-latest.zip)
-(cd $(dirname ${TMPPATH}); cp webdavcgi-${RELEASE}.tar.bz2 webdavcgi-latest.tar.bz2 )
