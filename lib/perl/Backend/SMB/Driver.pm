@@ -144,7 +144,7 @@ sub _read_dir_root {
                     "$DOCUMENT_ROOT$fserver$_SHARESEP$$f[1]",
                     { type => $f->[0], comment => $f->[2] }
                 );
-                if ( $f->[0] == $self->smbclient->SMBC_FILE_SHARE
+                if ( $f->[0] == $smbclient->SMBC_FILE_SHARE
                     && ( !defined $sfilter || $f->[1] !~ /$sfilter/xms ) )
                 {
                     push @files, "$fserver$_SHARESEP$$f[1]";
