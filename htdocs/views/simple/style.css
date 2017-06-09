@@ -1381,6 +1381,10 @@ tr:focus .action.changeuri {
 	min-width: 1em;
 	float: left;
 }
+.action.quicknav-el {
+	line-height: 18px;
+	background-position-y: 2px;
+}
 .action.quicknav-el:hover,.action.quicknav-el:focus {
 	color: black;
 }
