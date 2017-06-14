@@ -58,6 +58,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	};
 	
 	$.MyStringHelper = {};
+	$.MyStringHelper.fmtFloatVals = function(strfltval) {
+		var ret = strfltval;
+		var dp = $("#decimalpoint").data("value");
+		if (dp != ".") ret = strfltval.replace(/[.]/g, dp);
+		return ret;
+	};
 	$.MyStringHelper.renderByteSizes = function(size) {
 		var text = "";
 		text += size+" Byte(s)";
@@ -69,7 +75,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		if (nfs.toFixed(2) > 0) text +=" = "+nfs.toFixed(2)+"GB";
 		nfs /= 1024;
 		if (nfs.toFixed(2) > 0) text +=" = "+nfs.toFixed(2)+"TB";
-		return text;
+		return $.MyStringHelper.fmtFloatVals(text);
 	};
 	$.MyStringHelper.renderByteSize = function(size) {
 		var text = size+" Byte(s)";
@@ -81,7 +87,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		if (nfs.toFixed(2) > 0 && nfs > 1) text =nfs.toFixed(2)+"GB";
 		nfs /= 1024;
 		if (nfs.toFixed(2) > 0 && nfs > 1) text =nfs.toFixed(2)+"TB";
-		return text;
+		return $.MyStringHelper.fmtFloatVals(text);
 	};
 	$.MyStringHelper.trimString = function(str,charcount) {
 		var ret = str;

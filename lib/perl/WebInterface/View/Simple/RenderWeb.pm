@@ -96,6 +96,7 @@ sub render_template {
         LANG            => $LANG,
         VBASE           => $self->{cgi}->escapeHTML($vbase),
         VHTDOCS         => $vbase . $VHTDOCS,
+        decimalpoint => substr($self->render_perc_val(1.1,1), 1,1),
     );
     return $self->SUPER::render_template( $fn, $ru, $content, \%stdvars );
 }

@@ -61,8 +61,9 @@ sub render_template {
             //= ( $self->render_byte_val( $quota{quotaavailable}, 2, 2 ) )[1],
         quotastyle         => $quota{quotastyle},
         quotalevel         => $quota{quotalevel},
-        quotausedperc      => $quota{quotausedperc},
-        quotaavailableperc => $quota{quotaavailableperc},
+        quotausedperc      => $self->render_perc_val($quota{quotausedperc}),
+        quotausedpercval   => $quota{quotausedperc},
+        quotaavailableperc => $self->render_perc_val($quota{quotaavailableperc}),
     );
     return $self->SUPER::render_template( $fn, $ru, $content, \%stdvars );
 }

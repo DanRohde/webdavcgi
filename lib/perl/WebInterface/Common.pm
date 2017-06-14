@@ -343,7 +343,13 @@ sub render_byte_val {
     );
 
 }
-
+sub render_perc_val {
+    my ($self, $v, $a) = @_; # v - value, a - accuracy
+    use locale;
+    $v //= 0;
+    $a //= 1;
+    return sprintf "%.${a}f%%", $v;
+}
 sub filter {
     my ( $self, $path, $file ) = @_;
     return 1 if FileUtils::filter( $path, $file );
