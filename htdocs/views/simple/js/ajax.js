@@ -25,7 +25,7 @@ $(document).ajaxError(function(event, jqxhr, settings, exception) {
 	if (jqxhr) {
 		if (jqxhr.getResponseHeader("Location")) {
 			window.open(jqxhr.getResponseHeader("Location"),"_blank");
-		} else if (jqxhr.statusText && jqxhr.statusText != "abort") {
+		} else if (jqxhr.statusText && jqxhr.statusText != "abort" && jqxhr.statusText != "OK") {
 			notifyError(jqxhr.statusText == "error" ? $("#ajax-connection-error").html() : jqxhr.statusText);
 		}
 	}
