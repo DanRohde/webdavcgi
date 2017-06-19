@@ -135,7 +135,6 @@ sub _search_address {
         $content,
         {
             'Cache-Control' => 'no-cache, no-store',
-            -Content_Length => length $content
         }
     );
     return 1;
