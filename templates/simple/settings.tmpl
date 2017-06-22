@@ -13,7 +13,7 @@
 <table class="tab showtab settings_view">
 <tr><td colspan="2" class="tabhead">$tl(settings.view)</td></tr>
 $each#(show.fileactions,show.fileactionlabels,show.dotfiles,show.dotfolders,show.statusbar,dblclick.action)#'<tr><td><label for="settings.$v">$tl(settings.$v)</label></td><td><input type="checkbox" id="settings.$v" name="settings.$v"/></td></tr>'#
-<tr><td><label for="settings.filelistable.view">$tl(settings.filelisttable.view)</label></td>
+<tr><td><label for="settings.filelisttable.view">$tl(settings.filelisttable.view)</label></td>
 <td><select name="settings.filelisttable.view" id="settings.filelisttable.view">
 $each#(thumbs,list,details)#'<option value="flt-view-$v">$tl(filelisttable.view.$v)</option>'#
 </select></td></tr>
@@ -48,9 +48,13 @@ $extensions(settings_dialogs)
 </table>
 $extensions(settings_tabs)
 <table class="tab settings_extensions">
+<colgroup><col><col></colgroup>
+<tbody>
 <tr><td colspan="2" class="tabhead">$tl(settings.extensions)</td></tr>
+<tr><td></td><td></td></tr>
 $extension(settings_extensions)
 $extension(settings)
+</tbody>
 </table>
 
 </table>
