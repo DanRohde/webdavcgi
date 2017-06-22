@@ -357,6 +357,12 @@ table,th,td {
 	text-decoration: inherit;
 	font-weight: inherit;
 }
+.nts {
+	display: inline;
+}
+.hide-suffixes .nts {
+	display: none;
+}
 span.ws, div.ws {
 	white-space: pre-wrap;
 	display: inline-block;

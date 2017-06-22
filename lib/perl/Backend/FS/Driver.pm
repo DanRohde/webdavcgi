@@ -50,12 +50,12 @@ sub finalize {
 
 sub __basename {
     my $bn = get_base_uri_frag( $_[1] );
-    if ( $_[2] ) { $bn =~ s/\Q$_[2]\E//xms; }
+    if ( $_[2] ) { $bn =~ s/\Q$_[2]\E$//xms; }
     return $bn;
 }
 
 sub basename {
-    return $CACHE{ $_[0] }{ $_[1] }{basename} //=
+    return $CACHE{ $_[0] }{ $_[1] }{$_[2] // q{}}{basename} //=
       $_[0]->__basename( $_[1], $_[2] );
 }
 

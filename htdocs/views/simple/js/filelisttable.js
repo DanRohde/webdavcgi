@@ -17,9 +17,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 initSelect();
 initNav();
-
+initFileListSettings();
 updateFileList();
 
+function initFileListSettings() {
+	initShowSuffixesSetting();
+	$("body").on("settingchanged", initShowSuffixesSetting);
+}
+function initShowSuffixesSetting() {
+	$("#flt").toggleClass("hide-suffixes", $.MyCookie("settings.show.suffixes") == "no")
+}
 function getURI() {
 	return $("#fileList").data("uri");
 }
