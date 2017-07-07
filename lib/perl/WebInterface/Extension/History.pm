@@ -35,7 +35,7 @@ sub handle_hook_fileactionpopup {
     my ( $self, $config, $params ) = @_;
     return {
         title      => $self->tl('history'),
-        popup      => [],
+        popup      => [ { action => 'history-clear', label=>$self->tl('history.clear'), classes=>'sep' } ],
         classes    => 'history-popup',
         type       => 'li',
         subclasses => 'history-popup-history',

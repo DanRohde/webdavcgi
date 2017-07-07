@@ -30,3 +30,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .history-popup.label:hover {
 	background-image: url(history-hover.svg);
 }
+.action.history-clear {
+	background-image: url(history-clear.svg);
+	background-position: left center;
+	background-size: 18px 18px;
+}
+.action.history-clear:focus, .action.history-clear:hover, .action.history-clear:active {
+	background-image: url(history-clear-hover.svg);
+}
