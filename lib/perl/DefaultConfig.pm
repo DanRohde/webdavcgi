@@ -206,7 +206,7 @@ EOF
         group   => [qw(r w x s)],
         others  => [qw(r w x t)], };
     $LANGSWITCH
-        = q{<div id="langswitch"><a href="?lang=en">[EN]</a> <a href="?lang=de">[DE]</a> <a href="?lang=fr">[FR]</a> <a href="?lang=hu">[HU]</a> <a href="?lang=it">[IT]</a> $CLOCK</div>};
+        = q{<div id="langswitch"><a href="?lang=en">EN</a> | <a href="?lang=de">DE</a> | <a href="?lang=fr">FR</a> | <a href="?lang=hu">HU</a> | <a href="?lang=it">IT</a>&nbsp;&nbsp;$CLOCK</div>};
     $HEADER
         = q{<div class="header">WebDAV CGI - Web interface: You are logged in as ${USER}.<div id="now">$NOW</div></div>};
     $SIGNATURE
