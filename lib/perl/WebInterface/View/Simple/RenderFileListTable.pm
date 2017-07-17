@@ -245,7 +245,7 @@ sub _render_file_list_entry {
         :                  get_mime_type($full);
     my $suffix
         = $id ? ( $file eq q{..} ? 'folderup' : 'folder' )
-              : ( $file =~ /[.]([^.]+)$/xms ? lc($1) : 'unknown' );
+              : ( $file =~ /.+[.]([^.]+)$/xms ? lc($1) : 'unknown' );
     my $category    = $id ? $self->get_category_class(lc($bfile), 'folder', 'category-folder')
                           : $self->get_category_class($suffix, q{(?!folder)}, q{});
     my $is_locked   = $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
@@ -264,7 +264,7 @@ sub _render_file_list_entry {
         'name'         => $self->{cgi}->escapeHTML($file),
         'displayname'  => $displayname,
         'qdisplayname' => $self->quote_ws($displayname),
-        'qdisplayname_prefix' => $id || $suffix eq 'unknown' ? $self->quote_ws($displayname): $self->quote_ws($self->{backend}->basename($full,q{.}.$suffix)),
+        'qdisplayname_prefix' => $id || $suffix eq 'unknown' ? $self->quote_ws($displayname): $self->quote_ws($self->{backend}->basename($full, q{.}.$suffix)),
         'qdisplayname_suffix' => $id || $suffix eq 'unknown' ? q{} : $self->quote_ws(q{.}.$suffix),
         'size'         => $ir ? $sizetxt : q{-},
         'sizetitle'    => $sizetitle,
