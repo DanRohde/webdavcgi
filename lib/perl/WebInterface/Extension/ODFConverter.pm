@@ -122,7 +122,7 @@ sub handle_hook_appsmenu {
     foreach my $suffix (sort @{ $self->{types} } ) {
         my $targets = $self->{targets}{$suffix};
         $targets =~ s/ (?: ^ \b \Q$suffix\E \b [|] | [|] \b \Q$suffix\E \b ) //xmsg; # remove suffix
-        $targets =~ s/ \b ( \w+ ) \b (.*?) [|] \1 /$1$2/xmsg; # remove dublets
+        $targets =~ s/ \b ( \w+ ) \b (.*?) [|] \b\1\b /$1$2/xmsg; # remove dublets
         push @popup, {
                 action => 'odfconvert',
                 label  => $suffix,
