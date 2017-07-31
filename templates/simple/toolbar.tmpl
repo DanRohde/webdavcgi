@@ -1,4 +1,4 @@
-<ul class="toolbar" data-help="$help(toolbar)">
+<ul class="toolbar" data-help="$help(toolbar)" role="menu">
 <li><nav id="quicknav">$[quicknavpath]</nav>
 	<!--IF($config(ALLOW_PATHINPUT))-->
 	<form id="pathinputform" action="#" method="post"><span id="pathinput" class="hidden"><input type="text" size="50" name="uri" value="$uri"/><button>$tl(go)</button></span></form>
@@ -25,7 +25,7 @@
 	</ul>
 </li>
 <!--IF($config(ALLOW_POST_UPLOADS))-->
-<li class="uploadmenu popup ai-upload uibutton access-writeable toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)">
+<li class="uploadmenu popup ai-upload uibutton access-writeable toolbar-button" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload)">
 	&nbsp;
 	<ul class="popup">
 	<li class="sep action upload access-writeable" title="$tl(upload) (&le; $maxuploadsizehr)" aria-label="$tl(upload) (&le; $maxuploadsizehr)"><div class="label">$tl(upload)</div><div class="accesskey">u</div></li>
@@ -41,13 +41,13 @@
 <!--ENDIF-->
 <!--IF($config(ENABLE_BOOKMARKS))-->
 <li class="toolbar-spacer action addbookmark sel-none hideit uibutton" title="$tl(addbookmarktitle)" aria-label="$tl(addbookmarktitle)"></li>
-<li class="bookmarkmenu ai-bookmarks sel-none hideit uibutton popup toolbar-button" id="bookmarks" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b">
+<li class="bookmarkmenu ai-bookmarks sel-none hideit uibutton popup toolbar-button" id="bookmarks" title="$tl(bookmarks)" aria-label="$tl(bookmarks)" accesskey="b" role="menu">
 	&nbsp;
 	$INCLUDE(bookmarks)
 </li>
 <!--ENDIF-->
 <!--IF(%AUTOREFRESH)-->
-<li title="$tl(autorefresh.select.title)" class="toolbar-spacer autorefreshmenu ai-refresh sel-none hideit uibutton popup toolbar-button" aria-label="$tl(autorefresh.select.title)" accesskey="a">
+<li title="$tl(autorefresh.select.title)" class="toolbar-spacer autorefreshmenu ai-refresh sel-none hideit uibutton popup toolbar-button" aria-label="$tl(autorefresh.select.title)" role="menu" accesskey="a">
 	&nbsp;
 	$INCLUDE(autorefresh)
 <!--ENDIF-->
@@ -66,7 +66,7 @@ $extension(filelistaction)
 	<li>
 	<form id="filterbox" method="post" action="#">
 		$tl(namefilter) <input type="text" name="query" size="10" title="$tl(namefiltertooltip)" aria-label="$tl(namefiltertooltip)" accesskey="i"><div class="action clearfilter" title="$tl(filter.reset)" aria-label="$tl(filter.reset)" tabindex="0">&times;</div>
-	   <div class="contexthelp" tabindex="0" data-htmltooltip="$inchelp(filterbox)"></div>
+	   <div class="contexthelp" aria-label="$tl(help)" aria-describedby="MyTooltip" tabindex="0" data-htmltooltip="$inchelp(filterbox)"></div>
 	</form>
 	</li>
 	</ul>

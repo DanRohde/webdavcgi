@@ -1,23 +1,23 @@
-<ul id="apps">
-	<li class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" tabindex="0">
+<ul id="apps" role="menu">
+	<li class="action refresh" title="$tl(files.title)" aria-label="$tl(files.title)" tabindex="0" role="menuitem">
 	<div class="label">$tl(files.title)</div>
 	</li>
-	<li class="applicationsmenu popup" tabindex="0">
+	<li class="applicationsmenu popup" tabindex="0" role="menu" aria-label="$tl(applications)">
 		<div class="label ai-applications">$tl(applications)</div>
 		<ul class="popup">
-			<li class="popup sep select" title="$tl(select)" tabindex="0">
+			<li class="popup sep select" title="$tl(select)" tabindex="0" role="menu" aria-label="$tl(select)">
 				<div class="popup label select ai-toggleselection">$tl(select)</div>
 				<ul class="popup">
-					<li class="action toggleselection" title="$tl(togglealltooltip)" tabindex="0">$tl(togglealltooltip)</li>
-					<li class="action selectall" title="$tl(selectall)" tabindex="0">$tl(selectall)</li>
-					<li class="action selectnone" title="$tl(selectnone)" tabindex="0">$tl(selectnone)</li>
+					<li class="action toggleselection" title="$tl(togglealltooltip)" role="menuitem" tabindex="0">$tl(togglealltooltip)</li>
+					<li class="action selectall" title="$tl(selectall)"  role="menuitem" tabindex="0">$tl(selectall)</li>
+					<li class="action selectnone" title="$tl(selectnone)" role="menuitem" tabindex="0">$tl(selectnone)</li>
 				</ul>
 			</li>
-			<li class="bookmarkmenu popup" tabindex="0">
+			<li class="bookmarkmenu popup" tabindex="0" role="menu" aria-label="$tl(bookmarks)">
 				<div class="label bookmark-label ai-bookmarks">$tl(bookmarks)</div>
 				$INCLUDE(bookmarks)
 			</li>
-			<li class="autorefreshmenu popup" tabindex="0">
+			<li class="autorefreshmenu popup" tabindex="0" role="menu" aria-label="$tl(autorefresh.select)">
 				<div class="label autorefresh-label ai-refresh" title="$tl(autorefresh.select.title)">$tl(autorefresh.select)</div>
 				$INCLUDE(autorefresh)
 			</li>

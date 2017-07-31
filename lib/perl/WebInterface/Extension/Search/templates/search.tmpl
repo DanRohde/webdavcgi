@@ -13,7 +13,7 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 <div class="search-form-and-buttons">
 <div class="search formpanel">
 	<div class="search query">
-		$tl(search.query): <input class="search query" type="search" name="query" value=""> <div class="contexthelp" data-htmltooltip="$inchelp(query)"></div>
+		$tl(search.query): <input class="search query" type="search" name="query" value=""> <div class="contexthelp" tabindex="0" aria-label="$tl(help)" aria-describedby="MyTooltip" data-htmltooltip="$inchelp(query)"></div>
 	</div>
 	<div class="search filenamesearch">
 			<label><input type="radio" name="searchin" value="filename" checked="checked">$tl(search.filenameoption)</label>	
@@ -27,14 +27,14 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 				$tl(search.contentoption)
 			</label>
 	</div>
-	<div class="search moreoptionscollapser">$tl(search.moreoptions)</div>
+	<div class="search moreoptionscollapser" tabindex="0" role="button" aria-label="$tl(search.moreoptions)" aria-expanded="false">$tl(search.moreoptions)</div>
 	<div class="search moreoptions">
 		
 		<fieldset class="search typeonly">
 			<div>$tl(search.typeonly): 
-				<label><input type="checkbox" name="filetype" checked="checked">$tl(search.filetype)</label>   
-				<label><input type="checkbox" name="foldertype" checked="checked">$tl(search.foldertype)</label>
-				<label><input type="checkbox" name="linktype" checked="checked">$tl(search.linktype)</label>
+				<label><input type="checkbox" name="filetype" checked="checked" aria-label="$tl(search.typeonly) $tl(search.filetype)">$tl(search.filetype)</label>   
+				<label><input type="checkbox" name="foldertype" checked="checked" aria-label="$tl(search.typeonly) $tl(search.foldertype)">$tl(search.foldertype)</label>
+				<label><input type="checkbox" name="linktype" checked="checked" aria-label="$tl(search.typeonly) $tl(search.linktype)">$tl(search.linktype)</label>
 			</div> 
 		</fieldset>
 		<fieldset class="search size">
@@ -86,7 +86,7 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 			<fieldset class="search duplicate">
 				<label>
 					<input type="checkbox" name="dupsearch">$tl(search.duplicatefiles)
-					<span class="contexthelp" data-htmltooltip="$inchelp(duplicates)"></span>
+					<span class="contexthelp" data-htmltooltip="$inchelp(duplicates)" tabindex="0" aria-label="$tl(help)" aria-describedby="MyTooltip"></span>
 				</label>
 			</fieldset>
 		<!--ENDIF-->

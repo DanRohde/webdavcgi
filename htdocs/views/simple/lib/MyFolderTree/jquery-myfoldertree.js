@@ -139,12 +139,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		function toggleNode(node, collapse) {
 			node.toggleClass("mft-collapsed", collapse);
 			if (!node.hasClass("mft-collapsed")) $(".mft-node", node).addClass("mft-collapsed");
+			$(".mft-node-expander", node).attr({"aria-expanded":!node.hasClass("mft-collapsed")});
 		}
 		function renderFolderTreeNode(node) {
 			if (!node.ext_attributes) node.ext_attributes = "";
 			var li = $("<li "+node.ext_attributes+"></li>").addClass("mft-node");
-			var expander = $("<div/>").addClass("mft-node-expander").attr("tabindex",0).appendTo(li);
-			var label = $("<div/>").addClass("mft-node-label").addClass(node.labelclasses).appendTo(li).attr("tabindex",0);
+			var expander = $("<div/>").addClass("mft-node-expander").attr({"tabindex":0, role:"tree", "aria-label" : node.name+" expander", "aria-expanded": !node.expand}).appendTo(li);
+			var label = $("<div/>").addClass("mft-node-label").addClass(node.labelclasses).appendTo(li).attr({"tabindex":0,"aria-label":node.name, role:"treeitem"});
 			var icon = $("<div/>").addClass("mft-node-icon").addClass(node.iconclasses).appendTo(label);
 			var text = $("<div/>").addClass("mft-node-label-text").text(node.name).appendTo(label);
 			if (node.read == 'yes') li.addClass("mft-node-read");

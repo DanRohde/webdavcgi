@@ -143,27 +143,33 @@ sub exec_template_function {
     }
     return $self->SUPER::exec_template_function( $fn, $ru, $func, $param );
 }
+sub _render_extension_popup_element {
+        my ( $self, $hook, $a ) = @_;
+        my %attr = (
+            -tabindex=>0,
+            -class => 'popup ' . ( ${$a}{classes} // q{} ),
+            -title => $a->{title} // $a->{label} // q{},
+            -aria_label => $a->{title} // $a->{label} // q{},
+            -role => 'menuitem',
+            %{ $a->{attr} // {} },
+        );
+        my %labelattr = (
+            -class=>'popup label notab '.($a->{classes} // q{}),
+            %{ $a->{labelattr} // {} },
+        );
+        return $self->{cgi}->li(
+            \%attr,
+            ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div(\%labelattr, $a->{label} // $a->{title} // q{} ))
+            . $self->{cgi}->ul( { -class => 'popup '.($a->{subclasses} // q{}) },  $self->render_extension_element( $hook, ${$a}{popup} ) )
+        );
 
+}
 sub render_extension_element {
     my ( $self, $hook, $a ) = @_;
     my $content = q{};
     if ( ref($a) eq 'HASH' ) {
         if ( ${$a}{popup} ) {
-            my %attr = (
-                -tabindex=>0,
-                -class => 'popup ' . ( ${$a}{classes} // q{} ),
-                -title => $a->{title} // $a->{label} // q{},
-                %{ $a->{attr} // {} },
-            );
-            my %labelattr = (
-                -class=>'popup label notab '.($a->{classes} // q{}),
-                %{ $a->{labelattr} // {} },
-            );
-            return $self->{cgi}->li(
-                \%attr,
-                ($a->{nolabel} ? '&nbsp;' : $self->{cgi}->div(\%labelattr, $a->{label} // $a->{title} // q{} ))
-                . $self->{cgi}->ul( { -class => 'popup '.($a->{subclasses} // q{}) },  $self->render_extension_element( $hook, ${$a}{popup} ) )
-            );
+            return $self->_render_extension_popup_element($hook, $a);
         }
         my %params = ( -class => q{}, -tabindex=>0 );
         $params{-class} .= ${$a}{action} ? ' action ' . ${$a}{action} : q{};
