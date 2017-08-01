@@ -220,7 +220,7 @@ function doRename(base, file, newname) {
 function handleFileRename(row) {
 	var file = row.closest("tr[data-file]").data("file");
 	var defaultValue = file.replace(/\/$/,"");
-	$.MyInplaceEditor({	
+	$.MyInplaceEditor({
 		editorTarget: row.find("td.filename"),
 		defaultValue: defaultValue,
 		beforeEvent: function() { $("#flt").enableSelection(); },

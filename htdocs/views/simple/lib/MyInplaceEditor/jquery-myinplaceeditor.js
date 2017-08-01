@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (function ( $ ) {
 	$.fn.MyInplaceEditor = function(options) {
 		var settings = $.extend({}, $.fn.MyInplaceEditor.settings, options, { actionTarget: this });
-		settings.actionTarget.off("click.myinplaceeditor").on("click.myinplaceeditor", function() {
+		settings.actionTarget.off("click.myinplaceeditor").on("click.myinplaceeditor", function(event) {
+			settings.actionTarget = $(event.currentTarget);
 			replaceOrigHTML(settings);
 		});
 		return this;
