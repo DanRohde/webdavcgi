@@ -73,6 +73,7 @@ function initFileActions() {
 		.on("click dblclick", function(ev) {
 			$.MyPreventDefault(ev);
 			$(".fileactions-popup").toggle();
+			$(this).attr("aria-pressed", $(".fileactions-popup").is(":visible"));
 		}).MyKeyboardEventHandler().MyTooltip();
 	$("#fileactions .action").addClass("focus").on("click dblclick", handleFileActionEvent).MyKeyboardEventHandler();
 	$("#fileactions li.popup").MyPopup();

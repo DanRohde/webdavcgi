@@ -91,8 +91,3 @@ function renderAccessKeyDetails() {
 				buttons : [ { text: $("#close").html(), click:  function() { $(this).dialog("destroy").remove(); }}],
 				open: function() { $("#accesskeydetails li:focusable:first").focus(); } });
 }
-function toggleRowSelection(row,on) {
-	if (!row) return;
-	row.toggleClass("selected", on);
-	row.find(".selectbutton").prop("checked", row.hasClass("selected"));
-}

@@ -273,3 +273,9 @@ function handleFileListDrop(event, ui) {
 	if (dsturi == $.MyStringHelper.concatUri(srcinfo.srcuri,encodeURIComponent($.MyStringHelper.stripSlash(dragfilerow.attr("data-file"))))+"/") return;
 	return doFileListDropWithConfirm(srcinfo,dsturi);
 }
+function toggleRowSelection(row,on) {
+	if (!row) return;
+	row.toggleClass("selected", on);
+	row.find(".selectbutton").prop("checked", row.hasClass("selected"));
+	row.attr("aria-checked", row.hasClass("selected"));
+}

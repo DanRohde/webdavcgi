@@ -179,6 +179,7 @@ sub render_extension_element {
         if ( ${$a}{accesskey} ) { $params{-accesskey} = ${$a}{accesskey}; }
         if ( ${$a}{title} || ${$a}{label} ) {
             $params{-title} = $self->tl( ${$a}{title} // ${$a}{label} );
+            $params{-aria_label} = $params{-title};
         }
         if ( ${$a}{template} ) { $params{-data_template} = ${$a}{template}; }
         $content .= ${$a}{prehtml} ? ${$a}{prehtml} : q{};

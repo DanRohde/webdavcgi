@@ -45,11 +45,11 @@ $INCLUDE(htmlhead)</head>
 <div class="template">
 	<img id="emptyimage" src="${VHTDOCS}views/simple/icons/blank.png" alt="empty">
 	<div id="confirmdialog" data-title="$tl(confirm)"></div>
-	<div id="fileactions" class="fileactions" title="$tl(fileactions)" tabindex="0">
-		<ul class="popup fileactions-popup">
-			<li class="action rename access-writeable" tabindex="0" accesskey="m" title="$tl(movefilesbutton)"><div class="label">$tl(movefilesbutton)</div><div class="accesskey">m</div></li>
+	<div id="fileactions" class="fileactions" title="$tl(fileactions)" aria-label="$tl(fileactions)" role="button" aria-pressed="false" tabindex="0">
+		<ul class="popup fileactions-popup" role="menu">
+			<li class="action rename access-writeable" tabindex="0" accesskey="m" role="menuitem" aria-label="$tl(movefilesbutton)" title="$tl(movefilesbutton)"><div class="label">$tl(movefilesbutton)</div><div class="accesskey">m</div></li>
 			$extension(fileaction)
-			<li class="action delete sep" tabindex="0" accesskey="d" title="$tl(deletefilesbutton)"><div class="label">$tl(deletefilesbutton)</div><div class="accesskey">d</div></li>
+			<li class="action delete sep" tabindex="0" accesskey="d" role="menuitem" aria-label="$tl(deletefilesbutton)" title="$tl(deletefilesbutton)"><div class="label">$tl(deletefilesbutton)</div><div class="accesskey">d</div></li>
 		</ul>
 	</div>
 	<div id="renamefield">

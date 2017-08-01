@@ -297,6 +297,7 @@ sub _render_file_list_entry {
         'islink'   => $B2YN{ $il },
         'isempty'  => $id  ? 'unknown' : $B2YN{ (defined $size ) && $size == 0},
         'type'     => $file =~ /^[.]{1,2}$/xms || $id ? 'dir' : 'file',
+        'tl_type' => $self->tl('type.' . ($id ? 'dir' : 'file')),
         'fileuri'      => $fulle,
         'unselectable' => $B2YN{ $file eq q{..} || $self->is_unselectable($full) },
         'mode'    => sprintf( '%04o',        $mode & oct 7777 ),
