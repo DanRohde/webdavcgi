@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 .isreadable-no .action.imageinfo,
 .isselectable-no .action.imageinfo,
-.isempty-yes .action.imageinfo {
+.isempty-yes .action.imageinfo,
+.is-dir .action.imageinfo {
 	display: none;
 }
 .action.imageinfo, .imageinfo.ui-dialog .ui-dialog-title {
@@ -42,7 +43,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.imageinfo.audio:hover {
 	background-image: url(imageinfo-audio-hover.svg);
 }
-.action.imageinfo.image, .action.imageinfo.video, .action.imageinfo.audio {
+.action.imageinfo.text, .imageinfo.text.ui-dialog .ui-dialog-title {
+    background-image: url(imageinfo-text.svg);
+}
+.action.imageinfo.text:hover {
+    background-image: url(imageinfo-audio-text.svg);
+}
+.action.imageinfo.application, .imageinfo.application.ui-dialog .ui-dialog-title {
+    background-image: url(imageinfo-application.svg);
+}
+.action.imageinfo.application:hover {
+    background-image: url(imageinfo-application-hover.svg);
+}
+
+.action.imageinfo.image, .action.imageinfo.video, .action.imageinfo.audio,
+.action.imageinfo.text, .action.imageinfo.application {
 	background-position: 2px center;
 }
 .imageinfo.ui-dialog .ui-dialog-title {
@@ -50,7 +65,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	padding-left: 20px;
 }
 
-.imageinfo-audio-hide .action.imageinfo.audio, .imageinfo-video-hide .action.imageinfo.video, .imageinfo-image-hide .action.imageinfo.image {
+.imageinfo-audio-hide .action.imageinfo.audio, .imageinfo-video-hide .action.imageinfo.video, .imageinfo-image-hide .action.imageinfo.image,
+.imageinfo-text-hide .action.imageinfo.text, .imageinfo-application-hide .action.imageinfo.application{
 	display: none;
 }
 table.imageinfo, .imageinfo table {

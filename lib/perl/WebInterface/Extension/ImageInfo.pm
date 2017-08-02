@@ -32,6 +32,10 @@ use base qw( WebInterface::Extension );
 use DefaultConfig qw( $LANG $PATH_TRANSLATED $REQUEST_URI );
 use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 
+use vars qw( @FILETYPES );
+
+@FILETYPES = qw( image audio video application text );
+
 sub init {
     my ( $self, $hookreg ) = @_;
     my @hooks = qw(css locales javascript posthandler fileactionpopup fileattr appsmenu);
@@ -47,7 +51,7 @@ sub handle_hook_fileattr {
     my $mime        = get_mime_type( $params->{path} );
     my $is_readable = $self->{backend}->isReadable( $params->{path} );
     my $classes     = q{};
-    foreach my $type (qw( image audio video )) {
+    foreach my $type (@FILETYPES) {
         $classes .=
           " imageinfo-$type-"
           . ( $is_readable && $mime =~ /^\Q$type\E\//xmsi ? 'show' : 'hide' );
@@ -58,7 +62,7 @@ sub handle_hook_fileattr {
 sub _get_popup {
     my ( $self, $classes ) = @_;
     my $ret         = [];
-    foreach my $type ( ( 'image', 'audio', 'video' ) ) {
+    foreach my $type (@FILETYPES) {
         push @{$ret},
           {
             action   => 'imageinfo ' . $type,
