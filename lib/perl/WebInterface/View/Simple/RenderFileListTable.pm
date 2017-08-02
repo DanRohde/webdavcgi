@@ -247,7 +247,7 @@ sub _render_file_list_entry {
         = $id ? ( $file eq q{..} ? 'folderup' : 'folder' )
               : ( $file =~ /.+[.]([^.]+)$/xms ? lc($1) : 'unknown' );
     my $category    = $id ? $self->get_category_class(lc($bfile), 'folder', 'category-folder')
-                          : $self->get_category_class($suffix, q{(?!folder)}, q{});
+                          : $self->get_category_class($bfile=~/[.]([^.]+)$/xms?$1:$bfile, q{(?!folder)}, q{});
     my $is_locked   = $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
     my $displayname = $self->{cgi}->escapeHTML( $self->{backend}->getDisplayName($full) );
     my $now = $self->{c}{_render_file_list_entry}{now}{$lang} //= DateTime->now( locale => $lang );
@@ -300,7 +300,7 @@ sub _render_file_list_entry {
         'tl_type' => $self->tl('type.' . ($id ? 'dir' : 'file')),
         'fileuri'      => $fulle,
         'unselectable' => $B2YN{ $file eq q{..} || $self->is_unselectable($full) },
-        'mode'    => sprintf( '%04o',        $mode & oct 7777 ),
+        'mode'    => sprintf( '%04o', $mode & oct 7777 ),
         'modestr' => $self->mode2str( $full, $mode ),
         'uidNumber' => $uid // 0,
         'uid'       => $u,
