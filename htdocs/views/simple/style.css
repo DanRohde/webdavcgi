@@ -1237,9 +1237,13 @@ img {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.tabsel:hover, .tabsel:focus, .tabsel.activetabsel {
+.tabsel:hover, .tabsel:focus, .tabsel:active {
 	border-color: black;
-	background-color: #eaeaea;
+	background-color: #f8f8f8;
+}
+.tabsel.activetabsel {
+	border-color: black;
+	background-color: #ccc;
 	outline: none;
 }
 .tabs {

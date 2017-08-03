@@ -43,5 +43,6 @@ function initSettingsDialog() {
 				if (name == "settings.lang") name = name.replace(/^settings\./,"");
 				$("option[value='"+$.MyCookie(name)+"']", s).prop("selected",true);
 			});
+		$(".tabsel.activetabsel").focus();
 	}});
 }

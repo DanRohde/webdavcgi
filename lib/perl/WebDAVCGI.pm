@@ -57,7 +57,7 @@ use HTTPHelper qw( print_header_and_content );
 use CacheManager;
 
 
-$RELEASE = '1.1.2RC1.12';
+$RELEASE = '1.1.2RC1.13';
 
 use vars qw( $_METHODS_RX );
 
