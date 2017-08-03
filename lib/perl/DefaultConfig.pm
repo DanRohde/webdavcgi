@@ -155,6 +155,8 @@ db        accdb accde accdr accdt accdw adn cdb db db2 db3 dbc dbf dbs dbt dbv d
 config    cf cfg cnf conf exrc gitconfig gvimrc gxt htaccess inf ini manifest muttrc perltidyrc pif pinerc pref preferences props properties rhosts set viminfo vimrc vmc vmx wfc xauthority
 gis       axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk 
 crypt     cer cert crl crt csr dss_key der eslock gpg id_dsa id_rsa p12 p7b p7m p7r pem pfx pgr pgp pkr random_seed rnd skr spc sst stl
+temp      ### $$$ $a $db $ed §§§ asd buf cache db$ download file moz swn swo temp tmp tmt
+backup    000 001 002 ab abk arm arz backup backupdb bak bak1 bak2 bak3 bck bckp bk! bk0 bka1 bk2 bk3 bk4 bk5 vbk6 bk7 bk8 bk9 deleted ezc ezp mobilebackups moz-backup old old1 old2 old3 ori orig qic qmd 
 EOF
         ;
     $ICON_WIDTH              = 18;
