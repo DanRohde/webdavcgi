@@ -50,8 +50,10 @@ function initFileList() {
 	$("#fileList td.filename .changeuri").toggleClass("action",$.MyCookie("settings.dblclick.action")=="no");
 	$("body").off("settingchanged.initFileList").on("settingchanged.initFileList", function(e, data) {
 		if (data.setting != "settings.dblclick.action") return;
-		$("#fileList td.filename .changeuri").off("click.changeuri").toggleClass("action", !data.value);
-		$("#flt").trigger("fileListChanged");
+		window.setTimeout(function() {
+			$("#fileList td.filename .changeuri").off("click.changeuri").toggleClass("action", !data.value);
+			$("#flt").trigger("fileListChanged");
+		}, 100);
 	});
 	
 	// fix selections after tablesorter:
