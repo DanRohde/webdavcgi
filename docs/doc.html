@@ -107,8 +107,9 @@ apt install libdbi-perl libdbd-sqlite3-perl sqlite3 libtimedate-perl \
             libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
             libfile-copy-link-perl libjson-perl libdatetime-perl \
             libmime-tools-perl libnet-ldap-perl libimage-exiftool-perl \
-            liblist-moreutils-perl libdatetime-format-human-duration \
+            liblist-moreutils-perl libcgi-session-perl libwww-csrf-perl
             
+cpan install DateTime::Format::Human::Duration
 
 cpan install IO::Compress::Brotli
 
@@ -128,7 +129,7 @@ apt install librcs-perl
 apt install openafs-client krb5-user openafs-krb5 libafs-pag-perl
 
 ## for mod_perl users with Kerberos (SMB, AFS) authentication:
-perl -MCPAN -e "install Env::C"
+cpan install Env::C
 
 </pre>   
 </li>
@@ -143,16 +144,19 @@ perl -MCPAN -e "install Env::C"
 </ul>
 <pre>
 ## Debian/Ubuntu quick install:
-apt-get install speedy-cgi-perl ghostscript
+apt install  ghostscript
+
+## older systems support it:
+apt install speedy-cgi-perl
 
 ## only for SMB backend users:
-apt-get install smbclient
+apt install smbclient
 
 ## only for SMB and AFS backend users:
-apt-get install krb5-user
+apt install krb5-user
 
 ## for ODFConverter extension:
-apt-get install libreoffice
+apt install libreoffice
 
 </pre>
 <pre>
@@ -167,6 +171,15 @@ emerge -va net-fs/cifs-utils
 emerge -va app-crypt/heimdal
 </pre>
 </li>
+<li>install locales
+<pre>
+## Debian/Ubuntu quick install:
+rm -f /var/lib/locales/supported.d/webdavcgi
+for l in de_DE en_US fr_FR it_IT hu_HU ; do
+        fgrep $l /usr/share/i18n/SUPPORTED >> /var/lib/locales/supported.d/webdavcgi
+done
+locale-gen
+</pre></li>
 <li>change directory to your preferred installation path, e.g. <code>cd /etc</code></li>
 <li>install WebDAV CGI:
 <ul><li><code>unzip webdavcgi-latest.zip</code> or <code>tar jxf webdavcgi-latest.tar.gz2</code> (Gentoo: <code>emerge -va www-apps/webdavcgi</code>)</li>
