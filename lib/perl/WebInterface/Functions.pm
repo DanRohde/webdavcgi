@@ -223,7 +223,7 @@ sub _handle_delete_action {
                   ->("DELETE($PATH_TRANSLATED) via POST");
             }
         }
-        if ( $count > 0 ) {
+        if ( $count > 0 && @err < 0) {
             $msg = ( $count > 1 ) ? 'deletedmulti' : 'deletedsingle';
             $msgparam = [$count];
         }
