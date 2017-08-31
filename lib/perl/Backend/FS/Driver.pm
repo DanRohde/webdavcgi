@@ -181,8 +181,12 @@ sub deltree {
     my ( $self, $f, $err_ref ) = @_;
     $err_ref //= [];
     my $count = 0;
+    if ( !$self->isWriteable($f)) {
+        push @{$err_ref}, { $f => 'not writeable'};
+        return 0;
+    }
     if ( !$self->{config}->{method}->is_allowed( $f, 1 ) ) {
-        push @{$err_ref}, { $f => "Cannot delete $f" };
+        push @{$err_ref}, { $f => 'not allowed (maybe locked)' };
         return 0;
     }
     if ( $self->isLink($f) ) {
@@ -190,7 +194,7 @@ sub deltree {
             $count++;
         }
         else {
-            push @{$err_ref}, { $f => "Cannot delete '$f': $ERRNO" };
+            push @{$err_ref}, { $f => $ERRNO };
         }
     }
     elsif ( $self->isDir($f) ) {
@@ -206,11 +210,11 @@ sub deltree {
                 $f .= $f !~ /\/$/xms ? q{/} : q{};
             }
             else {
-                push @{$err_ref}, { $f => "Cannot delete '$f': $ERRNO" };
+                push @{$err_ref}, { $f => $ERRNO };
             }
         }
         else {
-            push @{$err_ref}, { $f => "Cannot open '$f': $ERRNO" };
+            push @{$err_ref}, { $f => $ERRNO };
         }
     }
     elsif ( $self->exists($f) ) {
@@ -218,11 +222,11 @@ sub deltree {
             $count++;
         }
         else {
-            push @{$err_ref}, { $f => "Cannot delete '$f' : $ERRNO" };
+            push @{$err_ref}, { $f => $ERRNO };
         }
     }
     else {
-        push @{$err_ref}, { $f => "File/Folder '$f' not found" };
+        push @{$err_ref}, { $f => 'not found' };
     }
     return $count;
 }

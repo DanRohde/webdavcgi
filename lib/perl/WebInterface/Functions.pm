@@ -193,7 +193,7 @@ sub handle_clipboard_action {
 
 sub _handle_delete_action {
     my ($self) = @_;
-    my ( $msg, $errmsg, $msgparam );
+    my ( $msg, $errmsg, $msgparam, @err );
     if ( defined $self->{cgi}->param('file') ) {
         my $count = 0;
         foreach my $file ( $self->get_cgi_multi_param('file') ) {
@@ -215,7 +215,7 @@ sub _handle_delete_action {
                 }
                 else {
                     $count +=
-                      $self->{backend}->deltree( $full, \my @err );
+                      $self->{backend}->deltree( $full, \@err );
                 }
                 $self->{config}->{event}
                   ->broadcast( 'WEB-DELETED', { file => $full } );
@@ -234,7 +234,7 @@ sub _handle_delete_action {
     else {
         $errmsg = 'deletenothingerr';
     }
-    return ( $msg, $errmsg, $msgparam );
+    return ( $msg, $errmsg, $msgparam, delete_errors=>\@err );
 }
 
 sub _handle_rename_action {
