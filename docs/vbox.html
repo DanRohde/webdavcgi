@@ -27,25 +27,18 @@
 <li>Call the web interface (please ignore SSL warnings and <strong>accept the certificate</strong>): <a href="https://localhost:4443">https://localhost:4443/</a>
 	<br/> and login with <strong>user</strong> <code>testuser1</code> and <strong>password</strong> <code>testuser1</code></li>
 </ol>
-<h2>About the folders</h2>
-<ul>
-<li>home - is a virtual link from /data/home to /home/testuser1</li>
-<li>projects - is a project folder with public share support, revision controlled files (RCS), and POSIX ACL support</li>
-<li>scratch - is a temporary file storage</li>
-<li>dbb - uses a SQLite database for all data (/tmp/webdav*db ; The database content is lost after reboot.)</li>
-</ul>
 <h2>About the Virtual Box</h2>
 <ul>
 <li>Virtual Box:
 <ul>
 	<li>1 CPU</li>
 	<li>4 GB RAM</li>
-	<li>2 hard drives: sda: root (ext4, quota) and swap, sdb: data (ext4) with POSIX ACL support and group quotas</li>
+	<li>2 hard drives: sda: root (ext4, quota) and swap</li>
 	<li>Port forwarding: 4443 to 443 for HTTPS and 2222 to 22 for ssh</li>
 </ul></li>
-<li>OS: Ubuntu 12.04 LTS 64bit:
+<li>OS: Ubuntu 16.04 LTS 64bit:
 	<ul>
-	<li>Apache 2.2 with rewrite, SSL, and cgid modules</li>
+	<li>Apache 2.4 with rewrite, SSL, and cgid modules</li>
 	<li>PostgreSQL database server for WebDAV locks and properties</li>
 	<li>LDAP server:
 		<ul> 
@@ -68,7 +61,7 @@
 </ul>
 
 <div id="contact">
-&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2011-2015 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
+&copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
 </div>
 </div>
 </body>

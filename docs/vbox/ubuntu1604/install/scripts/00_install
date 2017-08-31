@@ -10,3 +10,5 @@ mount -o quota,remount
 quotacheck -umf /
 quotaon /
 
+update-rc.d quota defaults
+service quota start
