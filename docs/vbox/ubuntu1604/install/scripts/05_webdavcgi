@@ -1,0 +1,90 @@
+#!/bin/bash
+
+apt install libdbi-perl libdbd-sqlite3-perl sqlite3 libtimedate-perl \
+            libuuid-tiny-perl libxml-simple-perl libquota-perl \
+            libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
+            libfile-copy-link-perl libjson-perl libdatetime-perl \
+            libmime-tools-perl libnet-ldap-perl libimage-exiftool-perl \
+            liblist-moreutils-perl libcgi-session-perl
+
+cpan install DateTime::Format::Human::Duration
+cpan install IO::Compress::Brotli
+
+cpan install Env::C
+
+## only for PostgreSQL users:
+apt install libdbd-pg-perl
+
+## only for MySQL users:
+apt install libdbd-mysql-perl
+
+## only for SMB backend users:
+apt install libfilesys-smbclient-perl smbclient krb5-user
+
+## only for RCS backend users:
+apt install librcs-perl
+
+apt install ghostscript smbclient krb5-user libreoffice
+
+
+
+rm -f /var/lib/locales/supported.d/webdavcgi
+for l in de_DE en_US fr_FR it_IT hu_HU ; do
+	fgrep $l /usr/share/i18n/SUPPORTED >> /var/lib/locales/supported.d/webdavcgi
+done
+locale-gen
+
+
+cd /etc
+git clone https://github.com/DanRohde/webdavcgi.git
+
+su - postgres 
+
+createuser webdavcgi -P
+
+createdb -O webdavcgi webdavcgi 
+
+psql webdavcgi <<EOF
+
+CREATE TABLE webdav_locks (basefn VARCHAR(5000) NOT NULL, fn VARCHAR(5000) NOT NULL, 
+			   type VARCHAR(255), scope VARCHAR(255), 
+			   token VARCHAR(255) NOT NULL, depth VARCHAR(255) NOT NULL, 
+			   timeout VARCHAR(255) NULL, owner TEXT NULL, 
+			   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE webdav_props (fn VARCHAR(5000) NOT NULL, propname VARCHAR(255) NOT NULL, value TEXT);
+CREATE INDEX webdav_locks_idx1 ON webdav_locks (fn);
+CREATE INDEX webdav_locks_idx2 ON webdav_locks (basefn);
+CREATE INDEX webdav_locks_idx3 ON webdav_locks (fn,basefn);
+CREATE INDEX webdav_locks_idx4 ON webdav_locks (fn,basefn,token);
+CREATE INDEX webdav_props_idx1 ON webdav_props (fn);
+CREATE INDEX webdav_props_idx2 ON webdav_props (fn,propname);
+
+
+GRANT ALL ON ALL TABLES IN SCHEMA public TO webdavcgi;
+
+EOF
+
+cp -rp ../etc/init.d/* /etc/init.d/
+update-rc.d webdavcgi defaults
+
+cp ../etc/webdav*conf /etc/
+cp -r ../etc/webdavcgi/* /etc/webdavcgi/
+
+cp ../etc/ldap.conf /etc
+
+cp ../etc/apache-webdavcgi.conf /etc/apache2/conf-available
+a2enconf apache-webdavcgi
+a2enmod authnz_ldap
+a2enmod ldap
+a2enmod rewrite
+a2ensite default-ssl
+
+cd  /etc/webdavcgi/
+bash install.sh
+
+cd /
+patch -p0 < ~adminuser/install/etc/apache-default-ssl.conf.patch
+
+service apache2 reload
+
+

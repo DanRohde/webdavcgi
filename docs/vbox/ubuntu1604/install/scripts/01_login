@@ -1,0 +1,17 @@
+cat - >/etc/motd <<EOF
+
+WebDAV CGI URL: https://localhost:4443/
+
+        Test-User1: testuser1 (password: testuser1)
+        Test-User2: testuser2 (password: testuser2)
+
+Ubuntu system:
+        Username: adminuser  (password: adminuser)
+        Become root: sudo -i
+        SSH: ssh -l adminuser -p 2222 localhost
+
+
+
+EOF
+
+sed -i -e 's@^ExecStart=.*$@ExecStart=-/sbin/agetty --noclear -a adminuser %I $TERM@' /lib/systemd/system/getty@.service

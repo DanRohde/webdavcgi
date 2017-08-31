@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export SUDO_ASKPASS=~/scripts/adminpw
+export LDAP_HOST=localhost
+export LDAP_BASEDN="dc=danrohde,dc=github,dc=io"
+export LDAP_ADMIN="cn=admin,$LDAP_BASEDN"
+export LDAP_ADMINPW="adminuser"
+export LDAP_USERS="ou=users,$LDAP_BASEDN"
+export LDAP_GROUPS="ou=groups,$LDAP_BASEDN"
+export UIDBASE=10000
+export GIDBASE=30000
+export PROJECTBASE=/data/projects
+export PUBLICGROUP=public

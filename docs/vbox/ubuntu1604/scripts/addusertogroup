@@ -1,0 +1,41 @@
+#!/bin/bash
+##########################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin
+# Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+# addes: 
+#   LDAP users group to a LDAP group
+
+if [ $# -lt 2 ] ; then
+	echo "Usage: $0 group user1 [user2 [user3 ...]]"
+	exit 1
+fi
+
+. $(dirname $0)/config
+
+group=$1
+if [ "$(getent group $group)" == "" ] ; then
+	echo $group does not exists!
+	exit 1
+fi
+shift
+(
+	cat - <<EOF
+dn: cn=$group,$LDAP_GROUPS
+changeType: modify
+EOF
+	while (( "$#" )) ; do
+		user=$1
+		if [ "$(getent passwd $user)" = "" ] ; then
+			echo $user does not exists!
+			shift
+			exit 1
+		fi
+		cat - <<EOF
+add: memberUid
+memberUid: $user
+-
+EOF
+		shift
+	done
+) | ldapmodify -x -h $LDAP_HOST -D $LDAP_ADMIN -w $LDAP_ADMINPW 

@@ -1,0 +1,6 @@
+cp ../etc/smb.conf /etc/samba
+service smbd restart
+smbpasswd -L -a adminuser
+smbpasswd -L -a testuser1
+smbpasswd -L -a testuser2
+

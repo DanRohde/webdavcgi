@@ -1,0 +1,41 @@
+#!/bin/bash
+##########################################################
+# (C) ZE CMS, Humboldt-Universitaet zu Berlin
+# Written 2014 by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+##########################################################
+# creates:
+#   LDAP group entry if necessary
+#   project directory
+#   quota entry
+
+if [ $# = 0 ] ; then
+        echo "Usage: $0 project [project2 [project3 ...]]"
+        exit 1
+fi
+
+. $(dirname $0)/config
+
+projects=$@
+
+while (( "$#" )) ; do
+	project=$1
+	pdir=$PROJECTBASE/$project
+
+	if [ "$(getent group $project)" == "" ] ; then
+		$(dirname $0)/creategroup $project
+	fi
+	if [ ! -d $pdir ] ; then
+		sudo -A mkdir $pdir
+		sudo -A chgrp $project $pdir
+		sudo -A chmod g+s $pdir
+		sudo -A setfacl -d -m group:$project:rwx $pdir
+		sudo -A setfacl -d -m group:$PUBLICGROUP:rx $pdir
+		sudo -A edquota -p quotatemplate -g $project
+		echo Project $project created successfully.
+	else
+		echo Project directory already exists!
+	fi
+	shift
+done
+echo "Don't forget to add users to your project group(s) $projects, e.g.:"
+echo " $(dirname $0)/addusertogroup $project user1 [user2 ...]"

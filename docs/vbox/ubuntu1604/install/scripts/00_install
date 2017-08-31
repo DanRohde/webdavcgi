@@ -1,0 +1,12 @@
+apt install \
+	slapd ldap-utils \
+	libpam-ldap apache2 libapach2-mod-perl2 \
+	build-essential quota
+
+
+## quota
+sed -i -e 's/errors=remount-ro/errors=remount-ro,quota/g' /etc/fstab
+mount -o quota,remount
+quotacheck -umf /
+quotaon /
+

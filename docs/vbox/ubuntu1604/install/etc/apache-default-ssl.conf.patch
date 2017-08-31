@@ -1,0 +1,10 @@
+--- /etc/apache2/sites-available/default-ssl.conf.orig	2017-08-30 16:46:20.782403932 +0200
++++ /etc/apache2/sites-available/default-ssl.conf	2017-08-30 16:43:48.806376615 +0200
+@@ -1,5 +1,7 @@
+ <IfModule mod_ssl.c>
+ 	<VirtualHost _default_:443>
++		RewriteEngine on
++		RewriteOptions inherit
+ 		ServerAdmin webmaster@localhost
+ 
+ 		DocumentRoot /var/www/html
