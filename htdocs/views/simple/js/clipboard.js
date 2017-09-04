@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
 initClipboard();
-
+initCopyUrl();
 function initClipboard() {
 	handleClipboard();
 	$("#flt").on("fileListChanged", handleClipboard);
@@ -32,4 +32,29 @@ function handleClipboard() {
 		$.each(files.split("@/@"), function(i,val) { 
 			$("[data-file='"+$.MyStringHelper.escapeSel(val)+"']").addClass("cutted").fadeTo("fast",0.5);
 		}) ;
+}
+function initCopyUrl() {
+	$("body").on("fileActionEvent", function(event,data) {
+		if (!data.obj.hasClass("copyurl")) return;
+		var url = window.location.href.split(/\?|#/)[0];
+		if (!url.match(/\/$/)) url += "/";
+		url = data.file == ".."
+								? $.MyStringHelper.getParentURI(url)
+								: data.file == "."
+													? url
+													: url + encodeURIComponent($.MyStringHelper.stripSlash(data.file));
+		var te = $("<textarea/>")
+					.css({position:"fixed",top:0,left:0,width:"2em",height:"2em", padding:0,border:"none",outline:"none",boxShadow:"none"})
+					.val(url);
+		$("body").append(te);
+		te.select();
+		try {
+			if (! document.execCommand("copy") ) {
+				window.prompt(data.obj.data("tooltip"),url);
+			};
+		} catch (e) {
+			window.prompt(data.obj.data("tooltip"),url);
+		}
+		te.remove();
+	});
 }
