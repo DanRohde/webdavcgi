@@ -64,6 +64,7 @@ sub handle_hook_fileactionpopup {
         label     => $ACTION,
         path      => ${$params}{path},
         type      => 'li',
+        akavailable => 9,
     };
 }
 

@@ -78,7 +78,8 @@ sub handle_hook_fileactionpopup {
         label   => 'dwnload',
         path    => $params->{path},
         type    => 'li',
-        classes => $self->{add_classes}
+        classes => $self->{add_classes},
+        akavailable => 's',
     };
 }
 sub handle_hook_apps {
@@ -97,6 +98,7 @@ sub handle_hook_appsmenu {
         label  => 'dwnload',
         type   => 'li',
         classes => 'access-readable sel-one sel-file hideit '. $self->{add_classes},
+        akavailable => 's',
     };
 }
 
