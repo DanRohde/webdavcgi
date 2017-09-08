@@ -193,8 +193,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			}
 			function goDown() {
 				if (self.parent().find(".mft-list:first").find(cl+":focusable:first").focus().length == 0) // child
-					if (self.parent().next().find(cl+":focusable:first").focus().length == 0) // sibling
-						self.parents(".mft-list:first").parents(".mft-node:first").next().find(cl+":focusable:first").focus(); // next parent
+					if (self.parent().next().find(cl+":focusable:first").focus().length == 0) { // sibling
+						var el = self.parents(".mft-list:first").parents(".mft-node:first"); // find next parent with siblings
+						while (el.next().length==0 && el.parents(".mft-list:first").parents(".mft-node:first").length > 0) {
+							el = el.parents(".mft-list:first").parents(".mft-node:first");
+						}
+						el.next().find(cl+":focusable:first").focus();
+					}
 			}
 			switch (event.keyCode) {
 			case 32:
