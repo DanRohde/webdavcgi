@@ -116,6 +116,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				};
 				el.find(settings.droppable.selector).droppable(settings.droppable.params);
 			}
+			el.find(".mft-node-expander,.mft-node-label").off("keyup.mft").on("keyup.mft", keyboardEventHandler);
 			settings.initDom(el);
 			return el;
 		}
@@ -154,6 +155,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			if (!node.expand) li.addClass("mft-collapsed");
 			if (node.title) label.attr("title", node.title);
 			if (node.help) li.attr("title", node.help);
+			if (node.attr) li.attr(node.attr);
+			if (node.labelAttr) label.attr(node.labelAttr);
+			if (node.expanderAttr) expander.attr(node.expanderAttr);
 			li.data("mftn", node );
 			if (node.children)
 				li.toggleClass("mft-node-empty", node.read == "yes" && node.children.length == 0).append(renderFolderTree(node.children));
@@ -177,6 +181,55 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				var node = $(e);
 				return filter(node, node.data("mftn"));
 			});
+		}
+		function keyboardEventHandler(event) {
+			if (event.target != this) return;
+			var self = $(this);
+			var cl = self.hasClass("mft-node-label") ? ".mft-node-label" : ".mft-node-expander";
+			function goUp() {
+				if (self.parent().prev().find(cl+":focusable:last").focus().length == 0) { // sibling
+					self.parents(".mft-list:first").parents(".mft-node:first").find(cl+":focusable:first").focus(); // parent
+				}
+			}
+			function goDown() {
+				if (self.parent().find(".mft-list:first").find(cl+":focusable:first").focus().length == 0) // child
+					if (self.parent().next().find(cl+":focusable:first").focus().length == 0) // sibling
+						self.parents(".mft-list:first").parents(".mft-node:first").next().find(cl+":focusable:first").focus(); // next parent
+			}
+			switch (event.keyCode) {
+			case 32:
+			case 13:
+				if (self.data("input-finished")) {
+					self.removeData("input-finished");
+					return;
+				}
+				self.trigger("click", { origEvent : event });
+				break;
+			case 33: // page up
+				self.parent().siblings().first().find(cl+":focusable:first").focus();
+				break;
+			case 34: // page down
+				self.parent().siblings().last().find(cl+":focusable:last").focus()
+				break;
+			case 35: // end
+				foldertree.find(cl+":focusable:last").focus();
+				break;
+			case 36: // home
+				foldertree.find(cl+":focusable:first").focus();
+				break;
+			case 37: // left
+				if (self.prevAll(":focusable:first").focus().length == 0) { cl = ".mft-node-label"; goUp(); }
+				break;
+			case 38: // up
+				goUp(self);
+				break;
+			case 39: // right
+				if (self.nextAll(":focusable:first").focus().length == 0) { cl = ".mft-node-expander"; goDown(); }
+				break;
+			case 40: // down
+				goDown();
+				break;
+			}
 		}
 		return this;
 	};

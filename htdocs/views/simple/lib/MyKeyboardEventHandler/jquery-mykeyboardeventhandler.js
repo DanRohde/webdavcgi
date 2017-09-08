@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 (function ( $ ) {
 	$.fn.MyKeyboardEventHandler = function(options) {
 		var settings = $.extend( {
-			namespace : "mykeyboardeventhandler",
+			namespace : "mykeyboardeventhandler"
 		}, options);
 		
 		this.off("keyup."+settings.namespace).on("keyup."+settings.namespace, keyboardEventHelper);

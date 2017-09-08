@@ -56,7 +56,6 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		},
 		initDom: function(el) {
 			el.MyTooltip();
-			el.find(".mft-node-label,.mft-node-expander").MyKeyboardEventHandler();
 		},
 		droppable : {
 			selector: ".mft-node.iswriteable-yes .mft-node-label",
@@ -85,6 +84,13 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 				initFolderTreePopupMenu();
 			});
 		},
+	})
+	.on("click", function(event) {
+		if (event.target == this) {
+			var self = $(this);
+			if (!self.is(":visible")) $(".action.toggle-foldertree:first").click();
+			if (self.find(".mft-node.mft-active-node :focusable:first").focus().length == 0) self.find(":focusable:first").focus();
+		}
 	})
 	.MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
 	initFolderTreePopupMenu();
