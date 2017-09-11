@@ -116,7 +116,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				};
 				el.find(settings.droppable.selector).droppable(settings.droppable.params);
 			}
-			el.find(".mft-node-expander,.mft-node-label").off("keyup.mft").on("keyup.mft", keyboardEventHandler);
+			el.find(".mft-node-expander,.mft-node-label").off("keydown.mft").on("keydown.mft", keyboardEventHandler);
 			settings.initDom(el);
 			return el;
 		}
