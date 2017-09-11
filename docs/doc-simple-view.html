@@ -81,18 +81,18 @@ Overview of existing page template hooks (template file name pattern: <code>temp
 <li> Create a custom template: <code>vi templates/simple/help.custom.tmpl</code></li>
 <li> Add HTML code to the new template (change href values to your preferred URLs):
 <pre>
-&lt;li class="logout-button" data-href="/logout"&gt;
-  &lt;div class="label"&gt;Logout&lt;/div&gt;
+&lt;li class="logout-button" data-href="/logout" role="button" aria-label="$tl(logout)"&gt;
+  &lt;div class="label"&gt;$tl(logout)&lt;/div&gt;
 &lt;/li&gt;
 &lt;li class="contact-button" accesskey="9" 
-    data-href="mailto:contact@mydomain.org?subject=WebDAV%20CGI"&gt;
-  &lt;div class="label"&gt;Contact&lt;/div&gt;
+    data-href="mailto:contact@mydomain.org?subject=WebDAV%20CGI" role="button" "aria-label="$(contact)"&gt;
+  &lt;div class="label"&gt;$tl(contact)&lt;/div&gt;
 &lt;/li&gt;
-&lt;li class="link-button" data-href="https://google.com/" data-target="_blank"&gt;
+&lt;li class="link-button" data-href="https://google.com/" data-target="_blank" role="button" aria-label="Google"&gt;
   &lt;div class="label"&gt;Google&lt;/div&gt;
 &lt;/li&gt;
-&lt;li class="help-button" accesskey="6" data-target="_blank" data-href="link_to_my_help"&gt;
-  &lt;div class="label"&gt;Help&lt;/div&gt;
+&lt;li class="help-button" accesskey="6" data-target="_blank" data-href="link_to_my_help" role="button" aria-label="$tl(help)"&gt;
+  &lt;div class="label"&gt;$tl(help)&lt;/div&gt;
 &lt;/li&gt;
 </pre>
 </li>
