@@ -13,7 +13,10 @@ $(".search-datepicker").datepicker({ firstDay: $FIRSTDAY, monthNames : [$MONTHNA
 <div class="search-form-and-buttons">
 <div class="search formpanel">
 	<div class="search query">
-		$tl(search.query): <input class="search query" type="search" name="query" value=""> <div class="contexthelp" tabindex="0" aria-label="$tl(help)" aria-describedby="MyTooltip" data-htmltooltip="$inchelp(query)"></div>
+		$tl(search.query): 
+		<input class="search query" type="search" name="query" value="">
+		<div class="search-reset-button" aria-label="$tl(search.resetquery)" title="$tl(search.resetquery)" tabindex="0">×</div>
+		<div class="contexthelp search" tabindex="0" aria-label="$tl(help)" aria-describedby="MyTooltip" data-htmltooltip="$inchelp(query)"></div>
 	</div>
 	<div class="search filenamesearch">
 			<label><input type="radio" name="searchin" value="filename" checked="checked">$tl(search.filenameoption)</label>	

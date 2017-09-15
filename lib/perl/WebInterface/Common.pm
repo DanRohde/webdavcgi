@@ -235,6 +235,7 @@ sub _get_std_template_vars {
         q{.}            => scalar time,
         TIME            => strftime($self->tl('vartimeformat'), @lt),
         NOW             => strftime($self->tl('varnowformat'), @lt),
+        YEAR            => 1900 + $lt[5],
         %{$vars},
     };
 }

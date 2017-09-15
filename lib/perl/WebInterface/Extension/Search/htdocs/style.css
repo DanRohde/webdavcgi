@@ -161,12 +161,24 @@ div.search.query {
 }
 input.search.query {
 	flex: 1 1 auto;
+	padding-right: 2em;
+}
+.search-reset-button {
+	margin-left: -2em;
+	cursor: pointer;
+	display: inline-block;
+	padding: 0;
+	line-height: 1.8;
+	height: 1ex;
 }
 .search-form-and-buttons {
 	display: flex;
 	flex-flow: row no-wrap;
 	justify-content: space-between;
 	align-items: flex-end;
+}
+.search.contexthelp {
+	margin-left: 1.5em;
 }
 .search.formpanel {
 	flex: 0.6 1 auto;
