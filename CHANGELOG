@@ -1,4 +1,4 @@
-1.1.2: BETA 
+1.1.2: 2017/05/10
      - moved source code from sourceforge to github
      - added folder upload support via folder drag and drop and menu dialog
      - changed file/folder action dialog
@@ -12,6 +12,10 @@
      - added session authentication support
      - added Brotli compression support (module IO::Compress::Brotli required)
      - added Localizer plugin for Web UI translation support
+     - improved accessiblity: improved screenreader and keyboard support
+     - converted all web interface icons to SVG
+     - added folder tree view, big icon and small icon view
+
 1.1.1: 2016/9/10 
      - fixed broken images in ImageInfo extension bug
      - fixed wrong thumbnail toggle state bug in QuickToggle extension
