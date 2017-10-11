@@ -33,6 +33,9 @@ function getURI() {
 function getBaseURI() {
 	return $("#flt").data("uri");
 }
+function getBasePath() {
+	return $("#flt").data("baseuri");
+}
 function initFileList() {
 	$("#fileList.selectable-false tr").removeClass("unselectable-no").addClass("unselectable-yes");
 	

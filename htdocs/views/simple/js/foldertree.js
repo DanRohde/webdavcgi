@@ -32,6 +32,12 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 			return (decodeURI(data.uri) == duri);
 		});
 	}
+	function getNodeByUri(uri) {
+		var duri = decodeURI(uri);
+		return $("#foldertree").MyFolderTree("get-nodes", function(node, data) {
+			return duri == decodeURI(data.uri);
+		});
+	}
 	function initFolderTreePopupMenu() {
 		$("#foldertreepopupmenu").MyPopup({
 			contextmenu: $("#foldertreepopupmenu"),
@@ -104,6 +110,29 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	$(".action.foldertree-open-folder").on("click", function(event) {
 		$.MyPreventDefault(event);
 		changeUri($("#foldertree").MyFolderTree("get-node-data", $(this).closest(".mft-node")).uri);
+	});
+	$(".action.foldertree-open-current").on("click", function(event) {
+		var ft = $("#foldertree");
+		var basePath = getBasePath();
+		var reluri = getURI().substr(basePath.length);
+		var us = reluri.split(/\//);
+		function openNode(path) {
+			var n = getNodeByUri(path);
+			var p = path + us.shift()+"/";
+			if (ft.MyFolderTree("is-node-read",n)) {
+				ft.MyFolderTree("expand-node",n);
+				setActiveNodeInFolderTree(p);
+				if (us.length>1) openNode(p);
+			} else { 
+				ft.off("foldertreeChanged.foc-on").on("foldertreeChanged.foc-on", function() {
+					setActiveNodeInFolderTree(p);
+					ft.off("foldertreeChanged.foc-on");
+					if (us.length > 1) openNode(p);
+				});
+				ft.MyFolderTree("expand-node", n);
+			}
+		}
+		if (reluri.length > 0) openNode(basePath);
 	});
 	$(".action.foldertree-expand-all").on("click", function(event) {
 		$.MyPreventDefault(event);

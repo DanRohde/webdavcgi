@@ -38,6 +38,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				var parent = anode.parents(".mft-node:first");
 				anode.remove();
 				parent.toggleClass("mft-node-empty", parent.find(".mft-node").length == 0);
+			} else if ( options == "is-node-read" ) { // param: node
+				return param.closest(".mft-node").data("mftn").read;
 			} else if ( options == "set-node-unread" ) { // param: function(element, data):bool
 				var anode = getNodes(param);
 				var data = anode.data("mftn");
