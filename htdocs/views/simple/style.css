@@ -1682,6 +1682,9 @@ a.extern:after {
 	background-color: white;
 	border: 2px solid #ddd;
 }
+#foldertree {
+	overflow: auto;
+}
 .mft-list {
 	margin-left: 18px;
 }
