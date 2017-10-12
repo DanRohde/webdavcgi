@@ -1669,7 +1669,7 @@ a.extern:after {
 	background-position: right top, right 35px;
 }
 /* Folder tree */
-#foldertree {
+#foldertree-pane {
 	display: none;
 	position: fixed;
 	overflow: auto;
@@ -1685,10 +1685,10 @@ a.extern:after {
 .mft-list {
 	margin-left: 18px;
 }
-.head-collapsed #foldertree {
+.head-collapsed #foldertree-pane {
 	top: 0px;
 }
-.show-foldertree #foldertree {
+.show-foldertree #foldertree-pane {
 	display: block;	
 }
 .show-foldertree #flt {
@@ -1698,6 +1698,24 @@ a.extern:after {
 	border: 1px inset #ddd;
 	background-color: #eee;
 }
+#foldertreetoolbar {
+	padding: 0;
+	margin: 0;
+	position:absolute;
+	right: 0;
+	background-color: #f7f7f7;
+	border: 1px solid #ddd;
+	width: 24px;
+}
+#foldertreetoolbar .action {
+	width: 18px;
+	height: 18px;
+	background-position-x: center;
+	padding: 0;
+	margin: 2px;
+	background-size: 16px 16px;
+}
+
 .mft-node-expander {
 	display: inline-block;
 	width: 18px;

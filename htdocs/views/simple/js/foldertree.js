@@ -21,7 +21,7 @@ function WebDAVCGIFolderTree() {
 
 WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	function handleFolderTreeDrop(event,ui) {
-		var dsturi = $(this).closest(".mft-node").data("mftn").uri;
+		var dsturi = $("#foldertree").MyFolderTree("get-node-data", $(this)).uri;
 		var srcinfo = getFileListDropSrcInfo(event,ui);
 		if (dsturi != srcinfo.srcuri) doFileListDropWithConfirm(srcinfo,dsturi);
 		return false;
@@ -31,6 +31,12 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		$("#foldertree").MyFolderTree("set-active-node", function(node, data) {
 			return (decodeURI(data.uri) == duri);
 		});
+	}
+	function getActiveNode(e) {
+		var el = $(e);
+		var ft = $("#foldertree");
+		var an = ft.MyFolderTree("is-node", el) ? ft.MyFolderTree("get-node-by-element", el) : ft.MyFolderTree("get-active-node");
+		return an.length == 0 ? ft.MyFolderTree("get-root-node"): an;
 	}
 	function getNodeByUri(uri) {
 		var duri = decodeURI(uri);
@@ -50,10 +56,10 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	$(".action.toggle-foldertree").on("click", function() {
 		$("#content").toggleClass("show-foldertree");
 		$.MyCookie.toggleCookie("settings.show.foldertree","yes", $("#content").hasClass("show-foldertree"), true);
-		$("#foldertree").MySplitPane("resize");
+		$("#foldertree-pane").MySplitPane("resize");
 		$("#flt").css("margin-left",$("#content").hasClass("show-foldertree") ? ($("#foldertree").width()+12)+"px" : "");
 	});
-	$("body").on("windowResized", function() { $("#foldertree").MySplitPane("resize"); });
+	$("body").on("windowResized", function() { $("#foldertree-pang").MySplitPane("resize"); });
 	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
 	$("#foldertree")
 	.MyFolderTree({ 
@@ -97,8 +103,9 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 			if (!self.is(":visible")) $(".action.toggle-foldertree:first").click();
 			if (self.find(".mft-node.mft-active-node :focusable:first").focus().length == 0) self.find(":focusable:first").focus();
 		}
-	})
-	.MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
+	});
+	$("#foldertree-pane").MySplitPane({ left: { element: "self", style: "width", min: 100, max: $("#content").width()/2 }, right: { element: $("#flt"), style: "margin-left" } });
+	$("#foldertreetoolbar").MyTooltip().find(".action").MyKeyboardEventHandler();
 	initFolderTreePopupMenu();
 	$("#foldertreepopupmenu .action").on("click", handleFileListActionEvent);
 	flt.on("fileListChanged", function() {
@@ -109,7 +116,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	});
 	$(".action.foldertree-open-folder").on("click", function(event) {
 		$.MyPreventDefault(event);
-		changeUri($("#foldertree").MyFolderTree("get-node-data", $(this).closest(".mft-node")).uri);
+		changeUri($("#foldertree").MyFolderTree("get-node-data", getActiveNode()).uri);
 	});
 	$(".action.foldertree-open-current").on("click", function(event) {
 		var ft = $("#foldertree");
@@ -123,7 +130,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 				ft.MyFolderTree("expand-node",n);
 				setActiveNodeInFolderTree(p);
 				if (us.length>1) openNode(p);
-			} else { 
+			} else {
 				ft.off("foldertreeChanged.foc-on").on("foldertreeChanged.foc-on", function() {
 					setActiveNodeInFolderTree(p);
 					ft.off("foldertreeChanged.foc-on");
@@ -136,20 +143,20 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	});
 	$(".action.foldertree-expand-all").on("click", function(event) {
 		$.MyPreventDefault(event);
-		$("#foldertree").MyFolderTree("expand-all-nodes",$(this).closest(".mft-node"));
+		$("#foldertree").MyFolderTree("expand-all-nodes", getActiveNode(this));
 	});
 	$(".action.foldertree-collapse-all").on("click", function(event) {
 		$.MyPreventDefault(event);
-		$("#foldertree").MyFolderTree("collapse-all-nodes", $(this).closest(".mft-node"));
+		$("#foldertree").MyFolderTree("collapse-all-nodes", getActiveNode(this));
 	});
 	$(".action.foldertree-refresh-current").on("click", function(event) {
 		$.MyPreventDefault(event);
-		$("#foldertree").MyFolderTree("reload-node", $(this).closest(".mft-node"));
+		$("#foldertree").MyFolderTree("reload-node", getActiveNode(this));
 		
 	});
 	$(".action.foldertree-read-all").on("click", function(event) {
 		$.MyPreventDefault(event);
-		$("#foldertree").data("recurse",true).MyFolderTree("reload-node", $(this).closest(".mft-node"));
+		$("#foldertree").data("recurse",true).MyFolderTree("reload-node", getActiveNode(this));
 	});
 	$(".action.foldertree-new-folder").MyInplaceEditor(  
 	{ 
@@ -158,7 +165,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		},
 		changeEvent: function(data) {
 			var self = $(this);
-			var n = self.closest(".mft-node");
+			var n = $("#foldertree").MyFolderTree("get-node-by-element",self);
 			var nd = $("#foldertree").MyFolderTree("get-node-data", n);
 			$.MyPost(nd.uri, { mkcol : "yes", colname : data.value }, function(response) {
 				if (!response.error && response.message) 
@@ -169,7 +176,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 	});
 	$(".action.foldertree-rename-folder").on("click", function(event) {
 		$.MyPreventDefault(event);
-		var n = $(this).closest(".mft-node");
+		var n = $("#foldertree").MyFolderTree("get-node-by-element",$(this));
 		var nd = $("#foldertree").MyFolderTree("get-node-data", n);
 		var label = n.children(".mft-node-label:first");
 		var base = $.MyStringHelper.getParentURI(nd.uri);

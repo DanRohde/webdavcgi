@@ -26,6 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				anode.children(".mft-node-label:first").addClass("mft-active-node");
 				anode.parents(".mft-collapsed").removeClass("mft-collapsed");
 				if (anode.length>0 && anode[0].scrollIntoView) anode[0].scrollIntoView();
+			} else if ( options == "get-active-node") { // param: -
+				return foldertree.find(".mft-active-node");
 			} else if ( options == "add-node-data") { // param: function(element, data)
 				var anode = getNodes(param);
 				if (anode.length > 0) readUnreadNodes(anode, anode.data("mftn"), false);
@@ -40,6 +42,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				parent.toggleClass("mft-node-empty", parent.find(".mft-node").length == 0);
 			} else if ( options == "is-node-read" ) { // param: node
 				return param.closest(".mft-node").data("mftn").read;
+			} else if ( options == "is-node") { // param: node
+				return param.closest(".mft-node").length > 0;
+			} else if ( options == "get-node-by-element") { // param: element
+				return param.closest(".mft-node");
+			} else if ( options == "get-root-node") { // param: -
+				return foldertree.find(".mft-node:first");
 			} else if ( options == "set-node-unread" ) { // param: function(element, data):bool
 				var anode = getNodes(param);
 				var data = anode.data("mftn");

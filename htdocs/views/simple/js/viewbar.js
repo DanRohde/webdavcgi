@@ -21,7 +21,7 @@ initFileListViewSwitches();
 
 
 function initViewBar() {
-	$("#viewbar").MyTooltip();
+	$("#viewbar").MyTooltip().find(".action").MyKeyboardEventHandler();
 }
 
 function initFileListViewSwitches() {
