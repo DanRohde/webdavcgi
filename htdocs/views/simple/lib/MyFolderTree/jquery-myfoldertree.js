@@ -26,6 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				anode.children(".mft-node-label:first").addClass("mft-active-node");
 				anode.parents(".mft-collapsed").removeClass("mft-collapsed");
 				if (anode.length>0 && anode[0].scrollIntoView) anode[0].scrollIntoView();
+			} else if ( options == "set-node-visible" ) { // param: node
+				param.parents(".mft-node").removeClass("mft-collapsed");
 			} else if ( options == "get-active-node") { // param: -
 				return foldertree.find(".mft-active-node");
 			} else if ( options == "add-node-data") { // param: function(element, data)

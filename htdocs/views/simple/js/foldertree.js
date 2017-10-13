@@ -142,21 +142,21 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		if (reluri.length > 0) openNode(basePath);
 	});
 	$(".action.foldertree-expand-all").on("click", function(event) {
-		$.MyPreventDefault(event);
-		$("#foldertree").MyFolderTree("expand-all-nodes", getActiveNode(this));
+		var node = getActiveNode(this);
+		$("#foldertree").MyFolderTree("set-node-visible", node).MyFolderTree("expand-all-nodes", node);
 	});
 	$(".action.foldertree-collapse-all").on("click", function(event) {
-		$.MyPreventDefault(event);
-		$("#foldertree").MyFolderTree("collapse-all-nodes", getActiveNode(this));
+		var node = getActiveNode(this);
+		$("#foldertree").MyFolderTree("set-node-visible", node).MyFolderTree("collapse-all-nodes", node);
 	});
 	$(".action.foldertree-refresh-current").on("click", function(event) {
-		$.MyPreventDefault(event);
-		$("#foldertree").MyFolderTree("reload-node", getActiveNode(this));
+		var node = getActiveNode(this);
+		$("#foldertree").MyFolderTree("set-node-visible", node).MyFolderTree("reload-node", node);
 		
 	});
 	$(".action.foldertree-read-all").on("click", function(event) {
-		$.MyPreventDefault(event);
-		$("#foldertree").data("recurse",true).MyFolderTree("reload-node", getActiveNode(this));
+		var node = getActiveNode(this);
+		$("#foldertree").data("recurse",true).MyFolderTree("set-node-visible",node).MyFolderTree("reload-node", node);
 	});
 	$(".action.foldertree-new-folder").MyInplaceEditor(  
 	{ 

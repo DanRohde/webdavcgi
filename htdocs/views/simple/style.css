@@ -1718,7 +1718,9 @@ a.extern:after {
 	margin: 2px;
 	background-size: 16px 16px;
 }
-
+.spacer-top {
+	margin-top: 9px !important;
+}
 .mft-node-expander {
 	display: inline-block;
 	width: 18px;
