@@ -115,8 +115,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		
 	});
 	$(".action.foldertree-open-folder").on("click", function(event) {
-		$.MyPreventDefault(event);
-		changeUri($("#foldertree").MyFolderTree("get-node-data", getActiveNode()).uri);
+		changeUri($("#foldertree").MyFolderTree("get-node-data", $(this)).uri);
 	});
 	$(".action.foldertree-open-current").on("click", function(event) {
 		var ft = $("#foldertree");
