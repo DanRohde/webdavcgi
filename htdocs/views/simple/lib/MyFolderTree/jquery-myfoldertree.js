@@ -152,6 +152,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			return node;
 		}
 		function toggleNode(node, collapse) {
+			if (!node.data("mftn").read) return;
 			node.toggleClass("mft-collapsed", collapse);
 			if (!node.hasClass("mft-collapsed")) $(".mft-node", node).addClass("mft-collapsed");
 			$(".mft-node-expander", node).attr({"aria-expanded":!node.hasClass("mft-collapsed")});
