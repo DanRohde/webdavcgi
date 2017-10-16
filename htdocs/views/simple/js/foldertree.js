@@ -59,7 +59,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 		$("#foldertree-pane").MySplitPane("resize");
 		$("#flt").css("margin-left",$("#content").hasClass("show-foldertree") ? ($("#foldertree").width()+12)+"px" : "");
 	});
-	$("body").on("windowResized", function() { $("#foldertree-pang").MySplitPane("resize"); });
+	$("body").on("windowResized", function() { $("#foldertree-pane").MySplitPane("resize"); });
 	$("#content").toggleClass("show-foldertree", $.MyCookie("settings.show.foldertree") == "yes");
 	$("#foldertree")
 	.MyFolderTree({ 
