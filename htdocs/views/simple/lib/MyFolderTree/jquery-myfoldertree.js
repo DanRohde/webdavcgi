@@ -59,10 +59,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			} else if ( options == "collapse-all-nodes" ) { // param: node
 				param.closest(".mft-node").addClass("mft-collapsed").find(".mft-node").addClass("mft-collapsed");
 			} else if ( options == "expand-all-nodes") { // param: node
-				readUnreadNodes(param, param.data("mftn"), false);
-				param.closest(".mft-node").removeClass("mft-collapsed").find(".mft-node.mft-node-read").removeClass("mft-collapsed");
+				var node = param.closest(".mft-node");
+				toggleNode(readUnreadNodes(node, node.data("mftn"), false), false).find(".mft-node").each(function(i,v) { toggleNode($(v), false); });
 			} else if ( options == "expand-node" ) { // param: node
-				readUnreadNodes(param, param.data("mftn"), true);
+				var node = param.closest(".mft-node");
+				readUnreadNodes(node, node.data("mftn"), true);
 			} else if ( options == "reload-node" ) { // param: node
 				reloadNode(param.closest(".mft-node"));
 			}
@@ -141,23 +142,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			toggleNode(node, false);
 		}
 		function readUnreadNodes(node, data, expand, forceRead) {
-			if (data.read) return;
+			if (data.read) return node;
 			data.read = true;
 			settings.getFolderTree(data, function(children) {
 				initClickHandler(node.append(renderFolderTree(children)));
 				node.addClass("mft-node-read").toggleClass("mft-node-empty", children.length == 0);
 				if (expand || settings.autoExpandOnRead) toggleNode(node, false);
 			}, forceRead);
+			return node;
 		}
 		function toggleNode(node, collapse) {
 			node.toggleClass("mft-collapsed", collapse);
 			if (!node.hasClass("mft-collapsed")) $(".mft-node", node).addClass("mft-collapsed");
 			$(".mft-node-expander", node).attr({"aria-expanded":!node.hasClass("mft-collapsed")});
+			return node;
 		}
 		function renderFolderTreeNode(node) {
 			if (!node.ext_attributes) node.ext_attributes = "";
 			var li = $("<li "+node.ext_attributes+"></li>").addClass("mft-node");
-			var expander = $("<div/>").addClass("mft-node-expander").attr({"tabindex":0, role:"tree", "aria-label" : node.name+" expander", "aria-expanded": !node.expand}).appendTo(li);
+			var expander = $("<div/>").addClass("mft-node-expander").attr({"tabindex":0, "aria-label" : node.name+" expander", "aria-expanded": !node.expand}).appendTo(li);
 			var label = $("<div/>").addClass("mft-node-label").addClass(node.labelclasses).appendTo(li).attr({"tabindex":0,"aria-label":node.name, role:"treeitem"});
 			var icon = $("<div/>").addClass("mft-node-icon").addClass(node.iconclasses).appendTo(label);
 			var text = $("<div/>").addClass("mft-node-label-text").text(node.name).appendTo(label);
@@ -178,7 +181,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			return li;
 		} 
 		function renderFolderTree(tree) {
-			var ul = $("<ul/>").addClass("mft-list");
+			var ul = $("<ul/>").addClass("mft-list").attr("role","tree");
 			tree.sort(function(a,b) {
 				return a.name.localeCompare ? a.name.localeCompare(b.name) : a.name < b.name ? -1 : a.name > b.name ? 1 : 0; 
 			});

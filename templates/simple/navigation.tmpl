@@ -4,24 +4,24 @@
 	</li>
 	<li class="applicationsmenu popup" tabindex="0" role="menu" aria-label="$tl(applications)">
 		<div class="label ai-applications">$tl(applications)</div>
-		<ul class="popup">
-			<li class="popup sep select" title="$tl(select)" tabindex="0" role="menu" aria-label="$tl(select)">
+		<ul class="popup" role="menu">
+			<li class="popup sep select" title="$tl(select)" tabindex="0" role="menuitem" aria-label="$tl(select)">
 				<div class="popup label select ai-toggleselection">$tl(select)</div>
-				<ul class="popup">
+				<ul class="popup" role="menu">
 					<li class="action toggleselection" title="$tl(togglealltooltip)" role="menuitem" tabindex="0">$tl(togglealltooltip)</li>
 					<li class="action selectall" title="$tl(selectall)"  role="menuitem" tabindex="0">$tl(selectall)</li>
 					<li class="action selectnone" title="$tl(selectnone)" role="menuitem" tabindex="0">$tl(selectnone)</li>
 				</ul>
 			</li>
-			<li class="bookmarkmenu popup" tabindex="0" role="menu" aria-label="$tl(bookmarks)">
+			<li class="bookmarkmenu popup" tabindex="0" role="menuitem" aria-label="$tl(bookmarks)">
 				<div class="label bookmark-label ai-bookmarks">$tl(bookmarks)</div>
 				$INCLUDE(bookmarks)
 			</li>
-			<li class="autorefreshmenu popup" tabindex="0" role="menu" aria-label="$tl(autorefresh.select)">
+			<li class="autorefreshmenu popup" tabindex="0" role="menuitem" aria-label="$tl(autorefresh.select)">
 				<div class="label autorefresh-label ai-refresh" title="$tl(autorefresh.select.title)">$tl(autorefresh.select)</div>
 				$INCLUDE(autorefresh)
 			</li>
-			<li class="action copyurl sel-one" title="$tl(copyurltooltip)" aria-label="$tl(copyurltooltip)" accesskey="k"><div class="label">$tl(copyurl)</div><div class="accesskey">k</div></li>
+			<li class="action copyurl sel-one" title="$tl(copyurltooltip)" aria-label="$tl(copyurltooltip)" accesskey="k" role="menuitem"><div class="label">$tl(copyurl)</div><div class="accesskey">k</div></li>
 			$extension(appsmenu)
 		</ul>
 	</li>
@@ -29,16 +29,16 @@
 	$extension(apps)
 </ul>
 $INCLUDE(nav)
-<ul id="prefs">
+<ul id="prefs" role="menu">
 	$INCLUDE(pref)
 	<!--IF($#SUPPORTED_VIEWS>0)-->
-		<li title="$tl(viewoptions)">
+		<li title="$tl(viewoptions)" role="menuitem">
 			<div class="accordion">
 				<h3>$tl(viewoptions)</h3> 
 				<div>
-					<ul>
-						$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)" class="action view $v" data-href="?view=$v" title="$v" aria-label="$v" tabindex="0">$tl(${v}view)</li>'#'^$view$'#
-						<li title="$tl(filter.title)" class="action viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)" tabindex="0">
+					<ul role="menu">
+						$each#@SUPPORTED_VIEWS#'<li title="$tl(${v}view)" class="action view $v" data-href="?view=$v" title="$v" aria-label="$v" role="menuitem" tabindex="0">$tl(${v}view)</li>'#'^$view$'#
+						<li title="$tl(filter.title)" class="action viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)" role="menuitem" tabindex="0">
 							<span class="label">$tl(filter.title)</span>
 						</li>
 					</ul>
@@ -46,11 +46,11 @@ $INCLUDE(nav)
 			</div>
 		</li>
 	<!--ELSE-->
-		<li title="$tl(filter.title)" class="action viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)" tabindex="0"><span class="label">$tl(filter.title)</span></li>
+		<li title="$tl(filter.title)" class="action viewfilter" data-template="viewfilter" accesskey="o" aria-label="$tl(filter.title)" role="menuitem" tabindex="0"><span class="label">$tl(filter.title)</span></li>
 	<!--ENDIF-->
-	<li title="$tl(settings)" class="dialog action settings" data-action="settings" aria-label="$tl(settings)" tabindex="0"><span class="label">$tl(settings)</span></li>
+	<li title="$tl(settings)" class="dialog action settings" data-action="settings" aria-label="$tl(settings)" role="menuitem" tabindex="0"><span class="label">$tl(settings)</span></li>
 	$extension(pref)
 	$INCLUDE(help)
 	$INCLUDE(manual)
-	<li title="$tl(about)" class="dialog action about" data-action="about" accesskey="6" aria-label="$tl(about)" tabindex="0"><span class="label">$tl(about)</span></li>
+	<li title="$tl(about)" class="dialog action about" data-action="about" accesskey="6" aria-label="$tl(about)" role="menuitem" tabindex="0"><span class="label">$tl(about)</span></li>
 </ul>
