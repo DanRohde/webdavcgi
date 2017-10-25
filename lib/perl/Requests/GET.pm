@@ -108,14 +108,13 @@ sub _compressable {
     my $enc    = $self->{cgi}->http('Accept-Encoding');
     my $mime   = get_mime_type($PATH_TRANSLATED);
     my $stat   = stat2h( $self->{backend}->stat($PATH_TRANSLATED) );
-
     return
          $ENABLE_COMPRESSION
       && $enc
       && $enc =~ /(?:gzip|deflate)/xms
       && $stat->{size} >= $MIN_COMPRESSABLE_FILESIZE
       && $stat->{size} <= $MAX_COMPRESSABLE_FILESIZE
-      && $mime !~ m{^(?:text/(?:css|html)|application/(?:x-)?javascript)$}xmsi;
+      && $mime =~ m{^(?:text/(?:css|html)|application/(?:x-)?javascript)$}xmsi;
 }
 
 sub _handle_compressed_file {
@@ -123,7 +122,6 @@ sub _handle_compressed_file {
     if ( !$self->_compressable() ) {
         return 0;
     }
-
     my $enc  = $self->{cgi}->http('Accept-Encoding');
     my $mime = get_mime_type($PATH_TRANSLATED);
     my $stat = stat2h( $self->{backend}->stat($PATH_TRANSLATED) );
@@ -160,24 +158,7 @@ sub _handle_compressed_file {
     }
     my $bufsize = $BUFSIZE;
     if ( defined $count && $count < $bufsize ) { $bufsize = $count; }
-    my $bytecount = 0;
-    if ( open my $F, '<', $self->{backend}->getLocalFilename($PATH_TRANSLATED) )
-    {
-        if ( defined $start ) {
-            seek( $F, $start, 0 )
-              || carp(
-                "Cannot seek filehandle for '$PATH_TRANSLATED' to $start.");
-        }
-        while ( my $bytesread = read $F, my $buffer, $bufsize ) {
-            $c->write($buffer);
-            $bytecount += $bytesread;
-            if ( defined $count && $bytecount >= $count ) { last; }
-            if ( defined $count && ( $bytecount + $bufsize > $count ) ) {
-                $bufsize = $count - $bytecount;
-            }
-        }
-        close($F) || carp('Cannot close filehandle.');
-    }
+    $self->{backend}->printFile($PATH_TRANSLATED, $c, $start, $count);
     $self->{event}->broadcast(
         'GET',
         {

@@ -1,4 +1,6 @@
 1.1.3: BETA
+     - fixed performance bugs reported by Hendrik Visage: GET handler should not compress binaries and should use backend for printing compressed files instead of local temporary downloads
+     - fixed temporary file handling bug in SMB backend reported by Handrik Visage: folder for temporary files should not be hard coded
 
 1.1.2: 2017/05/10
      - moved source code from sourceforge to github

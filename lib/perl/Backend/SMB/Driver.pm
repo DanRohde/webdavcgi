@@ -27,6 +27,7 @@ use base qw( Backend::Helper);
 
 use Filesys::SmbClient;
 use File::Temp qw/ tempfile tempdir /;
+use File::Spec;
 use Fcntl qw(:flock);
 use CGI::Carp;
 use English qw( -no_match_vars );
@@ -337,7 +338,7 @@ sub printFile {
     $fh //= \*STDOUT;
     if ( my $rd = $smbclient->open( $self->_get_smb_url($file) ) ) {
         my $bytecount = 0;
-        if ($pos) { $smbclient->seek( $rd, $pos ); }
+        if ($pos) { $smbclient->seek( $rd, $pos ) || carp("Cannt seek filehandle for $file to $pos."); }
         while ( my $buffer = $smbclient->read( $rd, $bufsize ) ) {
             print( {$fh} $buffer ) || carp("Cannot print file $file to $fh.");
             $bytecount += bytes::length($buffer);
@@ -387,9 +388,10 @@ sub getLocalFilename {
     if ( $self->exists($file) ) {
         my $suffix = $file =~ m{([.][^./]+)$}xms ? $1 : undef;
         my ( $fh, $filename ) = tempfile(
-            TEMPLATE => '/tmp/webdavcgiXXXXX',
+            TEMPLATE => 'webdavcgiXXXXX',
             CLEANUP  => 1,
-            SUFFIX   => $suffix
+            SUFFIX   => $suffix,
+            DIR => File::Spec->tmpdir(),
         );
         $self->printFile( $file, $fh );
         close($fh) || carp("Cannot close $file.");
