@@ -28,8 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	min-width: 3ex;
 
 	color: black;
-	background: #feffef;
-	background: linear-gradient(to right, white, #feffef);
+	background-color: #feffef;
+	background-image: linear-gradient(to right, white, #feffef);
 	box-shadow: 0px 0px 4px 4px rgba(144,144,144,0.5);
 	border-radius: 2px;
 
@@ -52,6 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .tooltip code {
 	border: 1px solid #a9aa9a;
 	background-color: #edeede;
+	color: black;
 	font-family: monospace;
 	font-size: 0.80em;
 	padding: 1px 1ex;

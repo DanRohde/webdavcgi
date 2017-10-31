@@ -1,0 +1,185 @@
+@import "mixins.less";
+ul {
+	list-style: none outside none;
+	&.ui-autocomplete {
+		z-index: 1100;
+	}
+}
+
+a {
+	text-decoration: none;
+	&.extern:after {
+		content: "🔗";
+	}
+}
+
+span.ws , div.ws {
+	white-space: pre-wrap;
+	display: inline-block;
+}
+
+.template {
+	display: none;
+}
+
+.ui-button.action.changedir {
+	background-position: center center;
+}
+
+.hidden {
+	display: none;
+}
+
+.invisible {
+	visibility: hidden;
+}
+
+form {
+	display: inline;
+}
+
+.link {
+	cursor: pointer;
+}
+
+.nowrap {
+	white-space: nowrap;
+}
+
+.right {
+	text-align: right;
+	float: right;
+}
+
+.left {
+	text-align: left;
+	float: left;
+}
+
+td.center {
+	text-align: center;
+}
+
+
+.ui-accordion .ui-accordion-content {
+	padding: 0;
+}
+
+img {
+	border: 0;
+}
+
+.link-button {
+	padding-left: 2px ! important;
+	background-image: none;
+	&:before {
+		content: "\01F517";
+		width: 22px;
+		text-align: center;
+		display: inline-block;
+		float: left;
+	}
+}
+
+.tooltip-help {
+	background-position: center center;
+	&:after {
+		content: none;
+	}
+}
+
+.note {
+	height: 1em;
+	display: inline-block;
+	position: absolute;
+	right: 1ex;
+	line-height: 15px;
+}
+
+.dragaccept {
+	cursor: pointer;
+}
+
+.ui-front {
+	z-index: 200;
+}
+
+#filler {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: -1;
+}
+
+.noty_text {
+	white-space: pre-wrap;
+}
+
+.inline-block {
+	display: inline-block;
+	vertical-align: top;
+}:focus {
+	outline: black solid 1px;
+}
+
+.ui-widget button:focus , .ui-widget.ui-widget-content:focus {
+	outline: none;
+}
+
+
+.flex-row {
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+
+.contexthelp {
+	display: inline-block;
+	margin: 0 0 0 -2px;
+	border-radius: 4px;
+	cursor: help;
+	width: 1em;
+	height: 1em;
+	text-align: center;
+	vertical-align: middle;
+	line-height: 1;
+	&:after {
+		content: "?";
+	}
+}
+
+.label {
+	.text-truncate ();
+}
+
+.ajax-loader {
+	z-index: 10000;
+	background-image: url(images/ajax-loader.gif);
+	background-repeat: no-repeat;
+	background-position: 2em 5em;
+	position: fixed;
+	top: 45px;
+	left: 160px;
+	display: none;
+	width: 100%;
+	height: 100%;
+}
+
+@import "layout-actions.less";
+@import "layout-overlay.less";
+@import "layout-top.less";
+@import "layout-nav.less";
+@import "layout-content.less";
+@import "layout-fileupload.less";
+@import "layout-dialogs.less";
+@import "layout-bookmarks.less";
+@import "layout-langswitch.less";
+@import "layout-autorefresh.less";
+@import "layout-collapsible.less";
+@import "layout-dropdown.less";
+@import "layout-statusbar.less";
+@import "layout-tabs.less";
+@import "layout-filestats.less";
+@import "layout-popup.less";

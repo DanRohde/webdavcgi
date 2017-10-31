@@ -19,11 +19,6 @@ function notify(type,msg) {
 	if ($.MyCookie("settings.messages."+type)=="no") return;
 	noty({text: msg, type: type, layout: "topCenter", timeout: 30000 });
 	$("body").trigger("notify",{type:type,msg:msg});
-// var notification = $("#notification");
-// notification.removeClass().hide();
-// notification.off("click").click(function() { $(this).hide().removeClass();
-// }).addClass(type).html("<span>"+$.MyStringHelper.simpleEscape(msg)+"</span>").show();
-	// .fadeOut(30000,function() { $(this).removeClass(type).html("");});
 }
 function notifyError(error) {
 	notify("error",error);

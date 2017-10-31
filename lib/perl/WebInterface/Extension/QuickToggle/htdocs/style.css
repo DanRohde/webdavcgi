@@ -82,8 +82,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .quicktoggle-content.quicktoggle-focus {
 	box-shadow: 3px 0 7px #ddd;	
-	background: #efefef;
-	background: linear-gradient(to right, white,#efefef)
+	background-color: #efefef;
+	background-image: linear-gradient(to right, white,#efefef)
 }
 #nav .quicktoggles, #nav .quicktoggle-content,
 #statusbar .quicktoggles, #statusbar .quicktoggle-content {

@@ -1,0 +1,50 @@
+@import "mixins.less";
+#statusbar {
+	display: none;
+	position: fixed;
+	left: 160px;
+	bottom: 0px;
+	height: 32px;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	z-index: 50;
+	&.enabled {
+		display: block;
+	}
+
+	> li {
+		display: inline-block;
+		height: 32px;
+		vertical-align: middle;
+	}
+
+	.notify {
+		width: 20ex;
+		padding: 0;
+		.text-truncate ();
+		height: 18px;
+	}
+
+	.unselectable {
+		outline: none;
+		cursor: default;
+	}
+
+	.files-stats , .selected-files-stats {
+		margin: 1px 0;
+		height: 30px;
+	}
+
+	.files-stats-content , .selected-files-stats-content {
+		padding: 6px 4px;
+	}
+}
+
+.selected-files-stats-checkedbox {
+	width: 18px;
+	height: 18px;
+	display: inline-block;
+	vertical-align: bottom;
+}
+

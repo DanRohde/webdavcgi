@@ -66,9 +66,6 @@ tr.localizer-locale-editor-entry-head td {
 tr.localizer-locale-editor-entry {
 	border-bottom: 1px solid #ddd;
 }
-.localizer-locale-editor-entry:hover {
-	background-color: #eee;
-}
 .localizer-locale-editor-entry td {
 	white-space: pre-wrap;
 }
@@ -76,7 +73,8 @@ tr.localizer-locale-editor-entry {
 	width: 95%;
 }
 .localizer-locale-editor-entry-active, .localizer-locale-editor-entry-active:hover {
-	background-color: #ffeeee;
+	color: black;
+	background-color: #fee;
 }
 .localizer-locale-editor-buttons {
 	position: absolute;

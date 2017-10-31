@@ -1,0 +1,38 @@
+@import "mixins.less";
+#nav {
+	position: fixed;
+	top: 45px;
+	left: 0;
+	width: 160px;
+	height: 100%;
+	z-index: 75;
+	> ul > li {
+		margin: 0;
+		padding: 6px 1px 6px 23px;
+		min-height: 1.2em;
+		background-position-x: 2px;
+		cursor: pointer;
+		.text-truncate ();
+		text-decoration: none;
+	}
+
+	li > div.accordion {
+		padding: 6px;
+	}
+}
+
+#apps , #prefs {
+	.reset-borders ();
+}
+
+.label.ai-applications {
+	background-position-x: 2px;
+}
+
+#prefs {
+	position: fixed;
+	bottom: 2em;
+	width: 160px;
+	overflow: hidden;
+}
+

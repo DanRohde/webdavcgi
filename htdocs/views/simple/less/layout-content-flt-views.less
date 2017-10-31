@@ -1,0 +1,97 @@
+@import "mixins.less";
+.flt-view-list {
+	.fileListHead {
+		display: none;
+	}
+
+	#fileList {
+		display: flex;
+		flex-flow: row wrap;
+		justify-content: flex-start;
+		padding-bottom: 3em;
+		.nametext {
+			.text-truncate ();
+			max-width: 11em;
+		}
+
+		tr {
+			flex: 0 1 17em;
+			padding: 0 5px;
+		}
+
+		td {
+			display: none;
+			&.filename {
+				display: flex;
+				flex-flow: row nowrap;
+				justify-content: space-between;
+			}
+		}
+	}
+}
+
+.flt-view-thumbs {
+	.fileListHead {
+		display: none;
+	}
+
+	#fileList {
+		display: flex;
+		flex-flow: row wrap;
+		justify-content: flex-start;
+		align-items: baseline;
+		padding-bottom: 3em;
+		tr {
+			flex: 0 0 12em;
+			padding: 1em;
+		}
+
+		td {
+			display: none;
+			&.filename {
+				display: flex;
+				flex-flow: column nowrap;
+				max-width: 12em;
+				position: relative;
+				div.filename {
+					flex-flow: column nowrap;
+				}
+			}
+		}
+
+		.nametext {
+			.text-truncate ();
+			text-align: center;
+		}
+	}
+
+	.islink-yes td.filename , .islocked-yes td.filename {
+		background-size: 30px 30px;
+		background-position: right top !important;
+	}
+
+	.islocked-yes.islink-yes td.filename {
+		background-position: right top, right 35px !important;
+	}
+
+	.icon {
+		background-position: center center;
+		background-size: 80% auto;
+		max-height: 120px;
+		min-width: 80%;
+		align-self: center;
+		&:hover {
+			max-height: 120px;
+		}
+	}
+
+	#fileactions {
+		height: 24px;
+		width: 24px;
+		position: absolute;
+		margin-top: -5px;
+		top: 60px;
+		left: 150px;
+	}
+}
+

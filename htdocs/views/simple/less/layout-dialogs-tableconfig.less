@@ -1,0 +1,101 @@
+.tableconfigdialog {
+	left: 0;
+	margin: 0;
+	padding: 0;
+	width: auto;
+	z-index: 110;
+	fieldset {
+		clear: none;
+		float: left;
+		margin: 1ex;
+	}
+
+	ul li , ul {
+		padding: 0;
+		margin: 0;
+	}
+
+	&.ui-dialog .ui-dialog-title {
+		background-position: left center;
+		padding-left: 20px;
+	}
+}
+
+.tableconfigactions {
+	clear: both;
+	text-align: center;
+}
+
+.tableconfigbutton {
+	background-position: center center;
+	background-size: 12px 12px ! important;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.tableconfig-save.save-icon , .tableconfig-cancel.cancel-icon {
+	background-position: 5px center;
+	background-size: 18px 18px;
+	background-repeat: no-repeat;
+	padding-left: 27px;
+}
+
+.action {
+	&.table-sort-this-asc , &.table-sort-this-desc , &.table-sort , &.table-column-hide-this , &.table-column , &.table-column-width-default , &.table-column-width-minimum {
+		padding-left: 0px;
+	}
+
+	&.table-sort {
+		.symbol:after {
+			content: "↕";
+		}
+
+		.symbol.ascending:after {
+			content: "↘";
+		}
+
+		.symbol.descending:after {
+			content: "↗";
+		}
+	}
+
+	&.table-sort-this-asc .note:after {
+		content: "[Az]";
+		[data-sorttype=number] & {
+			content: "[19]";
+		}
+	}
+
+	&.table-sort-this-desc .note:after {
+		content: "[Za]";
+		[data-sorttype=number] & {
+			content: "[91]";
+		}
+	}
+
+	&.table-column .symbol.column-hidden:after {
+		content: "☐";
+	}
+
+	&.table-column .symbol:after {
+		content: "☒";
+	}
+}
+
+.popup.table-sort-columns , .popup.table-columns {
+	padding-left: 0px;
+}
+
+.sorter-false .action.table-sort-this-asc , .sorter-false .action.table-sort-this-desc , .tablesorter-up .action.table-sort-this-asc , .tablesorter-down .action.table-sort-this-desc , .table-column-not-hide .action.table-column-hide-this , .resizable-false .action.table-column-width-default , .resizable-false .action.table-column-width-minimum , .column-width-minimum .action.table-column-width-minimum , .column-width-default .action.table-column-width-default {
+	display: none;
+}
+
+.symbol {
+	display: inline-block;
+	width: 22px;
+	float: left;
+	text-align: center;
+	line-height: 1.3;
+}
+

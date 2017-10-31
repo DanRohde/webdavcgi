@@ -1,0 +1,152 @@
+@import "mixins.less";
+#fileList {
+	.selector {
+		text-align: center;
+	}
+
+	td.filename {
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: space-between;
+		padding-top: 3px;
+		div.filename {
+			display: flex;
+			flex-flow: row nowrap;
+			justiy-content: flex-start;
+		}
+	}
+
+	.filename .nametext {
+		padding-left: 10px;
+		padding-top: 2px;
+		white-space: pre-wrap;
+		text-decoration: inherit;
+	}
+
+	.mode {
+		text-align: center;
+	}
+}
+
+.nts {
+	display: inline;
+}
+
+.hide-suffixes .nts {
+	display: none;
+}
+
+#fileList .size , th#headerSize {
+	text-align: right;
+	padding-right: 8px;
+}
+
+.iswriteable-no , .islocked-yes , .unselectable-yes {
+	.action.delete , .action.rename {
+		display: none;
+	}
+}
+
+.islink-yes {
+	td.filename , &.mft-node {
+		background-image: url(data:image/svg+xml;utf-8,%3Csvg%20id%3D%221%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20width%3D%221e3%22%20version%3D%221.1%22%20viewBox%3D%220%200%20999.99999%201000%22%3E%3Cpath%20id%3D%222%22%20d%3D%22m0%2052.362v749.23c79.456-79.4%20158.91-158.8%20238.37-238.21l234.34%20234.34v254.64h354.27c-0.002-134.18%200.003-270.11%200-403.19-35.32-31.1-68.34-67.74-102.78-100.97-78.41-78.42-156.82-156.83-235.24-235.24%2086.93-86.87%20173.86-173.73%20260.78-260.6h-749.74z%22%20fill%3D%22%23808080%22%20transform%3D%22translate%280%20-52.362%29%22%2F%3E%3C%2Fsvg%3E%0A);
+		background-repeat: no-repeat;
+		background-position: 20px top;
+		background-size: 10px 10px;
+	}
+
+	&.islocked-yes {
+		td.filename , &.mft-node {
+			background-image: url(data:image/svg+xml;utf-8,%3Csvg%20id%3D%221%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20width%3D%221e3%22%20version%3D%221.1%22%20viewBox%3D%220%200%20999.99999%201000%22%3E%3Cpath%20id%3D%222%22%20d%3D%22m0%2052.362v749.23c79.456-79.4%20158.91-158.8%20238.37-238.21l234.34%20234.34v254.64h354.27c-0.002-134.18%200.003-270.11%200-403.19-35.32-31.1-68.34-67.74-102.78-100.97-78.41-78.42-156.82-156.83-235.24-235.24%2086.93-86.87%20173.86-173.73%20260.78-260.6h-749.74z%22%20fill%3D%22%23808080%22%20transform%3D%22translate%280%20-52.362%29%22%2F%3E%3C%2Fsvg%3E%0A), url(data:image/svg+xml;utf-8,%3Csvg%20id%3D%221%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20width%3D%221e3%22%20version%3D%221.1%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20viewBox%3D%220%200%201000%201000%22%3E%3Cdefs%20id%3D%222%22%3E%3ClinearGradient%20id%3D%223%22%20y2%3D%22495.11%22%20gradientUnits%3D%22userSpaceOnUse%22%20x2%3D%22914.52%22%20y1%3D%22495.11%22%20x1%3D%2285.479%22%3E%3Cstop%20id%3D%2231%22%20stop-color%3D%22%23d4aa00%22%20offset%3D%220%22%2F%3E%3Cstop%20id%3D%2232%22%20stop-color%3D%22%23fff6d5%22%20offset%3D%22.25%22%2F%3E%3Cstop%20id%3D%2233%22%20stop-color%3D%22%23d4aa00%22%20stop-opacity%3D%22.49804%22%20offset%3D%22.5%22%2F%3E%3Cstop%20id%3D%2234%22%20stop-color%3D%22%23fff6d5%22%20offset%3D%22.75%22%2F%3E%3Cstop%20id%3D%2235%22%20stop-color%3D%22%23d4aa00%22%20offset%3D%221%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20id%3D%224%22%20d%3D%22m500%209.2695c-184.89%200.0006-335.11%20176.47-338.01%20395.47h-56.51c-11.081%200-20.001%208.92-20.001%2020v536.21c0%2011.08%208.92%2020%2020.001%2020h789.04c11.08%200%2020-8.92%2020-20v-536.21c0-11.08-8.92-20-20-20h-56.51c-2.9-219-153.12-395.47-338.01-395.47zm0%2088.052c130.93%200%20237.32%20114.93%20239.65%20307.42h-479.3c2.33-192.49%20108.72-307.42%20239.65-307.42z%22%20fill%3D%22url%28%233%29%22%2F%3E%3C%2Fsvg%3E%0A);
+			background-repeat: no-repeat, no-repeat;
+			background-position: 20px top, 20px bottom;
+			background-size: 10px 10px, 10px 10px;
+		}
+	}
+
+	&.islocked-yes.mft-node {
+		background-position: 34px top, 34px 12px;
+	}
+}
+
+.islocked-yes {
+	td.filename , &.mft-node {
+		background-image: url(data:image/svg+xml;utf-8,%3Csvg%20id%3D%221%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221e3%22%20width%3D%221e3%22%20version%3D%221.1%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20viewBox%3D%220%200%201000%201000%22%3E%3Cdefs%20id%3D%222%22%3E%3ClinearGradient%20id%3D%223%22%20y2%3D%22495.11%22%20gradientUnits%3D%22userSpaceOnUse%22%20x2%3D%22914.52%22%20y1%3D%22495.11%22%20x1%3D%2285.479%22%3E%3Cstop%20id%3D%2231%22%20stop-color%3D%22%23d4aa00%22%20offset%3D%220%22%2F%3E%3Cstop%20id%3D%2232%22%20stop-color%3D%22%23fff6d5%22%20offset%3D%22.25%22%2F%3E%3Cstop%20id%3D%2233%22%20stop-color%3D%22%23d4aa00%22%20stop-opacity%3D%22.49804%22%20offset%3D%22.5%22%2F%3E%3Cstop%20id%3D%2234%22%20stop-color%3D%22%23fff6d5%22%20offset%3D%22.75%22%2F%3E%3Cstop%20id%3D%2235%22%20stop-color%3D%22%23d4aa00%22%20offset%3D%221%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20id%3D%224%22%20d%3D%22m500%209.2695c-184.89%200.0006-335.11%20176.47-338.01%20395.47h-56.51c-11.081%200-20.001%208.92-20.001%2020v536.21c0%2011.08%208.92%2020%2020.001%2020h789.04c11.08%200%2020-8.92%2020-20v-536.21c0-11.08-8.92-20-20-20h-56.51c-2.9-219-153.12-395.47-338.01-395.47zm0%2088.052c130.93%200%20237.32%20114.93%20239.65%20307.42h-479.3c2.33-192.49%20108.72-307.42%20239.65-307.42z%22%20fill%3D%22url%28%233%29%22%2F%3E%3C%2Fsvg%3E%0A);
+		background-repeat: no-repeat;
+		background-position: 20px top;
+		background-size: 10px 10px;
+	}
+}
+
+.filterbox {
+	li& {
+		position: absolute;
+		right: 22px;
+		z-index: 80;
+	}
+
+	ul& {
+		padding: 0;
+		margin: 0;
+	}
+
+	.action.clearfilter {
+		margin-left: -2em;
+		display: inline-block;
+		padding: 0;
+		background-image: none;
+	}
+
+	input:focus {
+		width: 15em;
+		padding-right: 2em;
+	}
+}
+
+.action {
+	&.ui-button {
+		&.backupcopy , &.copy , &.cut , &.paste , &.delete {
+			background-position: center center;
+		}
+	}
+
+	&.cancel {
+		background-image: none;
+		&:hover , &:focus , &:active {
+			background-image: none;
+		}
+	}
+
+	&.dropdown-menu-item {
+		&.toggleselection , &.selectall , &.selectnone {
+			background-position: center center;
+		}
+	}
+}
+
+.dropdown-hover.ai-toggleselection {
+	background-position: center center;
+}
+
+.icon {
+	width: 20px;
+	max-height: 22px;
+	min-height: 22px;
+	margin-left: 0.2em;
+	.width-transition (1s);
+	&.thumbnail {
+		background-image: none ! important;
+	}
+
+	&.thumbnail:hover {
+		width: 120px;
+		max-height: none;
+	}
+}
+
+.hidedotfiles {
+	tr.is-file.isdotfile-yes , tr.is-dir.isdotfile-yes {
+		display: none ! important;
+	}
+}
+

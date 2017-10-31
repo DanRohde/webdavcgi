@@ -39,6 +39,15 @@ $each#(thumbs,list,details)#'<option value="flt-view-$v">$tl(filelisttable.view.
 </td>
 </tr>
 <!--ENDIF-->
+<!--IF(scalar @THEMES > 0)-->
+<tr><td><label for="settings.theme">$tl(settings.themes)</label></td>
+<td>
+	<select name="settings.theme" id="settings.theme">
+		$each#@THEMES#'<option value="$v" title="$v" aria-label="$tl(theme) $tl(theme.$v)">$tl(theme.${v})</option>'#
+	</select>
+</td>
+</tr>
+<!--ENDIF-->
 $extensions(settings_view)
 </table>
 <table class="tab settings_dialogs">

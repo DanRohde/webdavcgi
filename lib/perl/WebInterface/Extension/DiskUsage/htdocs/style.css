@@ -49,9 +49,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	text-align: right;	
     padding: 0;
 }
-.diskusage.entry:hover {
-	background-color: #ededed;
-}
 .diskusage.perc {
 	white-space:nowrap;
 	border-bottom: 8px solid gray;
@@ -97,4 +94,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 }
 .smalltext {
 	font-size: small;
+}
+.diskusage th, .diskusage td {
+	text-align: left;
+	height: 2em;
+	line-height: 22px;
 }

@@ -1,0 +1,31 @@
+@import "mixins.less";
+#quicknav {
+    display: inline-block;
+    border: 0;
+    margin-top: -7px;
+    max-height: 18px;
+}
+
+.action.quicknav-el , .action.quicknav-el-home {
+    padding: 6px 12px 6px 4px;
+    background-size: 22px 22px ! important;
+    background-position: right center;
+    border-radius: 0px 200px 200px 0px;
+    .outline-rounded (1px 200px 200px 1px);
+    max-width: 30ex;
+    .text-truncate (pre);
+    display: inline-block;
+    min-width: 1em;
+    float: left;
+}
+
+.action.quicknav-el {
+    line-height: 18px;
+    background-position-y: 2px;
+}
+
+.action.quicknav-el-home {
+    width: 22px;
+    height: 15px;
+}
+

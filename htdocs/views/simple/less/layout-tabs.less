@@ -1,0 +1,31 @@
+@import "mixins.less";
+.tabsels {
+    vertical-align: top;
+    padding: 2px;
+    width: 90px;
+    .user-select ();
+}
+
+.tabsel {
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    padding: 4px;
+    .text-truncate ();
+ 
+    &.activetabsel {
+        outline: none;
+    }
+}
+
+.tabs {
+    vertical-align: top;
+}
+
+.tab {
+    display: none;
+    &.showtab {
+        display: inherit;
+    }
+}
+

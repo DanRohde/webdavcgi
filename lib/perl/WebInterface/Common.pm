@@ -35,7 +35,7 @@ use DefaultConfig qw(
   $VIRTUAL_BASE %ICONS %TRANSLATION @ALLOWED_TABLE_COLUMNS @SUPPORTED_VIEWS
   @UNSELECTABLE_FOLDERS @VISIBLE_TABLE_COLUMNS %SUPPORTED_LANGUAGES %AUTOREFRESH
   @ALLOWED_TABLE_COLUMNS $DB $CM $CGI $BACKEND_INSTANCE $CONFIG %SESSION 
-  @ALL_EXTENSIONS $DOCUMENT_ROOT);
+  @ALL_EXTENSIONS $DOCUMENT_ROOT @THEMES $THEME);
 use HTTPHelper qw( get_mime_type print_compressed_header_and_content );
 use WebInterface::Translations qw( read_all_tl  );
 use FileUtils;
@@ -97,6 +97,11 @@ sub init {
     return $self->initialize();
 }
 
+sub _is_val_in_array {
+    my ($self, $val, $arrayref) = @_;
+    my $rx = '^(' . join( q{|}, @{$arrayref} ) . ')$';
+    return $val =~ /$rx/xms;
+}
 sub initialize {
     my ($self) = @_;
 
@@ -121,10 +126,11 @@ sub initialize {
       || $self->{cgi}->cookie('view')
       || $VIEW
       || $SUPPORTED_VIEWS[0];
-    my $svregex = '^(' . join( q{|}, @SUPPORTED_VIEWS ) . ')$';
-    if ( $view ne $VIEW && $view =~ /$svregex/xms ) {
+    if ( $view ne $VIEW && $self->_is_val_in_array($view, \@SUPPORTED_VIEWS) ) {
         $VIEW = $view;
     }
+    my $theme = $self->{cgi}->cookie('settings.theme') // $THEME // $THEMES[0];
+    $THEME = $self->_is_val_in_array($theme, \@THEMES) ? $theme : $THEME // $THEMES[0];
     return $self;
 }
 

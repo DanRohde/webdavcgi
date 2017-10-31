@@ -55,7 +55,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	justify-content: space-between;
 }
 .search.statusbar {
-	background-color: #ededed;
 	height: 1.5em;
 	width: 100%;
 }
@@ -92,9 +91,6 @@ input.search.start, input.search.cancel {
 	flex-wrap: nowrap;
 	justify-content: space-between;
 }
-.search.result.entry:hover, .search.result.entry:focus  {
-	background-color: #ededed;
-}
 .search.result.entry-info {
 	display: inline-block;
 	cursor: pointer;
@@ -125,10 +121,12 @@ input.search.start, input.search.cancel {
 	float: none;
 }
 .search.result.entry.duplicates {
-	background-color: #ffaaaa;
+	background-color: #faa;
+	color: black;
 	flex: 0 0 100%;
 }
 .search.result.entry.duplicates.limitexceeded {
+	color: black;
 	background-color: #ffffaa;
 }
 .search.result.fileuri {
@@ -140,6 +138,7 @@ input.search.start, input.search.cancel {
 .search.result.entry.duplicates.savingssummary {
 	font-style: italic;
 	background-color: #dadada;
+	color: black;
 }
 .search.disabled {
 	opacity: 0.5;
@@ -223,12 +222,4 @@ input.search.query {
 	font-size: 1.2em;
 	text-align: center;
 	background-size: 1em 1em;
-}
-
-.search-result-thumb-view-toggle-button:hover {
-	background-color: #bbb;	
-} 
-.search-result-thumb-view-toggle-button:focus,
-.search-result-thumb-view-toggle-button:active {
-	background-color: #aaa;
 }

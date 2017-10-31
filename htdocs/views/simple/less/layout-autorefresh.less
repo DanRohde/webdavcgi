@@ -1,0 +1,34 @@
+.autorefresh-label {
+	padding-left: 22px;
+}
+
+#autorefreshtimer {
+	display: none;
+	position: fixed;
+	right: 5px;
+	bottom: 5px;
+	background-position: left center;
+	padding: 6px 6px 6px 22px;
+	z-index: 1000;
+	width: 125px;
+	height: 20px;
+	cursor: move;
+	line-height: 22px;
+	margin: 0;
+	.action {
+		width: 22px;
+		height: 22px;
+		display: inline-block;
+		padding: 0;
+		background-position-x: center;
+	}
+}
+
+.autorefreshtimer {
+	flex: 1 1 0;
+	&.disabled {
+		display: none;
+		visibility: hidden;
+	}
+}
+

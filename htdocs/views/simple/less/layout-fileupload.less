@@ -1,0 +1,52 @@
+input.file-upload {
+	position: absolute;
+	top: -1000px;
+	z-index: 0;
+}
+
+#progress {
+	display: none;
+	z-index: 100;
+	.bar {
+		height: 2em;
+		white-space: nowrap;
+		vertical-align: middle;
+	}
+
+	.info {
+		min-height: 10em;
+		max-height: 15em;
+		overflow: auto;
+		margin-top: 0.5em;
+		.fileprogress {
+			width: 95%;
+			margin: 0.5em;
+			padding: 2px;
+		}
+
+		.fileprogressbar {
+			width: 0%;
+			border: 0;
+			height: 1.5em;
+			white-space: nowrap;
+			padding: 1px;
+			margin-bottom: 2px;
+			&.done , &.failed {
+				white-space: normal;
+				height: auto;
+			}
+		}
+
+		.cancel {
+			background-position: center center;
+			float: right;
+			width: 22px;
+			height: 22px;
+		}
+	}
+}
+
+.uploaddialog.ui-dialog .ui-dialog-title {
+	padding-left: 22px;
+}
+

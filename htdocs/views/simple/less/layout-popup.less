@@ -1,0 +1,97 @@
+@import "mixins.less";
+ul.popup {
+	text-align: left;
+	float: none;
+	clear: both;
+	padding: 0;
+	line-height: 1;
+	li {
+		min-width: 150px;
+		min-height: 1.2em ! important;
+		height: auto;
+		.text-truncate ();
+		margin: 0;
+		padding: 6px 1.6em 6px 22px;
+		border: 1px solid transparent;
+		text-transform: initial;
+		line-height: 1;
+		&.action {
+			background-position-x: 2px ! important;
+		}
+
+		&.popup {
+			cursor: pointer;
+			padding-left: 0px;
+			&:hover , &:active , &:focus {
+				cursor: pointer;
+				padding-left: 0px;
+			}
+		}
+	}
+}
+
+.popup {
+	&.label , .label {
+		background-position-x: 2px;
+		background-repeat: no-repeat;
+	}
+
+	&.label {
+		padding-left: 22px;
+	}
+
+	.label {
+		display: inline-block;
+		min-height: 1.2em ! important;
+		line-height: 1.2;
+	}
+}
+
+/* positions: */
+ul.popup {
+	margin-top: -26px;
+}
+
+#nav > ul > li.popup {
+	background-image: none;
+	padding-left: 0;
+}
+
+#nav > ul > li.popup > .label {
+	padding-left: 25px;
+}
+
+#nav > ul > li > ul.popup {
+	position: fixed ! important;
+	left: 150px;
+	margin-top: -26px;
+}
+
+.sidebar-iconsonly #nav > ul > li > ul.popup {
+	left: 24px;
+}
+
+.toolbar > li.popup > ul {
+	margin-top: 10px;
+	left: 0;
+}
+
+#popupmenu {
+	margin-top: 0;
+}
+
+#foldertreepopupmenu {
+	margin-top: 0;
+}
+
+#tc_popupmenu.popup {
+	margin-top: 0;
+}
+.accesskey {
+	display: inline-block;
+	position: absolute;
+	height: 1em;
+	right: 1ex;
+	line-height: 1.8;
+}
+

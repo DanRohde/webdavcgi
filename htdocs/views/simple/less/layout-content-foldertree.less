@@ -1,0 +1,102 @@
+#foldertree-pane {
+	display: none;
+	position: fixed;
+	overflow: auto;
+	width: 20em;
+	top: 42px;
+	bottom: 0;
+	margin-top: 45px;
+	padding-left: 5px;
+	padding-bottom: 33px;
+	.show-foldertree & {
+		display: block;
+	}
+}
+
+#foldertree {
+	overflow: auto;
+}
+
+.mft-list {
+	margin-left: 18px;
+}
+
+.show-foldertree {
+	#flt {
+		margin-left: 21em;
+	}
+}
+
+#foldertreetoolbar {
+	padding: 0;
+	margin: 0;
+	position: absolute;
+	right: 0;
+	width: 24px;
+	.action {
+		width: 18px;
+		height: 18px;
+		background-position-x: center;
+		padding: 0;
+		margin: 2px;
+		background-size: 16px 16px;
+	}
+}
+
+.spacer-top {
+	margin-top: 9px ! important;
+}
+
+.mft-node-expander {
+	display: inline-block;
+	width: 18px;
+	height: 22px;
+}
+
+.mft-node-label {
+	height: 22px;
+	display: inline-lock;
+	vertical-align: top;
+	&.icon {
+		text-overflow: hidden;
+		overflow: hidden;
+		white-space: pre;
+		width: auto;
+		padding-left: 24px;
+	}
+}
+
+.mft-node-icon , .mft-node-label-text {
+	display: inline-block;
+	height: 22px;
+	vertical-align: bottom;
+}
+
+.mft-node-label-text {
+	margin-left: 4px;
+}
+
+.mft-node {
+	white-space: nowrap;
+}
+
+.hidedotfolders .mft-node.isdotfile-yes {
+	display: none;
+}
+
+.mft-node.isreadable-no > div .action {
+	&.foldertree-expand-all , &.foldertree-collapse-all , &.copy , &.cut {
+		display: none;
+	}
+}
+
+.mft-node.iswriteable-no > div .action {
+	&.cut , &.delete , &.foldertree-rename-folder , &.foldertree-new-folder {
+		display: none;
+	}
+}
+
+.mft-node.mft-active-node > div .action.foldertree-open-folder {
+	display: none;
+}
+

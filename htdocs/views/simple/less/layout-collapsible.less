@@ -1,0 +1,84 @@
+ .collapsible {
+	position: fixed;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	&.bottom {
+		bottom: 32px;
+	}
+
+	&.top {
+		top: 4.5em;
+	}
+
+	&.right {
+		right: 0.5em;
+	}
+
+	&.left {
+		left: 0.5em;
+	}
+
+	&.action.collapse-sidebar {
+		position: fixed;
+		left: 152px;
+		background-position: center center;
+		background-size: 12px 12px ! important;
+		z-index: 76;
+	}
+
+	&.action.collapse-sidebar.collapsed {
+		left: -5px;
+	}
+
+	.sidebar-iconsonly &.action.collapse-sidebar {
+		left: 19px;
+	}
+
+	&.action.collapse-head {
+		background-position: center center;
+		background-size: 12px 12px ! important;
+		top: 34px;
+		z-index: 101;
+	}
+
+	&.action.collapse-head.collapsed {
+		top: -5px;
+	}
+}
+
+.sidebar-iconsonly {
+	#content , #controls , .ajax-loader , #statusbar {
+		left: 24px;
+	}
+
+	#nav , #prefs {
+		width: 24px;
+	}
+
+	#nav > ul > .label {
+		display: none;
+	}
+
+	#nav .popup .label {
+		display: block;
+	}
+}
+
+.sidebar-collapsed {
+	#content , #controls , .ajax-loader , #statusbar {
+		left: 0;
+	}
+
+	#nav , #prefs {
+		width: 0px;
+		display: none;
+	}
+}
+
+.head-collapsed {
+	#nav& , #controls& , #content& , .ajax-loader& , #viewbar , #foldertree-pane {
+		top: 0;
+	}
+}
+

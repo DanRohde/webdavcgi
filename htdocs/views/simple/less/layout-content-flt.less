@@ -1,0 +1,81 @@
+#fileListTableContent {
+	padding-top: 42px;
+}
+
+#fileListTable {
+	top: 37px;
+	width: 100%;
+	padding-bottom: 6em;
+	white-space: nowrap;
+	border-collapse: collapse;
+	clear: both;
+	vertical-align: middle;
+	th , td {
+		text-align: left;
+		vertical-align: middle;
+		line-height: 22px;
+	}
+
+	th {
+		height: 2em;
+		&.dragged {
+			cursor: move;
+		}
+	}
+}
+
+.fileListEntry {
+	cursor: pointer;
+}
+
+#headerSelector {
+	width: 22px;
+	padding-left: 8px;
+}
+
+#headerName img {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	width: 20px;
+	height: 20px;
+}
+
+#headerSize {
+	width: 8em;
+}
+
+#headerDate , #headerCreated {
+	width: 20em;
+}
+
+#headerMode {
+	width: 12ex;
+	text-align: center;
+}
+
+#headerMime {
+	width: 15ex;
+}
+
+#headerOption {
+	width: 16px;
+}
+
+#headerUID , #headerGID {
+	width: 8ex;
+}
+
+@import "layout-content-flt-fileactions.less";
+@import "layout-content-flt-filelist.less";
+.statistics {
+	padding: 4px 10px;
+	vertical-align: bottom;
+	white-space: nowrap;
+	> div {
+		display: inline-block;
+		white-space: nowrap;
+	}
+}
+
+@import "layout-content-flt-views.less";

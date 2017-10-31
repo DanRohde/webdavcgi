@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	white-space: nowrap;
 	cursor: pointer;
 	border: 1px solid red;
-	background-color: #ffffcc;
+	color: black;
+	background-color: #ffc;
 	padding: 1px 1px 1px 22px;
 	background-image: url(motd.svg);
 	background-repeat: no-repeat;

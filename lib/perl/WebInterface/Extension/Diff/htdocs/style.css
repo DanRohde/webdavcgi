@@ -42,6 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	border:0;
 	width: 100%;
 	overflow:auto;
+	color: black;
 }
 .diff.table td,  .diff.table th {
 	padding: 2px;
