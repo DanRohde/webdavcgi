@@ -65,16 +65,17 @@
 
 .theme-default-button {
 	color: @default-button-color;
-	background-color: @default-button-bgcolor;
+	.linear-gradient(@default-button-bgcolor, to bottom, @default-button-bordercolor, @default-button-bgcolor);
 	border: 1px solid @default-button-bordercolor;
 	&:hover , &:focus {
 		color: @default-button-bgcolor;
-		background-color: @default-button-color;
+		.linear-gradient(@default-button-bgcolor, to bottom, @default-button-bgcolor, @default-button-color );
 	}
 
 	&:active {
 		color: @default-button-active-color;
 		background-color: @default-button-active-bgcolor;
+		background-image: none;
 	}
 }
 
@@ -704,10 +705,12 @@ li.sep {
 	color: @default-color;
 	background-color: @default-bgcolor;
 }
+
 .tooltip {
 	color: @default-color;
-	.linear-gradient(@default-bgcolor, to right, @default-bordercolor, @default-bgcolor);
+	.linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor);
 }
+
 .quicktoggle-content {
 	&.quicktoggle-focus , &:hover , &:focus , &:active {
 		.box-shadow (3px 0 7px @default-bordercolor);
@@ -721,11 +724,12 @@ li.sep {
 	border-color: @default-bordercolor;
 }
 
-.ui-widget-header , .ui-button {
+.ui-widget-header  {
 	.linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor);
 }
 
-.ui-button {
+.ui-button, button {
+	.linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor);
 	&:hover , &:focus {
 		.linear-gradient (@default-color , to bottom , @default-bordercolor , @default-color);
 		color: @default-bgcolor;
@@ -742,12 +746,12 @@ li.sep {
 	opacity: 0.7;
 }
 
-.ui-state-default , .ui-button , .ui-state-focus {
+.ui-state-default , .ui-state-focus {
 	background-color: transparent;
 	background-image: none;
 }
 
-.ui-widget-content .ui-state-default {
+.ui-widget-content .ui-state-default, .ui-widget-content .ui-state-default a {
 	color: @default-color;
 	.linear-gradient (@default-bgcolor , to bottom , @default-bgcolor , @default-bordercolor);
 }

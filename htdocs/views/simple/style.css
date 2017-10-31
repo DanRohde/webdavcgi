@@ -1360,7 +1360,7 @@ ul.popup {
 }
 .theme-default-button:hover,
 .theme-default-button:focus {
-  color: #eee;
+  color: black;
   background-color: #666;
 }
 .theme-default-button:active {
@@ -1924,7 +1924,8 @@ li.sep {
   border-color: #ddd;
 }
 .ui-widget-header,
-.ui-button {
+.ui-button,
+button {
   background-color: white;
   background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, white));
   background-image: -ms-linear-gradient(to bottom, #ddd, white);

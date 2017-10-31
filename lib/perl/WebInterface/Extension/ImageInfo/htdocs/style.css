@@ -77,9 +77,6 @@ table.imageinfo td {
 	vertical-align: top;
 	
 }
-.iiprop:hover {
-	background-color: #eaeaea;
-}
 .imageinfo .iigroups {
 	width: 175px;
 }
@@ -94,6 +91,7 @@ table.imageinfo td {
 	font-weight: bold;
 	border-bottom: 1px solid gray;
 	background-color: white;
+	color: black;
 }
 .imageinfo .iigroupsel { 
 	cursor: pointer;
@@ -110,12 +108,9 @@ table.imageinfo td {
 }
 .imageinfo .iigroupsel a.active {
 	background-color: #eaeaea;
+	color: black;
 	font-weight: bold;	
 
-}
-.imageinfo .iigroupsel a:hover, .imageinfo .iigroupsel a:focus {
-	border-color: black;
-	outline: none;
 }
 .imageinfo .iigroup {
 	display: none;
@@ -127,7 +122,6 @@ table.imageinfo td {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	vertical-align: top;
-	color: #444;
 }
 .imageinfo .iipropvalue {
 	overflow: hidden;
