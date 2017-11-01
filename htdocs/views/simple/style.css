@@ -1353,19 +1353,33 @@ ul.popup {
   background-color: #ddd;
   color: white;
 }
-.theme-default-button {
+.theme-default-button,
+.ui-state-default,
+.ui-button,
+button {
   color: #666;
   background-color: #eee;
+  background-image: -webkit-gradient(linear, to bottom, color-stop(0, #eee), color-stop(1, #666));
+  background-image: -ms-linear-gradient(to bottom, #eee, #666);
+  background-image: -moz-linear-gradient(to bottom, #eee 0%, #666 100%);
+  background-image: -o-linear-gradient(#eee, #666);
+  background-image: linear-gradient(to bottom, #eee, #666);
   border: 1px solid #ddd;
 }
 .theme-default-button:hover,
 .theme-default-button:focus {
   color: black;
-  background-color: #666;
+  background-color: #eee;
+  background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, #666));
+  background-image: -ms-linear-gradient(to bottom, #ddd, #666);
+  background-image: -moz-linear-gradient(to bottom, #ddd 0%, #666 100%);
+  background-image: -o-linear-gradient(#ddd, #666);
+  background-image: linear-gradient(to bottom, #ddd, #666);
 }
 .theme-default-button:active {
   color: black;
   background-color: #ddd;
+  background-image: none;
 }
 body {
   padding: 0;
@@ -1923,9 +1937,7 @@ li.sep {
   color: black;
   border-color: #ddd;
 }
-.ui-widget-header,
-.ui-button,
-button {
+.ui-widget-header {
   background-color: white;
   background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, white));
   background-image: -ms-linear-gradient(to bottom, #ddd, white);
@@ -1941,10 +1953,6 @@ button {
   background-image: -webkit-radial-gradient(center, ellipse farthest-corner, #ddd 0%, white 100%);
   background-image: radial-gradient(ellipse farthest-corner at center, #ddd 0%, white 100%);
   opacity: 0.7;
-}
-.ui-state-default,
-.ui-button {
-  background-color: transparent;
 }
 .ui-state-hover {
   color: black;
