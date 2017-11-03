@@ -1,24 +1,23 @@
 @import "../mixins.less";
 @fonts: Verdana, Helvetica, Arial, sans-serif;
 .lighten (@color , @perc) {
-    @lightencolor: darken(@color, @perc);
+    @lightencolor: lighten(@color, @perc);
 }
 
 .darken (@color , @perc) {
-    @darkencolor: lighten(@color, @perc);
+    @darkencolor: darken(@color, @perc);
 }
-
-@default-bgcolor: black;
-@default-color: #f0f0f0;
-@default-bordercolor: #666;
+@default-bgcolor: #EEF;
+@default-color: #006;
+@default-bordercolor: #DDF;
 @default-button-bordercolor: @default-bordercolor;
-@default-button-color: #eee;
-@default-button-bgcolor: #666;
-@default-button-active-color: @default-bgcolor;
+@default-button-color: #66F;
+@default-button-bgcolor: #EEF; 
+@default-button-active-color: @default-color;
 @default-button-active-bgcolor: @default-bordercolor;
 @top-font-size: 15px;
-@top-color: @default-color;
-@top-bgcolor: @default-bgcolor;
+@top-color: @default-bgcolor;
+@top-bgcolor: @default-color;
 @nav-font-size: 15px;
 @nav-bgcolor: @default-button-bgcolor;
 @nav-color: @default-button-color;
@@ -48,13 +47,6 @@
     color: @default-color;
 }
 
-.theme-default-hover {
-    &:focus , &:active , &:hover {
-        background-color: @default-bordercolor;
-        color: @default-bgcolor;
-    }
-}
-
 .theme-default-bgcolor {
     background-color: @default-bgcolor;
 }
@@ -63,20 +55,26 @@
     border-color: @default-bordercolor;
 }
 
+.theme-default-hover {
+    &:focus , &:active , &:hover {
+        background-color: @default-bordercolor;
+        color: @default-bgcolor;
+    }
+}
+
 .theme-default-button {
     color: @default-button-color;
-    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bordercolor , @default-button-bgcolor);
+    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor);
     border: 1px solid @default-button-bordercolor;
-    .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor);
     &:hover , &:focus {
-        .linear-gradient (@default-color , to bottom , @default-bordercolor , @default-color);
-        color: @default-bgcolor;
+        color: @default-color;
+        .linear-gradient (@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor);
     }
 
     &:active {
         color: @default-button-active-color;
+        background-color: @default-button-active-bgcolor;
         background-image: none;
-        background-color: @default-color;
     }
 }
 
@@ -86,11 +84,13 @@ body {
     font-family: @fonts;
 }
 
-a , .ui-widget-content a {
+a {
     color: @default-color;
 }
 
 input {
+    background-color: @default-bgcolor;
+    color: @default-color;
     &[readonly=readonly] {
         opacity: 0.5;
     }
@@ -98,11 +98,6 @@ input {
     &.file-upload {
         opacity: 0;
     }
-}
-
-select , button , textarea , input {
-    color: @default-color;
-    background-color: @default-bgcolor;
 }
 
 .action , .ui-button.action {
@@ -180,7 +175,7 @@ select , button , textarea , input {
 
 #top {
     color: @top-color;
-    .lighten (@top-color , 60%);
+    .lighten (@top-bgcolor , 60%);
     .linear-gradient (@top-bgcolor , to bottom , @top-bgcolor , @lightencolor);
     .darken (@top-color , 80%);
     .box-shadow (0 0 10px rgba(0, 0, 0, 0.5) , 0 -2px 10px @darkencolor inset);
@@ -401,10 +396,9 @@ select , button , textarea , input {
     }
 
     th {
-        .lighten (@default-color , 20%);
+        .lighten (@default-color , 50%);
         color: @lightencolor;
-        .darken (@default-bgcolor , 30%);
-        background-color: @darkencolor;
+        background-color: @default-bgcolor;
         &.dragged {
             opacity: 0.8;
         }
@@ -490,10 +484,6 @@ select , button , textarea , input {
                 background-color: @default-button-active-bgcolor;
             }
         }
-
-        &.mft-active-node {
-            background-color: @default-button-bgcolor;
-        }
     }
 
     .isreadable-no .mft-node-label-text {
@@ -505,14 +495,6 @@ select , button , textarea , input {
         opacity: 0.5;
         .mft-node-read > & {
             opacity: 1;
-        }
-
-        &:hover , &:focus {
-            background-color: @default-button-active-bgcolor;
-        }
-
-        &:active {
-            background-color: @default-color;
         }
     }
 }
@@ -589,14 +571,14 @@ select , button , textarea , input {
 }
 
 .langswitch {
-    color: @default-color;
+    color: @default-bgcolor;
     font-size: 10px;
     a {
-        color: @default-color;
-        border: 1px solid transparent;
+        color: @default-bgcolor;
         background-color: transparent;
+        border: 1px solid transparent;
         &:hover , &:focus , &:active {
-            border: 1px solid @default-color;
+            border: 1px solid @default-bgcolor;
         }
     }
 }
@@ -650,15 +632,16 @@ li.sep {
         background-color: @default-bgcolor;
         border: 1px solid @default-bordercolor;
         &.error {
-            color: red;
+            color: white;
+            background-color: red;
         }
 
         &.message {
+            background-color: white;
         }
 
         &.warning {
-            color: #ffd700;
-            background-color: @default-bgcolor;
+            background-color: #ffd700;
         }
     }
 
@@ -702,23 +685,6 @@ li.sep {
     background-color: @default-bgcolor;
 }
 
-#about , #settings , #viewfilter {
-    color: @default-color;
-    background-color: @default-bgcolor;
-}
-
-.tooltip {
-    color: @default-color;
-    .linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor);
-}
-
-.quicktoggle-content {
-    &.quicktoggle-focus , &:hover , &:focus , &:active {
-        .box-shadow (3px 0 7px @default-bordercolor);
-        .linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor)
-    }
-}
-
 .ui-widget-header , .ui-widget-content , .ui-button {
     background-color: @default-bgcolor;
     color: @default-color;
@@ -729,6 +695,11 @@ li.sep {
     .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor);
 }
 
+.ui-widget-overlay {
+    .radial-gradient (@default-bordercolor , @default-bgcolor);
+    opacity: 0.7;
+}
+
 .ui-button , button, input[type=submit], select {
     &:extend(.theme-default-button);
     &:hover, &:focus {
@@ -737,21 +708,6 @@ li.sep {
     &:active {
         &:extend(.theme-default-button:active);
     }
-}
-
-.ui-widget-overlay {
-    .radial-gradient (@default-bordercolor , @default-bgcolor);
-    opacity: 0.7;
-}
-
-.ui-state-default , .ui-state-focus {
-    background-color: transparent;
-    background-image: none;
-}
-
-.ui-widget-content .ui-state-default , .ui-widget-content .ui-state-default a {
-    color: @default-color;
-    .linear-gradient (@default-bgcolor , to bottom , @default-bgcolor , @default-bordercolor);
 }
 
 .ui-state-hover {

@@ -55,7 +55,6 @@ sub handle_hook_fileactionpopup {
         action => $ACTION,
         label  => $ACTION,
         path   => $params->{path},
-        type   => 'li'
     };
 }
 

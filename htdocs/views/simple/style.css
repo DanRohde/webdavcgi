@@ -914,6 +914,10 @@ fieldset.viewfilter {
   clear: both;
   text-align: center;
 }
+.tableconfigactions .cancel-icon,
+.tableconfigactions .save-icon {
+  padding-left: 22px;
+}
 .tableconfigbutton {
   background-position: center center;
   background-size: 12px 12px ! important;
@@ -1354,29 +1358,42 @@ ul.popup {
   color: white;
 }
 .theme-default-button,
-.ui-state-default,
 .ui-button,
-button {
+button,
+input[type=submit],
+select {
   color: #666;
   background-color: #eee;
-  background-image: -webkit-gradient(linear, to bottom, color-stop(0, #eee), color-stop(1, #666));
-  background-image: -ms-linear-gradient(to bottom, #eee, #666);
-  background-image: -moz-linear-gradient(to bottom, #eee 0%, #666 100%);
-  background-image: -o-linear-gradient(#eee, #666);
-  background-image: linear-gradient(to bottom, #eee, #666);
+  background-image: -webkit-gradient(linear, to bottom, color-stop(0, #eee), color-stop(1, #ddd));
+  background-image: -ms-linear-gradient(to bottom, #eee, #ddd);
+  background-image: -moz-linear-gradient(to bottom, #eee 0%, #ddd 100%);
+  background-image: -o-linear-gradient(#eee, #ddd);
+  background-image: linear-gradient(to bottom, #eee, #ddd);
   border: 1px solid #ddd;
 }
 .theme-default-button:hover,
-.theme-default-button:focus {
+.theme-default-button:focus,
+.ui-button:hover,
+button:hover,
+input[type=submit]:hover,
+select:hover,
+.ui-button:focus,
+button:focus,
+input[type=submit]:focus,
+select:focus {
   color: black;
   background-color: #eee;
-  background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, #666));
-  background-image: -ms-linear-gradient(to bottom, #ddd, #666);
-  background-image: -moz-linear-gradient(to bottom, #ddd 0%, #666 100%);
-  background-image: -o-linear-gradient(#ddd, #666);
-  background-image: linear-gradient(to bottom, #ddd, #666);
+  background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, #eee));
+  background-image: -ms-linear-gradient(to bottom, #ddd, #eee);
+  background-image: -moz-linear-gradient(to bottom, #ddd 0%, #eee 100%);
+  background-image: -o-linear-gradient(#ddd, #eee);
+  background-image: linear-gradient(to bottom, #ddd, #eee);
 }
-.theme-default-button:active {
+.theme-default-button:active,
+.ui-button:active,
+button:active,
+input[type=submit]:active,
+select:active {
   color: black;
   background-color: #ddd;
   background-image: none;
