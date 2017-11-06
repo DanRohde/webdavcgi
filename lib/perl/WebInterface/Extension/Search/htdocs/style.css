@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 
-.action.search, .search.ui-dialog .ui-dialog-title {
+.action.search, .search-icon, .search.ui-dialog .ui-dialog-title {
 	background-image: url(search.svg);
 	background-position-y: center;
 	background-size: 18px 18px;
@@ -23,10 +23,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .action.search:hover, .action.search:focus, .action.search:active {
 	background-image: url(search-hover.svg);
 }
+.search .cancel-icon, .search .search-icon {
+	padding-left: 22px;
+	background-repeat: no-repeat;
+}
 .search.ui-dialog .ui-dialog-title  {
 	background-position: left center;
 	background-repeat: no-repeat;
 	padding-left: 20px;
+}
+.search.buttonpanel {
+	display: flex;
+	flex-flow: column wrap;
+}
+.search.start, .search.cancel {
+	flex-grow: 1;
+	margin-bottom: 4px;
 }
 .search.dialogpane {
 	display: flex;

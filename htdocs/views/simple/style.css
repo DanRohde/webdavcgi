@@ -864,6 +864,10 @@ fieldset.viewfilter {
   padding: 5px;
   margin: 5px;
 }
+.filter-reset .cancel-icon,
+.filter-apply .save-icon {
+  padding-left: 22px;
+}
 .guidedialog.ui-dialog .ui-dialog-title {
   background-position: left center;
   padding-left: 20px;
