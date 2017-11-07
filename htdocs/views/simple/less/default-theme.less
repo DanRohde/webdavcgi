@@ -11,6 +11,15 @@
 @default-bgcolor: white;
 @default-color: black;
 @default-bordercolor: #ddd;
+@default-color-l30: lighten(@default-color, 30%);
+@default-color-l40: lighten(@default-color, 40%);
+@default-color-l50: lighten(@default-color, 50%);
+@default-color-l60: lighten(@default-color, 60%);
+@default-color-l80: lighten(@default-color, 80%);
+@default-color-l90: lighten(@default-color, 90%);
+@default-bgcolor-d10: darken(@default-bgcolor, 10%);
+@default-bgcolor-d20: darken(@default-bgcolor, 20%);
+@default-bgcolor-d30: darken(@default-bgcolor, 30%);
 @default-button-bordercolor: @default-bordercolor;
 @default-button-color: #666;
 @default-button-bgcolor: #eee;
@@ -135,14 +144,12 @@ input {
 
 .disabled {
     a& , .link& {
-        .lighten (@default-color , 60%);
-        color: @lightencolor;
+        color: @default-color-l60;
     }
 }
 
 .accesskey {
-    .lighten (@default-color , 40%);
-    color: @lightencolor;
+    color: @default-color-l40;
     font-size: 80%;
     font-family: monospace;
 }
@@ -152,8 +159,7 @@ input {
 }
 
 .note {
-    .lighten (@default-color , 40%);
-    color: @lightencolor;
+    color: @default-color-l40;
     font-size: .8em;
 }
 
@@ -320,45 +326,35 @@ input {
 
     tr {
         &:hover , &.draghover , &:focus {
-            .darken (@default-bgcolor , 10%);
-            background-color: @darkencolor;
+            background-color: @default-bgcolor-d10;
         }
 
         &.cutted , &.cutted a {
-            .lighten (@default-color , 66%);
-            color: @lightencolor;
+            color: @default-color-l60;
         }
 
         &.selected {
-            .darken (@default-bgcolor , 20%);
-            background-color: @darkencolor;
+            background-color: @default-bgcolor-d20;
             &:hover , &:focus , &:active {
-                .darken (@default-bgcolor , 34%);
-                background-color: @darkencolor;
+                background-color: @default-bgcolor-d30;
             }
         }
 
         &.isreadable-no {
-            .lighten (@default-color , 60%);
-            color: @lightencolor;
+            color: @default-color-l60;
             a {
-                .lighten (@default-color , 60%);
-                color: @lightencolor;
+                color: @default-color-l60;
             }
 
             &:hover , &:active , &:focus {
-                .lighten (@default-color , 50%);
-                color: @lightencolor;
-                .darken (@default-bgcolor , 20%);
-                background-color: @darkencolor;
+                color: @default-color-l50;
+                background-color: @default-bgcolor-d20;
             }
 
             &.selected {
-                .lighten (@default-color , 80%);
-                color: @lightencolor;
+                color: @default-color-l80;
                 &:hover , &:active , &:focus {
-                    .lighten (@default-color , 90%);
-                    color: @lightencolor;
+                    color: @default-color-l90;
                 }
             }
         }
@@ -368,8 +364,7 @@ input {
 .filterbox {
     li& {
         font-weight: bold;
-        .lighten (@default-color , 50%);
-        color: @lightencolor;
+        color: @default-color-l50;
     }
 }
 
@@ -397,8 +392,7 @@ input {
     }
 
     th {
-        .lighten (@default-color , 50%);
-        color: @lightencolor;
+        color: @default-color-l50;
         background-color: @default-bgcolor;
         &.dragged {
             opacity: 0.8;
@@ -411,15 +405,13 @@ input {
 }
 
 .statistics {
-    .lighten (@default-color , 30%);
-    color: @lightencolor;
+    color: @default-color-l30;
     font-size: 0.8em;
     border-bottom: 1px solid @default-bordercolor;
 }
 
 .selstats {
-    .darken (@default-bgcolor , 20%);
-    background-color: @darkencolor;
+    background-color: @default-bgcolor-d20;
 }
 
 .icon {
@@ -488,8 +480,7 @@ input {
     }
 
     .isreadable-no .mft-node-label-text {
-        .lighten (@default-color , 60%);
-        color: @lightencolor;
+        color: @default-color-l60;
     }
 
     .mft-node-expander {
@@ -521,8 +512,7 @@ input {
 }
 
 .symbol {
-    .lighten (@default-color , 50%);
-    color: @lightencolor;
+    color: @default-color-l50;
     font-weight: bold;
     &:hover , li:hover > & , &:active , li:active > & , &:focus , li:focus > & {
         color: @default-color;
@@ -586,8 +576,7 @@ input {
 
 ul.popup {
     .default-colors ();
-    .darken (@default-bgcolor , 7%);
-    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @darkencolor);
+    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10);
     border: 1px solid @default-bordercolor;
     .box-shadow (3px 0 7px @default-bordercolor);
     li , li.popup {
@@ -647,8 +636,7 @@ li.sep {
     }
 
     .selected-files-stats {
-        .darken (@default-bgcolor , 20%);
-        background-color: @darkencolor;
+        background-color: @default-bgcolor-d20;
     }
 }
 
@@ -660,14 +648,12 @@ li.sep {
     border: 1px solid @default-bordercolor;
     &:hover , &:focus , &:active {
         border-color: @default-color;
-        .darken (@default-bgcolor , 20%);
-        background-color: @darkencolor;
+        background-color: @default-bgcolor-d20;
     }
 
     &.activetabsel {
         border-color: @default-color;
-        .darken (@default-bgcolor , 34%);
-        background-color: @darkencolor;
+        background-color: @default-bgcolor-d30;
     }
 }
 

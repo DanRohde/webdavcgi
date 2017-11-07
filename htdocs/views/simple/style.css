@@ -360,9 +360,7 @@ tr:focus .action.changeuri {
   padding-top: 42px;
 }
 #fileListTable {
-  top: 37px;
   width: 100%;
-  padding-bottom: 6em;
   white-space: nowrap;
   border-collapse: collapse;
   clear: both;
@@ -594,6 +592,7 @@ ul.filterbox {
   padding: 4px 10px;
   vertical-align: bottom;
   white-space: nowrap;
+  line-height: 1.6;
 }
 .statistics > div {
   display: inline-block;
@@ -1634,7 +1633,7 @@ a.neverdisabled {
 }
 #fileList tr.cutted,
 #fileList tr.cutted a {
-  color: #a8a8a8;
+  color: #999999;
 }
 #fileList tr.selected {
   background-color: #cccccc;
@@ -1642,7 +1641,7 @@ a.neverdisabled {
 #fileList tr.selected:hover,
 #fileList tr.selected:focus,
 #fileList tr.selected:active {
-  background-color: #a8a8a8;
+  background-color: #b3b3b3;
 }
 #fileList tr.isreadable-no {
   color: #999999;
@@ -1854,11 +1853,11 @@ li:focus > .symbol {
 ul.popup {
   color: black;
   background-color: white;
-  background-image: -webkit-gradient(linear, to right, color-stop(0, white), color-stop(1, #ededed));
-  background-image: -ms-linear-gradient(to right, white, #ededed);
-  background-image: -moz-linear-gradient(to right, white 0%, #ededed 100%);
-  background-image: -o-linear-gradient(white, #ededed);
-  background-image: linear-gradient(to right, white, #ededed);
+  background-image: -webkit-gradient(linear, to right, color-stop(0, white), color-stop(1, #e6e6e6));
+  background-image: -ms-linear-gradient(to right, white, #e6e6e6);
+  background-image: -moz-linear-gradient(to right, white 0%, #e6e6e6 100%);
+  background-image: -o-linear-gradient(white, #e6e6e6);
+  background-image: linear-gradient(to right, white, #e6e6e6);
   border: 1px solid #ddd;
   -webkit-box-shadow: 3px 0 7px #ddd;
   -moz-box-shadow: 3px 0 7px #ddd;
@@ -1938,7 +1937,7 @@ li.sep {
 }
 .tabsel.activetabsel {
   border-color: black;
-  background-color: #a8a8a8;
+  background-color: #b3b3b3;
 }
 .tabhead {
   font-weight: bold;
