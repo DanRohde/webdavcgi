@@ -188,7 +188,7 @@ sub handle_post_request {
 }
 sub handle_login {
     my ($self) = @_;
-    return $self->_get_renderer()->render_login();
+    return $self->get_renderer()->render_login();
 }
 
 sub get_thumbnail_renderer {
@@ -205,7 +205,7 @@ sub get_functions {
     return $self->{config}->{functions}->init();
 }
 
-sub _get_renderer {
+sub get_renderer {
     my ($self) = @_;
     my $view = "WebInterface::View::\u${VIEW}::Renderer";
     $view =~ s/[.\/]+//xmsg;
@@ -220,7 +220,7 @@ sub _get_renderer {
 
 sub render_web_interface {
     my ( $self ) = @_;
-    return $self->_get_renderer()->render();
+    return $self->get_renderer()->render();
 }
 
 

@@ -139,7 +139,7 @@ folderweb       public_html .public_html www html
 text      1 2 3 4 5 6 7 8 9 asc eml htpasswd ldif list log ics info out pub text txt vcard vcs md markdown
 audio     aac aif aiff aifc atrac au flac m3u mid midi mp2 mp3 m4a oga ogg opus spx snd wav wma
 video     3gp avi mkv mov mpeg mp4 mpg mpe mpv mts ogv qt webm wmv
-image     arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf tga thm tif tiff vsd xcf yuf
+image     arw bmp cr2 crw dcr dia fff gif hdr icn ico j2k jpg jpe jpeg jps jpx k25 kdc mac mng nef nrw odg odi omf pcx png ppf psp raw rwl sr2 srf svg tga thm tif tiff vsd xcf yuf
 source    ada am as asp asm awk b bas c cc ccs cpp cs css cxx diff el erl f77 f90 for fs h has hpp hrl hs in inl jav java js json l lol lua m m4 mak make makefile p p6 pas patch php phps pl pm pod pov py pyw r rb sed src sql t tcl tk xql yml
 oofficew  odt ott odm stw sxw
 officew   doc docb docm docx dot dotx dotm rtf

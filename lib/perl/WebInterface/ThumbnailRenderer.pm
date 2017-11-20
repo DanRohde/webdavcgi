@@ -141,7 +141,7 @@ sub print_thumbnail {
 
 sub print_media_rss {
     my ( $self, $fn, $ru ) = @_;
-    my $renderer = $self->{config}{webinterface}->get_renderer();
+    my $renderer = $self->{config}->{webinterface}->get_renderer();
     my $content =
 qq@<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>$ENV{SCRIPT_URI} media data</title><description>$ENV{SCRIPT_URI} media data</description><link>$ENV{SCRIPT_URI}</link>@;
     foreach my $file ( sort { $a cmp $b }
