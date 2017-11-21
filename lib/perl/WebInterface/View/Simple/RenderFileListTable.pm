@@ -226,9 +226,9 @@ sub _render_file_list_entry {
     my $full  = "$PATH_TRANSLATED$file";
     my $fulle = $REQUEST_URI . $self->{cgi}->escape($file);
     $fulle =~ s/\%2f/\//xmsgi;    ## fix for search
-    my $ir = $self->{backend}->isReadable($full);
-    my $il = $self->{backend}->isLink($full);
-    my $id = $self->{backend}->isDir($full);
+    my $ir = $self->{backend}->isReadable($full) // 0;
+    my $il = $self->{backend}->isLink($full) // 0;
+    my $id = $self->{backend}->isDir($full) // 0;
     my $bfile = $file =~ m{^(.*)/$}xms ? $1 : $file;
     $file .= $file !~ /^[.]{1,2}$/xms && $id ? q{/} : q{};
     my $e = $entrytemplate;

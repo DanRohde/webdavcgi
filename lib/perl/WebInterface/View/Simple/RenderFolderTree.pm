@@ -40,9 +40,9 @@ sub build_folder_tree {
     foreach my $file ( @{$filesref} ) {
         my $full = $path.$file;
         if ( $file =~ /^[.]{1,2}$/xms || !$self->{backend}->isDir($full)) { next; }
-        my $isreadable = $self->{backend}->isReadable($full);
-        my $iswriteable = $self->{backend}->isWriteable($full);
-        my $islink = $self->{backend}->isLink($full);
+        my $isreadable = $self->{backend}->isReadable($full) // 0;
+        my $iswriteable = $self->{backend}->isWriteable($full) // 0;
+        my $islink = $self->{backend}->isLink($full) // 0;
         my $fileuri = $uri.$self->{cgi}->escape($file).q{/};
         my $child = {
             name  => $self->{backend}->getDisplayName($full),
