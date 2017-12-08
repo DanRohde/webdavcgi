@@ -759,7 +759,7 @@ sub get_category_class {
     $suffix=~s/\s/+/xmsg;
     $class //= q{};
     my $ft = $CACHE{categorytypes}{$REMOTE_USER} //= $self->replace_vars($FILETYPES);
-    return $CACHE{category}{$REMOTE_USER}{$suffix}{$class} //=  $ft =~ /^($class\w+)[^\n]+?[ ]\Q$suffix\E[ \r\n]/xmsi ? 'category-' . $1  : $default // q{};
+    return $CACHE{category}{$REMOTE_USER}{$suffix}{$class} //=  $ft =~ /^($class\w+)[^\n]+?[ ]\Q$suffix\E[ \r\n]/xmsi ? 'category-' . $1  : $default;
 }
 sub get_lang_filename {
     my ($self, $basepath, $basename, $suffix) = @_;

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" height="1e3" viewBox="0 0 1000 1000" width="1e3" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <radialGradient id="radialGradient4516" gradientUnits="userSpaceOnUse" cy="461.21" cx="499.64" gradientTransform="matrix(1 0 0 1.5728 0 -264.19)" r="293.24">
+   <stop stop-color="#40b2e7" offset="0"/>
+   <stop stop-color="#1679a7" stop-opacity=".93725" offset="1"/>
+  </radialGradient>
+ </defs>
+ <g opacity=".6" transform="translate(0 .006)" fill="#40b2e7">
+  <path fill="url(#radialGradient4516)" d="m206.4 0h438.66c49.277 57.188 98.555 114.38 147.83 171.56v750.87h-586.49v-922.44z"/>
+ </g>
+ <g fill="#808080">
+  <path fill="#808080" d="m134.66 0v999.58h730.68c-0.56928-270.53-1.1386-541.06-1.7078-811.59-60.9-62.67-121.8-125.33-182.7-187.99h-546.27zm71.74 73.846h438.66c49.277 52.61 98.555 105.22 147.83 157.83v690.76h-586.49v-848.59z"/>
+ </g>
+ <g fill="#1596b8">
+  <path fill-opacity=".93725" fill="#1679a7" d="m614.43 0.00072173c11.873-0.0025 55.782 0.0025 67.655-0.000004l182.71 174.26c0.0295 13.01 0.0914 41.354 0.12092 54.364h-250.48z"/>
+ </g>
+ <path stroke-linejoin="round" d="m198.98 674.07h154.3s24.323-309.81 294.79-314.08c-87.248 136.55-5.4738 314.08-5.4738 314.08h160.73" stroke="#808080" stroke-width="27.628" fill="none"/>
+</svg>

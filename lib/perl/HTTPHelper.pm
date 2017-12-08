@@ -269,7 +269,7 @@ sub get_etag {
     my (
         $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
         $size, $atime, $mtime, $ctime, $blksize, $blocks
-    ) = $backend ? $backend->stat($file) : stat($file);
+    ) = $backend ? $backend->stat($file) : stat $file;
     my $digest = Digest::MD5->new;
     $digest->add($file);
     $digest->add( $size  // 0 );

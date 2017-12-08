@@ -123,7 +123,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			preventDefault(ev);
 		}).MyKeyboardEventHandler();
 
-		/* clean up all events for .popup-click popups and handle click separatly:*/
+		/* clean up all events for .popup-click popups and handle click separately:*/
 		popup.filter(".popup-click").off("."+settings.namespace).on("click."+settings.namespace, function(ev) {
 			preventDefault(ev);
 			$("ul.popup:first:visible", $(".MyPopup-autohide").not(popup)).hide();

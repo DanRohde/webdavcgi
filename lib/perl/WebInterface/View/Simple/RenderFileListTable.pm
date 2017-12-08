@@ -247,7 +247,8 @@ sub _render_file_list_entry {
         = $id ? ( $file eq q{..} ? 'folderup' : 'folder' )
               : ( $file =~ /.+[.]([^.]+)$/xms ? lc($1) : 'unknown' );
     my $category    = $id ? $self->get_category_class(lc($bfile), 'folder', 'category-folder')
-                          : $self->get_category_class($bfile=~/[.]([^.]+)$/xms?$1:$bfile, q{(?!folder)}, q{});
+                          : $self->get_category_class($bfile=~/[.](.+)$/xms ? $1 : $bfile, q{(?!folder)})
+                            // $self->get_category_class($bfile=~/[.]([^.]+)$/xms ? $1 : $bfile, q{(?!folder)}, q{});
     my $is_locked   = $SHOW_LOCKS && $self->{config}->{method}->is_locked_cached($full);
     my $displayname = $self->{cgi}->escapeHTML( $self->{backend}->getDisplayName($full) );
     my $now = $self->{c}{_render_file_list_entry}{now}{$lang} //= DateTime->now( locale => $lang );
