@@ -159,7 +159,7 @@ gis       axt eta fit gmap gml gpx kml kmz loc osb osc osm ov2 poi rgn tfw trk
 crypt     cer cert crl crt csr dss_key der eslock gpg id_dsa id_rsa p12 p7b p7m p7r pem pfx pgr pgp pkr random_seed rnd skr spc sst stl
 temp      ### $$$ $a $db $ed §§§ asd buf cache db$ download file moz swn swo temp tmp tmt
 backup    000 001 002 ab abk arm arz backup backupdb bak bak1 bak2 bak3 bck bckp bk! bk0 bka1 bk2 bk3 bk4 bk5 vbk6 bk7 bk8 bk9 deleted ezc ezp mobilebackups moz-backup old old1 old2 old3 ori orig qic qmd 
-pcap      5vw 5vw.gz apc apc.gz aps aps.gz bfr bfr.gz camins camins.gz cap cap.gz caz caz.gz cscpkt cscpkt.gz dcf dcf.gz dmp erf erf.gz fdc fdc.gz ipfx ipfx.gz mplog mplog.gz ncf ncf.gz ntar ntar.gz pcap pcap.gz pcapng pcapng.gz pklg pklg.gz pkt pkt.gz rf5 rf5.gz syc syc.gz tnef tnef.gz tpc tpc.gz tr1 tr1.gz trc trc.gz trc0 trc0.gz trc1 trc1.gz vwr vwr.gz wpz wpz.gz
+pcap      5vw 5vw.gz apc apc.gz aps aps.gz bfr bfr.gz camins camins.gz cap cap.gz caz caz.gz cscpkt cscpkt.gz dcf dcf.gz dmp dmp.gz erf erf.gz fdc fdc.gz ipfx ipfx.gz mplog mplog.gz ncf ncf.gz ntar ntar.gz pcap pcap.gz pcapng pcapng.gz pklg pklg.gz pkt pkt.gz rf5 rf5.gz syc syc.gz tnef tnef.gz tpc tpc.gz tr1 tr1.gz trc trc.gz trc0 trc0.gz trc1 trc1.gz vwr vwr.gz wpz wpz.gz
 EOF
         ;
     $ICON_WIDTH              = 18;

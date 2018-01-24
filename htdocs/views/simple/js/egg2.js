@@ -169,7 +169,7 @@ ColoredBlocks.prototype.finish = function() {
 	var self = this;
 	if (!self.isClickable()) {
 		self.arena.canvas.off("click.coloredblocks");
-		if (self.blocks <= self.colors * 2) {
+		if (self.blocks <= self.colors * 3) {
 			self.colors = Math.min(self.colors + 1 , self.arena.colors.length);
 		//} else if (self.blocks > self.colors * 4) {
 		//	self.colors = Math.max(self.colors -1 , 1);
@@ -251,7 +251,7 @@ ColoredBlocks.prototype.getColorsCookie = function() {
 	var c = document.cookie;
 	var regex = /coloredblocks.colors=(\d+)/;
 	var res = regex.exec(c);
-	return !res || res.length === 0 ? this.startColors : res[1];
+	return !res || res.length === 0 ? this.startColors : parseInt(res[1]);
 };
 ColoredBlocks.prototype.updateColorsCookie = function() {
 	document.cookie = "coloredblocks.colors="+this.colors+"; expires=Fri, 26 Feb 2027 00:00:00 UTC; path=/;";
