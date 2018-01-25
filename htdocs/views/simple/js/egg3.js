@@ -68,7 +68,10 @@ P2048.prototype.start = function() {
 	self.countNums = 0;
 	self.highscore = self.getHighscoreCookie();
 	self.arena.ctx = self.arena.canvas[0].getContext("2d");
-	self.initField().draw().showGameInfo().addNumber().addNumber();
+	if (!self.deserialize()) {
+		self.initField().addNumber().addNumber().serialize();
+	}
+	self.draw().showGameInfo();
 
 	return self;
 };
@@ -132,6 +135,7 @@ P2048.prototype.keypressed = function(event) {
 	else if (event.keyCode == 38) self.move(0,-1); // up
 	else if (event.keyCode == 39) self.move(1,0); // right
 	else if (event.keyCode == 40) self.move(0,1); // down
+	else if (event.keyCode == 82 || event.keyCode == 78) self.rmserialize().start(); // restart ('n' or 'r')
 };
 P2048.prototype.initField = function() {
 	var self = this;
@@ -320,8 +324,7 @@ P2048.prototype.move = function(dirX,dirY, levelParam) {
 	// remove spaces again:
 	moved+=self.move(dirX,dirY, level+1);
 	if (moved > 0) {
-		self.updateHighscore().showGameInfo();
-		self.addNumber();
+		self.updateHighscore().showGameInfo().addNumber();
 	}
 	self.checkGameState();
 	self.moving = false;
@@ -363,7 +366,10 @@ P2048.prototype.checkGameState = function() {
 		else 
 			self.showMessageText("FAILED!", "red", "black");
 		self.failed = true;
+		self.rmserialize();
 		window.setTimeout(function() { self.start(); }, 5000);
+	} else {
+		self.serialize();
 	}
 	return self;
 };
@@ -410,6 +416,31 @@ P2048.prototype.showGameInfo = function() {
 	self.arena.scoreDiv.find(".score").html(self.prependZeros(self.score,6));
 	self.arena.scoreDiv.find(".highscore").html(self.prependZeros(self.highscore,6));
 	return self;
+};
+P2048.prototype.serialize = function() {
+	var self = this;
+	document.cookie = "p2048.state="+ JSON.stringify(self.arena.field)+"; expires=Fri, 26 Feb 2027 00:00:00 UTC; path=/;";
+	return self;
+};
+P2048.prototype.rmserialize = function() {
+	var self = this;
+	document.cookie  = "p2048.state=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;";
+	return self;
+};
+P2048.prototype.deserialize = function() {
+	var self = this;
+	var c = document.cookie;
+	var regex = /p2048.state=([^\;]+)/;
+	var res = regex.exec(c);
+	if ( res && res.length > 0 ) {
+		try {
+			self.arena.field = JSON.parse(res[1]);
+			return true;
+		} catch (e) {
+			console.log(e);
+		}
+	}
+	return false;
 };
 $("#flt").on("fileListChanged", function() {
 	$(".ai-create-file.filestats-filecount").on("dblclick", function() {
