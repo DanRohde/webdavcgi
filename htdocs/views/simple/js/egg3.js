@@ -419,7 +419,11 @@ P2048.prototype.showGameInfo = function() {
 };
 P2048.prototype.serialize = function() {
 	var self = this;
-	document.cookie = "p2048.state="+ JSON.stringify(self.arena.field)+"; expires=Fri, 26 Feb 2027 00:00:00 UTC; path=/;";
+	try {
+		document.cookie = "p2048.state="+ btoa(JSON.stringify({field : self.arena.field, score: self.score}))+"; expires=Fri, 26 Feb 2027 00:00:00 UTC; path=/;";
+	} catch (e) {
+		console.log(e);
+	}
 	return self;
 };
 P2048.prototype.rmserialize = function() {
@@ -434,7 +438,9 @@ P2048.prototype.deserialize = function() {
 	var res = regex.exec(c);
 	if ( res && res.length > 0 ) {
 		try {
-			self.arena.field = JSON.parse(res[1]);
+			var data = JSON.parse(atob(res[1]));
+			self.arena.field = data.field;
+			self.score = data.score;
 			return true;
 		} catch (e) {
 			console.log(e);
