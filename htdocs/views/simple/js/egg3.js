@@ -58,11 +58,13 @@ P2048.prototype.start = function() {
 	self.failed = false;
 
 	self.arena.canvas
-		.off("mousedown.r2048").on("mousedown.r2048", function(event) { self.mousedown(event); })
-		.off("mousemove.r2048").on("mousemove.r2048", function(event) { self.mousemove(event); })
-		.off("mouseup.r2048").on("mouseup.r2048", function(event) { self.mouseup(event); })
-		.off("click.r2048").on("click.r2048", function(event){ self.click(event); })
-		.off("keydown.r2048").on("keydown.r2048", function(event) { self.keypressed(event);})
+		.off("mousedown.p2048").on("mousedown.p2048", function(event) { self.mousedown(event); })
+		.off("mousemove.p2048").on("mousemove.p2048", function(event) { self.mousemove(event); })
+		.off("mouseup.p2048").on("mouseup.p2048", function(event) { self.mouseup(event); })
+		.off("click.p2048").on("click.p2048", function(event){ self.click(event); })
+		.off("keydown.p2048").on("keydown.p2048", function(event) { self.keypressed(event);})
+		.off("touchstart.p2048").on("touchstart.p2048", function(event) { self.touchstart(event);})
+		.off("touchend.p2048").on("touchend.p2048", function(event) { self.touchend(event);})
 	;
 	self.score = 0;
 	self.countNums = 0;
@@ -131,12 +133,29 @@ P2048.prototype.click = function(event) {
 };
 P2048.prototype.keypressed = function(event) {
 	var self = this;
+	if (event.preventDefault) event.preventDefault();
 	if (event.keyCode == 37) self.move(-1,0); // left
 	else if (event.keyCode == 38) self.move(0,-1); // up
 	else if (event.keyCode == 39) self.move(1,0); // right
 	else if (event.keyCode == 40) self.move(0,1); // down
 	else if (event.keyCode == 82 || event.keyCode == 78) self.rmserialize().start(); // restart ('n' or 'r')
 };
+P2048.prototype.touchstart = function(event) {
+	var self = this;
+	self.touch = { startX : event.originalEvent.touches[0].clientX, startY : event.originalEvent.touches[0].clientY };
+	return self;
+}
+P2048.prototype.touchend = function(event) {
+	var self = this;
+	if (event.preventDefault) event.preventDefault();
+	var diffX = event.originalEvent.touches[0].clientX - self.touch.startX;
+	var diffY = event.originalEvent.touches[0].clientY - self.touch.startY;
+	if (Math.abs(diffX) > Math.abs(diffY)) 
+		self.move(Math.sign(diffX), 0);
+	else 
+		self.move(0, Math.sign(diffY));
+	return self;
+}
 P2048.prototype.initField = function() {
 	var self = this;
 	for (var x = 0 ; x < self.width; x++ ) {
