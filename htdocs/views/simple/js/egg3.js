@@ -63,8 +63,8 @@ P2048.prototype.start = function() {
 		.off("mouseup.p2048").on("mouseup.p2048", function(event) { self.mouseup(event); })
 		.off("click.p2048").on("click.p2048", function(event){ self.click(event); })
 		.off("keydown.p2048").on("keydown.p2048", function(event) { self.keypressed(event);})
-		.off("touchstart.p2048").on("touchstart.p2048", function(event) { self.touchstart(event);})
-		.off("touchend.p2048").on("touchend.p2048", function(event) { self.touchend(event);})
+		//.off("touchstart.p2048").on("touchstart.p2048", function(event) { self.touchstart(event);})
+		//.off("touchend.p2048").on("touchend.p2048", function(event) { self.touchend(event);})
 	;
 	self.score = 0;
 	self.countNums = 0;
@@ -434,6 +434,20 @@ P2048.prototype.showGameInfo = function() {
 	
 	self.arena.scoreDiv.find(".score").html(self.prependZeros(self.score,6));
 	self.arena.scoreDiv.find(".highscore").html(self.prependZeros(self.highscore,6));
+	
+	if (!a.helpDiv) {
+		a.helpDiv = $("<div/>")
+				.css({position: "fixed", display: "flex", flexFlow: "row nowrap", justifyContent: "space-between",
+						left: a.x+"px", top: (a.y+a.height)+"px", width: a.width+"px",
+						backgroundColor: "black", color: "white", fontFamily: "monospace", fontWeight: "bold",
+						fontSize: (a.bs/16)+"px"
+					})
+				.append($("<div/>").html("Cursor keys [&uarr;&darr;&larr;&rarr;] OR drag mouse up/down/left/right - Move"))
+				.append($("<div/>").html("N - New game"))
+				.append($("<div/>").html("ESC - Exit"))
+				.appendTo("body");
+	}
+	
 	return self;
 };
 P2048.prototype.serialize = function() {

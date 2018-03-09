@@ -25,5 +25,5 @@ $(function() {
 	 		   js/tableconfigdialog.js, js/keyboard.js, js/thumbnails.js, js/statusbar.js,
 	 		   js/guide.js, js/foldertree.js, js/viewbar.js, js/toolbox.js, js/filelisttable.js,
 	 		   js/themes.js,
-	 		   js/egg.js, js/egg2.js, js/egg3.js)**/
+	 		   js/egg.js, js/egg2.js, js/egg3.js, js/egg4.js)**/
 });
