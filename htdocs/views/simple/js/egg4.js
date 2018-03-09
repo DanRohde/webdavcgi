@@ -67,9 +67,9 @@ Tetris.prototype.init = function(varsonly) {
 				.css({float: "left"})
 				.html("<div style='font-weight:bold; font-size: 2em;'>Tetris</div>" +
 						"<div style='margin: 10px 0;'>" +
-						"<div>Highscore: <div style='display: inline-block' id='tetris-highscore'>0000</div></div><div>&nbsp;</div>" +
+						"<div>Highscore: <div style='display: inline-block' id='tetris-highscore'>"+self.zeros(self.highscore)+"</div></div><div>&nbsp;</div>" +
 						"<div>Score: <div id='tetris-score' style='display:inline-block;'>00000</div></div>" +
-						"<div>Level: <div id='tetris-level' style='display:inline-block;'>00001</div></div>" +
+						"<div>Level: <div id='tetris-level' style='display:inline-block;'>"+self.zeros(self.level)+"</div></div>" +
 						"<div>Lines: <div style='display: inline-block' id='tetris-lines'>00000</div></div>" +
 						
 						"</div>")
@@ -98,6 +98,12 @@ Tetris.prototype.restart = function() {
 };
 Tetris.prototype.gameLoop = function() {
 	var self = this;
+	/*if (!self.dialog.is(":visible") || !self.arena.canvas.is(":visible")) {
+		console.log("dialog or canvas is not visible!");
+		window.clearInterval(self.visibleInterval);
+		self.visibleInterval = window.setInterval(function() { self.gameLoop(); }, 50);
+		return self;
+	}*/
 	if (self.interval) window.clearInterval(self.interval);
 	self.interval = window.setInterval(function() {
 		try {
@@ -347,16 +353,14 @@ Tetris.prototype.fillTileQueue = function() {
 Tetris.prototype.drawTileXYC = function(ctx, x,y,c) {
 	var self = this;
 	var bs = self.arena.bs;
-	if ( c == 0 ) {
-		ctx.clearRect(x * bs, y * bs, bs, bs);
-	} else {
+	ctx.clearRect(x * bs, y * bs, bs, bs);
+	if ( c != 0 ) {
 		var sb = 1;
 		var dsb = 2 * sb;
 		//ctx.shadowColor = "white";
 		//ctx.shadowBlur = 2;
 		ctx.fillStyle = c;
 		ctx.fillRect(x * bs + sb, y * bs + sb , bs - dsb , bs - dsb);
-		
 	}
 	return self;
 };
@@ -467,7 +471,7 @@ Tetris.prototype.showMessageText = function(text, color, stroke) {
 		ctx.strokeStyle = stroke;
 		ctx.strokeText(text, i.xOffset,i.yOffset, h);
 		ctx.restore();	
-	},300);
+	},50);
 	return self;
 };
 Tetris.prototype.destroy = function() {
