@@ -25,6 +25,7 @@ Tetris.prototype.init = function(varsonly) {
 	self.level = 1;
 	self.leveluplines = 20;
 	self.speed = 500;
+	self.dropSpeed = 50;
 	self.speeddecr = 20; 
 	self.score = 0;
 	self.lines = 0;
@@ -82,7 +83,7 @@ Tetris.prototype.init = function(varsonly) {
 		)
 		.append(self.arena.canvas)
 		.on("keydown", function(event) { self.handleKeyboardInput(event); })
-		.on("click mousemove wheel", function(event) { self.handleMouseInput(event); });
+		.on("mousedown mousemove mouseup contextmenu wheel", function(event) { self.handleMouseInput(event); });
 	}
 	return self.setupField().deserialize().updateStats().drawNext();
 };
@@ -98,12 +99,6 @@ Tetris.prototype.restart = function() {
 };
 Tetris.prototype.gameLoop = function() {
 	var self = this;
-	/*if (!self.dialog.is(":visible") || !self.arena.canvas.is(":visible")) {
-		console.log("dialog or canvas is not visible!");
-		window.clearInterval(self.visibleInterval);
-		self.visibleInterval = window.setInterval(function() { self.gameLoop(); }, 50);
-		return self;
-	}*/
 	if (self.interval) window.clearInterval(self.interval);
 	self.interval = window.setInterval(function() {
 		try {
@@ -187,7 +182,7 @@ Tetris.prototype.removeFullLines = function() {
 Tetris.prototype.move = function() {
 	var self = this;
 	self.fillTileQueue().initTile();
-	if (self.tile.y == -1 && !self.canMoveTile(self.tile, self.tile.x, self.tile.y, self.tile.o)) { // nothing moved but collision
+	if (self.tile.y == -1 && !self.canMoveTile(self.tile, self.tile.x, self.tile.y + 1, self.tile.o)) { // nothing moved but collision
 		return self.finished();
 	} else if (self.canMoveTile(self.tile, self.tile.x, self.tile.y+1, self.tile.o)) { // move one down
 		self.drawTile(self.tile, true);
@@ -215,23 +210,31 @@ Tetris.prototype.handleKeyboardInput = function(event) {
 	else if (event.keyCode == 38 || event.keyCode == 73) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o + 1));
 	else if (event.keyCode == 39 || event.keyCode == 76) self.moveTileTo(self.tile.x + 1, self.tile.o);
 	else if (event.keyCode == 40 || event.keyCode == 75) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o - 1));
-	else if (event.keyCode == 32 || event.keyCode == 13) self.dropTile();
+	else if (event.keyCode == 32 || event.keyCode == 13) self.dropTile(self.dropSpeed);
 	// else console.log(event.keyCode);
 	return self;
 };
 Tetris.prototype.handleMouseInput = function(event) {
 	var self = this;
 	if (self.gameLoopOff) return self;
+	event.preventDefault();
 	var oe = event.originalEvent;
-	if (event.type == "click") {
-		if (event.preventDefault) event.preventDefault();
-		if (event.which == 1) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o - 1));
-		else if (event.which == 2) self.dropTile();
-		else if (event.which == 3) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o + 1));
+	if (event.type == "mousedown") {
+		self.arena.mousepos = { x: event.pageX, y: event.pageY };
 	}
 	else if (event.type == "mousemove" && self.tile && event.originalEvent) {
-		self.moveTileTo(self.tile.x + (Math.abs(oe.movementX) >= self.arena.bs/4 ? Math.sign(oe.movementX) : 0 ), self.tile.o);
-	} 
+		if (!self.arena.mousepos || oe.which != 1) return self;
+		var dx = Math.round((event.pageX - self.arena.mousepos.x) / self.arena.bs);
+		if ( dx != 0 ) {
+			if (dx != 0) self.moveTileTo(self.tile.x + dx, self.tile.o);
+			self.arena.mousepos = { x: event.pageX, y: event.pageY };
+		}
+	}
+	else if (event.type == "mouseup") {
+		self.arena.mousepos = null;
+		if (oe.which == 3) self.dropTile(self.dropSpeed);
+		else if (oe.which == 2) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o + 1));
+	}
 	else if (event.type == "wheel") {
 		self.moveTileTo(self.tile.x + Math.sign(oe.deltaX), self.getTileOrientation(self.tile.o + Math.sign(oe.deltaY)));
 	}
@@ -270,16 +273,28 @@ Tetris.prototype.moveTileTo = function(nx,no) {
 	}
 	return self;
 };
-Tetris.prototype.dropTile = function(sub) {
+Tetris.prototype.dropTile = function(speed) {
 	var self = this;
 	var tile = self.tile;
-	self.toggleGameLoopOff(true);
-	while (self.canMoveTile(tile, tile.x, tile.y+1, tile.o)) {
-		self.drawTile(tile, true);
-		tile.y++;
-		self.drawTile(tile);
+	if (speed && speed > 0) {
+		if (self.dropTimeout) window.clearTimeout(self.dropTimeout);
+		if (self.canMoveTile(tile, tile.x, tile.y+1, tile.o)) {
+			self.drawTile(tile, true);
+			tile.y++;
+			self.drawTile(tile);
+			self.dropTimeout = window.setTimeout(function(){
+				self.dropTile(speed);
+			}, speed);
+		}
+	} else {
+		self.toggleGameLoopOff(true);
+		while (self.canMoveTile(tile, tile.x, tile.y+1, tile.o)) {
+			self.drawTile(tile, true);
+			tile.y++;
+			self.drawTile(tile);
+		}
+		self.toggleGameLoopOff(false);
 	}
-	self.toggleGameLoopOff(false);
 	return self;
 };
 Tetris.prototype.canMoveTile = function(tile, ntx, nty, nto) {
@@ -287,12 +302,11 @@ Tetris.prototype.canMoveTile = function(tile, ntx, nty, nto) {
 	var f = self.arena.field;
 	var t = self.tiles[tile.t];
 	if (!t) return false;
-	if (tile.x )
 	for (var y = 0; y < t.length; y++) {  
 		for (var x = 0; x < t[y].length; x++) {
 			if (t[y][x] == 0) continue;
 			var off = self.getTilePosOffsets(t, nto, x, y);
-			if ( self.isPosInArena([ ntx + off[0], nty + off[1] ]) && f[ntx + off[0]][nty + off[1]] > 0) return false;
+			if ( !off || (self.isPosInArena([ ntx + off[0], nty + off[1] ]) && f[ntx + off[0]][nty + off[1]] > 0)) return false;
 		} 
 	}
 	return true;
