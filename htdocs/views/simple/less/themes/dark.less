@@ -758,4 +758,9 @@ li.sep {
     color: @default-color;
     background-color: @default-button-active-bgcolor;
 }
-
+.icon.category-folder {
+    &, &audio, &config, &current, &docs, &home, &pictures,
+      &temp, &trash, &up, &video, &web {
+        transform: rotate(-90deg);
+    }
+}

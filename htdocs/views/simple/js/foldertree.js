@@ -73,7 +73,7 @@ WebDAVCGIFolderTree.prototype.initFolderTree = function() {
 			selector: ".mft-node.iswriteable-yes .mft-node-label",
 			params: { scope: "fileList", tolerance: "intersect", drop: handleFolderTreeDrop, hoverClass: "foldertree-draghover", greedy: true }
 		},
-		rootNodes : [{ name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes", labelclasses : "icon category-folderhome" }],
+		rootNodes : [{ name: flt.data("basedn"), uri: flt.data("baseuri"), isreadable: true, iswriteable: true, classes: "isreadable-yes iswriteable-yes", iconclasses : "icon category-folderhome" }],
 		getFolderTree: function(node, callback, forceRead) {
 			var uri = getURI();
 			var recurse = $("#foldertree").data("recurse");
