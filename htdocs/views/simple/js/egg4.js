@@ -31,6 +31,7 @@ Tetris.prototype.init = function(varsonly) {
 	self.lines = 0;
 	self.highscore = self.getHighscoreCookie();
 	self.lost = false;
+	self.d = false;
 	
 	if (!varsonly) {
 		var $w = $(window);
@@ -76,14 +77,20 @@ Tetris.prototype.init = function(varsonly) {
 						"</div>")
 				.append($("<div/>").html("Next:"))
 				.append(self.next)
-				.append($("<div/>").html("<div style='position:absolute;bottom:0;margin-bottom: 10px;'>Help:<div>p - Toggle pause</div><div>r - Start a new game</div>" +
-						"<div>j, &larr; - Left</div><div>l, &rarr; - Right</div><div>k, &darr; - Rotate left</div>" +
-						"<div>i, &uarr; - Rotate right</div><div> space, enter - Drop</div>" +
-				"<div>Esc - Exit</div></div>"))
+				.append($("<div/>").html("<div style='position:absolute;bottom:0;margin-bottom: 10px; cursor:pointer;'>Help:<div id='tetris-pause'>p - Toggle pause</div><div id='tetris-restart'>r - Start a new game</div>" +
+						"<div id='tetris-left'>j, &larr; - Left</div><div id='tetris-right'>l, &rarr; - Right</div><div id='tetris-rl'>k, &darr; - Rotate left</div>" +
+						"<div id='tetris-rr'>i, &uarr; - Rotate right</div><div id='tetris-drop'> space, enter - Drop</div>" +
+				"<div id='tetris-exit'>Esc - Exit</div></div>"))
 		)
 		.append(self.arena.canvas)
-		.on("keydown", function(event) { self.handleKeyboardInput(event); })
-		.on("mousedown mousemove mouseup contextmenu wheel", function(event) { self.handleMouseInput(event); });
+		.on("keydown", function(event) { self.handleKeyboardInput(event); });
+
+		self.arena.canvas
+		.on("mousedown mousemove mouseup mouseenter mouseleave contextmenu wheel", function(event) { self.handleMouseInput(event); })
+		.on("touchmove touchstart touchend touchcancel", function(event) { self.handleTouchInput(event); });
+
+		$("#tetris-left,#tetris-right,#tetris-rl,#tetris-rr,#tetris-drop,#tetris-pause,#tetris-restart,#tetris-exit", self.dialog)
+		.on("click", function(event) { self.handleClickEvents(event, $(this).attr("id")); });
 	}
 	return self.setupField().deserialize().updateStats().drawNext();
 };
@@ -196,7 +203,8 @@ Tetris.prototype.move = function() {
 	self.updateStats().serialize();
 	return self;
 };
-Tetris.prototype.getTileOrientation = function(o) {
+Tetris.prototype.getTileOrientation = function(d) {
+	var o = this.tile.o + d;
 	return o < 0 ? 3 : o > 3 ? 0 : o;
 };
 Tetris.prototype.handleKeyboardInput = function(event) {
@@ -207,9 +215,9 @@ Tetris.prototype.handleKeyboardInput = function(event) {
 	else if (event.keyCode == 80) self.togglePause();
 	else if (self.gameLoopOff) return self;
 	else if (event.keyCode == 37 || event.keyCode == 74) self.moveTileTo(self.tile.x - 1, self.tile.o);
-	else if (event.keyCode == 38 || event.keyCode == 73) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o + 1));
+	else if (event.keyCode == 38 || event.keyCode == 73) self.moveTileTo(self.tile.x, self.getTileOrientation(1));
 	else if (event.keyCode == 39 || event.keyCode == 76) self.moveTileTo(self.tile.x + 1, self.tile.o);
-	else if (event.keyCode == 40 || event.keyCode == 75) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o - 1));
+	else if (event.keyCode == 40 || event.keyCode == 75) self.moveTileTo(self.tile.x, self.getTileOrientation(-1));
 	else if (event.keyCode == 32 || event.keyCode == 13) self.dropTile(self.dropSpeed);
 	// else console.log(event.keyCode);
 	return self;
@@ -221,6 +229,7 @@ Tetris.prototype.handleMouseInput = function(event) {
 	var oe = event.originalEvent;
 	if (event.type == "mousedown") {
 		self.arena.mousepos = { x: event.pageX, y: event.pageY };
+		self.debug("mousedown", self.arena.mousepos);
 	}
 	else if (event.type == "mousemove" && self.tile && event.originalEvent) {
 		if (!self.arena.mousepos || oe.which != 1) return self;
@@ -229,17 +238,64 @@ Tetris.prototype.handleMouseInput = function(event) {
 			if (dx != 0) self.moveTileTo(self.tile.x + dx, self.tile.o);
 			self.arena.mousepos = { x: event.pageX, y: event.pageY };
 		}
+		self.debug("mousemove", self.arena.mousepos);
 	}
 	else if (event.type == "mouseup") {
 		self.arena.mousepos = null;
 		if (oe.which == 3) self.dropTile(self.dropSpeed);
-		else if (oe.which == 2) self.moveTileTo(self.tile.x, self.getTileOrientation(self.tile.o + 1));
+		else if (oe.which == 2) self.moveTileTo(self.tile.x, self.getTileOrientation(1));
+	}
+	else if (event.type == "mouseleave" || event.type == "mouseenter") {
+		self.arena.mousepos = null;
 	}
 	else if (event.type == "wheel") {
-		self.moveTileTo(self.tile.x + Math.sign(oe.deltaX), self.getTileOrientation(self.tile.o + Math.sign(oe.deltaY)));
+		self.moveTileTo(self.tile.x + Math.sign(oe.deltaX), self.getTileOrientation(Math.sign(oe.deltaY)));
 	}
 	return self;
 };
+Tetris.prototype.handleClickEvents = function(event, id) {
+	var self = this;
+	event.preventDefault();
+	self.debug("handleClikEvents, id="+id);
+	if (id == "tetris-pause") self.togglePause();
+	else if (id == "tetris-restart") self.restart();
+	else if (id == "tetris-exit") self.serialize().destroy();
+	else if (self.gameLoopOff) return self;
+	else if (id == "tetris-left") self.moveTileTo(self.tile.x-1, self.tile.o);
+	else if (id == "tetris-right") self.moveTileTo(self.tile.x+1, self.tile.o);
+	else if (id == "tetris-rl") self.moveTileTo(self.tile.x, self.getTileOrientation(-1));
+	else if (id == "tetris-rr") self.moveTileTo(self.tile.x, self.getTileOrientation(1));
+	else if (id == "tetris-drop") self.dropTile();
+	return self;
+}
+Tetris.prototype.handleTouchInput = function(event) {
+	var self = this;
+	if (self.gameLoopOff) return self;
+	var oe = event.originalEvent;
+	event.preventDefault();
+	self.debug(event.type);
+	if (event.type == "touchstart") {
+		var t = oe.touches[0];
+		self.arena.touchpos = { x: t.pageX, y: t.pageY };
+		self.debug(self.arena.touchpos);
+	}
+	else if (event.type == "touchmove") {
+		var t = ou.touches[0];
+		var dx = Math.round((t.pageX - self.arena.touchpos.x) / self.arena.bs);
+		var dy = Math.round((t.pageY - self.arena.touchpos.y) / self.arena.bs);
+		self.debug("dx: "+dx+", dy: "+dy);
+		if (Math.abs(dx) > Math.abs(dy) && dx != 0) {
+			self.moveTileTo(self.tile.x + dx, self.tile.o);
+			self.arena.touchpos = { x: t.page.x, y: t.page.y };
+		} else if (dy != 0) {
+			self.moveTileTo(self.tile.x, self.getTileOrientation(Math.sign(dy)));
+		}
+	}
+	else if (event.type == "touchend" || event.type == "touchcancel") {
+		self.arena.touchpos = null;
+	}
+	return self;
+}
 Tetris.prototype.togglePause = function(toggle) {
 	var self = this;
 	if (self.lost) return self;
@@ -371,10 +427,22 @@ Tetris.prototype.drawTileXYC = function(ctx, x,y,c) {
 	if ( c != 0 ) {
 		var sb = 1;
 		var dsb = 2 * sb;
-		//ctx.shadowColor = "white";
-		//ctx.shadowBlur = 2;
 		ctx.fillStyle = c;
 		ctx.fillRect(x * bs + sb, y * bs + sb , bs - dsb , bs - dsb);
+		var grds = [ { grd: [x * bs + sb, y * bs + sb, (x+1) * bs + sb, (y+1) * bs + sb], c : [c,c,"white",c], t:0.5 },
+					 { grd: [(x+1) * bs + sb, y * bs + sb, x * bs + sb, (y+1) * bs + sb], c : [c,"white"], t:0.5 }
+		];
+		for (var i in grds) {
+			var grd = ctx.createLinearGradient(grds[i].grd[0],grds[i].grd[1],grds[i].grd[2],grds[i].grd[3]);
+			ctx.globalAlpha = grds[i].t;
+			var ci = 1 / (grds[i].c.length - 1)
+			for (var j in grds[i].c) {
+				grd.addColorStop(ci * j, grds[i].c[j]);
+			}
+			ctx.fillStyle = grd;
+			ctx.fillRect(x * bs + sb, y * bs + sb , bs - dsb , bs - dsb);
+		}
+		ctx.globalAlpha = 1;
 	}
 	return self;
 };
@@ -495,6 +563,18 @@ Tetris.prototype.destroy = function() {
 	self.dialog = null;
 	return self;
 };
+Tetris.prototype.debug = function(data) {
+	var self = this;
+	if (!self.d) return;
+	var d = $("#tetrisdebug");
+	if (d.length == 0) d = $("<div/>").attr("id","tetrisdebug").css({zIndex: 200,position: "fixed", left: 0, top: 0, width: "50em", height: "15em", overflow:"auto", backgroundColor: "white"}).appendTo($("body"));
+	var e;
+	for (var i in arguments) {
+		console.log(arguments[i]);
+		d.prepend(e=$("<div/>").html(JSON.stringify(arguments[i])));
+	}
+	return self;
+}
 $("#now").on("dblclick", function() {
 		var p = new Tetris();
 		p.start();
