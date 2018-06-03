@@ -1129,9 +1129,6 @@ fieldset.viewfilter {
 .sidebar-iconsonly #nav > ul > .label {
   display: none;
 }
-.sidebar-iconsonly #nav .popup .label {
-  display: block;
-}
 .sidebar-collapsed #content,
 .sidebar-collapsed #controls,
 .sidebar-collapsed .ajax-loader,

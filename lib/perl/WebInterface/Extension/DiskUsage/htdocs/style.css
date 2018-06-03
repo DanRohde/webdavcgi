@@ -65,6 +65,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .diskusage.filetype.piechart {
 	width: 500px;
 	height: 300px;
+	background-color: lightgray;
 }
 .diskusage.filetype.chart {
 	display: inline-block;

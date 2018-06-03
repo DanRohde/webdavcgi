@@ -80,6 +80,7 @@ P2048.prototype.start = function() {
 P2048.prototype.destroy = function() {
 	this.arena.canvas.remove();
 	this.arena.scoreDiv.remove();
+	this.arena.helpDiv.remove();
 	this.arena.field = null;
 };
 P2048.prototype.mousedown = function(event) {
