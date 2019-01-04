@@ -157,7 +157,7 @@ sub _render_viewer {
         my $title = create_xml( $r200{prop},        1 );
         my $value = create_xml( $r200{prop}{$prop}, 1 );
         my $namespace = get_namespace_uri($prop);
-        if ( $prop =~ /^{([^}]*)}/xms ) {
+        if ( $prop =~ /^[{]([^}]*)[}]/xms ) {
             $namespace = $1;
         }
         push @bgstyleclasses, shift @bgstyleclasses;

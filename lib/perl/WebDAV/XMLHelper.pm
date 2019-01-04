@@ -229,7 +229,7 @@ sub get_namespace_uri {
 
 sub nonamespace {
     my ($prop) = @_;
-    $prop =~ s/^{[^}]*}//xms;
+    $prop =~ s/^[{][^}]*[}]//xms;
     return $prop;
 }
 

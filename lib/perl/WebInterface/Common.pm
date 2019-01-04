@@ -562,7 +562,7 @@ sub _get_varref {
         if ( defined $self->{$str} ) {
             return $self->{$str};
         }
-        if ($str=~/^(.*){(.*?)}/xms) {
+        if ($str=~/^(.*)[{](.*?)[}]/xms) {
             $ref = $DefaultConfig::{$1}{$2};
             return $ref;
         }

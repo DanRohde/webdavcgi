@@ -139,7 +139,7 @@ sub set_property {
     my $rfn = $self->resolve($fn);
     my $ru  = $REQUEST_URI;
     my ( $ns, $pn );
-    if ( $propname =~ /^{([^}]+)}(.*)$/xms ) {
+    if ( $propname =~ /^[{]([^}]+)[}](.*)$/xms ) {
         ( $ns, $pn ) = ( $1, $2 );
     }
 
@@ -186,7 +186,7 @@ sub set_property {
         if (   $parref
             && ref($parref) eq 'HASH'
             && ( !${$parref}{xmlns} || ${$parref}{xmlns} eq q{} )
-            && $n !~ /^{[^}]*}/xms )
+            && $n !~ /^[{][^}]*[}]/xms )
         {
             $n = '{}' . $n;
         }

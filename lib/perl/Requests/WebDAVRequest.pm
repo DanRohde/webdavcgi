@@ -134,7 +134,7 @@ sub get_prop_stat {
     $fn .= $is_dir && $fn !~ /\/$/xms ? q{/} : q{};
     foreach my $prop ( @{$props} ) {
         my ( $xmlnsuri, $propname ) = ( 'DAV:', $prop );
-        if ( $prop =~ /^{([^}]*)}(.*)$/xms ) {
+        if ( $prop =~ /^[{]([^}]*)[}](.*)$/xms ) {
             ( $xmlnsuri, $propname ) = ( $1, $2 );
         }
 

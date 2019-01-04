@@ -85,7 +85,7 @@ sub render_file_list_table {
         unselectable => $self->is_unselectable($fn)        ? 'yes' : 'no',
     );
     $filelisttabletemplate =~
-        s/[\$]{?(\w+)}?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/xmegs;
+        s/[\$][{]?(\w+)[}]?/exists $stdvars{$1} && defined $stdvars{$1}?$stdvars{$1}:"\$$1"/xmegs;
     my %jsondata = (
         content => $self->minify_html(
             $self->render_template( $fn, $ru, $filelisttabletemplate )
@@ -253,8 +253,8 @@ sub _render_file_list_entry {
     my $displayname = $self->{cgi}->escapeHTML( $self->{backend}->getDisplayName($full) );
     my $now = $self->{c}{_render_file_list_entry}{now}{$lang} //= DateTime->now( locale => $lang );
     my $cct = $self->can_create_thumb($full);
-    my $u   = $self->{c}{_render_file_list_entry}{uid}{$uid // 'unknown'} //= $uid && $uid=~/^\d+$/xms ? scalar getpwuid( $uid ) : $uid ? $uid : 'unknown';
-    my $g   = $self->{c}{_render_file_list_entry}{gid}{$gid // 'unknown'} //= $gid && $gid=~/^\d+$/xms ? scalar getgrgid( $gid ) : $gid ? $gid : 'unknown';
+    my $u   = $self->{c}{_render_file_list_entry}{uid}{$uid // 'unknown'} //= $uid && $uid=~/^\d+$/xms ? scalar getpwuid( $uid ) // $uid: $uid ? $uid : 'unknown';
+    my $g   = $self->{c}{_render_file_list_entry}{gid}{$gid // 'unknown'} //= $gid && $gid=~/^\d+$/xms ? scalar getgrgid( $gid ) // $gid: $gid ? $gid : 'unknown';
     my $icon = $self->{c}{_render_file_list_entry}{icon}{$mime}
         //= $self->get_icon($mime);
     my $enthumb = $self->{c}{_render_file_list_entry}{cookie}{thumbnails}
