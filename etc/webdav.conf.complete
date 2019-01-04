@@ -37,7 +37,8 @@ $UMASK = oct 22;
 ## -- MIMEFILE
 ## path to your MIME types file
 ## EXAMPLE: $MIMEFILE = '/etc/mime.types';
-$MIMEFILE = $INSTALL_BASE . '/etc/mime.types';
+## CHANGED in 1.1.3 to /etc/mime.types
+$MIMEFILE = '/etc/mime.types';
 
 ## -- FANCYINDEXING
 ## enables/disables Web interface

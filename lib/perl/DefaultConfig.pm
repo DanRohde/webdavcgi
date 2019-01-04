@@ -114,7 +114,7 @@ sub init_defaults {
     $VIRTUAL_BASE       = qr{/}xms;
     $DOCUMENT_ROOT      //= $ENV{DOCUMENT_ROOT} . q{/};
     $UMASK              = oct 22;
-    $MIMEFILE           = $INSTALL_BASE . '/etc/mime.types';
+    $MIMEFILE           = '/etc/mime.types';
     $FANCYINDEXING      = 1;
     $ENABLE_COMPRESSION = 1;
     $VHTDOCS            = "_webdavcgi_/$RELEASE/";
