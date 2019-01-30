@@ -54,7 +54,7 @@ function renderUploadProgressAll(uploadState, dataparam) {
 	var data = dataparam;
 	if (!data) data=uploadState;
 	var perc = data.loaded / data.total * 100;
-	$("#progress .bar").css("width", perc.toFixed(2) + "%")
+	$("#progress .bar").css("width", perc.toFixed(2) + "%").addClass(uploadState.failed>0 ? "failed" : "done")
 		.html(parseInt(perc, 10)+"% ("+$.MyStringHelper.renderByteSize(data.loaded)+"/"+$.MyStringHelper.renderByteSize(data.total)+")" + "; " + uploadState.done+"/"+uploadState.uploads
 				);	
 }
