@@ -1782,7 +1782,7 @@ li.filterbox {
 #foldertree-pane .mft-node-expander {
   opacity: 0.5;
 }
-.mft-node-read > #foldertree-pane .mft-node-expander {
+#foldertree-pane .mft-node-read > .mft-node-expander {
   opacity: 1;
 }
 .show-foldertree .action.toggle-foldertree {
