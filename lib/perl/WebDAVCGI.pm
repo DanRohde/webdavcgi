@@ -120,6 +120,12 @@ sub init {
     $REQUEST_URI     = $ENV{REQUEST_URI};
     $REMOTE_USER     = $ENV{REDIRECT_REMOTE_USER} // $ENV{REMOTE_USER} // $UID;
     $HTTP_HOST = $ENV{HTTP_HOST} // $ENV{REDIRECT_HTTP_HOST} // 'localhost';
+    #Ensure a folder / directory is ending in /
+    if (-d $PATH_TRANSLATED ) {
+      if (substr($PATH_TRANSLATED,-1,1) ne "/") {
+        $PATH_TRANSLATED .= "/"
+      }
+    }
 
     ## some must haves:
     $BUFSIZE //= 1_048_576;
