@@ -8,7 +8,9 @@
     @darkencolor: darken(@color, @perc);
 }
 
+
 @default-bgcolor: white;
+@default-background: @default-bgcolor;
 @default-color: black;
 @default-bordercolor: #ddd;
 @default-color-l30: lighten(@default-color, 30%);
@@ -43,64 +45,81 @@
 @viewbar-bgcolor: @controls-bgcolor;
 @viewbar-bordercolor: @default-bordercolor;
 @viewbar-fontsize: medium;
-.default-colors () {
-    color: @default-color;
-    background-color: @default-bgcolor;
-}
 
 .theme-default-colors {
     color: @default-color;
+    color: var(--foreground-color, @default-color);
     background-color: @default-bgcolor;
+    background-color: var(--background-color, @default-bgcolor);
 }
 
 .theme-default-color {
     color: @default-color;
+    color: var(--foreground-color, @default-color);
 }
 
 .theme-default-bgcolor {
     background-color: @default-bgcolor;
+    background-color: var(--background-color, @default-bgcolor);
 }
 
 .theme-default-bordercolor {
     border-color: @default-bordercolor;
+    border-color: var(--border-color,@default-bordercolor);
 }
 
 .theme-default-hover {
     &:focus , &:active , &:hover {
         background-color: @default-bordercolor;
+        background-color: var(--hover-bgcolor, @default-bordercolor);
         color: @default-bgcolor;
+        color: var(--hover-color, @default-bgcolor);
     }
 }
 
 .theme-default-button {
     color: @default-button-color;
-    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor);
+    color: var(--button-color, @default-button-color);
+    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor, --button-linear-gradient);
     border: 1px solid @default-button-bordercolor;
+    border: var(--button-border, 1px solid @default-button-bordercolor);
     &:hover , &:focus {
         color: @default-color;
-        .linear-gradient (@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor);
+        color: var(--button-active-color, @default-color);
+        .linear-gradient (@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor, --button-active-linear-gradient);
     }
 
     &:active {
         color: @default-button-active-color;
         background-color: @default-button-active-bgcolor;
+        background-color: var(--button-active-bgcolor, @default-button-active-bgcolor);
         background-image: none;
+        background-image: var(--button-active-bgimage, none);
     }
 }
 
 body {
     .reset-borders ();
-    .default-colors ();
+    color: @default-color;
+    color: var(--color, @default-color);
+    background-color: @default-bgcolor;
+    background-color: var(--bgcolor, @default-bgcolor);
+    background: @default-bgcolor;
+    background: var(--background, @default-bgcolor);
     font-family: @fonts;
+    font-family: var(--fonts,@fonts);
 }
 
 a {
     color: @default-color;
+    color: var(--a-color, @default-color);
 }
 
 input {
     background-color: @default-bgcolor;
+    background-color: var(--input-bgcolor, @default-bgcolor);
     color: @default-color;
+    color: var(--input-color, @default-color);
     &[readonly=readonly] {
         opacity: 0.5;
     }
@@ -112,8 +131,10 @@ input {
 
 .action , .ui-button.action {
     background-color: transparent;
+    background-color: var(--action-color, transparent);
     &:focus , &:hover , &:active {
         background-color: @default-button-active-bgcolor;
+        background-color: var(--action-active-bgcolor, @default-button-active-bgcolor);
     }
 }
 
@@ -121,81 +142,100 @@ input {
     &.delete , &.foldertree-delete-folder {
         &:focus , &:hover , &:active {
             background-color: #ff6666 ! important;
+            background-color: var(--action-active-color, #ff6666);
         }
     }
 
     &.flt-view-change.toggle-on {
         border: 1px inset @default-bordercolor;
+        border: var(--action-view-change-toggle-border, 1px inset @default-bordercolor);
         background-color: @default-button-active-bgcolor;
+        background-color: var(--action-view-change-bgcolor-border, @default-button-active-bgcolor);
     }
 }
 
 .link {
     &:hover {
         background-color: @default-button-active-bgcolor;
+        background-color: var(--link-hover-bgcolor, @default-button-active-bgcolor);
     }
 }
 
 .link-button {
     &:hover:before , &:active:before , &:focus:before {
         color: @default-color;
+        color: var(--link-button-active-color, @default-color);
     }
 }
 
 .disabled {
     a& , .link& {
         color: @default-color-l60;
+        color: var(--link-disabled-color, @default-color-l60);
     }
 }
 
 .accesskey {
     color: @default-color-l40;
+    color: var(--accesskey-color, @default-color-l40);
     font-size: 80%;
+    font-size: var(--accesskey-font-size, 80%);
     font-family: monospace;
+    font-family: var(--accesskey-font-family, monospace);
 }
 
 .accesskeydetails {
     font-family: monospace;
+    font-family: var(--accesskey-details-font-family, monospace);
 }
 
 .note {
     color: @default-color-l40;
+    color: var(--note-color, @default-color-l40);
     font-size: .8em;
+    font-size: var(--note-font-size, .8em);
 }
 
 .disabled {
     a& , .button& , li& {
         opacity: .5;
+        opacity: var(--link-disabled-opacity, .5);
     }
 }
 
 .neverdisabled {
     .link& , a& {
         opacity: 1;
+        opacity: var(--link-neverdisabled-opacity, 1);
         color: black;
+        color: var(--link-neverdisabled-color, black);
     }
 }
 
 #filler {
     background-color: @default-bgcolor;
+    background-color: var(--filler-bgcolor, @default-bgcolor);
 }
 
 #top {
     color: @top-color;
+    color: var(--top-color, @top-color);
     .lighten (@top-bgcolor , 60%);
-    .linear-gradient (@top-bgcolor , to bottom , @top-bgcolor , @lightencolor);
+    .linear-gradient (@top-bgcolor , to bottom , @top-bgcolor , @lightencolor, --top-linear-gradient);
     .darken (@top-color , 80%);
-    .box-shadow (0 0 10px rgba(0, 0, 0, 0.5) , 0 -2px 10px @darkencolor inset);
+    .box-shadow (0 0 10px rgba(0, 0, 0, 0.5) , 0 -2px 10px @darkencolor inset, --top-box-shadow);
     font-size: @top-font-size;
+    font-size: var(--top-font-size, @top-font-size);
 }
 
 #now {
     font-size: 10px;
+    font-size: var(--now-font-size, 10px);
 }
 
 #nav {
-    .linear-gradient (@nav-bgcolor , to right , @default-bgcolor , @nav-bgcolor);
-    .box-shadow (-3px 0 7px @nav-shadow);
+    .linear-gradient (@nav-bgcolor , to right , @default-bgcolor , @nav-bgcolor, --nav-linear-gradient);
+    .box-shadow (-3px 0 7px @nav-shadow, --nav-box-shadow);
     > ul > li {
         .lighten (@default-bordercolor , 16%);
         @topcolor: @lightencolor;
@@ -207,50 +247,67 @@ input {
         border-left: 0;
         font-size: @nav-font-size;
         color: @nav-color;
+        color: var(--nav-item-color, @nav-color);
         .lighten (@nav-color , 55%);
         text-shadow: 0 1px 0 @lightencolor;
+        text-shadow: var(--nav-item-text-shadow, 0 1px 0 @lightencolor);
         &:hover , &:focus {
             color: @nav-hover-color;
+            color: var(--nav-item-hover-color, @nav-hover-color);
             background-color: @nav-hover-bgcolor;
+            background-color: var(--nav-item-hover-bgcolor, @nav-hover-bgcolor);
         }
 
         &:active {
             color: @nav-active-color;
+            color: var(--nav-item-active-color, @nav-active-color);
             background-color: @nav-active-bgcolor;
+            background-color: var(--nav-item-active-bgcolor, @nav-active-bgcolor);
         }
     }
 }
 
 #controls {
     background-color: @controls-bgcolor;
+    background-color: var(--controls-bgcolor, @controls-bgcolor);
     border-bottom: 1px solid @controls-bordercolor;
-    .box-shadow (0 -3px 7px @controls-shadowcolor);
+    border-bottom: var(--controls--border-bottom, 1px solid @controls-bordercolor);
+    .box-shadow (0 -3px 7px @controls-shadowcolor, --controls-box-shadow);
     .toolbar {
         font-size: 15px;
+        font-size: var(--controls-toolbar-font-size, 15px);
         > .action {
-            .bordered (@default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor);
+            .bordered (@default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor, --controls-border);
             color: @default-button-color;
+            color: var(--controls-action-color, @default-button-color);
             &:active , &:focus , &:hover {
                 background-color: @default-button-active-bgcolor;
+                background-color: var(--controls-action-active-bgcolor, @default-button-active-bgcolor);
             }
         }
 
         > li {
             font-size: 15px;
+            font-size: var(--controls-item-font-size, 15px);
         }
     }
 }
 
 #pathinput {
     font-size: 100%;
+    font-size: var(--pathinput-font-size, 100%);
 }
 
 #autorefreshtimer {
     color: @default-button-color;
+    color: var(--autorefrestimer-color, @default-button-color);
     background-color: @default-bgcolor;
+    background-color: var(--autorefreshtimer-bgcolor, @default-bgcolor);
     border: 1px solid @default-button-bordercolor;
-    .box-shadow (3px 0 7px @default-button-bordercolor);
+    border: var(--autorefreshtimer-border, 1px solid @default-button-bordercolor);
+    .box-shadow (3px 0 7px @default-button-bordercolor, --autorefreshtimer-box-shadow);
     font-size: 15px;
+    font-size: var(--autorefreshtimer-font-size, 15px);
 }
 
 .collapsible {
@@ -326,35 +383,61 @@ input {
 
     tr {
         &:hover , &.draghover , &:focus {
+            color: @default-color;
+            color: var(--filelist-row-hover-color, @default-color);
             background-color: @default-bgcolor-d10;
+            background-color: var(--filelist-row-hover-bgcolor, @default-bgcolor-d10);
         }
 
         &.cutted , &.cutted a {
             color: @default-color-l60;
+            color: var(--filelist-row-cutted-color, @default-color-l60);
+            background-color: @default-bgcolor;
+            background-color: var(--filelist-row-cutted-bgcolor, @default-bgcolor);
         }
 
         &.selected {
+            color: @default-color;
+            color: var(--filelist-row-selected-color, @default-color); 
             background-color: @default-bgcolor-d20;
+            background-color: var(--filelist-row-selected-bgcolor, @default-bgcolor-d20);
             &:hover , &:focus , &:active {
+                color: @default-color;
+                color: var(--filelist-row-selected-hover-color, @default-color);
                 background-color: @default-bgcolor-d30;
+                background-color: var(--filelist-row-selected-hover-bgcolor, @default-bgcolor-d30);
             }
         }
 
         &.isreadable-no {
             color: @default-color-l60;
+            color: var(--filelist-row-isnotreadable-color, @default-color-l60);
+            background-color: inherit;
+            background-color: var(--filelist-row-isnotreadable-bgcolor, inherit);
             a {
                 color: @default-color-l60;
+                color: var(--filelist-row-isnotreadable-color, @default-color-l60);
+                background-color: inherit;
+                background-color: var(--filelist-row-isnotreadable-bgcolor, inherit);
             }
 
             &:hover , &:active , &:focus {
                 color: @default-color-l50;
+                color: var(--filelist-row-isnotreadable-hover-color, @default-color-l50);
                 background-color: @default-bgcolor-d20;
+                background-color: var(--filelist-row-isnotreadable-hover-bgcolor, @default-bgcolor-d20);
             }
 
             &.selected {
                 color: @default-color-l80;
+                color: var(--filelist-row-isnotreadable-selected-color, @default-color-l80);
+                background-color: inherit;
+                background-color: var(--filelist-row-isnotreadable-selected-bgcolor, inherit);
                 &:hover , &:active , &:focus {
                     color: @default-color-l90;
+                    color: var(--filelist-row-isnotreadable-selected-hover-color, @default-color-l90);
+                    background-color: inherit;
+                    background-color: var(--filelist-row-isnotreadable-selected-hover-bgcolor, inherit);
                 }
             }
         }
@@ -364,14 +447,18 @@ input {
 .filterbox {
     li& {
         font-weight: bold;
+        font-weight: var(--filterbox-font-weight, bold);
         color: @default-color-l50;
+        color: var(--filterbox-color, @default-color-l50);
     }
 }
 
 .flt-view-list , .flt-view-thumbs {
     .draghover {
         border: inherit;
+        border: var(--flt-view-list-thumbs-draghover-border, inherit);
         background-color: @default-button-active-bgcolor;
+        background-color: var(-flt-view-list-thumbs-draghover-bgcolor, @default-button-active-bgcolor);
     }
 
     #fileList {
@@ -379,6 +466,7 @@ input {
             border: 3px solid transparent;
             &.selected {
                 border: 3px inset @default-bordercolor;
+                border: var(--flt-view-list-thumbs-border, 3px inset @default-bordercolor);
             }
         }
     }
@@ -388,12 +476,16 @@ input {
     font-size: 15px;
     tr {
         border-top: 1px solid @default-bordercolor;
+        border-top: var(--filelisttable-border-top, 1px solid @default-bordercolor);
         border-bottom: 1px solid @default-bordercolor;
+        border-bottom: var(--filelisttable-border-bottom, 1px solid @default-bordercolor);
     }
 
     th {
         color: @default-color-l50;
+        color: var(--filelisttable-head-color, @default-color-l50);
         background-color: @default-bgcolor;
+        background-color: var(--filelisttable-head-bgcolor, @default-bgcolor);
         &.dragged {
             opacity: 0.8;
         }
@@ -406,12 +498,16 @@ input {
 
 .statistics {
     color: @default-color-l30;
+    color: var(--statistics-color, @default-color-l30);
     font-size: 0.8em;
+    font-size: var(--statistics-font-size, 0.8em);
     border-bottom: 1px solid @default-bordercolor;
+    border-bottom: var(--statistics-border-bottom, 1px solid @default-bordercolor);
 }
 
 .selstats {
     background-color: @default-bgcolor-d20;
+    background-color: var(--selstats-bgcolor, @default-bgcolor-d20);
 }
 
 .icon {
@@ -424,116 +520,161 @@ input {
 #overlay , .overlay {
     opacity: .5;
     background-color: @default-bgcolor;
+    background-color: var(--overlay-bgcolor, @default-bgcolor);
 }
 
 #content {
     background-color: @default-bgcolor;
+    background-color: var(--content-bgcolor, @default-bgcolor);
     &.hover {
         border: 5px solid green;
+        border: var(--content-hover-border, 5px solid green);
     }
 }
 
 #viewbar {
     background-color: @viewbar-bgcolor;
+    background-color: var(--viewbar-bgcolor, @viewbar-bgcolor);
     border: 1px solid @viewbar-bordercolor;
+    border: var(--viewbar-border, 1px solid @viewbar-bordercolor);
     font-size: @viewbar-fontsize;
+    font-size: var(--viewbar-font-size, @viewbar-fontsize);
 }
 
 #quota {
     color: @default-button-color;
+    color: var(--quota-color, @default-button-color);
     font-weight: normal;
+    font-weight: var(--quota-font-weight, normal);
     .quotabar {
         border: 1px solid @default-bordercolor;
+        border: var(--quota-bar-border, 1px solid @default-bordercolor);
         background-color: @default-bgcolor;
+        background-color: var(-quota-bar-bgcolor, @default-bgcolor);
     }
 
     .quotaused {
         background-color: @default-bordercolor;
+        background-color: var(--quota-used-bgcolor, @default-bordercolor);
         border: 1px outset @default-bordercolor;
+        border: var(--quota-used-border, 1px outset @default-bordercolor);
     }
 
     &.warn , .warn {
         background-color: yellow;
+        background-color: var(--quota-warn-bgcolor, yellow);
+        color: var(--quota-warn-color, @default-button-color);
     }
 
     &.critical , .critical {
         background-color: red;
+        background-color: var(--quota-background-color, red);
         color: yellow;
+        color: var(--quota-critical-color, yellow);
     }
 }
 
 #foldertree-pane {
     background-color: @default-bgcolor;
+    background-color: var(--foldertree-pane-bgcolor, @default-bgcolor);
     color: @default-color;
+    color: var(--foldertree-pane-color, @default-color);
     border: 2px solid @default-bordercolor;
+    border: var(--foldertree-pane-border, 2px solid @default-bordercolor);
     .mft-node-label {
         color: @default-color;
+        color: var(--foldertree-node-label-color, @default-color);
+        background-color: @default-bgcolor;
+        background-color: var(--foldertree-node-label-bgcolor, @default-bgcolor);
         &.foldertree-draghover {
             background-color: @default-bordercolor;
+            background-color: var(--foldertree-node-label-draghover-bgcolor, @default-bordercolor);
         }
 
         &:hover , &:active , &:focus {
             .mft-node-label-text {
                 background-color: @default-button-active-bgcolor;
+                background-color: var(--foldertree-node-active-label-text-bgcolor, @default-button-active-bgcolor);
             }
         }
     }
 
     .isreadable-no .mft-node-label-text {
         color: @default-color-l60;
+        color: var(--foldertree-pane-node-label-isreadable-no-color, @default-color-l60);
     }
 
     .mft-node-expander {
         opacity: 0.5;
+        opacity: var(--foldertree-pane-node-expander-opacity, 0.5);
     }
 
     .mft-node-read > .mft-node-expander {
         opacity: 1;
+        opacity: var(--foldertree-pane-node-expander-read-opacity,1);
     }
 }
 
 .show-foldertree {
     .action.toggle-foldertree {
         border: 1px inset @default-bordercolor;
+        border: var(--show-foldertree-toggle-border, 1px inset @default-bordercolor);
         background-color: @default-button-active-bgcolor;
+        background-color: var(--show-foldertree-toggle-bgcolor, @default-button-active-bgcolor);
     }
 }
 
 #foldertreetoolbar {
     background-color: @controls-bgcolor;
+    background-color: var(--foldertreetoolbar-bgcolor, @controls-bgcolor);
     border: 1px solid @default-bordercolor;
+    border: var(--foldertreetoolbar-border, 1px solid @default-bordercolor);
 }
 
 .tableconfigdialog {
-    .default-colors ();
+    color: @default-color;
+    color: var(--tableconfigdialog-color, @default-color);
+    background-color: @default-bgcolor;
+    background-color: var(--tableconfigdialog-bgcolor, @default-bgcolor);
 }
 
 .tableconfigbutton {
     border: 1px solid @default-button-bordercolor;
+    border: var(--tableconfigbutton, 1px solid @default-button-bordercolor);
 }
 
 .symbol {
     color: @default-color-l50;
+    color: var(--symbol-color, @default-color-l50);
     font-weight: bold;
+    font-weight: var(--symbol-font-weight, bold);
     &:hover , li:hover > & , &:active , li:active > & , &:focus , li:focus > & {
         color: @default-color;
+        color: var(--symbol-hover-color, @default-color);
     }
 }
 
 .viewfilterinfo {
     background-color: yellow;
+    background-color: var(--viewfilterinfo-color, yellow);
     font-size: 0.8em;
+    font-size: var(--viewfilterinfo-font-size, 0.8em);
 }
 
 #abortdialog {
-    .default-colors ();
+    color: @default-color;
+    color: var(--abortdialog-color, @default-color);
+    background-color: @default-bgcolor;
+    background-color: var(--abortdialog-bgcolor, @default-bgcolor);
     border: 1px solid @default-bordercolor;
+    border: var(--abortdialog-border, 1px solid @default-bordercolor);
 }
 
 .dropdown-menu {
     background: white;
     border: 1px solid @default-bordercolor;
-    .box-shadow (3px 0 7px @default-bordercolor);
+    border: var(--dropdown-border, 1px solid @default-bordercolor);
+    .box-shadow (3px 0 7px @default-bordercolor, --dropdown-box-shadow);
 }
 
 #progress {
@@ -576,17 +717,23 @@ input {
 }
 
 ul.popup {
-    .default-colors ();
-    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10);
+    color: @default-color;
+    color: var(--popup-color, @default-color);
+    background-color: @default-bgcolor;
+    background-color: var(--popup-bgcolor, @default-bgcolor);
+    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10, --popup-linear-gradient);
     border: 1px solid @default-bordercolor;
-    .box-shadow (3px 0 7px @default-bordercolor);
+    border: var(--popup-border, 1px solid @default-bordercolor);
+    .box-shadow (3px 0 7px @default-bordercolor, --popup-box-shadow);
     li , li.popup {
         font-size: 15px;
         font-weight: initial;
         text-shadow: none;
         color: @default-color;
+        color: var(--popup-item-color, @default-color);
         &:hover , &:focus , &:active {
             color: @default-color;
+            color: var(--popup-item-hover-color, @default-color);
         }
     }
 }
@@ -595,11 +742,13 @@ li.popup , li.action {
     &:hover {
         border: 1px dotted @default-button-bordercolor;
         background-color: @default-button-active-bgcolor;
+        background-color: var(--popup-item-hover-bgcolor, @default-button-active-bgcolor);
     }
 
     &:focus , &:active {
         border: 1px solid @default-button-bordercolor;
         background-color: @default-button-active-bgcolor;
+        background-color: var(--popup-item-hover-bgcolor, @default-button-active-bgcolor);
     }
 }
 
@@ -607,42 +756,59 @@ li.action.disabled {
     &:hover , &:focus , &:active {
         .lighten (@default-button-active-bgcolor , 8%);
         background-color: @lightencolor;
+        background-color: var(--action-disabled-bgcolor, @lightencolor);
     }
 }
 
 li.sep {
     border-top: 1px solid @default-bordercolor ! important;
+    border-top: var(--item-seperator-border-top, 1px solid @default-bordercolor);
 }
 
 #statusbar {
-    .box-shadow (-3px 0 3px @default-color);
+    .box-shadow (-3px 0 3px @default-color, --statusbar-box-shadow);
     color: @default-color;
+    color: var(--statusbar-color, @default-color);
     background-color: @controls-bgcolor;
+    background-color: var(--statusbar-bgcolor, @controls-bgcolor);
     font-size: 15px;
+    font-size: var(--statusbar-fonts-size, 15px);
     .notify {
         background-color: @default-bgcolor;
+        background-color: var(--statusbar-notify-bgcolor, @default-bgcolor);
         border: 1px solid @default-bordercolor;
+        border: var(--statusbar-notify-border, 1px solid @default-bordercolor);
         &.error {
             color: white;
+            color: var(--statusbar-notify-error-color, white);
             background-color: red;
+            color: var(--statusbar-notify-error-bgcolor, red);
         }
 
         &.message {
+            color: @default-color;
+            color: var(--statusbar-notify-msg-color, @default-color);
             background-color: white;
+            background-color: var(--statusbar-notify-msg-bgcolor, white);
         }
 
         &.warning {
+            color: @default-color;
+            color: var(--statusbar-notify-warn-color, @default-color);
             background-color: #ffd700;
+            background-color: var(--statusbar-notify-warn-bgcolor, #ffd700);
         }
     }
 
     .selected-files-stats {
         background-color: @default-bgcolor-d20;
+        background-color: var(--statusbar-selected-files-stat, @default-bgcolor-d20);
     }
 }
 
 .tabsels {
     border: 1px solid @default-bordercolor;
+    border: var(--tabsels, 1px solid @default-bordercolor);
 }
 
 .tabsel {
@@ -660,32 +826,57 @@ li.sep {
 
 .tabhead {
     font-weight: bold;
+    font-weight: var(-tabhead-font-weight, bold);
     border-bottom: 1px solid @default-color;
+    border-bottom: var(-tabhead-border-bottom, 1px solid @default-color);
 }
 
 .contexthelp {
     border: 1px solid @default-bordercolor;
+    border: var(--contexthelp-border, 1px solid @default-bordercolor);
     font-size: 0.8em;
+    font-size: var(-contexthelp-font-size, 0.8em);
 }
 
 .ajax-loader {
     opacity: 0.7;
+    opacity: var(--ajax-load-opacity, 0.7);
     background-color: @default-bgcolor;
+    background-color: var(--ajax-load-bgcolor, @default-bgcolor);
+    color: @default-color;
+    color: var(--ajax-load-color, @default-color);
+}
+#about , #settings , #viewfilter {
+    color: @default-color;
+    color: var(--dialog-color, @default-color);
+    background-color: @default-bgcolor;
+    background-color: var(--dialog-bgcolor, @default-bgcolor);
 }
 
+.tooltip {
+    color: @default-color;
+    color: var(--tooltip-color,@default-color);
+    .linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor, --tooltip-linear-gradient);
+}
 .ui-widget-header , .ui-widget-content , .ui-button {
     background-color: @default-bgcolor;
+    background-color: var(--ui-widget-bgcolor, @default-bgcolor);
     color: @default-color;
+    color: var(-ui-widget-color, @default-color);
     border-color: @default-bordercolor;
+    border-color: var(-ui-widget-border-color, @default-bordercolor);
 }
 
 .ui-widget-header {
-    .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor);
+    color: @default-color;
+    color: var(--dialog-header-color, @default-color);
+    .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor, --dialog-header-linear-gradient);
 }
 
 .ui-widget-overlay {
-    .radial-gradient (@default-bordercolor , @default-bgcolor);
+    .radial-gradient (@default-bordercolor , @default-bgcolor, --dialog-widget-radial-gradient);
     opacity: 0.7;
+    opacity: var(--dialog-widget-opacity, 0.7);
 }
 
 .ui-button , button, input[type=submit], select {
@@ -700,6 +891,8 @@ li.sep {
 
 .ui-state-hover {
     color: @default-color;
+    color: var(--button-active-color, @default-color);
     background-color: @default-button-active-bgcolor;
+    background-color: var(--button-active-bgcolor, @default-button-active-bgcolor);
 }
 

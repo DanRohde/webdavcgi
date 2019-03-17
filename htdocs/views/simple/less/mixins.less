@@ -1,72 +1,92 @@
 .reset-borders () {
-	padding: 0;
-	margin: 0;
-	border: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
 }
 
-.box-shadow (@a , @b) {
-	-webkit-box-shadow: @a, @b;
-	-moz-box-shadow: @a, @b;
-	box-shadow: @a, @b;
+.box-shadow (@a , @b, @var) {
+    -webkit-box-shadow: @a, @b;
+    -moz-box-shadow: @a, @b;
+    box-shadow: @a, @b;
+    box-shadow: var(@var);
 }
 
-.box-shadow (@a) {
-	-webkit-box-shadow: @a;
-	-moz-box-shadow: @a;
-	box-shadow: @a;
+.box-shadow (@a, @var) {
+    -webkit-box-shadow: @a;
+    -moz-box-shadow: @a;
+    box-shadow: @a;
+    box-shadow: var(@var, @a);
 }
 
-.linear-gradient (@bg , @dir , @start , @stop) {
-	background-color: @bg;
-	background-image: -webkit-gradient(linear, @dir, color-stop(0, @start), color-stop(1, @stop));
-	background-image: -ms-linear-gradient(@dir, @start, @stop);
-	background-image: -moz-linear-gradient(@dir, @start 0%, @stop 100%);
-	background-image: -o-linear-gradient(@start, @stop);
-	background-image: linear-gradient(@dir, @start, @stop);
+.box-shadow(@a) {
+    .box-shadow(@a, --default-box-shadow);
 }
 
-.radial-gradient (@start , @stop) {
-	background-image: -ms-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
-	background-image: -moz-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
-	background-image: -o-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
-	background-image: -webkit-gradient(radial, center center, 0, center center, 497, color-stop(0, @start), color-stop(1, @stop));
-	background-image: -webkit-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
-	background-image: radial-gradient(ellipse farthest-corner at center, @start 0%, @stop 100%);
+.linear-gradient (@bg, @dir, @start, @stop, @var) {
+    background-color: @bg;
+    background-image: -webkit-gradient(linear, @dir, color-stop(0, @start), color-stop(1, @stop));
+    background-image: -ms-linear-gradient(@dir, @start, @stop);
+    background-image: -moz-linear-gradient(@dir, @start 0%, @stop 100%);
+    background-image: -o-linear-gradient(@start, @stop);
+    background-image: linear-gradient(@dir, @start, @stop);
+    background-image: var(@var, linear-gradient(@dir, @start, @stop));
+}
+.linear-gradient (@bg, @dir, @start, @stop) {
+    .linear-gradient(@bg, @dir, @start, @stop, --default-linear-gradient);
 }
 
-.outline-rounded (@arg) {
-	-moz-outline-radius: @arg;
-	outline-radius: @arg;
+.radial-gradient (@start , @stop, @var) {
+    background-image: -ms-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
+    background-image: -moz-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
+    background-image: -o-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
+    background-image: -webkit-gradient(radial, center center, 0, center center, 497, color-stop(0, @start), color-stop(1, @stop));
+    background-image: -webkit-radial-gradient(center, ellipse farthest-corner, @start 0%, @stop 100%);
+    background-image: radial-gradient(ellipse farthest-corner at center, @start 0%, @stop 100%);
+    background-image: var(@var, radial-gradient(ellipse farthest-corner at center, @start 0%, @stop 100%));
+}
+.radial-gradient (@start, @stop) {
+    .radial-gradient( @start, @stop, --default-radial-gradient);
 }
 
-.width-transition (@duration) {
-	-webkit-transition: width @duration;
-	-moz-transition: width @duration;
-	-o-transition: width @duration;
-	transition: width @duration;
+.outline-rounded (@arg, @var) {
+    -moz-outline-radius: @arg;
+    outline-radius: @arg;
+    outline-radius: var(@var, @arg);
+}
+
+.width-transition (@duration, @var) {
+    -webkit-transition: width @duration;
+    -moz-transition: width @duration;
+    -o-transition: width @duration;
+    transition: width @duration;
+    transition: var(@var, width @duration);
 }
 
 .text-truncate (@ws: nowrap) {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: @ws;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: @ws;
 }
 
 .text-truncate () {
-	.text-truncate (nowrap);
+    .text-truncate (nowrap);
 }
 
 .user-select (@argument: none) {
-	-webkit-user-select: @argument;
-	-moz-user-select: @argument;
-	-ms-user-select: @argument;
-	user-select: @argument;
+    -webkit-user-select: @argument;
+    -moz-user-select: @argument;
+    -ms-user-select: @argument;
+    user-select: @argument;
 }
 
+.bordered (@t , @r , @b , @l, @var) {
+    border-top: @t;
+    border-right: @r;
+    border-bottom: @b;
+    border-left: @l;
+    border: var(@var, @t @r @b @l);
+}
 .bordered (@t , @r , @b , @l) {
-	border-top: @t;
-	border-right: @r;
-	border-bottom: @b;
-	border-left: @l;
+    .bordered(@t , @r , @b , @l, --default-border);
 }
 

@@ -324,6 +324,7 @@ tr:focus .action.changeuri {
   border-radius: 0px 200px 200px 0px;
   -moz-outline-radius: 1px 200px 200px 1px;
   outline-radius: 1px 200px 200px 1px;
+  outline-radius: var(--quicknav-outline-rounded, 1px 200px 200px 1px);
   max-width: 30ex;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -576,6 +577,7 @@ ul.filterbox {
   -moz-transition: width 1s;
   -o-transition: width 1s;
   transition: width 1s;
+  transition: var(--flt-icon-width-transition, width 1s);
 }
 .icon.thumbnail {
   background-image: none ! important;
@@ -1356,22 +1358,29 @@ ul.popup {
 }
 .theme-default-colors {
   color: black;
+  color: var(--foreground-color, black);
   background-color: white;
+  background-color: var(--background-color, white);
 }
 .theme-default-color {
   color: black;
+  color: var(--foreground-color, black);
 }
 .theme-default-bgcolor {
   background-color: white;
+  background-color: var(--background-color, white);
 }
 .theme-default-bordercolor {
   border-color: #ddd;
+  border-color: var(--border-color, #ddd);
 }
 .theme-default-hover:focus,
 .theme-default-hover:active,
 .theme-default-hover:hover {
   background-color: #ddd;
+  background-color: var(--hover-bgcolor, #ddd);
   color: white;
+  color: var(--hover-color, white);
 }
 .theme-default-button,
 .ui-button,
@@ -1379,13 +1388,16 @@ button,
 input[type=submit],
 select {
   color: #666;
+  color: var(--button-color, #666);
   background-color: #eee;
   background-image: -webkit-gradient(linear, to bottom, color-stop(0, #eee), color-stop(1, #ddd));
   background-image: -ms-linear-gradient(to bottom, #eee, #ddd);
   background-image: -moz-linear-gradient(to bottom, #eee 0%, #ddd 100%);
   background-image: -o-linear-gradient(#eee, #ddd);
   background-image: linear-gradient(to bottom, #eee, #ddd);
+  background-image: var(--button-linear-gradient, linear-gradient(to bottom, #eee, #ddd));
   border: 1px solid #ddd;
+  border: var(--button-border, 1px solid #ddd);
 }
 .theme-default-button:hover,
 .theme-default-button:focus,
@@ -1398,12 +1410,14 @@ button:focus,
 input[type=submit]:focus,
 select:focus {
   color: black;
+  color: var(--button-active-color, black);
   background-color: #eee;
   background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, #eee));
   background-image: -ms-linear-gradient(to bottom, #ddd, #eee);
   background-image: -moz-linear-gradient(to bottom, #ddd 0%, #eee 100%);
   background-image: -o-linear-gradient(#ddd, #eee);
   background-image: linear-gradient(to bottom, #ddd, #eee);
+  background-image: var(--button-active-linear-gradient, linear-gradient(to bottom, #ddd, #eee));
 }
 .theme-default-button:active,
 .ui-button:active,
@@ -1412,22 +1426,32 @@ input[type=submit]:active,
 select:active {
   color: black;
   background-color: #ddd;
+  background-color: var(--button-active-bgcolor, #ddd);
   background-image: none;
+  background-image: var(--button-active-bgimage, none);
 }
 body {
   padding: 0;
   margin: 0;
   border: 0;
   color: black;
+  color: var(--color, black);
   background-color: white;
+  background-color: var(--bgcolor, white);
+  background: white;
+  background: var(--background, white);
   font-family: Verdana, Helvetica, Arial, sans-serif;
+  font-family: var(--fonts, Verdana, Helvetica, Arial, sans-serif);
 }
 a {
   color: black;
+  color: var(--a-color, black);
 }
 input {
   background-color: white;
+  background-color: var(--input-bgcolor, white);
   color: black;
+  color: var(--input-color, black);
 }
 input[readonly=readonly] {
   opacity: 0.5;
@@ -1438,6 +1462,7 @@ input.file-upload {
 .action,
 .ui-button.action {
   background-color: transparent;
+  background-color: var(--action-color, transparent);
 }
 .action:focus,
 .ui-button.action:focus,
@@ -1446,6 +1471,7 @@ input.file-upload {
 .action:active,
 .ui-button.action:active {
   background-color: #ddd;
+  background-color: var(--action-active-bgcolor, #ddd);
 }
 .action.delete:focus,
 .action.foldertree-delete-folder:focus,
@@ -1454,63 +1480,84 @@ input.file-upload {
 .action.delete:active,
 .action.foldertree-delete-folder:active {
   background-color: #ff6666 ! important;
+  background-color: var(--action-active-color, #ff6666);
 }
 .action.flt-view-change.toggle-on {
   border: 1px inset #ddd;
+  border: var(--action-view-change-toggle-border, 1px inset #ddd);
   background-color: #ddd;
+  background-color: var(--action-view-change-bgcolor-border, #ddd);
 }
 .link:hover {
   background-color: #ddd;
+  background-color: var(--link-hover-bgcolor, #ddd);
 }
 .link-button:hover:before,
 .link-button:active:before,
 .link-button:focus:before {
   color: black;
+  color: var(--link-button-active-color, black);
 }
 a.disabled,
 .link.disabled {
   color: #999999;
+  color: var(--link-disabled-color, #999999);
 }
 .accesskey {
   color: #666666;
+  color: var(--accesskey-color, #666666);
   font-size: 80%;
+  font-size: var(--accesskey-font-size, 80%);
   font-family: monospace;
+  font-family: var(--accesskey-font-family, monospace);
 }
 .accesskeydetails {
   font-family: monospace;
+  font-family: var(--accesskey-details-font-family, monospace);
 }
 .note {
   color: #666666;
+  color: var(--note-color, #666666);
   font-size: .8em;
+  font-size: var(--note-font-size, 0.8em);
 }
 a.disabled,
 .button.disabled,
 li.disabled {
   opacity: .5;
+  opacity: var(--link-disabled-opacity, 0.5);
 }
 .link.neverdisabled,
 a.neverdisabled {
   opacity: 1;
+  opacity: var(--link-neverdisabled-opacity, 1);
   color: black;
+  color: var(--link-neverdisabled-color, black);
 }
 #filler {
   background-color: white;
+  background-color: var(--filler-bgcolor, white);
 }
 #top {
   color: white;
+  color: var(--top-color, white);
   background-color: black;
   background-image: -webkit-gradient(linear, to bottom, color-stop(0, black), color-stop(1, #999999));
   background-image: -ms-linear-gradient(to bottom, black, #999999);
   background-image: -moz-linear-gradient(to bottom, black 0%, #999999 100%);
   background-image: -o-linear-gradient(black, #999999);
   background-image: linear-gradient(to bottom, black, #999999);
+  background-image: var(--top-linear-gradient, linear-gradient(to bottom, black, #999999));
   -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 -2px 10px #333333 inset;
   -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 -2px 10px #333333 inset;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 -2px 10px #333333 inset;
+  box-shadow: var(--top-box-shadow);
   font-size: 15px;
+  font-size: var(--top-font-size, 15px);
 }
 #now {
   font-size: 10px;
+  font-size: var(--now-font-size, 10px);
 }
 #nav {
   background-color: #eee;
@@ -1519,9 +1566,11 @@ a.neverdisabled {
   background-image: -moz-linear-gradient(to right, white 0%, #eee 100%);
   background-image: -o-linear-gradient(white, #eee);
   background-image: linear-gradient(to right, white, #eee);
+  background-image: var(--nav-linear-gradient, linear-gradient(to right, white, #eee));
   -webkit-box-shadow: -3px 0 7px black;
   -moz-box-shadow: -3px 0 7px black;
   box-shadow: -3px 0 7px black;
+  box-shadow: var(--nav-box-shadow, -3px 0 7px black);
 }
 #nav > ul > li {
   border-top: 1px solid #ffffff;
@@ -1530,53 +1579,73 @@ a.neverdisabled {
   border-left: 0;
   font-size: 15px;
   color: #666;
+  color: var(--nav-item-color, #666);
   text-shadow: 0 1px 0 #ffffff;
+  text-shadow: var(--nav-item-text-shadow, 0 1px 0 #ffffff);
 }
 #nav > ul > li:hover,
 #nav > ul > li:focus {
   color: black;
+  color: var(--nav-item-hover-color, black);
   background-color: #ddd;
+  background-color: var(--nav-item-hover-bgcolor, #ddd);
 }
 #nav > ul > li:active {
   color: black;
+  color: var(--nav-item-active-color, black);
   background-color: #ddd;
+  background-color: var(--nav-item-active-bgcolor, #ddd);
 }
 #controls {
   background-color: white;
+  background-color: var(--controls-bgcolor, white);
   border-bottom: 1px solid #ddd;
+  border-bottom: var(--controls--border-bottom, 1px solid #ddd);
   -webkit-box-shadow: 0 -3px 7px black;
   -moz-box-shadow: 0 -3px 7px black;
   box-shadow: 0 -3px 7px black;
+  box-shadow: var(--controls-box-shadow, 0 -3px 7px black);
 }
 #controls .toolbar {
   font-size: 15px;
+  font-size: var(--controls-toolbar-font-size, 15px);
 }
 #controls .toolbar > .action {
   border-top: #ddd;
   border-right: #ddd;
   border-bottom: #ddd;
   border-left: #ddd;
+  border: var(--controls-border, #ddd #ddd #ddd #ddd);
   color: #666;
+  color: var(--controls-action-color, #666);
 }
 #controls .toolbar > .action:active,
 #controls .toolbar > .action:focus,
 #controls .toolbar > .action:hover {
   background-color: #ddd;
+  background-color: var(--controls-action-active-bgcolor, #ddd);
 }
 #controls .toolbar > li {
   font-size: 15px;
+  font-size: var(--controls-item-font-size, 15px);
 }
 #pathinput {
   font-size: 100%;
+  font-size: var(--pathinput-font-size, 100%);
 }
 #autorefreshtimer {
   color: #666;
+  color: var(--autorefrestimer-color, #666);
   background-color: white;
+  background-color: var(--autorefreshtimer-bgcolor, white);
   border: 1px solid #ddd;
+  border: var(--autorefreshtimer-border, 1px solid #ddd);
   -webkit-box-shadow: 3px 0 7px #ddd;
   -moz-box-shadow: 3px 0 7px #ddd;
   box-shadow: 3px 0 7px #ddd;
+  box-shadow: var(--autorefreshtimer-box-shadow, 3px 0 7px #ddd);
   font-size: 15px;
+  font-size: var(--autorefreshtimer-font-size, 15px);
 }
 .collapsible {
   border: 1px solid #ddd;
@@ -1641,48 +1710,78 @@ a.neverdisabled {
 #fileList tr:hover,
 #fileList tr.draghover,
 #fileList tr:focus {
+  color: black;
+  color: var(--filelist-row-hover-color, black);
   background-color: #e6e6e6;
+  background-color: var(--filelist-row-hover-bgcolor, #e6e6e6);
 }
 #fileList tr.cutted,
 #fileList tr.cutted a {
   color: #999999;
+  color: var(--filelist-row-cutted-color, #999999);
+  background-color: white;
+  background-color: var(--filelist-row-cutted-bgcolor, white);
 }
 #fileList tr.selected {
+  color: black;
+  color: var(--filelist-row-selected-color, black);
   background-color: #cccccc;
+  background-color: var(--filelist-row-selected-bgcolor, #cccccc);
 }
 #fileList tr.selected:hover,
 #fileList tr.selected:focus,
 #fileList tr.selected:active {
+  color: black;
+  color: var(--filelist-row-selected-hover-color, black);
   background-color: #b3b3b3;
+  background-color: var(--filelist-row-selected-hover-bgcolor, #b3b3b3);
 }
 #fileList tr.isreadable-no {
   color: #999999;
+  color: var(--filelist-row-isnotreadable-color, #999999);
+  background-color: inherit;
+  background-color: var(--filelist-row-isnotreadable-bgcolor, inherit);
 }
 #fileList tr.isreadable-no a {
   color: #999999;
+  color: var(--filelist-row-isnotreadable-color, #999999);
+  background-color: inherit;
+  background-color: var(--filelist-row-isnotreadable-bgcolor, inherit);
 }
 #fileList tr.isreadable-no:hover,
 #fileList tr.isreadable-no:active,
 #fileList tr.isreadable-no:focus {
   color: #808080;
+  color: var(--filelist-row-isnotreadable-hover-color, #808080);
   background-color: #cccccc;
+  background-color: var(--filelist-row-isnotreadable-hover-bgcolor, #cccccc);
 }
 #fileList tr.isreadable-no.selected {
   color: #cccccc;
+  color: var(--filelist-row-isnotreadable-selected-color, #cccccc);
+  background-color: inherit;
+  background-color: var(--filelist-row-isnotreadable-selected-bgcolor, inherit);
 }
 #fileList tr.isreadable-no.selected:hover,
 #fileList tr.isreadable-no.selected:active,
 #fileList tr.isreadable-no.selected:focus {
   color: #e6e6e6;
+  color: var(--filelist-row-isnotreadable-selected-hover-color, #e6e6e6);
+  background-color: inherit;
+  background-color: var(--filelist-row-isnotreadable-selected-hover-bgcolor, inherit);
 }
 li.filterbox {
   font-weight: bold;
+  font-weight: var(--filterbox-font-weight, bold);
   color: #808080;
+  color: var(--filterbox-color, #808080);
 }
 .flt-view-list .draghover,
 .flt-view-thumbs .draghover {
   border: inherit;
+  border: var(--flt-view-list-thumbs-draghover-border, inherit);
   background-color: #ddd;
+  background-color: var(-flt-view-list-thumbs-draghover-bgcolor, #ddd);
 }
 .flt-view-list #fileList tr,
 .flt-view-thumbs #fileList tr {
@@ -1691,17 +1790,22 @@ li.filterbox {
 .flt-view-list #fileList tr.selected,
 .flt-view-thumbs #fileList tr.selected {
   border: 3px inset #ddd;
+  border: var(--flt-view-list-thumbs-border, 3px inset #ddd);
 }
 #fileListTable {
   font-size: 15px;
 }
 #fileListTable tr {
   border-top: 1px solid #ddd;
+  border-top: var(--filelisttable-border-top, 1px solid #ddd);
   border-bottom: 1px solid #ddd;
+  border-bottom: var(--filelisttable-border-bottom, 1px solid #ddd);
 }
 #fileListTable th {
   color: #808080;
+  color: var(--filelisttable-head-color, #808080);
   background-color: white;
+  background-color: var(--filelisttable-head-bgcolor, white);
 }
 #fileListTable th.dragged {
   opacity: 0.8;
@@ -1711,11 +1815,15 @@ li.filterbox {
 }
 .statistics {
   color: #4d4d4d;
+  color: var(--statistics-color, #4d4d4d);
   font-size: 0.8em;
+  font-size: var(--statistics-font-size, 0.8em);
   border-bottom: 1px solid #ddd;
+  border-bottom: var(--statistics-border-bottom, 1px solid #ddd);
 }
 .selstats {
   background-color: #cccccc;
+  background-color: var(--selstats-bgcolor, #cccccc);
 }
 .icon {
   color: transparent;
@@ -1727,82 +1835,118 @@ li.filterbox {
 .overlay {
   opacity: .5;
   background-color: white;
+  background-color: var(--overlay-bgcolor, white);
 }
 #content {
   background-color: white;
+  background-color: var(--content-bgcolor, white);
 }
 #content.hover {
   border: 5px solid green;
+  border: var(--content-hover-border, 5px solid green);
 }
 #viewbar {
   background-color: white;
+  background-color: var(--viewbar-bgcolor, white);
   border: 1px solid #ddd;
+  border: var(--viewbar-border, 1px solid #ddd);
   font-size: medium;
+  font-size: var(--viewbar-font-size, medium);
 }
 #quota {
   color: #666;
+  color: var(--quota-color, #666);
   font-weight: normal;
+  font-weight: var(--quota-font-weight, normal);
 }
 #quota .quotabar {
   border: 1px solid #ddd;
+  border: var(--quota-bar-border, 1px solid #ddd);
   background-color: white;
+  background-color: var(-quota-bar-bgcolor, white);
 }
 #quota .quotaused {
   background-color: #ddd;
+  background-color: var(--quota-used-bgcolor, #ddd);
   border: 1px outset #ddd;
+  border: var(--quota-used-border, 1px outset #ddd);
 }
 #quota.warn,
 #quota .warn {
   background-color: yellow;
+  background-color: var(--quota-warn-bgcolor, yellow);
+  color: var(--quota-warn-color, #666);
 }
 #quota.critical,
 #quota .critical {
   background-color: red;
+  background-color: var(--quota-background-color, red);
   color: yellow;
+  color: var(--quota-critical-color, yellow);
 }
 #foldertree-pane {
   background-color: white;
+  background-color: var(--foldertree-pane-bgcolor, white);
   color: black;
+  color: var(--foldertree-pane-color, black);
   border: 2px solid #ddd;
+  border: var(--foldertree-pane-border, 2px solid #ddd);
 }
 #foldertree-pane .mft-node-label {
   color: black;
+  color: var(--foldertree-node-label-color, black);
+  background-color: white;
+  background-color: var(--foldertree-node-label-bgcolor, white);
 }
 #foldertree-pane .mft-node-label.foldertree-draghover {
   background-color: #ddd;
+  background-color: var(--foldertree-node-label-draghover-bgcolor, #ddd);
 }
 #foldertree-pane .mft-node-label:hover .mft-node-label-text,
 #foldertree-pane .mft-node-label:active .mft-node-label-text,
 #foldertree-pane .mft-node-label:focus .mft-node-label-text {
   background-color: #ddd;
+  background-color: var(--foldertree-node-active-label-text-bgcolor, #ddd);
 }
 #foldertree-pane .isreadable-no .mft-node-label-text {
   color: #999999;
+  color: var(--foldertree-pane-node-label-isreadable-no-color, #999999);
 }
 #foldertree-pane .mft-node-expander {
   opacity: 0.5;
+  opacity: var(--foldertree-pane-node-expander-opacity, 0.5);
 }
 #foldertree-pane .mft-node-read > .mft-node-expander {
   opacity: 1;
+  opacity: var(--foldertree-pane-node-expander-read-opacity, 1);
 }
 .show-foldertree .action.toggle-foldertree {
   border: 1px inset #ddd;
+  border: var(--show-foldertree-toggle-border, 1px inset #ddd);
   background-color: #ddd;
+  background-color: var(--show-foldertree-toggle-bgcolor, #ddd);
 }
 #foldertreetoolbar {
   background-color: white;
+  background-color: var(--foldertreetoolbar-bgcolor, white);
   border: 1px solid #ddd;
+  border: var(--foldertreetoolbar-border, 1px solid #ddd);
 }
 .tableconfigdialog {
   color: black;
+  color: var(--tableconfigdialog-color, black);
   background-color: white;
+  background-color: var(--tableconfigdialog-bgcolor, white);
 }
 .tableconfigbutton {
   border: 1px solid #ddd;
+  border: var(--tableconfigbutton, 1px solid #ddd);
 }
 .symbol {
   color: #808080;
+  color: var(--symbol-color, #808080);
   font-weight: bold;
+  font-weight: var(--symbol-font-weight, bold);
 }
 .symbol:hover,
 li:hover > .symbol,
@@ -1811,22 +1955,30 @@ li:active > .symbol,
 .symbol:focus,
 li:focus > .symbol {
   color: black;
+  color: var(--symbol-hover-color, black);
 }
 .viewfilterinfo {
   background-color: yellow;
+  background-color: var(--viewfilterinfo-color, yellow);
   font-size: 0.8em;
+  font-size: var(--viewfilterinfo-font-size, 0.8em);
 }
 #abortdialog {
   color: black;
+  color: var(--abortdialog-color, black);
   background-color: white;
+  background-color: var(--abortdialog-bgcolor, white);
   border: 1px solid #ddd;
+  border: var(--abortdialog-border, 1px solid #ddd);
 }
 .dropdown-menu {
   background: white;
   border: 1px solid #ddd;
+  border: var(--dropdown-border, 1px solid #ddd);
   -webkit-box-shadow: 3px 0 7px #ddd;
   -moz-box-shadow: 3px 0 7px #ddd;
   box-shadow: 3px 0 7px #ddd;
+  box-shadow: var(--dropdown-box-shadow, 3px 0 7px #ddd);
 }
 #progress {
   background-color: white;
@@ -1864,16 +2016,21 @@ li:focus > .symbol {
 }
 ul.popup {
   color: black;
+  color: var(--popup-color, black);
+  background-color: var(--popup-bgcolor, white);
   background-color: white;
   background-image: -webkit-gradient(linear, to right, color-stop(0, white), color-stop(1, #e6e6e6));
   background-image: -ms-linear-gradient(to right, white, #e6e6e6);
   background-image: -moz-linear-gradient(to right, white 0%, #e6e6e6 100%);
   background-image: -o-linear-gradient(white, #e6e6e6);
   background-image: linear-gradient(to right, white, #e6e6e6);
+  background-image: var(--popup-linear-gradient, linear-gradient(to right, white, #e6e6e6));
   border: 1px solid #ddd;
+  border: var(--popup-border, 1px solid #ddd);
   -webkit-box-shadow: 3px 0 7px #ddd;
   -moz-box-shadow: 3px 0 7px #ddd;
   box-shadow: 3px 0 7px #ddd;
+  box-shadow: var(--popup-box-shadow, 3px 0 7px #ddd);
 }
 ul.popup li,
 ul.popup li.popup {
@@ -1881,6 +2038,7 @@ ul.popup li.popup {
   font-weight: initial;
   text-shadow: none;
   color: black;
+  color: var(--popup-item-color, black);
 }
 ul.popup li:hover,
 ul.popup li.popup:hover,
@@ -1889,11 +2047,13 @@ ul.popup li.popup:focus,
 ul.popup li:active,
 ul.popup li.popup:active {
   color: black;
+  color: var(--popup-item-hover-color, black);
 }
 li.popup:hover,
 li.action:hover {
   border: 1px dotted #ddd;
   background-color: #ddd;
+  background-color: var(--popup-item-hover-bgcolor, #ddd);
 }
 li.popup:focus,
 li.action:focus,
@@ -1901,42 +2061,61 @@ li.popup:active,
 li.action:active {
   border: 1px solid #ddd;
   background-color: #ddd;
+  background-color: var(--popup-item-hover-bgcolor, #ddd);
 }
 li.action.disabled:hover,
 li.action.disabled:focus,
 li.action.disabled:active {
   background-color: #f1f1f1;
+  background-color: var(--action-disabled-bgcolor, #f1f1f1);
 }
 li.sep {
   border-top: 1px solid #ddd ! important;
+  border-top: var(--item-seperator-border-top, 1px solid #ddd);
 }
 #statusbar {
   -webkit-box-shadow: -3px 0 3px black;
   -moz-box-shadow: -3px 0 3px black;
   box-shadow: -3px 0 3px black;
+  box-shadow: var(--statusbar-box-shadow, -3px 0 3px black);
   color: black;
+  color: var(--statusbar-color, black);
   background-color: white;
+  background-color: var(--statusbar-bgcolor, white);
   font-size: 15px;
+  font-size: var(--statusbar-fonts-size, 15px);
 }
 #statusbar .notify {
   background-color: white;
+  background-color: var(--statusbar-notify-bgcolor, white);
   border: 1px solid #ddd;
+  border: var(--statusbar-notify-border, 1px solid #ddd);
 }
 #statusbar .notify.error {
   color: white;
+  color: var(--statusbar-notify-error-color, white);
   background-color: red;
+  color: var(--statusbar-notify-error-bgcolor, red);
 }
 #statusbar .notify.message {
+  color: black;
+  color: var(--statusbar-notify-msg-color, black);
   background-color: white;
+  background-color: var(--statusbar-notify-msg-bgcolor, white);
 }
 #statusbar .notify.warning {
+  color: black;
+  color: var(--statusbar-notify-warn-color, black);
   background-color: #ffd700;
+  background-color: var(--statusbar-notify-warn-bgcolor, #ffd700);
 }
 #statusbar .selected-files-stats {
   background-color: #cccccc;
+  background-color: var(--statusbar-selected-files-stat, #cccccc);
 }
 .tabsels {
   border: 1px solid #ddd;
+  border: var(--tabsels, 1px solid #ddd);
 }
 .tabsel {
   border: 1px solid #ddd;
@@ -1953,30 +2132,63 @@ li.sep {
 }
 .tabhead {
   font-weight: bold;
+  font-weight: var(-tabhead-font-weight, bold);
   border-bottom: 1px solid black;
+  border-bottom: var(-tabhead-border-bottom, 1px solid black);
 }
 .contexthelp {
   border: 1px solid #ddd;
+  border: var(--contexthelp-border, 1px solid #ddd);
   font-size: 0.8em;
+  font-size: var(-contexthelp-font-size, 0.8em);
 }
 .ajax-loader {
   opacity: 0.7;
+  opacity: var(--ajax-load-opacity, 0.7);
   background-color: white;
+  background-color: var(--ajax-load-bgcolor, white);
+  color: black;
+  color: var(--ajax-load-color, black);
+}
+#about,
+#settings,
+#viewfilter {
+  color: black;
+  color: var(--dialog-color, black);
+  background-color: white;
+  background-color: var(--dialog-bgcolor, white);
+}
+.tooltip {
+  color: black;
+  color: var(--tooltip-color, black);
+  background-color: white;
+  background-image: -webkit-gradient(linear, to right, color-stop(0, #ddd), color-stop(1, white));
+  background-image: -ms-linear-gradient(to right, #ddd, white);
+  background-image: -moz-linear-gradient(to right, #ddd 0%, white 100%);
+  background-image: -o-linear-gradient(#ddd, white);
+  background-image: linear-gradient(to right, #ddd, white);
+  background-image: var(--tooltip-linear-gradient, linear-gradient(to right, #ddd, white));
 }
 .ui-widget-header,
 .ui-widget-content,
 .ui-button {
   background-color: white;
+  background-color: var(--ui-widget-bgcolor, white);
   color: black;
+  color: var(-ui-widget-color, black);
   border-color: #ddd;
+  border-color: var(-ui-widget-border-color, #ddd);
 }
 .ui-widget-header {
+  color: black;
+  color: var(--dialog-header-color, black);
   background-color: white;
   background-image: -webkit-gradient(linear, to bottom, color-stop(0, #ddd), color-stop(1, white));
   background-image: -ms-linear-gradient(to bottom, #ddd, white);
   background-image: -moz-linear-gradient(to bottom, #ddd 0%, white 100%);
   background-image: -o-linear-gradient(#ddd, white);
   background-image: linear-gradient(to bottom, #ddd, white);
+  background-image: var(--dialog-header-linear-gradient, linear-gradient(to bottom, #ddd, white));
 }
 .ui-widget-overlay {
   background-image: -ms-radial-gradient(center, ellipse farthest-corner, #ddd 0%, white 100%);
@@ -1985,9 +2197,13 @@ li.sep {
   background-image: -webkit-gradient(radial, center center, 0, center center, 497, color-stop(0, #ddd), color-stop(1, white));
   background-image: -webkit-radial-gradient(center, ellipse farthest-corner, #ddd 0%, white 100%);
   background-image: radial-gradient(ellipse farthest-corner at center, #ddd 0%, white 100%);
+  background-image: var(--dialog-widget-radial-gradient, radial-gradient(ellipse farthest-corner at center, #ddd 0%, white 100%));
   opacity: 0.7;
+  opacity: var(--dialog-widget-opacity, 0.7);
 }
 .ui-state-hover {
   color: black;
+  color: var(--button-active-color, black);
   background-color: #ddd;
+  background-color: var(--button-active-bgcolor, #ddd);
 }
