@@ -242,8 +242,11 @@ input {
         .lighten (@default-bordercolor , 8%);
         @rightcolor: @lightencolor;
         border-top: 1px solid @topcolor;
+        border-top: var(--nav-item-border-top, 1px solid @topcolor);
         border-right: 1px solid @rightcolor;
+        border-right: var(--nav-item-border-right, 1px solid @rightcolor);
         border-bottom: 1px solid @default-bordercolor;
+        border-bottom: var(--nav-item-border-bottom, 1px solid @default-bordercolor);
         border-left: 0;
         font-size: @nav-font-size;
         color: @nav-color;
@@ -769,6 +772,8 @@ li.sep {
     .box-shadow (-3px 0 3px @default-color, --statusbar-box-shadow);
     color: @default-color;
     color: var(--statusbar-color, @default-color);
+    background-image: none;
+    background-image: var(--statusbar-background-image, none);
     background-color: @controls-bgcolor;
     background-color: var(--statusbar-bgcolor, @controls-bgcolor);
     font-size: 15px;

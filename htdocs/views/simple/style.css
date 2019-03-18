@@ -1574,8 +1574,11 @@ a.neverdisabled {
 }
 #nav > ul > li {
   border-top: 1px solid #ffffff;
+  border-top: var(--nav-item-border-top, 1px solid #ffffff);
   border-right: 1px solid #ffffff;
+  border-right: var(--nav-item-border-right, 1px solid #ffffff);
   border-bottom: 1px solid #ddd;
+  border-bottom: var(--nav-item-border-bottom, 1px solid #ddd);
   border-left: 0;
   font-size: 15px;
   color: #666;
@@ -2080,6 +2083,8 @@ li.sep {
   box-shadow: var(--statusbar-box-shadow, -3px 0 3px black);
   color: black;
   color: var(--statusbar-color, black);
+  background-image: none;
+  background-image: var(--statusbar-background-image, none);
   background-color: white;
   background-color: var(--statusbar-bgcolor, white);
   font-size: 15px;
