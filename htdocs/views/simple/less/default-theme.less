@@ -521,6 +521,8 @@ input {
 }
 
 .selstats {
+    color: inherit;
+    color: var(--selstats-color, inherit);
     background-color: @default-bgcolor-d20;
     background-color: var(--selstats-bgcolor, @default-bgcolor-d20);
 }
@@ -819,8 +821,10 @@ li.sep {
     }
 
     .selected-files-stats {
+        color: inherit;
+        color: var(--statusbar-selected-files-stat-color, inherit);
         background-color: @default-bgcolor-d20;
-        background-color: var(--statusbar-selected-files-stat, @default-bgcolor-d20);
+        background-color: var(--statusbar-selected-files-stat-bgcolor, @default-bgcolor-d20);
     }
 }
 

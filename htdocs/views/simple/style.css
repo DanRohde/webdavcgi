@@ -1837,6 +1837,8 @@ li.filterbox {
   border-bottom: var(--statistics-border-bottom, 1px solid #ddd);
 }
 .selstats {
+  color: inherit;
+  color: var(--selstats-color, inherit);
   background-color: #cccccc;
   background-color: var(--selstats-bgcolor, #cccccc);
 }
@@ -2128,8 +2130,10 @@ li.sep {
   background-color: var(--statusbar-notify-warn-bgcolor, #ffd700);
 }
 #statusbar .selected-files-stats {
+  color: inherit;
+  color: var(--statusbar-selected-files-stat-color, inherit);
   background-color: #cccccc;
-  background-color: var(--statusbar-selected-files-stat, #cccccc);
+  background-color: var(--statusbar-selected-files-stat-bgcolor, #cccccc);
 }
 .tabsels {
   border: 1px solid #ddd;
