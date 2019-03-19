@@ -80,13 +80,13 @@
 .theme-default-button {
     color: @default-button-color;
     color: var(--button-color, @default-button-color);
-    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor, --button-linear-gradient);
+    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor, --button-background-image);
     border: 1px solid @default-button-bordercolor;
     border: var(--button-border, 1px solid @default-button-bordercolor);
     &:hover , &:focus {
         color: @default-color;
         color: var(--button-active-color, @default-color);
-        .linear-gradient (@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor, --button-active-linear-gradient);
+        .linear-gradient (@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor, --button-active-background-image);
     }
 
     &:active {
@@ -142,7 +142,7 @@ input {
     &.delete , &.foldertree-delete-folder {
         &:focus , &:hover , &:active {
             background-color: #ff6666 ! important;
-            background-color: var(--action-active-color, #ff6666);
+            background-color: var(--action-active-color, #ff6666) ! important;
         }
     }
 
@@ -221,7 +221,7 @@ input {
     color: @top-color;
     color: var(--top-color, @top-color);
     .lighten (@top-bgcolor , 60%);
-    .linear-gradient (@top-bgcolor , to bottom , @top-bgcolor , @lightencolor, --top-linear-gradient);
+    .linear-gradient (@top-bgcolor , to bottom , @top-bgcolor , @lightencolor, --top-background-image);
     .darken (@top-color , 80%);
     .box-shadow (0 0 10px rgba(0, 0, 0, 0.5) , 0 -2px 10px @darkencolor inset, --top-box-shadow);
     font-size: @top-font-size;
@@ -234,7 +234,7 @@ input {
 }
 
 #nav {
-    .linear-gradient (@nav-bgcolor , to right , @default-bgcolor , @nav-bgcolor, --nav-linear-gradient);
+    .linear-gradient (@nav-bgcolor , to right , @default-bgcolor , @nav-bgcolor, --nav-background-image);
     .box-shadow (-3px 0 7px @nav-shadow, --nav-box-shadow);
     > ul > li {
         .lighten (@default-bordercolor , 16%);
@@ -385,11 +385,17 @@ input {
     }
 
     tr {
-        &:hover , &.draghover , &:focus {
+        &:hover , &.draghover, &:hover td, &.draghover td {
+            color: @default-color !important;
+            color: var(--filelist-row-hover-color, @default-color) !important;
+            background-color: @default-bgcolor-d10 !important;
+            background-color: var(--filelist-row-hover-bgcolor, @default-bgcolor-d10) !important;
+        }
+        &:focus {
             color: @default-color;
-            color: var(--filelist-row-hover-color, @default-color);
+            color: var(--filelist-row-focus-color, @default-color);
             background-color: @default-bgcolor-d10;
-            background-color: var(--filelist-row-hover-bgcolor, @default-bgcolor-d10);
+            background-color: var(--filelist-row-focus-bgcolor, @default-bgcolor-d10);
         }
 
         &.cutted , &.cutted a {
@@ -404,11 +410,17 @@ input {
             color: var(--filelist-row-selected-color, @default-color); 
             background-color: @default-bgcolor-d20;
             background-color: var(--filelist-row-selected-bgcolor, @default-bgcolor-d20);
-            &:hover , &:focus , &:active {
+            &:hover {
                 color: @default-color;
                 color: var(--filelist-row-selected-hover-color, @default-color);
                 background-color: @default-bgcolor-d30;
                 background-color: var(--filelist-row-selected-hover-bgcolor, @default-bgcolor-d30);
+            }
+            &:focus, &:active {
+                color: @default-color;
+                color: var(--filelist-row-selected-focus-color, @default-color);
+                background-color: @default-bgcolor-d30;
+                background-color: var(--filelist-row-selected-focus-bgcolor, @default-bgcolor-d30);
             }
         }
 
@@ -517,6 +529,7 @@ input {
     color: transparent;
     &.thumbnail {
         background-color: transparent ! important;
+        background-color: var(--icon-bgcolor, transparent) ! important;
     }
 }
 
@@ -724,7 +737,7 @@ ul.popup {
     color: var(--popup-color, @default-color);
     background-color: @default-bgcolor;
     background-color: var(--popup-bgcolor, @default-bgcolor);
-    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10, --popup-linear-gradient);
+    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10, --popup-background-image);
     border: 1px solid @default-bordercolor;
     border: var(--popup-border, 1px solid @default-bordercolor);
     .box-shadow (3px 0 7px @default-bordercolor, --popup-box-shadow);
@@ -765,7 +778,7 @@ li.action.disabled {
 
 li.sep {
     border-top: 1px solid @default-bordercolor ! important;
-    border-top: var(--item-seperator-border-top, 1px solid @default-bordercolor);
+    border-top: var(--item-seperator-border-top, 1px solid @default-bordercolor) ! important;
 }
 
 #statusbar {
@@ -861,7 +874,7 @@ li.sep {
 .tooltip {
     color: @default-color;
     color: var(--tooltip-color,@default-color);
-    .linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor, --tooltip-linear-gradient);
+    .linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor, --tooltip-background-image);
 }
 .ui-widget-header , .ui-widget-content , .ui-button {
     background-color: @default-bgcolor;
@@ -875,7 +888,7 @@ li.sep {
 .ui-widget-header {
     color: @default-color;
     color: var(--dialog-header-color, @default-color);
-    .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor, --dialog-header-linear-gradient);
+    .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor, --dialog-header-background-image);
 }
 
 .ui-widget-overlay {

@@ -81,9 +81,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	display: inline-block;
 }
 .quicktoggle-content.quicktoggle-focus {
-	box-shadow: 3px 0 7px #ddd;	
 	background-color: #efefef;
-	background-image: linear-gradient(to right, white,#efefef)
+	background-color: var(--popup-item-hover-bgcolor, #efefef);
 }
 #nav .quicktoggles, #nav .quicktoggle-content,
 #statusbar .quicktoggles, #statusbar .quicktoggle-content {

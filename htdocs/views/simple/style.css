@@ -1395,7 +1395,7 @@ select {
   background-image: -moz-linear-gradient(to bottom, #eee 0%, #ddd 100%);
   background-image: -o-linear-gradient(#eee, #ddd);
   background-image: linear-gradient(to bottom, #eee, #ddd);
-  background-image: var(--button-linear-gradient, linear-gradient(to bottom, #eee, #ddd));
+  background-image: var(--button-background-image, linear-gradient(to bottom, #eee, #ddd));
   border: 1px solid #ddd;
   border: var(--button-border, 1px solid #ddd);
 }
@@ -1417,7 +1417,7 @@ select:focus {
   background-image: -moz-linear-gradient(to bottom, #ddd 0%, #eee 100%);
   background-image: -o-linear-gradient(#ddd, #eee);
   background-image: linear-gradient(to bottom, #ddd, #eee);
-  background-image: var(--button-active-linear-gradient, linear-gradient(to bottom, #ddd, #eee));
+  background-image: var(--button-active-background-image, linear-gradient(to bottom, #ddd, #eee));
 }
 .theme-default-button:active,
 .ui-button:active,
@@ -1480,7 +1480,7 @@ input.file-upload {
 .action.delete:active,
 .action.foldertree-delete-folder:active {
   background-color: #ff6666 ! important;
-  background-color: var(--action-active-color, #ff6666);
+  background-color: var(--action-active-color, #ff6666) ! important;
 }
 .action.flt-view-change.toggle-on {
   border: 1px inset #ddd;
@@ -1547,7 +1547,7 @@ a.neverdisabled {
   background-image: -moz-linear-gradient(to bottom, black 0%, #999999 100%);
   background-image: -o-linear-gradient(black, #999999);
   background-image: linear-gradient(to bottom, black, #999999);
-  background-image: var(--top-linear-gradient, linear-gradient(to bottom, black, #999999));
+  background-image: var(--top-background-image, linear-gradient(to bottom, black, #999999));
   -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 -2px 10px #333333 inset;
   -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 -2px 10px #333333 inset;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 -2px 10px #333333 inset;
@@ -1566,7 +1566,7 @@ a.neverdisabled {
   background-image: -moz-linear-gradient(to right, white 0%, #eee 100%);
   background-image: -o-linear-gradient(white, #eee);
   background-image: linear-gradient(to right, white, #eee);
-  background-image: var(--nav-linear-gradient, linear-gradient(to right, white, #eee));
+  background-image: var(--nav-background-image, linear-gradient(to right, white, #eee));
   -webkit-box-shadow: -3px 0 7px black;
   -moz-box-shadow: -3px 0 7px black;
   box-shadow: -3px 0 7px black;
@@ -1712,11 +1712,18 @@ a.neverdisabled {
 }
 #fileList tr:hover,
 #fileList tr.draghover,
+#fileList tr:hover td,
+#fileList tr.draghover td {
+  color: black !important;
+  color: var(--filelist-row-hover-color, black) !important;
+  background-color: #e6e6e6 !important;
+  background-color: var(--filelist-row-hover-bgcolor, #e6e6e6) !important;
+}
 #fileList tr:focus {
   color: black;
-  color: var(--filelist-row-hover-color, black);
+  color: var(--filelist-row-focus-color, black);
   background-color: #e6e6e6;
-  background-color: var(--filelist-row-hover-bgcolor, #e6e6e6);
+  background-color: var(--filelist-row-focus-bgcolor, #e6e6e6);
 }
 #fileList tr.cutted,
 #fileList tr.cutted a {
@@ -1731,13 +1738,18 @@ a.neverdisabled {
   background-color: #cccccc;
   background-color: var(--filelist-row-selected-bgcolor, #cccccc);
 }
-#fileList tr.selected:hover,
-#fileList tr.selected:focus,
-#fileList tr.selected:active {
+#fileList tr.selected:hover {
   color: black;
   color: var(--filelist-row-selected-hover-color, black);
   background-color: #b3b3b3;
   background-color: var(--filelist-row-selected-hover-bgcolor, #b3b3b3);
+}
+#fileList tr.selected:focus,
+#fileList tr.selected:active {
+  color: black;
+  color: var(--filelist-row-selected-focus-color, black);
+  background-color: #b3b3b3;
+  background-color: var(--filelist-row-selected-focus-bgcolor, #b3b3b3);
 }
 #fileList tr.isreadable-no {
   color: #999999;
@@ -1833,6 +1845,7 @@ li.filterbox {
 }
 .icon.thumbnail {
   background-color: transparent ! important;
+  background-color: var(--icon-bgcolor, transparent) ! important;
 }
 #overlay,
 .overlay {
@@ -2027,7 +2040,7 @@ ul.popup {
   background-image: -moz-linear-gradient(to right, white 0%, #e6e6e6 100%);
   background-image: -o-linear-gradient(white, #e6e6e6);
   background-image: linear-gradient(to right, white, #e6e6e6);
-  background-image: var(--popup-linear-gradient, linear-gradient(to right, white, #e6e6e6));
+  background-image: var(--popup-background-image, linear-gradient(to right, white, #e6e6e6));
   border: 1px solid #ddd;
   border: var(--popup-border, 1px solid #ddd);
   -webkit-box-shadow: 3px 0 7px #ddd;
@@ -2074,7 +2087,7 @@ li.action.disabled:active {
 }
 li.sep {
   border-top: 1px solid #ddd ! important;
-  border-top: var(--item-seperator-border-top, 1px solid #ddd);
+  border-top: var(--item-seperator-border-top, 1px solid #ddd) ! important;
 }
 #statusbar {
   -webkit-box-shadow: -3px 0 3px black;
@@ -2172,7 +2185,7 @@ li.sep {
   background-image: -moz-linear-gradient(to right, #ddd 0%, white 100%);
   background-image: -o-linear-gradient(#ddd, white);
   background-image: linear-gradient(to right, #ddd, white);
-  background-image: var(--tooltip-linear-gradient, linear-gradient(to right, #ddd, white));
+  background-image: var(--tooltip-background-image, linear-gradient(to right, #ddd, white));
 }
 .ui-widget-header,
 .ui-widget-content,
@@ -2193,7 +2206,7 @@ li.sep {
   background-image: -moz-linear-gradient(to bottom, #ddd 0%, white 100%);
   background-image: -o-linear-gradient(#ddd, white);
   background-image: linear-gradient(to bottom, #ddd, white);
-  background-image: var(--dialog-header-linear-gradient, linear-gradient(to bottom, #ddd, white));
+  background-image: var(--dialog-header-background-image, linear-gradient(to bottom, #ddd, white));
 }
 .ui-widget-overlay {
   background-image: -ms-radial-gradient(center, ellipse farthest-corner, #ddd 0%, white 100%);
