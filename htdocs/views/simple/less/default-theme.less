@@ -127,8 +127,94 @@ input {
     &.file-upload {
         opacity: 0;
     }
-}
 
+    &[type=radio] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        display: inline-block;
+        position: relative;
+        top: 4px;
+        height: 15px;
+        width: 15px;
+        border: 0;
+        border-radius: 50px;
+        cursor: pointer;
+        margin-right: 7px;
+        outline: none;
+        font-size: 13px;
+        color: @default-color;
+        color: var(--input-color, @default-color);
+        background-color: @default-bgcolor-d30;
+        background-color: var(--input-bgcolor, @default-bgcolor-d30);
+        &:checked::before {
+            position: absolute;
+            left: 2px;
+            top: 0px;
+            color: @default-color;
+            color: var(--input-checked-color, @default-color);
+            content: '\02713';
+        }
+        &:hover,&:focus,&:active {
+            background-color: @default-bgcolor-d30;
+            background-color: var(--input-hover-bgcolor, @default-bgcolor-d30);
+        }
+        &:checked {
+            background-color: @default-bgcolor-d30;
+            background-color: var(--input-checked-bgcolor, @default-bgcolor-d30);
+        }
+        &[disabled] {
+            color: @default-color-l60;
+            color: var(--input-disabled-color, @default-color-l60);
+            background-color: @default-bgcolor-d30;
+            background-color: var(--input-disabled-bgcolor, @default-bgcolor-d30);
+            cursor: default;
+        }
+    }
+    &[type=checkbox] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        display: inline-block;
+        position: relative;
+        top: 4px;
+        height: 15px;
+        width: 15px;
+        border: 0;
+        border-radius: 2px;
+        cursor: pointer;
+        margin-right: 7px;
+        outline: none;
+        font-size: 13px;
+        color: @default-color;
+        color: var(--input-color, @default-color);
+        background-color: @default-bgcolor-d30;
+        background-color: var(--input-bgcolor, @default-bgcolor-d20);
+        &:checked::before {
+            position: absolute;
+            left: 2px;
+            top: 0px;
+            color: @default-color;
+            color: var(--input-checked-color, @default-color);
+            content: '\02713';
+        }
+        &:hover,&:focus,&:active {
+            background-color: @default-bgcolor-d30;
+            background-color: var(--input-hover-bgcolor, @default-bgcolor-d30);
+        }
+        &:checked {
+            background-color: @default-bgcolor-d30;
+            background-color: var(--input-checked-bgcolor, @default-bgcolor-d30);
+        }
+        &[disabled] {
+            color: @default-color-l60;
+            color: var(--input-disabled-color, @default-color-l60);
+            background-color: @default-bgcolor-d10;
+            background-color: var(--input-disabled-bgcolor, @default-bgcolor-d10);
+            cursor: default;
+        }
+    }
+}
 .action , .ui-button.action {
     background-color: transparent;
     background-color: var(--action-color, transparent);

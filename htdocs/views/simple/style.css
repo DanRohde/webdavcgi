@@ -1459,6 +1459,96 @@ input[readonly=readonly] {
 input.file-upload {
   opacity: 0;
 }
+input[type=radio] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: inline-block;
+  position: relative;
+  top: 4px;
+  height: 15px;
+  width: 15px;
+  border: 0;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-right: 7px;
+  outline: none;
+  font-size: 13px;
+  color: black;
+  color: var(--input-color, black);
+  background-color: #b3b3b3;
+  background-color: var(--input-bgcolor, #b3b3b3);
+}
+input[type=radio]:checked::before {
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  color: black;
+  color: var(--input-checked-color, black);
+  content: '\02713';
+}
+input[type=radio]:hover,
+input[type=radio]:focus,
+input[type=radio]:active {
+  background-color: #b3b3b3;
+  background-color: var(--input-hover-bgcolor, #b3b3b3);
+}
+input[type=radio]:checked {
+  background-color: #b3b3b3;
+  background-color: var(--input-checked-bgcolor, #b3b3b3);
+}
+input[type=radio][disabled] {
+  color: #999999;
+  color: var(--input-disabled-color, #999999);
+  background-color: #b3b3b3;
+  background-color: var(--input-disabled-bgcolor, #b3b3b3);
+  cursor: default;
+}
+input[type=checkbox] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: inline-block;
+  position: relative;
+  top: 4px;
+  height: 15px;
+  width: 15px;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-right: 7px;
+  outline: none;
+  font-size: 13px;
+  color: black;
+  color: var(--input-color, black);
+  background-color: #b3b3b3;
+  background-color: var(--input-bgcolor, #cccccc);
+}
+input[type=checkbox]:checked::before {
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  color: black;
+  color: var(--input-checked-color, black);
+  content: '\02713';
+}
+input[type=checkbox]:hover,
+input[type=checkbox]:focus,
+input[type=checkbox]:active {
+  background-color: #b3b3b3;
+  background-color: var(--input-hover-bgcolor, #b3b3b3);
+}
+input[type=checkbox]:checked {
+  background-color: #b3b3b3;
+  background-color: var(--input-checked-bgcolor, #b3b3b3);
+}
+input[type=checkbox][disabled] {
+  color: #999999;
+  color: var(--input-disabled-color, #999999);
+  background-color: #e6e6e6;
+  background-color: var(--input-disabled-bgcolor, #e6e6e6);
+  cursor: default;
+}
 .action,
 .ui-button.action {
   background-color: transparent;
