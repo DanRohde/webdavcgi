@@ -1427,8 +1427,8 @@ select:active {
   color: black;
   background-color: #ddd;
   background-color: var(--button-active-bgcolor, #ddd);
-  background-image: none;
-  background-image: var(--button-active-bgimage, none);
+  background-image: inherit;
+  background-image: var(--button-active-background-image, inherit);
 }
 body {
   padding: 0;
@@ -1459,51 +1459,7 @@ input[readonly=readonly] {
 input.file-upload {
   opacity: 0;
 }
-input[type=radio] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  display: inline-block;
-  position: relative;
-  top: 4px;
-  height: 15px;
-  width: 15px;
-  border: 0;
-  border-radius: 50px;
-  cursor: pointer;
-  margin-right: 7px;
-  outline: none;
-  font-size: 13px;
-  color: black;
-  color: var(--input-color, black);
-  background-color: #b3b3b3;
-  background-color: var(--input-bgcolor, #b3b3b3);
-}
-input[type=radio]:checked::before {
-  position: absolute;
-  left: 2px;
-  top: 0px;
-  color: black;
-  color: var(--input-checked-color, black);
-  content: '\02713';
-}
-input[type=radio]:hover,
-input[type=radio]:focus,
-input[type=radio]:active {
-  background-color: #b3b3b3;
-  background-color: var(--input-hover-bgcolor, #b3b3b3);
-}
-input[type=radio]:checked {
-  background-color: #b3b3b3;
-  background-color: var(--input-checked-bgcolor, #b3b3b3);
-}
-input[type=radio][disabled] {
-  color: #999999;
-  color: var(--input-disabled-color, #999999);
-  background-color: #b3b3b3;
-  background-color: var(--input-disabled-bgcolor, #b3b3b3);
-  cursor: default;
-}
+input[type=radio],
 input[type=checkbox] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -1513,8 +1469,8 @@ input[type=checkbox] {
   top: 4px;
   height: 15px;
   width: 15px;
-  border: 0;
-  border-radius: 2px;
+  border: 1px solid transparent;
+  border-radius: 50px;
   cursor: pointer;
   margin-right: 7px;
   outline: none;
@@ -1522,35 +1478,68 @@ input[type=checkbox] {
   color: black;
   color: var(--input-color, black);
   background-color: #b3b3b3;
-  background-color: var(--input-bgcolor, #cccccc);
+  background-color: var(--button-bgcolor, #b3b3b3);
+  background-image: inherit;
+  background-image: var(--button-background-image, inherit);
 }
+input[type=radio]:checked::before,
 input[type=checkbox]:checked::before {
   position: absolute;
   left: 2px;
-  top: 0px;
+  top: -2px;
   color: black;
   color: var(--input-checked-color, black);
   content: '\02713';
 }
+input[type=radio]:hover,
 input[type=checkbox]:hover,
+input[type=radio]:focus,
 input[type=checkbox]:focus,
+input[type=radio]:active,
 input[type=checkbox]:active {
-  background-color: #b3b3b3;
-  background-color: var(--input-hover-bgcolor, #b3b3b3);
+  background-color: #e6e6e6;
+  background-color: var(--button-hover-bgcolor, #e6e6e6);
+  background-image: inherit;
+  background-image: var(--button-hover-background-image, inherit);
 }
+input[type=radio]:focus,
+input[type=checkbox]:focus {
+  border: 1px solid black;
+  border: var(--button-focus-border, 1px solid black);
+}
+input[type=radio]:checked,
 input[type=checkbox]:checked {
   background-color: #b3b3b3;
-  background-color: var(--input-checked-bgcolor, #b3b3b3);
+  background-color: var(--button-checked-bgcolor, #b3b3b3);
+  background-image: inherit;
+  background-image: var(--button-checked-background-image, inherit);
 }
+input[type=radio]:checked:hover,
+input[type=checkbox]:checked:hover,
+input[type=radio]:checked:focus,
+input[type=checkbox]:checked:focus,
+input[type=radio]:checked:active,
+input[type=checkbox]:checked:active {
+  background-color: #e6e6e6;
+  background-color: var(--button-hover-bgcolor, #e6e6e6);
+  background-image: inherit;
+  background-image: var(--button-hover-background-image, inherit);
+}
+input[type=radio][disabled],
 input[type=checkbox][disabled] {
   color: #999999;
-  color: var(--input-disabled-color, #999999);
-  background-color: #e6e6e6;
-  background-color: var(--input-disabled-bgcolor, #e6e6e6);
+  color: var(--button-disabled-color, #999999);
+  background-color: #b3b3b3;
+  background-color: var(--button-disabled-bgcolor, #b3b3b3);
   cursor: default;
+}
+input[type=checkbox] {
+  border-radius: 2px;
 }
 .action,
 .ui-button.action {
+  color: black;
+  color: var(--button-color, black);
   background-color: transparent;
   background-color: var(--action-color, transparent);
 }
@@ -2282,14 +2271,13 @@ li.sep {
   background-image: var(--tooltip-background-image, linear-gradient(to right, #ddd, white));
 }
 .ui-widget-header,
-.ui-widget-content,
-.ui-button {
+.ui-widget-content {
   background-color: white;
   background-color: var(--ui-widget-bgcolor, white);
   color: black;
-  color: var(-ui-widget-color, black);
+  color: var(--ui-widget-color, black);
   border-color: #ddd;
-  border-color: var(-ui-widget-border-color, #ddd);
+  border-color: var(--ui-widget-border-color, #ddd);
 }
 .ui-widget-header {
   color: black;

@@ -14,7 +14,7 @@ my $BASEURI = 'smb://hucms11c.cms.hu-berlin.de/home/Abt4/cms_rohdedan/';
 my $FLAGS = Filesys::SmbClient::SMB_CTX_FLAG_USE_KERBEROS;
 
 my ($r,@a,$f,$d,$c);
-$c = new Filesys::SmbClient(username=>$USERNAME, password=>$PASSWORD, workgroup=>$WORKGROUP,flags=>$FLAGS,debug=>$DEBUG );
+$c = Filesys::SmbClient(username=>$USERNAME, password=>$PASSWORD, workgroup=>$WORKGROUP,flags=>$FLAGS,debug=>$DEBUG )->new();
 
 
 $d = $c->opendir($BASEURI);
