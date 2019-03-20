@@ -1539,9 +1539,9 @@ input[type=checkbox] {
 .action,
 .ui-button.action {
   color: black;
-  color: var(--button-color, black);
+  color: var(--action-color, black);
   background-color: transparent;
-  background-color: var(--action-color, transparent);
+  background-color: var(--action-bgcolor, transparent);
 }
 .action:focus,
 .ui-button.action:focus,
@@ -1549,8 +1549,10 @@ input[type=checkbox] {
 .ui-button.action:hover,
 .action:active,
 .ui-button.action:active {
+  color: inherit;
+  color: var(--action-hover-color, inherit);
   background-color: #ddd;
-  background-color: var(--action-active-bgcolor, #ddd);
+  background-color: var(--action-hover-bgcolor, #ddd);
 }
 .action.delete:focus,
 .action.foldertree-delete-folder:focus,
@@ -1700,12 +1702,16 @@ a.neverdisabled {
   border: var(--controls-border, #ddd #ddd #ddd #ddd);
   color: #666;
   color: var(--controls-action-color, #666);
+  background-color: inherit;
+  background-color: var(--controls-action-bgcolor, inherit);
 }
 #controls .toolbar > .action:active,
 #controls .toolbar > .action:focus,
 #controls .toolbar > .action:hover {
+  color: inherit;
+  color: var(--controls-action-hover-color, inherit);
   background-color: #ddd;
-  background-color: var(--controls-action-active-bgcolor, #ddd);
+  background-color: var(--controls-action-hover-bgcolor, #ddd);
 }
 #controls .toolbar > li {
   font-size: 15px;
@@ -1756,6 +1762,17 @@ a.neverdisabled {
 #quicknav .quicknav-el:focus,
 #quicknav .quicknav-el:active {
   color: black;
+  color: var(--quicknav-action-hover-color, black);
+}
+#quicknav .quicknav-el.action {
+  color: inherit;
+  color: var(--quicknav-action-color, inherit);
+}
+#quicknav .quicknav-el.action:hover,
+#quicknav .quicknav-el.action:focus,
+#quicknav .quicknav-el.action:active {
+  color: black;
+  color: var(--quicknav-action-hover-color, black);
 }
 #fileactions {
   font-size: 15px;

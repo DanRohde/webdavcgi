@@ -193,12 +193,14 @@ input {
 }
 .action , .ui-button.action {
     color: @default-color;
-    color: var(--button-color, @default-color);
+    color: var(--action-color, @default-color);
     background-color: transparent;
-    background-color: var(--action-color, transparent);
+    background-color: var(--action-bgcolor, transparent);
     &:focus , &:hover , &:active {
+        color: inherit;
+        color: var(--action-hover-color, inherit);
         background-color: @default-button-active-bgcolor;
-        background-color: var(--action-active-bgcolor, @default-button-active-bgcolor);
+        background-color: var(--action-hover-bgcolor, @default-button-active-bgcolor);
     }
 }
 
@@ -347,9 +349,13 @@ input {
             .bordered (@default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor, --controls-border);
             color: @default-button-color;
             color: var(--controls-action-color, @default-button-color);
+            background-color: inherit;
+            background-color: var(--controls-action-bgcolor, inherit);
             &:active , &:focus , &:hover {
+                color: inherit;
+                color: var(--controls-action-hover-color, inherit);
                 background-color: @default-button-active-bgcolor;
-                background-color: var(--controls-action-active-bgcolor, @default-button-active-bgcolor);
+                background-color: var(--controls-action-hover-bgcolor, @default-button-active-bgcolor);
             }
         }
 
@@ -403,6 +409,15 @@ input {
     .quicknav-el {
         &:hover , &:focus , &:active {
             color: @default-color;
+            color: var(--quicknav-action-hover-color, @default-color);
+        }
+        &.action {
+            color: inherit;
+            color: var(--quicknav-action-color, inherit);
+            &:hover , &:focus , &:active {
+                color: @default-color;
+                color: var(--quicknav-action-hover-color, @default-color);
+            }
         }
     }
 }
