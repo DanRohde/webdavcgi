@@ -1,13 +1,59 @@
 @import "mixins.less";
 @fonts: Verdana, Helvetica, Arial, sans-serif;
-.lighten (@color , @perc) {
+.lighten(@color , @perc) {
     @lightencolor: lighten(@color, @perc);
 }
 
 .darken (@color , @perc) {
     @darkencolor: darken(@color, @perc);
 }
+.colors(@var, @color:unset) {
+    @sc: ~'--@{var}-color';
+    color: @color;
+    color: var(@sc, @color);
+}
+.colors(@var, @color, @bgcolor) {
+    .colors(@var, @color);
+    @sbc: ~'--@{var}-bgcolor';
+    background-color: @bgcolor;
+    background-color: var(@sbc, @bgcolor);
+  
+}
+.colors(@var, @color, @bgcolor, @border) {
+    .colors(@var, @color, @bgcolor);
+    @sbo: ~'--@{var}-border-color';
+    border-color: @border;
+    border-color: var(@sbo,@border);
+}
 
+.colors(@var, @color, @bgcolor, @border, @image ) {
+    .colors(@var,@color,@bgcolor,@border);
+    @sbi: ~'--@{var}-background-image';
+    background-image: @image;
+    background-image: var(@sbi,@image);
+}
+.border(@var,@color:transparent,@width:unset,@style:unset,@radius:unset) {
+    @bc: ~'--@{var}-color';
+    @bw: ~'--@{var}-width';
+    @bs: ~'--@{var}-style';
+    @br: ~'--@{var}-radius';
+    border-color: @color;
+    border-color: var(@bc,@color);
+    border-width: @width;
+    border-width: var(@bw,@width);
+    border-style: @style;
+    border-style: var(@bs,@style);
+    border-radius: @radius;
+    border-radius: var(@br,@radius);
+}
+.font(@var,@size:unset,@family:unset) {
+    @fs: ~'--@{var}-font-size';
+    @ff: ~'--@{var}-font-family';
+    font-size: @size;
+    font-size: var(@fs,@size);
+    font-family: @family;
+    font-family: var(@ff,@family);
+}
 
 @default-bgcolor: white;
 @default-background: @default-bgcolor;
@@ -47,79 +93,61 @@
 @viewbar-fontsize: medium;
 
 .theme-default-colors {
-    color: @default-color;
-    color: var(--foreground-color, @default-color);
-    background-color: @default-bgcolor;
-    background-color: var(--background-color, @default-bgcolor);
+    .colors(default,@default-color,@default-bgcolor);
 }
 
 .theme-default-color {
-    color: @default-color;
-    color: var(--foreground-color, @default-color);
+    .colors(default,@default-color);
 }
 
 .theme-default-bgcolor {
-    background-color: @default-bgcolor;
-    background-color: var(--background-color, @default-bgcolor);
+    .colors(default,unset,@default-bgcolor);
 }
 
 .theme-default-bordercolor {
-    border-color: @default-bordercolor;
-    border-color: var(--border-color,@default-bordercolor);
+    .colors(default,unset,unset,@default-bordercolor)
 }
 
 .theme-default-hover {
     &:focus , &:active , &:hover {
-        background-color: @default-bordercolor;
-        background-color: var(--hover-bgcolor, @default-bordercolor);
-        color: @default-bgcolor;
-        color: var(--hover-color, @default-bgcolor);
+        .colors(hover, @default-bgcolor, @default-bordercolor);
+    }
+    &:active {
+        .colors(active,@default-bgcolor,@default-bordercolor);
     }
 }
 
 .theme-default-button {
-    color: @default-button-color;
-    color: var(--button-color, @default-button-color);
-    .linear-gradient (@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor, --button-background-image);
-    border: 1px solid @default-button-bordercolor;
-    border: var(--button-border, 1px solid @default-button-bordercolor);
-    &:hover , &:focus {
-        color: @default-color;
-        color: var(--button-active-color, @default-color);
-        .linear-gradient (@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor, --button-active-background-image);
-    }
+    border-style: solid;
+    border-width: 1px;
+    .colors(button,@default-button-color,unset,@default-button-bordercolor);
+    .linear-gradient(@default-button-bgcolor , to bottom , @default-button-bgcolor , @default-button-bordercolor, --button-background-image);
 
+    &:hover {
+        .colors(button-hover, @default-color);
+        .linear-gradient(@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor, --button-hover-background-image);
+    }
+    &:focus {
+        .colors(button-focus, @default-color, black);
+        .linear-gradient(@default-button-bgcolor , to bottom , @default-bordercolor , @default-button-bgcolor, --button-focus-background-image);
+    }
     &:active {
-        color: @default-button-active-color;
-        background-color: @default-button-active-bgcolor;
-        background-color: var(--button-active-bgcolor, @default-button-active-bgcolor);
-        background-image: inherit;
-        background-image: var(--button-active-background-image, inherit);
+       .colors(button-active,@default-button-active-color,@default-button-active-bgcolor);
     }
 }
 
 body {
-    .reset-borders ();
-    color: @default-color;
-    color: var(--color, @default-color);
-    background-color: @default-bgcolor;
-    background-color: var(--bgcolor, @default-bgcolor);
-    background: @default-bgcolor;
-    background: var(--background, @default-bgcolor);
-    font-family: @fonts;
-    font-family: var(--fonts,@fonts);
+    .reset-borders();
+    .colors(body,@default-color,@default-bgcolor);
+    .font(body,unset,@fonts);
 }
 
 a {
-    color: @default-color;
-    color: var(--a-color, @default-color);
+    .colors(a,@default-color);
 }
 
 input {
-    background-color: @default-bgcolor;
-    background-color: var(--input-bgcolor, @default-bgcolor);
-    color: @default-color;
-    color: var(--input-color, @default-color);
+    .colors(input,@default-color,@default-bgcolor);
     &[readonly=readonly] {
         opacity: 0.5;
     }
@@ -137,18 +165,12 @@ input {
         top: 4px;
         height: 15px;
         width: 15px;
-        border: 1px solid transparent;
-        border-radius: 50px;
+        .border(button,transparent,1px,solid,50px);
         cursor: pointer;
         margin-right: 7px;
         outline: none;
-        font-size: 13px;
-        color: @default-color;
-        color: var(--input-color, @default-color);
-        background-color: @default-bgcolor-d30;
-        background-color: var(--button-bgcolor, @default-bgcolor-d30);
-        background-image: inherit;
-        background-image: var(--button-background-image, inherit);
+        .font(button,13px);
+        .colors(button,@default-color,@default-bgcolor-d30,transparent,unset);
         &:checked::before {
             position: absolute;
             left: 2px;
@@ -157,50 +179,43 @@ input {
             color: var(--input-checked-color, @default-color);
             content: '\02713';
         }
-        &:hover,&:focus,&:active {
-            background-color: @default-bgcolor-d10;
-            background-color: var(--button-hover-bgcolor, @default-bgcolor-d10);
-            background-image: inherit;
-            background-image: var(--button-hover-background-image, inherit);
+        &:hover {
+            .colors(button-hover,unset,@default-bgcolor-d10,transparent,unset);
+        }
+        &:active {
+            .colors(button-active,unset,@default-bgcolor-d30,transparent,unset);
         }
         &:focus {
-            border: 1px solid black;
-            border: var(--button-focus-border, 1px solid black);
+            .colors(button-hover,unset,@default-bgcolor-d10,black,unset);
         }
         &:checked {
-            background-color: @default-bgcolor-d30;
-            background-color: var(--button-checked-bgcolor, @default-bgcolor-d30);
-            background-image: inherit;
-            background-image: var(--button-checked-background-image, inherit);
-            &:hover,&:focus,&:active {
-                background-color: @default-bgcolor-d10;
-                background-color: var(--button-hover-bgcolor, @default-bgcolor-d10);
-                background-image: inherit;
-                background-image: var(--button-hover-background-image, inherit);
+            .colors(button-checked,unset,@default-bgcolor-d30);
+            &:hover {
+                .colors(button-hover,unset,@default-bgcolor-d10);
+            }
+            &:active {
+                .colors(button-active,unset,@default-bgcolor-d30);
+            }
+            &:focus {
+                .colors(button-hover,unset,@default-bgcolor-d10,unset,black);
             }
         }
         &[disabled] {
-            color: @default-color-l60;
-            color: var(--button-disabled-color, @default-color-l60);
-            background-color: @default-bgcolor-d30;
-            background-color: var(--button-disabled-bgcolor, @default-bgcolor-d30);
+            .colors(button-disabled,@default-color-l60,@default-bgcolor-d30);
             cursor: default;
         }
     }
     &[type=checkbox] {
-        border-radius: 2px;
+        .border(button,transparent,1px,solid,2px);
     }
 }
 .action , .ui-button.action {
-    color: @default-color;
-    color: var(--action-color, @default-color);
-    background-color: transparent;
-    background-color: var(--action-bgcolor, transparent);
-    &:focus , &:hover , &:active {
-        color: inherit;
-        color: var(--action-hover-color, inherit);
-        background-color: @default-button-active-bgcolor;
-        background-color: var(--action-hover-bgcolor, @default-button-active-bgcolor);
+    .colors(action,@default-color,transparent);
+    &:focus , &:hover {
+        .colors(action-hover,unset,@default-button-active-bgcolor);
+    }
+    &:active {
+        .colors(action-active,unset,@default-button-active-bgcolor);
     }
 }
 
@@ -208,7 +223,7 @@ input {
     &.delete , &.foldertree-delete-folder {
         &:focus , &:hover , &:active {
             background-color: #ff6666 ! important;
-            background-color: var(--action-active-color, #ff6666) ! important;
+            background-color: var(--action-delete-active-color, #ff6666) ! important;
         }
     }
 
@@ -242,24 +257,17 @@ input {
 }
 
 .accesskey {
-    color: @default-color-l40;
-    color: var(--accesskey-color, @default-color-l40);
-    font-size: 80%;
-    font-size: var(--accesskey-font-size, 80%);
-    font-family: monospace;
-    font-family: var(--accesskey-font-family, monospace);
+    .colors(accesskey,@default-color-l40);
+    .font(accesskey,80%,monospace);
 }
 
 .accesskeydetails {
-    font-family: monospace;
-    font-family: var(--accesskey-details-font-family, monospace);
+    .font(accesskey-details,unset,monospace);
 }
 
 .note {
-    color: @default-color-l40;
-    color: var(--note-color, @default-color-l40);
-    font-size: .8em;
-    font-size: var(--note-font-size, .8em);
+    .colors(note,@default-color-l40);
+    .font(note,.8em);
 }
 
 .disabled {
@@ -284,14 +292,12 @@ input {
 }
 
 #top {
-    color: @top-color;
-    color: var(--top-color, @top-color);
-    .lighten (@top-bgcolor , 60%);
-    .linear-gradient (@top-bgcolor , to bottom , @top-bgcolor , @lightencolor, --top-background-image);
-    .darken (@top-color , 80%);
-    .box-shadow (0 0 10px rgba(0, 0, 0, 0.5) , 0 -2px 10px @darkencolor inset, --top-box-shadow);
-    font-size: @top-font-size;
-    font-size: var(--top-font-size, @top-font-size);
+    .colors(top,@top-color);
+    .lighten(@top-bgcolor , 60%);
+    .linear-gradient(@top-bgcolor , to bottom , @top-bgcolor , @lightencolor, --top-background-image);
+    .darken(@top-color , 80%);
+    .box-shadow(0 0 10px rgba(0, 0, 0, 0.5) , 0 -2px 10px @darkencolor inset, --top-box-shadow);
+    .font(top,@top-font-size);
 }
 
 #now {
@@ -300,12 +306,12 @@ input {
 }
 
 #nav {
-    .linear-gradient (@nav-bgcolor , to right , @default-bgcolor , @nav-bgcolor, --nav-background-image);
-    .box-shadow (-3px 0 7px @nav-shadow, --nav-box-shadow);
+    .linear-gradient(@nav-bgcolor , to right , @default-bgcolor , @nav-bgcolor, --nav-background-image);
+    .box-shadow(-3px 0 7px @nav-shadow, --nav-box-shadow);
     > ul > li {
-        .lighten (@default-bordercolor , 16%);
+        .lighten(@default-bordercolor , 16%);
         @topcolor: @lightencolor;
-        .lighten (@default-bordercolor , 8%);
+        .lighten(@default-bordercolor , 8%);
         @rightcolor: @lightencolor;
         border-top: 1px solid @topcolor;
         border-top: var(--nav-item-border-top, 1px solid @topcolor);
@@ -317,7 +323,7 @@ input {
         font-size: @nav-font-size;
         color: @nav-color;
         color: var(--nav-item-color, @nav-color);
-        .lighten (@nav-color , 55%);
+        .lighten(@nav-color , 55%);
         text-shadow: 0 1px 0 @lightencolor;
         text-shadow: var(--nav-item-text-shadow, 0 1px 0 @lightencolor);
         &:hover , &:focus {
@@ -341,19 +347,19 @@ input {
     background-color: var(--controls-bgcolor, @controls-bgcolor);
     border-bottom: 1px solid @controls-bordercolor;
     border-bottom: var(--controls--border-bottom, 1px solid @controls-bordercolor);
-    .box-shadow (0 -3px 7px @controls-shadowcolor, --controls-box-shadow);
+    .box-shadow(0 -3px 7px @controls-shadowcolor, --controls-box-shadow);
     .toolbar {
         font-size: 15px;
         font-size: var(--controls-toolbar-font-size, 15px);
         > .action {
-            .bordered (@default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor, --controls-border);
+            .bordered(@default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor, --controls-border);
             color: @default-button-color;
             color: var(--controls-action-color, @default-button-color);
-            background-color: inherit;
-            background-color: var(--controls-action-bgcolor, inherit);
+            background-color: unset;
+            background-color: var(--controls-action-bgcolor, unset);
             &:active , &:focus , &:hover {
-                color: inherit;
-                color: var(--controls-action-hover-color, inherit);
+                color: unset;
+                color: var(--controls-action-hover-color, unset);
                 background-color: @default-button-active-bgcolor;
                 background-color: var(--controls-action-hover-bgcolor, @default-button-active-bgcolor);
             }
@@ -378,7 +384,7 @@ input {
     background-color: var(--autorefreshtimer-bgcolor, @default-bgcolor);
     border: 1px solid @default-button-bordercolor;
     border: var(--autorefreshtimer-border, 1px solid @default-button-bordercolor);
-    .box-shadow (3px 0 7px @default-button-bordercolor, --autorefreshtimer-box-shadow);
+    .box-shadow(3px 0 7px @default-button-bordercolor, --autorefreshtimer-box-shadow);
     font-size: 15px;
     font-size: var(--autorefreshtimer-font-size, 15px);
 }
@@ -412,8 +418,8 @@ input {
             color: var(--quicknav-action-hover-color, @default-color);
         }
         &.action {
-            color: inherit;
-            color: var(--quicknav-action-color, inherit);
+            color: unset;
+            color: var(--quicknav-action-color, unset);
             &:hover , &:focus , &:active {
                 color: @default-color;
                 color: var(--quicknav-action-hover-color, @default-color);
@@ -441,7 +447,7 @@ input {
 
 #fileList {
     .filename .nametext {
-        font-weight: inherit;
+        font-weight: unset;
     }
 
     .mode {
@@ -506,13 +512,13 @@ input {
         &.isreadable-no {
             color: @default-color-l60;
             color: var(--filelist-row-isnotreadable-color, @default-color-l60);
-            background-color: inherit;
-            background-color: var(--filelist-row-isnotreadable-bgcolor, inherit);
+            background-color: unset;
+            background-color: var(--filelist-row-isnotreadable-bgcolor, unset);
             a {
                 color: @default-color-l60;
                 color: var(--filelist-row-isnotreadable-color, @default-color-l60);
-                background-color: inherit;
-                background-color: var(--filelist-row-isnotreadable-bgcolor, inherit);
+                background-color: unset;
+                background-color: var(--filelist-row-isnotreadable-bgcolor, unset);
             }
 
             &:hover , &:active , &:focus {
@@ -525,13 +531,13 @@ input {
             &.selected {
                 color: @default-color-l80;
                 color: var(--filelist-row-isnotreadable-selected-color, @default-color-l80);
-                background-color: inherit;
-                background-color: var(--filelist-row-isnotreadable-selected-bgcolor, inherit);
+                background-color: unset;
+                background-color: var(--filelist-row-isnotreadable-selected-bgcolor, unset);
                 &:hover , &:active , &:focus {
                     color: @default-color-l90;
                     color: var(--filelist-row-isnotreadable-selected-hover-color, @default-color-l90);
-                    background-color: inherit;
-                    background-color: var(--filelist-row-isnotreadable-selected-hover-bgcolor, inherit);
+                    background-color: unset;
+                    background-color: var(--filelist-row-isnotreadable-selected-hover-bgcolor, unset);
                 }
             }
         }
@@ -549,8 +555,8 @@ input {
 
 .flt-view-list , .flt-view-thumbs {
     .draghover {
-        border: inherit;
-        border: var(--flt-view-list-thumbs-draghover-border, inherit);
+        border: unset;
+        border: var(--flt-view-list-thumbs-draghover-border, unset);
         background-color: @default-button-active-bgcolor;
         background-color: var(-flt-view-list-thumbs-draghover-bgcolor, @default-button-active-bgcolor);
     }
@@ -600,8 +606,8 @@ input {
 }
 
 .selstats {
-    color: inherit;
-    color: var(--selstats-color, inherit);
+    color: unset;
+    color: var(--selstats-color, unset);
     background-color: @default-bgcolor-d20;
     background-color: var(--selstats-bgcolor, @default-bgcolor-d20);
 }
@@ -771,7 +777,7 @@ input {
     background: white;
     border: 1px solid @default-bordercolor;
     border: var(--dropdown-border, 1px solid @default-bordercolor);
-    .box-shadow (3px 0 7px @default-bordercolor, --dropdown-box-shadow);
+    .box-shadow(3px 0 7px @default-bordercolor, --dropdown-box-shadow);
 }
 
 #progress {
@@ -818,10 +824,10 @@ ul.popup {
     color: var(--popup-color, @default-color);
     background-color: @default-bgcolor;
     background-color: var(--popup-bgcolor, @default-bgcolor);
-    .linear-gradient (@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10, --popup-background-image);
+    .linear-gradient(@default-bgcolor , to right , @default-bgcolor , @default-bgcolor-d10, --popup-background-image);
     border: 1px solid @default-bordercolor;
     border: var(--popup-border, 1px solid @default-bordercolor);
-    .box-shadow (3px 0 7px @default-bordercolor, --popup-box-shadow);
+    .box-shadow(3px 0 7px @default-bordercolor, --popup-box-shadow);
     li , li.popup {
         font-size: 15px;
         font-weight: initial;
@@ -851,7 +857,7 @@ li.popup , li.action {
 
 li.action.disabled {
     &:hover , &:focus , &:active {
-        .lighten (@default-button-active-bgcolor , 8%);
+        .lighten(@default-button-active-bgcolor , 8%);
         background-color: @lightencolor;
         background-color: var(--action-disabled-bgcolor, @lightencolor);
     }
@@ -863,7 +869,7 @@ li.sep {
 }
 
 #statusbar {
-    .box-shadow (-3px 0 3px @default-color, --statusbar-box-shadow);
+    .box-shadow(-3px 0 3px @default-color, --statusbar-box-shadow);
     color: @default-color;
     color: var(--statusbar-color, @default-color);
     background-image: none;
@@ -900,8 +906,8 @@ li.sep {
     }
 
     .selected-files-stats {
-        color: inherit;
-        color: var(--statusbar-selected-files-stat-color, inherit);
+        color: unset;
+        color: var(--statusbar-selected-files-stat-color, unset);
         background-color: @default-bgcolor-d20;
         background-color: var(--statusbar-selected-files-stat-bgcolor, @default-bgcolor-d20);
     }
@@ -913,15 +919,14 @@ li.sep {
 }
 
 .tabsel {
-    border: 1px solid @default-bordercolor;
+    border-width: 1px;
+    border-style: solid;
+    .colors(tabsel,unset,unset,@default-bordercolor,unset);
     &:hover , &:focus , &:active {
-        border-color: @default-color;
-        background-color: @default-bgcolor-d20;
+        .colors(tabsel-hover,@default-color,@default-bgcolor-d20,unset,unset);
     }
-
     &.activetabsel {
-        border-color: @default-color;
-        background-color: @default-bgcolor-d30;
+        .colors(tabsel-active,unset,@default-bgcolor-d30, @default-color);
     }
 }
 
@@ -957,7 +962,7 @@ li.sep {
 .tooltip {
     color: @default-color;
     color: var(--tooltip-color,@default-color);
-    .linear-gradient (@default-bgcolor , to right , @default-bordercolor , @default-bgcolor, --tooltip-background-image);
+    .linear-gradient(@default-bgcolor , to right , @default-bordercolor , @default-bgcolor, --tooltip-background-image);
 }
 .ui-widget-header , .ui-widget-content {
     background-color: @default-bgcolor;
@@ -971,11 +976,11 @@ li.sep {
 .ui-widget-header {
     color: @default-color;
     color: var(--dialog-header-color, @default-color);
-    .linear-gradient (@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor, --dialog-header-background-image);
+    .linear-gradient(@default-bgcolor , to bottom , @default-bordercolor , @default-bgcolor, --dialog-header-background-image);
 }
 
 .ui-widget-overlay {
-    .radial-gradient (@default-bordercolor , @default-bgcolor, --dialog-widget-radial-gradient);
+    .radial-gradient(@default-bordercolor , @default-bgcolor, --dialog-widget-radial-gradient);
     opacity: 0.7;
     opacity: var(--dialog-widget-opacity, 0.7);
 }
@@ -995,5 +1000,17 @@ li.sep {
     color: var(--button-active-color, @default-color);
     background-color: @default-button-active-bgcolor;
     background-color: var(--button-active-bgcolor, @default-button-active-bgcolor);
+}
+.ui-widget-content .ui-state-default , .ui-widget-content .ui-state-default a {
+    color: @default-button-color;
+    color: var(--ui-widget-content-color, @default-button-color);
+    background-image: linear-gradient(to bottom, @default-button-bgcolor, @default-bgcolor, @default-button-bgcolor);
+    background-image: var(--ui-widget-content-background-image, linear-gradient(to bottom, @default-button-bgcolor, @default-bgcolor, @default-button-bgcolor));
+    &:hover, &:focus, &:active {
+        color: @default-button-active-color;
+        color: var(--ui-widget-content-hover-color, @default-button-active-color);
+        background-image: linear-gradient(to bottom, @default-button-active-bgcolor, @default-bgcolor, @default-button-active-bgcolor);
+        background-image: var(--ui-widget-content-hover-background-image, linear-gradient(to bottom, @default-button-active-bgcolor, @default-bgcolor, @default-button-active-bgcolor));
+    }
 }
 

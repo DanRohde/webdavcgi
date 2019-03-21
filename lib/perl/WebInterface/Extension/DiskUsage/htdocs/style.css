@@ -57,8 +57,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	cursor: pointer;
 }
 .diskusage.treemap.tooltip {
-	color: black;
-	background-color: white;
 	width: 20em;
 	overflow:hidden;
 }

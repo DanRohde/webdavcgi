@@ -4,6 +4,8 @@
 # Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
 ##################################################################
 
+set -e
+
 BP=$(dirname "$0")
 
 cd $BP
