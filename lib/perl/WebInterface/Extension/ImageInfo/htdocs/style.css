@@ -107,10 +107,7 @@ table.imageinfo td {
 	text-align: center;
 }
 .imageinfo .iigroupsel a.active {
-	background-color: #eaeaea;
-	color: black;
-	font-weight: bold;	
-
+	font-weight: bold;
 }
 .imageinfo .iigroup {
 	display: none;

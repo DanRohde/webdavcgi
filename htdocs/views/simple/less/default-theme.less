@@ -117,7 +117,7 @@
     }
 }
 
-.theme-default-button {
+.theme-default-button, a.theme-default-button {
     border-style: solid;
     border-width: 1px;
     .colors(button,@default-button-color,unset,@default-button-bordercolor);
@@ -1001,7 +1001,7 @@ li.sep {
     background-color: @default-button-active-bgcolor;
     background-color: var(--button-active-bgcolor, @default-button-active-bgcolor);
 }
-.ui-widget-content .ui-state-default , .ui-widget-content .ui-state-default a {
+.ui-widget-content .ui-state-default , .ui-widget-content .ui-state-default a{
     color: @default-button-color;
     color: var(--ui-widget-content-color, @default-button-color);
     background-image: linear-gradient(to bottom, @default-button-bgcolor, @default-bgcolor, @default-button-bgcolor);
@@ -1013,4 +1013,3 @@ li.sep {
         background-image: var(--ui-widget-content-hover-background-image, linear-gradient(to bottom, @default-button-active-bgcolor, @default-bgcolor, @default-button-active-bgcolor));
     }
 }
-

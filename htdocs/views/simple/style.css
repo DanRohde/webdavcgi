@@ -1395,6 +1395,7 @@ ul.popup {
   background-color: var(--active-bgcolor, #ddd);
 }
 .theme-default-button,
+a.theme-default-button,
 .ui-button,
 button,
 input[type=submit],
@@ -1416,6 +1417,7 @@ select {
   background-image: var(--button-background-image, linear-gradient(to bottom, #eee, #ddd));
 }
 .theme-default-button:hover,
+a.theme-default-button:hover,
 .ui-button:hover,
 button:hover,
 input[type=submit]:hover,
@@ -1434,7 +1436,8 @@ select:focus {
   background-image: linear-gradient(to bottom, #ddd, #eee);
   background-image: var(--button-hover-background-image, linear-gradient(to bottom, #ddd, #eee));
 }
-.theme-default-button:focus {
+.theme-default-button:focus,
+a.theme-default-button:focus {
   color: black;
   color: var(--button-focus-color, black);
   background-color: black;
@@ -1448,6 +1451,7 @@ select:focus {
   background-image: var(--button-focus-background-image, linear-gradient(to bottom, #ddd, #eee));
 }
 .theme-default-button:active,
+a.theme-default-button:active,
 .ui-button:active,
 button:active,
 input[type=submit]:active,
