@@ -176,7 +176,7 @@ emerge -va app-crypt/heimdal
 ## Debian/Ubuntu quick install:
 rm -f /var/lib/locales/supported.d/webdavcgi
 for l in de_DE en_US fr_FR it_IT hu_HU ; do
-        fgrep $l /usr/share/i18n/SUPPORTED >> /var/lib/locales/supported.d/webdavcgi
+        fgrep $l /usr/share/i18n/SUPPORTED >> /etc/locale.gen
 done
 locale-gen
 </pre></li>
