@@ -25,6 +25,7 @@ our $VERSION = '2.0';
 use base qw( WebInterface::View::Simple::Renderer );
 
 use POSIX qw(strftime ceil);
+use Encode qw(encode decode);
 
 use DefaultConfig
   qw( $PATH_TRANSLATED $REQUEST_URI $REMOTE_USER $VIEW $VIRTUAL_BASE $POST_MAX_SIZE
@@ -88,9 +89,9 @@ sub render_template {
                 id            => 'clock',
                 'data-format' => $self->tl('vartimeformat')
             },
-            strftime( $self->tl('vartimeformat'), localtime )
+            _encoded_strftime($self->tl('vartimeformat'), localtime )
         ),
-        NOW             => strftime( $self->tl('varnowformat'), localtime ),
+        NOW             => _encoded_strftime( $self->tl('varnowformat'), localtime ),
         REQUEST_URI     => $REQUEST_URI,
         PATH_TRANSLATED => $PATH_TRANSLATED,
         LANG            => $LANG,
@@ -100,7 +101,10 @@ sub render_template {
     );
     return $self->SUPER::render_template( $fn, $ru, $content, \%stdvars );
 }
-
+sub _encoded_strftime {
+    my ($f,@v) = @_;
+    return encode('UTF-8',decode('ISO-8859-1', strftime($f, @v)));
+}
 sub _render_language_list {
     my ( $self, $tmplfile ) = @_;
     my $tmpl =
