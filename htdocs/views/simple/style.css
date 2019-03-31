@@ -2206,11 +2206,16 @@ li:focus > .symbol {
 }
 .langswitch {
   color: white;
+  color: var(--langswitch-color, white);
+  background-color: transparent;
+  background-color: var(--langswitch-bgcolor, transparent);
   font-size: 10px;
 }
 .langswitch a {
   color: white;
+  color: var(--langswitch-color, white);
   background-color: transparent;
+  background-color: var(--langswitch-bgcolor, transparent);
   border: 1px solid transparent;
 }
 .langswitch a:hover,

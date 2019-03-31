@@ -807,11 +807,10 @@ input {
 }
 
 .langswitch {
-    color: @default-bgcolor;
+    .colors(langswitch, @default-bgcolor, transparent);
     font-size: 10px;
     a {
-        color: @default-bgcolor;
-        background-color: transparent;
+        .colors(langswitch, @default-bgcolor, transparent);
         border: 1px solid transparent;
         &:hover , &:focus , &:active {
             border: 1px solid @default-bgcolor;
