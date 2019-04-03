@@ -86,10 +86,10 @@ sub init {
                         2
                     )[1]
                 ) || carp 'Cannot write login:passwort to kinit.';
-                close $kinit || carp 'Cannot close kinit call.';
+                close($kinit) || carp 'Cannot close kinit call.';
 
                 flock $lfh, LOCK_UN;
-                close $lfh || carp "Cannot close $agefile.";
+                close($lfh) || carp "Cannot close $agefile.";
             }
             else {
                 carp "flock($agefile) failed!";

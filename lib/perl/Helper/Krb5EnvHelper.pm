@@ -64,26 +64,18 @@ sub init {
             my $oldfilename = $1;
 
             my ( $in, $out, $age );
-            if (
-                open( $in, '<', $oldfilename )
-                && sysopen( $out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT,
-                    oct 600 )
-                && open $age,
-                '>', $agefile
-              )
-            {
+            if (open( $in, '<', $oldfilename ) && sysopen( $out, $ticketfn, O_WRONLY | O_TRUNC | O_CREAT, oct 600 ) && open $age, '>', $agefile ) {
                 if ( flock $age, LOCK_EX | LOCK_NB ) {
                     binmode $in;
                     binmode $out;
                     while ( read $in, my $buffer, $READBUFSIZE )
                     {
-                        print {$out} $buffer
-                          || carp "Cannot write to ticket file $ticketfn";
+                        print {$out} $buffer;
                     }
-                    close $in  || carp "Cannot close $oldfilename.";
-                    close $out || carp "Cannot close $ticketfn.";
-                    flock $age, LOCK_UN;
-                    close $age || carp "Cannot close $agefile.";
+                    close($in) || carp "Cannot close $oldfilename.";
+                    close($out)|| carp "Cannot close $ticketfn.";
+                    flock($age, LOCK_UN) || carp "Cannot unlock $agefile.";
+                    close($age) || carp "Cannot close $agefile.";
                 }
                 else {
                     carp "flock($agefile) failed!";
@@ -91,9 +83,7 @@ sub init {
 
             }
             else {
-                carp
-q{Cannot read ticket file (don't use a setuid/setgid wrapper):}
-                  . ( -r $oldfilename );
+                carp qq{Cannot read ticket file $oldfilename (don't use a setuid/setgid wrapper)};
             }
         }
     }
