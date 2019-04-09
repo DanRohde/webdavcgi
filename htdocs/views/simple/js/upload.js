@@ -86,6 +86,7 @@ function initUpload(form,confirmmsg,dialogtitle, dropZone) {
 				$("<div/>").click(function(event) {
 					$.MyPreventDefault(event);
 					$(this).data("transport").abort($("#uploadaborted").html()+": "+$(this).data("filename"));
+					up.find(".fileprogressbar.running").removeClass("running").addClass("aborted");
 				}).appendTo(up).attr("title",$("#cancel").html()).MyTooltip().addClass("cancel cancel-icon").data({ filename: filename, transport: transport });
 				$("<div/>").appendTo(up).addClass("fileprogressbar running").html(data.files[0].name+" ("+$.MyStringHelper.renderByteSize(data.files[0].size)+"): 0%");
 				uploadState.uploads+=1;

@@ -32,11 +32,16 @@
     background-image: @image;
     background-image: var(@sbi,@image);
 }
+.opacity(@var, @opacity) {
+    @ov: ~'--@{var}-opacity';
+    opacity: @opacity;
+    opacity: var(@ov, @opacity);
+}
 .border(@var,@color:transparent,@width:unset,@style:unset,@radius:unset) {
-    @bc: ~'--@{var}-color';
-    @bw: ~'--@{var}-width';
-    @bs: ~'--@{var}-style';
-    @br: ~'--@{var}-radius';
+    @bc: ~'--@{var}-border-color';
+    @bw: ~'--@{var}-border-width';
+    @bs: ~'--@{var}-border-style';
+    @br: ~'--@{var}-border-radius';
     border-color: @color;
     border-color: var(@bc,@color);
     border-width: @width;
@@ -146,7 +151,7 @@ a {
     .colors(a,@default-color);
 }
 
-input {
+input, textarea {
     .colors(input,@default-color,@default-bgcolor);
     &[readonly=readonly] {
         opacity: 0.5;
@@ -343,31 +348,25 @@ input {
 }
 
 #controls {
-    background-color: @controls-bgcolor;
-    background-color: var(--controls-bgcolor, @controls-bgcolor);
+    .colors(controls, @default-color, @controls-bgcolor);
     border-bottom: 1px solid @controls-bordercolor;
-    border-bottom: var(--controls--border-bottom, 1px solid @controls-bordercolor);
+    border-bottom: var(--controls-border-bottom, 1px solid @controls-bordercolor);
     .box-shadow(0 -3px 7px @controls-shadowcolor, --controls-box-shadow);
     .toolbar {
-        font-size: 15px;
-        font-size: var(--controls-toolbar-font-size, 15px);
-        > .action {
-            .bordered(@default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor , @default-button-bordercolor, --controls-border);
-            color: @default-button-color;
-            color: var(--controls-action-color, @default-button-color);
-            background-color: unset;
-            background-color: var(--controls-action-bgcolor, unset);
-            &:active , &:focus , &:hover {
-                color: unset;
-                color: var(--controls-action-hover-color, unset);
-                background-color: @default-button-active-bgcolor;
-                background-color: var(--controls-action-hover-bgcolor, @default-button-active-bgcolor);
+        .font(controls-toolbar, 15px);
+        > .action, > li.uibutton {
+            .colors(controls-action, @default-button-color, unset);
+            &:active {
+               .colors(controls-action-active, unset, @default-button-active-bgcolor);
+            }
+            &:focus , &:hover {
+               .colors(controls-action-hover, unset, @default-button-active-bgcolor);
             }
         }
 
         > li {
-            font-size: 15px;
-            font-size: var(--controls-item-font-size, 15px);
+            .font(controls-item, 15px);
+            .colors(controls, @default-color, @controls-bgcolor);
         }
     }
 }
@@ -410,20 +409,15 @@ input {
 }
 
 #quicknav {
-    color: @controls-color;
-    border: 1px solid transparent;
-    .quicknav-el {
-        &:hover , &:focus , &:active {
-            color: @default-color;
-            color: var(--quicknav-action-hover-color, @default-color);
+    .colors(quicknav, @controls-color, @default-bgcolor);
+    .border(quicknav, transparent, 1px, solid);
+    .quicknav-el.action {
+        .colors(quicknav-action, unset, unset);
+        &:hover , &:focus {
+            .colors(quicknav-action-hover, @default-button-active-color, @default-button-active-bgcolor)
         }
-        &.action {
-            color: unset;
-            color: var(--quicknav-action-color, unset);
-            &:hover , &:focus , &:active {
-                color: @default-color;
-                color: var(--quicknav-action-hover-color, @default-color);
-            }
+        &:active {
+            .colors(quicknav-action-active, @default-button-active-color, @default-button-active-bgcolor)
         }
     }
 }
@@ -621,9 +615,8 @@ input {
 }
 
 #overlay , .overlay {
-    opacity: .5;
-    background-color: @default-bgcolor;
-    background-color: var(--overlay-bgcolor, @default-bgcolor);
+    .opacity(overlay, 0.5);
+    .colors(overlay, unset, @default-bgcolor);
 }
 
 #content {
@@ -636,12 +629,9 @@ input {
 }
 
 #viewbar {
-    background-color: @viewbar-bgcolor;
-    background-color: var(--viewbar-bgcolor, @viewbar-bgcolor);
-    border: 1px solid @viewbar-bordercolor;
-    border: var(--viewbar-border, 1px solid @viewbar-bordercolor);
-    font-size: @viewbar-fontsize;
-    font-size: var(--viewbar-font-size, @viewbar-fontsize);
+    .colors(viewbar, @default-color, @viewbar-bgcolor);
+    .border(viewbar, @viewbar-bordercolor, 1px, solid);
+    .font(viewbar, @viewbar-fontsize);
 }
 
 #quota {
@@ -678,43 +668,42 @@ input {
 }
 
 #foldertree-pane {
-    background-color: @default-bgcolor;
-    background-color: var(--foldertree-pane-bgcolor, @default-bgcolor);
-    color: @default-color;
-    color: var(--foldertree-pane-color, @default-color);
-    border: 2px solid @default-bordercolor;
-    border: var(--foldertree-pane-border, 2px solid @default-bordercolor);
+    .colors(foldertree, @default-color, @default-bgcolor);
+    .border(foldertree, @default-bordercolor, 2px, solid);
     .mft-node-label {
-        color: @default-color;
-        color: var(--foldertree-node-label-color, @default-color);
-        background-color: @default-bgcolor;
-        background-color: var(--foldertree-node-label-bgcolor, @default-bgcolor);
+        .colors(foldertree-label, @default-color, @default-bgcolor);
         &.foldertree-draghover {
-            background-color: @default-bordercolor;
-            background-color: var(--foldertree-node-label-draghover-bgcolor, @default-bordercolor);
+            .colors(foldertree-label-draghover, @default-color, @default-bordercolor)
         }
 
-        &:hover , &:active , &:focus {
+        &:hover, &:focus {
             .mft-node-label-text {
-                background-color: @default-button-active-bgcolor;
-                background-color: var(--foldertree-node-active-label-text-bgcolor, @default-button-active-bgcolor);
+                .colors(foldertree-label-text-hover, @default-color, @default-button-active-bgcolor, none);
+            }
+        }
+        &:active {
+            .mft-node-label-text {
+                .colors(foldertree-label-text-active, @default-color, @default-button-active-bgcolor, none);
             }
         }
     }
 
     .isreadable-no .mft-node-label-text {
-        color: @default-color-l60;
-        color: var(--foldertree-pane-node-label-isreadable-no-color, @default-color-l60);
-    }
+        .colors(foldertree-label-isnotreadable, @default-color-l60, @default-bgcolor);
+     }
 
     .mft-node-expander {
-        opacity: 0.5;
-        opacity: var(--foldertree-pane-node-expander-opacity, 0.5);
+        .opacity(foldertree-node-expander, 0.5);
+        &:hover, &:focus {
+            .colors(foldertree-node-expander-hover, @default-color, @default-button-active-bgcolor);
+        }
+        &:active {
+            .colors(foldertree-node-expander-active, @default-color, @default-button-active-bgcolor);
+        }
     }
 
     .mft-node-read > .mft-node-expander {
-        opacity: 1;
-        opacity: var(--foldertree-pane-node-expander-read-opacity,1);
+        .opacity(foldertree-node-expander-read, 1);
     }
 }
 
@@ -728,10 +717,8 @@ input {
 }
 
 #foldertreetoolbar {
-    background-color: @controls-bgcolor;
-    background-color: var(--foldertreetoolbar-bgcolor, @controls-bgcolor);
-    border: 1px solid @default-bordercolor;
-    border: var(--foldertreetoolbar-border, 1px solid @default-bordercolor);
+    .colors(foldertree-toolbar, @controls-color, @controls-bgcolor);
+    .border(foldertree-toolbar, @default-bordercolor, 1px, solid);
 }
 
 .tableconfigdialog {
@@ -781,11 +768,16 @@ input {
 }
 
 #progress {
-    background-color: @default-bgcolor;
+    .colors(progress, unset, @default-bgcolor);
     .bar {
-        background-color: #ddddff;
-        color: black;
-        border: 1px solid #aaaaff;
+       .colors(progress-bar, black, #ddddff);
+       .border(progress-bar,#aaaaff, 1px, solid);
+        &.done {
+            .colors(progress-bar-done, black, lightgreen);
+        }
+        &.failed {
+            .colors(progress-bar-failed, black, #ffaaaa);
+        }
     }
 
     .info {
@@ -797,10 +789,16 @@ input {
         .fileprogressbar {
             &.running {
                 border-bottom: 2px solid #4444ff;
+                border-bottom: var(--progress-filebar-running, 2px solid #44f);
             }
-
+            &.done {
+                .colors(progress-bar-done, black, lightgreen);
+            }
             &.failed {
-                background-color: #ffbbbb;
+                .colors(progress-bar-failed, black,#fbb);
+            }
+            &.aborted {
+                .colors(progress-bar-aborted, black, #fbb);
             }
         }
     }
@@ -963,7 +961,7 @@ li.sep {
     color: var(--tooltip-color,@default-color);
     .linear-gradient(@default-bgcolor , to right , @default-bordercolor , @default-bgcolor, --tooltip-background-image);
 }
-.ui-widget-header , .ui-widget-content {
+.ui-widget-header , .ui-widget-content, .ui-widget-content a {
     background-color: @default-bgcolor;
     background-color: var(--ui-widget-bgcolor, @default-bgcolor);
     color: @default-color;
@@ -980,8 +978,7 @@ li.sep {
 
 .ui-widget-overlay {
     .radial-gradient(@default-bordercolor , @default-bgcolor, --dialog-widget-radial-gradient);
-    opacity: 0.7;
-    opacity: var(--dialog-widget-opacity, 0.7);
+    .opacity(overlay, 0.5);
 }
 
 .ui-button , button, input[type=submit], select {

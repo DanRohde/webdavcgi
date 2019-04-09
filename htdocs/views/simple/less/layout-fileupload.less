@@ -11,14 +11,6 @@ input.file-upload {
 		height: 2em;
 		white-space: nowrap;
 		vertical-align: middle;
-		&.done {
-			background-color: lightgreen;
-			color: black;
-		}
-		&.failed {
-			background-color: #ffaaaa;
-			color: black;
-		}
 	}
 
 	.info {
@@ -42,13 +34,10 @@ input.file-upload {
 			&.done , &.failed {
 				white-space: normal;
 				height: auto;
-				color: black;
 			}
-			&.done {
-				background-color: lightgreen;
-			}
-			&.failed {
-				background-color: #ffaaaa;
+			&.aborted {
+				width: 100%;
+				text-decoration: line-through;
 			}
 		}
 

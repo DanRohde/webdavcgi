@@ -324,7 +324,7 @@ EOF
     );
     $EXTENSION_CONFIG{Feedback}{contact} = 'd.rohde@cms.hu-berlin.de';
     undef %SESSION;
-    @THEMES = qw(default blue dark green pink red purple orange gold);
+    @THEMES = qw(default blue dark green pink red purple orange gold rainbow);
     $THEME = 'default';
     return 1;
 }

@@ -806,14 +806,6 @@ input.file-upload {
   white-space: nowrap;
   vertical-align: middle;
 }
-#progress .bar.done {
-  background-color: lightgreen;
-  color: black;
-}
-#progress .bar.failed {
-  background-color: #ffaaaa;
-  color: black;
-}
 #progress .info {
   min-height: 10em;
   max-height: 80%;
@@ -837,13 +829,10 @@ input.file-upload {
 #progress .info .fileprogressbar.failed {
   white-space: normal;
   height: auto;
-  color: black;
 }
-#progress .info .fileprogressbar.done {
-  background-color: lightgreen;
-}
-#progress .info .fileprogressbar.failed {
-  background-color: #ffaaaa;
+#progress .info .fileprogressbar.aborted {
+  width: 100%;
+  text-decoration: line-through;
 }
 #progress .info .cancel {
   background-position: center center;
@@ -1478,20 +1467,25 @@ a {
   color: black;
   color: var(--a-color, black);
 }
-input {
+input,
+textarea {
   color: black;
   color: var(--input-color, black);
   background-color: white;
   background-color: var(--input-bgcolor, white);
 }
-input[readonly=readonly] {
+input[readonly=readonly],
+textarea[readonly=readonly] {
   opacity: 0.5;
 }
-input.file-upload {
+input.file-upload,
+textarea.file-upload {
   opacity: 0;
 }
 input[type=radio],
-input[type=checkbox] {
+textarea[type=radio],
+input[type=checkbox],
+textarea[type=checkbox] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -1500,13 +1494,12 @@ input[type=checkbox] {
   top: 4px;
   height: 15px;
   width: 15px;
-  border-color: var(--button-color, transparent);
   border-width: 1px;
-  border-width: var(--button-width, 1px);
+  border-width: var(--button-border-width, 1px);
   border-style: solid;
-  border-style: var(--button-style, solid);
+  border-style: var(--button-border-style, solid);
   border-radius: 50px;
-  border-radius: var(--button-radius, 50px);
+  border-radius: var(--button-border-radius, 50px);
   cursor: pointer;
   margin-right: 7px;
   outline: none;
@@ -1524,7 +1517,9 @@ input[type=checkbox] {
   background-image: var(--button-background-image, unset);
 }
 input[type=radio]:checked::before,
-input[type=checkbox]:checked::before {
+textarea[type=radio]:checked::before,
+input[type=checkbox]:checked::before,
+textarea[type=checkbox]:checked::before {
   position: absolute;
   left: 2px;
   top: -2px;
@@ -1533,7 +1528,9 @@ input[type=checkbox]:checked::before {
   content: '\02713';
 }
 input[type=radio]:hover,
-input[type=checkbox]:hover {
+textarea[type=radio]:hover,
+input[type=checkbox]:hover,
+textarea[type=checkbox]:hover {
   color: unset;
   color: var(--button-hover-color, unset);
   background-color: #e6e6e6;
@@ -1544,7 +1541,9 @@ input[type=checkbox]:hover {
   background-image: var(--button-hover-background-image, unset);
 }
 input[type=radio]:active,
-input[type=checkbox]:active {
+textarea[type=radio]:active,
+input[type=checkbox]:active,
+textarea[type=checkbox]:active {
   color: unset;
   color: var(--button-active-color, unset);
   background-color: #b3b3b3;
@@ -1555,7 +1554,9 @@ input[type=checkbox]:active {
   background-image: var(--button-active-background-image, unset);
 }
 input[type=radio]:focus,
-input[type=checkbox]:focus {
+textarea[type=radio]:focus,
+input[type=checkbox]:focus,
+textarea[type=checkbox]:focus {
   color: unset;
   color: var(--button-hover-color, unset);
   background-color: #e6e6e6;
@@ -1566,28 +1567,36 @@ input[type=checkbox]:focus {
   background-image: var(--button-hover-background-image, unset);
 }
 input[type=radio]:checked,
-input[type=checkbox]:checked {
+textarea[type=radio]:checked,
+input[type=checkbox]:checked,
+textarea[type=checkbox]:checked {
   color: unset;
   color: var(--button-checked-color, unset);
   background-color: #b3b3b3;
   background-color: var(--button-checked-bgcolor, #b3b3b3);
 }
 input[type=radio]:checked:hover,
-input[type=checkbox]:checked:hover {
+textarea[type=radio]:checked:hover,
+input[type=checkbox]:checked:hover,
+textarea[type=checkbox]:checked:hover {
   color: unset;
   color: var(--button-hover-color, unset);
   background-color: #e6e6e6;
   background-color: var(--button-hover-bgcolor, #e6e6e6);
 }
 input[type=radio]:checked:active,
-input[type=checkbox]:checked:active {
+textarea[type=radio]:checked:active,
+input[type=checkbox]:checked:active,
+textarea[type=checkbox]:checked:active {
   color: unset;
   color: var(--button-active-color, unset);
   background-color: #b3b3b3;
   background-color: var(--button-active-bgcolor, #b3b3b3);
 }
 input[type=radio]:checked:focus,
-input[type=checkbox]:checked:focus {
+textarea[type=radio]:checked:focus,
+input[type=checkbox]:checked:focus,
+textarea[type=checkbox]:checked:focus {
   color: unset;
   color: var(--button-hover-color, unset);
   background-color: #e6e6e6;
@@ -1598,22 +1607,25 @@ input[type=checkbox]:checked:focus {
   background-image: var(--button-hover-background-image, black);
 }
 input[type=radio][disabled],
-input[type=checkbox][disabled] {
+textarea[type=radio][disabled],
+input[type=checkbox][disabled],
+textarea[type=checkbox][disabled] {
   color: #999999;
   color: var(--button-disabled-color, #999999);
   background-color: #b3b3b3;
   background-color: var(--button-disabled-bgcolor, #b3b3b3);
   cursor: default;
 }
-input[type=checkbox] {
+input[type=checkbox],
+textarea[type=checkbox] {
   border-color: transparent;
-  border-color: var(--button-color, transparent);
+  border-color: var(--button-border-color, transparent);
   border-width: 1px;
-  border-width: var(--button-width, 1px);
+  border-width: var(--button-border-width, 1px);
   border-style: solid;
-  border-style: var(--button-style, solid);
+  border-style: var(--button-border-style, solid);
   border-radius: 2px;
-  border-radius: var(--button-radius, 2px);
+  border-radius: var(--button-border-radius, 2px);
 }
 .action,
 .ui-button.action {
@@ -1771,10 +1783,12 @@ a.neverdisabled {
   background-color: var(--nav-item-active-bgcolor, #ddd);
 }
 #controls {
+  color: black;
+  color: var(--controls-color, black);
   background-color: white;
   background-color: var(--controls-bgcolor, white);
   border-bottom: 1px solid #ddd;
-  border-bottom: var(--controls--border-bottom, 1px solid #ddd);
+  border-bottom: var(--controls-border-bottom, 1px solid #ddd);
   -webkit-box-shadow: 0 -3px 7px black;
   -moz-box-shadow: 0 -3px 7px black;
   box-shadow: 0 -3px 7px black;
@@ -1783,21 +1797,27 @@ a.neverdisabled {
 #controls .toolbar {
   font-size: 15px;
   font-size: var(--controls-toolbar-font-size, 15px);
+  font-family: unset;
+  font-family: var(--controls-toolbar-font-family, unset);
 }
-#controls .toolbar > .action {
-  border-top: #ddd;
-  border-right: #ddd;
-  border-bottom: #ddd;
-  border-left: #ddd;
-  border: var(--controls-border, #ddd #ddd #ddd #ddd);
+#controls .toolbar > .action,
+#controls .toolbar > li.uibutton {
   color: #666;
   color: var(--controls-action-color, #666);
   background-color: unset;
   background-color: var(--controls-action-bgcolor, unset);
 }
 #controls .toolbar > .action:active,
+#controls .toolbar > li.uibutton:active {
+  color: unset;
+  color: var(--controls-action-active-color, unset);
+  background-color: #ddd;
+  background-color: var(--controls-action-active-bgcolor, #ddd);
+}
 #controls .toolbar > .action:focus,
-#controls .toolbar > .action:hover {
+#controls .toolbar > li.uibutton:focus,
+#controls .toolbar > .action:hover,
+#controls .toolbar > li.uibutton:hover {
   color: unset;
   color: var(--controls-action-hover-color, unset);
   background-color: #ddd;
@@ -1806,6 +1826,12 @@ a.neverdisabled {
 #controls .toolbar > li {
   font-size: 15px;
   font-size: var(--controls-item-font-size, 15px);
+  font-family: unset;
+  font-family: var(--controls-item-font-family, unset);
+  color: black;
+  color: var(--controls-color, black);
+  background-color: white;
+  background-color: var(--controls-bgcolor, white);
 }
 #pathinput {
   font-size: 100%;
@@ -1846,23 +1872,36 @@ a.neverdisabled {
 }
 #quicknav {
   color: #666;
-  border: 1px solid transparent;
-}
-#quicknav .quicknav-el:hover,
-#quicknav .quicknav-el:focus,
-#quicknav .quicknav-el:active {
-  color: black;
-  color: var(--quicknav-action-hover-color, black);
+  color: var(--quicknav-color, #666);
+  background-color: white;
+  background-color: var(--quicknav-bgcolor, white);
+  border-color: transparent;
+  border-color: var(--quicknav-border-color, transparent);
+  border-width: 1px;
+  border-width: var(--quicknav-border-width, 1px);
+  border-style: solid;
+  border-style: var(--quicknav-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--quicknav-border-radius, unset);
 }
 #quicknav .quicknav-el.action {
   color: unset;
   color: var(--quicknav-action-color, unset);
+  background-color: unset;
+  background-color: var(--quicknav-action-bgcolor, unset);
 }
 #quicknav .quicknav-el.action:hover,
-#quicknav .quicknav-el.action:focus,
-#quicknav .quicknav-el.action:active {
+#quicknav .quicknav-el.action:focus {
   color: black;
   color: var(--quicknav-action-hover-color, black);
+  background-color: #ddd;
+  background-color: var(--quicknav-action-hover-bgcolor, #ddd);
+}
+#quicknav .quicknav-el.action:active {
+  color: black;
+  color: var(--quicknav-action-active-color, black);
+  background-color: #ddd;
+  background-color: var(--quicknav-action-active-bgcolor, #ddd);
 }
 #fileactions {
   font-size: 15px;
@@ -2037,7 +2076,10 @@ li.filterbox {
 }
 #overlay,
 .overlay {
-  opacity: .5;
+  opacity: 0.5;
+  opacity: var(--overlay-opacity, 0.5);
+  color: unset;
+  color: var(--overlay-color, unset);
   background-color: white;
   background-color: var(--overlay-bgcolor, white);
 }
@@ -2050,12 +2092,22 @@ li.filterbox {
   border: var(--content-hover-border, 5px solid green);
 }
 #viewbar {
+  color: black;
+  color: var(--viewbar-color, black);
   background-color: white;
   background-color: var(--viewbar-bgcolor, white);
-  border: 1px solid #ddd;
-  border: var(--viewbar-border, 1px solid #ddd);
+  border-color: #ddd;
+  border-color: var(--viewbar-border-color, #ddd);
+  border-width: 1px;
+  border-width: var(--viewbar-border-width, 1px);
+  border-style: solid;
+  border-style: var(--viewbar-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--viewbar-border-radius, unset);
   font-size: medium;
   font-size: var(--viewbar-font-size, medium);
+  font-family: unset;
+  font-family: var(--viewbar-font-family, unset);
 }
 #quota {
   color: #666;
@@ -2089,40 +2141,74 @@ li.filterbox {
   color: var(--quota-critical-color, yellow);
 }
 #foldertree-pane {
-  background-color: white;
-  background-color: var(--foldertree-pane-bgcolor, white);
   color: black;
-  color: var(--foldertree-pane-color, black);
-  border: 2px solid #ddd;
-  border: var(--foldertree-pane-border, 2px solid #ddd);
+  color: var(--foldertree-color, black);
+  background-color: white;
+  background-color: var(--foldertree-bgcolor, white);
+  border-color: #ddd;
+  border-color: var(--foldertree-border-color, #ddd);
+  border-width: 2px;
+  border-width: var(--foldertree-border-width, 2px);
+  border-style: solid;
+  border-style: var(--foldertree-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--foldertree-border-radius, unset);
 }
 #foldertree-pane .mft-node-label {
   color: black;
-  color: var(--foldertree-node-label-color, black);
+  color: var(--foldertree-label-color, black);
   background-color: white;
-  background-color: var(--foldertree-node-label-bgcolor, white);
+  background-color: var(--foldertree-label-bgcolor, white);
 }
 #foldertree-pane .mft-node-label.foldertree-draghover {
+  color: black;
+  color: var(--foldertree-label-draghover-color, black);
   background-color: #ddd;
-  background-color: var(--foldertree-node-label-draghover-bgcolor, #ddd);
+  background-color: var(--foldertree-label-draghover-bgcolor, #ddd);
 }
 #foldertree-pane .mft-node-label:hover .mft-node-label-text,
-#foldertree-pane .mft-node-label:active .mft-node-label-text,
 #foldertree-pane .mft-node-label:focus .mft-node-label-text {
+  color: black;
+  color: var(--foldertree-label-text-hover-color, black);
   background-color: #ddd;
-  background-color: var(--foldertree-node-active-label-text-bgcolor, #ddd);
+  background-color: var(--foldertree-label-text-hover-bgcolor, #ddd);
+  border-color: none;
+  border-color: var(--foldertree-label-text-hover-border-color, none);
+}
+#foldertree-pane .mft-node-label:active .mft-node-label-text {
+  color: black;
+  color: var(--foldertree-label-text-active-color, black);
+  background-color: #ddd;
+  background-color: var(--foldertree-label-text-active-bgcolor, #ddd);
+  border-color: none;
+  border-color: var(--foldertree-label-text-active-border-color, none);
 }
 #foldertree-pane .isreadable-no .mft-node-label-text {
   color: #999999;
-  color: var(--foldertree-pane-node-label-isreadable-no-color, #999999);
+  color: var(--foldertree-label-isnotreadable-color, #999999);
+  background-color: white;
+  background-color: var(--foldertree-label-isnotreadable-bgcolor, white);
 }
 #foldertree-pane .mft-node-expander {
   opacity: 0.5;
-  opacity: var(--foldertree-pane-node-expander-opacity, 0.5);
+  opacity: var(--foldertree-node-expander-opacity, 0.5);
+}
+#foldertree-pane .mft-node-expander:hover,
+#foldertree-pane .mft-node-expander:focus {
+  color: black;
+  color: var(--foldertree-node-expander-hover-color, black);
+  background-color: #ddd;
+  background-color: var(--foldertree-node-expander-hover-bgcolor, #ddd);
+}
+#foldertree-pane .mft-node-expander:active {
+  color: black;
+  color: var(--foldertree-node-expander-active-color, black);
+  background-color: #ddd;
+  background-color: var(--foldertree-node-expander-active-bgcolor, #ddd);
 }
 #foldertree-pane .mft-node-read > .mft-node-expander {
   opacity: 1;
-  opacity: var(--foldertree-pane-node-expander-read-opacity, 1);
+  opacity: var(--foldertree-node-expander-read-opacity, 1);
 }
 .show-foldertree .action.toggle-foldertree {
   border: 1px inset #ddd;
@@ -2131,10 +2217,18 @@ li.filterbox {
   background-color: var(--show-foldertree-toggle-bgcolor, #ddd);
 }
 #foldertreetoolbar {
+  color: #666;
+  color: var(--foldertree-toolbar-color, #666);
   background-color: white;
-  background-color: var(--foldertreetoolbar-bgcolor, white);
-  border: 1px solid #ddd;
-  border: var(--foldertreetoolbar-border, 1px solid #ddd);
+  background-color: var(--foldertree-toolbar-bgcolor, white);
+  border-color: #ddd;
+  border-color: var(--foldertree-toolbar-border-color, #ddd);
+  border-width: 1px;
+  border-width: var(--foldertree-toolbar-border-width, 1px);
+  border-style: solid;
+  border-style: var(--foldertree-toolbar-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--foldertree-toolbar-border-radius, unset);
 }
 .tableconfigdialog {
   color: black;
@@ -2185,12 +2279,36 @@ li:focus > .symbol {
   box-shadow: var(--dropdown-box-shadow, 3px 0 7px #ddd);
 }
 #progress {
+  color: unset;
+  color: var(--progress-color, unset);
   background-color: white;
+  background-color: var(--progress-bgcolor, white);
 }
 #progress .bar {
-  background-color: #ddddff;
   color: black;
-  border: 1px solid #aaaaff;
+  color: var(--progress-bar-color, black);
+  background-color: #ddddff;
+  background-color: var(--progress-bar-bgcolor, #ddddff);
+  border-color: #aaaaff;
+  border-color: var(--progress-bar-border-color, #aaaaff);
+  border-width: 1px;
+  border-width: var(--progress-bar-border-width, 1px);
+  border-style: solid;
+  border-style: var(--progress-bar-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--progress-bar-border-radius, unset);
+}
+#progress .bar.done {
+  color: black;
+  color: var(--progress-bar-done-color, black);
+  background-color: lightgreen;
+  background-color: var(--progress-bar-done-bgcolor, lightgreen);
+}
+#progress .bar.failed {
+  color: black;
+  color: var(--progress-bar-failed-color, black);
+  background-color: #ffaaaa;
+  background-color: var(--progress-bar-failed-bgcolor, #ffaaaa);
 }
 #progress .info {
   font-size: 0.9em;
@@ -2200,9 +2318,25 @@ li:focus > .symbol {
 }
 #progress .info .fileprogressbar.running {
   border-bottom: 2px solid #4444ff;
+  border-bottom: var(--progress-filebar-running, 2px solid #44f);
+}
+#progress .info .fileprogressbar.done {
+  color: black;
+  color: var(--progress-bar-done-color, black);
+  background-color: lightgreen;
+  background-color: var(--progress-bar-done-bgcolor, lightgreen);
 }
 #progress .info .fileprogressbar.failed {
-  background-color: #ffbbbb;
+  color: black;
+  color: var(--progress-bar-failed-color, black);
+  background-color: #fbb;
+  background-color: var(--progress-bar-failed-bgcolor, #fbb);
+}
+#progress .info .fileprogressbar.aborted {
+  color: black;
+  color: var(--progress-bar-aborted-color, black);
+  background-color: #fbb;
+  background-color: var(--progress-bar-aborted-bgcolor, #fbb);
 }
 .langswitch {
   color: white;
@@ -2402,7 +2536,8 @@ li.sep {
   background-image: var(--tooltip-background-image, linear-gradient(to right, #ddd, white));
 }
 .ui-widget-header,
-.ui-widget-content {
+.ui-widget-content,
+.ui-widget-content a {
   background-color: white;
   background-color: var(--ui-widget-bgcolor, white);
   color: black;
@@ -2429,8 +2564,8 @@ li.sep {
   background-image: -webkit-radial-gradient(center, ellipse farthest-corner, #ddd 0%, white 100%);
   background-image: radial-gradient(ellipse farthest-corner at center, #ddd 0%, white 100%);
   background-image: var(--dialog-widget-radial-gradient, radial-gradient(ellipse farthest-corner at center, #ddd 0%, white 100%));
-  opacity: 0.7;
-  opacity: var(--dialog-widget-opacity, 0.7);
+  opacity: 0.5;
+  opacity: var(--overlay-opacity, 0.5);
 }
 .ui-state-hover {
   color: black;
