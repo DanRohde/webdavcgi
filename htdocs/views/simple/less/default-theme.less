@@ -752,18 +752,13 @@ input, textarea {
 }
 
 #abortdialog {
-    color: @default-color;
-    color: var(--abortdialog-color, @default-color);
-    background-color: @default-bgcolor;
-    background-color: var(--abortdialog-bgcolor, @default-bgcolor);
-    border: 1px solid @default-bordercolor;
-    border: var(--abortdialog-border, 1px solid @default-bordercolor);
+    .colors(abortdialog, @deafult-color, @default-bgcolor);
+    .border(abortdialog, @default-bordercolor, 1px, solid);
 }
 
 .dropdown-menu {
-    background: white;
-    border: 1px solid @default-bordercolor;
-    border: var(--dropdown-border, 1px solid @default-bordercolor);
+    .colors(dropdown, @default-color, @default-bgcolor);
+    .border(dropdown, @default-bordercolor, 1px, solid);
     .box-shadow(3px 0 7px @default-bordercolor, --dropdown-box-shadow);
 }
 

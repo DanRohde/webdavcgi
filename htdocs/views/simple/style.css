@@ -2270,9 +2270,18 @@ li:focus > .symbol {
   border: var(--abortdialog-border, 1px solid #ddd);
 }
 .dropdown-menu {
-  background: white;
-  border: 1px solid #ddd;
-  border: var(--dropdown-border, 1px solid #ddd);
+  color: black;
+  color: var(--dropdown-color, black);
+  background-color: white;
+  background-color: var(--dropdown-bgcolor, white);
+  border-color: #ddd;
+  border-color: var(--dropdown-border-color, #ddd);
+  border-width: 1px;
+  border-width: var(--dropdown-border-width, 1px);
+  border-style: solid;
+  border-style: var(--dropdown-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--dropdown-border-radius, unset);
   -webkit-box-shadow: 3px 0 7px #ddd;
   -moz-box-shadow: 3px 0 7px #ddd;
   box-shadow: 3px 0 7px #ddd;
