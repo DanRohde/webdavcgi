@@ -55,8 +55,7 @@ sub letsplay {
     $REALM //= $ENV{REALM} // $ENV{DOMAIN} // 'default';
 
     if (!$authheader) {
-        send_auth_required_response();
-        return;
+        return send_auth_required_response();
     }
     my $handler = SessionAuthenticationHandler->new();
     my ($login, $password) = get_login_password($authheader);
@@ -85,8 +84,7 @@ sub letsplay {
             return;
         }
     }
-    send_auth_required_response();
-    return;
+    return send_auth_required_response();
 }
 
 letsplay();

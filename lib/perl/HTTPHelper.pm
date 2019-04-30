@@ -90,7 +90,7 @@ sub print_header_and_content {
     %header = ( %header, %{ get_sec_header(_get_header_hashref($add_header)) }, );
 #binmode STDOUT, ":encoding(\U$CHARSET\E)" || carp('Cannot set bindmode for STDOUT.'); # WebDAV works but web doesn't so ignore wide character warnings
     binmode(STDOUT) || carp('Cannot set bindmode for STDOUT.');
-    print($cgi->header( \%header ) . $content) || carp('Cannot write header and content to STDOUT.');
+    print($cgi->header( \%header ), $content) || carp('Cannot write header and content to STDOUT.');
     return fix_mod_perl_response( \%header );
 }
 
@@ -129,8 +129,7 @@ sub print_compressed_header_and_content {
             $header->{'Content-Encoding'} = 'deflate';
         }
     }
-    return print_header_and_content( $status, $type, $content, $header,
-        $cookies );
+    return print_header_and_content( $status, $type, $content, $header, $cookies );
 }
 
 sub print_local_file_header {
@@ -222,8 +221,7 @@ sub read_request_body {
 sub get_byte_ranges {
     no locale;
     my $etag = get_etag($PATH_TRANSLATED);
-    my $lm   = strftime( '%a, %d %b %Y %T GMT',
-        gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] // time ) );
+    my $lm   = strftime( '%a, %d %b %Y %T GMT', gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] // time ) );
     my $ifrange = $CGI->http('If-Range') || $etag;
     return if $ifrange ne $etag && $ifrange ne $lm;
     my $range = $CGI->http('Range');

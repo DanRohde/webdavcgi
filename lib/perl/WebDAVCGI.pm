@@ -213,7 +213,7 @@ sub _debug_request_info {
         debug( sprintf "WORKER %s %s time(s) used.\n",
             $PID, ++$self->{runcounter} );
     }
-    debug("AGENT: $ENV{HTTP_USER_AGENT}");
+    debug(sprintf 'AGENT: %s', $ENV{HTTP_USER_AGENT} // 'unset');
     if ( defined $CGI->http('X-Litmus') ) {
         debug( 'LITMUS: X-Litmus: ' . $CGI->http('X-Litmus') );
     }
