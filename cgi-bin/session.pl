@@ -31,7 +31,8 @@ use vars qw( $W %SESSION $REALM );
 
 sub send_auth_required_response() {
     require CGI;
-    print CGI::header(-status=>'401 Unauthorized', -WWW_Authenticate=>sprintf 'Basic realm="%s"', $REALM);
+    my $content = '401 Unauthorized';
+    print CGI::header(-status=>'401 Unauthorized', -Content_type=>'text/plain', -Content_length=>bytes::length($content), -WWW_Authenticate=>sprintf 'Basic realm="%s"', $REALM), $content;
     return;
 }
 

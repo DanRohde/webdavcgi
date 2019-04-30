@@ -173,6 +173,7 @@ sub handle_request {
     # protection against direct CGI script calls:
     if ( !defined $PATH_TRANSLATED || $PATH_TRANSLATED eq q{} ) {
         carp('FORBIDDEN DIRECT CALL!');
+        debug(\%ENV);
         return print_header_and_content('404 Not Found');
     }
 
@@ -263,8 +264,13 @@ sub logger {
 sub debug {
     my ($text) = @_;
     if ($DEBUG) {
-        print( {*STDERR} "${PROGRAM_NAME}: $text\n" )
-          || carp("Cannot print debug output to STDERR: $text");
+        if (ref($text) eq 'HASH') {
+            foreach my $key (sort keys %{$text}) {
+                printf({*STDERR} "%s = %s\n", $key, $text->{$key}) || carp("Cannot print debug output to STDERR: $text");
+            }
+        } else {
+            print( {*STDERR} "${PROGRAM_NAME}: $text\n" ) || carp("Cannot print debug output to STDERR: $text");
+        }
     }
     return;
 }
