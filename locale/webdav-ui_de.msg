@@ -268,6 +268,7 @@ login.logoutsuccess            "Sie wurden erfolgreich abgemeldet!"
 login.session                  "Entschuldigen Sie, Ihre Sitzung ist leider abgelaufen."
 login.error                    "Entschuldigen Sie, es ist ein interner Server-Fehler aufgetreten."
 login.toggleshowpassword       "Passwort anzeigen/verstecken."
+login.delay                    "Entschuldigen Sie bitte, die Anzahl Ihrer Login-Versuche hat eine Grenze erreicht. Das Login wird kurz pausiert.
 logout                         "Ausloggen"
 filelisttable.view.thumbs      "Liste mit großen Symbolen"
 filelisttable.view.list        "Liste mit kleinen Symbolen"

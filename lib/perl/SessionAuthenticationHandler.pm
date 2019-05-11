@@ -30,6 +30,9 @@
 #      callback => qw(...) # Perl module called after domain defaults
 #      callback_param => { } # parameter for callback
 #      postconfig => '/path/to/config' # configs loaded after domain defaults and callback call
+#      failcount => 3, # brute force: max failed login count in failrange
+#      failrange => 10, # brute force: time range before failecount will be reseted (in seconds)
+#      delay => 10, # brute force: delay before next login is allowed in login screen
 #      domains => {
 #          DOMAIN1 => [ # handler list
 #              {
@@ -57,6 +60,7 @@ use CGI::Carp;
 use CGI::Session '-ip_match';
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
+use MIME::Base64;
 
 use DefaultConfig qw( read_config $CONFIG %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE $DOCUMENT_ROOT );
 use HTTPHelper qw( print_compressed_header_and_content );
@@ -112,6 +116,10 @@ sub authenticate {
         return $self->_handle_redirect($session, login=>$login, logon=>'session', from=>3);
     }
 
+    if ($self->_handle_brute_force($session, $login)) {
+        return $self->_handle_redirect($session, delay=>$SESSION{delay} // 10);
+    }
+
     if (my $auth = $self->check_credentials(\%SESSION, $domain, $login, $password)) {
         # throw old (expired) session away:
         $self->_remove_session($session);
@@ -126,6 +134,27 @@ sub authenticate {
         return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/xms ? $1 : $REQUEST_URI ));
     }
     return $self->_handle_redirect($session, logon=>'failure', login=>$login);
+}
+sub _handle_brute_force {
+    my ($self, $session, $login) = @_;
+    my ($ts, $lc, $fr, $fc) = ( time, 0, $SESSION{failrange} // 10, $SESSION{failcount} // 3);
+    my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64($login // 'dummy');
+    if (open my $f, q{<}, $fn) {
+        ($ts, $lc) = split /:/xms, <$f>, 2;
+        close $f;
+    }
+    if (time - $ts > $fr) {
+        $ts = time;
+        $lc = 0;
+    }
+    $lc++;
+    if (open my $f, q{>}, $fn) {
+        printf $f '%d:%d', $ts, $lc;
+        close $f;
+    } else {
+        carp("BRUTE FORCE ATTACK: Cannot write file $fn for brute force attack detection!");
+    }
+    return ($lc > $fc);
 }
 sub _handle_post_config {
     my ( $self, $session ) = @_;

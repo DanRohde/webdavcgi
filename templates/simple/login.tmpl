@@ -5,22 +5,21 @@
 <title>$tl(login.title)</title>
 <style>
 body {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	background-color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #eee;
 }
 #bgcontainer {
-	position: absolute;
-	z-index: -1;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	min-width: 100%;
-	min-height: 100%;
-    
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 100%;
+    min-height: 100%;
     background: linear-gradient(135deg, white, #999);
     background-size: 400% 400%;
     animation: bganimation 15s ease infinite;
@@ -32,47 +31,50 @@ body {
     100%{background-position:23% 0%}
 }
 .login-form {
-	margin: 4em;
-	border: 1px outset #ddd;
-	background: linear-gradient(to bottom right, white, #aaa);
-	text-align: center;
-	padding: 2em;
-	width: 30em;
+    margin: 4em;
+    border: 1px outset #ddd;
+    background: linear-gradient(to bottom right, white, #aaa);
+    text-align: center;
+    padding: 2em;
+    width: 30em;
 }
 .login-title {
-	font-size: 150%;
-	padding-bottom: 0.5em;
-	text-shadow: 1px 1px 2px black;
+    font-size: 150%;
+    padding-bottom: 0.5em;
+    text-shadow: 1px 1px 2px black;
 }
 .login-submit, .login-language {
-	padding-top: 1em;
+    padding-top: 1em;
 }
 input,select {
-	width: 15em;
+    width: 15em;
     text-align: center;
     padding: 0.5ex 2em;
 }
 label {
-	display: block;
-	padding-top: 1ex;
-	font-size: 80%;
-	text-shadow: 1px 1px 1px #aaa;
+    display: block;
+    padding-top: 1ex;
+    font-size: 80%;
+    text-shadow: 1px 1px 1px #aaa;
 }
 .logon-failure, .logon-error {
-	color: red;
+    color: red;
 }
 .error-text {
-	font-family: monospace;
-	font-size: small;
+    font-family: monospace;
+    font-size: small;
 }
 .logon-session {
-	color: #aa3800;
+    color: #aa3800;
 }
 .logout-success {
-	font-weight: bold;
+    font-weight: bold;
+}
+.login-delay {
+    color: red;
 }
 .filler {
-	min-height: 100%;
+    min-height: 100%;
 }
 #pw-toggle {
     display: inline-block;
@@ -94,80 +96,84 @@ label {
 </style>
 <script>
 function togglePassword(id) {
-	var i = document.getElementById(id);
-	var type = i.getAttribute("type") == "text" ? "password" : "text";
-	i.setAttribute("type",type);
-	i.focus();
-	i.setSelectionStart = i.setSelectionEnd = i.value.length;
-	document.getElementById(id+"-toggle").setAttribute("class", type=="text" ? "visible" :"hidden");
+    var i = document.getElementById(id);
+    var type = i.getAttribute("type") == "text" ? "password" : "text";
+    i.setAttribute("type",type);
+    i.focus();
+    i.setSelectionStart = i.setSelectionEnd = i.value.length;
+    document.getElementById(id+"-toggle").setAttribute("class", type=="text" ? "visible" :"hidden");
 }
 function handleKeyDown(event, id) {
-	if (event.keyCode === 13 || event.keyCode === 32 ) { 
-		if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
+    if (event.keyCode === 13 || event.keyCode === 32 ) { 
+        if (event.preventDefault) event.preventDefault(); else event.returnValue = false;
         if (event.stopPropagation) event.stopPropagation();
-		togglePassword(id);
-	}
+        togglePassword(id);
+    }
+}
+function handleDelay() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var delay = urlParams.get("delay");
+    if (delay <= 0) return;
+    var sb = document.getElementById("submit");
+    sb.disabled = true;
+    window.setTimeout(function() { sb.disabled = false; document.querySelector(".login-delay").style.display="none"; }, delay * 1000);
+}
+function onLoad() {
+    handleDelay();
 }
 </script>
 </head>
-<body>
+<body onload="onLoad()">
 $INCLUDE(login-logo)
 <div id="bgcontainer"></div>
-	<div class="login-form">
-		<form method="POST">
-			$INCLUDE(login-title)
-			<!--IF("$cgiparam(logon)" eq q{failure})-->
-			<div class="logon-failure">$tl(login.failure)</div>
-			<!--ENDIF-->
-			<!--IF("$cgiparam(logon)" eq q{session})-->
-			<div class="logon-session">$tl(login.session)</div>
-			<!--ENDIF-->
-			<!--IF("$cgiparam(error)" ne q{})-->
-			<div class="logon-error">$tl(login.error) <div class="error-text">$cgiparam(error)</div></div>
-			<!--ENDIF-->
-			<!--IF("$cgiparam(logout)" ne q{})-->
-			<div class="logout-success">$tl(login.logoutsuccess)</div>
-			<!--ENDIF-->
-			<div class="login-login">
-				<label>
-				$tl(login.login)
-				</label>
-				<input type="text" name="login" value="$cgiparam(login)" required autocomplete="username" autofocus>
-				
-			</div>
-			<div class="login-password">
-				<label>
-				$tl(login.password)
-				</label>
-				<input type="password" name="password" required autocomplete="off" id="pw">
-				<div title="$tl(login.toggleshowpassword)" tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden"></div>
-			</div>
-			<!--IF(scalar keys %{$SESSION{domains}} > 1)-->
-			<div class="login-domain">
-				<label>
-				$tl(login.domain) 
-				</label>
-				<select name="domain">
-				$each|%SESSION{domains}|'<option>$k</option>'|
-				</select>
-				
-			</div>
-			<!--ELSE-->
-			<input type="hidden" name="domain" value="$each|%SESSION{domains}|'$k'|">
-			<!--ENDIF-->
-			<div class="login-submit">
-				<input type="submit" value="$tl(login.submit)">
-			</div>
-			<div class="login-language">
-				<select name="lang">
-					<option value="$LANG">$TRANS_LANG</option>
-					$each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|/^${TRANS_LANG}$/|
-				</select>
-			</div>
-			<input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
-		</form>
-	</div>
-
-
+<div class="login-form">
+    <form method="POST">
+        $INCLUDE(login-title)
+        <!--IF("$cgiparam(logon)" eq q{failure})-->
+            <div class="logon-failure">$tl(login.failure)</div>
+        <!--ENDIF-->
+        <!--IF("$cgiparam(logon)" eq q{session})-->
+            <div class="logon-session">$tl(login.session)</div>
+        <!--ENDIF-->
+        <!--IF("$cgiparam(error)" ne q{})-->
+            <div class="logon-error">$tl(login.error) <div class="error-text">$cgiparam(error)</div></div>
+        <!--ENDIF-->
+        <!--IF("$cgiparam(logout)" ne q{})-->
+            <div class="logout-success">$tl(login.logoutsuccess)</div>
+        <!--ENDIF-->
+        <!--IF("$cgiparam(delay)" ne q{})-->
+            <div class="login-delay">$tl(login.delay)</div>
+        <!--ENDIF-->
+        <div class="login-login">
+            <label> $tl(login.login) </label>
+            <input type="text" name="login" value="$cgiparam(login)" required autocomplete="username" autofocus>
+        </div>
+        <div class="login-password">
+            <label> $tl(login.password)  </label>
+            <input type="password" name="password" required autocomplete="off" id="pw">
+            <div title="$tl(login.toggleshowpassword)" tabindex="0" onclick="togglePassword('pw')" onkeydown="handleKeyDown(event,'pw')" id="pw-toggle" class="hidden"></div>
+        </div>
+        <!--IF(scalar keys %{$SESSION{domains}} > 1)-->
+            <div class="login-domain">
+                <label> $tl(login.domain) </label>
+                <select name="domain">
+                $each|%SESSION{domains}|'<option>$k</option>'|
+                </select>
+            </div>
+        <!--ELSE-->
+            <input type="hidden" name="domain" value="$each|%SESSION{domains}|'$k'|">
+        <!--ENDIF-->
+        <div class="login-submit">
+            <input type="submit" value="$tl(login.submit)" id="submit">
+        </div>
+        <div class="login-language">
+            <select name="lang">
+                <option value="$LANG">$TRANS_LANG</option>
+                $each|%SUPPORTED_LANGUAGES|'<option value="$k">$v</option>'|/^${TRANS_LANG}$/|
+            </select>
+        </div>
+        <input type="hidden" name="${TOKENNAME}" value="${TOKEN}">
+    </form>
+</div>
 </body>
 </html>
