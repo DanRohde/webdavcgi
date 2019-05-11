@@ -1839,11 +1839,11 @@ a.neverdisabled {
 }
 #autorefreshtimer {
   color: #666;
-  color: var(--autorefrestimer-color, #666);
-  background-color: white;
-  background-color: var(--autorefreshtimer-bgcolor, white);
-  border: 1px solid #ddd;
-  border: var(--autorefreshtimer-border, 1px solid #ddd);
+  color: var(--autorefreshtimer-color, #666);
+  background-color: #eee;
+  background-color: var(--autorefreshtimer-bgcolor, #eee);
+  border-color: #ddd;
+  border-color: var(--autorefreshtimer-border-color, #ddd);
   -webkit-box-shadow: 3px 0 7px #ddd;
   -moz-box-shadow: 3px 0 7px #ddd;
   box-shadow: 3px 0 7px #ddd;
@@ -1940,9 +1940,9 @@ a.neverdisabled {
 #fileList tr:hover td,
 #fileList tr.draghover td {
   color: black !important;
-  color: var(--filelist-row-hover-color, black) !important;
-  background-color: #e6e6e6 !important;
-  background-color: var(--filelist-row-hover-bgcolor, #e6e6e6) !important;
+  color: var(--filelist-row-hover-color, black !important);
+  background-color: #e6e6e6 !important};
+  background-color: var(--filelist-row-hover-bgcolor, #e6e6e6 !important});
 }
 #fileList tr:focus {
   color: black;
@@ -2129,16 +2129,17 @@ li.filterbox {
 }
 #quota.warn,
 #quota .warn {
+  color: #666;
+  color: var(--quota-warn-color, #666);
   background-color: yellow;
   background-color: var(--quota-warn-bgcolor, yellow);
-  color: var(--quota-warn-color, #666);
 }
 #quota.critical,
 #quota .critical {
-  background-color: red;
-  background-color: var(--quota-background-color, red);
   color: yellow;
   color: var(--quota-critical-color, yellow);
+  background-color: red;
+  background-color: var(--quota-critical-bgcolor, red);
 }
 #foldertree-pane {
   color: black;
@@ -2266,8 +2267,14 @@ li:focus > .symbol {
   color: var(--abortdialog-color, black);
   background-color: white;
   background-color: var(--abortdialog-bgcolor, white);
-  border: 1px solid #ddd;
-  border: var(--abortdialog-border, 1px solid #ddd);
+  border-color: #ddd;
+  border-color: var(--abortdialog-border-color, #ddd);
+  border-width: 1px;
+  border-width: var(--abortdialog-border-width, 1px);
+  border-style: solid;
+  border-style: var(--abortdialog-border-style, solid);
+  border-radius: unset;
+  border-radius: var(--abortdialog-border-radius, unset);
 }
 .dropdown-menu {
   color: black;
@@ -2432,10 +2439,10 @@ li.sep {
   box-shadow: var(--statusbar-box-shadow, -3px 0 3px black);
   color: black;
   color: var(--statusbar-color, black);
-  background-image: none;
-  background-image: var(--statusbar-background-image, none);
   background-color: white;
   background-color: var(--statusbar-bgcolor, white);
+  background-image: none;
+  background-image: var(--statusbar-background-image, none);
   font-size: 15px;
   font-size: var(--statusbar-fonts-size, 15px);
 }
@@ -2449,7 +2456,7 @@ li.sep {
   color: white;
   color: var(--statusbar-notify-error-color, white);
   background-color: red;
-  color: var(--statusbar-notify-error-bgcolor, red);
+  background-color: var(--statusbar-notify-error-bgcolor, red);
 }
 #statusbar .notify.message {
   color: black;
@@ -2520,10 +2527,10 @@ li.sep {
 .ajax-loader {
   opacity: 0.7;
   opacity: var(--ajax-load-opacity, 0.7);
-  background-color: white;
-  background-color: var(--ajax-load-bgcolor, white);
   color: black;
   color: var(--ajax-load-color, black);
+  background-color: white;
+  background-color: var(--ajax-load-bgcolor, white);
 }
 #about,
 #settings,
@@ -2547,10 +2554,10 @@ li.sep {
 .ui-widget-header,
 .ui-widget-content,
 .ui-widget-content a {
-  background-color: white;
-  background-color: var(--ui-widget-bgcolor, white);
   color: black;
   color: var(--ui-widget-color, black);
+  background-color: white;
+  background-color: var(--ui-widget-bgcolor, white);
   border-color: #ddd;
   border-color: var(--ui-widget-border-color, #ddd);
 }
@@ -2585,7 +2592,7 @@ li.sep {
 .ui-widget-content .ui-state-default,
 .ui-widget-content .ui-state-default a {
   color: #666;
-  color: var(--ui-widget-content-color, #666);
+  color: var(--widget-content-color, #666);
   background-image: linear-gradient(to bottom, #eee, white, #eee);
   background-image: var(--ui-widget-content-background-image, linear-gradient(to bottom, #eee, white, #eee));
 }

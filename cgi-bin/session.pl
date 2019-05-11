@@ -26,13 +26,20 @@ use CGI::Carp;
 use MIME::Base64;
 
 use SessionAuthenticationHandler;
-
 use vars qw( $W %SESSION $REALM );
 
 sub send_auth_required_response() {
     require CGI;
-    my $content = '401 Unauthorized';
-    print CGI::header(-status=>'401 Unauthorized', -Content_type=>'text/plain', -Content_length=>bytes::length($content), -WWW_Authenticate=>sprintf 'Basic realm="%s"', $REALM), $content;
+    my $status = '401 Unauthorized';
+    print CGI::header(
+                       -status           => $status,
+                       -WWW_Authenticate => sprintf('Basic realm="%s"', $REALM),
+                       -Content_type     => 'text/plain',
+                       -Content_length   => bytes::length($status),
+                       'MS-Author-Via'   => 'DAV',
+                       'DAV'             => '1, 2, 3'
+                      ),
+          $status;
     return;
 }
 
