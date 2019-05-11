@@ -116,7 +116,7 @@ sub authenticate {
         return $self->_handle_redirect($session, login=>$login, logon=>'session', from=>3);
     }
 
-    if ($self->_handle_brute_force($session, $login)) {
+    if ($self->_handle_brute_force($login)) {
         return $self->_handle_redirect($session, delay=>$SESSION{delay} // 10);
     }
 
@@ -136,7 +136,7 @@ sub authenticate {
     return $self->_handle_redirect($session, logon=>'failure', login=>$login);
 }
 sub _handle_brute_force {
-    my ($self, $session, $login) = @_;
+    my ($self, $login) = @_;
     my ($ts, $lc, $fr, $fc) = ( time, 0, $SESSION{failrange} // 10, $SESSION{failcount} // 3);
     my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($login // 'dummy');
     if (open my $f, q{<}, $fn) {
