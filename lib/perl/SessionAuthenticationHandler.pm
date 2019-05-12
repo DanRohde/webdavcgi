@@ -138,20 +138,25 @@ sub authenticate {
         $session->param('handleridx', $auth->{_handleridx});
         $session->expire($auth->{expire} // $SESSION{expire});
         $session->flush();
+        $self->_handle_brute_force($login, 2);
         # redirect because I have to set a new session cookie:
         return $self->_handle_redirect(undef, -cookie=> $self->{cgi}->cookie(-name=>$session->name(), -value=>$session->id(),-secure=>1,-path=> $REQUEST_URI=~/^($VIRTUAL_BASE)/xms ? $1 : $REQUEST_URI ));
     }
     return $self->_handle_redirect($session, logon=>'failure', login=>$login);
 }
 sub _handle_brute_force {
-    my ($self, $login) = @_;
+    my ($self, $login, $stage) = @_;
     $login //= 'dummy';
+    $stage //= 1;
     my %bfap = ( type => 1, delay=>10, failrange => 10, failcount => 3, sleep => 0, randomsleep => 0, %{$SESSION{bfap} // {}} );
     my ($bv, $ts, $lc ) = ( $bfap{type}, time, 0);
     my $bfapval = $bv == 2 ? "$login:$ENV{REMOTE_ADDR}" : $bv == 3 ? $ENV{REMOTE_ADDR} : $login;
     my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($bfapval);
     if ($bv == 0) {
         return 0;
+    }
+    if ($stage == 2) {
+        return ! unlink($fn);
     }
     if (open my $fh, q{<}, $fn) {
         flock($fh, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
