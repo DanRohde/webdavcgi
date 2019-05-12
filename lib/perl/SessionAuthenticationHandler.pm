@@ -30,9 +30,14 @@
 #      callback => qw(...) # Perl module called after domain defaults
 #      callback_param => { } # parameter for callback
 #      postconfig => '/path/to/config' # configs loaded after domain defaults and callback call
-#      failcount => 3, # brute force: max failed login count in failrange
-#      failrange => 10, # brute force: time range before failecount will be reseted (in seconds)
-#      delay => 10, # brute force: delay before next login is allowed in login screen
+#      bfap => {
+#           type => 1, # 0: disabled; 1: by user; 2: by user@IP; 3: by IP
+#           failcount => 3, # brute force: max failed login count in failrange
+#           failrange => 10, # brute force: time range before failecount will be reseted (in seconds)
+#           delay => 10, # brute force: delay before next login is allowed in login screen
+#           sleep => 0, # sleep for some seconds
+#           randomsleep => 0, # sleep some random amount of seconds
+#      },
 #      domains => {
 #          DOMAIN1 => [ # handler list
 #              {
@@ -117,8 +122,10 @@ sub authenticate {
         return $self->_handle_redirect($session, login=>$login, logon=>'session', from=>3);
     }
 
-    if ($self->_handle_brute_force($login)) {
-        return $self->_handle_redirect($session, delay=>$SESSION{delay} // 10);
+    if (my ($ret, $delay) = $self->_handle_brute_force($login)) {
+        if ($ret) {
+            return $self->_handle_redirect($session, delay=>$delay);
+        }
     }
 
     if (my $auth = $self->check_credentials(\%SESSION, $domain, $login, $password)) {
@@ -138,28 +145,40 @@ sub authenticate {
 }
 sub _handle_brute_force {
     my ($self, $login) = @_;
-    my ($ts, $lc, $fr, $fc) = ( time, 0, $SESSION{failrange} // 10, $SESSION{failcount} // 3);
-    my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($login // 'dummy');
-    if (open my $f, q{<}, $fn) {
-        flock($f, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
-        ($ts, $lc) = split /:/xms, <$f>, 2;
-        flock($f, LOCK_UN) or croak("BRUTE FORCE: Cannot unlock $fn.");
-        close $f;
+    $login //= 'dummy';
+    my %bfap = ( type => 1, delay=>10, failrange => 10, failcount => 3, sleep => 0, randomsleep => 0, %{$SESSION{bfap} // {}} );
+    my ($bv, $ts, $lc ) = ( $bfap{type}, time, 0);
+    my $bfapval = $bv == 2 ? "$login:$ENV{REMOTE_ADDR}" : $bv == 3 ? $ENV{REMOTE_ADDR} : $login;
+    my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($bfapval);
+    if ($bv == 0) {
+        return 0;
     }
-    if (time - $ts > $fr) {
+    if (open my $fh, q{<}, $fn) {
+        flock($fh, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
+        ($ts, $lc) = split /:/xms, <$fh>, 2;
+        flock($fh, LOCK_UN) or croak("BRUTE FORCE: Cannot unlock $fn.");
+        close($fh) or carp("Cannot close file $fn.");
+    }
+    if (time - $ts > $bfap{failrange}) {
         $ts = time;
         $lc = 0;
     }
     $lc++;
-    if (open my $f, q{>}, $fn) {
-        flock($f, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
-        printf $f '%d:%d', $ts, $lc;
-        flock($f, LOCK_UN) or croak("BRUTE FORCE: Cannot unlock $fn.");
-        close $f;
+    if (open my $fh, q{>}, $fn) {
+        flock($fh, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
+        printf $fh '%d:%d', $ts, $lc;
+        flock($fh, LOCK_UN) or croak("BRUTE FORCE: Cannot unlock $fn.");
+        close($fh) or carp("Cannot close file $fn.");
     } else {
         carp("BRUTE FORCE ATTACK: Cannot write file $fn for brute force attack detection!");
     }
-    return ($lc > $fc);
+    if ($bfap{sleep}) {
+        eval { sleep $bfap{sleep}; } or carp("BRUTE FORCE: Cannot sleep for $bfap{sleep} seconds.");
+    }
+    if ($bfap{randomsleep}) {
+        eval { sleep 1 + int rand $bfap{randomsleep}; } or carp("BRUTE FORCE: Cannot sleep for a random amount of time ($bfap{randomsleep}).");
+    }
+    return ($lc > $bfap{failcount} ? 1 : 0, $bfap{delay});
 }
 sub _handle_post_config {
     my ( $self, $session ) = @_;

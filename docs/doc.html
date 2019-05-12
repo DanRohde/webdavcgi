@@ -39,10 +39,9 @@ List of contents:
 	
 	<li><a href="backends.html" class="extern">Backends: AFS, GFS, SMB/CIFS, DBB, ...</a></li>
 	<li><a href="#performance">Performance</a></li>
-	<li><a href="#speedy">Speedy Support</a></li>
 	<li><a href="mod_perl.html" class="extern">Mod_Perl Support</a>
-	<!--[<li><a href="#security">Security</a></li>]-->
-	<li><a href="troubleshooting.html#setup" class="extern">Troubleshooting Guide</a></li>
+	<li><a href="#security">Security</a></li>
+    <li><a href="troubleshooting.html#setup" class="extern">Troubleshooting Guide</a></li>
 </ul>
 <a href="index.html"><br/>Back to the WebDAV CGI home</a>
 
@@ -135,7 +134,6 @@ cpan install Env::C
 </li>
 <li>install additional binaries/packages for a better WebDAV CGI experience:
 <ul>
-<li> Speedy - increases the performance of WebDAV CGI (Debian/Ubuntu package: speedy-cgi-perl) </li>
 <li> Ghostscript - allows the web interface of WebDAV CGI to generate thumbnails for PDF/PS files (Debian/Ubuntu package: ghostscript) </li>
 <li> smbclient (only for SMB backend users) - allows the web interface to show quota information (Debian/Ubuntu package: smbclient) </li>
 <li> kinit (only for SMB and AFS backend users) - allowed you to omit mod_auth_kerberos (Debian/Ubuntu package: krb5-user) </li>
@@ -145,9 +143,6 @@ cpan install Env::C
 <pre>
 ## Debian/Ubuntu quick install:
 apt install  ghostscript
-
-## older systems support it:
-apt install speedy-cgi-perl
 
 ## only for SMB backend users:
 apt install smbclient
@@ -161,7 +156,6 @@ apt install libreoffice
 </pre>
 <pre>
 ## Gentoo quick install:
-emerge -va dev-perl/SpeedyCGI
 emerge -va app-text/ghostscript-gpl
 
 ## only for SMB backend users:
@@ -850,7 +844,6 @@ Following variables are substituted:
   <li> Filter and limit large folders (<code>$FILECOUNTLIMIT</code>, <code>$FILECOUNTPERDIRLIMIT</code>, <code>$FILEFILTERPERDIR</code>)</li>
   <li> Limit folder depth for copy/move operations (<code>$LIMIT_FOLDER_DEPTH</code>)</li>
   <li> Change the bufsize for upload/download operations (<code>$BUFSIZE</code>)</li>
-  <li> Since WebDAV CGI v0.5.3 you can use <a href="#speedy">Speedy</a> to improve the performance. Attention: You must set "MaxRuns" because perl and/or WebDAV CGI runs out of memory.</li>
   <li> Since WebDAV CGI v1.0.0 mod_perl is supported for backends without setuid/setgid wrapping (e.g. SMB, AFS)</li>
   <li> disable <code>$CREATE_DB</code> after first WebDAV access (PROPFIND request). If you use a file based database like SQLite you can enable/disable it automatically: <code>$CREATE_DB = !-e &lt;mydatabasefile.db&gt;</code></li>
   <li> Slow response working with WebDAV resources on Windows Vista or Windows 7: <a href="http://support.microsoft.com/kb/2445570">KB2445570</a></li>
@@ -860,70 +853,49 @@ Following variables are substituted:
   	</ul> </li>
   	
 </ul>
-<h2 id="speedy">Speedy Support</h2>
-<a target="_blank" href="http://daemoninc.com/SpeedyCGI/">Speedy or PersistentPerl</a> allows you to increase the request/response speed of WebDAV CGI. WebDAV CGI is up to 7 times faster with Speedy than without.
-
-<div><strong>Note: Don't try to compile it if there is no prebuild Package for your Linux distribution, because newer Perl releases are not supported by Speedy.</strong></div>
-<div>
-
-Setup:
-<ol>
-<li>Install <a target="_blank" href="http://daemoninc.com/SpeedyCGI/">Speedy</a> (Debian/Ubuntu: <code>apt-get install speedy-cgi-perl</code>)</li>
-<li>Change the shebang of webdav.pl:
-<pre>
-OLD: #!/usr/bin/perl
-NEW: #!/usr/bin/speedy -- -r50 -M10 -t3600
-</pre>
-The <code>-r50</code> limits the requests per Speedy process. This is necessary because Perl runs out of memory (you can set it higher but watch your Apache error log). The <code>-M10</code> limits the count of Speedy processes (see <code>man speedy</code>). If you do not use a setuid/setgid wrapper (e.g. if you use the <a href="backends.html#smb">SMB backend</a>) you should remove the <code>-M10</code> or set it higher because all your clients using the same Speedy processes and you need one Speedy process per request. The <code>-t3600</code> sets the timeout for a idle Speedy process to one hour. 
-</li>
-<li> Only for the <a href="backends.html#smb">SMB backend</a>:
-    <ol>
-    <li>Add <code>E=TICKET_LIFETIME:28800</code> to your RewriteRule:
-<pre>
-RewriteRule ^/ /webdavcgi [PT,L,E=WEBDAVCONF:/etc/webdav.conf, \
-                                E=PERLLIB:/etc/webdavcgi/lib/perl, \
-                                E=TICKET_LIFETIME:21600]
-</pre>
-    	<br/>The ticket (renewal) lifetime depends on your domain controller setup (Kerberos policy of your domain group policy). You can check it (Debian/Ubuntu: <code>apt-get install krb5-user</code>):
-<pre>
-kinit mydomainaccount@MY.EXAMPLE.DOMAIN.ORG
-klist
-</pre>
-    	</li>
-    <li>Change the Apache script aliases:
-    <pre>
-OLD: ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdav.pl
-NEW (with mod_auth_kerberos): ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/webdavwrapper-smb 
-NEW (without mod_auth_kerberos): ScriptAlias /webdavcgi /etc/webdavcgi/cgi-bin/smbwrapper
-
-    </pre>
-    </li>
-    <li>Known issue: every request creates a new service ticket therefore the file size of ticket cache file grows for every request; Solution: reduce the TICKET_LIFETIME to reduce the temporary file space consumption</li>
-    </ol>
-</li>
-<li> That's all and don't forget to check the notes below.</li>
-</ol>
-Notes:
-<ul>
-<li>If you change your <code>/etc/webdav.conf</code> you have to touch webdav.pl (<code>touch&nbsp;cgi-bin/webdav.pl</code>) or kill all speedy processes (<code>pkill&nbsp;-f&nbsp;speedy_backend</code>) because Speedy checks only the modification time of webdav.pl.</li>
-<li>If you do not use a setuid/setgid wrapper you have to use a single database for all users.</li>
-<li>You can increase the performance if you enable persistent database connections in your <code>/etc/webdav.conf</code>: <code>$DBI_PERSISTENT = 1;</code></li> 
-<li>If you run multiple WebDAV CGI instances on a single server with different setups and databases you have to separate the Speedy instances. This can be done with a additional rewrite option: 
-<code>E=SPEEDY_TMPBASE:myprojecttmpbase</code> (replace <code>myprojecttmpbase</code> with a unique name for a WebDAV CGI instances, e.g. <code>E=SPEEDY_TMPBASE:/tmp/project2</code>) </li>
-</ul>
-
-</div>
-<!--[
 <h2 id="security">Security</h2>
+<h3>HTTP Basic Authentication and Brute Force Attacks </h3>
+The WebDAV protocol or most WebDAV clients supports only HTTP Basic authentication so you need it for WebDAV access. 
+<ol>
+<li>You can use the session.pl script of WebDAV CGI (see <a href="session.html">Session or form-based authentication</a>) 
+for your WebDAV access because the session authentication handler of WebDAV CGI has a pure brute force attack detection and prevention (BFAP). 
+There are some options you can set in your webdav-session.conf to modify the behavoir of BFAP. The default setting allows only 3 login attempts within 10 seconds for a account:
+<pre>
+$SESSION{bfap} = {
+    # type of BFAP protection for counting login attempts  (0: disabled; 1: by user; 2: by user@IP; 3: by IP):
+    # note: if you use NAT or a load balancer the REMOTE_ADDR environment variable is not useable so you should use value "2"
+    type => 1,
+    # number of allowed login failures before logon will be paused:
+    failcount} => 3,
+    # time range in seconds before the failcount will be reseted:
+    failrange => 10,
+    # delay in seconds to be paused after failcount was reached (only effective in session logon screen):
+    delay => 10,
+    # sleep for some seconds before login attempt (every (successful) logon will be delayed) (0 - disabled)
+    sleep => 0,
+    # sleep for random seconds before (successul) login attempt (0 - disabled; >0: range of seconds for random routine)
+    randomsleep => 0,
+};
+</pre>  
 
- <code>... work in progress ...</code>
+</li>
+<li>Or you can use a authentication module of your webserver. You should use
 <ul>
-  <li> Denial-of-Service (DoS): limits (Apache, WebDAV CGI, Authentication) </li>
-  <li> Authentication: strong encryption (https ok, http not), strong passwords</li>
-  <li> Up-to-date: OS, Apache (auth module), Perl (CGI)</li>
-
+<li>fail2ban </li>
+<li>or mod_security (Apache only).</li>
 </ul>
-]-->
+</li>
+</ol>
+<h3>Temporary files and disk/memory space</h3>
+WebDAV CGi creates a lot of temporary files:
+<ul>
+<li> cached files for JavaScript, CSS, localization messages</li>
+<li> thumbnails for previes</li>
+<li> upload and download files</li>
+<li> brute force attack prevention(BFAP) files (webdav_bfap_*)</li>
+</ul>
+You should setup some monitoring and maintenance scripts to protect your server against running out of memory if temp is a RAM disk or a full (root) harddisk.
+It's possible to limit upload/download file sizes, to disable thumbnails, or to setup temporary folder directory.
 
 <div id="contact">
 &copy; ZE CMS, Humboldt-Universit&auml;t zu Berlin | Written 2010-2017 by <a href="mailto:d.rohde@cms.hu-berlin.de?subject=WebDAV%20CGI">Daniel Rohde</a> </div>
