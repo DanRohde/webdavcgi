@@ -61,6 +61,7 @@ use CGI::Session '-ip_match';
 use WWW::CSRF qw(generate_csrf_token check_csrf_token CSRF_OK );
 use Bytes::Random::Secure;
 use MIME::Base64 qw( encode_base64url );
+use Fcntl qw(:flock);
 
 use DefaultConfig qw( read_config $CONFIG %SESSION $REMOTE_USER $REQUEST_URI $REQUEST_METHOD $LANG $VIRTUAL_BASE $DOCUMENT_ROOT );
 use HTTPHelper qw( print_compressed_header_and_content );
@@ -140,7 +141,9 @@ sub _handle_brute_force {
     my ($ts, $lc, $fr, $fc) = ( time, 0, $SESSION{failrange} // 10, $SESSION{failcount} // 3);
     my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($login // 'dummy');
     if (open my $f, q{<}, $fn) {
+        flock($f, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
         ($ts, $lc) = split /:/xms, <$f>, 2;
+        flock($f, LOCK_UN) or croak("BRUTE FORCE: Cannot unlock $fn.");
         close $f;
     }
     if (time - $ts > $fr) {
@@ -149,7 +152,9 @@ sub _handle_brute_force {
     }
     $lc++;
     if (open my $f, q{>}, $fn) {
+        flock($f, LOCK_EX) or croak("BRUTE FORCE: Cannot lock $fn.");
         printf $f '%d:%d', $ts, $lc;
+        flock($f, LOCK_UN) or croak("BRUTE FORCE: Cannot unlock $fn.");
         close $f;
     } else {
         carp("BRUTE FORCE ATTACK: Cannot write file $fn for brute force attack detection!");
