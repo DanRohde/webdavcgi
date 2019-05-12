@@ -37,6 +37,7 @@
 #           delay => 10, # brute force: delay before next login is allowed in login screen
 #           sleep => 0, # sleep for some seconds
 #           randomsleep => 0, # sleep some random amount of seconds
+#           sleeponfail => 3, # sleep some seconds after failcount was reached
 #      },
 #      domains => {
 #          DOMAIN1 => [ # handler list
@@ -148,7 +149,7 @@ sub _handle_brute_force {
     my ($self, $login, $stage) = @_;
     $login //= 'dummy';
     $stage //= 1;
-    my %bfap = ( type => 1, delay=>10, failrange => 10, failcount => 3, sleep => 0, randomsleep => 0, %{$SESSION{bfap} // {}} );
+    my %bfap = ( type => 1, delay=>0, failrange => 10, failcount => 3, sleep => 0, randomsleep => 0, sleeponfail=>3, %{$SESSION{bfap} // {}} );
     my ($bv, $ts, $lc ) = ( $bfap{type}, time, 0);
     my $bfapval = $bv == 2 ? "$login:$ENV{REMOTE_ADDR}" : $bv == 3 ? $ENV{REMOTE_ADDR} : $login;
     my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($bfapval);
@@ -177,11 +178,14 @@ sub _handle_brute_force {
     } else {
         carp("BRUTE FORCE ATTACK: Cannot write file $fn for brute force attack detection!");
     }
-    if ($bfap{sleep}) {
+    if ($bfap{sleep} > 0) {
         eval { sleep $bfap{sleep}; } or carp("BRUTE FORCE: Cannot sleep for $bfap{sleep} seconds.");
     }
-    if ($bfap{randomsleep}) {
+    if ($bfap{randomsleep} > 0) {
         eval { sleep 1 + int rand $bfap{randomsleep}; } or carp("BRUTE FORCE: Cannot sleep for a random amount of time ($bfap{randomsleep}).");
+    }
+    if ($bfap{sleeponfail} > 0 && $lc > $bfap{failcount}) {
+        eval { sleep $bfap{sleeponfail}; } or carp("BRUTE FORCE: Cannot sleep on fail for $bfap{sleeponfail} seconds.");
     }
     return ($lc > $bfap{failcount} ? 1 : 0, $bfap{delay});
 }
