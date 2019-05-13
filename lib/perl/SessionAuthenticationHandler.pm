@@ -149,7 +149,7 @@ sub _handle_brute_force {
     my ($self, $login, $stage) = @_;
     $login //= 'dummy';
     $stage //= 1;
-    my %bfap = ( type => 1, delay=>0, failrange => 10, failcount => 3, sleep => 0, randomsleep => 0, sleeponfail=>3, %{$SESSION{bfap} // {}} );
+    my %bfap = ( type => 1, delay=>10, failrange => 10, failcount => 3, sleep => 0, randomsleep => 0, sleeponfail=>3, %{$SESSION{bfap} // {}} );
     my ($bv, $ts, $lc ) = ( $bfap{type}, time, 0);
     my $bfapval = $bv == 2 ? "$login:$ENV{REMOTE_ADDR}" : $bv == 3 ? $ENV{REMOTE_ADDR} : $login;
     my $fn = ( $SESSION{temp} // '/tmp' ) . q{/webdavcgi_bfap_} . encode_base64url($bfapval);
