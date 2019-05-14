@@ -113,10 +113,26 @@ function handleKeyDown(event, id) {
 function handleDelay() {
     var urlParams = new URLSearchParams(window.location.search);
     var delay = urlParams.get("delay");
-    if (delay <= 0) return;
-    var sb = document.getElementById("submit");
-    sb.disabled = true;
-    window.setTimeout(function() { sb.disabled = false; document.querySelector(".login-delay").style.display="none"; }, delay * 1000);
+    if (delay <= 0) {
+        document.querySelector(".login-delay").style.display="none";
+        return;
+    }
+    var countdown = {
+               count : delay,
+               el : document.getElementById("countdown"),
+               sb : document.getElementById("submit"),
+               interval: null
+    };
+    countdown.sb.disabled = true;
+    countdown.el.innerHTML = countdown.count;
+    countdown.interval = window.setInterval(function() {
+        countdown.el.innerHTML = --countdown.count;
+        if (countdown.count == 0) {
+            window.clearInterval(countdown.interval);
+            countdown.sb.disabled = false;
+            document.querySelector(".login-delay").style.display="none";
+        }
+    },1000);
 }
 function onLoad() {
     handleDelay();
@@ -142,7 +158,7 @@ $INCLUDE(login-logo)
             <div class="logout-success">$tl(login.logoutsuccess)</div>
         <!--ENDIF-->
         <!--IF("$cgiparam(delay)" ne q{})-->
-            <div class="login-delay">$tl(login.delay)</div>
+            <div class="login-delay">$tl(login.delay) (<span id="countdown"></span>s)</div>
         <!--ENDIF-->
         <div class="login-login">
             <label> $tl(login.login) </label>
