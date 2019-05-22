@@ -2583,6 +2583,18 @@ li.sep {
   opacity: 0.5;
   opacity: var(--overlay-opacity, 0.5);
 }
+.icon,
+.action,
+.home-button,
+.logout-button,
+.contact-button,
+.link-button,
+.help-button,
+.popup .label,
+.ui-button {
+  filter: unset;
+  filter: var(--action-icon-filter, unset);
+}
 .ui-state-hover {
   color: black;
   color: var(--button-active-color, black);

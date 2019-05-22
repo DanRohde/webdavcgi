@@ -892,7 +892,10 @@ li.sep {
         &:extend(.theme-default-button:active);
     }
 }
-
+.icon, .action, .home-button, .logout-button, .contact-button, .link-button, .help-button, .popup .label, .ui-button {
+    filter: unset;
+    filter: var(--action-icon-filter, unset);
+}
 .ui-state-hover {
     .colors(button-active, @default-color, @default-button-active-bgcolor);
 }
