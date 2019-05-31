@@ -2,7 +2,7 @@
      - fixed performance bugs reported by Hendrik Visage: GET handler should not compress binaries and should use backend for printing compressed files instead of local temporary downloads
      - fixed temporary file handling bug in SMB backend reported by Hendrik Visage: folder for temporary files should not be hard coded
      - LESSified core CSS 
-     - added pure theme support
+     - added pure theme support using CSS3 custom properties
 1.1.2: 2017/05/10
      - moved source code from sourceforge to github
      - added folder upload support via folder drag and drop and menu dialog

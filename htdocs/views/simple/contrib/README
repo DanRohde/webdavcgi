@@ -4,22 +4,22 @@
 - contrib.sh uses minify.sh uses yuglify  
 
 ## main contrib:
-jquery: http://www.jquery.com/ - updated 2017-04-29 (v3.2.1)
+jquery: http://www.jquery.com/ - updated 2019-05-31 (v3.4.1)
 	jquery.js 
-jquery-migrate: http://www.jquery.com/ - updated 2017-04-29 (v3.0.0)
+jquery-migrate: http://www.jquery.com/ - updated 2019-05-31 (v3.0.1)
 	jquery-migrate.js 
 jquery-ui: http://www.jqueryui.com/ - updated 2017-04-29 (v1.12.1)
 	jquery-ui.js jquery-ui.css 
 	# theme: Smoothness and don't forget to copy ui images to images/
-js-cookie: https://github.com/js-cookie/js-cookie - updated 2017-04-29 (v2.1.4)
+js-cookie: https://github.com/js-cookie/js-cookie - updated 2019-05-31 (v2.2.0)
     # https://raw.githubusercontent.com/js-cookie/js-cookie/master/src/js.cookie.js
 	js.cookie.js 
-noty: https://github.com/needim/noty/releases - updated 2017-04-29 (v3.1.0)
+noty: https://github.com/needim/noty/releases - updated 2019-05-31 (v3.2.0-beta)
     # http://ned.im/noty
-	noty.js noty.css
-fileupload: http://blueimp.github.io/jQuery-File-Upload/ - updated 2017-04-29 (v9.18.0)
+	noty.js, concated noty.css + relax.css
+fileupload: http://blueimp.github.io/jQuery-File-Upload/ - updated 2019-05-31 (v9.31.0)
 	jquery.fileupload.js
-fancybox3: http://fancyapps.com/fancybox/3/ - updated 2017-04-29 (v3.0)
+fancybox3: http://fancyapps.com/fancybox/3/ - updated 2019-06-31 (v3.5.7)
 	jquery.fancybox.js		jquery.fancybox.css
 multidraggable: https://github.com/someshwara/MultiDraggable - updated 2015-09-02 (13 Nov 2012)
 	multidraggable.js

@@ -17,6 +17,7 @@ for js in $JS ; do
 done
 if [ "$1" = "-d" ] ; then
 	gzip -c < contrib.js >contrib.min.js.gz
+    brotli < contrib.js >contrib.min.js.br
 else
 	bash minify.sh contrib.js
 	rm contrib.js
@@ -28,6 +29,7 @@ for css in $CSS ; do
 done
 if [ "$1" = "-d" ] ; then
 	gzip -c < contrib.css >contrib.min.css.gz
+    brotli < contrib.css > contrib.min.css.br
 else 
 	bash minify.sh contrib.css
 	rm contrib.css
