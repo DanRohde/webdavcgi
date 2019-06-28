@@ -910,3 +910,10 @@ li.sep {
         background-image: var(--ui-widget-content-hover-background-image, linear-gradient(to bottom, @default-button-active-bgcolor, @default-bgcolor, @default-button-active-bgcolor));
     }
 }
+.icon.category-folder {
+    &, &audio, &config, &current, &docs, &home, &pictures,
+      &temp, &trash, &up, &video, &web {
+        transform: unset;
+        transform: var(--folder-icons-transform, unset);
+    }
+}

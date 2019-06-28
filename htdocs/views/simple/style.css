@@ -2619,3 +2619,18 @@ li.sep {
   background-image: linear-gradient(to bottom, #ddd, white, #ddd);
   background-image: var(--ui-widget-content-hover-background-image, linear-gradient(to bottom, #ddd, white, #ddd));
 }
+.icon.category-folder,
+.icon.category-folderaudio,
+.icon.category-folderconfig,
+.icon.category-foldercurrent,
+.icon.category-folderdocs,
+.icon.category-folderhome,
+.icon.category-folderpictures,
+.icon.category-foldertemp,
+.icon.category-foldertrash,
+.icon.category-folderup,
+.icon.category-foldervideo,
+.icon.category-folderweb {
+  transform: unset;
+  transform: var(--folder-icons-transform, unset);
+}
