@@ -90,7 +90,7 @@ WebDAV CGI supports two authentication schemes:
     <li><span style="optional">optional (for RCS backend):</span> Rcs (librcs-perl) - (since v0.8.0)</li>
     <li>JSON (libjson-perl) - (since v0.8.5)</li>
     <li>DateTime - (since v0.8.5)</li>
-    <li>DateTime::Format::Human::Duration - (since v0.8.5)</li>
+    <li>DateTime::Format::Human::Duration (libdatetime-format-human-duration-perl) - (since v0.8.5)</li>
     <li>Image::ExifTool (libimage-exiftool-perl)- (since v1.0.1)</li>
     <li>List::MoreUtils (liblist-moreutils-perl)- (since v1.1.0)</li>
     <li><span style="optional">optional for SendByMail extension:</span>MIME::Entity (libmime-tools-perl) - (since v0.9.1)</li>
@@ -106,9 +106,9 @@ apt install libdbi-perl libdbd-sqlite3-perl sqlite3 libtimedate-perl \
             libarchive-zip-perl libgraphics-magick-perl libmodule-load-perl \
             libfile-copy-link-perl libjson-perl libdatetime-perl \
             libmime-tools-perl libnet-ldap-perl libimage-exiftool-perl \
-            liblist-moreutils-perl libcgi-session-perl libwww-csrf-perl
-            
-cpan install DateTime::Format::Human::Duration
+            liblist-moreutils-perl libcgi-session-perl libwww-csrf-perl \
+             libdatetime-format-human-duration-perl
+
 
 cpan install IO::Compress::Brotli
 
