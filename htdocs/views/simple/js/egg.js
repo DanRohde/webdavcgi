@@ -80,10 +80,10 @@ Snake.prototype.start = function() {
 		else if (event.keyCode == 39) self.setDir( 1, 0); // right
 		else if (event.keyCode == 40) self.setDir( 0, 1); // down
 	});
-	
+	return self;
 };
 Snake.prototype.startLoop = function() {
-	this.gameLoop().drawWall().draw().feedSnake(); 
+	this.gameLoop().drawWall().draw().feedSnake();
 }
 Snake.prototype.gameLoop = function() {
 	var self = this;
@@ -202,6 +202,7 @@ Snake.prototype.destroy = function() {
 	$("body").off("keydown.snake");
 	this.arena.canvas.remove();
 	this.arena.pointsDiv.remove();
+	document.snake = false;
 };
 Snake.prototype.drawWall  = function() {
 	var self = this;
@@ -306,8 +307,6 @@ Snake.prototype.setDir = function(x,y) {
 };
 $("#flt").on("fileListChanged", function() {
 	$(".foldersize.filestats-foldersize").on("dblclick.snake", function() {
-		$(this).off("dblclick.snake");
-		var snake = new Snake();
-		snake.start();
+		document.snake ||= (new Snake()).start();
 	});
 });
