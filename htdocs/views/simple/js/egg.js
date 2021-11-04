@@ -74,7 +74,9 @@ Snake.prototype.start = function() {
 		})
 		.focus();
 	$("body").on("keydown.snake", function(event) {
-		if (event.keyCode == 27) self.destroy(); // escape
+		if (event.keyCode == 80) self.togglePause(); // p - pause
+		else if (event.keyCode == 27) self.destroy(); // escape
+		else if (self.paused) ; // ignore all other input
 		else if (event.keyCode == 37) self.setDir(-1, 0); // left
 		else if (event.keyCode == 38) self.setDir( 0,-1); // up
 		else if (event.keyCode == 39) self.setDir( 1, 0); // right
@@ -89,6 +91,7 @@ Snake.prototype.gameLoop = function() {
 	var self = this;
 	window.clearInterval(self.interval);
 	self.interval = window.setInterval(function() {
+		if (self.paused) return;
 		try {
 			self.setupLevel().showGameInfo();
 			if (self.move(self.dir)) self.draw();
@@ -137,7 +140,7 @@ Snake.prototype.showGameInfo = function() {
 						paddingLeft: fs+"px", paddingRight: fs+"px", width: a.width-2*fs, zIndex: 10000, 
 						backgroundColor: "black", color: "white", fontFamily: "monospace", fontWeight:"bold" })
 				.appendTo("body")
-				.append($("<div/>").html("&#8212; Snake &#8212;"))
+				.append($("<div/>").addClass("snaketitle").html("&#8212; Snake &#8212;"))
 				.append($("<div/>").append($("<span/>").html("Level: ")).append($("<span/>").addClass("level")))
 				.append($("<div/>").append($("<span/>").html("Level up: ")).append($("<span/>").addClass("levelup")))
 				.append($("<div/>").append($("<span/>").html("Points: ")).append($("<span/>").addClass("points")))
@@ -304,6 +307,11 @@ Snake.prototype.failed = function() {
 Snake.prototype.setDir = function(x,y) {
 	this.dir.x = x;
 	this.dir.y = y;
+};
+Snake.prototype.togglePause = function() {
+	var self = this;
+	self.paused = ! self.paused;
+	$(".snaketitle").html(self.paused ? "&#8212; Snake - Paused &#8212;" : "&#8212; Snake &#8212;");
 };
 $("#flt").on("fileListChanged", function() {
 	$(".foldersize.filestats-foldersize").on("dblclick.snake", function() {
