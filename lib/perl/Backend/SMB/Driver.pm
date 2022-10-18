@@ -708,7 +708,7 @@ sub getQuota {
         $initdir = $1;
     }
     if ( defined $initdir ) { $path = "$initdir/$path"; }
-    return ( 0, 0 )
+    return undef
       if !$share
       || $share eq q{}
       || ( defined $fs->{quota}{$share} && !$fs->{quota}{$share} )
