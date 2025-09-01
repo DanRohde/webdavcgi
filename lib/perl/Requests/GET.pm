@@ -32,7 +32,7 @@ use DefaultConfig
   qw( $PATH_TRANSLATED $REQUEST_URI $VIRTUAL_BASE $VHTDOCS $DOCUMENT_ROOT $CHARSET
   $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
 use HTTPHelper
-  qw( print_header_and_content get_byte_ranges get_etag print_file_header fix_mod_perl_response
+  qw( print_header_and_content get_content_range_header get_byte_ranges get_etag print_file_header fix_mod_perl_response
   get_mime_type );
 use FileUtils qw( get_error_document is_hidden stat2h );
 
@@ -86,9 +86,8 @@ sub handle {
     binmode(STDOUT) || carp('Cannot set binmode for STDOUT.');
 
     if ( !$self->_handle_compressed_file() ) {
-        my ( $start, $end, $count ) = get_byte_ranges();
-        my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
-        $backend->printFile( $PATH_TRANSLATED, \*STDOUT, $start, $count );
+	my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
+	my $count = _print_file($backend, \*STDOUT);
         fix_mod_perl_response($headerref);
 
         $self->{event}->broadcast(
@@ -126,10 +125,9 @@ sub _handle_compressed_file {
     my $mime = get_mime_type($PATH_TRANSLATED);
     my $stat = stat2h( $self->{backend}->stat($PATH_TRANSLATED) );
 
-    my ( $start, $end, $count ) = get_byte_ranges();
-
     no locale;
     my %header = (
+	%{ get_content_range_header($self->{backend}->stat($PATH_TRANSLATED)) },
         -status => '200 OK',
         -type   => $mime,
         -ETag   => get_etag($PATH_TRANSLATED),
@@ -139,12 +137,6 @@ sub _handle_compressed_file {
         -Content_Encoding => $enc =~ /gzip/xms ? 'gzip' : 'deflate',
         -Cache_Control    => 'no-cache',
     );
-    if ( defined $start ) {
-        $header{-status} = '206 Partial Content';
-        $header{-Content_Range} = sprintf 'bytes %s-%s/%s', $start, $end,
-          $stat->{size};
-        $header{-Content_Length} = $count;
-    }
     print( $self->{cgi}->header( \%header ) )
       || carp('Cannot print HTTP header.');
     my $c;
@@ -157,8 +149,8 @@ sub _handle_compressed_file {
         $c = IO::Compress::Deflate->new( \*STDOUT );
     }
     my $bufsize = $BUFSIZE;
-    if ( defined $count && $count < $bufsize ) { $bufsize = $count; }
-    $self->{backend}->printFile($PATH_TRANSLATED, $c, $start, $count);
+    if ( defined $header{-Content_length} && $header{-Content_length} < $bufsize ) { $bufsize = $header{-Content_length}; }
+    my $count=_print_file($self->{backend}, $c);
     $self->{event}->broadcast(
         'GET',
         {
@@ -167,6 +159,32 @@ sub _handle_compressed_file {
         }
     );
     return 1;
+}
+sub _print_file {
+    my ($backend,$fh) = @_;
+    my ($ranges) = get_byte_ranges();
+    my $count = 0;
+    if (!defined $ranges) {
+	    $backend->printFile($PATH_TRANSLATED, $fh);
+	    return ($backend->stat($PATH_TRANSLATED))[7];
+    }
+    foreach my $range ( @{$ranges} ) {
+        my ($start, $end) = @{$range};
+        my $c = 0;
+        if (defined $start && defined $end) {
+            $c = $end - $start + 1;
+	} elsif (!defined $start && defined $end) {
+            $start = ($backend->stat($PATH_TRANSLATED))[7] - $end;
+            $c = $end;
+        } elsif (defined $start && !defined $end) {
+            $c = stat2h($backend->stat($PATH_TRANSLATED)) - $start + 1;
+        } else {
+	    continue;
+	}
+        $backend->printFile( $PATH_TRANSLATED, $fh, $start, $c );
+        $count+=$c;
+    }
+    return $count;
 }
 
 1;
