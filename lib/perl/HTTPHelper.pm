@@ -246,9 +246,9 @@ sub get_byte_ranges {
 	my @ranges = split /[,]/xms, $range;
 	my @ret= ();
 	foreach my $r (@ranges) {
-	    if  ($r=~/(\d+)\-(\d+)/xms) {
+	    if  ($r=~/^(\d+)\-(\d+)$/xms) {
 		    push @ret, [ $1 , $2 ];
-	    } elsif ($r=~/^-(\d+)/xms)  {
+	    } elsif ($r=~/^-(\d+)$/xms)  {
 		    push @ret, [ undef, $1 ];
 	    } elsif ($r=~/^(\d+)\-$/xms) {
 		    push @ret, [ $1, undef ];

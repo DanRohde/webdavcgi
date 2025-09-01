@@ -173,7 +173,7 @@ sub _print_file {
         my $c = 0;
         if (defined $start && defined $end) {
             $c = $end - $start + 1;
-	} elsif (!defined $start && defined $end) {
+        } elsif (!defined $start && defined $end) {
             $start = ($backend->stat($PATH_TRANSLATED))[7] - $end;
             $c = $end;
         } elsif (defined $start && !defined $end) {
