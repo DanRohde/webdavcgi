@@ -26,7 +26,7 @@ use base qw{ Exporter };
 our @EXPORT_OK =
   qw( print_header_and_content print_compressed_header_and_content print_file_header
   print_header_and_content print_local_file_header fix_mod_perl_response
-  read_request_body get_byte_ranges get_etag get_mime_type get_if_header_components
+  read_request_body get_content_range_header get_byte_ranges get_etag get_mime_type get_if_header_components
   get_dav_header get_supported_methods get_parent_uri get_base_uri_frag get_sec_header );
 
 use CGI::Carp;
@@ -79,7 +79,7 @@ sub print_header_and_content {
     my %header = (
         -status         => $status,
         -type           => $type,
-        -Content_Length => $contentlength,
+        -Content_length => $contentlength,
         -ETag           => get_etag(),
         -charset        => $CHARSET,
         -cookie         => $cookies,
@@ -140,7 +140,7 @@ sub print_local_file_header {
     my %header = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
-        -Content_Length => $stat[7],
+        -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified =>
           strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
@@ -164,7 +164,7 @@ sub print_file_header {
     my %header  = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
-        -Content_Length => $stat[7],
+        -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime($stat[9] // scalar time) ),
         -charset        => $CHARSET,
@@ -176,14 +176,7 @@ sub print_file_header {
     if ( defined $cgi->http('Translate') ) {
         $header{'Translate'} = 'f';
     }
-    my ( $start, $end, $count ) = get_byte_ranges();
-    if ( defined $start ) {
-        $header{-status} = '206 Partial Content';
-        $header{-Content_Range} = sprintf 'bytes %s-%s/%s', $start, $end,
-          $stat[7];
-        $header{-Content_Length} = $count;
-    }
-    %header = ( %header, %{ get_sec_header(_get_header_hashref($addheader)) } );
+    %header = ( %{get_content_range_header(\@stat) }, %header, %{ get_sec_header(_get_header_hashref($addheader)) } );
     print $cgi->header( \%header );
     return \%header;
 }
@@ -201,7 +194,7 @@ sub fix_mod_perl_response {
         && ${$headerref}{-status} =~
         /^(?:$stat200re|$stat300re|$stat400re|$stat500re)/xms # /^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/xms
         && ${$headerref}{-status} =~ /^(\d)/xms
-        && ${$headerref}{-Content_Length} > 0
+        && ${$headerref}{-Content_length} > 0
       )
     {
         $cgi->r->status("${1}00");
@@ -218,15 +211,50 @@ sub read_request_body {
     return $body;
 }
 
+sub get_content_range_header {
+    my ($statref) = @_;
+    my $ranges = get_byte_ranges();
+    my %header = ();
+    if ( defined $ranges && $#{$ranges} > -1) {
+        $header{-status} = '206 Partial Content';
+        my $r_s = q{};
+        my $count = 0;
+        foreach my $r (@{$ranges}) {
+            $r_s.= ($r_s eq q{} ? q{} : q{,}) . join '-', @{$r};
+            if (defined $r->[0] && defined $r->[1]) { $count += $r->[1]-$r->[0]+1; }
+            elsif (defined $r->[0]) { $count += $statref->[7]-$r->[0] + 1; }
+            elsif (defined $r->[1]) { $count += $r->[1] + 1; }
+        }
+        $header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
+        $header{-Content_length} = $count;
+    }
+    return \%header;
+}
+
 sub get_byte_ranges {
     no locale;
-    my $etag = get_etag($PATH_TRANSLATED);
-    my $lm   = strftime( '%a, %d %b %Y %T GMT', gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] // time ) );
-    my $ifrange = $CGI->http('If-Range') || $etag;
-    return if $ifrange ne $etag && $ifrange ne $lm;
+    if (defined $CGI->http('If-Range')) {
+	    my $etag = get_etag($PATH_TRANSLATED);
+	    my $lm   = strftime( '%a, %d %b %Y %T GMT', gmtime( ( $BACKEND_INSTANCE->stat($PATH_TRANSLATED) )[9] // time ) );
+	    my $ifrange = $CGI->http('If-Range') || $etag;
+	    return if $ifrange ne $etag && $ifrange ne $lm;
+    }
     my $range = $CGI->http('Range');
-    if ( $range && $range =~ /bytes=(\d+)\-(\d+)/xms ) {
-        return ( $1, $2, $2 - $1 + 1 ) if $1 < $2;
+    if ( defined $range && $range =~ /bytes=/xms) {
+	$range=~s/\s*//xmsg; # remove spaces
+	$range =~s/bytes=//xmsg; # remove 'bytes='
+	my @ranges = split /[,]/xms, $range;
+	my @ret= ();
+	foreach my $r (@ranges) {
+	    if  ($r=~/(\d+)\-(\d+)/xms) {
+		    push @ret, [ $1 , $2 ];
+	    } elsif ($r=~/^-(\d+)/xms)  {
+		    push @ret, [ undef, $1 ];
+	    } elsif ($r=~/^(\d+)\-$/xms) {
+		    push @ret, [ $1, undef ];
+	    }
+	}
+	return $#ret > -1 ? \@ret: undef;
     }
     return;
 }
