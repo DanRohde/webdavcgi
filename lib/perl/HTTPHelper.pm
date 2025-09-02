@@ -217,7 +217,7 @@ sub get_content_range_header {
     my %header = ();
     if ( defined $ranges && $#{$ranges} > -1) {
         $header{-status} = '206 Partial Content';
-        my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // q{}) } @{$arrref};
+        my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // q{}) } @{$ranges};
         my $count = 0;
         foreach my $r (@{$ranges}) {
             if (defined $r->[0] && defined $r->[1]) { $count += $r->[1]-$r->[0]+1; }
