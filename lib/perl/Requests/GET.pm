@@ -127,7 +127,7 @@ sub _handle_compressed_file {
 
     no locale;
     my %header = (
-	%{ get_content_range_header($self->{backend}->stat($PATH_TRANSLATED)) },
+	%{ get_content_range_header([$self->{backend}->stat($PATH_TRANSLATED)]) },
         -status => '200 OK',
         -type   => $mime,
         -ETag   => get_etag($PATH_TRANSLATED),
