@@ -71,7 +71,7 @@ sub is_insufficient_storage {
     my ( $self, $cgi, $backend ) = @_;
     my $ret = 0;
     my ( $block_hard, $block_curr ) = $backend->getQuota();
-    if ( $block_hard > 0 ) {
+    if ( defined $block_hard && $block_hard > 0 ) {
         if ( $block_curr >= $block_hard ) {
             $ret = 1;
         }
