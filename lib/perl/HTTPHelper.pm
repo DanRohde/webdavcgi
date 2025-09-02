@@ -141,7 +141,7 @@ sub print_local_file_header {
     my %header = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
-        #-Content_length => $stat[7],
+        -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified =>
           strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
@@ -152,7 +152,7 @@ sub print_local_file_header {
     if ( defined $cgi->http('Translate') ) {
         $header{'Translate'} = 'f';
     }
-    %header = ( %header, %{ get_sec_header(_get_header_hashref($addheader)) } );
+    %header = ( %header, %{get_content_range_header(\@stat)}, %{ get_sec_header(_get_header_hashref($addheader)) } );
     print $cgi->header( \%header );
     return \%header;
 }
@@ -165,7 +165,7 @@ sub print_file_header {
     my %header  = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
-        #-Content_length' => $stat[7],
+        -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime($stat[9] // scalar time) ),
         -charset        => $CHARSET,
@@ -177,7 +177,7 @@ sub print_file_header {
     if ( defined $cgi->http('Translate') ) {
         $header{'Translate'} = 'f';
     }
-    %header = ( %{get_content_range_header(\@stat) }, %header, %{ get_sec_header(_get_header_hashref($addheader)) } );
+    %header = ( %header, %{get_content_range_header(\@stat) }, %{ get_sec_header(_get_header_hashref($addheader)) } );
     print $cgi->header( \%header );
     return \%header;
 }
