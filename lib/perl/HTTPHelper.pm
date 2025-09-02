@@ -141,7 +141,6 @@ sub print_local_file_header {
     my %header = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
-        -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified =>
           strftime( '%a, %d %b %Y %T GMT', gmtime( $stat[9] || 0 ) ),
