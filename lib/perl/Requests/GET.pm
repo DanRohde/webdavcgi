@@ -32,7 +32,7 @@ use DefaultConfig
   qw( $PATH_TRANSLATED $REQUEST_URI $VIRTUAL_BASE $VHTDOCS $DOCUMENT_ROOT $CHARSET
   $FANCYINDEXING $ENABLE_COMPRESSION $BUFSIZE $REDIRECT_TO );
 use HTTPHelper
-  qw( print_header_and_content get_content_range_header get_byte_ranges get_etag print_file_header fix_mod_perl_response
+  qw( print_header_and_content get_content_range_header get_byte_ranges print_boundary get_etag print_file_header fix_mod_perl_response
   get_mime_type );
 use FileUtils qw( get_error_document is_hidden stat2h );
 
@@ -86,11 +86,12 @@ sub handle {
     binmode(STDOUT) || carp('Cannot set binmode for STDOUT.');
 
     if ( !$self->_handle_compressed_file() ) {
-	my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
-	my $count = _print_file($backend, \*STDOUT);
-        fix_mod_perl_response($headerref);
+    my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
+    my $count = _print_file($backend, \*STDOUT, $headerref->{'X-Boundary'}, $headerref->{'X-Content-Type'});
 
-        $self->{event}->broadcast(
+    fix_mod_perl_response($headerref);
+
+    $self->{event}->broadcast(
             'GET',
             {
                 file => $PATH_TRANSLATED,
@@ -161,7 +162,7 @@ sub _handle_compressed_file {
     return 1;
 }
 sub _print_file {
-    my ($backend,$fh) = @_;
+    my ($backend,$fh,$boundary,$contenttype) = @_;
     my ($ranges) = get_byte_ranges();
     my $count = 0;
     if (!defined $ranges) {
@@ -170,20 +171,23 @@ sub _print_file {
     }
     foreach my $range ( @{$ranges} ) {
         my ($start, $end) = @{$range};
-        my $c = 0;
+        my $c;
         if (defined $start && defined $end) {
             $c = $end - $start + 1;
         } elsif (!defined $start && defined $end) {
             $start = ($backend->stat($PATH_TRANSLATED))[7] - $end;
             $c = $end;
+            $end = ($backend->stat($PATH_TRANSLATED))[7]-$c;
         } elsif (defined $start && !defined $end) {
-            $c = ($backend->stat($PATH_TRANSLATED))[7] - $start + 1;
+            $c = ($backend->stat($PATH_TRANSLATED))[7] - $start;
         } else {
-	    continue;
+	    next;
 	}
+	print_boundary($fh, $boundary, $contenttype, $start, $end, $c);
         $backend->printFile( $PATH_TRANSLATED, $fh, $start, $c );
-        $count+=$c;
+        if (defined $c) { $count+=$c; }
     }
+    print_boundary($fh, $boundary, $contenttype);
     return $count;
 }
 

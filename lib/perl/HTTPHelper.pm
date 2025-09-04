@@ -26,7 +26,7 @@ use base qw{ Exporter };
 our @EXPORT_OK =
   qw( print_header_and_content print_compressed_header_and_content print_file_header
   print_header_and_content print_local_file_header fix_mod_perl_response
-  read_request_body get_content_range_header get_byte_ranges get_etag get_mime_type get_if_header_components
+  read_request_body get_content_range_header get_byte_ranges print_boundary get_etag get_mime_type get_if_header_components
   get_dav_header get_supported_methods get_parent_uri get_base_uri_frag get_sec_header );
 
 use CGI::Carp;
@@ -164,6 +164,7 @@ sub print_file_header {
     my %header  = (
         -status         => '200 OK',
         -type           => get_mime_type($fn),
+	'X-Content-Type' => get_mime_type($fn),
         -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime($stat[9] // scalar time) ),
@@ -216,18 +217,38 @@ sub get_content_range_header {
     my $ranges = get_byte_ranges();
     my %header = ();
     if ( defined $ranges && $#{$ranges} > -1) {
-        $header{-status} = '206 Partial Content';
-        my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // q{}) } @{$ranges};
+        my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // $statref->[7] - 1 - ($_->[0]//0)) } @{$ranges};
         my $count = 0;
         foreach my $r (@{$ranges}) {
             if (defined $r->[0] && defined $r->[1]) { $count += $r->[1]-$r->[0]+1; }
             elsif (defined $r->[0]) { $count += $statref->[7] - $r->[0] }
             elsif (defined $r->[1]) { $count += $r->[1] }
         }
-        $header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
-        $header{-Content_length} = $count;
+        if ($#{$ranges}>-1) {
+		$header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
+		$header{-status} = '206 Partial Content';
+		if ($#{$ranges}>0) {
+			my $boundary = uc(Digest::MD5::md5_base64(time));
+			$header{'Content-Type'} = 'multipart/byteranges; boundary='.$boundary;
+			$header{'X-Boundary'} = $boundary;
+		} else {
+			$header{-Content_length}=$count;
+			$header{'X-Content-Length'}=$count;
+			$header{'Content-Length'}=$count;
+		}
+	}
     }
     return \%header;
+}
+sub print_boundary {
+	my ($fh, $boundary, $mimetype, $start,$end, $count) = @_;
+	if (defined $boundary && defined $mimetype) {
+		print $fh "\n--$boundary\n";
+		if (defined $count) {
+			print $fh "Content-Type: $mimetype\n";
+			print $fh sprintf("Content-Range: bytes %s-%s/%s\n\n", $start // q{}, $end // q{}, $count);
+		}
+	}
 }
 
 sub get_byte_ranges {
@@ -251,6 +272,7 @@ sub get_byte_ranges {
 		    push @ret, [ undef, $1 ];
 	    } elsif ($r=~/^(\d+)\-$/xms) {
 		    push @ret, [ $1, undef ];
+		    if ($1 == 0) { return [[0,undef]]; }
 	    }
 	}
 	return $#ret > -1 ? \@ret: undef;
