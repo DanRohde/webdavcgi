@@ -150,7 +150,7 @@ sub _handle_compressed_file {
         $c = IO::Compress::Deflate->new( \*STDOUT );
     }
     my $bufsize = $BUFSIZE;
-    if ( defined $header{-Content_length} && $header{-Content_length} < $bufsize ) { $bufsize = $header{-Content_length}; }
+    if ( defined $header{-Content_Length} && $header{-Content_Length} < $bufsize ) { $bufsize = $header{-Content_Length}; }
     my $count=_print_file($self->{backend}, $c);
     $self->{event}->broadcast(
         'GET',

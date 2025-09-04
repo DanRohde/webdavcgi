@@ -79,7 +79,7 @@ sub print_header_and_content {
     my %header = (
         -status         => $status,
         -type           => $type,
-        -Content_length => $contentlength,
+        -Content_Length => $contentlength,
         -ETag           => get_etag(),
         -charset        => $CHARSET,
         -cookie         => $cookies,
@@ -194,7 +194,7 @@ sub fix_mod_perl_response {
         && ${$headerref}{-status} =~
         /^(?:$stat200re|$stat300re|$stat400re|$stat500re)/xms # /^(20[16789]|2[1-9]|30[89]|3[1-9]|41[89]|4[2-9]|50[6-9]|5[1-9])/xms
         && ${$headerref}{-status} =~ /^(\d)/xms
-        && ${$headerref}{-Content_length} > 0
+        && ${$headerref}{-Content_Length} > 0
       )
     {
         $cgi->r->status("${1}00");
@@ -225,18 +225,18 @@ sub get_content_range_header {
         }
         if ($#{$ranges}>-1) {
             $header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
-            $header{-status} = '206 Partial Content';
             if ($#{$ranges}>0) {
+                $header{-status} = '206 Partial Content';
                 my $boundary = uc(Digest::MD5::md5_base64(time));
                 $header{'Content-Type'} = 'multipart/byteranges; boundary='.$boundary;
                 $header{'X-Boundary'} = $boundary;
             } else {
-                $header{-Content_length}=$count;
+                $header{-Content_Length}=$count;
                 $header{'X-Content-Length'}=$count;
             }
         }
     } else {
-        $header{-Content_length} = $statref->[7];
+        $header{-Content_Length} = $statref->[7];
     }
     return \%header;
 }
