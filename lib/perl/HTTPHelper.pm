@@ -165,7 +165,6 @@ sub print_file_header {
         -status         => '200 OK',
         -type           => get_mime_type($fn),
 	'X-Content-Type' => get_mime_type($fn),
-        -Content_length => $stat[7],
         -ETag           => get_etag($fn),
         -Last_Modified  => strftime( '%a, %d %b %Y %T GMT', gmtime($stat[9] // scalar time) ),
         -charset        => $CHARSET,
@@ -225,18 +224,19 @@ sub get_content_range_header {
             elsif (defined $r->[1]) { $count += $r->[1] }
         }
         if ($#{$ranges}>-1) {
-		$header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
-		$header{-status} = '206 Partial Content';
-		if ($#{$ranges}>0) {
-			my $boundary = uc(Digest::MD5::md5_base64(time));
-			$header{'Content-Type'} = 'multipart/byteranges; boundary='.$boundary;
-			$header{'X-Boundary'} = $boundary;
-		} else {
-			$header{-Content_length}=$count;
-			$header{'X-Content-Length'}=$count;
-			$header{'Content-Length'}=$count;
-		}
-	}
+            $header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
+            $header{-status} = '206 Partial Content';
+            if ($#{$ranges}>0) {
+                my $boundary = uc(Digest::MD5::md5_base64(time));
+                $header{'Content-Type'} = 'multipart/byteranges; boundary='.$boundary;
+                $header{'X-Boundary'} = $boundary;
+            } else {
+                $header{-Content_length}=$count;
+                $header{'X-Content-Length'}=$count;
+            }
+        }
+    } else {
+        $header{-Content_length} = $statref->[7];
     }
     return \%header;
 }
