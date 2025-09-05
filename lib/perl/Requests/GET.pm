@@ -177,19 +177,19 @@ sub _print_file {
         } elsif (!defined $start && defined $end) {
             $start = ($backend->stat($PATH_TRANSLATED))[7] - $end;
             $c = $end;
-            $end = ($backend->stat($PATH_TRANSLATED))[7]-$c;
+            $end = ($backend->stat($PATH_TRANSLATED))[7]-1;
         } elsif (defined $start && !defined $end) {
             $c = ($backend->stat($PATH_TRANSLATED))[7] - $start;
         } else {
-	    next;
-	}
-	if ($start<($backend->stat($PATH_TRANSLATED))[7]) {
-		print_boundary($fh, $boundary, $contenttype, $start, $end, $c);
-		$backend->printFile( $PATH_TRANSLATED, $fh, $start, $c );
-		if (defined $c) { $count+=$c; }
-	} else {
-		return 0;
-	}
+            next;
+        }
+        if ($start<($backend->stat($PATH_TRANSLATED))[7]) {
+            print_boundary($fh, $boundary, $contenttype, $start, $end, $c);
+            $backend->printFile( $PATH_TRANSLATED, $fh, $start, $c );
+            if (defined $c) { $count+=$c; }
+        } else {
+            return 0;
+        }
     }
     print_boundary($fh, $boundary, $contenttype);
     return $count;
