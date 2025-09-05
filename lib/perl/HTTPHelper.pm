@@ -232,9 +232,9 @@ sub get_content_range_header {
             }
         }
         if ($#{$ranges}>-1) {
+            $header{-status} = '206 Partial Content';
             $header{'Content-Range'} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
             if ($#{$ranges}>0) {
-                $header{-status} = '206 Partial Content';
                 my $boundary = uc(Digest::MD5::md5_base64(time));
                 $header{'Content-Type'} = 'multipart/byteranges; boundary='.$boundary;
                 $header{'X-Boundary'} = $boundary;
