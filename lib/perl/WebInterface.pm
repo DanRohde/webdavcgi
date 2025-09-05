@@ -36,7 +36,7 @@ use DefaultConfig qw(
   $PATH_TRANSLATED $REMOTE_USER $REQUEST_URI $VHTDOCS $INSTALL_BASE
   $ENABLE_THUMBNAIL $ENABLE_DAVMOUNT $ALLOW_POST_UPLOADS $ENABLE_CLIPBOARD
   $OPTIMIZERTMP $THUMBNAIL_CACHEDIR $RELEASE $CONFIGFILE $READBUFSIZE
-  $VIEW @SUPPORTED_VIEWS  $DB $CGI $BACKEND_INSTANCE $D $L
+  $VIEW @SUPPORTED_VIEWS  $DB $CGI $BACKEND_INSTANCE $D $L $FIX_UTF8_BROTLI_ISSUE
 );
 
 sub new {
@@ -376,8 +376,11 @@ sub optimizer_write_content2br {
     if ( open my $fh, '>', $file) {
         flock( $fh, LOCK_EX ) || carp("Cannot get exclusive lock for $file.");
         require Encode;
-        #print {$fh} IO::Compress::Brotli::bro(Encode::decode('UTF-8', ${$contentref}));
-        print {$fh} IO::Compress::Brotli::bro(${$contentref});
+        if ($FIX_UTF8_BROTLI_ISSUE) {
+            print {$fh} IO::Compress::Brotli::bro(Encode::decode('UTF-8', ${$contentref}));
+        } else {
+            print {$fh} IO::Compress::Brotli::bro(${$contentref});
+        }
         flock( $fh, LOCK_UN ) || carp("Cannot unlock $file.");
         close($fh) || carp("Cannot close filehandle for $file");
         return 1;

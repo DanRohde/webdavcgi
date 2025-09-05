@@ -39,7 +39,7 @@ use DefaultConfig qw(
   $CHARSET %MIMETYPES $MIMEFILE $ENABLE_COMPRESSION $BUFSIZE
   $ENABLE_ACL $ENABLE_CALDAV $ENABLE_CARDDAV $ENABLE_CALDAV_SCHEDULE 
   $ENABLE_LOCK $ENABLE_BIND $ENABLE_SEARCH $BACKEND_INSTANCE
-  $ALLOW_BYTES_RANGE
+  $ALLOW_BYTES_RANGE $FIX_UTF8_BROTLI_ISSUE
 );
 
 require bytes;
@@ -100,8 +100,11 @@ sub _try_compress_with_brotli {
     if ($enc =~ /\bbr\b/xmsi && eval { require IO::Compress::Brotli }) {
         my $cd;
         require Encode;
-        #$cd = IO::Compress::Brotli::bro(utf8::is_utf8(${$contentref}) ? Encode::decode('UTF-8',${$contentref}) : ${$contentref});
-        $cd = IO::Compress::Brotli::bro(${$contentref});
+        if ($FIX_UTF8_BROTLI_ISSUE) {
+            $cd = IO::Compress::Brotli::bro(utf8::is_utf8(${$contentref}) ? Encode::decode('UTF-8',${$contentref}) : ${$contentref});
+        } else {
+            $cd = IO::Compress::Brotli::bro(${$contentref});
+        }
         $header->{'Content-Encoding'} = 'br';
         return \$cd;
     }
