@@ -39,6 +39,7 @@ use DefaultConfig qw(
   $CHARSET %MIMETYPES $MIMEFILE $ENABLE_COMPRESSION $BUFSIZE
   $ENABLE_ACL $ENABLE_CALDAV $ENABLE_CARDDAV $ENABLE_CALDAV_SCHEDULE 
   $ENABLE_LOCK $ENABLE_BIND $ENABLE_SEARCH $BACKEND_INSTANCE
+  $ALLOW_BYTES_RANGE
 );
 
 require bytes;
@@ -171,8 +172,8 @@ sub print_file_header {
         -Cache_Control  => 'no-cache, no-store',
         'MS-Author-Via' => 'DAV',
         'DAV'           => get_dav_header(),
-        'Accept-Ranges' => 'bytes',
     );
+    if ($ALLOW_BYTES_RANGE) { $header{'Accept-Ranges'}='bytes'; }
     if ( defined $cgi->http('Translate') ) {
         $header{'Translate'} = 'f';
     }
@@ -215,7 +216,7 @@ sub get_content_range_header {
     my ($statref) = @_;
     my $ranges = get_byte_ranges();
     my %header = ();
-    if ( defined $ranges && $#{$ranges} > -1) {
+    if ( $ALLOW_BYTES_RANGE && defined $ranges && $#{$ranges} > -1) {
         my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // ($statref->[7] - 1) ) } @{$ranges};
         my $count = 0;
         foreach my $r (@{$ranges}) {
@@ -223,23 +224,22 @@ sub get_content_range_header {
             elsif (defined $r->[0]) { $count += $statref->[7] - $r->[0] }
             elsif (defined $r->[1]) { $count += $r->[1] }
 
-	    if (defined $r->[0] && $r->[0]+1>$statref->[7]) {
-		    $header{-status}='416 Range Not Satisfiable';
-		    $header{-title}=$header{-status};
-		    $header{-Content_range}=sprintf 'bytes */%s', $statref->[7];
-		    $header{-Content_length}=0;
-		    return \%header;
-	    }
+            if ((defined $r->[0] && $r->[0]+1>$statref->[7])||(defined $r->[0] && defined $r->[1] && $r->[1] > $r->[0])) {
+                $header{-status}='416 Range Not Satisfiable';
+                $header{'Content-Range'}=sprintf 'bytes */%s', $statref->[7];
+                $header{'Content_Length'}=0;
+                return \%header;
+            }
         }
         if ($#{$ranges}>-1) {
-            $header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
+            $header{'Content-Range'} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
             if ($#{$ranges}>0) {
                 $header{-status} = '206 Partial Content';
                 my $boundary = uc(Digest::MD5::md5_base64(time));
                 $header{'Content-Type'} = 'multipart/byteranges; boundary='.$boundary;
                 $header{'X-Boundary'} = $boundary;
             } else {
-                $header{-Content_Length}=$count;
+                $header{'Content-Length'}=$count;
                 $header{'X-Content-Length'}=$count;
             }
         }
@@ -249,7 +249,7 @@ sub get_content_range_header {
     return \%header;
 }
 sub print_boundary {
-	my ($fh, $boundary, $mimetype, $start,$end, $count) = @_;
+	my ($fh, $boundary, $mimetype, $start, $end, $count) = @_;
 	if (defined $boundary && defined $mimetype) {
 		print $fh "\n--$boundary\n";
 		if (defined $count) {
