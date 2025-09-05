@@ -86,12 +86,12 @@ sub handle {
     binmode(STDOUT) || carp('Cannot set binmode for STDOUT.');
 
     if ( !$self->_handle_compressed_file() ) {
-    my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
-    my $count = _print_file($backend, \*STDOUT, $headerref->{'X-Boundary'}, $headerref->{'X-Content-Type'});
+        my $headerref = print_file_header( $backend, $PATH_TRANSLATED );
+        my $count = _print_file($backend, \*STDOUT, $headerref->{'X-Boundary'}, $headerref->{'X-Content-Type'});
 
-    fix_mod_perl_response($headerref);
+        fix_mod_perl_response($headerref);
 
-    $self->{event}->broadcast(
+        $self->{event}->broadcast(
             'GET',
             {
                 file => $PATH_TRANSLATED,
@@ -183,9 +183,13 @@ sub _print_file {
         } else {
 	    next;
 	}
-	print_boundary($fh, $boundary, $contenttype, $start, $end, $c);
-        $backend->printFile( $PATH_TRANSLATED, $fh, $start, $c );
-        if (defined $c) { $count+=$c; }
+	if ($start<($backend->stat($PATH_TRANSLATED))[7]) {
+		print_boundary($fh, $boundary, $contenttype, $start, $end, $c);
+		$backend->printFile( $PATH_TRANSLATED, $fh, $start, $c );
+		if (defined $c) { $count+=$c; }
+	} else {
+		return 0;
+	}
     }
     print_boundary($fh, $boundary, $contenttype);
     return $count;

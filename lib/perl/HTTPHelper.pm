@@ -99,7 +99,7 @@ sub _try_compress_with_brotli {
     if ($enc =~ /\bbr\b/xmsi && eval { require IO::Compress::Brotli }) {
         my $cd;
         require Encode;
-        # $cd = IO::Compress::Brotli::bro(utf8::is_utf8(${$contentref}) ? Encode::decode('UTF-8',${$contentref}) : ${$contentref});
+        #$cd = IO::Compress::Brotli::bro(utf8::is_utf8(${$contentref}) ? Encode::decode('UTF-8',${$contentref}) : ${$contentref});
         $cd = IO::Compress::Brotli::bro(${$contentref});
         $header->{'Content-Encoding'} = 'br';
         return \$cd;
@@ -216,12 +216,20 @@ sub get_content_range_header {
     my $ranges = get_byte_ranges();
     my %header = ();
     if ( defined $ranges && $#{$ranges} > -1) {
-        my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // $statref->[7] - 1 - ($_->[0]//0)) } @{$ranges};
+        my $r_s = join ',', map {  ($_->[0] // q{}) . '-' . ($_->[1] // ($statref->[7] - 1) ) } @{$ranges};
         my $count = 0;
         foreach my $r (@{$ranges}) {
             if (defined $r->[0] && defined $r->[1]) { $count += $r->[1]-$r->[0]+1; }
             elsif (defined $r->[0]) { $count += $statref->[7] - $r->[0] }
             elsif (defined $r->[1]) { $count += $r->[1] }
+
+	    if (defined $r->[0] && $r->[0]+1>$statref->[7]) {
+		    $header{-status}='416 Range Not Satisfiable';
+		    $header{-title}=$header{-status};
+		    $header{-Content_range}=sprintf 'bytes */%s', $statref->[7];
+		    $header{-Content_length}=0;
+		    return \%header;
+	    }
         }
         if ($#{$ranges}>-1) {
             $header{-Content_Range} = sprintf 'bytes %s/%s', $r_s, $statref->[7];
