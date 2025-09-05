@@ -224,10 +224,10 @@ sub get_content_range_header {
             elsif (defined $r->[0]) { $count += $statref->[7] - $r->[0] }
             elsif (defined $r->[1]) { $count += $r->[1] }
 
-            if ((defined $r->[0] && $r->[0]+1>$statref->[7])||(defined $r->[0] && defined $r->[1] && $r->[1] > $r->[0])) {
+            if ((defined $r->[0] && $r->[0]+1>$statref->[7])||(defined $r->[0] && defined $r->[1] && $r->[1] > $r->[0])||(defined $r->[1] && $r->[1]+1>$statref->[7])) {
                 $header{-status}='416 Range Not Satisfiable';
                 $header{'Content-Range'}=sprintf 'bytes */%s', $statref->[7];
-                $header{'Content_Length'}=0;
+                $header{'Content-Length'}=0;
                 return \%header;
             }
         }
