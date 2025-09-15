@@ -585,6 +585,15 @@ $THUMBNAIL_CACHEDIR = '/tmp';
 ## defines absolute path to a cache directory
 $OPTIMIZERTMP = '/tmp';
 
+## -- FIX_UTF8_BROTLI_ISSUE
+## fix encoding problems with old IO::Compress::Brotli versions
+$FIX_UTF8_BROTLI_ISSUE = 0;
+
+
+## -- ALLOW_BYTES_RANGE
+## allows bytes range requests (for video stream neccessary)
+$ALLOW_BYTES_RANGE = 1;
+
 ## -- ENABLE_BIND
 ## enables BIND/UNBIND/REBIND methods defined in http://tools.ietf.org/html/draft-ietf-webdav-bind-27
 ## EXAMPLE: $ENABLE_BIND = 1;

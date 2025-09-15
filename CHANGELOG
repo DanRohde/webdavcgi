@@ -3,6 +3,7 @@
      - fixed temporary file handling bug in SMB backend reported by Hendrik Visage: folder for temporary files should not be hard coded
      - LESSified core CSS 
      - added pure theme support using CSS3 custom properties
+     - fixed range request bug
 1.1.2: 2017/05/10
      - moved source code from sourceforge to github
      - added folder upload support via folder drag and drop and menu dialog
