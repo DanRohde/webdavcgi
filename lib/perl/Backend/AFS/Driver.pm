@@ -30,6 +30,8 @@ use English qw( -no_match_vars );
 
 use DefaultConfig qw( %BACKEND_CONFIG $BACKEND $PATH_TRANSLATED );
 
+use constant MAX_RECURSION_DEPTH => 50;
+
 sub isFile {
     return $_[0]->_check_caller_access( $_[1], 'l', 'r' )
       ? $_[0]->SUPER::isFile( $_[1] )
@@ -123,16 +125,33 @@ sub getQuota {
 }
 
 sub _get_caller_access {
-    my ( $self, $fn, $ignoreparent ) = @_;
+    my ( $self, $fn, $ignoreparent, $depth ) = @_;
+    $depth //= 0;
+
+    if ( $depth > MAX_RECURSION_DEPTH ) {
+        carp("_get_caller_access: max recursion depth reached for path: $fn");
+        return q{};
+    }
+
     $fn = $self->resolveVirt($fn);
     $fn =~ s{/$}{}xms;                # remove trailing slash
     $fn =~ s{/[^/]+/[.]{2}$}{}xms;    # eliminate ../
     $fn =~ s/(["\$\\])/\\$1/xmsg;     # quote special characters
+
+    # stop at root or empty path
+    if ( !defined $fn || $fn eq q{} || $fn eq q{/} ) {
+        return q{};
+    }
+
     if ( exists $self->{cache}{$fn}{_get_caller_access} ) {
         return $self->{cache}{$fn}{_get_caller_access};
     }
     if ( !$ignoreparent && !$self->isDir($fn) ) {
-        return $self->_get_caller_access( $self->dirname($fn) );
+        my $parent = $self->dirname($fn);
+        if ( defined $parent && $parent ne $fn ) {
+            return $self->_get_caller_access( $parent, $ignoreparent, $depth + 1 );
+        }
+        return q{};
     }
     my $access = q{};
 
