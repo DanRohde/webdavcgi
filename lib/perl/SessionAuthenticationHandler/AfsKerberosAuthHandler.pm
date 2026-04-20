@@ -1,6 +1,6 @@
 ########################################################################
 # (C) ZE CMS, Humboldt-Universitaet zu Berlin
-# Written by Daniel Rohde <d.rohde@cms.hu-berlin.de>
+# Written by Daniel Rohde
 #########################################################################
 # This is a very pure WebDAV server implementation that
 # uses the CGI interface of a Apache webserver.
@@ -15,56 +15,93 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #########################################################################
-# aklog => 'aklog'
+# aklog_argv => [ 'aklog' ]
 
 package SessionAuthenticationHandler::AfsKerberosAuthHandler;
 use strict;
 use warnings;
-
 our $VERSION = '1.0';
 
 use base qw( SessionAuthenticationHandler::KerberosAuthHandler );
-
 use English qw( -no_match_vars );
 use AFS::PAG qw( setpag unlog haspag );
 
 sub login {
-    my ($self, $config, $login, $password) = @_;
-    return $self->SUPER::login($config, $login, $password) && $self->_aklog($config, $login);
+  my ($self, $config, $login, $password) = @_;
+
+  if (!$self->_valid_login($login)) {
+    $self->log($config, 'Rejected invalid login syntax before AFS login.', 2);
+    return 0;
+  }
+
+  return $self->SUPER::login($config, $login, $password)
+      && $self->_aklog($config, $login);
 }
+
 sub _aklog {
-    my ($self, $config, $login) = @_;
-    if (haspag()) {
-        unlog();
-    } else {
-        if (!setpag()) {
-            $self->log($config, "setpag failed for $login.",1);
-            return 0;
-        }
-    }
-    system $config->{aklog} // 'aklog';
-    if ($CHILD_ERROR >> 8 != 0) {
-        $self->log($config, "AFS login failed for $login: $CHILD_ERROR, $ERRNO", 2);
-        return 0;
-    }
-    $self->log($config, "AFS login successful ($CHILD_ERROR).", 4);
-    return 1;
-}
-sub check_session {
-    my ($self, $config, $login) = @_;
-    return $self->SUPER::check_session($config, $login) && $self->_aklog($config, $login);
-}
-sub logout {
-    my ($self, $config, $login ) = @_;
-    $self->SUPER::logout($config, $login);
+  my ($self, $config, $login) = @_;
+
+  if (!$self->_valid_login($login)) {
+    $self->log($config, 'Rejected invalid login syntax before aklog.', 2);
+    return 0;
+  }
+
+  if (haspag()) {
     unlog();
-    return 1;
+  } else {
+    if (!setpag()) {
+      $self->log($config, "setpag failed for $login.", 1);
+      return 0;
+    }
+  }
+
+  my @aklog = $self->_aklog_argv($config);
+  system @aklog;
+
+  if ($CHILD_ERROR >> 8 != 0) {
+    $self->log($config, "AFS login failed for $login: $CHILD_ERROR, $ERRNO", 2);
+    return 0;
+  }
+
+  $self->log($config, "AFS login successful ($CHILD_ERROR).", 4);
+  return 1;
+}
+
+sub check_session {
+  my ($self, $config, $login) = @_;
+
+  if (!$self->_valid_login($login)) {
+    $self->log($config, 'Rejected invalid login syntax during AFS session check.', 2);
+    return 0;
+  }
+
+  return $self->SUPER::check_session($config, $login)
+      && $self->_aklog($config, $login);
+}
+
+sub logout {
+  my ($self, $config, $login ) = @_;
+
+  $self->SUPER::logout($config, $login);
+  unlog();
+  return 1;
+}
+
+sub _aklog_argv {
+  my ($self, $config) = @_;
+
+  if (ref($config->{aklog_argv}) eq 'ARRAY' && @{$config->{aklog_argv}}) {
+    return @{$config->{aklog_argv}};
+  }
+
+  return ('aklog');
 }
 
 1;
