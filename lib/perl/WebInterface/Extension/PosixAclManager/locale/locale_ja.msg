@@ -1,0 +1,7 @@
+pacl                     "POSIX ACLマネージャー"
+pacl_update              "更新"
+pacl_msg_success         "[%s]のPOSIX ACLを正常に変更しました"
+pacl_recursive           "再帰的(サブフォルダーにも適用)"
+pacl_legend              "権限:r-読み込み, w-書き込み, x-実行, --- - 権限なし"
+pacl_msg_err_usergroup   "新しいACLエントリは[user:],[group:],[default:]のいずれかで始めてください"
+pacl_msg_err_perm        "少なくとも1つの権限を指定する必要があります"

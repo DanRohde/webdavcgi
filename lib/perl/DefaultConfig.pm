@@ -223,6 +223,7 @@ EOF
         'fr'      => 'Français',
         'hu'      => 'Magyar',
         'it'      => 'Italiano',
+        'ja'      => 'Japanese',
     );
     $ORDER   = 'name';
     $DBI_SRC = 'dbi:SQLite:dbname=/tmp/webdav.'
