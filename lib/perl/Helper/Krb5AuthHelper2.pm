@@ -58,7 +58,7 @@ sub init {
     }
 
     if ( $ENV{KRB5CC_DOMAIN} ) {
-        print STDERR "Found KRB5CC_DOMAIN for $REMOTE_USER: ",$ENV{KRB5CC_DOMAIN},"\n";
+        # print STDERR "Found KRB5CC_DOMAIN for $REMOTE_USER: ",$ENV{KRB5CC_DOMAIN},"\n";
         $REMOTE_USER.=q{@}.$ENV{KRB5CC_DOMAIN};
     }
 
