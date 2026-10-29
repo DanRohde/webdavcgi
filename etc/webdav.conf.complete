@@ -348,6 +348,7 @@ $LANG = 'default';
     'fr'      => 'Français',
     'hu'      => 'Magyar',
     'it'      => 'Italiano',
+    'ja'      => 'Japanese',
 );
 
 ## -- ORDER

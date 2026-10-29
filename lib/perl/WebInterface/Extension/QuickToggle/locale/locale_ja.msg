@@ -1,0 +1,5 @@
+quicktoggles                  "クイックトグル"
+quicktoggles.bars             "サイドバー/ヘッダーの表示・非表示"
+quicktoggles.fullscreen       "全画面表示の切り替え"
+quicktoggles.dot              "隠しファイル・フォルダーの表示・非表示"
+quicktoggles.thumbnails       "サムネイルの有効・無効"
